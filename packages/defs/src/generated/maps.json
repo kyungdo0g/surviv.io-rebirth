@@ -9325,14 +9325,10 @@
         "crates": [
           {
             "name": "airdrop_crate_01",
-            "weight": 12
+            "weight": 10
           },
           {
             "name": "airdrop_crate_02de",
-            "weight": 1
-          },
-          {
-            "name": "airdrop_crate_05",
             "weight": 1
           }
         ]
@@ -15303,9 +15299,9 @@
           "shack_03a": 2,
           "shack_03b": 3,
           "greenhouse_01": 1,
-          "cache_01f": 1,
-          "cache_02f": 1,
-          "cache_07f": 1,
+          "cache_01": 2,
+          "cache_02": 2,
+          "cache_07": 2,
           "mansion_structure_01": 1,
           "bunker_structure_01": {
             "odds": 1
@@ -15319,9 +15315,6 @@
             "odds": 1
           },
           "tree_02": 3,
-          "cache_02": 1,
-          "cache_01": 1,
-          "cache_07": 1,
           "river_town_01": 1
         }
       ],
@@ -33712,8 +33705,8 @@
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
-          "cache_01w": 1,
-          "cache_02w": 1,
+          "cache_01": 2,
+          "cache_02": 1,
           "cache_03": 48,
           "chest_03": {
             "odds": 0.5
@@ -33739,7 +33732,6 @@
             "small": 3,
             "large": 4
           },
-          "cache_01": 1,
           "logging_complex_01": 1,
           "teapavilion_01w": 1
         }
@@ -48202,8 +48194,8 @@
             "small": 2,
             "large": 3
           },
-          "cache_01cb": 1,
-          "cache_02cb": 1,
+          "cache_01": 1,
+          "cache_02": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05

@@ -175,3 +175,102 @@ export function mapRoleProblems(maps: Record<string, any>, gameObjects: Record<s
     }
     return out;
 }
+
+/**
+ * Fork reskins of original objects that survev spawns on original maps (docs/research/provenance/balance-revert.md,
+ * section mapSpawns: "replaces the original rock cache cache_01" etc.; fork-vs-original.md lists the reskins as fork).
+ */
+const FORK_RESKIN_ORIGINALS: Record<string, string> = {
+    cache_01w: "cache_01",
+    cache_02w: "cache_02",
+    cache_01f: "cache_01",
+    cache_02f: "cache_02",
+    cache_07f: "cache_07",
+    cache_01cb: "cache_01",
+    cache_02cb: "cache_02",
+};
+
+/** Maps whose spawns are reverted: the eight maps of the original client. */
+const ORIGINAL_MAPS = ["main", "desert", "woods", "faction", "potato", "savannah", "halloween", "cobalt"];
+
+export interface ReskinRevert {
+    map: string;
+    path: string;
+    from: string;
+    to: string;
+}
+
+function replaceKeys(obj: Record<string, any>, map: string, path: string, log: ReskinRevert[]): Record<string, any> {
+    const out: Record<string, any> = {};
+    for (const [key, value] of Object.entries(obj)) {
+        const to = FORK_RESKIN_ORIGINALS[key];
+        if (!to) {
+            out[key] = typeof out[key] === "number" && typeof value === "number" ? out[key] + value : value;
+            continue;
+        }
+        log.push({ map, path, from: key, to });
+        out[to] = typeof out[to] === "number" && typeof value === "number" ? out[to] + value : (out[to] ?? value);
+    }
+    return out;
+}
+
+/**
+ * Puts the original objects back where survev spawns its reskins on original maps, and removes fork-only airdrop
+ * crates (desert's airdrop_crate_05, balance.txt line 319: original weights airdrop_crate_01 10, airdrop_crate_02de 1).
+ */
+export function revertForkReskins(maps: Record<string, any>, liveMapObjects: Record<string, unknown>): ReskinRevert[] {
+    const log: ReskinRevert[] = [];
+    for (const name of ORIGINAL_MAPS) {
+        const def = maps[name];
+        const gen = def?.mapGen;
+        if (!gen) continue;
+        for (const field of ["fixedSpawns", "densitySpawns", "spawnReplacements"] as const) {
+            if (Array.isArray(gen[field])) {
+                gen[field] = gen[field].map((o: Record<string, any>) => replaceKeys(o, name, `mapGen.${field}`, log));
+            }
+        }
+        if (Array.isArray(gen.spawnReplacements)) {
+            for (const repl of gen.spawnReplacements) {
+                for (const [k, v] of Object.entries(repl)) {
+                    if (FORK_RESKIN_ORIGINALS[v as string]) {
+                        log.push({
+                            map: name,
+                            path: `mapGen.spawnReplacements.${k}`,
+                            from: v as string,
+                            to: FORK_RESKIN_ORIGINALS[v as string],
+                        });
+                        repl[k] = FORK_RESKIN_ORIGINALS[v as string];
+                    }
+                }
+            }
+        }
+        for (const rs of gen.randomSpawns ?? []) {
+            rs.spawns = rs.spawns.map((s: string) => {
+                const to = FORK_RESKIN_ORIGINALS[s];
+                if (to) log.push({ map: name, path: "mapGen.randomSpawns", from: s, to });
+                return to ?? s;
+            });
+        }
+        const crates = def.gameConfig?.planes?.crates;
+        if (Array.isArray(crates)) {
+            const kept = crates.filter((c: { name: string }) => Object.hasOwn(liveMapObjects, c.name));
+            for (const c of crates) {
+                if (!kept.includes(c)) log.push({ map: name, path: "gameConfig.planes.crates", from: c.name, to: "" });
+            }
+            if (name === "desert" && kept.length !== crates.length) {
+                const c01 = kept.find((c: { name: string }) => c.name === "airdrop_crate_01");
+                if (c01 && c01.weight !== 10) {
+                    log.push({
+                        map: name,
+                        path: "gameConfig.planes.crates.airdrop_crate_01.weight",
+                        from: String(c01.weight),
+                        to: "10",
+                    });
+                    c01.weight = 10;
+                }
+            }
+            def.gameConfig.planes.crates = kept;
+        }
+    }
+    return log;
+}

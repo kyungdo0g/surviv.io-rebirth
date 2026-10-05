@@ -7,7 +7,14 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { applyBalanceRevert, type RevertLog } from "./lib/balance.ts";
 import { loadInputs } from "./lib/inputs.ts";
-import { cleanLootTables, cleanRoleOverrides, mapRoleProblems, portMaps, renameTiers } from "./lib/maps.ts";
+import {
+    cleanLootTables,
+    cleanRoleOverrides,
+    mapRoleProblems,
+    portMaps,
+    renameTiers,
+    revertForkReskins,
+} from "./lib/maps.ts";
 import { objectPaths, portGameConfig, portGameObjects, portMapObjects } from "./lib/objects.ts";
 import { stableJson } from "./lib/util.ts";
 import { validate } from "./lib/validate.ts";
@@ -55,6 +62,9 @@ if (existsSync(BALANCE_REVERT)) {
     console.warn(`warning: ${balanceRevertNote}`);
 }
 
+// 3b. fork reskins (woods/faction/cobalt caches, desert crimson airdrop) back to the original objects
+const reskinReverts = revertForkReskins(maps.maps, live.mapObjects);
+
 // 4. loot tables: original tier names, only items that exist, no xp drops
 const tierRenames = renameTiers(maps.maps);
 const lootRemovals = cleanLootTables(maps.maps, gameObjects.defs);
@@ -83,6 +93,7 @@ const provenance = {
     mapObjects: mapObjects.status,
     maps: maps.provenance,
     balanceRevert,
+    reskinReverts,
     lootRemovals: [...lootRemovals, ...mapObjects.lootRemovals, ...roleOverrideRemovals],
     gameConfigDiffs: [...gameConfig.diffs, ...gameConfig.prunes.map((p) => ({ ...p, kind: "pruned" }))],
     fixups: [...gameObjects.fixups, ...mapObjects.fixups, ...tierRenames],

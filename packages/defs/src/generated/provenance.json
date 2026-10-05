@@ -1507,10 +1507,8 @@
     "crate_09de": "survev-only",
     "crate_12po": "survev-only",
     "crate_12dev": "survev-only",
-    "crate_17": "survev-only",
     "airdrop_crate_03po": "survev-only",
     "airdrop_crate_03dev": "survev-only",
-    "airdrop_crate_05": "survev-only",
     "barrel_05": "survev-only",
     "chair_01": "survev-only",
     "gun_mount_06": "survev-only",
@@ -1538,7 +1536,6 @@
     "egg_02": "survev-only",
     "egg_03": "survev-only",
     "egg_04": "survev-only",
-    "stone_02cb": "survev-only",
     "stone_02w": "survev-only",
     "stone_02bh": "survev-only",
     "stone_02f": "survev-only",
@@ -1548,7 +1545,6 @@
     "tree_03sp": "survev-only",
     "tree_03f": "survev-only",
     "tree_03w": "survev-only",
-    "tree_03cb": "survev-only",
     "tree_03bh": "survev-only",
     "tree_13bh": "survev-only",
     "tree_14": "survev-only",
@@ -1569,13 +1565,11 @@
     "bunker_cloud_sublevel_01": "survev-only",
     "bunker_cloud_compartment_01": "survev-only",
     "bunker_cloud_compartment_02": "survev-only",
-    "cache_01cb": "survev-only",
     "cache_01w": "survev-only",
     "cache_01bh": "survev-only",
     "cache_01f": "survev-only",
     "cache_02w": "survev-only",
     "cache_02sp": "survev-only",
-    "cache_02cb": "survev-only",
     "cache_02f": "survev-only",
     "cache_02bh": "survev-only",
     "cache_06bh": "survev-only",
@@ -16854,6 +16848,62 @@
       "reason": "target not resolvable in the ported data"
     }
   ],
+  "reskinReverts": [
+    {
+      "map": "desert",
+      "path": "gameConfig.planes.crates",
+      "from": "airdrop_crate_05",
+      "to": ""
+    },
+    {
+      "map": "desert",
+      "path": "gameConfig.planes.crates.airdrop_crate_01.weight",
+      "from": "12",
+      "to": "10"
+    },
+    {
+      "map": "woods",
+      "path": "mapGen.fixedSpawns",
+      "from": "cache_01w",
+      "to": "cache_01"
+    },
+    {
+      "map": "woods",
+      "path": "mapGen.fixedSpawns",
+      "from": "cache_02w",
+      "to": "cache_02"
+    },
+    {
+      "map": "faction",
+      "path": "mapGen.fixedSpawns",
+      "from": "cache_01f",
+      "to": "cache_01"
+    },
+    {
+      "map": "faction",
+      "path": "mapGen.fixedSpawns",
+      "from": "cache_02f",
+      "to": "cache_02"
+    },
+    {
+      "map": "faction",
+      "path": "mapGen.fixedSpawns",
+      "from": "cache_07f",
+      "to": "cache_07"
+    },
+    {
+      "map": "cobalt",
+      "path": "mapGen.fixedSpawns",
+      "from": "cache_01cb",
+      "to": "cache_01"
+    },
+    {
+      "map": "cobalt",
+      "path": "mapGen.fixedSpawns",
+      "from": "cache_02cb",
+      "to": "cache_02"
+    }
+  ],
   "lootRemovals": [
     {
       "map": "main",
@@ -21664,12 +21714,6 @@
       "reason": "survev `category` renamed to the original field name"
     },
     {
-      "id": "crate_17",
-      "field": "obstacleType",
-      "value": "crate",
-      "reason": "survev `category` renamed to the original field name"
-    },
-    {
       "id": "airdrop_crate_03po",
       "field": "obstacleType",
       "value": "airdrop",
@@ -21677,12 +21721,6 @@
     },
     {
       "id": "airdrop_crate_03dev",
-      "field": "obstacleType",
-      "value": "airdrop",
-      "reason": "survev `category` renamed to the original field name"
-    },
-    {
-      "id": "airdrop_crate_05",
       "field": "obstacleType",
       "value": "airdrop",
       "reason": "survev `category` renamed to the original field name"
@@ -22107,7 +22145,9 @@
       "chest_03sv",
       "chest_03tr",
       "crate_13po",
+      "crate_17",
       "airdrop_crate_04po",
+      "airdrop_crate_05",
       "class_crate_common_classless",
       "class_crate_rare_classless",
       "chair_02",
@@ -22131,6 +22171,7 @@
       "bush_07cb",
       "campfire_01",
       "squash_02",
+      "stone_02cb",
       "stone_02x",
       "stone_03sv",
       "stone_03tr",
@@ -22142,6 +22183,7 @@
       "tree_03x",
       "tree_03d",
       "tree_03h",
+      "tree_03cb",
       "tree_interior_11",
       "tree_13x",
       "tree_14x",
@@ -22163,8 +22205,10 @@
       "camp_01w",
       "logging_complex_03su",
       "cache_01x",
+      "cache_01cb",
       "cache_02x",
       "cache_02su",
+      "cache_02cb",
       "cache_02d",
       "cache_02h",
       "cache_03tr",
