@@ -1,0 +1,3640 @@
+{
+    "meta": {
+        "fixture": "melee",
+        "generator": "node --experimental-transform-types tools/oracle/run.ts",
+        "survevCommit": "c6185e31fe25a4a07def77a2bb25b1710bda90ac",
+        "defs": {
+            "protocolHash": 2525058706,
+            "gameObjectsSha256": "dd1f0919eb7aad005ff5bcf51f84528d7851094ee75d8917fa0d872956b7eb4e",
+            "gameConfigSha256": "22020fb3c453fc41011e966a31dc6fcc65fdbb30108154405fe323f04558fc2b"
+        },
+        "simulation": {
+            "dt": 0.01,
+            "netSyncTps": 33,
+            "note": "game.update(dt) with a fixed dt, game.netSync() at netSyncTps, like survev's game process"
+        },
+        "randomModes": {
+            "seeded": "Math.random = mulberry32(seed); used for game creation (map generation) and natural-randomness runs",
+            "centered": "Math.random() = 0.5: zero spread deviation, zero shotgun pellet jitter, bullet distAdj index 8 (0 m), headshot roll fails",
+            "low": "Math.random() = 0: deviation -spread/2, pellet jitter -jitter, bullet distAdj index 0 (-1 m)",
+            "high": "Math.random() = 1 - 2^-53: deviation +spread/2, pellet jitter +jitter, bullet distAdj index 16 (+1 m)",
+            "headshotNever": "GameConfig.player.headshotChance = 0 (Math.random() < 0 never holds)",
+            "headshotAlways": "GameConfig.player.headshotChance = 1 (Math.random() < 1 always holds)",
+            "headshotRandom": "GameConfig.player.headshotChance = 0.15 (survev default)"
+        },
+        "patch": {
+            "replacedIds": 615,
+            "idsWithChangedValues": 231,
+            "gameplayValueChanges": 357,
+            "addedIds": [
+                "bullet_potato",
+                "bullet_bugle",
+                "bullet_mp5_bonus",
+                "bullet_m9_bonus",
+                "bullet_mac10_bonus",
+                "bullet_ump9_bonus",
+                "bullet_vector_bonus",
+                "bullet_glock_bonus",
+                "bullet_m93r_bonus",
+                "bullet_scorpion_bonus",
+                "bullet_vss_bonus",
+                "bullet_p30l_bonus",
+                "emote_flagisrael",
+                "outfitTree"
+            ],
+            "keptSurvevOnlyFields": { "bullet": ["noDistAdj", "useExplosiveRoundsAlt"] },
+            "gameConfigChanges": [
+                "bagSizes.9mm",
+                "bagSizes.762mm",
+                "bagSizes.556mm",
+                "bagSizes.12gauge",
+                "bagSizes.50AE",
+                "bagSizes.308sub",
+                "bagSizes.flare",
+                "bagSizes.45acp",
+                "bagSizes.frag",
+                "bagSizes.smoke",
+                "bagSizes.strobe",
+                "bagSizes.mirv",
+                "bagSizes.snowball",
+                "bagSizes.potato",
+                "bagSizes.bandage",
+                "bagSizes.healthkit",
+                "bagSizes.soda",
+                "bagSizes.painkiller",
+                "bagSizes.1xscope",
+                "bagSizes.2xscope",
+                "bagSizes.4xscope",
+                "bagSizes.8xscope",
+                "bagSizes.15xscope"
+            ],
+            "verification": [
+                {
+                    "check": "GameObjectDefs.typeToDef('bullet_an94', 'bullet').damage",
+                    "actual": 17.5,
+                    "ok": true
+                },
+                { "check": "BulletDefs.bullet_an94.damage", "actual": 17.5, "ok": true },
+                {
+                    "check": "GameObjectDefs.typeToDef('mosin', 'gun').headshotMult",
+                    "actual": 1.5,
+                    "ok": true
+                },
+                { "check": "GunDefs.mosin.headshotMult", "actual": 1.5, "ok": true },
+                {
+                    "check": "ids whose survev def differs from ours after the patch",
+                    "actual": 0,
+                    "ok": true
+                }
+            ]
+        },
+        "params": {
+            "random": "centered; body: headshotChance = 0, headshot: headshotChance = 1 (melee defs carry headshotMult)",
+            "attack": "shootHold + shootStart sent every tick (autoAttack weapons swing on hold, others on each click)",
+            "target": "100 HP test player standing attack.offset.x + 0.5 m in front of the attacker",
+            "damagePerHit": "measured with the health cap raised (never clamped)",
+            "ttk": "seconds from the first attack input to the end of the tick the target died",
+            "armorSets": [
+                { "name": "none", "helmet": "", "chest": "" },
+                { "name": "lvl1", "helmet": "helmet01", "chest": "chest01" },
+                { "name": "lvl2", "helmet": "helmet02", "chest": "chest02" },
+                { "name": "lvl3", "helmet": "helmet03", "chest": "chest03" }
+            ]
+        }
+    },
+    "notes": [
+        "a swing starts when the weapon cooldown is < 0 and no melee animation plays; damage is applied at each attack.damageTimes offset; the next swing waits attack.cooldownTime",
+        "survev ignores the melee armorPiercing flag: armor applies to melee like any non-explosion damage",
+        "equipDelayFromGun: switching to melee always waits max(melee cooldown, switchDelay)"
+    ],
+    "weapons": {
+        "fists": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "knuckles": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "karambit": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "bayonet": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "huntsman": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "bowie": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "machete": {
+            "def": {
+                "damage": 33,
+                "headshotMult": 1,
+                "cooldownTime": 0.3,
+                "damageTimes": [0.12],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": false,
+                "attackRad": 1.75,
+                "attackOffset": 1.5,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 22.89375
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 18.0048
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 15.15525
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 24.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 19.8
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 14.85
+                }
+            ]
+        },
+        "saw": {
+            "def": {
+                "damage": 44,
+                "headshotMult": 1,
+                "cooldownTime": 0.7,
+                "damageTimes": [0.1, 0.5],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": false,
+                "attackRad": 1.75,
+                "attackOffset": 2,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.81,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 1 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 44
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.2,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 30.525
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.51,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 2 }],
+                    "damagePerHit": 24.0064
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 5,
+                    "ttk": 1.51,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 2 }],
+                    "damagePerHit": 20.207
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.81,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 1 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 44
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.2,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 4,
+                    "ttk": 1.2,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 26.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 1.9,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 3 }, { "value": 0.31, "count": 2 }],
+                    "damagePerHit": 19.8
+                }
+            ]
+        },
+        "woodaxe": {
+            "def": {
+                "damage": 36,
+                "headshotMult": 1,
+                "cooldownTime": 0.36,
+                "damageTimes": [0.18],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": true,
+                "attackRad": 1,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.9,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 2 }],
+                    "damagePerHit": 36
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.62,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 4 }],
+                    "damagePerHit": 24.975
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.98,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 5 }],
+                    "damagePerHit": 19.6416
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 2.34,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 6 }],
+                    "damagePerHit": 16.533
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.9,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 2 }],
+                    "damagePerHit": 36
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.26,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 3 }],
+                    "damagePerHit": 27
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.62,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 4 }],
+                    "damagePerHit": 21.6
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 2.34,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 6 }],
+                    "damagePerHit": 16.2
+                }
+            ]
+        },
+        "fireaxe": {
+            "def": {
+                "damage": 44,
+                "headshotMult": 1,
+                "cooldownTime": 0.42,
+                "damageTimes": [0.21],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": true,
+                "attackRad": 1,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 1.05,
+                    "firstHitAfterInput": 0.21,
+                    "hitIntervals": [{ "value": 0.42, "count": 2 }],
+                    "damagePerHit": 44
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.47,
+                    "firstHitAfterInput": 0.21,
+                    "hitIntervals": [{ "value": 0.42, "count": 3 }],
+                    "damagePerHit": 30.525
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.89,
+                    "firstHitAfterInput": 0.21,
+                    "hitIntervals": [{ "value": 0.42, "count": 4 }],
+                    "damagePerHit": 24.0064
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 5,
+                    "ttk": 1.89,
+                    "firstHitAfterInput": 0.21,
+                    "hitIntervals": [{ "value": 0.42, "count": 4 }],
+                    "damagePerHit": 20.207
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 1.05,
+                    "firstHitAfterInput": 0.21,
+                    "hitIntervals": [{ "value": 0.42, "count": 2 }],
+                    "damagePerHit": 44
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.47,
+                    "firstHitAfterInput": 0.21,
+                    "hitIntervals": [{ "value": 0.42, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 4,
+                    "ttk": 1.47,
+                    "firstHitAfterInput": 0.21,
+                    "hitIntervals": [{ "value": 0.42, "count": 3 }],
+                    "damagePerHit": 26.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 2.31,
+                    "firstHitAfterInput": 0.21,
+                    "hitIntervals": [{ "value": 0.42, "count": 5 }],
+                    "damagePerHit": 19.8
+                }
+            ]
+        },
+        "katana": {
+            "def": {
+                "damage": 40,
+                "headshotMult": 1,
+                "cooldownTime": 0.4,
+                "damageTimes": [0.2],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": true,
+                "attackRad": 2,
+                "attackOffset": 1.75,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 1,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.4,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 3 }],
+                    "damagePerHit": 27.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.8,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 4 }],
+                    "damagePerHit": 21.824
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 2.2,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 5 }],
+                    "damagePerHit": 18.37
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 1,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.4,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 3 }],
+                    "damagePerHit": 30
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.8,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 2.2,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 5 }],
+                    "damagePerHit": 18
+                }
+            ]
+        },
+        "naginata": {
+            "def": {
+                "damage": 56,
+                "headshotMult": 1,
+                "cooldownTime": 0.54,
+                "damageTimes": [0.27],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": true,
+                "attackRad": 2,
+                "attackOffset": 3.5,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 2,
+                    "ttk": 0.81,
+                    "firstHitAfterInput": 0.27,
+                    "hitIntervals": [{ "value": 0.54, "count": 1 }],
+                    "damagePerHit": 56
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 3,
+                    "ttk": 1.35,
+                    "firstHitAfterInput": 0.27,
+                    "hitIntervals": [{ "value": 0.54, "count": 2 }],
+                    "damagePerHit": 38.85
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 4,
+                    "ttk": 1.89,
+                    "firstHitAfterInput": 0.27,
+                    "hitIntervals": [{ "value": 0.54, "count": 3 }],
+                    "damagePerHit": 30.5536
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 4,
+                    "ttk": 1.89,
+                    "firstHitAfterInput": 0.27,
+                    "hitIntervals": [{ "value": 0.54, "count": 3 }],
+                    "damagePerHit": 25.718
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 2,
+                    "ttk": 0.81,
+                    "firstHitAfterInput": 0.27,
+                    "hitIntervals": [{ "value": 0.54, "count": 1 }],
+                    "damagePerHit": 56
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 3,
+                    "ttk": 1.35,
+                    "firstHitAfterInput": 0.27,
+                    "hitIntervals": [{ "value": 0.54, "count": 2 }],
+                    "damagePerHit": 42
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 3,
+                    "ttk": 1.35,
+                    "firstHitAfterInput": 0.27,
+                    "hitIntervals": [{ "value": 0.54, "count": 2 }],
+                    "damagePerHit": 33.6
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 4,
+                    "ttk": 1.89,
+                    "firstHitAfterInput": 0.27,
+                    "hitIntervals": [{ "value": 0.54, "count": 3 }],
+                    "damagePerHit": 25.2
+                }
+            ]
+        },
+        "stonehammer": {
+            "def": {
+                "damage": 60,
+                "headshotMult": 1,
+                "cooldownTime": 0.5,
+                "damageTimes": [0.25],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": true,
+                "attackRad": 1.25,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 2,
+                    "ttk": 0.75,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 1 }],
+                    "damagePerHit": 60
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 3,
+                    "ttk": 1.25,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 2 }],
+                    "damagePerHit": 41.625
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 4,
+                    "ttk": 1.75,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 3 }],
+                    "damagePerHit": 32.736
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 4,
+                    "ttk": 1.75,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 3 }],
+                    "damagePerHit": 27.555
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 2,
+                    "ttk": 0.75,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 1 }],
+                    "damagePerHit": 60
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 3,
+                    "ttk": 1.25,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 2 }],
+                    "damagePerHit": 45
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 3,
+                    "ttk": 1.25,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 2 }],
+                    "damagePerHit": 36
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 4,
+                    "ttk": 1.75,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 3 }],
+                    "damagePerHit": 27
+                }
+            ]
+        },
+        "hook": {
+            "def": {
+                "damage": 18,
+                "headshotMult": 1,
+                "cooldownTime": 0.175,
+                "damageTimes": [0.075],
+                "switchDelay": 0.25,
+                "autoAttack": true,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 1,
+                "attackOffset": 1.5,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 6,
+                    "ttk": 0.98,
+                    "firstHitAfterInput": 0.08,
+                    "hitIntervals": [{ "value": 0.18, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 9,
+                    "ttk": 1.52,
+                    "firstHitAfterInput": 0.08,
+                    "hitIntervals": [{ "value": 0.18, "count": 8 }],
+                    "damagePerHit": 12.4875
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 11,
+                    "ttk": 1.88,
+                    "firstHitAfterInput": 0.08,
+                    "hitIntervals": [{ "value": 0.18, "count": 10 }],
+                    "damagePerHit": 9.8208
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 13,
+                    "ttk": 2.24,
+                    "firstHitAfterInput": 0.08,
+                    "hitIntervals": [{ "value": 0.18, "count": 12 }],
+                    "damagePerHit": 8.2665
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 6,
+                    "ttk": 0.98,
+                    "firstHitAfterInput": 0.08,
+                    "hitIntervals": [{ "value": 0.18, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 8,
+                    "ttk": 1.34,
+                    "firstHitAfterInput": 0.08,
+                    "hitIntervals": [{ "value": 0.18, "count": 7 }],
+                    "damagePerHit": 13.5
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 10,
+                    "ttk": 1.7,
+                    "firstHitAfterInput": 0.08,
+                    "hitIntervals": [{ "value": 0.18, "count": 9 }],
+                    "damagePerHit": 10.8
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 13,
+                    "ttk": 2.24,
+                    "firstHitAfterInput": 0.08,
+                    "hitIntervals": [{ "value": 0.18, "count": 12 }],
+                    "damagePerHit": 8.1
+                }
+            ]
+        },
+        "pan": {
+            "def": {
+                "damage": 60,
+                "headshotMult": 1,
+                "cooldownTime": 0.5,
+                "damageTimes": [0.15],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 1.5,
+                "attackOffset": 2,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 2,
+                    "ttk": 0.65,
+                    "firstHitAfterInput": 0.15,
+                    "hitIntervals": [{ "value": 0.5, "count": 1 }],
+                    "damagePerHit": 60
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 3,
+                    "ttk": 1.15,
+                    "firstHitAfterInput": 0.15,
+                    "hitIntervals": [{ "value": 0.5, "count": 2 }],
+                    "damagePerHit": 41.625
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 4,
+                    "ttk": 1.65,
+                    "firstHitAfterInput": 0.15,
+                    "hitIntervals": [{ "value": 0.5, "count": 3 }],
+                    "damagePerHit": 32.736
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 4,
+                    "ttk": 1.65,
+                    "firstHitAfterInput": 0.15,
+                    "hitIntervals": [{ "value": 0.5, "count": 3 }],
+                    "damagePerHit": 27.555
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 2,
+                    "ttk": 0.65,
+                    "firstHitAfterInput": 0.15,
+                    "hitIntervals": [{ "value": 0.5, "count": 1 }],
+                    "damagePerHit": 60
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 3,
+                    "ttk": 1.15,
+                    "firstHitAfterInput": 0.15,
+                    "hitIntervals": [{ "value": 0.5, "count": 2 }],
+                    "damagePerHit": 45
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 3,
+                    "ttk": 1.15,
+                    "firstHitAfterInput": 0.15,
+                    "hitIntervals": [{ "value": 0.5, "count": 2 }],
+                    "damagePerHit": 36
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 4,
+                    "ttk": 1.65,
+                    "firstHitAfterInput": 0.15,
+                    "hitIntervals": [{ "value": 0.5, "count": 3 }],
+                    "damagePerHit": 27
+                }
+            ]
+        },
+        "spade": {
+            "def": {
+                "damage": 40,
+                "headshotMult": 1,
+                "cooldownTime": 0.35,
+                "damageTimes": [0.12],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 1.5,
+                "attackOffset": 1.75,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.83,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.18,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 3 }],
+                    "damagePerHit": 27.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.53,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 4 }],
+                    "damagePerHit": 21.824
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 1.88,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 5 }],
+                    "damagePerHit": 18.37
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.83,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.18,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 3 }],
+                    "damagePerHit": 30
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.53,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 1.88,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 5 }],
+                    "damagePerHit": 18
+                }
+            ]
+        },
+        "crowbar": {
+            "def": {
+                "damage": 33,
+                "headshotMult": 1,
+                "cooldownTime": 0.3,
+                "damageTimes": [0.12],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 1.25,
+                "attackOffset": 1.25,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 22.89375
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 18.0048
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 15.15525
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 24.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 19.8
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 14.85
+                }
+            ]
+        },
+        "knuckles_rusted": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "knuckles_heroic": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "karambit_rugged": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "karambit_prismatic": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "karambit_drowned": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "bayonet_rugged": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "bayonet_woodland": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "huntsman_rugged": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "huntsman_burnished": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "bowie_vintage": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "bowie_frontier": {
+            "def": {
+                "damage": 24,
+                "headshotMult": 1,
+                "cooldownTime": 0.25,
+                "damageTimes": [0.1],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 0.9,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 16.65
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 8,
+                    "ttk": 1.86,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 7 }],
+                    "damagePerHit": 13.0944
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 11.022
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 5,
+                    "ttk": 1.11,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 6,
+                    "ttk": 1.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 5 }],
+                    "damagePerHit": 18
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 7,
+                    "ttk": 1.61,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 6 }],
+                    "damagePerHit": 14.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 10,
+                    "ttk": 2.36,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.25, "count": 9 }],
+                    "damagePerHit": 10.8
+                }
+            ]
+        },
+        "machete_taiga": {
+            "def": {
+                "damage": 33,
+                "headshotMult": 1,
+                "cooldownTime": 0.3,
+                "damageTimes": [0.12],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": false,
+                "attackRad": 1.75,
+                "attackOffset": 1.5,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 22.89375
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 18.0048
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 15.15525
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 24.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 19.8
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 14.85
+                }
+            ]
+        },
+        "kukri_trad": {
+            "def": {
+                "damage": 33,
+                "headshotMult": 1,
+                "cooldownTime": 0.3,
+                "damageTimes": [0.12],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": false,
+                "attackRad": 1.75,
+                "attackOffset": 1.5,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 22.89375
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 18.0048
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 15.15525
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 24.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 19.8
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 14.85
+                }
+            ]
+        },
+        "bonesaw_rusted": {
+            "def": {
+                "damage": 44,
+                "headshotMult": 1,
+                "cooldownTime": 0.7,
+                "damageTimes": [0.1, 0.5],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": false,
+                "attackRad": 1.75,
+                "attackOffset": 2,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.81,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 1 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 44
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.2,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 30.525
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.51,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 2 }],
+                    "damagePerHit": 24.0064
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 5,
+                    "ttk": 1.51,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 2 }],
+                    "damagePerHit": 20.207
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.81,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 1 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 44
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.2,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 4,
+                    "ttk": 1.2,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 26.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 1.9,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 3 }, { "value": 0.31, "count": 2 }],
+                    "damagePerHit": 19.8
+                }
+            ]
+        },
+        "woodaxe_bloody": {
+            "def": {
+                "damage": 36,
+                "headshotMult": 1,
+                "cooldownTime": 0.36,
+                "damageTimes": [0.18],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": true,
+                "attackRad": 1,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.9,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 2 }],
+                    "damagePerHit": 36
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.62,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 4 }],
+                    "damagePerHit": 24.975
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.98,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 5 }],
+                    "damagePerHit": 19.6416
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 2.34,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 6 }],
+                    "damagePerHit": 16.533
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.9,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 2 }],
+                    "damagePerHit": 36
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.26,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 3 }],
+                    "damagePerHit": 27
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.62,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 4 }],
+                    "damagePerHit": 21.6
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 2.34,
+                    "firstHitAfterInput": 0.18,
+                    "hitIntervals": [{ "value": 0.36, "count": 6 }],
+                    "damagePerHit": 16.2
+                }
+            ]
+        },
+        "katana_rusted": {
+            "def": {
+                "damage": 40,
+                "headshotMult": 1,
+                "cooldownTime": 0.4,
+                "damageTimes": [0.2],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": true,
+                "attackRad": 2,
+                "attackOffset": 1.75,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 1,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.4,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 3 }],
+                    "damagePerHit": 27.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.8,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 4 }],
+                    "damagePerHit": 21.824
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 2.2,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 5 }],
+                    "damagePerHit": 18.37
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 1,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.4,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 3 }],
+                    "damagePerHit": 30
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.8,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 2.2,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 5 }],
+                    "damagePerHit": 18
+                }
+            ]
+        },
+        "katana_orchid": {
+            "def": {
+                "damage": 40,
+                "headshotMult": 1,
+                "cooldownTime": 0.4,
+                "damageTimes": [0.2],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": true,
+                "attackRad": 2,
+                "attackOffset": 1.75,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 1,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.4,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 3 }],
+                    "damagePerHit": 27.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.8,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 4 }],
+                    "damagePerHit": 21.824
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 2.2,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 5 }],
+                    "damagePerHit": 18.37
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 1,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.4,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 3 }],
+                    "damagePerHit": 30
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.8,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 2.2,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 5 }],
+                    "damagePerHit": 18
+                }
+            ]
+        },
+        "sledgehammer": {
+            "def": {
+                "damage": 60,
+                "headshotMult": 1,
+                "cooldownTime": 0.5,
+                "damageTimes": [0.25],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": true,
+                "attackRad": 1.25,
+                "attackOffset": 1.35,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 2,
+                    "ttk": 0.75,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 1 }],
+                    "damagePerHit": 60
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 3,
+                    "ttk": 1.25,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 2 }],
+                    "damagePerHit": 41.625
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 4,
+                    "ttk": 1.75,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 3 }],
+                    "damagePerHit": 32.736
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 4,
+                    "ttk": 1.75,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 3 }],
+                    "damagePerHit": 27.555
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 2,
+                    "ttk": 0.75,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 1 }],
+                    "damagePerHit": 60
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 3,
+                    "ttk": 1.25,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 2 }],
+                    "damagePerHit": 45
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 3,
+                    "ttk": 1.25,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 2 }],
+                    "damagePerHit": 36
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 4,
+                    "ttk": 1.75,
+                    "firstHitAfterInput": 0.25,
+                    "hitIntervals": [{ "value": 0.5, "count": 3 }],
+                    "damagePerHit": 27
+                }
+            ]
+        },
+        "crowbar_scout": {
+            "def": {
+                "damage": 33,
+                "headshotMult": 1,
+                "cooldownTime": 0.3,
+                "damageTimes": [0.12],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 1.25,
+                "attackOffset": 1.25,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 22.89375
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 18.0048
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 15.15525
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 24.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 19.8
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 14.85
+                }
+            ]
+        },
+        "crowbar_recon": {
+            "def": {
+                "damage": 33,
+                "headshotMult": 1,
+                "cooldownTime": 0.3,
+                "damageTimes": [0.12],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 1.25,
+                "attackOffset": 1.25,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 22.89375
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 18.0048
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 15.15525
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 24.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 19.8
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 14.85
+                }
+            ]
+        },
+        "kukri_sniper": {
+            "def": {
+                "damage": 33,
+                "headshotMult": 1,
+                "cooldownTime": 0.3,
+                "damageTimes": [0.12],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": false,
+                "attackRad": 1.75,
+                "attackOffset": 1.5,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 22.89375
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 18.0048
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 15.15525
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 4,
+                    "ttk": 1.03,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 3 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 5,
+                    "ttk": 1.33,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 4 }],
+                    "damagePerHit": 24.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 6,
+                    "ttk": 1.63,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 5 }],
+                    "damagePerHit": 19.8
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 7,
+                    "ttk": 1.93,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.3, "count": 6 }],
+                    "damagePerHit": 14.85
+                }
+            ]
+        },
+        "bonesaw_healer": {
+            "def": {
+                "damage": 44,
+                "headshotMult": 1,
+                "cooldownTime": 0.7,
+                "damageTimes": [0.1, 0.5],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": false,
+                "attackRad": 1.75,
+                "attackOffset": 2,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.81,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 1 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 44
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.2,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 30.525
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.51,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 2 }],
+                    "damagePerHit": 24.0064
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 5,
+                    "ttk": 1.51,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 2 }],
+                    "damagePerHit": 20.207
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.81,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 1 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 44
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.2,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 33
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 4,
+                    "ttk": 1.2,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 2 }, { "value": 0.31, "count": 1 }],
+                    "damagePerHit": 26.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 1.9,
+                    "firstHitAfterInput": 0.11,
+                    "hitIntervals": [{ "value": 0.39, "count": 3 }, { "value": 0.31, "count": 2 }],
+                    "damagePerHit": 19.8
+                }
+            ]
+        },
+        "katana_demo": {
+            "def": {
+                "damage": 40,
+                "headshotMult": 1,
+                "cooldownTime": 0.4,
+                "damageTimes": [0.2],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": true,
+                "armorPiercing": true,
+                "attackRad": 2,
+                "attackOffset": 1.75,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 1,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.4,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 3 }],
+                    "damagePerHit": 27.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.8,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 4 }],
+                    "damagePerHit": 21.824
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 2.2,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 5 }],
+                    "damagePerHit": 18.37
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 1,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.4,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 3 }],
+                    "damagePerHit": 30
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.8,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 2.2,
+                    "firstHitAfterInput": 0.2,
+                    "hitIntervals": [{ "value": 0.4, "count": 5 }],
+                    "damagePerHit": 18
+                }
+            ]
+        },
+        "spade_assault": {
+            "def": {
+                "damage": 40,
+                "headshotMult": 1,
+                "cooldownTime": 0.35,
+                "damageTimes": [0.12],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": false,
+                "attackRad": 1.5,
+                "attackOffset": 1.75,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.83,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.18,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 3 }],
+                    "damagePerHit": 27.75
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.53,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 4 }],
+                    "damagePerHit": 21.824
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 1.88,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 5 }],
+                    "damagePerHit": 18.37
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 3,
+                    "ttk": 0.83,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 2 }],
+                    "damagePerHit": 40
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 4,
+                    "ttk": 1.18,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 3 }],
+                    "damagePerHit": 30
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 5,
+                    "ttk": 1.53,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 4 }],
+                    "damagePerHit": 24
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 6,
+                    "ttk": 1.88,
+                    "firstHitAfterInput": 0.13,
+                    "hitIntervals": [{ "value": 0.35, "count": 5 }],
+                    "damagePerHit": 18
+                }
+            ]
+        },
+        "warhammer_tank": {
+            "def": {
+                "damage": 64,
+                "headshotMult": 1,
+                "cooldownTime": 0.6,
+                "damageTimes": [0.3],
+                "switchDelay": 0.25,
+                "autoAttack": false,
+                "cleave": false,
+                "armorPiercing": true,
+                "attackRad": 1.75,
+                "attackOffset": 1.5,
+                "equipSpeed": 1
+            },
+            "equipDelayFromGun": 0.25,
+            "body": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 2,
+                    "ttk": 0.9,
+                    "firstHitAfterInput": 0.3,
+                    "hitIntervals": [{ "value": 0.6, "count": 1 }],
+                    "damagePerHit": 64
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 3,
+                    "ttk": 1.5,
+                    "firstHitAfterInput": 0.3,
+                    "hitIntervals": [{ "value": 0.6, "count": 2 }],
+                    "damagePerHit": 44.4
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 3,
+                    "ttk": 1.5,
+                    "firstHitAfterInput": 0.3,
+                    "hitIntervals": [{ "value": 0.6, "count": 2 }],
+                    "damagePerHit": 34.9184
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 4,
+                    "ttk": 2.1,
+                    "firstHitAfterInput": 0.3,
+                    "hitIntervals": [{ "value": 0.6, "count": 3 }],
+                    "damagePerHit": 29.392
+                }
+            ],
+            "headshot": [
+                {
+                    "armor": "none",
+                    "hitsToKill": 2,
+                    "ttk": 0.9,
+                    "firstHitAfterInput": 0.3,
+                    "hitIntervals": [{ "value": 0.6, "count": 1 }],
+                    "damagePerHit": 64
+                },
+                {
+                    "armor": "lvl1",
+                    "hitsToKill": 3,
+                    "ttk": 1.5,
+                    "firstHitAfterInput": 0.3,
+                    "hitIntervals": [{ "value": 0.6, "count": 2 }],
+                    "damagePerHit": 48
+                },
+                {
+                    "armor": "lvl2",
+                    "hitsToKill": 3,
+                    "ttk": 1.5,
+                    "firstHitAfterInput": 0.3,
+                    "hitIntervals": [{ "value": 0.6, "count": 2 }],
+                    "damagePerHit": 38.4
+                },
+                {
+                    "armor": "lvl3",
+                    "hitsToKill": 4,
+                    "ttk": 2.1,
+                    "firstHitAfterInput": 0.3,
+                    "hitIntervals": [{ "value": 0.6, "count": 3 }],
+                    "damagePerHit": 28.8
+                }
+            ]
+        }
+    }
+}

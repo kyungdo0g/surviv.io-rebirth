@@ -1,0 +1,323 @@
+{
+    "meta": {
+        "fixture": "heal",
+        "generator": "node --experimental-transform-types tools/oracle/run.ts",
+        "survevCommit": "c6185e31fe25a4a07def77a2bb25b1710bda90ac",
+        "defs": {
+            "protocolHash": 2525058706,
+            "gameObjectsSha256": "dd1f0919eb7aad005ff5bcf51f84528d7851094ee75d8917fa0d872956b7eb4e",
+            "gameConfigSha256": "22020fb3c453fc41011e966a31dc6fcc65fdbb30108154405fe323f04558fc2b"
+        },
+        "simulation": {
+            "dt": 0.01,
+            "netSyncTps": 33,
+            "note": "game.update(dt) with a fixed dt, game.netSync() at netSyncTps, like survev's game process"
+        },
+        "randomModes": {
+            "seeded": "Math.random = mulberry32(seed); used for game creation (map generation) and natural-randomness runs",
+            "centered": "Math.random() = 0.5: zero spread deviation, zero shotgun pellet jitter, bullet distAdj index 8 (0 m), headshot roll fails",
+            "low": "Math.random() = 0: deviation -spread/2, pellet jitter -jitter, bullet distAdj index 0 (-1 m)",
+            "high": "Math.random() = 1 - 2^-53: deviation +spread/2, pellet jitter +jitter, bullet distAdj index 16 (+1 m)",
+            "headshotNever": "GameConfig.player.headshotChance = 0 (Math.random() < 0 never holds)",
+            "headshotAlways": "GameConfig.player.headshotChance = 1 (Math.random() < 1 always holds)",
+            "headshotRandom": "GameConfig.player.headshotChance = 0.15 (survev default)"
+        },
+        "patch": {
+            "replacedIds": 615,
+            "idsWithChangedValues": 231,
+            "gameplayValueChanges": 357,
+            "addedIds": [
+                "bullet_potato",
+                "bullet_bugle",
+                "bullet_mp5_bonus",
+                "bullet_m9_bonus",
+                "bullet_mac10_bonus",
+                "bullet_ump9_bonus",
+                "bullet_vector_bonus",
+                "bullet_glock_bonus",
+                "bullet_m93r_bonus",
+                "bullet_scorpion_bonus",
+                "bullet_vss_bonus",
+                "bullet_p30l_bonus",
+                "emote_flagisrael",
+                "outfitTree"
+            ],
+            "keptSurvevOnlyFields": { "bullet": ["noDistAdj", "useExplosiveRoundsAlt"] },
+            "gameConfigChanges": [
+                "bagSizes.9mm",
+                "bagSizes.762mm",
+                "bagSizes.556mm",
+                "bagSizes.12gauge",
+                "bagSizes.50AE",
+                "bagSizes.308sub",
+                "bagSizes.flare",
+                "bagSizes.45acp",
+                "bagSizes.frag",
+                "bagSizes.smoke",
+                "bagSizes.strobe",
+                "bagSizes.mirv",
+                "bagSizes.snowball",
+                "bagSizes.potato",
+                "bagSizes.bandage",
+                "bagSizes.healthkit",
+                "bagSizes.soda",
+                "bagSizes.painkiller",
+                "bagSizes.1xscope",
+                "bagSizes.2xscope",
+                "bagSizes.4xscope",
+                "bagSizes.8xscope",
+                "bagSizes.15xscope"
+            ],
+            "verification": [
+                {
+                    "check": "GameObjectDefs.typeToDef('bullet_an94', 'bullet').damage",
+                    "actual": 17.5,
+                    "ok": true
+                },
+                { "check": "BulletDefs.bullet_an94.damage", "actual": 17.5, "ok": true },
+                {
+                    "check": "GameObjectDefs.typeToDef('mosin', 'gun').headshotMult",
+                    "actual": 1.5,
+                    "ok": true
+                },
+                { "check": "GunDefs.mosin.headshotMult", "actual": 1.5, "ok": true },
+                {
+                    "check": "ids whose survev def differs from ours after the patch",
+                    "actual": 0,
+                    "ok": true
+                }
+            ]
+        },
+        "params": {
+            "player": "test player with boost 0 (no regeneration) unless noted; 3 of the item in the inventory",
+            "input": "useItem sent in an input message, as the client does",
+            "cancelCases": "event applied 1 s after the use input (bandage use time 3 s)",
+            "seconds": "from the use input to the end of the tick the action ended (completed or cancelled)"
+        }
+    },
+    "notes": [
+        "healing items: refused when health == maxHeal; the heal is added at completion and clamped to 100",
+        "boost items: boost is added at completion and clamped to 100; usable at any health",
+        "moving halves the speed during a use but does not cancel it"
+    ],
+    "uses": {
+        "bandage": {
+            "def": { "useTime": 3, "heal": 15, "maxHeal": 100 },
+            "fromHealth10": {
+                "started": true,
+                "completed": true,
+                "seconds": 3.01,
+                "itemsUsed": 1,
+                "healthDelta": 15,
+                "boostDelta": 0
+            },
+            "fromHealth95": {
+                "started": true,
+                "completed": true,
+                "seconds": 3.01,
+                "itemsUsed": 1,
+                "healthDelta": 5,
+                "boostDelta": 0
+            },
+            "atFullHealth": {
+                "started": false,
+                "completed": false,
+                "seconds": null,
+                "itemsUsed": 0,
+                "healthDelta": 0,
+                "boostDelta": 0
+            }
+        },
+        "healthkit": {
+            "def": { "useTime": 6, "heal": 100, "maxHeal": 100 },
+            "fromHealth10": {
+                "started": true,
+                "completed": true,
+                "seconds": 6.01,
+                "itemsUsed": 1,
+                "healthDelta": 90,
+                "boostDelta": 0
+            },
+            "fromHealth95": {
+                "started": true,
+                "completed": true,
+                "seconds": 6.01,
+                "itemsUsed": 1,
+                "healthDelta": 5,
+                "boostDelta": 0
+            },
+            "atFullHealth": {
+                "started": false,
+                "completed": false,
+                "seconds": null,
+                "itemsUsed": 0,
+                "healthDelta": 0,
+                "boostDelta": 0
+            }
+        },
+        "soda": {
+            "def": { "useTime": 3, "boost": 25 },
+            "fromHealth10": {
+                "started": true,
+                "completed": true,
+                "seconds": 3.01,
+                "itemsUsed": 1,
+                "healthDelta": 0,
+                "boostDelta": 25
+            },
+            "fromHealth95": {
+                "started": true,
+                "completed": true,
+                "seconds": 3.01,
+                "itemsUsed": 1,
+                "healthDelta": 0,
+                "boostDelta": 25
+            },
+            "atFullHealth": {
+                "started": true,
+                "completed": true,
+                "seconds": 3.01,
+                "itemsUsed": 1,
+                "healthDelta": 0,
+                "boostDelta": 25
+            },
+            "fromBoost90": {
+                "started": true,
+                "completed": true,
+                "seconds": 3.01,
+                "itemsUsed": 1,
+                "healthDelta": 5.2675,
+                "boostDelta": 10
+            }
+        },
+        "painkiller": {
+            "def": { "useTime": 5, "boost": 50 },
+            "fromHealth10": {
+                "started": true,
+                "completed": true,
+                "seconds": 5.01,
+                "itemsUsed": 1,
+                "healthDelta": 0,
+                "boostDelta": 50
+            },
+            "fromHealth95": {
+                "started": true,
+                "completed": true,
+                "seconds": 5.01,
+                "itemsUsed": 1,
+                "healthDelta": 0,
+                "boostDelta": 50
+            },
+            "atFullHealth": {
+                "started": true,
+                "completed": true,
+                "seconds": 5.01,
+                "itemsUsed": 1,
+                "healthDelta": 0,
+                "boostDelta": 50
+            },
+            "fromBoost90": {
+                "started": true,
+                "completed": true,
+                "seconds": 5.01,
+                "itemsUsed": 1,
+                "healthDelta": 8.7675,
+                "boostDelta": 10
+            }
+        }
+    },
+    "cancel": {
+        "cancelInput": {
+            "started": true,
+            "completed": false,
+            "seconds": 1.01,
+            "itemsUsed": 0,
+            "healthDelta": 0,
+            "boostDelta": 0,
+            "actionAfterEvent": "None"
+        },
+        "switchWeapon": {
+            "started": true,
+            "completed": false,
+            "seconds": 1.01,
+            "itemsUsed": 0,
+            "healthDelta": 0,
+            "boostDelta": 0,
+            "actionAfterEvent": "None"
+        },
+        "fireGun": {
+            "started": true,
+            "completed": false,
+            "seconds": 1.01,
+            "itemsUsed": 0,
+            "healthDelta": 0,
+            "boostDelta": 0,
+            "actionAfterEvent": "None"
+        },
+        "meleeAttack": {
+            "started": true,
+            "completed": false,
+            "seconds": 1.01,
+            "itemsUsed": 0,
+            "healthDelta": 0,
+            "boostDelta": 0,
+            "actionAfterEvent": "None"
+        },
+        "takeDamage": {
+            "started": true,
+            "completed": true,
+            "seconds": 3.01,
+            "itemsUsed": 1,
+            "healthDelta": 5,
+            "boostDelta": 0,
+            "actionAfterEvent": "UseItem"
+        },
+        "secondItem": {
+            "started": true,
+            "completed": true,
+            "seconds": 3.01,
+            "itemsUsed": 1,
+            "healthDelta": 15,
+            "boostDelta": 0,
+            "actionAfterEvent": "UseItem",
+            "healthkitsLeft": 1
+        },
+        "reloadInput": {
+            "started": true,
+            "completed": true,
+            "seconds": 3.01,
+            "itemsUsed": 1,
+            "healthDelta": 15,
+            "boostDelta": 0,
+            "actionAfterEvent": "UseItem",
+            "actionAfterUse": "None"
+        },
+        "walking": {
+            "started": true,
+            "completed": true,
+            "seconds": 3.01,
+            "itemsUsed": 1,
+            "healthDelta": 15,
+            "boostDelta": 0,
+            "actionAfterEvent": "UseItem"
+        },
+        "knockedDown": {
+            "started": true,
+            "completed": false,
+            "seconds": 1.01,
+            "itemsUsed": 0,
+            "healthDelta": 90,
+            "boostDelta": 0,
+            "actionAfterEvent": "None"
+        },
+        "useDuringReload": {
+            "reloadingBefore": "Reload",
+            "started": true,
+            "completed": true,
+            "seconds": 3.01,
+            "itemsUsed": 1,
+            "healthDelta": 15,
+            "boostDelta": 0
+        }
+    }
+}

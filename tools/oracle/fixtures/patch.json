@@ -1,0 +1,1647 @@
+{
+    "meta": {
+        "fixture": "patch",
+        "generator": "node --experimental-transform-types tools/oracle/run.ts",
+        "survevCommit": "c6185e31fe25a4a07def77a2bb25b1710bda90ac",
+        "defs": {
+            "protocolHash": 2525058706,
+            "gameObjectsSha256": "dd1f0919eb7aad005ff5bcf51f84528d7851094ee75d8917fa0d872956b7eb4e",
+            "gameConfigSha256": "22020fb3c453fc41011e966a31dc6fcc65fdbb30108154405fe323f04558fc2b"
+        },
+        "simulation": {
+            "dt": 0.01,
+            "netSyncTps": 33,
+            "note": "game.update(dt) with a fixed dt, game.netSync() at netSyncTps, like survev's game process"
+        },
+        "randomModes": {
+            "seeded": "Math.random = mulberry32(seed); used for game creation (map generation) and natural-randomness runs",
+            "centered": "Math.random() = 0.5: zero spread deviation, zero shotgun pellet jitter, bullet distAdj index 8 (0 m), headshot roll fails",
+            "low": "Math.random() = 0: deviation -spread/2, pellet jitter -jitter, bullet distAdj index 0 (-1 m)",
+            "high": "Math.random() = 1 - 2^-53: deviation +spread/2, pellet jitter +jitter, bullet distAdj index 16 (+1 m)",
+            "headshotNever": "GameConfig.player.headshotChance = 0 (Math.random() < 0 never holds)",
+            "headshotAlways": "GameConfig.player.headshotChance = 1 (Math.random() < 1 always holds)",
+            "headshotRandom": "GameConfig.player.headshotChance = 0.15 (survev default)"
+        },
+        "patch": {
+            "replacedIds": 615,
+            "idsWithChangedValues": 231,
+            "gameplayValueChanges": 357,
+            "addedIds": [
+                "bullet_potato",
+                "bullet_bugle",
+                "bullet_mp5_bonus",
+                "bullet_m9_bonus",
+                "bullet_mac10_bonus",
+                "bullet_ump9_bonus",
+                "bullet_vector_bonus",
+                "bullet_glock_bonus",
+                "bullet_m93r_bonus",
+                "bullet_scorpion_bonus",
+                "bullet_vss_bonus",
+                "bullet_p30l_bonus",
+                "emote_flagisrael",
+                "outfitTree"
+            ],
+            "keptSurvevOnlyFields": { "bullet": ["noDistAdj", "useExplosiveRoundsAlt"] },
+            "gameConfigChanges": [
+                "bagSizes.9mm",
+                "bagSizes.762mm",
+                "bagSizes.556mm",
+                "bagSizes.12gauge",
+                "bagSizes.50AE",
+                "bagSizes.308sub",
+                "bagSizes.flare",
+                "bagSizes.45acp",
+                "bagSizes.frag",
+                "bagSizes.smoke",
+                "bagSizes.strobe",
+                "bagSizes.mirv",
+                "bagSizes.snowball",
+                "bagSizes.potato",
+                "bagSizes.bandage",
+                "bagSizes.healthkit",
+                "bagSizes.soda",
+                "bagSizes.painkiller",
+                "bagSizes.1xscope",
+                "bagSizes.2xscope",
+                "bagSizes.4xscope",
+                "bagSizes.8xscope",
+                "bagSizes.15xscope"
+            ],
+            "verification": [
+                {
+                    "check": "GameObjectDefs.typeToDef('bullet_an94', 'bullet').damage",
+                    "actual": 17.5,
+                    "ok": true
+                },
+                { "check": "BulletDefs.bullet_an94.damage", "actual": 17.5, "ok": true },
+                {
+                    "check": "GameObjectDefs.typeToDef('mosin', 'gun').headshotMult",
+                    "actual": 1.5,
+                    "ok": true
+                },
+                { "check": "GunDefs.mosin.headshotMult", "actual": 1.5, "ok": true },
+                {
+                    "check": "ids whose survev def differs from ours after the patch",
+                    "actual": 0,
+                    "ok": true
+                }
+            ]
+        },
+        "params": {
+            "source": "packages/defs/src/generated/gameObjects.json + gameConfig.json",
+            "gameplayTypes": "gun, bullet, melee, throwable, explosion, helmet, chest, heal, boost"
+        }
+    },
+    "replacedIds": 615,
+    "idsWithChangedValues": 231,
+    "addedIds": [
+        "bullet_potato",
+        "bullet_bugle",
+        "bullet_mp5_bonus",
+        "bullet_m9_bonus",
+        "bullet_mac10_bonus",
+        "bullet_ump9_bonus",
+        "bullet_vector_bonus",
+        "bullet_glock_bonus",
+        "bullet_m93r_bonus",
+        "bullet_scorpion_bonus",
+        "bullet_vss_bonus",
+        "bullet_p30l_bonus",
+        "emote_flagisrael",
+        "outfitTree"
+    ],
+    "keptSurvevOnlyFields": [
+        { "id": "bullet_buckshot", "field": "noDistAdj", "value": true },
+        { "id": "bullet_buckshot", "field": "useExplosiveRoundsAlt", "value": true },
+        { "id": "bullet_flechette", "field": "noDistAdj", "value": true },
+        { "id": "bullet_flechette", "field": "useExplosiveRoundsAlt", "value": true },
+        { "id": "bullet_frag", "field": "noDistAdj", "value": true },
+        { "id": "bullet_birdshot", "field": "noDistAdj", "value": true },
+        { "id": "bullet_birdshot", "field": "useExplosiveRoundsAlt", "value": true }
+    ],
+    "gameplayChangesByType": {
+        "bullet": { "changed": 19 },
+        "explosion": { "changed": 5, "survevOnly": 14 },
+        "chest": { "changed": 1 },
+        "gun": { "oursOnly": 20, "changed": 159, "survevOnly": 3 },
+        "melee": { "survevOnly": 61, "oursOnly": 49, "changed": 13 },
+        "throwable": { "changed": 4, "survevOnly": 4, "oursOnly": 5 }
+    },
+    "gameplayChanges": [
+        { "id": "bullet_an94", "path": "damage", "kind": "changed", "survev": 20, "ours": 17.5 },
+        { "id": "bullet_an94", "path": "speed", "kind": "changed", "survev": 120, "ours": 110 },
+        { "id": "bullet_scarssr", "path": "damage", "kind": "changed", "survev": 81, "ours": 60 },
+        { "id": "bullet_m39", "path": "damage", "kind": "changed", "survev": 28, "ours": 27 },
+        { "id": "bullet_svd", "path": "damage", "kind": "changed", "survev": 37, "ours": 36 },
+        { "id": "bullet_garand", "path": "damage", "kind": "changed", "survev": 44, "ours": 35 },
+        { "id": "bullet_garand", "path": "falloff", "kind": "changed", "survev": 0.94, "ours": 0.9 },
+        { "id": "bullet_garand", "path": "distance", "kind": "changed", "survev": 444, "ours": 400 },
+        { "id": "bullet_garand", "path": "speed", "kind": "changed", "survev": 144, "ours": 130 },
+        { "id": "bullet_m9", "path": "damage", "kind": "changed", "survev": 13, "ours": 12 },
+        { "id": "bullet_m9_cursed", "path": "damage", "kind": "changed", "survev": 13, "ours": 12 },
+        { "id": "bullet_m1911", "path": "damage", "kind": "changed", "survev": 16, "ours": 14 },
+        { "id": "bullet_mkg45", "path": "damage", "kind": "changed", "survev": 29, "ours": 28 },
+        { "id": "bullet_ump9", "path": "damage", "kind": "changed", "survev": 14.5, "ours": 15 },
+        { "id": "bullet_vss", "path": "damage", "kind": "changed", "survev": 24, "ours": 22 },
+        { "id": "bullet_vss", "path": "falloff", "kind": "changed", "survev": 0.85, "ours": 0.8 },
+        { "id": "bullet_vss", "path": "speed", "kind": "changed", "survev": 110, "ours": 95 },
+        { "id": "bullet_mk12", "path": "damage", "kind": "changed", "survev": 23, "ours": 22.5 },
+        { "id": "bullet_l86", "path": "damage", "kind": "changed", "survev": 25, "ours": 26.5 },
+        { "id": "explosion_snowball", "path": "damage", "kind": "changed", "survev": 6, "ours": 2 },
+        {
+            "id": "explosion_snowball",
+            "path": "freezeDuration",
+            "kind": "survevOnly",
+            "survev": 0.5
+        },
+        {
+            "id": "explosion_snowball",
+            "path": "frozenSprites",
+            "kind": "survevOnly",
+            "survev": ["player-snow-01.img", "player-snow-02.img", "player-snow-03.img"]
+        },
+        { "id": "explosion_snowball", "path": "dropRandomLoot", "kind": "survevOnly", "survev": 1 },
+        {
+            "id": "explosion_snowball_heavy",
+            "path": "damage",
+            "kind": "changed",
+            "survev": 28,
+            "ours": 5
+        },
+        {
+            "id": "explosion_snowball_heavy",
+            "path": "freezeDuration",
+            "kind": "survevOnly",
+            "survev": 2
+        },
+        {
+            "id": "explosion_snowball_heavy",
+            "path": "frozenSprites",
+            "kind": "survevOnly",
+            "survev": ["player-snow-01.img", "player-snow-02.img", "player-snow-03.img"]
+        },
+        {
+            "id": "explosion_snowball_heavy",
+            "path": "dropRandomLoot",
+            "kind": "survevOnly",
+            "survev": 1
+        },
+        { "id": "explosion_potato", "path": "damage", "kind": "changed", "survev": 8, "ours": 2 },
+        { "id": "explosion_potato", "path": "freezeDuration", "kind": "survevOnly", "survev": 0.5 },
+        {
+            "id": "explosion_potato",
+            "path": "frozenSprites",
+            "kind": "survevOnly",
+            "survev": ["player-mash-01.img", "player-mash-02.img", "player-mash-03.img"]
+        },
+        { "id": "explosion_potato", "path": "dropRandomLoot", "kind": "survevOnly", "survev": 1 },
+        {
+            "id": "explosion_potato_heavy",
+            "path": "damage",
+            "kind": "changed",
+            "survev": 15,
+            "ours": 5
+        },
+        {
+            "id": "explosion_potato_heavy",
+            "path": "freezeDuration",
+            "kind": "survevOnly",
+            "survev": 1
+        },
+        {
+            "id": "explosion_potato_heavy",
+            "path": "frozenSprites",
+            "kind": "survevOnly",
+            "survev": ["player-mash-01.img", "player-mash-02.img", "player-mash-03.img"]
+        },
+        {
+            "id": "explosion_potato_heavy",
+            "path": "dropRandomLoot",
+            "kind": "survevOnly",
+            "survev": 2
+        },
+        {
+            "id": "explosion_potato_smgshot",
+            "path": "damage",
+            "kind": "changed",
+            "survev": 13,
+            "ours": 12
+        },
+        {
+            "id": "explosion_potato_smgshot",
+            "path": "freezeDuration",
+            "kind": "survevOnly",
+            "survev": 1
+        },
+        {
+            "id": "explosion_potato_smgshot",
+            "path": "frozenSprites",
+            "kind": "survevOnly",
+            "survev": ["player-mash-01.img", "player-mash-02.img", "player-mash-03.img"]
+        },
+        {
+            "id": "chest04",
+            "path": "lootImg.sprite",
+            "kind": "changed",
+            "survev": "loot-chest-04.img",
+            "ours": "loot-chest-03.img"
+        },
+        { "id": "mp5", "path": "bulletTypeBonus", "kind": "oursOnly", "ours": "bullet_mp5_bonus" },
+        {
+            "id": "mac10",
+            "path": "bulletTypeBonus",
+            "kind": "oursOnly",
+            "ours": "bullet_mac10_bonus"
+        },
+        { "id": "ump9", "path": "fireDelay", "kind": "changed", "survev": 0.3, "ours": 0.35 },
+        { "id": "ump9", "path": "burstDelay", "kind": "changed", "survev": 0.06, "ours": 0.07 },
+        { "id": "ump9", "path": "bulletTypeBonus", "kind": "oursOnly", "ours": "bullet_ump9_bonus" },
+        {
+            "id": "vector",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-vector-01.img",
+            "ours": "gun-med-01.img"
+        },
+        {
+            "id": "vector",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 9009504
+        },
+        {
+            "id": "vector",
+            "path": "bulletTypeBonus",
+            "kind": "oursOnly",
+            "ours": "bullet_vector_bonus"
+        },
+        { "id": "vector45", "path": "barrelLength", "kind": "changed", "survev": 2.45, "ours": 2.5 },
+        {
+            "id": "vector45",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-vector45-01.img",
+            "ours": "gun-med-01.img"
+        },
+        {
+            "id": "vector45",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 9009504
+        },
+        { "id": "scorpion", "path": "barrelLength", "kind": "changed", "survev": 3.5, "ours": 3.6 },
+        { "id": "scorpion", "path": "sound.fallOff", "kind": "oursOnly", "ours": 3 },
+        {
+            "id": "scorpion",
+            "path": "bulletTypeBonus",
+            "kind": "oursOnly",
+            "ours": "bullet_scorpion_bonus"
+        },
+        { "id": "vss", "path": "quality", "kind": "changed", "survev": 0, "ours": 1 },
+        { "id": "vss", "path": "headshotMult", "kind": "changed", "survev": 1.5, "ours": 2 },
+        { "id": "vss", "path": "sound.fallOff", "kind": "oursOnly", "ours": 3 },
+        { "id": "vss", "path": "bulletTypeBonus", "kind": "oursOnly", "ours": "bullet_vss_bonus" },
+        { "id": "famas", "path": "burstDelay", "kind": "changed", "survev": 0.05, "ours": 0.07 },
+        { "id": "m4a1", "path": "barrelLength", "kind": "changed", "survev": 3.3, "ours": 3.5 },
+        { "id": "mk12", "path": "headshotMult", "kind": "changed", "survev": 1.5, "ours": 2 },
+        { "id": "l86", "path": "barrelLength", "kind": "changed", "survev": 3.7, "ours": 3.25 },
+        { "id": "l86", "path": "headshotMult", "kind": "changed", "survev": 1.5, "ours": 2 },
+        {
+            "id": "l86",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-l86-01.img",
+            "ours": "gun-long-01.img"
+        },
+        { "id": "l86", "path": "worldImg.scale.y", "kind": "changed", "survev": 0.5, "ours": 0.46 },
+        {
+            "id": "l86",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 14469287
+        },
+        {
+            "id": "l86",
+            "path": "worldImg.leftHandOffset.x",
+            "kind": "changed",
+            "survev": 2,
+            "ours": -3
+        },
+        { "id": "m249", "path": "barrelLength", "kind": "changed", "survev": 3.7, "ours": 3.75 },
+        { "id": "qbb97", "path": "quality", "kind": "survevOnly", "survev": 1 },
+        { "id": "qbb97", "path": "isBullpup", "kind": "survevOnly", "survev": true },
+        {
+            "id": "qbb97",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-qbb97-top-01.img",
+            "ours": "gun-long-01.img"
+        },
+        {
+            "id": "qbb97",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.425
+        },
+        {
+            "id": "qbb97",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 1973790
+        },
+        {
+            "id": "qbb97",
+            "path": "worldImg.leftHandOffset.x",
+            "kind": "changed",
+            "survev": 12,
+            "ours": 8.4
+        },
+        {
+            "id": "qbb97",
+            "path": "worldImg.gunOffset",
+            "kind": "survevOnly",
+            "survev": { "x": -8, "y": 0 }
+        },
+        {
+            "id": "qbb97",
+            "path": "worldImg.magImg.pos.y",
+            "kind": "changed",
+            "survev": -7.5,
+            "ours": -14.25
+        },
+        {
+            "id": "qbb97",
+            "path": "particle.shellOffset",
+            "kind": "changed",
+            "survev": 0.125,
+            "ours": 0.5875
+        },
+        {
+            "id": "scout_elite",
+            "path": "barrelLength",
+            "kind": "changed",
+            "survev": 3.65,
+            "ours": 3.5
+        },
+        {
+            "id": "scout_elite",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-scout_elite-01.img",
+            "ours": "gun-long-01.img"
+        },
+        {
+            "id": "scout_elite",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.52
+        },
+        {
+            "id": "scout_elite",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 3290683
+        },
+        {
+            "id": "scout_elite",
+            "path": "worldImg.leftHandOffset.x",
+            "kind": "changed",
+            "survev": 6,
+            "ours": 2.8
+        },
+        { "id": "scar", "path": "barrelLength", "kind": "changed", "survev": 3.43, "ours": 3.15 },
+        {
+            "id": "scar",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-scar-01.img",
+            "ours": "gun-long-01.img"
+        },
+        {
+            "id": "scar",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.435
+        },
+        {
+            "id": "scar",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 10189640
+        },
+        { "id": "scarssr", "path": "barrelLength", "kind": "changed", "survev": 4.3, "ours": 3.9 },
+        { "id": "scarssr", "path": "headshotMult", "kind": "changed", "survev": 1.25, "ours": 1.5 },
+        { "id": "scarssr", "path": "sound.fallOff", "kind": "oursOnly", "ours": 3 },
+        { "id": "an94", "path": "barrelLength", "kind": "changed", "survev": 3.4, "ours": 3.25 },
+        {
+            "id": "an94",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-an94-01.img",
+            "ours": "gun-long-01.img"
+        },
+        { "id": "an94", "path": "worldImg.scale.y", "kind": "changed", "survev": 0.5, "ours": 0.46 },
+        {
+            "id": "an94",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 2960685
+        },
+        {
+            "id": "an94",
+            "path": "worldImg.leftHandOffset.x",
+            "kind": "changed",
+            "survev": 9,
+            "ours": 2.85
+        },
+        { "id": "groza", "path": "quality", "kind": "changed", "survev": 0, "ours": 1 },
+        { "id": "groza", "path": "barrelLength", "kind": "changed", "survev": 2.7, "ours": 2.6 },
+        { "id": "grozas", "path": "barrelLength", "kind": "changed", "survev": 3.4, "ours": 3.3 },
+        { "id": "grozas", "path": "sound.fallOff", "kind": "oursOnly", "ours": 3 },
+        { "id": "dp28", "path": "barrelLength", "kind": "changed", "survev": 3.8, "ours": 3.75 },
+        {
+            "id": "dp28",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-dp28-01.img",
+            "ours": "gun-long-01.img"
+        },
+        { "id": "dp28", "path": "worldImg.scale.y", "kind": "changed", "survev": 0.5, "ours": 0.53 },
+        {
+            "id": "dp28",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 1710618
+        },
+        {
+            "id": "dp28",
+            "path": "worldImg.leftHandOffset.x",
+            "kind": "changed",
+            "survev": 7,
+            "ours": 8.4
+        },
+        {
+            "id": "dp28",
+            "path": "worldImg.magImg.pos.y",
+            "kind": "changed",
+            "survev": -20.5,
+            "ours": -22.5
+        },
+        {
+            "id": "dp28",
+            "path": "particle.shellOffset",
+            "kind": "changed",
+            "survev": 0.725,
+            "ours": 0.6
+        },
+        {
+            "id": "bar",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-bar-01.img",
+            "ours": "gun-long-01.img"
+        },
+        { "id": "bar", "path": "worldImg.scale.y", "kind": "changed", "survev": 0.5, "ours": 0.52 },
+        {
+            "id": "bar",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 5065810
+        },
+        { "id": "pkp", "path": "barrelLength", "kind": "changed", "survev": 3.4, "ours": 3.6 },
+        { "id": "model94", "path": "barrelLength", "kind": "changed", "survev": 3.78, "ours": 3.7 },
+        {
+            "id": "model94",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-model94-01.img",
+            "ours": "gun-long-01.img"
+        },
+        {
+            "id": "model94",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.5175
+        },
+        {
+            "id": "model94",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 10510624
+        },
+        { "id": "mkg45", "path": "barrelLength", "kind": "changed", "survev": 3.6, "ours": 3.3 },
+        { "id": "mkg45", "path": "headshotMult", "kind": "changed", "survev": 1.75, "ours": 2 },
+        {
+            "id": "mkg45",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-mkg45-01.img",
+            "ours": "gun-long-01.img"
+        },
+        {
+            "id": "mkg45",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.47
+        },
+        {
+            "id": "mkg45",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 3487029
+        },
+        { "id": "blr", "path": "barrelLength", "kind": "changed", "survev": 3.85, "ours": 3.8 },
+        {
+            "id": "blr",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-blr-01.img",
+            "ours": "gun-long-01.img"
+        },
+        { "id": "blr", "path": "worldImg.scale.y", "kind": "changed", "survev": 0.5, "ours": 0.53 },
+        {
+            "id": "blr",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 4663046
+        },
+        { "id": "mosin", "path": "barrelLength", "kind": "changed", "survev": 3.95, "ours": 3.75 },
+        { "id": "mosin", "path": "headshotMult", "kind": "changed", "survev": 1.25, "ours": 1.5 },
+        {
+            "id": "mosin",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-mosin-01.img",
+            "ours": "gun-long-01.img"
+        },
+        {
+            "id": "mosin",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.52
+        },
+        {
+            "id": "mosin",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 3348992
+        },
+        {
+            "id": "mosin",
+            "path": "worldImg.leftHandOffset.x",
+            "kind": "changed",
+            "survev": 7,
+            "ours": 2.8
+        },
+        { "id": "sv98", "path": "barrelLength", "kind": "changed", "survev": 4.1, "ours": 3.5 },
+        { "id": "sv98", "path": "headshotMult", "kind": "changed", "survev": 1.25, "ours": 1.5 },
+        {
+            "id": "sv98",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-sv98-01.img",
+            "ours": "gun-long-01.img"
+        },
+        {
+            "id": "sv98",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.4925
+        },
+        {
+            "id": "sv98",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 6654279
+        },
+        {
+            "id": "sv98",
+            "path": "worldImg.leftHandOffset.x",
+            "kind": "changed",
+            "survev": 6.5,
+            "ours": 2.8
+        },
+        {
+            "id": "sv98",
+            "path": "worldImg.leftHandOffset.y",
+            "kind": "changed",
+            "survev": 0.25,
+            "ours": 0
+        },
+        { "id": "awc", "path": "barrelLength", "kind": "changed", "survev": 4, "ours": 3.8 },
+        { "id": "m39", "path": "headshotMult", "kind": "changed", "survev": 1.5, "ours": 2 },
+        { "id": "svd", "path": "barrelLength", "kind": "changed", "survev": 4.2, "ours": 4 },
+        { "id": "svd", "path": "headshotMult", "kind": "changed", "survev": 1.5, "ours": 2 },
+        {
+            "id": "svd",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-svd-01.img",
+            "ours": "gun-long-01.img"
+        },
+        { "id": "svd", "path": "worldImg.scale.y", "kind": "changed", "survev": 0.5, "ours": 0.56 },
+        {
+            "id": "svd",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 1842204
+        },
+        { "id": "garand", "path": "barrelLength", "kind": "changed", "survev": 3.8, "ours": 3.6 },
+        { "id": "garand", "path": "shotSpread", "kind": "changed", "survev": 0.4, "ours": 1 },
+        { "id": "garand", "path": "headshotMult", "kind": "changed", "survev": 1.44, "ours": 2 },
+        { "id": "m1100", "path": "barrelLength", "kind": "changed", "survev": 3.7, "ours": 3.15 },
+        {
+            "id": "m1100",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-m1100-01.img",
+            "ours": "gun-long-01.img"
+        },
+        {
+            "id": "m1100",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.435
+        },
+        {
+            "id": "m1100",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 3032110
+        },
+        {
+            "id": "spas12",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-spas12-01.img",
+            "ours": "gun-long-01.img"
+        },
+        {
+            "id": "spas12",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.4
+        },
+        {
+            "id": "spas12",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 2966097
+        },
+        { "id": "m1014", "path": "barrelLength", "kind": "changed", "survev": 3.3, "ours": 3.2 },
+        { "id": "m1014", "path": "headshotMult", "kind": "changed", "survev": 1.25, "ours": 1.5 },
+        {
+            "id": "m1014",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-m1014-01.img",
+            "ours": "gun-long-01.img"
+        },
+        {
+            "id": "m1014",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.44
+        },
+        {
+            "id": "m1014",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 5656632
+        },
+        {
+            "id": "m1014",
+            "path": "worldImg.leftHandOffset.x",
+            "kind": "changed",
+            "survev": 7.8,
+            "ours": 4.8
+        },
+        { "id": "usas", "path": "barrelLength", "kind": "changed", "survev": 3.7, "ours": 3.65 },
+        { "id": "m9", "path": "moveSpread", "kind": "changed", "survev": 5, "ours": 8 },
+        { "id": "m9", "path": "shotSpread", "kind": "changed", "survev": 3, "ours": 8 },
+        { "id": "m9", "path": "bulletTypeBonus", "kind": "oursOnly", "ours": "bullet_m9_bonus" },
+        { "id": "m9_dual", "path": "ammoSpawnCount", "kind": "changed", "survev": 90, "ours": 45 },
+        { "id": "m9_dual", "path": "dualOffset", "kind": "changed", "survev": 0.55, "ours": 0.6 },
+        { "id": "m9_dual", "path": "moveSpread", "kind": "changed", "survev": 3.5, "ours": 9 },
+        { "id": "m9_dual", "path": "shotSpread", "kind": "changed", "survev": 4, "ours": 11 },
+        {
+            "id": "m9_dual",
+            "path": "bulletTypeBonus",
+            "kind": "oursOnly",
+            "ours": "bullet_m9_bonus"
+        },
+        { "id": "m9_cursed", "path": "moveSpread", "kind": "changed", "survev": 3, "ours": 8 },
+        { "id": "m9_cursed", "path": "shotSpread", "kind": "changed", "survev": 3, "ours": 8 },
+        { "id": "m93r", "path": "barrelLength", "kind": "changed", "survev": 2.2, "ours": 2.3 },
+        { "id": "m93r", "path": "bulletTypeBonus", "kind": "oursOnly", "ours": "bullet_m93r_bonus" },
+        {
+            "id": "m93r_dual",
+            "path": "ammoSpawnCount",
+            "kind": "changed",
+            "survev": 120,
+            "ours": 60
+        },
+        { "id": "m93r_dual", "path": "dualOffset", "kind": "changed", "survev": 0.55, "ours": 0.6 },
+        {
+            "id": "m93r_dual",
+            "path": "bulletTypeBonus",
+            "kind": "oursOnly",
+            "ours": "bullet_m93r_bonus"
+        },
+        {
+            "id": "glock",
+            "path": "bulletTypeBonus",
+            "kind": "oursOnly",
+            "ours": "bullet_glock_bonus"
+        },
+        {
+            "id": "glock_dual",
+            "path": "ammoSpawnCount",
+            "kind": "changed",
+            "survev": 102,
+            "ours": 51
+        },
+        { "id": "glock_dual", "path": "dualOffset", "kind": "changed", "survev": 0.55, "ours": 0.6 },
+        {
+            "id": "glock_dual",
+            "path": "bulletTypeBonus",
+            "kind": "oursOnly",
+            "ours": "bullet_glock_bonus"
+        },
+        { "id": "p30l", "path": "quality", "kind": "changed", "survev": 0, "ours": 1 },
+        { "id": "p30l", "path": "barrelLength", "kind": "changed", "survev": 2.4, "ours": 2.3 },
+        { "id": "p30l", "path": "bulletTypeBonus", "kind": "oursOnly", "ours": "bullet_p30l_bonus" },
+        { "id": "p30l_dual", "path": "barrelLength", "kind": "changed", "survev": 2.4, "ours": 2.3 },
+        { "id": "p30l_dual", "path": "dualOffset", "kind": "changed", "survev": 0.55, "ours": 0.6 },
+        {
+            "id": "p30l_dual",
+            "path": "bulletTypeBonus",
+            "kind": "oursOnly",
+            "ours": "bullet_p30l_bonus"
+        },
+        { "id": "ot38_dual", "path": "ammoSpawnCount", "kind": "changed", "survev": 40, "ours": 20 },
+        { "id": "ot38_dual", "path": "barrelLength", "kind": "changed", "survev": 2.05, "ours": 2 },
+        { "id": "ot38_dual", "path": "dualOffset", "kind": "changed", "survev": 0.55, "ours": 0.6 },
+        { "id": "ots38", "path": "barrelLength", "kind": "changed", "survev": 2.1, "ours": 2.05 },
+        { "id": "ots38", "path": "sound.fallOff", "kind": "oursOnly", "ours": 3 },
+        { "id": "ots38_dual", "path": "barrelLength", "kind": "changed", "survev": 2.1, "ours": 2 },
+        { "id": "ots38_dual", "path": "dualOffset", "kind": "changed", "survev": 0.55, "ours": 0.6 },
+        { "id": "ots38_dual", "path": "sound.fallOff", "kind": "oursOnly", "ours": 3 },
+        { "id": "colt45", "path": "barrelLength", "kind": "changed", "survev": 2.55, "ours": 2.26 },
+        {
+            "id": "colt45",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-colt45-01.img",
+            "ours": "gun-short-01.img"
+        },
+        {
+            "id": "colt45",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.52
+        },
+        {
+            "id": "colt45",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 12895428
+        },
+        {
+            "id": "colt45_dual",
+            "path": "ammoSpawnCount",
+            "kind": "changed",
+            "survev": 96,
+            "ours": 48
+        },
+        {
+            "id": "colt45_dual",
+            "path": "barrelLength",
+            "kind": "changed",
+            "survev": 2.55,
+            "ours": 2.26
+        },
+        {
+            "id": "colt45_dual",
+            "path": "dualOffset",
+            "kind": "changed",
+            "survev": 0.55,
+            "ours": 0.6
+        },
+        {
+            "id": "colt45_dual",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-colt45-01.img",
+            "ours": "gun-short-01.img"
+        },
+        {
+            "id": "colt45_dual",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.52
+        },
+        {
+            "id": "colt45_dual",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 12895428
+        },
+        { "id": "m1911", "path": "moveSpread", "kind": "changed", "survev": 3, "ours": 7 },
+        { "id": "m1911", "path": "shotSpread", "kind": "changed", "survev": 2, "ours": 6 },
+        {
+            "id": "m1911_dual",
+            "path": "ammoSpawnCount",
+            "kind": "changed",
+            "survev": 56,
+            "ours": 28
+        },
+        { "id": "m1911_dual", "path": "dualOffset", "kind": "changed", "survev": 0.55, "ours": 0.6 },
+        { "id": "m1911_dual", "path": "moveSpread", "kind": "changed", "survev": 3.5, "ours": 8 },
+        { "id": "m1911_dual", "path": "shotSpread", "kind": "changed", "survev": 4, "ours": 9.5 },
+        { "id": "deagle", "path": "barrelLength", "kind": "changed", "survev": 2.5, "ours": 1.855 },
+        {
+            "id": "deagle_dual",
+            "path": "barrelLength",
+            "kind": "changed",
+            "survev": 2.5,
+            "ours": 2.4
+        },
+        {
+            "id": "deagle_dual",
+            "path": "dualOffset",
+            "kind": "changed",
+            "survev": 0.55,
+            "ours": 0.6
+        },
+        {
+            "id": "flare_gun",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-flare-01.img",
+            "ours": "gun-short-01.img"
+        },
+        {
+            "id": "flare_gun",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.4625
+        },
+        {
+            "id": "flare_gun",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 16733184
+        },
+        {
+            "id": "flare_gun_dual",
+            "path": "dualOffset",
+            "kind": "changed",
+            "survev": 0.55,
+            "ours": 0.6
+        },
+        {
+            "id": "flare_gun_dual",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "gun-flare-01.img",
+            "ours": "gun-short-01.img"
+        },
+        {
+            "id": "flare_gun_dual",
+            "path": "worldImg.scale.y",
+            "kind": "changed",
+            "survev": 0.5,
+            "ours": 0.4625
+        },
+        {
+            "id": "flare_gun_dual",
+            "path": "worldImg.tint",
+            "kind": "changed",
+            "survev": 16777215,
+            "ours": 16733184
+        },
+        {
+            "id": "potato_cannon",
+            "path": "bulletType",
+            "kind": "changed",
+            "survev": "bullet_invis",
+            "ours": "bullet_potato"
+        },
+        {
+            "id": "potato_smg",
+            "path": "bulletType",
+            "kind": "changed",
+            "survev": "bullet_invis",
+            "ours": "bullet_potato"
+        },
+        { "id": "bugle", "path": "barrelOffset", "kind": "changed", "survev": 0.16, "ours": 0 },
+        {
+            "id": "bugle",
+            "path": "bulletType",
+            "kind": "changed",
+            "survev": "bullet_invis",
+            "ours": "bullet_bugle"
+        },
+        { "id": "fists", "path": "sound.pickup", "kind": "survevOnly", "survev": "none" },
+        { "id": "fists", "path": "lootImg.rad", "kind": "oursOnly", "ours": 25 },
+        { "id": "fists", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "knuckles",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["knuckles_spin", "knuckles_slam"]
+        },
+        { "id": "knuckles", "path": "anim.deployAnimTime", "kind": "survevOnly", "survev": 0.65 },
+        {
+            "id": "knuckles",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["knuckles_bash"]
+        },
+        { "id": "knuckles", "path": "anim.idleAnimTime", "kind": "survevOnly", "survev": 0.7 },
+        {
+            "id": "knuckles",
+            "path": "sound.idle",
+            "kind": "survevOnly",
+            "survev": "knuckles_bash_01"
+        },
+        { "id": "knuckles", "path": "lootImg.rad", "kind": "oursOnly", "ours": 25 },
+        { "id": "knuckles", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "karambit",
+            "path": "anim.attackAnims",
+            "kind": "changed",
+            "survev": ["slash", "stab"],
+            "ours": ["slash", "fists"]
+        },
+        {
+            "id": "karambit",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["karambit_spin", "karambit_rapidSpin"]
+        },
+        { "id": "karambit", "path": "anim.deployAnimTime", "kind": "survevOnly", "survev": 0.65 },
+        {
+            "id": "karambit",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["karambit_frontSpin", "karambit_backSpin"]
+        },
+        { "id": "karambit", "path": "anim.idleAnimTime", "kind": "survevOnly", "survev": 0.85 },
+        { "id": "karambit", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "bayonet",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["bayonet_unsheathe"]
+        },
+        { "id": "bayonet", "path": "anim.deployAnimTime", "kind": "survevOnly", "survev": 0.65 },
+        {
+            "id": "bayonet",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["knife_inspect"]
+        },
+        { "id": "bayonet", "path": "anim.idleAnimTime", "kind": "survevOnly", "survev": 1.15 },
+        { "id": "bayonet", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "huntsman",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["huntsman_catch"]
+        },
+        { "id": "huntsman", "path": "anim.deployAnimTime", "kind": "survevOnly", "survev": 0.675 },
+        {
+            "id": "huntsman",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["knife_inspect"]
+        },
+        { "id": "huntsman", "path": "anim.idleAnimTime", "kind": "survevOnly", "survev": 1.15 },
+        { "id": "huntsman", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "bowie", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "machete", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "saw", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "woodaxe", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "fireaxe", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "katana", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "naginata", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "stonehammer", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "hook", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "pan", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "spade", "path": "obstacleDamage", "kind": "changed", "survev": 1.3, "ours": 1 },
+        {
+            "id": "spade",
+            "path": "attack.cooldownTime",
+            "kind": "changed",
+            "survev": 0.3,
+            "ours": 0.35
+        },
+        { "id": "spade", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "crowbar",
+            "path": "sound.deploy",
+            "kind": "changed",
+            "survev": "stow_weapon_01",
+            "ours": "frag_pickup_01"
+        },
+        {
+            "id": "crowbar",
+            "path": "lootImg.sprite",
+            "kind": "changed",
+            "survev": "loot-melee-crowbar.img",
+            "ours": "loot-melee-crowbar-scout.img"
+        },
+        {
+            "id": "crowbar",
+            "path": "worldImg.sprite",
+            "kind": "changed",
+            "survev": "loot-melee-crowbar.img",
+            "ours": "loot-melee-crowbar-scout.img"
+        },
+        { "id": "crowbar", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "crowbar", "path": "noPotatoSwap", "kind": "oursOnly", "ours": true },
+        {
+            "id": "knuckles_rusted",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["knuckles_spin", "knuckles_slam"]
+        },
+        {
+            "id": "knuckles_rusted",
+            "path": "anim.deployAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.65
+        },
+        {
+            "id": "knuckles_rusted",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["knuckles_bash"]
+        },
+        {
+            "id": "knuckles_rusted",
+            "path": "anim.idleAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.7
+        },
+        {
+            "id": "knuckles_rusted",
+            "path": "sound.idle",
+            "kind": "survevOnly",
+            "survev": "knuckles_bash_01"
+        },
+        { "id": "knuckles_rusted", "path": "lootImg.rad", "kind": "oursOnly", "ours": 25 },
+        { "id": "knuckles_rusted", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "knuckles_heroic",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["knuckles_spin", "knuckles_slam"]
+        },
+        {
+            "id": "knuckles_heroic",
+            "path": "anim.deployAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.65
+        },
+        {
+            "id": "knuckles_heroic",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["knuckles_bash"]
+        },
+        {
+            "id": "knuckles_heroic",
+            "path": "anim.idleAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.7
+        },
+        {
+            "id": "knuckles_heroic",
+            "path": "sound.idle",
+            "kind": "survevOnly",
+            "survev": "knuckles_bash_01"
+        },
+        { "id": "knuckles_heroic", "path": "lootImg.rad", "kind": "oursOnly", "ours": 25 },
+        { "id": "knuckles_heroic", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "karambit_rugged",
+            "path": "anim.attackAnims",
+            "kind": "changed",
+            "survev": ["slash", "stab"],
+            "ours": ["slash", "fists"]
+        },
+        {
+            "id": "karambit_rugged",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["karambit_spin", "karambit_rapidSpin"]
+        },
+        {
+            "id": "karambit_rugged",
+            "path": "anim.deployAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.65
+        },
+        {
+            "id": "karambit_rugged",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["karambit_frontSpin", "karambit_backSpin"]
+        },
+        {
+            "id": "karambit_rugged",
+            "path": "anim.idleAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.85
+        },
+        {
+            "id": "karambit_rugged",
+            "path": "lore",
+            "kind": "survevOnly",
+            "survev": "What's your favourite knife trick?"
+        },
+        { "id": "karambit_rugged", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "karambit_prismatic",
+            "path": "anim.attackAnims",
+            "kind": "changed",
+            "survev": ["slash", "stab"],
+            "ours": ["slash", "fists"]
+        },
+        {
+            "id": "karambit_prismatic",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["karambit_spin", "karambit_rapidSpin"]
+        },
+        {
+            "id": "karambit_prismatic",
+            "path": "anim.deployAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.65
+        },
+        {
+            "id": "karambit_prismatic",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["karambit_frontSpin", "karambit_backSpin"]
+        },
+        {
+            "id": "karambit_prismatic",
+            "path": "anim.idleAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.85
+        },
+        { "id": "karambit_prismatic", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "karambit_drowned",
+            "path": "anim.attackAnims",
+            "kind": "changed",
+            "survev": ["slash", "stab"],
+            "ours": ["slash", "fists"]
+        },
+        {
+            "id": "karambit_drowned",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["karambit_spin", "karambit_rapidSpin"]
+        },
+        {
+            "id": "karambit_drowned",
+            "path": "anim.deployAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.65
+        },
+        {
+            "id": "karambit_drowned",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["karambit_frontSpin", "karambit_backSpin"]
+        },
+        {
+            "id": "karambit_drowned",
+            "path": "anim.idleAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.85
+        },
+        { "id": "karambit_drowned", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "bayonet_rugged",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["bayonet_unsheathe"]
+        },
+        {
+            "id": "bayonet_rugged",
+            "path": "anim.deployAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.65
+        },
+        {
+            "id": "bayonet_rugged",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["knife_inspect"]
+        },
+        {
+            "id": "bayonet_rugged",
+            "path": "anim.idleAnimTime",
+            "kind": "survevOnly",
+            "survev": 1.15
+        },
+        {
+            "id": "bayonet_rugged",
+            "path": "lore",
+            "kind": "survevOnly",
+            "survev": "Can't go wrong with the ol' reliable."
+        },
+        { "id": "bayonet_rugged", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "bayonet_woodland",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["bayonet_unsheathe"]
+        },
+        {
+            "id": "bayonet_woodland",
+            "path": "anim.deployAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.65
+        },
+        {
+            "id": "bayonet_woodland",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["knife_inspect"]
+        },
+        {
+            "id": "bayonet_woodland",
+            "path": "anim.idleAnimTime",
+            "kind": "survevOnly",
+            "survev": 1.15
+        },
+        {
+            "id": "bayonet_woodland",
+            "path": "lore",
+            "kind": "survevOnly",
+            "survev": "The woods have left their mark on a lethal weapon."
+        },
+        { "id": "bayonet_woodland", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "huntsman_rugged",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["huntsman_catch"]
+        },
+        {
+            "id": "huntsman_rugged",
+            "path": "anim.deployAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.675
+        },
+        {
+            "id": "huntsman_rugged",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["knife_inspect"]
+        },
+        {
+            "id": "huntsman_rugged",
+            "path": "anim.idleAnimTime",
+            "kind": "survevOnly",
+            "survev": 1.15
+        },
+        {
+            "id": "huntsman_rugged",
+            "path": "lore",
+            "kind": "survevOnly",
+            "survev": "Always bet on black."
+        },
+        { "id": "huntsman_rugged", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "huntsman_burnished",
+            "path": "anim.deployAnims",
+            "kind": "survevOnly",
+            "survev": ["huntsman_catch"]
+        },
+        {
+            "id": "huntsman_burnished",
+            "path": "anim.deployAnimTime",
+            "kind": "survevOnly",
+            "survev": 0.675
+        },
+        {
+            "id": "huntsman_burnished",
+            "path": "anim.idleAnims",
+            "kind": "survevOnly",
+            "survev": ["knife_inspect"]
+        },
+        {
+            "id": "huntsman_burnished",
+            "path": "anim.idleAnimTime",
+            "kind": "survevOnly",
+            "survev": 1.15
+        },
+        {
+            "id": "huntsman_burnished",
+            "path": "lore",
+            "kind": "survevOnly",
+            "survev": "Bury them with style."
+        },
+        { "id": "huntsman_burnished", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "bowie_vintage", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "bowie_frontier", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "machete_taiga", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "kukri_trad", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "bonesaw_rusted", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "woodaxe_bloody", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "katana_rusted", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "katana_orchid", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "sledgehammer", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "crowbar_scout",
+            "path": "sound.deploy",
+            "kind": "changed",
+            "survev": "stow_weapon_01",
+            "ours": "frag_pickup_01"
+        },
+        { "id": "crowbar_scout", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "crowbar_scout", "path": "noPotatoSwap", "kind": "oursOnly", "ours": false },
+        {
+            "id": "crowbar_recon",
+            "path": "sound.deploy",
+            "kind": "changed",
+            "survev": "stow_weapon_01",
+            "ours": "frag_pickup_01"
+        },
+        { "id": "crowbar_recon", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "crowbar_recon", "path": "noPotatoSwap", "kind": "oursOnly", "ours": false },
+        { "id": "kukri_sniper", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "bonesaw_healer", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "katana_demo", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        {
+            "id": "spade_assault",
+            "path": "obstacleDamage",
+            "kind": "changed",
+            "survev": 1.3,
+            "ours": 1
+        },
+        {
+            "id": "spade_assault",
+            "path": "attack.cooldownTime",
+            "kind": "changed",
+            "survev": 0.3,
+            "ours": 0.35
+        },
+        { "id": "spade_assault", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "warhammer_tank", "path": "headshotMult", "kind": "oursOnly", "ours": 1 },
+        { "id": "strobe", "path": "strikeDelay", "kind": "changed", "survev": 3, "ours": 2.5 },
+        { "id": "snowball", "path": "heavyType", "kind": "survevOnly", "survev": "snowball_heavy" },
+        { "id": "snowball", "path": "changeTime", "kind": "survevOnly", "survev": 1 },
+        {
+            "id": "snowball",
+            "path": "throwPhysics.speed",
+            "kind": "changed",
+            "survev": 52,
+            "ours": 40
+        },
+        { "id": "snowball_heavy", "path": "fuseTime", "kind": "changed", "survev": 9999, "ours": 5 },
+        { "id": "snowball_heavy", "path": "handImg", "kind": "oursOnly", "ours": {} },
+        { "id": "potato", "path": "changeTime", "kind": "survevOnly", "survev": 1 },
+        { "id": "potato_heavy", "path": "fuseTime", "kind": "changed", "survev": 9999, "ours": 5 },
+        { "id": "potato_heavy", "path": "handImg", "kind": "oursOnly", "ours": {} },
+        { "id": "potato_cannonball", "path": "handImg", "kind": "oursOnly", "ours": {} },
+        { "id": "potato_smgshot", "path": "handImg", "kind": "oursOnly", "ours": {} },
+        {
+            "id": "bomb_iron",
+            "path": "forceMaxThrowDistance",
+            "kind": "survevOnly",
+            "survev": false
+        },
+        { "id": "bomb_iron", "path": "handImg", "kind": "oursOnly", "ours": {} }
+    ],
+    "gameConfigChanges": [
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.9mm",
+            "kind": "changed",
+            "survev": [120, 240, 330, 420, 510],
+            "ours": [120, 240, 330, 420]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.762mm",
+            "kind": "changed",
+            "survev": [90, 180, 240, 300, 360],
+            "ours": [90, 180, 240, 300]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.556mm",
+            "kind": "changed",
+            "survev": [90, 180, 240, 300, 360],
+            "ours": [90, 180, 240, 300]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.12gauge",
+            "kind": "changed",
+            "survev": [15, 30, 60, 90, 120],
+            "ours": [15, 30, 60, 90]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.50AE",
+            "kind": "changed",
+            "survev": [50, 100, 150, 200, 250],
+            "ours": [49, 98, 147, 196]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.308sub",
+            "kind": "changed",
+            "survev": [20, 40, 55, 70, 85],
+            "ours": [10, 20, 40, 80]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.flare",
+            "kind": "changed",
+            "survev": [2, 4, 6, 8, 10],
+            "ours": [2, 4, 6, 8]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.45acp",
+            "kind": "changed",
+            "survev": [90, 180, 240, 300, 360],
+            "ours": [90, 180, 240, 300]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.frag",
+            "kind": "changed",
+            "survev": [3, 6, 9, 12, 15],
+            "ours": [3, 6, 9, 12]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.smoke",
+            "kind": "changed",
+            "survev": [3, 6, 9, 12, 15],
+            "ours": [3, 6, 9, 12]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.strobe",
+            "kind": "changed",
+            "survev": [2, 3, 4, 5, 6],
+            "ours": [2, 3, 4, 5]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.mirv",
+            "kind": "changed",
+            "survev": [2, 4, 6, 8, 10],
+            "ours": [2, 4, 6, 8]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.snowball",
+            "kind": "changed",
+            "survev": [10, 20, 30, 40, 50],
+            "ours": [10, 20, 30, 40]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.potato",
+            "kind": "changed",
+            "survev": [10, 20, 30, 40, 50],
+            "ours": [10, 20, 30, 40]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.bandage",
+            "kind": "changed",
+            "survev": [5, 10, 15, 30, 45],
+            "ours": [5, 10, 15, 30]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.healthkit",
+            "kind": "changed",
+            "survev": [1, 2, 3, 4, 5],
+            "ours": [1, 2, 3, 4]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.soda",
+            "kind": "changed",
+            "survev": [2, 5, 10, 15, 20],
+            "ours": [2, 5, 10, 15]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.painkiller",
+            "kind": "changed",
+            "survev": [1, 2, 3, 4, 5],
+            "ours": [1, 2, 3, 4]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.1xscope",
+            "kind": "changed",
+            "survev": [1, 1, 1, 1, 1],
+            "ours": [1, 1, 1, 1]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.2xscope",
+            "kind": "changed",
+            "survev": [1, 1, 1, 1, 1],
+            "ours": [1, 1, 1, 1]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.4xscope",
+            "kind": "changed",
+            "survev": [1, 1, 1, 1, 1],
+            "ours": [1, 1, 1, 1]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.8xscope",
+            "kind": "changed",
+            "survev": [1, 1, 1, 1, 1],
+            "ours": [1, 1, 1, 1]
+        },
+        {
+            "id": "GameConfig",
+            "path": "bagSizes.15xscope",
+            "kind": "changed",
+            "survev": [1, 1, 1, 1, 1],
+            "ours": [1, 1, 1, 1]
+        }
+    ],
+    "gameConfigNotApplied": ["gas.stages"],
+    "verification": [
+        {
+            "check": "GameObjectDefs.typeToDef('bullet_an94', 'bullet').damage",
+            "expected": 17.5,
+            "actual": 17.5,
+            "ok": true
+        },
+        { "check": "BulletDefs.bullet_an94.damage", "expected": 17.5, "actual": 17.5, "ok": true },
+        {
+            "check": "GameObjectDefs.typeToDef('mosin', 'gun').headshotMult",
+            "expected": 1.5,
+            "actual": 1.5,
+            "ok": true
+        },
+        { "check": "GunDefs.mosin.headshotMult", "expected": 1.5, "actual": 1.5, "ok": true },
+        {
+            "check": "ids whose survev def differs from ours after the patch",
+            "expected": 0,
+            "actual": 0,
+            "ok": true
+        }
+    ]
+}

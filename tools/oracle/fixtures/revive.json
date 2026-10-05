@@ -1,0 +1,145 @@
+{
+    "meta": {
+        "fixture": "revive",
+        "generator": "node --experimental-transform-types tools/oracle/run.ts",
+        "survevCommit": "c6185e31fe25a4a07def77a2bb25b1710bda90ac",
+        "defs": {
+            "protocolHash": 2525058706,
+            "gameObjectsSha256": "dd1f0919eb7aad005ff5bcf51f84528d7851094ee75d8917fa0d872956b7eb4e",
+            "gameConfigSha256": "22020fb3c453fc41011e966a31dc6fcc65fdbb30108154405fe323f04558fc2b"
+        },
+        "simulation": {
+            "dt": 0.01,
+            "netSyncTps": 33,
+            "note": "game.update(dt) with a fixed dt, game.netSync() at netSyncTps, like survev's game process"
+        },
+        "randomModes": {
+            "seeded": "Math.random = mulberry32(seed); used for game creation (map generation) and natural-randomness runs",
+            "centered": "Math.random() = 0.5: zero spread deviation, zero shotgun pellet jitter, bullet distAdj index 8 (0 m), headshot roll fails",
+            "low": "Math.random() = 0: deviation -spread/2, pellet jitter -jitter, bullet distAdj index 0 (-1 m)",
+            "high": "Math.random() = 1 - 2^-53: deviation +spread/2, pellet jitter +jitter, bullet distAdj index 16 (+1 m)",
+            "headshotNever": "GameConfig.player.headshotChance = 0 (Math.random() < 0 never holds)",
+            "headshotAlways": "GameConfig.player.headshotChance = 1 (Math.random() < 1 always holds)",
+            "headshotRandom": "GameConfig.player.headshotChance = 0.15 (survev default)"
+        },
+        "patch": {
+            "replacedIds": 615,
+            "idsWithChangedValues": 231,
+            "gameplayValueChanges": 357,
+            "addedIds": [
+                "bullet_potato",
+                "bullet_bugle",
+                "bullet_mp5_bonus",
+                "bullet_m9_bonus",
+                "bullet_mac10_bonus",
+                "bullet_ump9_bonus",
+                "bullet_vector_bonus",
+                "bullet_glock_bonus",
+                "bullet_m93r_bonus",
+                "bullet_scorpion_bonus",
+                "bullet_vss_bonus",
+                "bullet_p30l_bonus",
+                "emote_flagisrael",
+                "outfitTree"
+            ],
+            "keptSurvevOnlyFields": { "bullet": ["noDistAdj", "useExplosiveRoundsAlt"] },
+            "gameConfigChanges": [
+                "bagSizes.9mm",
+                "bagSizes.762mm",
+                "bagSizes.556mm",
+                "bagSizes.12gauge",
+                "bagSizes.50AE",
+                "bagSizes.308sub",
+                "bagSizes.flare",
+                "bagSizes.45acp",
+                "bagSizes.frag",
+                "bagSizes.smoke",
+                "bagSizes.strobe",
+                "bagSizes.mirv",
+                "bagSizes.snowball",
+                "bagSizes.potato",
+                "bagSizes.bandage",
+                "bagSizes.healthkit",
+                "bagSizes.soda",
+                "bagSizes.painkiller",
+                "bagSizes.1xscope",
+                "bagSizes.2xscope",
+                "bagSizes.4xscope",
+                "bagSizes.8xscope",
+                "bagSizes.15xscope"
+            ],
+            "verification": [
+                {
+                    "check": "GameObjectDefs.typeToDef('bullet_an94', 'bullet').damage",
+                    "actual": 17.5,
+                    "ok": true
+                },
+                { "check": "BulletDefs.bullet_an94.damage", "actual": 17.5, "ok": true },
+                {
+                    "check": "GameObjectDefs.typeToDef('mosin', 'gun').headshotMult",
+                    "actual": 1.5,
+                    "ok": true
+                },
+                { "check": "GunDefs.mosin.headshotMult", "actual": 1.5, "ok": true },
+                {
+                    "check": "ids whose survev def differs from ours after the patch",
+                    "actual": 0,
+                    "ok": true
+                }
+            ]
+        },
+        "params": {
+            "teamMode": "duo, empty oracle map (survev test_normal gameConfig = main)",
+            "knock": "150 Player damage with no source (teammate alive -> downed)",
+            "revive": "teammate placed 2 m behind the downed player (after its knock-back slide) sends Interact",
+            "cancel": "the reviver walks away (moveLeft) until the revive is cancelled"
+        }
+    },
+    "config": {
+        "reviveDuration": 8,
+        "reviveHealth": 24,
+        "reviveRange": 5,
+        "bleedTickRate": 1,
+        "bleedDamage": 2,
+        "bleedDamageMult": 1,
+        "downedDamageBuffer": 0.1
+    },
+    "notes": [
+        "a downed player bleeds bleedDamage every bleedTickRate seconds while no action (revive) runs; with bleedDamageMult != 1 the damage is downedCount * bleedDamageMult * bleedDamage",
+        "the first bleed tick right after the knock falls inside downedDamageBuffer and is ignored",
+        "bleeding ignores armor"
+    ],
+    "bleedOut": {
+        "downed": true,
+        "healthWhenDowned": 100,
+        "secondsToDeath": 50.01,
+        "bleedCalls": 51,
+        "firstBleeds": [
+            { "time": 0.01, "damage": 0 },
+            { "time": 1.01, "damage": 2 },
+            { "time": 2.01, "damage": 2 },
+            { "time": 3.01, "damage": 2 },
+            { "time": 4.01, "damage": 2 }
+        ],
+        "lastBleed": { "time": 50.01, "damage": 2 }
+    },
+    "revived": {
+        "healthWhenReviveStarted": 96,
+        "reviverAction": "Revive",
+        "downedAction": "Revive",
+        "reviveSeconds": 8.01,
+        "healthAfterRevive": 24,
+        "bleedHitsDuringRevive": 0,
+        "bleedHitsBeforeRevive": 3,
+        "secondsDownedBeforeRevive": 2.5
+    },
+    "secondKnock": { "downedCount": 2, "secondsToDeath": 50.01, "bleedDamage": [0, 2] },
+    "cancelled": {
+        "cancelledAfterSeconds": 0.45,
+        "distanceAtCancel": 5.14,
+        "reviveRange": 5,
+        "stillDowned": true,
+        "bleedHitsAfterCancel": 3
+    },
+    "downedDamage": { "knockHitThenImmediateHit": [0], "hitAfterBuffer": [10] }
+}

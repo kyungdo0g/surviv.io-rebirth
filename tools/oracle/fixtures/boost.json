@@ -1,0 +1,173 @@
+{
+    "meta": {
+        "fixture": "boost",
+        "generator": "node --experimental-transform-types tools/oracle/run.ts",
+        "survevCommit": "c6185e31fe25a4a07def77a2bb25b1710bda90ac",
+        "defs": {
+            "protocolHash": 2525058706,
+            "gameObjectsSha256": "dd1f0919eb7aad005ff5bcf51f84528d7851094ee75d8917fa0d872956b7eb4e",
+            "gameConfigSha256": "22020fb3c453fc41011e966a31dc6fcc65fdbb30108154405fe323f04558fc2b"
+        },
+        "simulation": {
+            "dt": 0.01,
+            "netSyncTps": 33,
+            "note": "game.update(dt) with a fixed dt, game.netSync() at netSyncTps, like survev's game process"
+        },
+        "randomModes": {
+            "seeded": "Math.random = mulberry32(seed); used for game creation (map generation) and natural-randomness runs",
+            "centered": "Math.random() = 0.5: zero spread deviation, zero shotgun pellet jitter, bullet distAdj index 8 (0 m), headshot roll fails",
+            "low": "Math.random() = 0: deviation -spread/2, pellet jitter -jitter, bullet distAdj index 0 (-1 m)",
+            "high": "Math.random() = 1 - 2^-53: deviation +spread/2, pellet jitter +jitter, bullet distAdj index 16 (+1 m)",
+            "headshotNever": "GameConfig.player.headshotChance = 0 (Math.random() < 0 never holds)",
+            "headshotAlways": "GameConfig.player.headshotChance = 1 (Math.random() < 1 always holds)",
+            "headshotRandom": "GameConfig.player.headshotChance = 0.15 (survev default)"
+        },
+        "patch": {
+            "replacedIds": 615,
+            "idsWithChangedValues": 231,
+            "gameplayValueChanges": 357,
+            "addedIds": [
+                "bullet_potato",
+                "bullet_bugle",
+                "bullet_mp5_bonus",
+                "bullet_m9_bonus",
+                "bullet_mac10_bonus",
+                "bullet_ump9_bonus",
+                "bullet_vector_bonus",
+                "bullet_glock_bonus",
+                "bullet_m93r_bonus",
+                "bullet_scorpion_bonus",
+                "bullet_vss_bonus",
+                "bullet_p30l_bonus",
+                "emote_flagisrael",
+                "outfitTree"
+            ],
+            "keptSurvevOnlyFields": { "bullet": ["noDistAdj", "useExplosiveRoundsAlt"] },
+            "gameConfigChanges": [
+                "bagSizes.9mm",
+                "bagSizes.762mm",
+                "bagSizes.556mm",
+                "bagSizes.12gauge",
+                "bagSizes.50AE",
+                "bagSizes.308sub",
+                "bagSizes.flare",
+                "bagSizes.45acp",
+                "bagSizes.frag",
+                "bagSizes.smoke",
+                "bagSizes.strobe",
+                "bagSizes.mirv",
+                "bagSizes.snowball",
+                "bagSizes.potato",
+                "bagSizes.bandage",
+                "bagSizes.healthkit",
+                "bagSizes.soda",
+                "bagSizes.painkiller",
+                "bagSizes.1xscope",
+                "bagSizes.2xscope",
+                "bagSizes.4xscope",
+                "bagSizes.8xscope",
+                "bagSizes.15xscope"
+            ],
+            "verification": [
+                {
+                    "check": "GameObjectDefs.typeToDef('bullet_an94', 'bullet').damage",
+                    "actual": 17.5,
+                    "ok": true
+                },
+                { "check": "BulletDefs.bullet_an94.damage", "actual": 17.5, "ok": true },
+                {
+                    "check": "GameObjectDefs.typeToDef('mosin', 'gun').headshotMult",
+                    "actual": 1.5,
+                    "ok": true
+                },
+                { "check": "GunDefs.mosin.headshotMult", "actual": 1.5, "ok": true },
+                {
+                    "check": "ids whose survev def differs from ours after the patch",
+                    "actual": 0,
+                    "ok": true
+                }
+            ]
+        },
+        "params": {
+            "instant": "boost and health (50) set, one tick walking right: rates are deltas / dt",
+            "natural": "boost set once, health 10, 100 ticks standing still",
+            "fullDecay": "boost 100, health reset to 1 before every tick until boost reaches 0"
+        }
+    },
+    "config": {
+        "boostDecay": 0.375,
+        "boostBreakpoints": [1, 1, 1.5, 0.5],
+        "boostHealAmounts": [0.5, 1.25, 1.5, 1.75],
+        "boostMoveSpeed": 1.85
+    },
+    "notes": [
+        "heal per second uses the boost before this tick's decay; the band is the last breakpoint band with prev <= boost <= max, so a value exactly on a breakpoint (25, 50, 87.5) heals at the higher band",
+        "the +boostMoveSpeed bonus needs boost >= 50 after this tick's decay (boost 50 exactly decays to 49.996 first and gets no bonus)",
+        "no regeneration at boost 0; downed players lose all boost"
+    ],
+    "instant": [
+        { "boost": 0, "regenPerSecond": 0, "decayPerSecond": 0, "speed": 13 },
+        { "boost": 0.01, "regenPerSecond": 0.5, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 5, "regenPerSecond": 0.5, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 10, "regenPerSecond": 0.5, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 15, "regenPerSecond": 0.5, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 20, "regenPerSecond": 0.5, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 24.99, "regenPerSecond": 0.5, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 25, "regenPerSecond": 1.25, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 25.01, "regenPerSecond": 1.25, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 30, "regenPerSecond": 1.25, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 35, "regenPerSecond": 1.25, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 40, "regenPerSecond": 1.25, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 45, "regenPerSecond": 1.25, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 49.99, "regenPerSecond": 1.25, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 50, "regenPerSecond": 1.5, "decayPerSecond": 0.375, "speed": 13 },
+        { "boost": 50.01, "regenPerSecond": 1.5, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 55, "regenPerSecond": 1.5, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 60, "regenPerSecond": 1.5, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 65, "regenPerSecond": 1.5, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 70, "regenPerSecond": 1.5, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 75, "regenPerSecond": 1.5, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 80, "regenPerSecond": 1.5, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 85, "regenPerSecond": 1.5, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 87.49, "regenPerSecond": 1.5, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 87.5, "regenPerSecond": 1.75, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 87.51, "regenPerSecond": 1.75, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 90, "regenPerSecond": 1.75, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 95, "regenPerSecond": 1.75, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 99.99, "regenPerSecond": 1.75, "decayPerSecond": 0.375, "speed": 14.85 },
+        { "boost": 100, "regenPerSecond": 1.75, "decayPerSecond": 0.375, "speed": 14.85 }
+    ],
+    "natural": [
+        { "boost": 0, "healthGained": 0, "boostAfter": 0 },
+        { "boost": 0.01, "healthGained": 0.015, "boostAfter": 0 },
+        { "boost": 5, "healthGained": 0.5, "boostAfter": 4.625 },
+        { "boost": 10, "healthGained": 0.5, "boostAfter": 9.625 },
+        { "boost": 15, "healthGained": 0.5, "boostAfter": 14.625 },
+        { "boost": 20, "healthGained": 0.5, "boostAfter": 19.625 },
+        { "boost": 24.99, "healthGained": 0.5, "boostAfter": 24.615 },
+        { "boost": 25, "healthGained": 0.5075, "boostAfter": 24.625 },
+        { "boost": 25.01, "healthGained": 0.5225, "boostAfter": 24.635 },
+        { "boost": 30, "healthGained": 1.25, "boostAfter": 29.625 },
+        { "boost": 35, "healthGained": 1.25, "boostAfter": 34.625 },
+        { "boost": 40, "healthGained": 1.25, "boostAfter": 39.625 },
+        { "boost": 45, "healthGained": 1.25, "boostAfter": 44.625 },
+        { "boost": 49.99, "healthGained": 1.25, "boostAfter": 49.615 },
+        { "boost": 50, "healthGained": 1.2525, "boostAfter": 49.625 },
+        { "boost": 50.01, "healthGained": 1.2575, "boostAfter": 49.635 },
+        { "boost": 55, "healthGained": 1.5, "boostAfter": 54.625 },
+        { "boost": 60, "healthGained": 1.5, "boostAfter": 59.625 },
+        { "boost": 65, "healthGained": 1.5, "boostAfter": 64.625 },
+        { "boost": 70, "healthGained": 1.5, "boostAfter": 69.625 },
+        { "boost": 75, "healthGained": 1.5, "boostAfter": 74.625 },
+        { "boost": 80, "healthGained": 1.5, "boostAfter": 79.625 },
+        { "boost": 85, "healthGained": 1.5, "boostAfter": 84.625 },
+        { "boost": 87.49, "healthGained": 1.5, "boostAfter": 87.115 },
+        { "boost": 87.5, "healthGained": 1.5025, "boostAfter": 87.125 },
+        { "boost": 87.51, "healthGained": 1.5075, "boostAfter": 87.135 },
+        { "boost": 90, "healthGained": 1.75, "boostAfter": 89.625 },
+        { "boost": 95, "healthGained": 1.75, "boostAfter": 94.625 },
+        { "boost": 99.99, "healthGained": 1.75, "boostAfter": 99.615 },
+        { "boost": 100, "healthGained": 1.75, "boostAfter": 99.625 }
+    ],
+    "fullDecay": { "seconds": 266.67, "totalHealing": 325.0125 }
+}
