@@ -278,7 +278,7 @@ test.describe("M2 weapons, loot and HUD", () => {
         expect(errors).toEqual([]);
     });
 
-    test("dying shows the death overlay and the sandbox respawns the player", async ({ page }) => {
+    test("dying shows the death screen and the sandbox respawns the player", async ({ page }) => {
         const errors = collectErrors(page);
         await boot(page, "/?sandbox=1&map=main&seed=1&dummies=1&loot=0");
         const before = await page.evaluate(() => {
@@ -293,12 +293,18 @@ test.describe("M2 weapons, loot and HUD", () => {
             return r.player.id as number;
         });
         await page.waitForFunction(() => (window as any).__rebirth.local.dead === true, null, { timeout: 10_000 });
-        await expect(page.locator("#ui-death")).toBeVisible();
-        await expect(page.locator("#ui-death-title")).toHaveText("You died.");
-        await expect(page.locator("#ui-death-killer")).toHaveText("dummy 1 killed YOU");
         await expect(page.locator("#ui-health-actual")).toHaveCSS("width", "0px");
+        // M4: the original stats screen replaced the M2 overlay; the killer is named in the kill feed
+        await page.waitForFunction(() => (window as any).__rebirth.match.gameOver.settled === true, null, {
+            timeout: 20_000,
+        });
+        await expect(page.locator("#ui-stats")).toBeVisible();
+        await expect(page.locator(".ui-stats-header-title")).toHaveText("You died.");
+        expect(await page.evaluate(() => (window as any).__rebirth.match.killFeed)).toContain(
+            "dummy 1 killed player with AK-47",
+        );
         await page.screenshot({ path: `${SCREENS}/death.png` });
-        await page.locator("#ui-death-respawn").click();
+        await page.locator(".ui-stats-restart").click();
         await page.waitForFunction(
             (old) => {
                 const r = (window as any).__rebirth;
@@ -307,7 +313,7 @@ test.describe("M2 weapons, loot and HUD", () => {
             before,
             { timeout: 10_000 },
         );
-        await expect(page.locator("#ui-death")).toBeHidden();
+        await expect(page.locator("#ui-stats")).toBeHidden();
         expect(errors).toEqual([]);
     });
 });

@@ -1,8 +1,10 @@
 // Boots a game: the loopback simulation (default), a game on the server (`net`), or the renderer fixture, and
-// exposes the test surface on window.__rebirth.
+// exposes the test surface on window.__rebirth. "Play New Game" respawns the local player in a sandbox, and
+// otherwise tears the client down and boots a fresh game (a new loopback match, or a new WebSocket game).
 import type { Vec2 } from "@rebirth/core";
 import type { Application } from "pixi.js";
 import { TextureStore } from "../assets/textures.ts";
+import { AudioEngine } from "../audio/audio.ts";
 import { FixtureTransport } from "../dev/fixtures.ts";
 import { debugGlobals } from "../globals.ts";
 import { LoopbackTransport } from "../net/loopback.ts";
@@ -10,6 +12,7 @@ import type { Transport } from "../net/transport.ts";
 import { describeDisconnect, WsTransport } from "../net/ws.ts";
 import type { PlayerRender } from "../objects/player.ts";
 import { GameClient } from "./client.ts";
+import { gasStagesFor } from "./gasStages.ts";
 
 export interface SandboxOptions {
     mapName: string;
@@ -24,6 +27,13 @@ export interface SandboxOptions {
     loot?: boolean;
     /** gun id given to the local player in slot 1 with full ammo */
     give?: string;
+    /**
+     * Loopback match rules: true (default) for the sandbox (starts at once, never ends, always joinable); false for
+     * a real match (two players alive for 10 s start it, the last one alive wins).
+     */
+    sandbox?: boolean;
+    /** red-zone stage table: "fast" for the shortened one (gasStages.ts), else the original */
+    gas?: string;
     /** play on a game server instead of the loopback simulation */
     net?: {
         /** HTTP origin of the server; "" uses the page's origin (the Vite dev server proxies /api and /play) */
@@ -32,51 +42,90 @@ export interface SandboxOptions {
     };
 }
 
+/** textures and the (unlocked) audio engine outlive a game, so a new game starts warm */
+let sharedTextures: TextureStore | null = null;
+let sharedAudio: AudioEngine | null = null;
+
 export function bootSandbox(app: Application, opts: SandboxOptions): GameClient {
-    const textures = new TextureStore();
+    sharedTextures ??= new TextureStore();
+    sharedAudio ??= new AudioEngine();
+    const textures = sharedTextures;
+    const globals = debugGlobals();
     let transport: Transport;
     let loopback: LoopbackTransport | null = null;
     let ws: WsTransport | null = null;
     if (opts.fixture) {
         transport = new FixtureTransport();
     } else if (opts.net) {
-        ws = new WsTransport({
+        const conn = new WsTransport({
             baseUrl: opts.net.server,
             name: opts.net.name,
             mapName: opts.mapName,
             onDisconnect: (reason) => {
-                debugGlobals().disconnect = { reason, message: describeDisconnect(reason) };
-                console.warn(`disconnected: ${describeDisconnect(reason)}`);
+                const normal = conn.endedNormally;
+                globals.disconnect = { reason, normal, message: describeDisconnect(reason) };
+                if (!normal) console.warn(`disconnected: ${describeDisconnect(reason)}`);
             },
         });
+        ws = conn;
         transport = ws;
     } else {
         loopback = new LoopbackTransport(
             { mapName: opts.mapName, seed: opts.seed },
-            { init: { spawnLoot: opts.loot ?? true }, dummies: opts.dummies, give: opts.give },
+            {
+                init: {
+                    spawnLoot: opts.loot ?? true,
+                    sandbox: opts.sandbox ?? true,
+                    gasStages: gasStagesFor(opts.gas),
+                },
+                dummies: opts.dummies,
+                give: opts.give,
+            },
         );
         transport = loopback;
     }
     const lb = loopback;
-    const client = new GameClient(app, transport, textures, {
+    let client: GameClient | null = null;
+    const playAgain = (): void => {
+        if (lb && (opts.sandbox ?? true)) {
+            lb.respawn();
+            return;
+        }
+        client?.destroy();
+        bootSandbox(app, opts);
+    };
+    client = new GameClient(app, transport, textures, {
         showDebugHud: opts.showDebugHud,
         debugZoom: opts.debugZoom,
-        onRespawn: lb ? () => lb.respawn() : ws ? () => location.reload() : undefined,
-        playerName: lb ? (id) => lb.playerName(id) : undefined,
+        onPlayAgain: playAgain,
+        audio: sharedAudio,
     });
-
-    const globals = debugGlobals();
+    exposeGlobals(client, transport, loopback, playAgain);
     globals.mode = loopback ? "loopback" : ws ? "network" : "fixture";
+    globals.disconnect = undefined;
+    return client;
+}
+
+function exposeGlobals(
+    client: GameClient,
+    transport: Transport,
+    loopback: LoopbackTransport | null,
+    playAgain: () => void,
+): void {
+    const globals = debugGlobals();
+    const textures = client.textures;
     transport.onSnapshot((s) => {
         globals.lastSnapshot = s;
     });
     globals.client = client;
     globals.transport = transport;
     globals.game = loopback?.game;
+    globals.playAgain = playAgain;
     globals.player = {
         get id() {
             return client.localId;
         },
+        /** the followed player's position (the spectated player while spectating) */
         get pos() {
             return { x: client.localPos.x, y: client.localPos.y };
         },
@@ -134,6 +183,13 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
         get visible() {
             return !!client.minimap?.container.visible;
         },
+        get indicators() {
+            return client.minimap?.indicators.count ?? 0;
+        },
+        /** red zone, safe-zone ring and line drawn on the minimap */
+        get gas() {
+            return client.minimap?.gas.state ?? null;
+        },
     };
     globals.hud = {
         get visible() {
@@ -145,5 +201,57 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
             return textures.loadedCount;
         },
     };
-    return client;
+    const match = client.match;
+    globals.match = {
+        get activeId() {
+            return client.activeId;
+        },
+        get spectating() {
+            return match.spectating;
+        },
+        get aliveCount() {
+            return match.aliveCount;
+        },
+        get localKills() {
+            return match.localKills;
+        },
+        get killFeed() {
+            return match.hud.killFeed.visibleTexts();
+        },
+        get announcement() {
+            return match.hud.announcementText;
+        },
+        get gameOver() {
+            const s = match.gameOver;
+            return { visible: s.visible, won: s.won, settled: s.settled };
+        },
+    };
+    globals.gas = {
+        get active() {
+            return match.gas.active;
+        },
+        get mode() {
+            return match.gas.mode;
+        },
+        get timeLeft() {
+            return match.gas.timeLeft();
+        },
+        get circle() {
+            return match.gas.circle(1);
+        },
+        get safeZone() {
+            return match.gas.safeZone();
+        },
+        get overlayVisible() {
+            return client.gasOverlay.display.visible;
+        },
+    };
+    globals.air = {
+        get planes() {
+            return client.air?.counts.planes ?? 0;
+        },
+        get airdrops() {
+            return client.air?.counts.airdrops ?? 0;
+        },
+    };
 }

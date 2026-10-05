@@ -73,6 +73,20 @@ function chip(image: string, color: number | (() => number), opts: Partial<Parti
     };
 }
 
+/** a piece of an air drop crate (survev particles.ts airdropCrate01/02) */
+function crateShell(image: string, drag: Range, rotVel: Range): ParticleDef {
+    return {
+        image: [image],
+        life: [0.85, 1.15],
+        drag,
+        rotVel,
+        scaleStart: 0.5,
+        scaleEnd: 0.4,
+        alphaLerp: [0.9, 1],
+        color: 0xffffff,
+    };
+}
+
 /** debris that tumbles (wood chips, leaves) */
 const tumbling = { life: [0.5, 1], drag: [1, 5], rotVel: [PI * 3, PI * 3], alphaLerp: [0.9, 1] } as const;
 const shard = { drag: [1, 5], rotVel: [PI, PI * 6] } as const;
@@ -128,4 +142,20 @@ export const PARTICLE_DEFS: Readonly<Record<string, ParticleDef>> = {
     pinkChip: chip("part-spark-02.img", () => hsv(0, 0.52, rnd(0.98, 1)), tumbling),
     ltblueChip: chip("part-spark-02.img", () => hsv(0.5, 0.65, rnd(0.98, 1)), tumbling),
     yellowChip: chip("part-spark-02.img", () => hsv(0.16, 0.73, rnd(0.98, 1)), tumbling),
+    // M4 air drops: landing smoke, the lid flying off an opened crate and the shell pieces of a burst crate
+    airdropSmoke: {
+        image: ["part-smoke-02.img", "part-smoke-03.img"],
+        zOrd: 499,
+        life: [1, 1.5],
+        drag: 0,
+        rotVel: [PI * 0.25, PI * 0.5],
+        scaleStart: [0.67, 0.72],
+        scaleEnd: [0.55, 0.61],
+        alphaLerp: [0.9, 1],
+        color: () => hsv(0, 0, rnd(0.9, 0.95)),
+    },
+    airdropCrate01: crateShell("part-airdrop-01.img", [2, 2.25], [PI, PI * 2]),
+    airdropCrate01x: crateShell("part-airdrop-01x.img", [2, 2.25], [PI, PI * 2]),
+    airdropCrate02: crateShell("part-airdrop-02.img", [1.85, 2.15], [0, PI * 2]),
+    airdropCrate02x: crateShell("part-airdrop-02x.img", [1.85, 2.15], [0, PI * 2]),
 };

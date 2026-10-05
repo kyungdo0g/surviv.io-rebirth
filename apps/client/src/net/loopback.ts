@@ -1,6 +1,8 @@
 // Runs the authoritative simulation inside the page: fixed TICK_HZ steps driven by requestAnimationFrame through
 // an accumulator, a snapshot every SNAPSHOT_EVERY_TICKS ticks, and the local input applied before each step.
-// Sandbox extras: standing dummy players in front of the local player, a starting gun, and respawning.
+// Sandbox extras: standing dummy players in front of the local player, a starting gun, and respawning. The caller
+// picks the match rules through `extras.init` (GameInit: `sandbox` for a match that starts at once and never ends,
+// `gasStages` for a shortened red zone).
 import { v2 } from "@rebirth/core";
 import { GameObjectDefs, WeaponSlot } from "@rebirth/defs";
 import {
@@ -11,6 +13,7 @@ import {
     type GameOptions,
     type PlayerInput,
     SNAPSHOT_EVERY_TICKS,
+    type SpectateActionName,
     TICK_HZ,
 } from "@rebirth/sim";
 import { type Transport, TransportEvents } from "./transport.ts";
@@ -71,6 +74,10 @@ export class LoopbackTransport implements Transport {
 
     sendInput(input: PlayerInput): void {
         if (!this.closed) this.game.setInput(this.playerId, input);
+    }
+
+    spectate(action: SpectateActionName): void {
+        if (!this.closed) this.game.spectate(this.playerId, action);
     }
 
     playerName(id: number): string | undefined {

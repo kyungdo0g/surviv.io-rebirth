@@ -1,7 +1,9 @@
 // Bottom-left minimap like the original (survev client/src/ui/ui.ts redraw/m_render and client/src/map.ts
 // renderMap): the whole map is rendered once into a texture (terrain + every map object whose definition has
 // map.display, using map.color and map.scale), shown at 80% alpha inside a masked 256 px square that scrolls so
-// the local player stays centered, with the player dot and the camera's view rectangle on top.
+// the local player stays centered, with the player dot and the camera's view rectangle on top. M4: the red zone,
+// the next safe zone and the line to it, and the map indicators (air drop pings) are drawn over the map texture
+// inside the same mask (mapMarkers.ts).
 import { collider, math, type Vec2 } from "@rebirth/core";
 import {
     type BuildingDef,
@@ -11,12 +13,14 @@ import {
     MapObjectDefs,
     type ObstacleDef,
 } from "@rebirth/defs";
-import type { MapData, TerrainShape } from "@rebirth/sim";
+import type { MapData, MapIndicatorView, TerrainShape } from "@rebirth/sim";
 import { type Application, Container, Graphics, RenderTexture, Sprite, Text } from "pixi.js";
 import type { TextureStore } from "../assets/textures.ts";
+import type { GasTracker } from "../fx/gas.ts";
 import { drawTerrain } from "../map/terrain.ts";
 import { buildingLocalBounds } from "../objects/building.ts";
 import type { Camera } from "../render/camera.ts";
+import { MapIndicators, MinimapGas } from "./mapMarkers.ts";
 
 const MARGIN = 16;
 const SIZE = 256;
@@ -59,9 +63,20 @@ export function uiScale(width: number, height: number): number {
     return Math.min(1, math.clamp(width / 1280, 0.75, 1) * math.clamp(height / 1024, 0.75, 1));
 }
 
+export interface MinimapFrame {
+    dt: number;
+    gas: GasTracker | null;
+    /** interpolation blend between the last two snapshots (the moving red zone) */
+    alpha: number;
+}
+
 export class Minimap {
     readonly container = new Container({ label: "minimap" });
+    /** everything clipped to the minimap square: map, gas, indicators */
+    private readonly clip = new Container({ label: "minimap-clip" });
     private readonly mapSprite: Sprite;
+    readonly gas = new MinimapGas();
+    readonly indicators: MapIndicators;
     private readonly mask = new Graphics();
     private readonly border = new Graphics();
     private readonly viewRect = new Graphics();
@@ -85,15 +100,16 @@ export class Minimap {
         textures.apply(this.playerInner, "player-map-inner.img", 0.2);
         // the local player is in their own group: group color 0 (survev ui.ts updatePlayerMapSprites)
         this.playerInner.tint = GameConfig.groupColors[0];
-        this.container.addChild(
-            this.mapSprite,
-            this.viewRect,
-            this.playerOuter,
-            this.playerInner,
-            this.border,
-            this.mask,
-        );
-        this.mapSprite.mask = this.mask;
+        this.indicators = new MapIndicators(textures);
+        // survev ui.ts container order: map, gas, safe zone, map sprites (pings), player dots, border
+        this.clip.addChild(this.mapSprite, this.gas.container, this.indicators.container);
+        this.container.addChild(this.clip, this.viewRect, this.playerOuter, this.playerInner, this.border, this.mask);
+        this.clip.mask = this.mask;
+    }
+
+    /** Applies a snapshot's map indicators; returns the ping defs that just appeared (for their sounds). */
+    applyIndicators(list: readonly MapIndicatorView[]): Array<{ sound?: string }> {
+        return this.indicators.apply(list);
     }
 
     static renderMapTexture(app: Application, map: MapData, terrain: TerrainShape): RenderTexture {
@@ -173,7 +189,7 @@ export class Minimap {
     }
 
     /** Lays the minimap out for the screen and scrolls it to `playerPos`. */
-    update(camera: Camera, playerPos: Vec2): void {
+    update(camera: Camera, playerPos: Vec2, frame?: MinimapFrame): void {
         const scale = uiScale(camera.screenWidth, camera.screenHeight);
         const size = SIZE * scale;
         const left = MARGIN;
@@ -212,6 +228,10 @@ export class Minimap {
         if (x1 > x0 && y1 > y0)
             this.viewRect.rect(x0, y0, x1 - x0, y1 - y0).stroke({ width: 1, color: 0xffffff, alpha: 0.6 });
 
+        const proj = { toMap: px, pxPerUnit: mapSize / this.map.width, uiScale: scale, rect: this.rect };
+        if (frame?.gas) this.gas.update(proj, frame.gas, playerPos, frame.alpha);
+        this.indicators.update(frame?.dt ?? 0, proj);
+
         this.playerOuter.position.set(center.x, center.y);
         this.playerOuter.scale.set(0.3 * scale);
         this.playerInner.position.set(center.x, center.y);
@@ -219,6 +239,7 @@ export class Minimap {
     }
 
     destroy(): void {
+        this.indicators.clear();
         this.container.destroy({ children: true });
         this.texture.destroy(true);
     }

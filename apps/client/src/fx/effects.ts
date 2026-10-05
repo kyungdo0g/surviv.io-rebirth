@@ -1,13 +1,15 @@
 // Sounds and particles driven by the game state: shots and tracers (via BulletSystem), reload and item-use
 // sounds, casings, melee swings and hits, and the local player's weapon switch, pickup and dry-fire sounds.
 // Behaviour follows survev client/src/objects/player.ts (update: switch sounds; playActionStartEffect;
-// animPlaySound; animMeleeCollision), shot.ts (casings, cycle/pull sounds) and the PickupMsg handler.
+// animPlaySound; animMeleeCollision), shot.ts (casings, cycle/pull sounds) and the PickupMsg handler. M4: button
+// use and obstacle destruction effects (survev obstacle.ts: use particle + on/off sound, 5-10 explode particles
+// + explode sound).
 import { collider, math, type Vec2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, type GunDef, MapObjectDefs, type MeleeDef, type ObstacleDef } from "@rebirth/defs";
 import type { LocalPlayerState, ObstacleView, PlayerView, Snapshot } from "@rebirth/sim";
 import type { AudioEngine, SoundHandle } from "../audio/audio.ts";
 import type { AnimEffect } from "../objects/anims.ts";
-import type { PlayerFx } from "../objects/types.ts";
+import type { ObstacleFx, PlayerFx } from "../objects/types.ts";
 import type { ObjectWorld } from "../objects/world.ts";
 import type { BulletScene, BulletSystem } from "./bullets.ts";
 import type { ParticleSystem } from "./particles.ts";
@@ -32,7 +34,7 @@ function gunDef(id: string): GunDef | undefined {
     return def?.type === "gun" ? def : undefined;
 }
 
-export class GameEffects implements PlayerFx, BulletScene {
+export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
     readonly audio: AudioEngine;
     readonly particles: ParticleSystem;
     readonly bullets: BulletSystem;
@@ -321,6 +323,36 @@ export class GameEffects implements PlayerFx, BulletScene {
             this.particles.add(h.particle, h.layer, h.pos, h.vel, { zOrd: PLAYER_FX_Z_ORD });
             h.sound();
         }
+    }
+
+    obstacleButton(view: ObstacleView, center: Vec2): void {
+        const def = MapObjectDefs[view.type] as ObstacleDef | undefined;
+        const button = def?.button;
+        if (!button || !view.button) return;
+        if (button.useParticle) {
+            const ang = Math.random() * Math.PI * 2;
+            const speed = 5 + Math.random() * 10;
+            this.particles.add(button.useParticle, view.layer, center, {
+                x: Math.cos(ang) * speed,
+                y: Math.sin(ang) * speed,
+            });
+        }
+        const sound = view.button.onOff ? button.sound.on : button.sound.off;
+        this.audio.playSound(sound, { channel: "sfx", pos: view.pos, layer: view.layer });
+    }
+
+    obstacleDestroyed(view: ObstacleView, center: Vec2): void {
+        const def = MapObjectDefs[view.type] as ObstacleDef | undefined;
+        if (!def) return;
+        const particles = Array.isArray(def.explodeParticle) ? def.explodeParticle : [def.explodeParticle];
+        const count = Math.floor(5 + Math.random() * 6);
+        for (let i = 0; i < count && particles.length; i++) {
+            const ang = Math.random() * Math.PI * 2;
+            const speed = 5 + Math.random() * 10;
+            const type = particles[Math.floor(Math.random() * particles.length)];
+            this.particles.add(type, view.layer, center, { x: Math.cos(ang) * speed, y: Math.sin(ang) * speed });
+        }
+        this.audio.playSound(def.sound.explode, { channel: "sfx", pos: center, layer: view.layer });
     }
 
     clear(): void {

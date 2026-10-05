@@ -1,5 +1,7 @@
 // Obstacle sprite: definition image scaled by the obstacle's current scale, rotated by its orientation, tinted,
-// and swapped for the residue image once dead. Ordering follows survev client/src/objects/obstacle.ts.
+// and swapped for the residue image once dead; a used button shows its `useImg` (an opened air drop crate). A
+// button use and a destruction seen in view trigger their particles and sounds through the fx hooks. Ordering and
+// effects follow survev client/src/objects/obstacle.ts.
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
 import type { ObstacleView } from "@rebirth/sim";
@@ -28,6 +30,8 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
     private zIdx = 0;
     /** door casings stay where the closed door was (survev obstacle.ts door.closedPos) */
     private casingPos: Vec2 = { x: 0, y: 0 };
+    private buttonSeq = -1;
+    private wasDead = false;
 
     constructor(deps: ViewDeps, id: number) {
         this.deps = deps;
@@ -52,7 +56,13 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
             }
         }
         const img = this.def.img;
-        const current = (view.dead ? img.residue : img.sprite) ?? "";
+        let current = (view.dead ? img.residue : img.sprite) ?? "";
+        const buttonDef = this.def.button;
+        if (buttonDef && view.button) {
+            if (view.button.onOff && !view.dead && buttonDef.useImg) current = buttonDef.useImg;
+            else if (!view.button.canUse && buttonDef.offImg) current = buttonDef.offImg;
+        }
+        this.effects(view, isNew);
         if (current !== this.img || isNew) {
             this.img = current;
             this.deps.textures.apply(this.sprite, current, img.scale ?? 1);
@@ -64,6 +74,23 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
             this.zIdx = Math.floor(view.scale * 1000) * 65535 + view.id;
         }
         this.sprite.visible = current !== "";
+    }
+
+    /** Button and destruction effects for state changes seen while the obstacle is in view. */
+    private effects(view: ObstacleView, isNew: boolean): void {
+        const fx = this.deps.fx;
+        const seq = view.button?.seq ?? -1;
+        const used = !isNew && seq !== this.buttonSeq;
+        const destroyed = !isNew && view.dead && !this.wasDead;
+        this.buttonSeq = seq;
+        this.wasDead = view.dead;
+        if (!fx || (!used && !destroyed)) return;
+        const box = collider.toAabb(
+            collider.transform(this.def.collision, view.pos, math.oriToRad(view.ori), view.scale),
+        );
+        const center = { x: (box.min.x + box.max.x) / 2, y: (box.min.y + box.max.y) / 2 };
+        if (used) fx.obstacleButton?.(view, center);
+        if (destroyed) fx.obstacleDestroyed?.(view, center);
     }
 
     update(ctx: FrameContext, pos: Vec2): void {

@@ -1,5 +1,6 @@
 // Layered world scene, ordered like the original client (survev client/src/renderer.ts):
 //   terrain -> layer 0 (ground) -> underground fill -> layer 1 (underground) -> layer 2/3 (stairs, tall objects)
+// then the screen-space red zone (`gas`, above every world layer like survev game.ts) and the UI overlay.
 // Each layer is sorted by (zOrd, zIdx); views register their display objects every frame with `add()`.
 // World children live in "pixel space": 16 px per world unit at zoom 1 with +y down, i.e. (x, y) -> (16x, -16y).
 // The world root alone carries the camera transform, so moving the camera never touches individual sprites.
@@ -45,6 +46,8 @@ export class Renderer {
     readonly layers: Container[] = [];
     /** underground fill drawn between layer 0 and layer 1 */
     readonly undergroundFill = new Graphics();
+    /** screen-space red zone between the world and the UI (survev game.ts scene order: layers, then gas) */
+    readonly gas = new Container({ label: "gas" });
     /** screen-space UI on top of the world (minimap, HUD) */
     readonly overlay = new Container({ label: "overlay" });
     /** hides the stairs layer inside structure masks while viewing the ground (survev renderer.ts layerMask) */
@@ -72,7 +75,17 @@ export class Renderer {
         this.undergroundFill.visible = false;
         this.world.interactiveChildren = false;
         this.overlay.interactiveChildren = false;
-        app.stage.addChild(this.world, this.overlay);
+        this.gas.interactiveChildren = false;
+        app.stage.addChild(this.world, this.gas, this.overlay);
+    }
+
+    /** Removes the scene from the stage and frees it (the client is torn down for a new game). */
+    destroy(): void {
+        this.pool.clear();
+        for (const root of [this.world, this.gas, this.overlay]) {
+            root.removeFromParent();
+            root.destroy({ children: true });
+        }
     }
 
     /** Sets the underground fill color and the area it covers (the map plus its ocean border). */

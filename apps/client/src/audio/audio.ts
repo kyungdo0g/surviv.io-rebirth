@@ -3,7 +3,9 @@
 //   volume = channel volume x sound volume x base 0.5 x master 0.5, and for positional sounds on any channel but
 //   the local player's x (1 - d / range)^(1 + 2 fallOff), pan = horizontal offset / range; other layers x 0.5.
 // The AudioContext is only created on the first user gesture (autoplay policy). Files load lazily on first use (or
-// through `preload`) and are cached; a sound whose file is still loading plays only if it arrives promptly.
+// through `preload`) and are cached; a sound whose file is still loading plays only if it arrives promptly (or
+// whenever it arrives, for `late` sounds such as loops). Looping and moving sources (planes, falling crates) keep
+// their gain and pan nodes so `updateSound` can follow the source (survev audioManager.updateSound).
 import type { Vec2 } from "@rebirth/core";
 import { Channels, soundDef, soundGroup } from "./soundDefs.ts";
 
@@ -30,12 +32,24 @@ export interface PlayOptions {
     detune?: number;
     /** start delay in milliseconds */
     delay?: number;
+    /** loop until stopped */
+    loop?: boolean;
+    /** multiplies the channel's range for positional sounds (planes, air drops) */
+    rangeMult?: number;
+    /** start this many seconds into the file */
+    offset?: number;
+    /** start even when the positional volume is below the audible threshold (it is updated later) */
+    ignoreMinAllowable?: boolean;
+    /** start whenever the file finishes loading instead of dropping a sound that arrives late */
+    late?: boolean;
 }
 
 export interface SoundHandle {
     readonly name: string;
     source: AudioBufferSourceNode | null;
     stopped: boolean;
+    gain?: GainNode;
+    panner?: StereoPannerNode;
 }
 
 /** layers 0/1 are the ground/underground; stairs (2, 3) hear both (survev util.sameAudioLayer) */
@@ -157,18 +171,8 @@ export class AudioEngine {
         this.requested++;
         if (this.muted || !this.ctx) return null;
 
-        let volume = channel.volume * def.volume * BASE_VOLUME * (opts.volumeScale ?? 1);
-        let pan = 0;
-        if (opts.pos && channelName !== "activePlayer") {
-            const dx = this.cameraPos.x - opts.pos.x;
-            const dy = this.cameraPos.y - opts.pos.y;
-            const range = channel.maxRange > 0 ? channel.maxRange : 1;
-            const distNormal = Math.min(1, Math.hypot(dx, dy) / range);
-            volume *= (1 - distNormal) ** (1 + (opts.fallOff ?? 0) * 2);
-            pan = Math.max(-1, Math.min(1, -dx / range));
-        }
-        if (opts.layer !== undefined && !sameAudioLayer(opts.layer, this.activeLayer)) volume *= DIFF_LAYER_MULT;
-        if (volume <= MIN_VOLUME) return null;
+        const { volume, pan } = this.mix(channelName, def.volume, opts);
+        if (volume <= MIN_VOLUME && !opts.ignoreMinAllowable) return null;
         if ((this.playing.get(name) ?? 0) >= (def.maxInstances ?? MAX_INSTANCES) || this.active >= MAX_INSTANCES) {
             return null;
         }
@@ -180,7 +184,7 @@ export class AudioEngine {
         } else {
             const requestedAt = performance.now();
             void this.load(def.path).then((loaded) => {
-                if (loaded && !handle.stopped && performance.now() - requestedAt < LATE_PLAY_MS) {
+                if (loaded && !handle.stopped && (opts.late || performance.now() - requestedAt < LATE_PLAY_MS)) {
                     this.start(handle, loaded, volume, pan, opts);
                 }
             });
@@ -188,11 +192,41 @@ export class AudioEngine {
         return handle;
     }
 
+    /** Volume and stereo pan of a sound of `channelName` with definition volume `defVolume`. */
+    private mix(channelName: string, defVolume: number, opts: PlayOptions): { volume: number; pan: number } {
+        const channel = Channels[channelName];
+        let volume = channel.volume * defVolume * BASE_VOLUME * (opts.volumeScale ?? 1);
+        let pan = 0;
+        if (opts.pos && channelName !== "activePlayer") {
+            const dx = this.cameraPos.x - opts.pos.x;
+            const dy = this.cameraPos.y - opts.pos.y;
+            let range = channel.maxRange * (opts.rangeMult ?? 1);
+            if (!(range > 0)) range = 1;
+            const distNormal = Math.min(1, Math.hypot(dx, dy) / range);
+            volume *= (1 - distNormal) ** (1 + (opts.fallOff ?? 0) * 2);
+            pan = Math.max(-1, Math.min(1, -dx / range));
+        }
+        if (opts.layer !== undefined && !sameAudioLayer(opts.layer, this.activeLayer)) volume *= DIFF_LAYER_MULT;
+        return { volume, pan };
+    }
+
+    /** Moves a playing positional sound: recomputes its volume and pan for `opts.pos` (survev updateSound). */
+    updateSound(handle: SoundHandle | null | undefined, channelName: string, opts: PlayOptions): void {
+        if (!handle || handle.stopped || !handle.gain || !handle.panner) return;
+        const def = soundDef(handle.name, channelName);
+        if (!def || !Channels[channelName]) return;
+        const { volume, pan } = this.mix(channelName, def.volume, opts);
+        if (volume <= MIN_VOLUME && !opts.ignoreMinAllowable) return;
+        handle.gain.gain.value = volume;
+        handle.panner.pan.value = pan;
+    }
+
     private start(handle: SoundHandle, buffer: AudioBuffer, volume: number, pan: number, opts: PlayOptions): void {
         const ctx = this.ctx;
         if (!ctx || !this.master) return;
         const source = ctx.createBufferSource();
         source.buffer = buffer;
+        source.loop = !!opts.loop;
         if (opts.detune) source.detune.value = opts.detune;
         const gain = ctx.createGain();
         gain.gain.value = volume;
@@ -208,8 +242,11 @@ export class AudioEngine {
             source.disconnect();
             handle.source = null;
         };
-        source.start(ctx.currentTime + (opts.delay ?? 0) / 1000);
+        const offset = opts.offset ? opts.offset % buffer.duration : 0;
+        source.start(ctx.currentTime + (opts.delay ?? 0) / 1000, Math.max(0, offset));
         handle.source = source;
+        handle.gain = gain;
+        handle.panner = panner;
         this.started++;
     }
 

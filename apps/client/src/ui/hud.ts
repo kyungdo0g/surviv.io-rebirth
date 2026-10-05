@@ -1,7 +1,8 @@
 // DOM HUD over the canvas, laid out like the original desktop HUD (survev client/index.html + ui2.ts render; see
-// hud.css): scopes, kill counter, medical and ammo counts, interaction prompt, reload/use pie timer, clip and
-// reserve ammo, boost and health bars, gear levels, the four weapon slots and a death overlay with a respawn
-// button for the sandbox. `update` diffs against what is on screen and only touches changed properties.
+// hud.css): scopes, medical and ammo counts, interaction prompt, reload/use pie timer, clip and reserve ammo,
+// boost and health bars, gear levels and the four weapon slots. The battle-royale parts (alive counter, kill
+// leader, kill feed, red-zone timer, spectating) are in matchHud.ts and the death / win screen in gameOver.ts.
+// `update` diffs against what is on screen and only touches changed properties.
 import { GameConfig, GameObjectDefs, type GunDef, Input } from "@rebirth/defs";
 import type { LocalPlayerState } from "@rebirth/sim";
 import { lootImageUrl } from "../assets/hudImages.ts";
@@ -13,8 +14,6 @@ import { healthBarColor } from "./hudColors.ts";
 export interface HudCallbacks {
     /** queue a one-shot input action (defs `Input` value) */
     action(action: number): void;
-    /** sandbox respawn; the death overlay hides its button when absent */
-    respawn?: () => void;
 }
 
 export interface HudFrame {
@@ -22,8 +21,11 @@ export interface HudFrame {
     local: LocalPlayerState | null;
     /** interaction prompt ("[F] AK-47"), null when there is nothing to interact with */
     interaction: { key: string; text: string } | null;
-    /** name of the player who killed the local player, when known */
-    killerName?: string;
+    /**
+     * Client-side timed object use shown on the pie timer while no reload or item use runs (rebirth: the opening
+     * of an air drop crate, `button.useDelay`).
+     */
+    objectAction?: { label: string; time: number; duration: number } | null;
 }
 
 const MEDICAL = ["bandage", "healthkit", "soda", "painkiller"] as const;
@@ -99,7 +101,6 @@ export class Hud {
         (typeof GEAR)[number],
         { div: HTMLDivElement; image: HTMLImageElement; level: HTMLDivElement }
     >();
-    private readonly kills = el("span", { cls: "ui-player-kills" }, "0");
     private readonly interaction = el("div", { id: "ui-interaction" });
     private readonly interactionKey = el("div", { id: "ui-interaction-press" });
     private readonly interactionText = el("div", { id: "ui-interaction-description" });
@@ -113,9 +114,6 @@ export class Hud {
     private readonly pieArc = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     private readonly pieCount = el("div", { cls: "ui-pie-count" });
     private readonly pieLabel = el("div", { cls: "ui-pie-label" });
-    private readonly death = el("div", { id: "ui-death" });
-    private readonly deathTitle = el("div", { id: "ui-death-title" });
-    private readonly deathKiller = el("div", { id: "ui-death-killer" });
     /** local copy of the running action, advanced between snapshots */
     private action = { key: "", time: 0, duration: 0 };
     private lastLocal: LocalPlayerState | null = null;
@@ -125,7 +123,6 @@ export class Hud {
         this.root = el("div", { id: "ui-game" });
         this.root.append(
             this.buildScopes(),
-            this.buildKills(),
             this.buildRightCenter(),
             el("div", { id: "ui-lower-center" }, this.buildInteraction()),
             this.buildPie(),
@@ -137,7 +134,6 @@ export class Hud {
             this.buildBars(),
             this.buildGear(),
             this.buildWeapons(),
-            this.buildDeath(),
         );
         parent.append(this.root);
         this.applyStrings();
@@ -168,12 +164,6 @@ export class Hud {
             wrap.append(div);
         }
         return wrap;
-    }
-
-    private buildKills(): HTMLDivElement {
-        const header = el("div", { cls: "ui-kill-counter-header" });
-        header.dataset.l10n = "game-kills";
-        return el("div", { id: "ui-leaderboard-wrapper" }, el("div", { id: "ui-kill-counter" }, this.kills), header);
     }
 
     private buildRightCenter(): HTMLDivElement {
@@ -285,17 +275,6 @@ export class Hud {
         return el("div", { id: "ui-bottom-right" }, container);
     }
 
-    private buildDeath(): HTMLDivElement {
-        this.death.append(this.deathTitle, this.deathKiller);
-        if (this.cb.respawn) {
-            const button = el("div", { id: "ui-death-respawn", click: () => this.cb.respawn?.() });
-            button.dataset.l10n = "game-play-new-game";
-            this.death.append(button);
-        }
-        this.death.style.display = "none";
-        return this.death;
-    }
-
     /** Scope buttons only step through owned scopes, so send as many next/prev scope inputs as needed. */
     private selectScope(scope: string): void {
         const local = this.lastLocal;
@@ -319,13 +298,8 @@ export class Hud {
         this.updateWeapons(local);
         this.updateItems(local);
         this.updateGear(local);
-        this.updateAction(local, frame.dt);
+        this.updateAction(local, frame.dt, frame.objectAction ?? null);
         this.updateInteraction(local.dead ? null : frame.interaction);
-        this.updateDeath(local, frame.killerName);
-        const kills = String(local.kills ?? 0);
-        this.p.set("kills", kills, () => {
-            this.kills.textContent = kills;
-        });
     }
 
     private updateBars(local: LocalPlayerState): void {
@@ -436,14 +410,28 @@ export class Hud {
     }
 
     /** Reload / item-use pie timer: label, arc and countdown (survev pieTimer.ts, ui.ts updateActionTimer). */
-    private updateAction(local: LocalPlayerState, dt: number): void {
+    private updateAction(
+        local: LocalPlayerState,
+        dt: number,
+        objectAction: { label: string; time: number; duration: number } | null,
+    ): void {
         const a = local.action;
-        const running = !local.dead && !!a && a.type !== "none" && a.duration > 0;
-        const key = running ? `${a.type}|${a.item}|${a.duration}` : "";
-        if (key !== this.action.key || (running && Math.abs(a.time - this.action.time) > 0.25)) {
-            this.action = { key, time: running ? a.time : 0, duration: running ? a.duration : 0 };
-        } else if (running) {
-            this.action.time = Math.min(this.action.time + dt, this.action.duration);
+        const playerAction = !local.dead && !!a && a.type !== "none" && a.duration > 0;
+        const objectRunning = !playerAction && !local.dead && !!objectAction && objectAction.duration > 0;
+        const running = playerAction || objectRunning;
+        if (objectRunning && objectAction) {
+            this.action = {
+                key: `object|${objectAction.label}`,
+                time: objectAction.time,
+                duration: objectAction.duration,
+            };
+        } else {
+            const key = playerAction ? `${a.type}|${a.item}|${a.duration}` : "";
+            if (key !== this.action.key || (playerAction && Math.abs(a.time - this.action.time) > 0.25)) {
+                this.action = { key, time: playerAction ? a.time : 0, duration: playerAction ? a.duration : 0 };
+            } else if (playerAction) {
+                this.action.time = Math.min(this.action.time + dt, this.action.duration);
+            }
         }
         this.p.set("pie", running, () => {
             this.pie.style.display = running ? "block" : "none";
@@ -458,8 +446,10 @@ export class Hud {
             this.pie.style.top = `${top}px`;
         });
         let label = "";
-        if (a.type === "reload") label = t("game-reloading");
-        else label = isSov() ? `${itemName(a.item)} ${t("game-using")}` : `${t("game-using")} ${itemName(a.item)}`;
+        if (objectRunning && objectAction) label = objectAction.label;
+        else if (a?.type === "reload") label = t("game-reloading");
+        else if (a)
+            label = isSov() ? `${itemName(a.item)} ${t("game-using")}` : `${t("game-using")} ${itemName(a.item)}`;
         this.p.set("pieLabel", label, () => {
             this.pieLabel.textContent = label;
         });
@@ -480,23 +470,6 @@ export class Hud {
             if (!interaction) return;
             this.interactionKey.textContent = interaction.key;
             this.interactionText.textContent = interaction.text;
-        });
-    }
-
-    private updateDeath(local: LocalPlayerState, killerName?: string): void {
-        const dead = !!local.dead;
-        let killer = "";
-        if (dead && killerName && (local.killedBy ?? 0) > 0) {
-            // the original kill message: "<killer> killed YOU" (Korean keeps the verb last: "<killer> 이(가) 사살했습니다")
-            killer = isSov()
-                ? `${killerName} ${t("game-killed")}`
-                : `${killerName} ${t("game-killed")} ${t("game-you").toUpperCase()}`;
-        }
-        this.p.set("death", `${dead}|${killer}`, () => {
-            this.death.style.display = dead ? "block" : "none";
-            this.deathTitle.textContent = `${t("game-You")} ${t("game-you-died")}.`;
-            this.deathKiller.textContent = killer;
-            this.deathKiller.style.display = killer ? "block" : "none";
         });
     }
 

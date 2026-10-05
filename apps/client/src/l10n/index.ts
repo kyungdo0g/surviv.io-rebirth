@@ -31,6 +31,11 @@ export function t(key: string): string {
     return TABLES[lang].ui[key] ?? en[key] ?? key;
 }
 
+/** UI string by key, or "" when no table has it (the original's translate() for optional parts). */
+export function tryT(key: string): string {
+    return TABLES[lang].ui[key] ?? en[key] ?? "";
+}
+
 /** Localized item name (the original "game-<id>"), falling back to the definition name, then the id. */
 export function itemName(id: string): string {
     if (!id) return "";

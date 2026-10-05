@@ -175,6 +175,9 @@ export class FixtureTransport implements Transport {
         this.input = input;
     }
 
+    /** the fixture has no match: nobody dies, nothing to spectate */
+    spectate(): void {}
+
     close(): void {
         this.closed = true;
         cancelAnimationFrame(this.raf);

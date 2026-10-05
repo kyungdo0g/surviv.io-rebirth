@@ -1,11 +1,13 @@
-// How the client talks to a game: the in-browser loopback simulation now (M1), a WebSocket later (M3).
-import type { MapData, PlayerInput, Snapshot } from "@rebirth/sim";
+// How the client talks to a game: the in-browser loopback simulation (M1) or a WebSocket to a game server (M3).
+import type { MapData, PlayerInput, Snapshot, SpectateActionName } from "@rebirth/sim";
 
 export interface Transport {
     /** Called once with the static map and the local player's object id (immediately if already joined). */
     onJoin(cb: (map: MapData, playerId: number) => void): void;
     onSnapshot(cb: (s: Snapshot) => void): void;
     sendInput(input: PlayerInput): void;
+    /** Spectate request of the dead local player: begin, next or prev (the original Spectate message) (M4). */
+    spectate(action: SpectateActionName): void;
     close(): void;
 }
 

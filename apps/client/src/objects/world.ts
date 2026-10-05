@@ -121,6 +121,14 @@ export class ObjectWorld {
         return entry && this.interp.pos(id, now, entry.data.pos);
     }
 
+    /** Whether the local player stands under a building's roof (survev map.insideBuildingCeiling). */
+    localIndoors(): boolean {
+        for (const { render } of this.entries.values()) {
+            if (render instanceof BuildingRender && render.localInside) return true;
+        }
+        return false;
+    }
+
     update(ctx: FrameContext, now: number, view: ViewBounds): void {
         let visible = 0;
         for (const [id, entry] of this.entries) {

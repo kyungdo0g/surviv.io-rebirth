@@ -1,15 +1,18 @@
 // Network transport (M3): POST /api/find_game on the game server, open the /play WebSocket, Join, then hand the
 // decoded Map and Update messages (exact MapData / Snapshot shapes) to the client through the Transport interface.
 // Inputs are throttled to one message per 60 Hz frame, sent at once when they change and repeated every second
-// otherwise (packages/protocol InputThrottle).
+// otherwise (packages/protocol InputThrottle). A dead player's spectate requests go out as Spectate messages. The
+// server closes a finished game 1.8 s after its winner was decided with a `game_closed` disconnect; after this
+// client saw its GameOver result that is the normal end of the game, not an error (`endedNormally`).
 import {
     DisconnectReason,
     GameConnection,
     type GameConnectionOptions,
     InputThrottle,
     MsgType,
+    SpectateAction,
 } from "@rebirth/protocol";
-import type { PlayerInput } from "@rebirth/sim";
+import type { PlayerInput, SpectateActionName } from "@rebirth/sim";
 import { type Transport, TransportEvents } from "./transport.ts";
 
 export interface WsTransportOptions extends GameConnectionOptions {
@@ -53,6 +56,8 @@ export class WsTransport implements Transport {
     private pingTimer: ReturnType<typeof setInterval> | null = null;
     private joined = false;
     private closed = false;
+    /** a GameOver result arrived (the game_closed disconnect that follows is expected) */
+    private sawGameOver = false;
 
     constructor(opts: WsTransportOptions = {}) {
         this.connection = new GameConnection(opts);
@@ -66,11 +71,12 @@ export class WsTransport implements Transport {
             }
         });
         this.connection.onUpdate((msg) => {
+            if (msg.snapshot.gameOver) this.sawGameOver = true;
             if (this.joined && !this.closed) this.events.emitSnapshot(msg.snapshot);
         });
         this.connection.onDisconnect((reason) => {
             this.stopTimers();
-            if (reason !== "closed") console.warn(`disconnected: ${reason}`);
+            if (reason !== "closed" && !this.endedNormally) console.warn(`disconnected: ${reason}`);
             for (const cb of this.disconnectCbs) cb(reason);
         });
         this.ready = this.connection.connect().then(() => {
@@ -82,6 +88,12 @@ export class WsTransport implements Transport {
         });
         // failures are reported through onDisconnect; keep the rejection from going unhandled
         this.ready.catch(() => {});
+    }
+
+    /** The connection ended the normal way: closed by us, or the server closed the game after our GameOver. */
+    get endedNormally(): boolean {
+        const reason = this.connection.disconnectReason;
+        return reason === "closed" || (reason === DisconnectReason.GameClosed && this.sawGameOver);
     }
 
     /** latest measured round trip in ms (-1 before the first Pong) */
@@ -105,6 +117,13 @@ export class WsTransport implements Transport {
 
     sendInput(input: PlayerInput): void {
         if (!this.closed && this.joined) this.throttle.push(input);
+    }
+
+    spectate(action: SpectateActionName): void {
+        if (this.closed || !this.joined) return;
+        const value =
+            action === "begin" ? SpectateAction.Begin : action === "next" ? SpectateAction.Next : SpectateAction.Prev;
+        this.connection.send({ type: MsgType.Spectate, action: value });
     }
 
     close(): void {

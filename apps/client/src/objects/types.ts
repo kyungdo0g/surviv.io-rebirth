@@ -1,7 +1,7 @@
 // Shared shapes of the per-object views that turn snapshot ObjectViews into Pixi display objects.
 import type { Vec2 } from "@rebirth/core";
 import type { MapDef } from "@rebirth/defs";
-import type { ObjectView, PlayerView } from "@rebirth/sim";
+import type { ObjectView, ObstacleView, PlayerView } from "@rebirth/sim";
 import type { TextureStore } from "../assets/textures.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import type { Renderer } from "../render/renderer.ts";
@@ -17,12 +17,20 @@ export interface PlayerFx {
     shot(player: PlayerView, pos: Vec2, dir: Vec2): void;
 }
 
+/** Hooks the obstacle view calls for sounds and particles (implemented by fx/effects.ts) (M4). */
+export interface ObstacleFx {
+    /** a button was used (`button.seq` changed): use particle and on/off sound */
+    obstacleButton(view: ObstacleView, center: Vec2): void;
+    /** the obstacle was destroyed while in view: explode particles and sound */
+    obstacleDestroyed(view: ObstacleView, center: Vec2): void;
+}
+
 /** Long-lived services every view needs. */
 export interface ViewDeps {
     renderer: Renderer;
     textures: TextureStore;
     mapDef: MapDef;
-    fx?: PlayerFx;
+    fx?: PlayerFx & Partial<ObstacleFx>;
 }
 
 /** Per-frame state handed to every view. */

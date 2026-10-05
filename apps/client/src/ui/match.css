@@ -1,0 +1,596 @@
+/*
+ * Battle-royale HUD and the stats screen, sized and coloured like the original desktop HUD (survev
+ * client/css/game.css and app.css; docs/research/ui/hud.md). The HUD parts live in #ui-game (click-through except
+ * [data-hud-click]); #ui-stats is its own full-screen layer.
+ */
+
+/* top right: alive counter, kill counter (big map only) */
+#ui-leaderboard-wrapper {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 85px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#ui-leaderboard-alive {
+    display: none;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    margin-bottom: 8px;
+    padding: 8px;
+    height: 64px;
+    width: 72px;
+    line-height: 64px;
+}
+
+.ui-players-alive,
+.ui-player-kills {
+    position: relative;
+    font-size: 54px;
+}
+
+.ui-leaderboard-header,
+.ui-kill-counter-header {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+#ui-kill-counter-wrapper {
+    display: none;
+    margin-top: 32px;
+}
+
+#ui-kill-counter {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    margin-bottom: 8px;
+    padding: 8px;
+    height: 64px;
+    width: 72px;
+    line-height: 64px;
+}
+
+/* kill leader, left of the alive counter */
+#ui-kill-leader-wrapper {
+    position: absolute;
+    right: 112px;
+    top: 0;
+    white-space: nowrap;
+}
+
+#ui-kill-leader-name,
+#ui-kill-leader-count {
+    display: inline-block;
+    font-size: 24px;
+    text-shadow: 1px 1px #000000;
+}
+
+#ui-kill-leader-icon {
+    display: inline-block;
+    position: relative;
+    top: 12px;
+    width: 40px;
+    height: 40px;
+    margin: 0 4px;
+    border-radius: 20px;
+    background-color: rgba(0, 0, 0, 0.4);
+    background-image: url(/assets/img/gui/crosshair.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 32px;
+}
+
+/* kill feed: lines right-aligned 100 px left of the wrapper's right edge (under the kill leader) */
+#ui-killfeed-wrapper {
+    position: absolute;
+    top: 60px;
+    right: 12px;
+    display: flex;
+    font-size: 16px;
+}
+
+#ui-killfeed {
+    display: inline-block;
+    margin-left: 24px;
+    height: 100px;
+}
+
+#ui-killfeed-contents {
+    width: 800px;
+}
+
+#ui-killfeed-contents .killfeed-div {
+    position: absolute;
+    right: 100px;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 4px 8px;
+    border-radius: 2px;
+    height: 22px;
+    line-height: 24px;
+}
+
+.killfeed-div .killfeed-text {
+    float: left;
+    max-width: 550px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #efeeee;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-height: 864px) {
+    #ui-kill-leader-wrapper {
+        transform-origin: right;
+        transform: scale(0.8);
+    }
+}
+
+@media (min-width: 851px) and (max-height: 768px), (max-width: 1200px) {
+    #ui-killfeed-wrapper,
+    #ui-leaderboard-wrapper {
+        transform-origin: top right;
+        transform: scale(0.85);
+    }
+}
+
+/* top centre: waiting / spectating */
+#ui-top-center {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#ui-top-center .top-center-text {
+    text-align: center;
+    width: 100vw;
+    padding: 8px;
+}
+
+#ui-waiting-text {
+    display: none;
+    text-shadow: 2px 2px 0 #000000;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+#ui-spectate-text {
+    display: none;
+    position: relative;
+}
+
+.top-center-text .spectate-text {
+    display: inline-block;
+    text-shadow: 2px 2px 0 #000000;
+    font-size: 24px;
+    font-weight: bold;
+    overflow: hidden;
+    height: 32px;
+}
+
+.top-center-text .spectate-desc {
+    margin-right: 8px;
+}
+
+#spectate-player {
+    max-width: 250px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: cyan;
+}
+
+/* upper centre: announcements */
+#ui-upper-center {
+    position: absolute;
+    display: flex;
+    top: 180px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#ui-announcement {
+    display: none;
+    color: yellow;
+    text-shadow: 2px 2px 0 #000000;
+    font-size: 32px;
+    font-weight: bold;
+    text-align: center;
+    width: 100vw;
+}
+
+/* bottom centre: kill message */
+#ui-bottom-center-1 {
+    position: absolute;
+    bottom: 220px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+}
+
+@media (max-height: 768px), (max-width: 1200px) {
+    #ui-bottom-center-1 {
+        transform-origin: bottom;
+        transform: translateX(-50%) scale(0.85);
+        bottom: 138px;
+    }
+}
+
+#ui-kills {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    padding: 8px;
+    opacity: 0;
+    white-space: nowrap;
+}
+
+#ui-kill-text {
+    font-size: 18px;
+}
+
+#ui-kill-count {
+    font-weight: bold;
+    color: #ff4100;
+    font-size: 32px;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+/* above the minimap: red-zone timer and spectator counter (positioned and scaled by matchHud.ts) */
+#ui-map-info {
+    position: absolute;
+    width: 100px;
+    height: 36px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    transform-origin: left bottom;
+    white-space: nowrap;
+}
+
+#ui-gas-icon {
+    padding: 6px;
+    display: inline-block;
+    height: 24px;
+    width: 24px;
+    margin-left: 2px;
+    background-size: 24px;
+    background-repeat: no-repeat;
+    background-position: 6px 6px;
+}
+
+#ui-gas-icon.gas-icon {
+    background-image: url(/assets/img/gui/gas.svg);
+}
+
+#ui-gas-icon.danger-icon {
+    background-image: url(/assets/img/gui/danger.svg);
+}
+
+#ui-map-info.icon-pulse {
+    animation: ui-gas-pulse 2s linear infinite;
+}
+
+@keyframes ui-gas-pulse {
+    0% {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+    50% {
+        background-color: rgba(255, 0, 0, 0.8);
+    }
+    100% {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+}
+
+#ui-gas-timer {
+    position: relative;
+    display: inline-block;
+    font-size: 24px;
+    text-align: center;
+    bottom: 10px;
+}
+
+#ui-spec-counter {
+    display: none;
+    position: absolute;
+    width: 68px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    transform-origin: left bottom;
+}
+
+#ui-spec-counter-icon {
+    padding: 6px;
+    display: inline-block;
+    height: 24px;
+    width: 18px;
+    margin-left: 2px;
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: 6px 4px;
+    background-image: url(/assets/img/gui/eye.svg);
+}
+
+#ui-spec-counter-number {
+    position: relative;
+    display: inline-block;
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+    bottom: 15px;
+}
+
+/* top left: spectate options */
+#ui-spectate-options-wrapper {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+}
+
+#ui-spectate-options {
+    display: none;
+    position: relative;
+    pointer-events: auto;
+}
+
+#ui-spectate-buttons {
+    display: inline-block;
+    vertical-align: top;
+    padding: 8px 8px 0;
+    width: 192px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+}
+
+#ui-game .menu-option,
+#ui-stats .menu-option {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: 40px;
+    line-height: 38px;
+    margin-bottom: 8px;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    color: #ffffff;
+    font-size: 16px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+#ui-spectate-options .menu-option {
+    position: relative;
+    background: #50afab;
+    border-bottom: 2px solid #387c79;
+    box-shadow: inset 0 -2px #387c79;
+}
+
+#ui-game .btn-darken:hover,
+#ui-stats .btn-darken:hover {
+    filter: brightness(80%);
+    transition: all 0.25s ease;
+}
+
+#btn-spectate-prev-player {
+    margin-bottom: 24px;
+}
+
+#ui-spectate-stats {
+    display: none;
+    vertical-align: top;
+    margin-left: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+}
+
+#ui-spectate-stats-header {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 8px;
+}
+
+#ui-spectate-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#ui-spectate-stats td {
+    padding: 0 8px 8px 16px;
+    font-size: 18px;
+}
+
+.ui-spectate-stats-category {
+    width: 130px;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.ui-spectate-stats-value {
+    width: 75px;
+}
+
+/* rebirth addition: red vignette on red-zone damage (matchHud.ts GAS_DAMAGE_FLASH) */
+#ui-gas-flash {
+    display: none;
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0) 45%, rgba(255, 0, 0, 0.55) 100%);
+}
+
+/* stats screen */
+#ui-stats {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    color: #ffffff;
+    font-family: "Roboto Condensed", "Noto Sans KR", Arial, sans-serif;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#ui-stats-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.75);
+}
+
+#ui-stats-contents {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    transform: translateX(-50%);
+    text-align: center;
+    opacity: 0;
+}
+
+#ui-stats-contents-inner {
+    margin-top: 75px;
+}
+
+.ui-stats-header-title {
+    font-weight: bold;
+    font-size: 48px;
+    margin: 20px;
+    color: gold;
+}
+
+.ui-stats-header-overview {
+    display: inline;
+    margin: 10px;
+    font-size: 16px;
+}
+
+.ui-stats-header-overview div {
+    display: inline;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+.ui-stats-header-stat {
+    font-size: 24px;
+}
+
+.ui-stats-header-value {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+#ui-stats-info-box {
+    position: relative;
+    left: 50%;
+    margin: 50px auto 0;
+    height: 190px;
+    display: flex;
+}
+
+.ui-stats-info-player {
+    position: relative;
+    width: 250px;
+    background-color: rgba(0, 0, 0, 0.75);
+    border-radius: 4px;
+    border: 2px solid black;
+    transform: translateX(-50%);
+    z-index: 0;
+}
+
+.ui-stats-info-status::after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 15%;
+    left: 25%;
+    width: 100%;
+    height: 100%;
+    background-image: url(/assets/img/gui/skull.svg);
+    background-repeat: no-repeat;
+    background-size: 128px;
+    opacity: 0.1;
+    z-index: -1;
+}
+
+.ui-stats-info-player-name {
+    color: gold;
+    font-size: 24px;
+    font-weight: bold;
+    font-style: italic;
+    margin: 8px auto;
+    max-width: 240px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ui-stats-info {
+    display: flex;
+    height: 36px;
+    margin: auto;
+}
+
+.ui-stats-info > div {
+    padding: 8px;
+    font-size: 18px;
+    line-height: 12px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.ui-stats-info > div:first-child {
+    width: 55%;
+    margin-right: 4px;
+    text-align: right;
+    font-weight: normal;
+}
+
+#ui-stats-options {
+    position: absolute;
+    left: 50%;
+    margin-top: 20px;
+    min-height: 60px;
+    z-index: 1;
+}
+
+#ui-stats-options .menu-option {
+    pointer-events: auto;
+}
+
+.btn-green {
+    position: relative;
+    background: #83af50;
+    border-bottom: 2px solid #5b7a38;
+    box-shadow: inset 0 -2px #5b7a38;
+}
+
+#ui-stats .ui-stats-restart {
+    position: absolute;
+    left: -72px;
+    width: 200px;
+    margin: auto auto 20px;
+    transform: translateX(-50%);
+}
+
+#ui-stats .ui-stats-restart.ui-stats-restart-wide {
+    left: 0;
+    width: 225px;
+}
+
+#ui-stats .ui-stats-spectate {
+    position: absolute;
+    left: 102px;
+    width: 125px;
+    transform: translateX(-50%);
+    background: #50afab;
+    border-bottom: 2px solid #387c79;
+    box-shadow: inset 0 -2px #387c79;
+}

@@ -24,6 +24,11 @@ export class SpritePool {
         return sprite;
     }
 
+    /** Destroys the pooled sprites (textures are shared and stay alive). */
+    clear(): void {
+        for (const sprite of this.free.splice(0)) sprite.destroy();
+    }
+
     release(sprite: Sprite): void {
         sprite.removeFromParent();
         sprite.texture = Texture.EMPTY;

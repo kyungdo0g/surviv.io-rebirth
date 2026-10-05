@@ -59,6 +59,8 @@ export class BuildingRender implements ObjectRender<BuildingView> {
     private scale = 1;
     /** zoomIn regions in world space */
     private zoomIn: ViewBounds[] = [];
+    /** the local player stood under this roof last frame (planes fade out indoors) */
+    localInside = false;
     private localBounds: ViewBounds | null = null;
     private visionTicker = 0;
     /** 1 = ceiling fully drawn, 0 = hidden */
@@ -116,6 +118,7 @@ export class BuildingRender implements ObjectRender<BuildingView> {
     update(ctx: FrameContext, pos: Vec2): void {
         const vision = { ...DEFAULT_VISION, ...this.def.ceiling.vision };
         this.visionTicker -= ctx.dt;
+        this.localInside = this.canSeeInside(ctx) && !this.data.ceilingDead;
         if (this.canSeeInside(ctx)) this.visionTicker = vision.linger + 0.0001;
         const revealed = this.visionTicker > 0;
         const target = revealed ? 0 : 1;
