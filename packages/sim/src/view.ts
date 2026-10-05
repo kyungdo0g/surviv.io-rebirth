@@ -1,6 +1,14 @@
 // Contract between the simulation and its consumers (client renderer, network encoder, bots, tests).
 // The client only ever sees these view types: the loopback transport hands them over directly (M1) and the
 // network protocol encodes/decodes exactly these shapes later (M3). Keep them plain, serializable data.
+//
+// M2 additions (all backward compatible: new fields are optional in the types so hand-written views, e.g. the
+// client's dev fixtures, stay valid; the simulation always fills every one of them):
+// - PlayerView: `anim`, `action`, `shot`, `wearingPan`.
+// - LocalPlayerState: `scope`, `outfit`, `helmet`, `chest`, `backpack`, `action`, `cooldowns`, `kills`, `dead`,
+//   `killedBy`. `weapons` now carries the real per-slot ammo and `inventory` the real item counts.
+// - Snapshot: `bullets` (BulletEvent list: bullets fired near the viewer since its previous snapshot).
+// - New types: PlayerAnim, PlayerAction, PlayerShot, BulletEvent, AnimType, ActionType.
 import type { Vec2 } from "@rebirth/core";
 
 export interface RiverData {
@@ -76,6 +84,38 @@ export interface PlayerView extends BaseView {
     backpack: string;
     /** world units; 1 = default body size */
     scale: number;
+    /** current animation; `seq` increments every time an animation starts or is cancelled (M2) */
+    anim?: PlayerAnim;
+    /** current timed action (reload, item use); `seq` increments on every start and cancel (M2) */
+    action?: PlayerAction;
+    /** last gun shot, for muzzle flashes and recoil; `seq` increments on every trigger pull that fired (M2) */
+    shot?: PlayerShot;
+    /** a pan in the melee slot is worn on the back while another slot is selected (it reflects bullets) (M2) */
+    wearingPan?: boolean;
+}
+
+export type AnimType = "none" | "melee" | "cook" | "throw";
+
+export interface PlayerAnim {
+    type: AnimType;
+    seq: number;
+}
+
+export type ActionType = "none" | "reload" | "use";
+
+export interface PlayerAction {
+    type: ActionType;
+    seq: number;
+    /** GameObjectDefs id of the reloaded gun or used item; "" for none */
+    item: string;
+    /** total duration in seconds (0 for none) */
+    duration: number;
+}
+
+export interface PlayerShot {
+    seq: number;
+    /** dual guns alternate barrels: true when the last shot came from the off hand (left, +dualOffset) */
+    offHand: boolean;
 }
 
 export interface ObstacleView extends BaseView {
@@ -124,9 +164,60 @@ export interface LocalPlayerState {
     zoom: number;
     /** layer the camera renders (0 ground, 1 underground, 2/3 stairs) */
     layer: number;
+    /** the four weapon slots (primary, secondary, melee, throwable); ammo is the loaded magazine */
     weapons: Array<{ type: string; ammo: number }>;
     curWeapIdx: number;
+    /** item counts for every bag item (ammo, heals, boosts, throwables, scopes) */
     inventory: Record<string, number>;
+    /** equipped scope id, e.g. "1xscope" (M2) */
+    scope?: string;
+    /** worn gear ids; "" when empty (M2) */
+    outfit?: string;
+    helmet?: string;
+    chest?: string;
+    backpack?: string;
+    /** running timed action with its progress, for the reload/use bar (M2) */
+    action?: { type: ActionType; item: string; time: number; duration: number };
+    /** seconds until each weapon slot can fire/attack again (0 = ready) and until the next free switch (M2) */
+    cooldowns?: { weapons: number[]; freeSwitch: number };
+    kills?: number;
+    dead?: boolean;
+    /** id of the player credited with the kill, 0 when alive or killed by the environment */
+    killedBy?: number;
+}
+
+/**
+ * A bullet fired near the viewer since its previous snapshot (the original UpdateMsg bullet records). The client
+ * draws the tracer from `pos` along `dir` for at most `maxDist` units at the bullet def's speed.
+ * A bullet is reported once when fired; when it hits a player after that report it is reported once more with the
+ * same `id`, `hitPlayer` true and `endDist` set, so the client can stop the tracer there.
+ */
+export interface BulletEvent {
+    /** bullet id, unique within a game (not an object id) */
+    id: number;
+    /** player who fired it (0 for none) */
+    shooterId: number;
+    /** GameObjectDefs bullet id */
+    bulletType: string;
+    /** weapon that fired it (GameObjectDefs id) */
+    sourceType: string;
+    /** start position */
+    pos: Vec2;
+    /** unit direction */
+    dir: Vec2;
+    layer: number;
+    /** travel distance the client draws: the bullet's range cut at the first indestructible obstacle on its path */
+    maxDist: number;
+    /** 0 for a fired bullet, n for the n-th ricochet */
+    reflectCount: number;
+    /** whether the bullet hit a player (known when the bullet already stopped at report time) */
+    hitPlayer: boolean;
+    /** distance travelled when the bullet stopped; absent while it is still flying */
+    endDist?: number;
+    /** first bullet of a shot (muzzle flash, shot sound); false for extra pellets and ricochets */
+    shotFx: boolean;
+    /** dual guns: fired from the off hand */
+    offHand: boolean;
 }
 
 /** One simulation snapshot as seen by one player (the original UpdateMsg, decoded). */
@@ -140,6 +231,8 @@ export interface Snapshot {
     objects: ObjectView[];
     /** ids that left the view or were destroyed since the previous snapshot */
     deletedIds: number[];
+    /** bullets fired near the viewer since its previous snapshot (M2) */
+    bullets?: BulletEvent[];
 }
 
 /** Terrain polygons derived deterministically from MapData by `buildTerrain(map)` (client and server share it). */

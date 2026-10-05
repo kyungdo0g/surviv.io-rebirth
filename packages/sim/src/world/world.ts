@@ -5,13 +5,16 @@ import type { GenerateMapResult } from "../mapgen/generate.ts";
 import type { Terrain } from "../mapgen/terrain.ts";
 import { riverWaterAt } from "../mapgen/terrainQuery.ts";
 import type { MapData } from "../view.ts";
+import type { Loot } from "../loot/loot.ts";
 import { Building, createMapEntity, type MapEntity, Obstacle, Structure } from "./entities.ts";
 import type { Player } from "./player.ts";
 
-export type Entity = MapEntity | Player;
+export type Entity = MapEntity | Player | Loot;
 
 /** Broadphase cell size (survev server grid.ts). */
 const GRID_CELL_SIZE = 16;
+/** Long segments are queried in pieces of this length so the boxes stay small. */
+const SEGMENT_QUERY_STEP = 16;
 
 /** Layers 0 ground / 1 underground / 2-3 stairs; stair layers see both floors (survev util.sameLayer). */
 export function sameLayer(a: number, b: number): boolean {
@@ -82,6 +85,34 @@ export class World {
     /** Entities whose broadphase bounds touch `bounds`; `out` is reused when given. */
     query(bounds: Bounds, out: Entity[] = []): Entity[] {
         return this.grid.query(bounds, out);
+    }
+
+    /**
+     * Entities whose bounds touch the box around any piece of the segment a -> b (pieces of 16 units), each once,
+     * in first-seen order. A superset of what the segment touches; callers run the exact test.
+     */
+    querySegment(a: Vec2, b: Vec2, out: Entity[] = []): Entity[] {
+        out.length = 0;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const pieces = Math.max(1, Math.ceil(Math.hypot(dx, dy) / SEGMENT_QUERY_STEP));
+        const seen = new Set<number>();
+        for (let i = 0; i < pieces; i++) {
+            const x0 = a.x + (dx * i) / pieces;
+            const y0 = a.y + (dy * i) / pieces;
+            const x1 = a.x + (dx * (i + 1)) / pieces;
+            const y1 = a.y + (dy * (i + 1)) / pieces;
+            const box = {
+                min: { x: Math.min(x0, x1), y: Math.min(y0, y1) },
+                max: { x: Math.max(x0, x1), y: Math.max(y0, y1) },
+            };
+            for (const obj of this.grid.query(box, this.scratch)) {
+                if (seen.has(obj.id)) continue;
+                seen.add(obj.id);
+                out.push(obj);
+            }
+        }
+        return out;
     }
 
     /**

@@ -1,0 +1,83 @@
+// One-shot input actions (equip, reload, interact, scopes...) applied at the start of a player's tick.
+// Behaviour follows survev server/src/game/objects/player.ts handleInput.
+import { Input, WeaponSlot } from "@rebirth/defs";
+import { SCOPE_LEVELS } from "../items/inventory.ts";
+import { closestLoot, pickupLoot } from "../loot/pickup.ts";
+import type { SimContext } from "./context.ts";
+import type { Player } from "./player.ts";
+
+export function handleActions(ctx: SimContext, player: Player, actions: readonly number[]): void {
+    const wm = player.weaponManager;
+    for (const action of actions) {
+        // TODO(M6): downed players only accept Interact, Use, Revive and Cancel
+        switch (action) {
+            case Input.StowWeapons:
+            case Input.EquipMelee:
+                wm.setCurWeapIndex(WeaponSlot.Melee);
+                break;
+            case Input.EquipPrimary:
+                wm.setCurWeapIndex(WeaponSlot.Primary);
+                break;
+            case Input.EquipSecondary:
+                wm.setCurWeapIndex(WeaponSlot.Secondary);
+                break;
+            case Input.EquipThrowable:
+                // pressing it again cycles the throwable type
+                if (wm.curWeapIdx === WeaponSlot.Throwable) wm.showNextThrowable();
+                else wm.setCurWeapIndex(WeaponSlot.Throwable);
+                break;
+            case Input.EquipNextWeap:
+            case Input.EquipPrevWeap: {
+                const step = action === Input.EquipNextWeap ? 1 : -1;
+                let idx = wm.curWeapIdx;
+                for (let i = 0; i < WeaponSlot.Count; i++) {
+                    idx = (((idx + step) % WeaponSlot.Count) + WeaponSlot.Count) % WeaponSlot.Count;
+                    if (wm.weapons[idx].type) break;
+                }
+                wm.setCurWeapIndex(idx);
+                break;
+            }
+            case Input.EquipLastWeap:
+                wm.setCurWeapIndex(wm.lastWeaponIdx);
+                break;
+            case Input.EquipOtherGun: {
+                const targets = [WeaponSlot.Primary, WeaponSlot.Secondary, WeaponSlot.Melee].filter(
+                    (s) => s !== wm.curWeapIdx,
+                );
+                const slot = targets.find((s) => wm.weapons[s].type);
+                if (slot !== undefined) wm.setCurWeapIndex(slot);
+                break;
+            }
+            case Input.SwapWeapSlots:
+                wm.swapWeaponSlots();
+                break;
+            case Input.Reload:
+                wm.scheduledReload = true;
+                break;
+            case Input.Cancel:
+                player.cancelAction();
+                break;
+            case Input.Interact:
+            case Input.Loot: {
+                // TODO(M4): Interact also opens doors and revives teammates
+                const loot = closestLoot(ctx, player);
+                if (loot) pickupLoot(ctx, player, loot);
+                break;
+            }
+            case Input.EquipNextScope:
+            case Input.EquipPrevScope: {
+                const step = action === Input.EquipNextScope ? 1 : -1;
+                for (let i = SCOPE_LEVELS.indexOf(player.scope) + step; i >= 0 && i < SCOPE_LEVELS.length; i += step) {
+                    if (player.inv.has(SCOPE_LEVELS[i])) {
+                        player.scope = SCOPE_LEVELS[i];
+                        break;
+                    }
+                }
+                break;
+            }
+            // TODO(M5): UseBandage/UseHealthKit/UseSoda/UsePainkiller, EquipFragGrenade/EquipSmokeGrenade
+            default:
+                break;
+        }
+    }
+}
