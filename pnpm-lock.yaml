@@ -26,6 +26,15 @@ importers:
 
   apps/client:
     dependencies:
+      '@rebirth/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@rebirth/defs':
+        specifier: workspace:*
+        version: link:../../packages/defs
+      '@rebirth/sim':
+        specifier: workspace:*
+        version: link:../../packages/sim
       pixi.js:
         specifier: ^8.22.0
         version: 8.22.0
