@@ -1,0 +1,141 @@
+// Shared brain types: the Intent a decision produces (where to go, what to aim at, whether to fire, which slot to
+// hold, one-shot actions), the per-bot memory behaviours keep between decisions, and the context they read.
+import type { Rng, Vec2 } from "@rebirth/core";
+import type { DifficultyParams } from "../difficulty.ts";
+import type { HeldGun } from "../knowledge/arsenal.ts";
+import type { Contact, SelfState, WorldModel } from "../perception/world.ts";
+
+export type BehaviourName =
+    | "idle"
+    | "explore"
+    | "loot"
+    | "break"
+    | "fight"
+    | "flee"
+    | "heal"
+    | "zone"
+    | "revive"
+    | "regroup"
+    | "downed"
+    | "order";
+
+export interface ThrowPlan {
+    /** throwable to use (frag, mirv, smoke) */
+    item: string;
+    /** world point to land it on */
+    pos: Vec2;
+    /** seconds to cook before releasing */
+    cook: number;
+}
+
+export interface Intent {
+    behaviour: BehaviourName;
+    /** walk here (pathfinding); null: no destination */
+    goal: Vec2 | null;
+    arriveDist: number;
+    /** walk in this direction directly (overrides `goal`), e.g. strafing or backing off */
+    moveDir: Vec2 | null;
+    /** stand still (accuracy, reviving) */
+    stop: boolean;
+    /** world point to aim at; null: look where walking */
+    aim: Vec2 | null;
+    /** contact the aim tracks (0 for none); used for the reaction delay and the aim error */
+    targetId: number;
+    /** pull the trigger when the aim is on target */
+    fire: boolean;
+    /** weapon slot to hold; null: keep the current one */
+    slot: number | null;
+    /** one-shot input actions (defs Input values) */
+    actions: number[];
+    /** bag item to use (heal, boost) */
+    useItem: string;
+    /** grenade to throw */
+    throwPlan: ThrowPlan | null;
+}
+
+export function emptyIntent(behaviour: BehaviourName = "idle"): Intent {
+    return {
+        behaviour,
+        goal: null,
+        arriveDist: 1,
+        moveDir: null,
+        stop: false,
+        aim: null,
+        targetId: 0,
+        fire: false,
+        slot: null,
+        actions: [],
+        useItem: "",
+        throwPlan: null,
+    };
+}
+
+/** An order given to a bot from outside (tests, scripted scenarios): it overrides the brain. */
+export type BotOrder = { type: "goto"; pos: Vec2; arriveDist?: number } | { type: "hold" };
+
+/** State behaviours keep between decisions. */
+export class BrainMemory {
+    // fight
+    strafeSign = 1;
+    strafeUntil = 0;
+    standStill = false;
+    engagedTarget = 0;
+    engageStart = 0;
+    reaction = 0.3;
+    strafing = true;
+    useCover = false;
+    targetId = 0;
+    // loot
+    lootTarget = 0;
+    readonly lootBlacklist = new Map<number, number>();
+    lootAttemptId = 0;
+    lootAttemptAt = Number.NEGATIVE_INFINITY;
+    lootAttemptPos: Vec2 | null = null;
+    breakTarget = 0;
+    breakStart = 0;
+    // explore
+    exploreGoal: Vec2 | null = null;
+    exploreUntil = 0;
+    readonly visited = new Set<number>();
+    // actions
+    lastUseRequest = Number.NEGATIVE_INFINITY;
+    lastReloadRequest = Number.NEGATIVE_INFINITY;
+    lastReviveRequest = Number.NEGATIVE_INFINITY;
+    lastLootRequest = Number.NEGATIVE_INFINITY;
+    lastThrow = Number.NEGATIVE_INFINITY;
+    lastSmoke = Number.NEGATIVE_INFINITY;
+    /** goal the path follower could not reach, and until when it is avoided */
+    failedGoal: Vec2 | null = null;
+    failedUntil = 0;
+    order: BotOrder | null = null;
+    current: BehaviourName = "idle";
+}
+
+export interface BrainCtx {
+    model: WorldModel;
+    self: SelfState;
+    params: DifficultyParams;
+    rng: Rng;
+    now: number;
+    mem: BrainMemory;
+    /** living enemies, visible or remembered */
+    enemies: Contact[];
+    visibleEnemies: Contact[];
+    /** the enemy the bot fights, if any */
+    target: Contact | null;
+    targetDist: number;
+    /** guns with their ammo */
+    guns: HeldGun[];
+    /** holds a gun with rounds in the magazine or the bag */
+    armed: boolean;
+    /** duo or squad */
+    teamMode: boolean;
+    /** navigation component the bot stands in (0 when unknown): targets outside it cannot be reached */
+    myComp: number;
+}
+
+/** Whether a walkable cell within `slack` of `p` lies in the bot's navigation component. */
+export function reachable(ctx: BrainCtx, p: Vec2, slack = 1.5): boolean {
+    if (ctx.myComp === 0) return true;
+    return ctx.model.nav.nearestWalkable(p, slack, ctx.myComp) >= 0;
+}

@@ -1,0 +1,19 @@
+{
+    "name": "@rebirth/bots",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "scripts": {
+        "match": "node scripts/match.ts",
+        "typecheck": "tsc -p tsconfig.json"
+    },
+    "dependencies": {
+        "@rebirth/core": "workspace:*",
+        "@rebirth/defs": "workspace:*",
+        "@rebirth/protocol": "workspace:*",
+        "@rebirth/sim": "workspace:*"
+    }
+}

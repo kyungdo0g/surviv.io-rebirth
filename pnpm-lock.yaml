@@ -57,6 +57,9 @@ importers:
       '@hono/node-server':
         specifier: ^2.1.3
         version: 2.1.3(hono@4.13.13)
+      '@rebirth/bots':
+        specifier: workspace:*
+        version: link:../../packages/bots
       '@rebirth/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -82,6 +85,21 @@ importers:
       '@types/ws':
         specifier: ^8.18.2
         version: 8.18.2
+
+  packages/bots:
+    dependencies:
+      '@rebirth/core':
+        specifier: workspace:*
+        version: link:../core
+      '@rebirth/defs':
+        specifier: workspace:*
+        version: link:../defs
+      '@rebirth/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+      '@rebirth/sim':
+        specifier: workspace:*
+        version: link:../sim
 
   packages/core: {}
 
