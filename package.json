@@ -15,10 +15,14 @@
         "kb:check": "node tools/kb/kb-check.ts",
         "survev:fetch": "sh tools/port-survev/fetch.sh",
         "port": "node tools/port-survev/port.ts",
-        "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm kb:check"
+        "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm kb:check",
+        "e2e": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers playwright test",
+        "assets": "node tools/assets/import.ts",
+        "dev": "pnpm --filter @rebirth/client dev"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.5.15",
+        "@playwright/test": "1.56.1",
         "@types/node": "^22.20.5",
         "typescript": "~6.0.3",
         "vitest": "^5.0.3"

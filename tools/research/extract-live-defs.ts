@@ -72,6 +72,15 @@ const tryReq = (id: string) => {
     }
 };
 
+// Building children pick a random obstacle through closures made by randomObstacleType(weights);
+// wrap the helper so each closure remembers its weights and can be serialized.
+for (const id of findModule(modules, /randomObstacleType\s*:/)) {
+    const helpers = req(Number(id));
+    if (typeof helpers.randomObstacleType !== "function") continue;
+    const orig = helpers.randomObstacleType;
+    helpers.randomObstacleType = (weights: Record<string, number>) => Object.assign(orig(weights), { __weights: weights });
+}
+
 const goId = findModule(modules, /GameObject ".concat\(|GameObject "\s*\+/)[0];
 const gameObjects = tryReq(goId);
 const moIds = findModule(modules, /house_red_01:/);
@@ -94,7 +103,7 @@ const out = {
 };
 writeFileSync(
     join(DIR, "defs.json"),
-    JSON.stringify(out, (_k, v) => (typeof v === "function" ? `[fn ${v.name}]` : v), 1),
+    JSON.stringify(out, (_k, v) => (typeof v === "function" ? (v.__weights ?? `[fn ${v.name}]`) : v), 1),
 );
 console.log(`gameObjects: ${Object.keys(gameObjects).length} (module ${goId})`);
 console.log(

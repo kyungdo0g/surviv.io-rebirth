@@ -14,3 +14,8 @@ research-cache/
 # playwright
 test-results/
 playwright-report/
+
+# original surviv.io art/audio, copied locally from the survev clone by `pnpm assets` (not redistributed)
+apps/client/public/assets/
+# e2e screenshots contain original art too
+tests/e2e/__screens__/

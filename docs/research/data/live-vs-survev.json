@@ -8409,50 +8409,6 @@
      "survev": "-25.9"
     },
     {
-     "field": "mapObjects[38].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[39].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[45].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[46].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[38].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[38].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[39].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[39].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[45].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[46].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[46].type.",
-     "survev": "1"
-    },
-    {
      "field": "teamId",
      "survev": "1"
     }
@@ -8469,52 +8425,8 @@
      "survev": "-25.9"
     },
     {
-     "field": "mapObjects[38].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[39].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[45].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[46].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "vault",
      "live": "\"vault_01b\""
-    },
-    {
-     "field": "mapObjects[38].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[38].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[39].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[39].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[45].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[46].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[46].type.",
-     "survev": "1"
     }
    ]
   },
@@ -8527,50 +8439,6 @@
      "field": "mapObjects[1].pos.x",
      "live": "-26",
      "survev": "-25.9"
-    },
-    {
-     "field": "mapObjects[38].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[39].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[45].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[46].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[38].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[38].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[39].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[39].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[45].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[46].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[46].type.",
-     "survev": "1"
     }
    ]
   },
@@ -8620,80 +8488,8 @@
      "survev": "0.667"
     },
     {
-     "field": "mapObjects[48].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[49].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[50].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[51].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[59].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[60].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "bonus_door",
      "live": "\"house_door_02\""
-    },
-    {
-     "field": "mapObjects[48].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[48].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[49].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[49].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[50].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[50].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[51].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[51].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.",
-     "survev": "1"
     }
    ]
   },
@@ -8713,84 +8509,12 @@
      "survev": "0.667"
     },
     {
-     "field": "mapObjects[48].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[49].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[50].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[51].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[59].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[60].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "porch_01",
      "live": "\"cache_pumpkin_02\""
     },
     {
      "field": "bonus_door",
      "live": "\"house_door_02\""
-    },
-    {
-     "field": "mapObjects[48].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[48].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[49].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[49].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[50].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[50].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[51].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[51].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.",
-     "survev": "1"
     }
    ]
   },
@@ -8810,80 +8534,8 @@
      "survev": "0.667"
     },
     {
-     "field": "mapObjects[48].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[49].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[50].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[51].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[59].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[60].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "bonus_door",
      "live": "\"house_door_02\""
-    },
-    {
-     "field": "mapObjects[48].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[48].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[49].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[49].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[50].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[50].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[51].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[51].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.",
-     "survev": "1"
     }
    ]
   },
@@ -8903,80 +8555,8 @@
      "survev": "0.667"
     },
     {
-     "field": "mapObjects[48].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[49].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[50].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[51].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[59].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[60].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "bonus_room",
      "live": "\"barn_basement_structure_01\""
-    },
-    {
-     "field": "mapObjects[48].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[48].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[49].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[49].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[50].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[50].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[51].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[51].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.",
-     "survev": "1"
     }
    ]
   },
@@ -8996,80 +8576,8 @@
      "survev": "0.667"
     },
     {
-     "field": "mapObjects[48].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[49].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[50].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[51].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[59].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[60].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "bonus_room",
      "live": "\"barn_basement_structure_01d\""
-    },
-    {
-     "field": "mapObjects[48].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[48].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[49].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[49].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[50].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[50].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[51].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[51].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.",
-     "survev": "1"
     }
    ]
   },
@@ -9312,32 +8820,7 @@
    "id": "bathhouse_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[34].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[35].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[34].type.toilet_01",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[34].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[35].type.toilet_01",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[35].type.toilet_02",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "bathhouse_column_1",
@@ -9367,56 +8850,7 @@
    "id": "bathhouse_sideroom_02",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[12].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[13].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[12].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[12].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[13].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[13].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[14].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[15].type.deposit_box_02",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "bed_lg_01",
@@ -9812,63 +9246,13 @@
    "id": "bridge_lg_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[18].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[19].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[18].type.loot_tier_1",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[18].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[19].type.loot_tier_1",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[19].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "bridge_lg_01x",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[18].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[19].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[18].type.loot_tier_1",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[18].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[19].type.loot_tier_1",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[19].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "bridge_lg_structure_01",
@@ -9892,20 +9276,7 @@
    "id": "bridge_md_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.loot_tier_2",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "bridge_md_structure_01",
@@ -9983,774 +9354,19 @@
    "id": "brush_clump_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[0].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[3].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[12].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[13].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[17].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_2",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_surviv",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[1].type.stone_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[1].type.barrel_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[1].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[2].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[2].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[3].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[3].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[3].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[4].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[4].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[4].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[5].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[5].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[6].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[6].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[7].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[8].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[9].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[10].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[10].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[11].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[11].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[12].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[12].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[13].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[13].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[13].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[14].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[14].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[15].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[15].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[16].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[16].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[17].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[17].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[17].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "brush_clump_02",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[0].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[3].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[12].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[13].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_2",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_surviv",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[1].type.stone_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[1].type.barrel_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[1].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[2].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[2].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[3].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[3].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[3].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[4].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[4].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[4].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[5].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[5].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[6].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[6].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[7].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[8].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[9].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[10].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[10].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[11].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[11].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[12].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[12].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[13].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[13].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[13].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[14].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[14].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[15].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[15].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[16].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[16].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "brush_clump_03",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[0].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[3].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_2",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_surviv",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[1].type.stone_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[1].type.barrel_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[1].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[2].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[2].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[3].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[3].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[3].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[4].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[4].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[4].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[5].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[5].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[6].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[6].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[7].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[8].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[9].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[10].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[10].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[11].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[11].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "bunker_chrys_01",
@@ -10769,8 +9385,12 @@
      "survev": "\"map-bunker-chrys-compartment-floor-01d.img\""
     },
     {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
+     "field": "mapObjects[7].type.crate_01",
+     "live": "2"
+    },
+    {
+     "field": "mapObjects[7].type.crate_04",
+     "live": "1"
     },
     {
      "field": "mapObjects[7].pos.x",
@@ -10783,8 +9403,12 @@
      "survev": "7"
     },
     {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
+     "field": "mapObjects[8].type.crate_01",
+     "live": "2"
+    },
+    {
+     "field": "mapObjects[8].type.crate_04",
+     "live": "1"
     },
     {
      "field": "mapObjects[8].pos.x",
@@ -10797,8 +9421,12 @@
      "survev": "7"
     },
     {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
+     "field": "mapObjects[9].type.crate_01",
+     "live": "2"
+    },
+    {
+     "field": "mapObjects[9].type.crate_04",
+     "live": "1"
     },
     {
      "field": "mapObjects[9].pos.x",
@@ -10811,9 +9439,12 @@
      "survev": "7"
     },
     {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\"",
-     "survev": "\"planter_04\""
+     "field": "mapObjects[10].type.crate_01",
+     "live": "2"
+    },
+    {
+     "field": "mapObjects[10].type.crate_04",
+     "live": "1"
     },
     {
      "field": "mapObjects[10].pos.x",
@@ -10881,6 +9512,10 @@
     {
      "field": "mapObjects[9].type.",
      "survev": "1"
+    },
+    {
+     "field": "mapObjects[10].type",
+     "survev": "\"planter_04\""
     },
     {
      "field": "mapObjects[10].puzzlePiece",
@@ -11080,152 +9715,7 @@
    "id": "bunker_chrys_compartment_01b",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[12].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[13].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[17].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[18].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[10].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[11].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[12].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[13].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[13].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[14].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[15].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[16].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[17].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[17].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.planter_07",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[18].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "bunker_chrys_compartment_02",
@@ -11321,20 +9811,7 @@
    "id": "bunker_crossing_bathroom",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[0].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[0].type.toilet_03",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[0].type.toilet_04",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "bunker_crossing_compartment_01",
@@ -11442,20 +9919,7 @@
    "id": "bunker_hydra_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[13].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[13].type.toilet_03",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[13].type.toilet_04",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "bunker_hydra_compartment_01",
@@ -11491,20 +9955,7 @@
    "id": "bunker_storm_sublevel_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[22].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[22].type.case_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[22].type.chest_02",
-     "survev": "9"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "bunker_structure_01",
@@ -12505,111 +10956,13 @@
    "id": "cabin_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[23].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[25].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[28].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[23].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[23].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[25].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[25].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[28].type.gun_mount_01",
-     "survev": "50"
-    },
-    {
-     "field": "mapObjects[28].type.gun_mount_05",
-     "survev": "50"
-    },
-    {
-     "field": "mapObjects[28].type.gun_mount_04",
-     "survev": "10"
-    },
-    {
-     "field": "mapObjects[28].type.gun_mount_02",
-     "survev": "10"
-    },
-    {
-     "field": "mapObjects[28].type.gun_mount_03",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "cabin_01x",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[23].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[25].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[28].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[23].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[23].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[25].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[25].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[28].type.gun_mount_01",
-     "survev": "50"
-    },
-    {
-     "field": "mapObjects[28].type.gun_mount_05",
-     "survev": "50"
-    },
-    {
-     "field": "mapObjects[28].type.gun_mount_04",
-     "survev": "10"
-    },
-    {
-     "field": "mapObjects[28].type.gun_mount_02",
-     "survev": "10"
-    },
-    {
-     "field": "mapObjects[28].type.gun_mount_03",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "cabin_02",
@@ -12617,36 +10970,12 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[23].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[25].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "cabin_mount",
      "live": "\"gun_mount_02\""
     },
     {
      "field": "porch_01",
      "live": "\"cache_pumpkin_02\""
-    },
-    {
-     "field": "mapObjects[23].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[23].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[25].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[25].type.drawers_02",
-     "survev": "1"
     }
    ]
   },
@@ -13873,116 +12202,12 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[56].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[57].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[58].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[71].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[72].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[73].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[87].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[88].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[91].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[95].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[98].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[56].type.crate_14",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[56].type.crate_14a",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[57].type.crate_14",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[57].type.crate_14a",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[58].type.crate_14",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[58].type.crate_14a",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[71].type.crate_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[71].type.crate_14",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[71].type.crate_14a",
-     "survev": "1"
-    },
-    {
      "field": "mapObjects[71].ignoreMapSpawnReplacement",
      "survev": "true"
     },
     {
-     "field": "mapObjects[72].type.crate_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[72].type.crate_14",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[72].type.crate_14a",
-     "survev": "1"
-    },
-    {
      "field": "mapObjects[72].ignoreMapSpawnReplacement",
      "survev": "true"
-    },
-    {
-     "field": "mapObjects[73].type.crate_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[73].type.crate_14",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[73].type.crate_14a",
-     "survev": "1"
     },
     {
      "field": "mapObjects[73].ignoreMapSpawnReplacement",
@@ -13991,58 +12216,6 @@
     {
      "field": "mapObjects[80].ignoreMapSpawnReplacement",
      "survev": "true"
-    },
-    {
-     "field": "mapObjects[87].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[87].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[88].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[88].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[91].type.crate_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[91].type.barrel_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[91].type.barrel_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[95].type.crate_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[95].type.crate_14",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[95].type.crate_14a",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[98].type.crate_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[98].type.crate_14",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[98].type.crate_14a",
-     "survev": "1"
     }
    ]
   },
@@ -14442,96 +12615,31 @@
    "id": "container_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type.loot_tier_1",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[4].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "container_01x",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type.loot_tier_1",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[4].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "container_02",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type.loot_tier_1",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[4].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "container_03",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type.loot_tier_1",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[4].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "container_04",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[3].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[3].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[3].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "container_05",
@@ -16655,20 +14763,7 @@
    "id": "dock_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[1].type.barrel_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[1].type.crate_01",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "drawers_01",
@@ -16819,56 +14914,7 @@
    "id": "grassy_cover_complex_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[0].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[0].type.grassy_cover_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[0].type.grassy_cover_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[0].type.grassy_cover_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[1].type.grassy_cover_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[1].type.grassy_cover_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[1].type.grassy_cover_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.grassy_cover_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.grassy_cover_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.grassy_cover_03",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "grassy_wall_3",
@@ -16886,174 +14932,13 @@
    "id": "greenhouse_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[17].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[18].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[19].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[20].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[21].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[14].type.planter_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.planter_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.planter_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.planter_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.planter_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.planter_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.planter_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.planter_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.planter_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[17].type.planter_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[17].type.planter_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[17].type.planter_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.planter_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.planter_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.planter_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[19].type.planter_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[19].type.planter_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[19].type.planter_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.planter_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.planter_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.planter_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[21].type.planter_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[21].type.planter_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[21].type.planter_03",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "greenhouse_02",
    "type": "building",
    "status": "both",
    "diffs": [
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[17].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[18].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[19].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[20].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[21].type",
-     "live": "\"[fn ]\""
-    },
     {
      "field": "floor_images[0].sprite",
      "live": "\"map-building-greenhouse-floor-02.img\""
@@ -17157,70 +15042,6 @@
     {
      "field": "ceiling_images[0].tint",
      "live": "16777215"
-    },
-    {
-     "field": "mapObjects[14].type.planter_06",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[14].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.planter_06",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[15].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.planter_06",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[16].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[17].type.planter_06",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[17].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.planter_06",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[18].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[19].type.planter_06",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[19].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.planter_06",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[20].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[21].type.planter_06",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[21].type.",
-     "survev": "1"
     }
    ]
   },
@@ -17442,32 +15263,8 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[30].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[32].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "stand",
      "live": "\"stand_01\""
-    },
-    {
-     "field": "mapObjects[30].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[30].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[32].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[32].type.drawers_02",
-     "survev": "1"
     }
    ]
   },
@@ -17477,36 +15274,12 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[30].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[32].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "porch_01",
      "live": "\"cache_pumpkin_02\""
     },
     {
      "field": "stand",
      "live": "\"stand_01\""
-    },
-    {
-     "field": "mapObjects[30].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[30].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[32].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[32].type.drawers_02",
-     "survev": "1"
     }
    ]
   },
@@ -17515,14 +15288,6 @@
    "type": "building",
    "status": "both",
    "diffs": [
-    {
-     "field": "mapObjects[30].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[32].type",
-     "live": "\"[fn ]\""
-    },
     {
      "field": "mapObjects[37].type",
      "live": "\"bush_02\"",
@@ -17537,22 +15302,6 @@
      "field": "mapObjects[37].pos.y",
      "live": "-10.5",
      "survev": "-8.5"
-    },
-    {
-     "field": "mapObjects[30].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[30].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[32].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[32].type.drawers_02",
-     "survev": "1"
     },
     {
      "field": "mapObjects[41].type.loot_tier_surviv",
@@ -17574,44 +15323,8 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[28].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[30].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[31].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "stand",
      "live": "\"stand_01\""
-    },
-    {
-     "field": "mapObjects[28].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[28].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[30].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[30].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[31].type.bookshelf_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[31].type.bookshelf_02",
-     "survev": "1"
     }
    ]
   },
@@ -17621,48 +15334,12 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[28].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[30].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[31].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "porch_01",
      "live": "\"cache_pumpkin_02\""
     },
     {
      "field": "stand",
      "live": "\"stand_01\""
-    },
-    {
-     "field": "mapObjects[28].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[28].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[30].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[30].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[31].type.bookshelf_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[31].type.bookshelf_02",
-     "survev": "1"
     }
    ]
   },
@@ -17671,18 +15348,6 @@
    "type": "building",
    "status": "both",
    "diffs": [
-    {
-     "field": "mapObjects[28].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[30].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[31].type",
-     "live": "\"[fn ]\""
-    },
     {
      "field": "mapObjects[35].type",
      "live": "\"bush_02\"",
@@ -17697,30 +15362,6 @@
      "field": "mapObjects[35].pos.y",
      "live": "10.5",
      "survev": "8.5"
-    },
-    {
-     "field": "mapObjects[28].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[28].type.toilet_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[30].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[30].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[31].type.bookshelf_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[31].type.bookshelf_02",
-     "survev": "1"
     },
     {
      "field": "mapObjects[39].type.loot_tier_surviv",
@@ -17788,56 +15429,7 @@
    "id": "hut_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[10].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "hut_01bh",
@@ -17849,78 +15441,13 @@
    "id": "hut_01x",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[10].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "hut_02",
    "type": "building",
    "status": "both",
    "diffs": [
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
     {
      "field": "ceilingImg",
      "live": "\"map-building-hut-ceiling-02.img\""
@@ -17932,38 +15459,6 @@
     {
      "field": "map.displayType",
      "survev": "\"hut_01\""
-    },
-    {
-     "field": "mapObjects[7].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[10].type.",
-     "survev": "1"
     }
    ]
   },
@@ -17973,60 +15468,12 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "specialLoot",
      "live": "\"pot_02\""
     },
     {
      "field": "map.displayType",
      "survev": "\"hut_01x\""
-    },
-    {
-     "field": "mapObjects[7].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[10].type.",
-     "survev": "1"
     }
    ]
   },
@@ -18036,60 +15483,12 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "ceilingImg",
      "live": "\"map-building-hut-ceiling-03.img\""
     },
     {
      "field": "specialLoot",
      "live": "\"pot_05\""
-    },
-    {
-     "field": "mapObjects[7].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.pot_01",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[10].type.",
-     "survev": "1"
     }
    ]
   },
@@ -18151,535 +15550,13 @@
    "id": "junkyard_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[12].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[13].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[17].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[18].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[19].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[20].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[21].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[22].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[23].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[24].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[25].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[26].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[27].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[28].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[29].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[30].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[31].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[32].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[33].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[34].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[35].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[36].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[37].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[38].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[39].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[6].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[10].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[11].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[12].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[13].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[13].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[14].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[15].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[16].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[17].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[17].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[18].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[19].type.refrigerator_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[19].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.table_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[21].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[21].type.table_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[22].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[22].type.table_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[23].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[23].type.table_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[24].type.oven_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[24].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[25].type.oven_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[25].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[26].type.oven_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[26].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[27].type.oven_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[27].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[28].type.oven_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[28].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[29].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[29].type.toilet_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[30].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[30].type.toilet_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[31].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[31].type.toilet_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[32].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[32].type.toilet_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[33].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[33].type.vending_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[34].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[34].type.vending_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[35].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[35].type.cache_03",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[36].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[36].type.cache_03",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[37].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[37].type.cache_03",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[38].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[38].type.cache_03",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[39].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[39].type.cache_03",
-     "survev": "3"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "kopje_brush_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[0].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[3].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_2",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[0].type.loot_tier_surviv",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[1].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[1].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[1].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[2].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[2].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[3].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[3].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[3].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[4].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[4].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[4].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[5].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[5].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.brush_01sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[6].type.brush_02sv",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[6].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "kopje_patch_01",
@@ -18687,56 +15564,8 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "grass_color",
      "live": "8035865"
-    },
-    {
-     "field": "mapObjects[4].type.crate_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[4].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.crate_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[5].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.crate_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[6].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.crate_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
     }
    ]
   },
@@ -18930,196 +15759,7 @@
    "id": "logging_complex_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[12].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[29].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[30].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[31].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[37].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[39].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[40].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[1].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[1].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[2].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[5].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[6].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[7].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[15].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[16].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[29].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[29].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[30].type.chest_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[30].type.case_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[31].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[31].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[37].type.outhouse_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[37].type.outhouse_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[39].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[39].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[40].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[40].type.crate_19",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "logging_complex_01sp",
@@ -19127,200 +15767,12 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[12].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[29].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[30].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[31].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[37].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[39].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[40].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "groundTintLt",
      "live": "3361294"
     },
     {
      "field": "groundTintDk",
      "live": "2437648"
-    },
-    {
-     "field": "mapObjects[1].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[1].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[2].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[5].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[6].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[7].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[15].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[16].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[29].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[29].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[30].type.chest_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[30].type.case_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[31].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[31].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[37].type.outhouse_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[37].type.outhouse_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[39].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[39].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[40].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[40].type.crate_19",
-     "survev": "1"
     }
    ]
   },
@@ -19330,200 +15782,12 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[12].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[29].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[30].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[31].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[37].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[39].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[40].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "groundTintLt",
      "live": "7843122"
     },
     {
      "field": "groundTintDk",
      "live": "5143827"
-    },
-    {
-     "field": "mapObjects[1].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[1].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[2].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[5].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[6].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[7].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[15].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[16].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[16].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[29].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[29].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[30].type.chest_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[30].type.case_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[31].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[31].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[37].type.outhouse_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[37].type.outhouse_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[39].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[39].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[40].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[40].type.crate_19",
-     "survev": "1"
     }
    ]
   },
@@ -19531,44 +15795,7 @@
    "id": "logging_complex_02",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[3].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[1].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[1].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[2].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[3].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[3].type.crate_19",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "logging_complex_02sp",
@@ -19576,48 +15803,12 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[3].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "groundTintDk",
      "live": "2437648"
     },
     {
      "field": "tree_08c",
      "live": "\"tree_08spc\""
-    },
-    {
-     "field": "mapObjects[1].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[1].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[2].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[3].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[3].type.crate_19",
-     "survev": "1"
     }
    ]
   },
@@ -19627,44 +15818,8 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[3].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "groundTintDk",
      "live": "5143827"
-    },
-    {
-     "field": "mapObjects[1].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[1].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[2].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[2].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[3].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[3].type.crate_19",
-     "survev": "1"
     }
    ]
   },
@@ -19678,32 +15833,7 @@
    "id": "logging_complex_03",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[0].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[1].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[0].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[0].type.crate_19",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[1].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[1].type.crate_19",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "logging_complex_03sp",
@@ -19949,104 +16079,7 @@
    "id": "mansion_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[57].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[58].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[59].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[62].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[84].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[85].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[86].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[87].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[57].type.bookshelf_01",
-     "survev": "6"
-    },
-    {
-     "field": "mapObjects[57].type.bookshelf_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[58].type.bookshelf_01",
-     "survev": "6"
-    },
-    {
-     "field": "mapObjects[58].type.bookshelf_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[59].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[62].type.bookshelf_01",
-     "survev": "6"
-    },
-    {
-     "field": "mapObjects[62].type.bookshelf_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[84].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[84].type.bush_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[85].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[85].type.bush_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[86].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[86].type.bush_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[87].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[87].type.bush_03",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "mansion_01x",
@@ -20054,41 +16087,9 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[57].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[58].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[59].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[62].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "mapObjects[79].scale",
      "live": "1",
      "survev": "0.8"
-    },
-    {
-     "field": "mapObjects[84].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[85].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[86].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[87].type",
-     "live": "\"[fn ]\""
     },
     {
      "field": "mapObjects[92].type",
@@ -20115,86 +16116,6 @@
     {
      "field": "bush_chance",
      "live": "999"
-    },
-    {
-     "field": "mapObjects[57].type.bookshelf_01",
-     "survev": "6"
-    },
-    {
-     "field": "mapObjects[57].type.bookshelf_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[58].type.bookshelf_01",
-     "survev": "6"
-    },
-    {
-     "field": "mapObjects[58].type.bookshelf_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[59].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[62].type.bookshelf_01",
-     "survev": "6"
-    },
-    {
-     "field": "mapObjects[62].type.bookshelf_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[84].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[84].type.bush_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[84].type.",
-     "survev": "999"
-    },
-    {
-     "field": "mapObjects[85].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[85].type.bush_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[85].type.",
-     "survev": "999"
-    },
-    {
-     "field": "mapObjects[86].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[86].type.bush_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[86].type.",
-     "survev": "999"
-    },
-    {
-     "field": "mapObjects[87].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[87].type.bush_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[87].type.",
-     "survev": "999"
     }
    ]
   },
@@ -20203,38 +16124,6 @@
    "type": "building",
    "status": "both",
    "diffs": [
-    {
-     "field": "mapObjects[57].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[58].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[59].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[62].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[84].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[85].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[86].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[87].type",
-     "live": "\"[fn ]\""
-    },
     {
      "field": "decoration_01",
      "live": "\"decal_web_01\""
@@ -20246,70 +16135,6 @@
     {
      "field": "porch_01",
      "live": "\"cache_pumpkin_02\""
-    },
-    {
-     "field": "mapObjects[57].type.bookshelf_01",
-     "survev": "6"
-    },
-    {
-     "field": "mapObjects[57].type.bookshelf_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[58].type.bookshelf_01",
-     "survev": "6"
-    },
-    {
-     "field": "mapObjects[58].type.bookshelf_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.drawers_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[59].type.drawers_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[62].type.bookshelf_01",
-     "survev": "6"
-    },
-    {
-     "field": "mapObjects[62].type.bookshelf_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[84].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[84].type.bush_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[85].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[85].type.bush_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[86].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[86].type.bush_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[87].type.bush_01",
-     "survev": "25"
-    },
-    {
-     "field": "mapObjects[87].type.bush_03",
-     "survev": "1"
     }
    ]
   },
@@ -20323,126 +16148,13 @@
    "id": "mansion_cellar_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[17].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[18].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[19].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[20].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[21].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[23].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[16].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[16].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[17].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[17].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[18].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[19].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[19].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[20].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[21].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[21].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[23].type.bookshelf_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[23].type.bookshelf_02",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "mansion_cellar_02",
    "type": "building",
    "status": "both",
    "diffs": [
-    {
-     "field": "mapObjects[16].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[17].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[18].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[19].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[20].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[21].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[23].type",
-     "live": "\"[fn ]\""
-    },
     {
      "field": "decoration_01",
      "live": "\"decal_web_01\""
@@ -20454,62 +16166,6 @@
     {
      "field": "mid_obs_01",
      "live": "\"pumpkin_01\""
-    },
-    {
-     "field": "mapObjects[16].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[16].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[17].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[17].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[18].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[19].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[19].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[20].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[21].type.barrel_03",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[21].type.barrel_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[23].type.bookshelf_01",
-     "survev": "7"
-    },
-    {
-     "field": "mapObjects[23].type.bookshelf_02",
-     "survev": "1"
     }
    ]
   },
@@ -21161,39 +16817,13 @@
    "id": "outhouse_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[5].type.toilet_02",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "outhouse_01x",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type.toilet_01",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[5].type.toilet_02",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "outhouse_02",
@@ -21248,20 +16878,7 @@
    "id": "panicroom_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "perch_01",
@@ -21377,178 +16994,6 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[47].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[49].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[50].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[52].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[53].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[55].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[56].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[57].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[58].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[59].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[60].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[71].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[72].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[73].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[74].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[75].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[47].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[47].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[49].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[49].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[50].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[50].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[52].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[52].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[53].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[53].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[55].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[55].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[56].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[56].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[57].type.toilet_03",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[57].type.toilet_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[58].type.toilet_03",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[58].type.toilet_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.toilet_03",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[59].type.toilet_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.toilet_03",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[60].type.toilet_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[71].type.loot_tier_police_floor",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[72].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[73].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[74].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[75].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
      "field": "teamId",
      "survev": "2"
     }
@@ -21558,180 +17003,7 @@
    "id": "police_01x",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[47].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[49].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[50].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[52].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[53].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[55].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[56].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[57].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[58].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[59].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[60].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[71].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[72].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[73].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[74].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[75].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[47].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[47].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[49].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[49].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[50].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[50].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[52].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[52].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[53].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[53].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[55].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[55].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[56].type.locker_01",
-     "survev": "8"
-    },
-    {
-     "field": "mapObjects[56].type.locker_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[57].type.toilet_03",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[57].type.toilet_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[58].type.toilet_03",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[58].type.toilet_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[59].type.toilet_03",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[59].type.toilet_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[60].type.toilet_03",
-     "survev": "5"
-    },
-    {
-     "field": "mapObjects[60].type.toilet_04",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[71].type.loot_tier_police_floor",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[72].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[73].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[74].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[75].type.loot_tier_1",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "police_wall_int_10",
@@ -22341,38 +17613,6 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[12].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[15].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[22].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[23].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[26].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "goreRegion.type",
      "survev": "1"
     },
@@ -22391,94 +17631,6 @@
     {
      "field": "goreRegion.max.y",
      "survev": "80"
-    },
-    {
-     "field": "mapObjects[5].type.crate_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.crate_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[6].type.crate_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.crate_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[11].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[15].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[22].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[22].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[22].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[23].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[23].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[23].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[26].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[26].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[26].type.container_03",
-     "survev": "1"
     }
    ]
   },
@@ -22486,72 +17638,7 @@
    "id": "river_town_02",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[3].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[13].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[3].type.crate_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[3].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[4].type.crate_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[4].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[7].type.crate_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[8].type.crate_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.crate_01",
-     "survev": "4"
-    },
-    {
-     "field": "mapObjects[13].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[13].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[13].type.container_03",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "safe_01",
@@ -22569,43 +17656,13 @@
    "id": "saferoom_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type.case_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[4].type.case_02",
-     "survev": "0.025"
-    },
-    {
-     "field": "mapObjects[4].type.chest_02",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "saloon_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[42].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[42].type.gun_mount_01",
-     "survev": "100"
-    },
-    {
-     "field": "mapObjects[42].type.gun_mount_02",
-     "survev": "10"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "saloon_bar_back_large",
@@ -22729,85 +17786,25 @@
    "id": "shack_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type.loot_tier_2",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "shack_01x",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type.loot_tier_2",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "shack_02",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type.loot_tier_1",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "shack_02x",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type.loot_tier_1",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "shack_03a",
@@ -23567,56 +18564,7 @@
    "id": "teahouse_complex_01s",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type.tree_08sp",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[5].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[6].type.tree_08sp",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[6].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.tree_08sp",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[7].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.tree_08sp",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[8].type.",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "teahouse_complex_01su",
@@ -23760,56 +18708,8 @@
      "live": "true"
     },
     {
-     "field": "mapObjects[2].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[3].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[5].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "terrain.grass",
      "survev": "true"
-    },
-    {
-     "field": "mapObjects[2].type.tree_07sp",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[2].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[3].type.tree_07sp",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[3].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[4].type.tree_08sp",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[4].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[5].type.tree_07sp",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[5].type.",
-     "survev": "1"
     }
    ]
   },
@@ -24380,88 +19280,7 @@
    "id": "vault_01",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[6].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[6].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[7].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[8].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[8].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[9].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[10].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[10].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[11].type.deposit_box_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.loot_tier_vault_floor",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "vault_01b",
@@ -24469,84 +19288,12 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[6].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[8].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[10].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "gold_box",
      "live": "9"
     },
     {
      "field": "floor_loot",
      "live": "\"loot_tier_stonehammer\""
-    },
-    {
-     "field": "mapObjects[6].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[6].type.deposit_box_02",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[7].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[7].type.deposit_box_02",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[8].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[8].type.deposit_box_02",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[9].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[9].type.deposit_box_02",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[10].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[10].type.deposit_box_02",
-     "survev": "9"
-    },
-    {
-     "field": "mapObjects[11].type.deposit_box_01",
-     "survev": "3"
-    },
-    {
-     "field": "mapObjects[11].type.deposit_box_02",
-     "survev": "9"
     }
    ]
   },
@@ -24693,10 +19440,6 @@
    "status": "both",
    "diffs": [
     {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
      "field": "topLeftObs",
      "live": "\"crate_01\""
     },
@@ -24711,14 +19454,6 @@
     {
      "field": "ignoreMapSpawnReplacement",
      "live": "true"
-    },
-    {
-     "field": "mapObjects[14].type.crate_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.crate_01",
-     "survev": "3"
     }
    ]
   },
@@ -24727,10 +19462,6 @@
    "type": "building",
    "status": "both",
    "diffs": [
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
     {
      "field": "topLeftObs",
      "live": "\"crate_01\""
@@ -24742,14 +19473,6 @@
     {
      "field": "botRightObs",
      "live": "\"crate_01\""
-    },
-    {
-     "field": "mapObjects[14].type.crate_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.crate_01",
-     "survev": "3"
     }
    ]
   },
@@ -24758,10 +19481,6 @@
    "type": "building",
    "status": "both",
    "diffs": [
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
     {
      "field": "topLeftObs",
      "live": "\"crate_01\""
@@ -24781,14 +19500,6 @@
     {
      "field": "ignoreMapSpawnReplacement",
      "live": "true"
-    },
-    {
-     "field": "mapObjects[14].type.crate_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.crate_01",
-     "survev": "3"
     }
    ]
   },
@@ -24797,10 +19508,6 @@
    "type": "building",
    "status": "both",
    "diffs": [
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
     {
      "field": "topLeftObs",
      "live": "\"crate_01\""
@@ -24816,14 +19523,6 @@
     {
      "field": "ignoreMapSpawnReplacement",
      "live": "true"
-    },
-    {
-     "field": "mapObjects[14].type.crate_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.crate_01",
-     "survev": "3"
     }
    ]
   },
@@ -24831,87 +19530,13 @@
    "id": "warehouse_02",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.crate_08",
-     "survev": "24"
-    },
-    {
-     "field": "mapObjects[14].type.crate_09",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "warehouse_02x",
    "type": "building",
    "status": "both",
-   "diffs": [
-    {
-     "field": "mapObjects[9].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[11].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[14].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[9].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[9].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.loot_tier_1",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[11].type.",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[14].type.crate_08",
-     "survev": "24"
-    },
-    {
-     "field": "mapObjects[14].type.crate_09",
-     "survev": "1"
-    }
-   ]
+   "diffs": []
   },
   {
    "id": "warehouse_03",
@@ -24942,242 +19567,6 @@
    "type": "building",
    "status": "both",
    "diffs": [
-    {
-     "field": "mapObjects[4].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[7].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[12].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[13].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[18].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[20].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[24].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[26].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[28].type",
-     "live": "\"[fn ]\""
-    },
-    {
-     "field": "mapObjects[4].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[4].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[4].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[4].type.container_06",
-     "survev": "0.08"
-    },
-    {
-     "field": "mapObjects[7].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[7].type.container_06",
-     "survev": "0.08"
-    },
-    {
-     "field": "mapObjects[12].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[12].type.container_05",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[12].type.container_06",
-     "survev": "0.08"
-    },
-    {
-     "field": "mapObjects[12].type.",
-     "survev": "0.75"
-    },
-    {
-     "field": "mapObjects[13].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[13].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[13].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[13].type.container_05",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[13].type.container_06",
-     "survev": "0.08"
-    },
-    {
-     "field": "mapObjects[13].type.",
-     "survev": "0.75"
-    },
-    {
-     "field": "mapObjects[18].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[18].type.container_05",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[18].type.container_06",
-     "survev": "0.08"
-    },
-    {
-     "field": "mapObjects[18].type.",
-     "survev": "0.75"
-    },
-    {
-     "field": "mapObjects[20].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[20].type.container_05",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[20].type.container_06",
-     "survev": "0.08"
-    },
-    {
-     "field": "mapObjects[20].type.",
-     "survev": "0.75"
-    },
-    {
-     "field": "mapObjects[24].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[24].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[24].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[24].type.container_05",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[24].type.container_06",
-     "survev": "0.08"
-    },
-    {
-     "field": "mapObjects[24].type.",
-     "survev": "0.75"
-    },
-    {
-     "field": "mapObjects[26].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[26].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[26].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[26].type.container_05",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[26].type.container_06",
-     "survev": "0.08"
-    },
-    {
-     "field": "mapObjects[26].type.",
-     "survev": "0.75"
-    },
-    {
-     "field": "mapObjects[28].type.container_01",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[28].type.container_02",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[28].type.container_03",
-     "survev": "1"
-    },
-    {
-     "field": "mapObjects[28].type.container_05",
-     "survev": "2"
-    },
-    {
-     "field": "mapObjects[28].type.container_06",
-     "survev": "0.08"
-    },
-    {
-     "field": "mapObjects[28].type.",
-     "survev": "0.75"
-    },
     {
      "field": "teamId",
      "survev": "2"

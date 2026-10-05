@@ -509,7 +509,7 @@
 
 | type | in both | survev only | original only | changed gameplay fields |
 |---|---|---|---|---|
-| building | 173 | 55 | 0 | 102 [src:derived/live-vs-survev] [H] |
+| building | 173 | 55 | 0 | 51 [src:derived/live-vs-survev] [H] |
 | decal | 38 | 3 | 0 | 0 [src:derived/live-vs-survev] [H] |
 | loot_spawner | 32 | 1 | 4 | 0 [src:derived/live-vs-survev] [H] |
 | obstacle | 564 | 177 | 3 | 180 [src:derived/live-vs-survev] [H] |
@@ -555,139 +555,16 @@
 | airdrop_crate_04 | obstacleType | "airdrop" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | airdrop_crate_04 | category | — | "airdrop" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bank_01 | mapObjects[1].pos.x | -26 | -25.9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[38].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[39].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[45].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[46].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[38].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[38].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[39].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[39].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[45].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[46].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01 | mapObjects[46].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bank_01 | teamId | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bank_01b | mapObjects[1].pos.x | -26 | -25.9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[38].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[39].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[45].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[46].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bank_01b | vault | "vault_01b" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[38].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[38].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[39].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[39].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[45].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[46].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01b | mapObjects[46].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bank_01x | mapObjects[1].pos.x | -26 | -25.9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[38].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[39].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[45].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[46].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[38].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[38].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[39].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[39].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[45].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[46].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bank_01x | mapObjects[46].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[48].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[49].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[50].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[51].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[59].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[60].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barn_01 | bonus_door | "house_door_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[48].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[48].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[49].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[49].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[50].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[50].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[51].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[51].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[59].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[59].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[60].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01 | mapObjects[60].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[48].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[49].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[50].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[51].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[59].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[60].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barn_01h | porch_01 | "cache_pumpkin_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barn_01h | bonus_door | "house_door_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[48].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[48].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[49].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[49].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[50].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[50].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[51].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[51].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[59].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[59].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[60].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01h | mapObjects[60].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[48].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[49].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[50].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[51].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[59].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[60].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barn_01x | bonus_door | "house_door_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[48].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[48].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[49].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[49].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[50].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[50].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[51].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[51].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[59].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[59].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[60].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_01x | mapObjects[60].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[48].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[49].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[50].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[51].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[59].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[60].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barn_02 | bonus_room | "barn_basement_structure_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[48].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[48].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[49].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[49].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[50].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[50].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[51].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[51].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[59].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[59].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[60].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02 | mapObjects[60].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[48].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[49].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[50].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[51].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[59].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[60].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barn_02d | bonus_room | "barn_basement_structure_01d" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[48].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[48].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[49].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[49].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[50].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[50].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[51].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[51].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[59].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[59].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[60].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| barn_02d | mapObjects[60].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barn_basement_floor_01 | mapObjects[10].type | "loot_tier_sledgehammer" | "loot_tier_barn_melee" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barn_basement_floor_01d | mapObjects[10].type | "loot_tier_sledgehammer" | "loot_tier_barn_melee" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barn_basement_floor_01d | basement | "barn_basement_floor_02d" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -701,24 +578,6 @@
 | barrel_03 | category | — | "barrel" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barrel_04 | obstacleType | "barrel" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | barrel_04 | category | — | "barrel" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_01 | mapObjects[34].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_01 | mapObjects[35].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_01 | mapObjects[34].type.toilet_01 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_01 | mapObjects[34].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_01 | mapObjects[35].type.toilet_01 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_01 | mapObjects[35].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[12].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[13].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[12].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[12].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[13].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[13].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[14].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[14].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[15].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bathhouse_sideroom_02 | mapObjects[15].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bed_lg_01 | obstacleType | "furniture" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bed_lg_01 | category | — | "furniture" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bed_sm_01 | obstacleType | "furniture" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -735,219 +594,20 @@
 | bottle_04 | category | — | "pot" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bottle_05 | obstacleType | "pot" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bottle_05 | category | — | "pot" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01 | mapObjects[18].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01 | mapObjects[19].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01 | mapObjects[18].type.loot_tier_1 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01 | mapObjects[18].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01 | mapObjects[19].type.loot_tier_1 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01 | mapObjects[19].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01x | mapObjects[18].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01x | mapObjects[19].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01x | mapObjects[18].type.loot_tier_1 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01x | mapObjects[18].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01x | mapObjects[19].type.loot_tier_1 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_lg_01x | mapObjects[19].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_md_01 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_md_01 | mapObjects[6].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bridge_md_01 | mapObjects[6].type.loot_tier_2 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[0].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[3].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[12].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[13].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[17].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[0].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[0].type.loot_tier_2 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[0].type.loot_tier_surviv | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[1].type.stone_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[1].type.barrel_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[1].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[2].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[2].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[2].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[3].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[3].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[3].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[4].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[4].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[4].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[5].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[5].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[5].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[6].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[6].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[6].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[7].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[7].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[8].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[8].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[9].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[9].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[10].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[10].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[10].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[11].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[11].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[11].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[12].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[12].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[12].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[13].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[13].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[13].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[14].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[14].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[14].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[15].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[15].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[15].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[16].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[16].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[16].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[17].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[17].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_01 | mapObjects[17].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[0].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[3].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[12].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[13].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[0].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[0].type.loot_tier_2 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[0].type.loot_tier_surviv | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[1].type.stone_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[1].type.barrel_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[1].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[2].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[2].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[2].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[3].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[3].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[3].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[4].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[4].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[4].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[5].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[5].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[5].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[6].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[6].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[6].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[7].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[7].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[8].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[8].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[9].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[9].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[10].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[10].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[10].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[11].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[11].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[11].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[12].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[12].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[12].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[13].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[13].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[13].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[14].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[14].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[14].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[15].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[15].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[15].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[16].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[16].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_02 | mapObjects[16].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[0].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[3].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[0].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[0].type.loot_tier_2 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[0].type.loot_tier_surviv | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[1].type.stone_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[1].type.barrel_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[1].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[2].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[2].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[2].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[3].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[3].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[3].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[4].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[4].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[4].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[5].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[5].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[5].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[6].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[6].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[6].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[7].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[7].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[8].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[8].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[9].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[9].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[10].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[10].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[10].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[11].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[11].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| brush_clump_03 | mapObjects[11].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
+| bunker_chrys_compartment_01 | mapObjects[7].type.crate_01 | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
+| bunker_chrys_compartment_01 | mapObjects[7].type.crate_04 | 1 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[7].pos.x | 1.5 | -0.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[7].pos.y | 5 | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01 | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
+| bunker_chrys_compartment_01 | mapObjects[8].type.crate_01 | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
+| bunker_chrys_compartment_01 | mapObjects[8].type.crate_04 | 1 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[8].pos.x | 1.5 | 2.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[8].pos.y | 0 | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01 | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
+| bunker_chrys_compartment_01 | mapObjects[9].type.crate_01 | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
+| bunker_chrys_compartment_01 | mapObjects[9].type.crate_04 | 1 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[9].pos.x | 6.5 | 5.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[9].pos.y | 5 | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01 | mapObjects[10].type | "[fn ]" | "planter_04" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
+| bunker_chrys_compartment_01 | mapObjects[10].type.crate_01 | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
+| bunker_chrys_compartment_01 | mapObjects[10].type.crate_04 | 1 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[10].pos.x | 6.5 | 8.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[10].pos.y | 0 | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[11].type | "vault_door_chrys_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -963,6 +623,7 @@
 | bunker_chrys_compartment_01 | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[9].type.planter_07 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
+| bunker_chrys_compartment_01 | mapObjects[10].type | — | "planter_04" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[10].puzzlePiece | — | "leaves" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[11].type.planter_07 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[11].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -1002,53 +663,8 @@
 | bunker_chrys_compartment_01 | mapObjects[21].type | — | "loot_tier_chrys_01" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[21].pos.x | — | 12 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_01 | mapObjects[21].pos.y | — | -5.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[12].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[13].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[17].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[18].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[7].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[8].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[9].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[10].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[10].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[11].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[11].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[12].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[12].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[13].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[13].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[14].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[14].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[15].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[15].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[16].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[16].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[17].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[17].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[18].type.planter_07 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_chrys_compartment_01b | mapObjects[18].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_chrys_compartment_03 | mapObjects[7].type | "crate_01" | "case_06" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_crossing_bathroom | mapObjects[0].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_crossing_bathroom | mapObjects[0].type.toilet_03 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_crossing_bathroom | mapObjects[0].type.toilet_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_crossing_compartment_01 | mapObjects[5].pos.x | 28 | 27 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_hydra_01 | mapObjects[13].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_hydra_01 | mapObjects[13].type.toilet_03 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_hydra_01 | mapObjects[13].type.toilet_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_storm_sublevel_01 | mapObjects[22].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_storm_sublevel_01 | mapObjects[22].type.case_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| bunker_storm_sublevel_01 | mapObjects[22].type.chest_02 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_structure_01 | mapObstacleBounds[0].min.x | -12 | -7.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_structure_01 | mapObstacleBounds[0].min.y | -16 | -7.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_structure_01 | mapObstacleBounds[0].max.x | 12 | 7.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -1193,38 +809,8 @@
 | bunker_twins_sublevel_01 | mapObjects[44].pos.y | — | 8.25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_twins_sublevel_01 | mapObjects[44].ori | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | bunker_twins_sublevel_01 | mapObjects[44].puzzlePiece | — | "medic" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[23].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[25].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[28].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[23].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[23].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[25].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[25].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[28].type.gun_mount_01 | — | 50 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[28].type.gun_mount_05 | — | 50 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[28].type.gun_mount_04 | — | 10 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[28].type.gun_mount_02 | — | 10 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01 | mapObjects[28].type.gun_mount_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[23].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[25].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[28].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[23].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[23].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[25].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[25].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[28].type.gun_mount_01 | — | 50 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[28].type.gun_mount_05 | — | 50 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[28].type.gun_mount_04 | — | 10 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[28].type.gun_mount_02 | — | 10 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_01x | mapObjects[28].type.gun_mount_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_02 | mapObjects[23].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_02 | mapObjects[25].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | cabin_02 | cabin_mount | "gun_mount_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | cabin_02 | porch_01 | "cache_pumpkin_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_02 | mapObjects[23].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_02 | mapObjects[23].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_02 | mapObjects[25].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| cabin_02 | mapObjects[25].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | case_01 | obstacleType | "crate" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | case_01 | category | — | "crate" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | case_01 | loot[0].props.preloadGuns | — | true | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -1339,67 +925,13 @@
 | class_shell_02 | category | — | "airdrop" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | class_shell_03 | obstacleType | "airdrop" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | class_shell_03 | category | — | "airdrop" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[56].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[57].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[58].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[71].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[72].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[73].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[87].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[88].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[91].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[95].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[98].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[56].type.crate_14 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[56].type.crate_14a | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[57].type.crate_14 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[57].type.crate_14a | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[58].type.crate_14 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[58].type.crate_14a | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[71].type.crate_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[71].type.crate_14 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[71].type.crate_14a | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | club_01 | mapObjects[71].ignoreMapSpawnReplacement | — | true | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[72].type.crate_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[72].type.crate_14 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[72].type.crate_14a | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | club_01 | mapObjects[72].ignoreMapSpawnReplacement | — | true | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[73].type.crate_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[73].type.crate_14 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[73].type.crate_14a | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | club_01 | mapObjects[73].ignoreMapSpawnReplacement | — | true | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | club_01 | mapObjects[80].ignoreMapSpawnReplacement | — | true | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[87].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[87].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[88].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[88].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[91].type.crate_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[91].type.barrel_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[91].type.barrel_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[95].type.crate_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[95].type.crate_14 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[95].type.crate_14a | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[98].type.crate_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[98].type.crate_14 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| club_01 | mapObjects[98].type.crate_14a | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | club_structure_01 | structureType | "club" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | club_structure_01 | category | — | "club" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | cobalt_wall_int_4 | explosion | — | "explosion_cobalt" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_01 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_01 | mapObjects[4].type.loot_tier_1 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_01 | mapObjects[4].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_01x | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_01x | mapObjects[4].type.loot_tier_1 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_01x | mapObjects[4].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_02 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_02 | mapObjects[4].type.loot_tier_1 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_02 | mapObjects[4].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_03 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_03 | mapObjects[4].type.loot_tier_1 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_03 | mapObjects[4].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_04 | mapObjects[3].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_04 | mapObjects[3].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| container_04 | mapObjects[3].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | control_panel_06 | collision.min.x | -2.5 | -3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | control_panel_06 | collision.min.y | -1.2 | -1.4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | control_panel_06 | collision.max.x | 2.5 | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -1705,9 +1237,6 @@
 | desert_town_02 | mapObjects[28].type | — | "barrel_01" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | desert_town_02 | mapObjects[28].pos.x | — | 12.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | desert_town_02 | mapObjects[28].pos.y | — | -3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| dock_01 | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| dock_01 | mapObjects[1].type.barrel_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| dock_01 | mapObjects[1].type.crate_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | drawers_01 | obstacleType | "furniture" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | drawers_01 | category | — | "furniture" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | drawers_02 | obstacleType | "furniture" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -1715,74 +1244,6 @@
 | eye_door_01 | hinge.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | eye_door_01 | extents.x | 0.3 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | eye_door_01 | extents.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[0].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[0].type.grassy_cover_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[0].type.grassy_cover_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[0].type.grassy_cover_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[1].type.grassy_cover_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[1].type.grassy_cover_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[1].type.grassy_cover_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[2].type.grassy_cover_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[2].type.grassy_cover_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| grassy_cover_complex_01 | mapObjects[2].type.grassy_cover_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[17].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[18].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[19].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[20].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[21].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[14].type.planter_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[14].type.planter_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[14].type.planter_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[15].type.planter_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[15].type.planter_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[15].type.planter_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[16].type.planter_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[16].type.planter_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[16].type.planter_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[17].type.planter_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[17].type.planter_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[17].type.planter_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[18].type.planter_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[18].type.planter_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[18].type.planter_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[19].type.planter_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[19].type.planter_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[19].type.planter_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[20].type.planter_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[20].type.planter_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[20].type.planter_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[21].type.planter_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[21].type.planter_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_01 | mapObjects[21].type.planter_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[17].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[18].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[19].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[20].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[21].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[14].type.planter_06 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[14].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[15].type.planter_06 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[15].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[16].type.planter_06 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[16].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[17].type.planter_06 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[17].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[18].type.planter_06 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[18].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[19].type.planter_06 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[19].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[20].type.planter_06 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[20].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[21].type.planter_06 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| greenhouse_02 | mapObjects[21].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | grill_01 | obstacleType | "furniture" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | grill_01 | category | — | "furniture" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | gun_mount_01 | obstacleType | "furniture" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -1807,274 +1268,27 @@
 | house_door_05 | hinge.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_door_05 | extents.x | 0.3 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_door_05 | extents.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01 | mapObjects[30].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01 | mapObjects[32].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_01 | stand | "stand_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01 | mapObjects[30].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01 | mapObjects[30].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01 | mapObjects[32].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01 | mapObjects[32].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01h | mapObjects[30].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01h | mapObjects[32].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_01h | porch_01 | "cache_pumpkin_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_01h | stand | "stand_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01h | mapObjects[30].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01h | mapObjects[30].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01h | mapObjects[32].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01h | mapObjects[32].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01x | mapObjects[30].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01x | mapObjects[32].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_01x | mapObjects[37].type | "bush_02" | "tree_interior_11" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_01x | mapObjects[37].pos.x | -12 | -10 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_01x | mapObjects[37].pos.y | -10.5 | -8.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01x | mapObjects[30].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01x | mapObjects[30].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01x | mapObjects[32].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_01x | mapObjects[32].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_01x | mapObjects[41].type.loot_tier_surviv | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_01x | mapObjects[42].type.loot_tier_surviv | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_01x | mapObjects[43].type.loot_tier_surviv | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02 | mapObjects[28].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02 | mapObjects[30].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02 | mapObjects[31].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_02 | stand | "stand_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02 | mapObjects[28].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02 | mapObjects[28].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02 | mapObjects[30].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02 | mapObjects[30].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02 | mapObjects[31].type.bookshelf_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02 | mapObjects[31].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02h | mapObjects[28].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02h | mapObjects[30].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02h | mapObjects[31].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_02h | porch_01 | "cache_pumpkin_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_02h | stand | "stand_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02h | mapObjects[28].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02h | mapObjects[28].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02h | mapObjects[30].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02h | mapObjects[30].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02h | mapObjects[31].type.bookshelf_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02h | mapObjects[31].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02x | mapObjects[28].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02x | mapObjects[30].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02x | mapObjects[31].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_02x | mapObjects[35].type | "bush_02" | "tree_interior_11" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_02x | mapObjects[35].pos.x | 2 | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_02x | mapObjects[35].pos.y | 10.5 | 8.5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02x | mapObjects[28].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02x | mapObjects[28].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02x | mapObjects[30].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02x | mapObjects[30].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02x | mapObjects[31].type.bookshelf_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| house_red_02x | mapObjects[31].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_02x | mapObjects[39].type.loot_tier_surviv | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_02x | mapObjects[40].type.loot_tier_surviv | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | house_red_02x | mapObjects[41].type.loot_tier_surviv | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[7].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[8].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[9].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[10].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01 | mapObjects[10].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[7].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[8].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[9].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[10].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_01x | mapObjects[10].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | hut_02 | specialLoot | "pot_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[7].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[8].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[9].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[10].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02 | mapObjects[10].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | hut_02x | specialLoot | "pot_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[7].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[8].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[9].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[10].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_02x | mapObjects[10].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | hut_03 | specialLoot | "pot_05" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[7].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[8].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[9].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[10].type.pot_01 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| hut_03 | mapObjects[10].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[12].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[13].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[17].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[18].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[19].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[20].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[21].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[22].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[23].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[24].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[25].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[26].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[27].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[28].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[29].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[30].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[31].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[32].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[33].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[34].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[35].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[36].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[37].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[38].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[39].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[6].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[6].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[7].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[8].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[9].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[10].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[10].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[11].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[11].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[12].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[12].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[13].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[13].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[14].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[14].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[15].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[15].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[16].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[16].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[17].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[17].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[18].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[18].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[19].type.refrigerator_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[19].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[20].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[20].type.table_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[21].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[21].type.table_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[22].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[22].type.table_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[23].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[23].type.table_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[24].type.oven_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[24].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[25].type.oven_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[25].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[26].type.oven_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[26].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[27].type.oven_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[27].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[28].type.oven_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[28].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[29].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[29].type.toilet_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[30].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[30].type.toilet_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[31].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[31].type.toilet_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[32].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[32].type.toilet_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[33].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[33].type.vending_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[34].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[34].type.vending_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[35].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[35].type.cache_03 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[36].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[36].type.cache_03 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[37].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[37].type.cache_03 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[38].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[38].type.cache_03 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[39].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| junkyard_01 | mapObjects[39].type.cache_03 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[0].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[3].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[0].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[0].type.loot_tier_2 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[0].type.loot_tier_surviv | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[1].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[1].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[1].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[2].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[2].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[2].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[3].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[3].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[3].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[4].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[4].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[4].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[5].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[5].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[5].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[6].type.brush_01sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[6].type.brush_02sv | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_brush_01 | mapObjects[6].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[4].type.crate_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[4].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[5].type.crate_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[5].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[6].type.crate_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[6].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[7].type.crate_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| kopje_patch_01 | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | lab_door_01 | hinge.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | lab_door_01 | extents.x | 0.3 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | lab_door_01 | extents.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -2103,310 +1317,18 @@
 | locker_03 | loot[2].tier | — | "tier_khaki_outfit" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | locker_03 | loot[2].min | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | locker_03 | loot[2].max | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[12].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[29].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[30].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[31].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[37].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[39].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[40].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[1].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[1].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[2].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[2].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[5].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[5].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[6].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[6].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[7].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[7].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[11].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[11].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[11].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[12].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[12].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[12].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[15].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[15].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[16].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[16].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[29].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[29].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[30].type.chest_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[30].type.case_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[31].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[31].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[37].type.outhouse_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[37].type.outhouse_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[39].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[39].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[40].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01 | mapObjects[40].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[12].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[29].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[30].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[31].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[37].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[39].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[40].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[1].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[1].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[2].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[2].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[5].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[5].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[6].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[6].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[7].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[7].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[11].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[11].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[11].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[12].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[12].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[12].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[15].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[15].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[16].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[16].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[29].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[29].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[30].type.chest_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[30].type.case_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[31].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[31].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[37].type.outhouse_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[37].type.outhouse_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[39].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[39].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[40].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01sp | mapObjects[40].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[12].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[29].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[30].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[31].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[37].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[39].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[40].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[1].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[1].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[2].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[2].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[5].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[5].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[6].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[6].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[7].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[7].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[11].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[11].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[11].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[12].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[12].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[12].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[15].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[15].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[16].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[16].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[29].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[29].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[30].type.chest_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[30].type.case_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[31].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[31].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[37].type.outhouse_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[37].type.outhouse_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[39].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[39].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[40].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_01su | mapObjects[40].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02 | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02 | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02 | mapObjects[3].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02 | mapObjects[1].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02 | mapObjects[1].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02 | mapObjects[2].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02 | mapObjects[2].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02 | mapObjects[3].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02 | mapObjects[3].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02sp | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02sp | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02sp | mapObjects[3].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | logging_complex_02sp | tree_08c | "tree_08spc" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02sp | mapObjects[1].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02sp | mapObjects[1].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02sp | mapObjects[2].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02sp | mapObjects[2].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02sp | mapObjects[3].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02sp | mapObjects[3].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02su | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02su | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02su | mapObjects[3].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02su | mapObjects[1].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02su | mapObjects[1].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02su | mapObjects[2].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02su | mapObjects[2].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02su | mapObjects[3].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_02su | mapObjects[3].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_03 | mapObjects[0].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_03 | mapObjects[1].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_03 | mapObjects[0].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_03 | mapObjects[0].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_03 | mapObjects[1].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| logging_complex_03 | mapObjects[1].type.crate_19 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[57].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[58].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[59].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[62].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[84].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[85].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[86].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[87].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[57].type.bookshelf_01 | — | 6 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[57].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[58].type.bookshelf_01 | — | 6 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[58].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[59].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[59].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[62].type.bookshelf_01 | — | 6 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[62].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[84].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[84].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[85].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[85].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[86].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[86].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[87].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01 | mapObjects[87].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[57].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[58].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[59].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[62].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[84].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[85].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[86].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[87].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_01x | mapObjects[92].type | "tree_01" | "tree_11" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_01x | mapObjects[94].type | "tree_01" | "tree_11" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_01x | tree | "tree_11" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_01x | tree_loot | "loot_tier_1" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_01x | bush_chance | 999 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[57].type.bookshelf_01 | — | 6 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[57].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[58].type.bookshelf_01 | — | 6 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[58].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[59].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[59].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[62].type.bookshelf_01 | — | 6 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[62].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[84].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[84].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[84].type. | — | 999 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[85].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[85].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[85].type. | — | 999 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[86].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[86].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[86].type. | — | 999 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[87].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[87].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_01x | mapObjects[87].type. | — | 999 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[57].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[58].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[59].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[62].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[84].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[85].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[86].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[87].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_02 | decoration_01 | "decal_web_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_02 | decoration_02 | "candle_lit_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_02 | porch_01 | "cache_pumpkin_02" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[57].type.bookshelf_01 | — | 6 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[57].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[58].type.bookshelf_01 | — | 6 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[58].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[59].type.drawers_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[59].type.drawers_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[62].type.bookshelf_01 | — | 6 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[62].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[84].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[84].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[85].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[85].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[86].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[86].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[87].type.bush_01 | — | 25 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_02 | mapObjects[87].type.bush_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[17].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[18].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[19].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[20].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[21].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[23].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[16].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[16].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[17].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[17].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[18].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[18].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[19].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[19].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[20].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[20].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[21].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[21].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[23].type.bookshelf_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_01 | mapObjects[23].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[16].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[17].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[18].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[19].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[20].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[21].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[23].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_cellar_02 | decoration_01 | "decal_web_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_cellar_02 | decoration_02 | "candle_lit_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_cellar_02 | mid_obs_01 | "pumpkin_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[16].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[16].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[17].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[17].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[18].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[18].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[19].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[19].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[20].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[20].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[21].type.barrel_03 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[21].type.barrel_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[23].type.bookshelf_01 | — | 7 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| mansion_cellar_02 | mapObjects[23].type.bookshelf_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mansion_structure_01 | teamId | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | metal_wall_ext_thicker_28 | collision.min.y | -14.5 | -14 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | metal_wall_ext_thicker_28 | collision.max.y | 14.5 | 14 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -2423,18 +1345,9 @@
 | mil_crate_04 | category | — | "crate" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mil_crate_05 | obstacleType | "crate" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | mil_crate_05 | category | — | "crate" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| outhouse_01 | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| outhouse_01 | mapObjects[5].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| outhouse_01 | mapObjects[5].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| outhouse_01x | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| outhouse_01x | mapObjects[5].type.toilet_01 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| outhouse_01x | mapObjects[5].type.toilet_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | outhouse_02 | obs | "toilet_02b" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | oven_01 | obstacleType | "furniture" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | oven_01 | category | — | "furniture" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| panicroom_01 | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| panicroom_01 | mapObjects[5].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| panicroom_01 | mapObjects[5].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | perch_01 | ceiling.destroy.residue | "map-perch-res.img" | "map-perch-res-01.img" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | planter_01 | obstacleType | "pot" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | planter_01 | category | — | "pot" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -2448,93 +1361,7 @@
 | planter_06 | category | — | "pot" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | planter_07 | obstacleType | "pot" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | planter_07 | category | — | "pot" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[47].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[49].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[50].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[52].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[53].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[55].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[56].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[57].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[58].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[59].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[60].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[71].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[72].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[73].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[74].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[75].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[47].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[47].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[49].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[49].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[50].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[50].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[52].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[52].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[53].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[53].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[55].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[55].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[56].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[56].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[57].type.toilet_03 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[57].type.toilet_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[58].type.toilet_03 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[58].type.toilet_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[59].type.toilet_03 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[59].type.toilet_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[60].type.toilet_03 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[60].type.toilet_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[71].type.loot_tier_police_floor | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[72].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[73].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[74].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01 | mapObjects[75].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | police_01 | teamId | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[47].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[49].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[50].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[52].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[53].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[55].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[56].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[57].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[58].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[59].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[60].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[71].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[72].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[73].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[74].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[75].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[47].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[47].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[49].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[49].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[50].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[50].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[52].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[52].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[53].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[53].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[55].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[55].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[56].type.locker_01 | — | 8 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[56].type.locker_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[57].type.toilet_03 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[57].type.toilet_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[58].type.toilet_03 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[58].type.toilet_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[59].type.toilet_03 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[59].type.toilet_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[60].type.toilet_03 | — | 5 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[60].type.toilet_04 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[71].type.loot_tier_police_floor | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[72].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[73].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[74].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| police_01x | mapObjects[75].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | pot_01 | obstacleType | "pot" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | pot_01 | category | — | "pot" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | pot_02 | obstacleType | "pot" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -2554,64 +1381,11 @@
 | potato_03 | category | — | "potato" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | propane_01 | obstacleType | "barrel" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | propane_01 | category | — | "barrel" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[12].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[15].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[22].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[23].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[26].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | river_town_01 | goreRegion.type | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | river_town_01 | goreRegion.min.x | — | -125 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | river_town_01 | goreRegion.min.y | — | -60 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | river_town_01 | goreRegion.max.x | — | 125 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | river_town_01 | goreRegion.max.y | — | 80 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[5].type.crate_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[5].type.crate_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[6].type.crate_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[6].type.crate_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[11].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[11].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[11].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[12].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[12].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[12].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[15].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[15].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[15].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[22].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[22].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[22].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[23].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[23].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[23].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[26].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[26].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_01 | mapObjects[26].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[3].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[13].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[3].type.crate_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[3].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[4].type.crate_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[4].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[7].type.crate_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[7].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[8].type.crate_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[8].type.crate_01 | — | 4 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[13].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[13].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| river_town_02 | mapObjects[13].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| saferoom_01 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| saferoom_01 | mapObjects[4].type.case_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| saferoom_01 | mapObjects[4].type.case_02 | — | 0.025 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| saferoom_01 | mapObjects[4].type.chest_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| saloon_01 | mapObjects[42].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| saloon_01 | mapObjects[42].type.gun_mount_01 | — | 100 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| saloon_01 | mapObjects[42].type.gun_mount_02 | — | 10 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | saloon_door_secret | hinge.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | saloon_door_secret | extents.x | 0.75 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | saloon_door_secret | extents.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -2620,20 +1394,6 @@
 | secret_door_club | hinge.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | secret_door_club | extents.x | 0.3 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | secret_door_club | extents.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_01 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_01 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_01 | mapObjects[6].type.loot_tier_2 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_01 | mapObjects[7].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_01 | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_01x | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_01x | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_01x | mapObjects[6].type.loot_tier_2 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_01x | mapObjects[7].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_01x | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_02 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_02 | mapObjects[6].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_02x | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| shack_02x | mapObjects[6].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | shilo_01 | teamId | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | silo_01po | loot[0].props | 1 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | squash_01 | collision.rad | 1.25 | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -2664,18 +1424,6 @@
 | table_03 | category | — | "furniture" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | table_03x | obstacleType | "furniture" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | table_03x | category | — | "furniture" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[5].type.tree_08sp | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[5].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[6].type.tree_08sp | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[6].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[7].type.tree_08sp | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[7].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[8].type.tree_08sp | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teahouse_complex_01s | mapObjects[8].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | teahouse_complex_01su | tree_small | "tree_08su" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | teahouse_complex_01su | tree_large | "tree_08su" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | teahouse_door_01 | hinge.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -2687,19 +1435,7 @@
 | teapavilion_01w | left_loot | "pot_03b" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | teapavilion_01w | right_loot | "pot_03c" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | teapavilion_complex_01 | terrain.lakeCenter | true | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[2].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[3].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[5].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | teapavilion_complex_01 | terrain.grass | — | true | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[2].type.tree_07sp | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[2].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[3].type.tree_07sp | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[3].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[4].type.tree_08sp | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[4].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[5].type.tree_07sp | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| teapavilion_complex_01 | mapObjects[5].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | toilet_01 | obstacleType | "toilet" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | toilet_01 | category | — | "toilet" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | toilet_02 | obstacleType | "toilet" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -2720,46 +1456,8 @@
 | tree_13 | collision.rad | 1.55 | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | tree_13 | terrain.grass | true | false | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | tree_13 | terrain.beach | false | true | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[6].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[6].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[7].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[7].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[8].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[8].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[9].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[9].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[10].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[10].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[11].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[11].type.deposit_box_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01 | mapObjects[14].type.loot_tier_vault_floor | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[6].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[8].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[10].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | vault_01b | gold_box | 9 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | vault_01b | floor_loot | "loot_tier_stonehammer" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[6].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[6].type.deposit_box_02 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[7].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[7].type.deposit_box_02 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[8].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[8].type.deposit_box_02 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[9].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[9].type.deposit_box_02 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[10].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[10].type.deposit_box_02 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[11].type.deposit_box_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| vault_01b | mapObjects[11].type.deposit_box_02 | — | 9 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | vault_door_bathhouse | hinge.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | vault_door_bathhouse | extents.x | 0.3 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | vault_door_bathhouse | extents.y | 2 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
@@ -2782,111 +1480,22 @@
 | vault_door_main | extents.y | 3.5 | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | vending_01 | obstacleType | "vending" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | vending_01 | category | — | "vending" | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01 | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01 | topLeftObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01 | topRightObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01 | botRightObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01 | ignoreMapSpawnReplacement | true | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01 | mapObjects[14].type.crate_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01 | mapObjects[14].type.crate_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01f | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01f | topLeftObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01f | topRightObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01f | botRightObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01f | mapObjects[14].type.crate_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01f | mapObjects[14].type.crate_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01h | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01h | topLeftObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01h | topRightObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01h | botRightObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01h | decoration_01 | "candle_lit_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01h | ignoreMapSpawnReplacement | true | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01h | mapObjects[14].type.crate_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01h | mapObjects[14].type.crate_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01x | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01x | topLeftObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01x | topRightObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01x | botRightObs | "crate_01" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_01x | ignoreMapSpawnReplacement | true | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01x | mapObjects[14].type.crate_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_01x | mapObjects[14].type.crate_01 | — | 3 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02 | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02 | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02 | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02 | mapObjects[9].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02 | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02 | mapObjects[11].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02 | mapObjects[11].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02 | mapObjects[14].type.crate_08 | — | 24 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02 | mapObjects[14].type.crate_09 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02x | mapObjects[9].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02x | mapObjects[11].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02x | mapObjects[14].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02x | mapObjects[9].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02x | mapObjects[9].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02x | mapObjects[11].type.loot_tier_1 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02x | mapObjects[11].type. | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02x | mapObjects[14].type.crate_08 | — | 24 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_02x | mapObjects[14].type.crate_09 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[4].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[7].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[12].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[13].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[18].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[20].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[24].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[26].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[28].type | "[fn ]" | — | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[4].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[4].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[4].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[4].type.container_06 | — | 0.08 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[7].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[7].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[7].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[7].type.container_06 | — | 0.08 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[12].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[12].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[12].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[12].type.container_05 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[12].type.container_06 | — | 0.08 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[12].type. | — | 0.75 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[13].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[13].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[13].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[13].type.container_05 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[13].type.container_06 | — | 0.08 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[13].type. | — | 0.75 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[18].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[18].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[18].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[18].type.container_05 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[18].type.container_06 | — | 0.08 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[18].type. | — | 0.75 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[20].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[20].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[20].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[20].type.container_05 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[20].type.container_06 | — | 0.08 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[20].type. | — | 0.75 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[24].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[24].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[24].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[24].type.container_05 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[24].type.container_06 | — | 0.08 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[24].type. | — | 0.75 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[26].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[26].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[26].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[26].type.container_05 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[26].type.container_06 | — | 0.08 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[26].type. | — | 0.75 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[28].type.container_01 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[28].type.container_02 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[28].type.container_03 | — | 1 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[28].type.container_05 | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[28].type.container_06 | — | 0.08 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
-| warehouse_complex_01 | mapObjects[28].type. | — | 0.75 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 | warehouse_complex_01 | teamId | — | 2 | [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjectDefs.ts] [H] |
 
 ## Conflicts
