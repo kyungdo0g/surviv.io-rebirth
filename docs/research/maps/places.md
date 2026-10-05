@@ -105,7 +105,7 @@
 - wiki.gg lists Police Station, Mansion, Bank, Docks, Crimson Ring Club and Hydra Bunker as Classic's major structures [src:wikigg/Classic_mode] [M]
 - Fandom: Docks were added in 0.4.0 "Log and load" (June 2, 2018) as "the Island's once-bustling port", the largest building area, with up to 17 containers [src:fandom/Docks] [src:changelog/0.4.0] [H]
 - Fandom: the Club (0.7.7, May 30, 2019) has a car park, lounge, a switch-coded vault with a machete, and a bathhouse basement with saunas that heal and a pool that turns red after 6 kills [src:fandom/Crimson_Ring_Club] [src:changelog/0.7.7] [M]
-- Main Spring (orig) spawns Bank, Police and Mansion together with no club and 2/3 teahouses instead of the complex; survev uses Main's club + trio [src:derived/survev@33832ffe:src/defs/maps/mainSpringDefs.ts:51-81] [src:survev/shared/defs/maps/mainSpringDefs.ts:65-96] [H]
+- Main Spring (orig) lists Bank, Police and Mansion together, 2/3 teahouses instead of the complex and no club in its fixed spawns (the spring event predates the 0.7.7 club); survev uses Main's club + trio [src:derived/survev@33832ffe:src/defs/maps/mainSpringDefs.ts:51-81] [src:survev/shared/defs/maps/mainSpringDefs.ts:65-96] [src:changelog/0.7.3] [src:changelog/0.7.7] [H]
 - Main Summer: teahouse complex and scout hut; fandom says the summer map has "a Scout Hut instead of the Gold Hut" [src:derived/survev@33832ffe:src/defs/maps/mainSummerDefs.ts:54-87] [src:fandom/Maps] [M]
 
 ### Desert

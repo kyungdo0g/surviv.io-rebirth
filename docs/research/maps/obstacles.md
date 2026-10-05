@@ -12,8 +12,8 @@
 - Per file, survev-only ids: buildingObjs 80, mapObstacle 48, furniture 22, crate 19, interactable 8 (fork) [src:derived/obstacle-dump] [src:derived/fork-vs-original-json] [H]
 - The original client names the grouping field `obstacleType`; survev renamed it `category` (values crate 88 ids, furniture 37, airdrop 17, pot 17, barrel 11, potato 9, locker 6, toilet 6, vending 1, unset 549) [src:derived/live-vs-survev] [src:survev/shared/defs/mapObjects/obstacles/obstacleDefs.ts:14] [src:derived/obstacle-dump] [H]
 - Categories drive "destruction" quests (crates, toilets, furniture, barrels, lockers, pots, vending machines, potatoes) [src:survev/shared/defs/gameObjects/questDefs.ts:670-891] [src:survev/server/src/game/questManager.ts:175] [H]
-- Original-only `tire_01`: 1500 HP, circle r1.75, height 0.5, destructible, grass/beach, no loot, "cloth" sounds (unused by any original map def) [src:kong/relaunch-client-defs] [H]
-- Original-only `house_door_06` (wood door, box 0.3 × 2.5) and `glass_wall_18` (glass wall 150 HP, ±0.5 × 9) [src:kong/relaunch-client-defs] [H]
+- Original-only `tire_01`: 1500 HP, circle r1.75, height 0.5, destructible, grass/beach, no loot, "cloth" sounds; no building in the original client places it [src:kong/relaunch-client-defs] [H]
+- Original-only `house_door_06` (150-HP swinging door, 0.6 × 2.5 box from its hinge) and `glass_wall_18` (glass wall 150 HP, ±0.5 × 9); no original building places either [src:kong/relaunch-client-defs] [H]
 - Fandom separates "obstacles" (do not drop loot unless they are a cache) from "crates" (drop loot); the survev schema treats both as obstacles [src:fandom/Obstacles] [src:survev/shared/defs/mapObjects/obstacles/obstacleDefs.ts:12-183] [M]
 
 ## Server behaviour by field
@@ -194,7 +194,7 @@
 
 | id | wiki name | HP | collision | height | col/destr | scale min–max / destroy | minimap | terrain | loot | behaviour | status | source |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `tree_01` | Palm tree | 175 | circle r1.55 | 10 | CD | 0.8–1 / 0.5 | yes | grass | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1121] [src:kong/relaunch-client-defs] [H] |
+| `tree_01` | Tree | 175 | circle r1.55 | 10 | CD | 0.8–1 / 0.5 | yes | grass | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1121] [src:kong/relaunch-client-defs] [H] |
 | `tree_01cb` | Synthetic Tree | 175 | circle r1.2 | 10 | CD | 1.1–1.3 / 0.5 | yes | grass | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1122] [src:kong/relaunch-client-defs] [H] |
 | `tree_01sv` | Savannah Tree | 175 | circle r1.55 | 10 | CD | 0.8–1 / 0.5 | yes | grass | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1133] [src:kong/relaunch-client-defs] [H] |
 | `tree_interior_01` |  | 175 | circle r1.55 | 10 | CD | 0.8–1 / 0.5 | yes | grass | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1137] [src:kong/relaunch-client-defs] [H] |
@@ -224,7 +224,7 @@
 | `tree_07su` |  | 175 | circle r1.55 | 10 | CD | 1–1.2 / 0.5 | yes | grass | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1351] [src:kong/relaunch-client-defs] [H] |
 | `tree_08` | Orange Tree | 225 | circle r1.55 | 10 | CD | 1.2–1.4 / 0.5 | yes | grass | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1356] [src:kong/relaunch-client-defs] [H] |
 | `tree_08b` | Orange Tree | 300 | circle r1.55 | 10 | CD | 1.75–2 / 0.5 | yes | grass | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1366] [src:kong/relaunch-client-defs] [H] |
-| `tree_08c` | Orange Tree | 500 | circle r1.55 | 10 | CD | 1.75–2 / 0.5 | yes | grass | `tier_shotguns`×2–3, `tier_lmgs`×2–3, `outfitWoodland`×1 | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1378] [src:kong/relaunch-client-defs] [H] |
+| `tree_08c` | Orange Tree (logging, cache) | 500 | circle r1.55 | 10 | CD | 1.75–2 / 0.5 | yes | grass | `tier_shotguns`×2–3, `tier_lmgs`×2–3, `outfitWoodland`×1 | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1378] [src:kong/relaunch-client-defs] [H] |
 | `tree_08f` | Faction Tree | 200 | circle r1.55 | 10 | CD | 1.2–1.6 / 0.5 | yes | grass | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1395] [src:kong/relaunch-client-defs] [H] |
 | `tree_08sp` |  | 225 | circle r1.55 | 10 | CD | 1.2–1.4 / 0.5 | yes | grass+riverShore | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1406] [src:kong/relaunch-client-defs] [H] |
 | `tree_08spb` |  | 300 | circle r1.55 | 10 | CD | 1.75–2 / 0.5 | yes | grass+riverShore | – | isTree | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1417] [src:kong/relaunch-client-defs] [H] |
@@ -240,7 +240,7 @@
 | `tree_13` | Tree (palm) | 175 | circle r1 | 10 | CD | 1.15–1.3 / 0.75 | yes | beach | – | isTree, randomRotation | orig (fork-modified) | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1537] [src:kong/relaunch-client-defs] [H] |
 | `tree_13bh` |  | 175 | circle r1 | 10 | CD | 1.15–1.3 / 0.75 | yes | grass+beach | – | isTree, randomRotation | fork | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1549] [H] |
 | `tree_13x` |  | 175 | circle r1 | 10 | CD | 1.2–1.4 / 0.75 | yes | grass | – | isTree, randomRotation | fork | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1561] [H] |
-| `tree_14` | Tree | 175 | circle r1 | 10 | CD | 1.15–1.3 / 0.85 | yes | grass+beach | `tier_coconut_outfit`×1, `coconut`×3 | isTree, randomRotation | fork | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1573] [H] |
+| `tree_14` | Coconut Palm | 175 | circle r1 | 10 | CD | 1.15–1.3 / 0.85 | yes | grass+beach | `tier_coconut_outfit`×1, `coconut`×3 | isTree, randomRotation | fork | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1573] [H] |
 | `tree_14d` |  | 250 | circle r1 | 10 | CD | 1.5–1.7 / 0.95 | yes | grass+beach | 3× `coconut`×3 | isTree, randomRotation | fork | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1587] [H] |
 | `tree_14x` |  | 175 | circle r1 | 10 | CD | 1.15–1.3 / 0.85 | yes | grass | `tier_coconut_outfit`×1–3, `coconut`×3 | isTree, randomRotation | fork | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1602] [H] |
 
@@ -292,7 +292,7 @@
 | `sandbags_01` | Sandbag | 150 | box ±3.1×1.4 | 0.5 | C– | 1–1 / 0.5 | yes | – | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:795] [src:kong/relaunch-client-defs] [H] |
 | `sandbags_02` | Small Sandbag | 150 | box ±1.1×1.4 | 0.5 | C– | 1–1 / 0.5 | yes | – | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:796] [src:kong/relaunch-client-defs] [H] |
 | `silo_01` | Silo | 300 | circle r7.75 | 10 | C– | 1–1 / 1 | yes | grass | – | reflects | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:800] [src:kong/relaunch-client-defs] [H] |
-| `silo_01po` | Silo | 2500 | circle r7.75 | 10 | CD | 1–1 / 0.9 | yes | grass | `potato_smg`×1 | reflects | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:801] [src:kong/relaunch-client-defs] [H] |
+| `silo_01po` | Rusted Silo | 2500 | circle r7.75 | 10 | CD | 1–1 / 0.9 | yes | grass | `potato_smg`×1 | reflects | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:801] [src:kong/relaunch-client-defs] [H] |
 | `woodpile_01` | Wood Pile | 150 | box ±1.5×1.5 | 0.5 | CD | 1–1 / 0.75 | – | – | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1614] [src:kong/relaunch-client-defs] [H] |
 | `woodpile_02` | Log Pile | 400 | box ±6×3 | 0.5 | CD | 1–1 / 0.75 | yes | – | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1615] [src:kong/relaunch-client-defs] [H] |
 | `woodpile_03` |  | 175 | box ±3×1.75 | 0.5 | CD | 1–1 / 0.75 | yes | – | – | – | fork | [src:survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1625] [H] |
@@ -364,7 +364,7 @@
 | `crate_02sv` |  | 140 | box ±2.25×2.25 | 1–1 / 0.5 | yes | grass+riverShore | `tier_soviet`×4–5, `tier_world`×1, `tier_medical`×1 | – | orig (fork-modified) | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:391] [src:kong/relaunch-client-defs] [H] |
 | `crate_02sv_lake` |  | 140 | box ±2.25×2.25 | 1–1 / 0.5 | yes | grass+beach+riverShore | `tier_soviet`×5–6, `tier_medical`×1 | – | orig (fork-modified) | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:403] [src:kong/relaunch-client-defs] [H] |
 | `crate_02x` | Present Crate | 140 | box ±2.25×2.25 | 1–1 / 0.5 | – | grass+riverShore | `tier_soviet`×3–5 | – | orig | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:410] [src:kong/relaunch-client-defs] [H] |
-| `crate_02f` | Soviet Crate | 140 | box ±2.25×2.25 | 1–1 / 0.5 | yes | grass+riverShore | `tier_guns`×3 (preloaded), `tier_armor`×2, `tier_packs`×1 | teamId 1, minDistanceFromSameType 32 | orig (fork-modified) | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:418] [src:kong/relaunch-client-defs] [H] |
+| `crate_02f` | Soviet Crate (50v50) | 140 | box ±2.25×2.25 | 1–1 / 0.5 | yes | grass+riverShore | `tier_guns`×3 (preloaded), `tier_armor`×2, `tier_packs`×1 | teamId 1, minDistanceFromSameType 32 | orig (fork-modified) | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:418] [src:kong/relaunch-client-defs] [H] |
 | `crate_02d` | Soviet Crate | 140 | box ±2.25×2.25 | 1–1 / 0.5 | yes | grass+riverShore | `m1014`×1, `helmet03_lt_aged`×1, `outfitRedLeaderAged`×1, `machete_taiga`×1 | – | orig | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:435] [src:kong/relaunch-client-defs] [H] |
 | `crate_03` | Grenade Box | 100 | box ±1.575×1.575 | 1–1 / 0.5 | yes | grass+riverShore | `tier_throwables`×2–4, `tier_fragtastic`×1 | – | orig (fork-modified) | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:448] [src:kong/relaunch-client-defs] [H] |
 | `crate_03x` | Snowball Crate | 100 | box ±1.575×1.575 | 1–1 / 0.5 | yes | grass+riverShore | 3× `snowball`×4 | – | orig | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:457] [src:kong/relaunch-client-defs] [H] |
@@ -400,8 +400,8 @@
 | `crate_20` | Crab Pot | 75 | box ±1.7×1.7 | 1–1 / 0.5 | yes | grass+riverShore | `tier_armor`×1, `tier_world`×1 | – | orig | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:941] [src:kong/relaunch-client-defs] [H] |
 | `crate_21` | Cloud Crate | 140 | box ±2.25×2.25 | 1–1 / 0.5 | yes | grass+riverShore | `tier_guns`×1–2, `tier_snipers`×1, `tier_cloud_02`×1, `tier_perks`×1 | – | orig | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:952] [src:kong/relaunch-client-defs] [H] |
 | `crate_21b` | Cloud Crate | 140 | box ±2.25×2.25 | 1–1 / 0.5 | – | grass+riverShore | `tier_guns`×1–2, `tier_snipers`×1, `tier_cloud_02`×1, `tier_perks`×1 | – | orig | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:965] [src:kong/relaunch-client-defs] [H] |
-| `crate_22` |  | 140 | box ±2.25×2.25 | 1–1 / 0.5 | yes | grass+riverShore | `tier_guns`×3 (preloaded), `tier_armor`×2, `tier_packs`×1 | teamId 2, minDistanceFromSameType 32 | orig (fork-modified) | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:978] [src:kong/relaunch-client-defs] [H] |
-| `crate_22d` |  | 140 | box ±2.25×2.25 | 1–1 / 0.5 | yes | grass+riverShore | `an94`×1, `helmet03_lt_aged`×1, `outfitBlueLeaderAged`×1, `kukri_trad`×1 | – | orig | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:995] [src:kong/relaunch-client-defs] [H] |
+| `crate_22` | Initiative Crate | 140 | box ±2.25×2.25 | 1–1 / 0.5 | yes | grass+riverShore | `tier_guns`×3 (preloaded), `tier_armor`×2, `tier_packs`×1 | teamId 2, minDistanceFromSameType 32 | orig (fork-modified) | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:978] [src:kong/relaunch-client-defs] [H] |
+| `crate_22d` | Desert Initiative Crate | 140 | box ±2.25×2.25 | 1–1 / 0.5 | yes | grass+riverShore | `an94`×1, `helmet03_lt_aged`×1, `outfitBlueLeaderAged`×1, `kukri_trad`×1 | – | orig | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:995] [src:kong/relaunch-client-defs] [H] |
 
 ### Air drops (crateDefs)
 
@@ -476,7 +476,7 @@
 | `couch_02b` |  | 125 | box ±3×1.5 | 0.5 | CD | – | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/furnitureDefs.ts:743] [src:kong/relaunch-client-defs] [H] |
 | `couch_03` | Couch | 125 | box ±1.5×1.5 | 0.5 | CD | – | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/furnitureDefs.ts:747] [src:kong/relaunch-client-defs] [H] |
 | `bottle_01` | Bottle | 12 | circle r0.5 | 0.5 | CD | yes | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/furnitureDefs.ts:751] [src:kong/relaunch-client-defs] [H] |
-| `bottle_02` | Bottle Switch | 20 | circle r1.5 | 0.5 | CD | yes | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/furnitureDefs.ts:768] [src:kong/relaunch-client-defs] [H] |
+| `bottle_02` | Bottle | 20 | circle r1.5 | 0.5 | CD | yes | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/furnitureDefs.ts:768] [src:kong/relaunch-client-defs] [H] |
 | `bottle_04` | Bottle | 20 | circle r0.5 | 0.5 | CD | yes | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/furnitureDefs.ts:785] [src:kong/relaunch-client-defs] [H] |
 | `bottle_05` | Bottle | 20 | circle r1.5 | 0.5 | CD | yes | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/furnitureDefs.ts:802] [src:kong/relaunch-client-defs] [H] |
 | `candle_01` |  | 150 | circle r0.5 | 0.5 | –– | – | – | – | orig | [src:survev/shared/defs/mapObjects/obstacles/furnitureDefs.ts:819] [src:kong/relaunch-client-defs] [H] |
