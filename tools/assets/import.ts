@@ -49,7 +49,7 @@ const manifest: Record<string, string> = {};
 const duplicates: string[] = [];
 for (const f of files.filter((p) => p.startsWith("img/") && /\.(svg|png)$/.test(p)).sort()) {
     const key = `${basename(f, extname(f))}.img`;
-    if (manifest[key] && manifest[key].endsWith(".svg")) {
+    if (manifest[key]?.endsWith(".svg")) {
         duplicates.push(`${key}: ${manifest[key]} / ${f}`);
         continue;
     }

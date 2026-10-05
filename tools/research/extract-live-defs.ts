@@ -78,7 +78,8 @@ for (const id of findModule(modules, /randomObstacleType\s*:/)) {
     const helpers = req(Number(id));
     if (typeof helpers.randomObstacleType !== "function") continue;
     const orig = helpers.randomObstacleType;
-    helpers.randomObstacleType = (weights: Record<string, number>) => Object.assign(orig(weights), { __weights: weights });
+    helpers.randomObstacleType = (weights: Record<string, number>) =>
+        Object.assign(orig(weights), { __weights: weights });
 }
 
 const goId = findModule(modules, /GameObject ".concat\(|GameObject "\s*\+/)[0];

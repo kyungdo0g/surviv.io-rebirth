@@ -9,7 +9,12 @@ export default defineConfig({
         baseURL: "http://127.0.0.1:5173",
         viewport: { width: 1280, height: 720 },
         launchOptions: {
-            args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
+            args: [
+                "--use-gl=angle",
+                "--use-angle=swiftshader",
+                "--enable-unsafe-swiftshader",
+                "--ignore-gpu-blocklist",
+            ],
         },
     },
     webServer: {

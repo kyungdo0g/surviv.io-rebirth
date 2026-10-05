@@ -9,7 +9,10 @@
             "!research-cache",
             "!packages/defs/src/generated",
             "!apps/client/public",
-            "!docs/research/**/*.json"
+            "!docs/research/**/*.json",
+            "!test-results",
+            "!playwright-report",
+            "!tests/e2e/__screens__"
         ]
     },
     "formatter": {
