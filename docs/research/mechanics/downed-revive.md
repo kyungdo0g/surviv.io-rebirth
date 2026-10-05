@@ -7,10 +7,10 @@
 
 | constant | value | original client? | sources |
 |---|---|---|---|
-| `reviveHealth` | 24 HP after a revive | yes | [src:survev/shared/gameConfig.ts:191] [src:derived/survev@9f64948d:src/gameConfig.ts:122] [src:kong/relaunch-client-bundle] [src:fandom/Knocked_Out] [src:fandom/Player] [H] |
-| `reviveDuration` | 8 s | yes | [src:survev/shared/gameConfig.ts:211] [src:derived/survev@9f64948d:src/gameConfig.ts:127] [src:kong/relaunch-client-bundle] [src:fandom/Knocked_Out] [src:fandom/Revivify] [H] |
-| `reviveRange` | 5 u | yes | [src:survev/shared/gameConfig.ts:212] [src:derived/survev@9f64948d:src/gameConfig.ts:128] [src:kong/relaunch-client-bundle] [src:fandom/Knocked_Out] [H] |
-| `bleedTickRate` | 1 s | yes | [src:survev/shared/gameConfig.ts:206] [src:derived/survev@9f64948d:src/gameConfig.ts:126] [src:kong/relaunch-client-bundle] [H] |
+| `reviveHealth` | 24 HP after a revive | yes | [src:survev/shared/gameConfig.ts:191] [src:derived/survev@9f64948d:src/gameConfig.ts:122] [src:kong/relaunch-client-defs] [src:fandom/Knocked_Out] [src:fandom/Player] [H] |
+| `reviveDuration` | 8 s | yes | [src:survev/shared/gameConfig.ts:211] [src:derived/survev@9f64948d:src/gameConfig.ts:127] [src:kong/relaunch-client-defs] [src:fandom/Knocked_Out] [src:fandom/Revivify] [H] |
+| `reviveRange` | 5 u | yes | [src:survev/shared/gameConfig.ts:212] [src:derived/survev@9f64948d:src/gameConfig.ts:128] [src:kong/relaunch-client-defs] [src:fandom/Knocked_Out] [H] |
+| `bleedTickRate` | 1 s | yes | [src:survev/shared/gameConfig.ts:206] [src:derived/survev@9f64948d:src/gameConfig.ts:126] [src:kong/relaunch-client-defs] [H] |
 | `bleedDamage` (per tick, all maps) | 2 | yes (map def) | [src:survev/shared/defs/maps/baseDefs.ts:87] [src:derived/survev@9f64948d:src/defs/modes/main.ts:59] [H] |
 | `bleedDamageMult` | 1 on every map except Faction (50v50) 1.25 | yes (map def) | [src:survev/shared/defs/maps/baseDefs.ts:88] [src:survev/shared/defs/maps/factionDefs.ts:245-246] [src:derived/survev@9f64948d:src/defs/modes/main.ts:60] [src:derived/survev@4b291f4d:shared/defs/maps/factionDefs.ts:136-137] [H] |
 | `crawlTime` | 0.75 s | yes | [src:survev/shared/gameConfig.ts:213] [src:derived/survev@9f64948d:src/gameConfig.ts:129] [H] |
@@ -38,7 +38,7 @@
 - Knockback: velocity set to the hit direction × 10, decaying by 1/(1 + 4·dt) per tick [src:survev/server/src/game/objects/player.ts:2588] [src:survev/server/src/game/objects/player.ts:1943-1946] [M]
 - A cooking grenade is dropped at the player's feet (thrown with no velocity), any action is cancelled, firing input is cleared, and the active weapon is forced to the melee slot; a pan in the melee slot is worn on the back [src:survev/server/src/game/objects/player.ts:2594-2610] [H]
 - A KillMsg with `downed: true` is broadcast. The source player (if any) becomes `downedBy` and is sent as both `killerId` and `killCreditId`. The feed reads "<killer> knocked out <target> with <weapon>"; gas reads "The red zone knocked out ...", airdrops "The air drop knocked out ..." [src:survev/server/src/game/objects/player.ts:2615-2628] [src:survev/client/src/ui/ui2.ts:1420-1467] [src:survev/client/src/en.json:309] [src:l10n/ko:game-knocked-out] [H]
-- In Faction mode, a knock re-checks Lone Survivr and Captain promotion [src:survev/server/src/game/objects/player.ts:2630-2634] [src:changelog/0.8.71] [H]
+- In Faction mode, a knock re-checks Lone Survivr promotion, and also Captain promotion (the Captain role is fork-only, fork) [src:survev/server/src/game/objects/player.ts:2630-2634] [src:survev/shared/defs/gameObjects/roleDefs.ts:162-170] [src:derived/survev@9f64948d:src/defs/roleDefs.js:2-161] [src:changelog/0.8.71] [H]
 - Kill-feed and team UI keys: "is down" (`game-is-down`), "knocked out", "finally killed", "finally bled out" [src:survev/client/src/en.json:309-312] [src:survev/client/src/en.json:734] [src:l10n/ko:game-is-down] [src:l10n/ko:game-finally-bled-out] [H]
 
 ## While downed
@@ -66,6 +66,7 @@
 - The first effective tick lands about 1 s after the down (the tick at the down is absorbed by the damage buffer) [src:survev/server/src/game/objects/player.ts:1574-1580] [src:survev/server/src/game/objects/player.ts:1601-1608] [M]
 - Gas keeps damaging downed players on top of bleeding (fandom: in late stages the red zone hits harder than bleeding) [src:survev/server/src/game/objects/player.ts:1648-1669] [src:fandom/Knocked_Out] [H]
 - That Sucks (`trick_drain`, Halloween 0.8.7): 1 Bleeding damage every 3 s (`bleedTickRate × 3`) even while standing; the original client shows the same 3 s cadence [src:survev/server/src/game/objects/player.ts:1603-1620] [src:survev/shared/defs/gameObjects/perkDefs.ts:149-151] [src:survev/client/src/objects/player.ts:999-1002] [src:fandom/That_Sucks] [H]
+- Quirk: a downed `trick_drain` holder takes the drain (1 every 3 s) instead of the normal bleed, because the drain branch replaces the bleed amount and tick rate. The original client's blood-splat timer uses the same 3 s cadence for such a player [src:survev/server/src/game/objects/player.ts:1600-1625] [src:survev/client/src/objects/player.ts:992-1002] [M]
 - namu: a downed squad player slowly loses health and dies unless a teammate revives them [src:namu/Surviv.io] [M]
 
 ## Reviving a teammate
@@ -80,14 +81,16 @@
 - Completion: the target gets `downed = false`, `downedBy` cleared, the damage buffer cleared, health = 24, and stops wearing the pan if it is held [src:survev/server/src/game/objects/player.ts:1716-1735] [src:fandom/Knocked_Out] [H]
 - After a revive the player keeps all gear and inventory but has 0 boost [src:fandom/Knocked_Out] [src:survev/server/src/game/objects/player.ts:2585] [H]
 - Revive particles: since 0.7.6 the downed player gives off purple heal particles while being revived [src:fandom/Knocked_Out] [src:fandom/Player] [M]
-- 0.2.2 fixed reduced health after reviving another player; 0.2.1 fixed a stuck reviving pose [src:changelog/0.2.2] [src:fandom/Player] [M]
+- 0.2.2 fixed reduced health after reviving another player; 0.2.1 fixed a stuck reviving pose [src:changelog/0.2.2] [src:changelog/0.2.1] [src:fandom/Player] [H]
 - namu advises throwing a smoke grenade before reviving in duo, squad and 50v50 [src:namu/Surviv.io/팁] [M]
 
 ## Revivify (`self_revive`) and the Medic
 
 - Revivify (original 0.8.65, Savannah first; Faction Medic from 0.8.71): a downed holder may start a Revive action on themselves (Interact or Revive input). It lasts 8 s, the holder moves at 2 u/s and the bleed pauses. A "Revive Self" button appears [src:survev/server/src/game/objects/player.ts:3156] [src:survev/server/src/game/objects/player.ts:3195-3201] [src:survev/client/src/ui/ui2.ts:1651-1659] [src:changelog/0.8.65] [src:changelog/0.8.71] [src:wikigg/Revivify] [H]
-- Teammates can still revive a Revivify holder normally; the holder can cancel the teammate's revive [src:survev/server/src/game/objects/player.ts:3345-3354] [src:fandom/Revivify] [src:wikigg/Revivify] [H]
-- Mass Medicate (`aoe_heal`, Medic role since 0.7.6): when the medic finishes a revive, every downed teammate within `medicReviveRange` 6 u is revived. This also happens when the medic self-revives or when someone revives the medic. The aura is purple and smaller than the 8 u heal aura [src:survev/server/src/game/objects/player.ts:3279-3300] [src:survev/server/src/game/objects/player.ts:3137-3150] [src:survev/client/src/objects/player.ts:1755-1785] [src:fandom/Mass_Medicate] [src:fandom/Medic] [src:wikigg/Mass_Medicate] [H]
+- Teammates can still revive a Revivify holder normally; the holder can cancel the teammate's revive [src:fandom/Revivify] [src:wikigg/Revivify] [H]
+- In survev any downed player (with or without Revivify) may send Cancel to stop a teammate's revive, unless the reviver has Mass Medicate (`aoe_heal`); a self-reviving medic can still cancel their own revive [src:survev/server/src/game/objects/player.ts:3345-3354] [src:fandom/Knocked_Out] [H]
+- Mass Medicate (`aoe_heal`, Medic role since 0.7.6): when the medic finishes a revive (of a teammate, or of themselves with Revivify), every downed teammate on the same layer within `medicReviveRange` 6 u is revived. The aura is purple and smaller than the 8 u heal aura [src:survev/server/src/game/objects/player.ts:3279-3300] [src:survev/server/src/game/objects/player.ts:3222-3248] [src:survev/client/src/objects/player.ts:1755-1785] [src:fandom/Mass_Medicate] [src:fandom/Medic] [src:wikigg/Mass_Medicate] [H]
+- Both wikis say the AoE also triggers when another player revives the medic, and the original client shows the purple aura in that case (a downed medic holding `self_revive` with a Revive action). survev only runs the AoE from the medic's own revive, so a non-medic reviving the medic revives the medic alone [src:fandom/Mass_Medicate] [src:wikigg/Mass_Medicate] [src:survev/client/src/objects/player.ts:1757-1763] [src:survev/server/src/game/objects/player.ts:1716-1735] [M]
 - Mass Medicate does not speed up revives (8 s) [src:survev/server/src/game/objects/player.ts:3196-3212] [src:fandom/Mass_Medicate] [src:wikigg/Mass_Medicate] [H]
 - Faction Medic role perks: `aoe_heal`, `self_revive` [src:survev/shared/defs/gameObjects/roleDefs.ts:235] [src:derived/survev@9f64948d:src/defs/roleDefs.js:32] [H]
 - Players inside a medic's revive aura but not the medic's direct target have no Revive action of their own, so survev keeps bleeding them until the revive completes [src:survev/server/src/game/objects/player.ts:1603] [src:survev/server/src/game/objects/player.ts:3137-3150] [L]
@@ -97,7 +100,7 @@
 - Finishing a downed player credits the player who downed them when: the finisher is on the downer's team; the finishing damage is not `Player` (bleed-out, gas, airstrike, crush); or the victim's own teammate finishes a player downed by an enemy [src:survev/server/src/game/gameModeManager.ts:286-302] [src:survev/tests/src/kill.test.ts:25-246] [H]
 - Otherwise the finisher gets the kill. For example, if a teammate downed a disconnected player and an enemy finishes them, the enemy gets it [src:survev/tests/src/kill.test.ts:181-214] [H]
 - The bleed-out KillMsg leaves `killerId` empty but carries `killCreditId`. The feed shows "<downer> finally killed <target>" or "<target> finally bled out"; the credited player sees "You finally killed X" [src:survev/server/src/game/objects/player.ts:2798-2804] [src:survev/client/src/ui/ui2.ts:1430-1438] [src:survev/client/src/ui/ui2.ts:1563-1569] [H]
-- Takedown triggers only on a credited kill: knocking out does not trigger it, and finishing someone a teammate downed gives the kill (and the perk) to the teammate [src:survev/server/src/game/objects/player.ts:2721-2725] [src:wikigg/Takedown] [src:fandom/Takedown] [H]
+- Takedown triggers only on a credited kill (survev, wiki.gg): knocking out does not trigger it, and finishing someone a teammate downed gives the kill (and the downer's Takedown) to the teammate. Fandom instead says the finisher's Takedown still activates while the kill goes to the knocker (see Conflicts) [src:survev/server/src/game/objects/player.ts:2721-2725] [src:wikigg/Takedown] [src:fandom/Takedown] [M]
 - Kills of downed players by the team wipe go to each victim's `downedBy` [src:survev/server/src/game/group.ts:56-66] [H]
 
 ## Conflicts
@@ -106,7 +109,9 @@
 - CONFLICT bleed-escalation-shape: survev uses `downedCount × 1.25` (2.5, 5, 7.5 per tick) [src:survev/server/src/game/objects/player.ts:1618] vs survev's first implementation compounding ×1.25 per down (2.5, 3.125, 3.9) [src:derived/survev-git-e16781bd]; proposed: keep the linear survev form as a knob, since neither is sourced [L]
 - CONFLICT down-health-50: down at 50 HP once the gas radius is ≤ 0.1 [src:survev/server/src/game/objects/player.ts:2590-2592] vs fandom: after multiple self-revives "some other feature kicks in" and gas-downs give less health [src:fandom/Revivify]; proposed: keep survev's rule, log the original trigger as open [L]
 - CONFLICT revive-drop-cancel: dropping an item cancels the action, revives included [src:survev/server/src/game/objects/player.ts:4242-4243] vs "A reviver can drop items without interrupting reviving" [src:fandom/Knocked_Out]; proposed: exempt Revive actions from the drop cancel [M]
-- CONFLICT revivify-version: Revivify added in 0.8.65 [src:changelog/0.8.65] [src:wikigg/Revivify] vs v0.8.5 "Proxy party" [src:fandom/Revivify]; proposed: 0.8.65 (changelog) [H]
+- CONFLICT medic-revived-aoe: survev revives the AoE group only when the medic completes a revive themselves [src:survev/server/src/game/objects/player.ts:1716-1735] [src:survev/server/src/game/objects/player.ts:3279-3300] vs "triggered when the Medic is healing or reviving themselves or if a Player is reviving the Medic" [src:fandom/Mass_Medicate] [src:wikigg/Mass_Medicate], consistent with the original client drawing the revive aura on a medic being revived [src:survev/client/src/objects/player.ts:1757-1763]; proposed: also run the medic's AoE revive when a teammate's revive of the medic completes [M]
+- CONFLICT takedown-credit-trigger: Takedown runs for the credited player, so finishing a teammate's knock triggers the downer's Takedown, not the finisher's [src:survev/server/src/game/objects/player.ts:2693-2725] [src:wikigg/Takedown] vs "Killing a player who was knocked by a player other than yourself will still activate the perk, but the kill will go to whoever knocked the player" [src:fandom/Takedown]; proposed: follow fandom for 0.8.82 (wiki.gg documents the fork) and keep survev's rule as a knob [L]
+- CONFLICT revivify-version: Revivify added in 0.8.65 [src:changelog/0.8.65] [src:wikigg/Revivify] vs v0.8.5 "Proxy party" [src:fandom/Revivify], although fandom's own date (October 22, 2019) is the 0.8.65 release date [src:changelog/0.8.65]; proposed: 0.8.65 (changelog) [H]
 
 ## Open questions
 

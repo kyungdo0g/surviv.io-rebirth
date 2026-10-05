@@ -7,7 +7,7 @@
 
 | constant | value | client-visible? | sources |
 |---|---|---|---|
-| `boostBreakpoints` | [1, 1, 1.5, 0.5] (sum 4), giving tier edges at 25 / 50 / 87.5 / 100 | yes | [src:survev/shared/gameConfig.ts:196] [src:derived/survev@9f64948d:src/gameConfig.ts:123] [src:kong/relaunch-client-bundle] [H] |
+| `boostBreakpoints` | [1, 1, 1.5, 0.5] (sum 4), giving tier edges at 25 / 50 / 87.5 / 100 | yes | [src:survev/shared/gameConfig.ts:196] [src:derived/survev@9f64948d:src/gameConfig.ts:123] [src:kong/relaunch-client-defs] [H] |
 | `boostHealAmounts` (HP/s per tier) | [0.5, 1.25, 1.5, 1.75] | no | [src:survev/shared/gameConfig.ts:195] [src:wikigg/Adrenaline] [M] |
 | `boostDecay` | 0.375 boost/s | no | [src:survev/shared/gameConfig.ts:193] [src:fandom/Adrenaline] [src:wikigg/Adrenaline] [H] |
 | `boostMoveSpeed` | +1.85 u/s at boost ≥ 50 | no | [src:survev/shared/gameConfig.ts:194] [src:fandom/Adrenaline] [src:fandom/Player] [src:wikigg/Adrenaline] [H] |
@@ -15,7 +15,8 @@
 | Soda (`soda`) | +25 boost, 3 s | yes (item def) | [src:survev/shared/defs/gameObjects/gearDefs.ts:325-329] [src:derived/survev@9f64948d:src/defs/gearDefs.js:185-189] [src:fandom/Soda] [src:namu/Surviv.io/의료품] [H] |
 | Pills (`painkiller`) | +50 boost, 5 s | yes (item def) | [src:survev/shared/defs/gameObjects/gearDefs.ts:347-351] [src:derived/survev@9f64948d:src/defs/gearDefs.js:207-211] [src:fandom/Pills] [src:namu/Surviv.io/의료품] [H] |
 
-- survev's earlier placeholder values were `boostDecay 0.33` and a flat `boostHealAmount 0.33` (commit `f96f88cd`, 2024-03-29), replaced by the current numbers [src:derived/survev-git-f96f88cd] [src:derived/survev-git-f35a7380] [L]
+- survev history: commit `2047140c` (2024-03-04) hard-coded decay 0.375/s and heal tiers 1 / 3.75 / 4.75 / 5 HP/s, the same numbers as fandom. Commits `ac8ac068` / `97029e58` (2024-06-28/29, "fixed healing/boost drop") changed the tiers to 0.5 / 1.25 / 1.5 / 1.75. So survev's current tiers are a survev correction and not independent of fandom's [src:derived/survev-git-2047140c] [src:derived/survev-git-ac8ac068] [src:derived/survev-git-97029e58] [H]
+- The unused `GameConfig` placeholders `boostDecay 0.33` and a flat `boostHealAmount 0.33` (commit `f96f88cd`, 2024-03-29) were replaced by the current config entries in `f35a7380` (2026-03-18) [src:derived/survev-git-f96f88cd] [src:derived/survev-git-f35a7380] [M]
 
 ## Formula in code (survev, every tick, `Player.update`)
 
@@ -41,7 +42,7 @@ if (!downed) {
 - Per-tick heal, decay and the downed reset [src:survev/server/src/game/objects/player.ts:1520-1546] [H]
 - Speed bonus [src:survev/server/src/game/objects/player.ts:4734-4737] [H]
 - survev's own unit test checks one second at `edge − 1` for each tier, including Leadership (tier 4) and Assume Leadership (tier 3) [src:survev/tests/src/boost.test.ts:13-49] [H]
-- Edge handling: exactly 25 heals 1.25, exactly 50 heals 1.5, exactly 87.5 heals 1.75. Before commit `f35a7380` exactly 25 healed 0.5 [src:survev/server/src/game/objects/player.ts:1527-1530] [src:derived/survev-git-ac8ac068] [M]
+- Edge handling: exactly 25 heals 1.25, exactly 50 heals 1.5, exactly 87.5 heals 1.75. Before commit `f35a7380` exactly 25 healed 0.5 [src:survev/server/src/game/objects/player.ts:1527-1530] [src:derived/survev-git-f35a7380] [H]
 
 ## Tier table: code vs wikis
 
@@ -90,7 +91,7 @@ if (!downed) {
 
 ## Interactions
 
-- Boost healing stacks with Gift of the Woods (`gotw`, +1 HP/s), building heal regions and Mass Medicate; it is not blocked by the red zone [src:survev/server/src/game/objects/player.ts:1555-1557] [src:survev/server/src/game/objects/player.ts:2141-2164] [src:wikigg/Adrenaline] [src:fandom/Gift_of_the_Woods] [H]
+- Boost healing stacks with Gift of the Woods (`gotw`; survev's +1 HP/s is a fork value, it was 0.5 before fork v0.2.2, see heal-actions.md), building heal regions and Mass Medicate; it is not blocked by the red zone [src:survev/server/src/game/objects/player.ts:1555-1557] [src:survev/server/src/game/objects/player.ts:2141-2164] [src:wikigg/Adrenaline] [src:fandom/Gift_of_the_Woods] [H]
 - Boost healing is clamped by the 100 HP cap; boost keeps decaying at full health [src:survev/server/src/game/objects/player.ts:647-648] [src:survev/server/src/game/objects/player.ts:1532-1542] [H]
 - That Sucks (`trick_drain`, Halloween 0.8.7) drain can be offset by boost (fandom) [src:fandom/That_Sucks] [src:wikigg/Adrenaline] [M]
 
@@ -99,11 +100,11 @@ if (!downed) {
 - Boost is sent as an 8-bit float over 0–100, and only when it changed by 0.1 or more since the last send [src:survev/shared/net/updateMsg.ts:15-16] [src:survev/server/src/game/objects/player.ts:1548-1553] [H]
 - The HUD bar has 4 segments sized by `boostBreakpoints` (25 % / 25 % / 37.5 % / 12.5 % of the bar). Each fills in turn and the bar is hidden at 0. The same code is in the relaunch bundle [src:survev/client/src/ui/ui2.ts:1153-1165] [src:kong/relaunch-client-bundle] [src:wikigg/Adrenaline] [H]
 - Tooltips: "Left-click to boost adrenaline by 25." (Soda), "... by 50." (Pills), "Adrenaline restores health over time." [src:survev/client/src/en.json:379-382] [src:l10n/ko:game-soda-tooltip] [src:l10n/ko:game-painkiller-tooltip] [src:l10n/ko:game-adrenaline-tooltip] [H]
-- Boost use emits the `boost` particle (green aura 0x199500 for the medic); boost particle skins are loadout items (`boost_basic`, `boost_star`, `boost_naturalize`, `boost_shuriken`; fork `boost_club`, `boost_hermes`, `boost_lightning`, `boost_gearshift`) [src:survev/shared/defs/gameObjects/gearDefs.ts:341-346] [src:changelog/0.8.6] [src:derived/live-vs-survev] [H]
+- Boost use emits the `boost` particle (green aura 0x199500 for the medic); boost particle skins are loadout items (`boost_basic`, `boost_star`, `boost_naturalize`, `boost_shuriken`; fork `boost_club`, `boost_hermes`, `boost_lightning`, `boost_gearshift`) [src:survev/shared/defs/gameObjects/gearDefs.ts:341-346] [src:survev/shared/defs/gameObjects/healEffectDefs.ts:63-122] [src:derived/survev@9f64948d:src/defs/healEffectDefs.js:30-56] [src:changelog/0.8.6] [H]
 
 ## Conflicts
 
-- CONFLICT boost-heal-tiers: 0.5 / 1.25 / 1.5 / 1.75 HP/s [src:survev/shared/gameConfig.ts:195] [src:wikigg/Adrenaline] vs 1 / 3.75 / 4.75 / 5 HP/s [src:fandom/Adrenaline] [src:fandom/Consumables]; proposed: keep survev's values as `boostHealAmounts` knobs (wiki.gg copies survev; fandom's values give a single Soda 66 HP, which seems implausible), and flag them for measurement on the relaunch [L]
+- CONFLICT boost-heal-tiers: 0.5 / 1.25 / 1.5 / 1.75 HP/s [src:survev/shared/gameConfig.ts:195] [src:wikigg/Adrenaline] vs 1 / 3.75 / 4.75 / 5 HP/s [src:fandom/Adrenaline] [src:fandom/Consumables]; survev itself used fandom's numbers until June 2024 and switched in a commit titled "fixed healing/boost drop" [src:derived/survev-git-97029e58]; proposed: keep survev's values as `boostHealAmounts` knobs (wiki.gg copies survev; fandom's values give a single Soda 66 HP, which seems implausible), and flag them for measurement on the relaunch [L]
 - CONFLICT boost-speed-threshold: one +1.85 step at ≥ 50 [src:survev/server/src/game/objects/player.ts:4735] [src:fandom/Adrenaline] [src:namu/Surviv.io] vs a second step at 90 % [src:fandom/Consumables] vs from 3/4 [src:namu/Surviv.io/팁]; proposed: single step at 50 [M]
 - CONFLICT lifeline-decay: decay × 0.75 = 0.28125/s [src:survev/shared/defs/gameObjects/perkDefs.ts:91] vs "20 % slower (0.3/s)" [src:wikigg/Indomitable_Spirit]; proposed: fork-only perk, out of scope for 0.8.82 [L]
 

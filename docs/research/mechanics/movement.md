@@ -1,7 +1,7 @@
 # Movement
 
 > Player movement speed, its modifiers and the per-tick position update, traced through survev `server/src/game/objects/player.ts` (`update`, `recalculateSpeed`) and `shared/gameConfig.ts`, cross-checked against fandom, wiki.gg and namu.
-> Most `GameConfig.player` speed constants (`moveSpeed`, `waterSpeedPenalty`, `cookSpeedPenalty`, `frozenSpeedPenalty`, `boostMoveSpeed`, `hasteSpeedBonus`, `downedMoveSpeed`, `downedRezMoveSpeed`) are server-only. The original client config (survev first commit `9f64948d`, cited `derived/survev@9f64948d:<path>:<lines>`) and the 2026 relaunch client bundle (`kong/relaunch-client-bundle`, `research-cache/live/app.e5465b46.js`) do not contain them. survev added them in commit `f96f88cd` (2024-03-29), so treat them as survev reconstructions that wikis corroborate.
+> Most `GameConfig.player` speed constants (`moveSpeed`, `waterSpeedPenalty`, `cookSpeedPenalty`, `frozenSpeedPenalty`, `boostMoveSpeed`, `hasteSpeedBonus`, `downedMoveSpeed`, `downedRezMoveSpeed`) are server-only. The original client config (survev first commit `9f64948d`, cited `derived/survev@9f64948d:<path>:<lines>`) and the 2026 relaunch client bundle (`kong/relaunch-client-bundle`, `research-cache/live/app.e5465b46.js`) do not contain them. survev hard-coded them from March 2024 (commit `2047140c`) and moved them into `GameConfig` in commit `f96f88cd` (2024-03-29), so treat them as survev reconstructions that wikis corroborate.
 > Units are world units per second (u/s). The player radius is 1 u. The server ticks at 100 Hz.
 
 ## Constants
@@ -17,8 +17,8 @@
 | `downedMoveSpeed` | 4 | no | [src:survev/shared/gameConfig.ts:207] [src:fandom/Player] [H] |
 | `downedRezMoveSpeed` (downed and being revived) | 2 | no | [src:survev/shared/gameConfig.ts:208] [src:fandom/Player] [H] |
 | reviver speed | `downedMoveSpeed + 2` = 6, marked in code "not specified in game config so i just estimated" | no | [src:survev/server/src/game/objects/player.ts:4693-4697] [L] |
-| `radius` | 1 | yes | [src:survev/shared/gameConfig.ts:187] [src:derived/survev@9f64948d:src/gameConfig.ts:118] [src:kong/relaunch-client-bundle] [H] |
-| `crawlTime` (downed crawl animation) | 0.75 s | yes | [src:survev/shared/gameConfig.ts:213] [src:derived/survev@9f64948d:src/gameConfig.ts:129] [src:kong/relaunch-client-bundle] [H] |
+| `radius` | 1 | yes | [src:survev/shared/gameConfig.ts:187] [src:derived/survev@9f64948d:src/gameConfig.ts:118] [src:kong/relaunch-client-defs] [H] |
+| `crawlTime` (downed crawl animation) | 0.75 s | yes | [src:survev/shared/gameConfig.ts:213] [src:derived/survev@9f64948d:src/gameConfig.ts:129] [src:kong/relaunch-client-defs] [H] |
 | `HasteType` | None 0, Windwalk 1, Takedown 2, Inspire 3 | yes | [src:survev/shared/gameConfig.ts:49-55] [src:derived/survev@9f64948d:src/gameConfig.ts:106-111] [H] |
 | server tick / net sync rate | `gameTps` 100, `netSyncTps` 33 (survev config) | n/a | [src:survev/config.ts:40-41] [M] |
 
@@ -58,7 +58,7 @@
 | `m249` (M249) | 0 | −4 | same | [src:survev/shared/defs/gameObjects/gunDefs.ts:692] [src:derived/survev@9f64948d:src/defs/gunDefs.js:602] [H] |
 | `pkp` (PKP Pecheneg) | 0 | −5 | same | [src:survev/shared/defs/gameObjects/gunDefs.ts:1282] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1142] [H] |
 | `potato_cannon` (Potato Cannon) | −3 | 0 | same | [src:survev/shared/defs/gameObjects/gunDefs.ts:3435] [src:derived/survev@9f64948d:src/defs/gunDefs.js:3102] [H] |
-| `potato_lmg` (Spud LMG, not in the original defs) | −1.5 | −6 | absent (post-0.8.82) | [src:survev/shared/defs/gameObjects/gunDefs.ts:3553] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1-3250] [M] |
+| `potato_lmg` (PMG-134, fork, added in fork v0.2.3 "Potato vs Tomato", 2026-04-01; not in the original defs or the relaunch) | −1.5 | −6 | absent (fork) | [src:survev/shared/defs/gameObjects/gunDefs.ts:3526] [src:survev/shared/defs/gameObjects/gunDefs.ts:3553] [src:wikigg/PMG-134] [src:derived/survev-git-81a93957] [H] |
 | `imbel` (fork), `spas16` (fork) | 0 | −1 | absent | [src:survev/shared/defs/gameObjects/gunDefs.ts:1235] [src:survev/shared/defs/gameObjects/gunDefs.ts:2035] [H] |
 | `barrett` (fork) | −1 | −4 | absent | [src:survev/shared/defs/gameObjects/gunDefs.ts:3174] [H] |
 | `sw500` (fork) | +0.5 | 0 | absent | [src:survev/shared/defs/gameObjects/gunDefs.ts:3226] [H] |
@@ -96,7 +96,7 @@
 - Narrowphase: after each substep, every collidable, non-dead obstacle on the same layer pushes the player circle out along the collision normal by `pen + 0.001`. With `tree_climbing`, trees are skipped [src:survev/server/src/game/objects/player.ts:1979-1998] [src:fandom/One_With_Nature] [H]
 - Players never collide with other players. Only obstacles are resolved [src:survev/server/src/game/objects/player.ts:1979-1998] [H]
 - The final position is clamped to the map bounds, inset by the player radius [src:survev/server/src/game/objects/player.ts:2303] [src:survev/server/src/game/map.ts:2277-2285] [H]
-- Water test (`map.isOnWater`, at the player centre): a decal surface wins first, then the highest-zIdx building surface on the layer, then river water polygons (not on layer 1). Lakes and the sea count as river polygons [src:survev/server/src/game/map.ts:2378-2440] [H]
+- Water test (`map.isOnWater`, at the player centre): a decal surface wins first, then the highest-zIdx building surface on the layer, then river and lake water polygons (`terrain.rivers`, skipped on layer 1). Any point outside the shore polygon (the ocean) is water [src:survev/server/src/game/map.ts:2378-2449] [H]
 - Speed scales with nothing else: player size (`scale`) changes the collision radius `1 × scale`, not speed [src:survev/server/src/game/objects/player.ts:582-584] [M]
 - Direction comes from the client's `toMouseDir` every input message. Since 0.6.2 the mobile player faces its movement direction when not firing [src:survev/server/src/game/objects/player.ts:3361] [src:changelog/0.6.2] [H]
 - 0.6.2 also "Adjusted left pad to enter full speed movement sooner", which suggests the original mobile pad was analog near its centre [src:changelog/0.6.2] [M]
@@ -107,12 +107,14 @@
 - Windwalk (`windwalk`, original 0.7.5): haste 3 s when an enemy bullet passes within 5 u or hits the player. It cannot re-trigger while Windwalk haste is active, and teammates' bullets do not trigger it (fandom: patched 2019-07-11) [src:survev/server/src/game/objects/bullet.ts:458-465] [src:survev/shared/defs/gameObjects/perkDefs.ts:77-80] [src:wikigg/Windwalk] [src:fandom/Windwalk] [H]
 - Takedown (`takedown`, 0.8.3): haste 3 s on a credited kill (with +25 HP and +25 boost in survev) [src:survev/server/src/game/objects/player.ts:2721-2725] [src:survev/shared/defs/gameObjects/perkDefs.ts:85-89] [src:wikigg/Takedown] [H]
 - Inspiration (Bugler, 0.8.81): firing the bugle gives Inspire haste for 3 s to nearby alive team players within 30 u [src:survev/server/src/game/objects/player.ts:4562-4583] [src:fandom/Inspiration] [H]
-- Last Breath (`final_bugle`, 0.8.81): on the bugler's death, Inspire haste for 5 s (fandom: 6 s) within 60 u, plus +20 % size and ×1.08 damage [src:survev/server/src/game/objects/player.ts:4528-4560] [src:survev/shared/defs/gameObjects/perkDefs.ts:48-53] [src:fandom/Last_Breath] [M]
+- Last Breath (`final_bugle`, 0.8.81): on the bugler's death, Inspire haste for 5 s (fandom and wiki.gg: 6 s) within 60 u, plus +20 % size and ×1.08 damage [src:survev/server/src/game/objects/player.ts:4528-4560] [src:survev/shared/defs/gameObjects/perkDefs.ts:48-53] [src:fandom/Last_Breath] [src:wikigg/Last_Breath] [M]
+- Windwalk overwrites any other active haste (Takedown or Inspire) with a fresh 3 s Windwalk haste; only an active Windwalk haste blocks it [src:survev/server/src/game/objects/bullet.ts:458-465] [src:survev/server/src/game/objects/player.ts:4599-4604] [H]
 - Lone Survivr promotion grants Windwalk haste for 5 s with full health and boost [src:survev/server/src/game/objects/player.ts:924-929] [src:fandom/Lone_Survivr] [M]
 
 ## Frozen
 
 - Snowball/potato-type explosions call `freeze(type, ori, duration)`. The frozen penalty is −3 for `freezeDuration` (survev: snowball 0.5 s, heavy snowball 2 s, potato 0.5 s, heavy potato 1 s) [src:survev/server/src/game/objects/player.ts:4520-4526] [src:survev/server/src/game/objects/explosion.ts:222-229] [src:survev/shared/defs/gameObjects/explosionsDefs.ts:141-191] [M]
+- Other survev explosions with `freezeDuration`: `explosion_potato_smgshot` 1 s (Spud Gun `potato_smg`, an original weapon, which also adds the "fat" scale effect), `explosion_potato_lmgshot` 0.25 s (PMG-134, fork, which also shrinks the target's view), `explosion_coconut` 1 s and `explosion_tomato` 0.5 s (fork; neither is in the original defs or the relaunch) [src:survev/shared/defs/gameObjects/explosionsDefs.ts:206-270] [src:survev/server/src/game/objects/explosion.ts:236-242] [src:derived/survev@9f64948d:src/defs/explosionsDefs.js:2-184] [src:kong/relaunch-client-defs] [H]
 - `freezeDuration` is not in the original client explosion defs (they only carry `freezeOnImpact` on the throwable). balance.txt says the heavy snowball went from 1 to 2 s in the fork, so the original heavy snowball value was 1 s [src:derived/survev@9f64948d:src/defs/explosionsDefs.js:110-130] [src:derived/survev@9f64948d:src/defs/throwableDefs.js:467] [src:balance/123] [src:balance/125] [M]
 
 ## Downed and revive movement
@@ -124,7 +126,7 @@
 
 ## Fork and post-0.8.82 notes
 
-- Fork perks that change speed: `field_medic.speedBoost` 1 (fork value), `assume_leadership` minBoost 50 (always above the 1.85 threshold), `bonus_assault` bullet speed only (fork) [src:survev/shared/defs/gameObjects/perkDefs.ts:9-12] [src:survev/shared/defs/gameObjects/perkDefs.ts:152-156] [src:balance/325] [H]
+- Fork changes that touch speed: `field_medic.speedBoost` 1 (fork value); the fork-only Captain role's `assume_leadership` perk keeps boost at 50 or more, so the +1.85 bonus is always on (fork); Hollow-points (`bonus_assault`, an original 0.8.8 perk) gained +10 % bullet speed in the fork (bullet speed, not movement) [src:survev/shared/defs/gameObjects/perkDefs.ts:9-12] [src:survev/shared/defs/gameObjects/perkDefs.ts:152-156] [src:survev/shared/defs/gameObjects/roleDefs.ts:162-170] [src:balance/325] [src:changelog/0.8.8] [H]
 - Post-0.8.82 wiki effects not in survev: Storm Map rivers slow more, Snow Map ice speeds players up (+3), Sugar Rush, Popsicle (+10 %), Wet and Contacted effects (post-0.8.82) [src:fandom/River] [src:fandom/One_With_Nature] [src:fandom/Effects] [src:fandom/Consumables] [M]
 
 ## Conflicts
@@ -132,7 +134,8 @@
 - CONFLICT water-penalty-depth: flat −3 anywhere in water [src:survev/server/src/game/objects/player.ts:4726-4732] [src:fandom/Player] vs "the further into a body of water a Player wades, the greater the slowing effect becomes, to a maximum of −2" [src:fandom/Water]; proposed: keep the flat −3 (two sources, fandom Player and One With Nature pages agree) and expose `waterSpeedPenalty` as a knob [L]
 - CONFLICT downed-melee-equip-bonus: survev adds the forced melee's +1 equip bonus while downed (5 u/s, 3 u/s being revived) [src:survev/server/src/game/objects/player.ts:4702-4720] vs 4 u/s downed and 2 u/s being revived [src:fandom/Player]; proposed: skip the equip bonus while downed so the wiki numbers hold [L]
 - CONFLICT reviver-speed: reviver base 6 + equip and boost (estimate in code) [src:survev/server/src/game/objects/player.ts:4697] vs "a 0.5x speed multiplier is applied to both" [src:fandom/Knocked_Out]; proposed: reviver = normal speed formula × 0.5 (12 → 6 with a gun, matching survev's base), downed target stays at 2 [L]
-- CONFLICT last-breath-haste-duration: Inspire haste 5 s [src:survev/shared/defs/gameObjects/perkDefs.ts:52] vs 6 s [src:fandom/Last_Breath]; proposed: 5 s with a knob, since fandom gives no source [L]
+- CONFLICT last-breath-haste-duration: Inspire haste 5 s, hard-coded since survev commit `b18ac3dc` (2024) [src:survev/shared/defs/gameObjects/perkDefs.ts:52] vs 6 s [src:fandom/Last_Breath] [src:wikigg/Last_Breath]; wiki.gg's text looks copied from fandom (it contradicts survev's own code), and balance.txt notes an unspecified fork "Last Breath adjusted (overall buff)" on 2025-07-23 [src:balance/178]; proposed: keep survev's 5 s (precedence rule 2: the value is not marked as an estimate) behind a knob, and log the 6 s wiki figure [L]
+- CONFLICT takedown-haste-low-hp: survev always grants the 3 s Takedown haste on a credited kill [src:survev/server/src/game/objects/player.ts:2721-2725] vs "if your Health is below 50, you will not get the speed boost" [src:fandom/Takedown]; proposed: always grant it (wiki.gg lists no such condition [src:wikigg/Takedown]) and log the fandom claim [L]
 - CONFLICT field-medic-speed: survev +1 while using items (fork-tuned, was 1.5) [src:survev/shared/defs/gameObjects/perkDefs.ts:95] vs fandom "you can move faster than you could with adrenaline" [src:fandom/Combat_Medic]; proposed: +1 knob, original value unknown [L]
 
 ## Open questions

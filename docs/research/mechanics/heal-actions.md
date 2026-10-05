@@ -16,6 +16,8 @@
 - survev adds a 5th capacity column for the fork Tactical Pack: bandage 45, healthkit 5, soda 20, painkiller 5 (fork) [src:survev/shared/gameConfig.ts:432-435] [src:wikigg/Bandage] [H]
 - Heal items use the red `heal` particle emitter and aura (0xff0000); boost items use the green `boost` emitter and aura (0x199500). Use particles were added in 0.7.1 [src:survev/shared/defs/gameObjects/gearDefs.ts:405-409] [src:survev/shared/defs/gameObjects/gearDefs.ts:341-346] [src:changelog/0.7.1] [src:fandom/Consumables] [H]
 - Sounds: `bandage_use_01`, `healthkit_use_01`, `soda_use_01`, `pills_use_01` (pickup `*_pickup_01`) [src:survev/shared/defs/gameObjects/gearDefs.ts:325-430] [src:fandom/Bandage] [src:fandom/Pills] [H]
+- Heal particle skins (loadout `heal_effect` items): `heal_basic` (Basic Healing, stock), `heal_heart` (Healing Hearts), `heal_moon` (Blood Moon) and `heal_tomoe` (Tomoe), the last three added in 0.8.6. The fork adds `heal_diamond` (Crazy Diamond), `heal_ankh` (Ankh Charm) and `heal_menacing` (Phantom Blood) (fork) [src:survev/shared/defs/gameObjects/healEffectDefs.ts:11-62] [src:derived/survev@9f64948d:src/defs/healEffectDefs.js:2-29] [src:changelog/0.8.6] [src:kong/relaunch-client-bundle] [H]
+- Boost particle skins (`boost_effect`): `boost_basic` (stock), `boost_star` (Starboost), `boost_naturalize` (Naturalize) and `boost_shuriken` (Shuriken), the last three added in 0.8.6. The fork adds `boost_club`, `boost_hermes`, `boost_lightning` and `boost_gearshift` (fork) [src:survev/shared/defs/gameObjects/healEffectDefs.ts:63-122] [src:derived/survev@9f64948d:src/defs/healEffectDefs.js:30-56] [src:changelog/0.8.6] [H]
 
 ### History (original changelog and wikis)
 
@@ -47,7 +49,7 @@
 | UseItem | 3 | heal/boost use | `useTime` (× 0.75 medic) | [src:survev/server/src/game/objects/player.ts:3272-3276] [H] |
 | Revive | 4 | revive (both players get it) | `reviveDuration` 8 s | [src:survev/server/src/game/objects/player.ts:3190-3220] [H] |
 
-- `doAction(item, type, duration, targetId)` is ignored while an action is already pending (`actionDirty`). Otherwise it stores the item, type, duration and target, resets `time` to 0 and bumps `actionSeq` [src:survev/server/src/game/objects/player.ts:4458-4478] [H]
+- `doAction(item, type, duration, targetId)` stores the item, type, duration and target, resets `time` to 0 and bumps `actionSeq`. It is skipped while `actionDirty` is set, but that flag is cleared after every network update and by `cancelAction`, so it only blocks a second action started in the same tick. It does not protect a running action; the callers check `actionType` themselves [src:survev/server/src/game/objects/player.ts:4458-4478] [src:survev/server/src/game/objects/player.ts:424-430] [src:survev/server/src/game/objects/player.ts:4516] [H]
 - Each tick `action.time += dt`, clamped to `ActionMaxDuration` 8.5 s (an original protocol constant). When `time ≥ duration` the effect applies and the action ends [src:survev/server/src/game/objects/player.ts:1676-1751] [src:survev/shared/net/net.ts:16] [src:derived/survev@9f64948d:src/net/net.ts:139] [H]
 - UseItem completion: heal items `health += heal` (clamped to 100, so the excess is wasted), boost items `boost += boost`, then one item is taken from the inventory. A cancelled use costs nothing [src:survev/server/src/game/objects/player.ts:1687-1713] [src:survev/server/src/game/objects/player.ts:647-648] [H]
 - With Mass Medicate the effect goes to every teammate on the same layer within `medicHealRange` 8 u (the medic included); downed players are excluded from heals and boosts [src:survev/server/src/game/objects/player.ts:3279-3300] [src:survev/server/src/game/objects/player.ts:3222-3248] [src:survev/shared/gameConfig.ts:223] [src:derived/survev@9f64948d:src/gameConfig.ts:138] [src:wikigg/Mass_Medicate] [H]
@@ -67,11 +69,11 @@
 | Cancel input (X; on mobile the interaction button sends Interact + Cancel) | yes | [src:survev/server/src/game/objects/player.ts:3506-3511] [src:survev/client/src/inputBinds.ts:33] [src:survev/client/src/game.ts:622-626] [src:survev/client/src/en.json:153-154] [src:fandom/Med_Kit] [H] |
 | being downed or dying | yes | [src:survev/server/src/game/objects/player.ts:2603] [src:survev/server/src/game/objects/player.ts:2646-2647] [H] |
 | starting another heal/boost | no (refused while one is running) | [src:survev/server/src/game/objects/player.ts:3256] [H] |
-| reload input (R) | no: the reload is scheduled but `doAction` refuses to start it | [src:survev/server/src/game/objects/player.ts:3501-3505] [src:survev/server/src/game/objects/player.ts:4464-4467] [M] |
+| reload input (R) | no: R sets `scheduledReload`, but `tryReload` returns early during UseItem or Revive and the scheduled flag is already consumed, so the press is lost | [src:survev/server/src/game/objects/player.ts:3501-3505] [src:survev/server/src/game/weaponManager.ts:361-363] [src:survev/server/src/game/weaponManager.ts:485-500] [H] |
 | picking up loot | no; non-gun loot is refused while using an item, guns can still be picked up | [src:survev/server/src/game/objects/player.ts:3718-3723] [src:fandom/Consumables] [M] |
 | taking damage, moving, opening doors | no | [src:survev/server/src/game/objects/player.ts:2410-2540] [src:fandom/Knocked_Out] [H] |
 
-- Original 0.1.0 notes on reloads: "Players can no longer shoot while reloading a magazine-fed gun. All other modes of interrupting a reload remain (switch weapons, stow weapons, use item, loot a new gun)" [src:fandom/Player] [M]
+- Original 0.1.0 notes on reloads: "Players can no longer shoot while reloading a magazine-fed gun. All other modes of interrupting a reload remain (switch weapons, stow weapons, use item, loot a new gun)" [src:changelog/0.1.0] [src:fandom/Player] [H]
 
 ## Movement while using
 
@@ -83,7 +85,7 @@
 | source | rate | era | sources |
 |---|---|---|---|
 | boost | 0.5–1.75 HP/s by tier | original (values: survev) | [src:survev/server/src/game/objects/player.ts:1520-1546] [M] |
-| Gift of the Woods (`gotw`) | +1 HP/s, no downed check in survev | original 0.7.5 | [src:survev/server/src/game/objects/player.ts:1555-1557] [src:survev/shared/defs/gameObjects/perkDefs.ts:81-84] [src:fandom/Gift_of_the_Woods] [src:wikigg/Health] [H] |
+| Gift of the Woods (`gotw`) | survev +1 HP/s, a fork value: 0.5 HP/s (and +25 % size) until fork v0.2.2 (commit `fddf75b8`, 2026-02-23). Fandom gives 1 HP/s, "the exact same as 25 % Adrenaline". No downed check in survev | original 0.7.5; value changed in the fork | [src:survev/server/src/game/objects/player.ts:1555-1557] [src:survev/shared/defs/gameObjects/perkDefs.ts:81-84] [src:derived/survev-git-fddf75b8] [src:wikigg/Gift_of_the_Woods] [src:fandom/Gift_of_the_Woods] [M] |
 | Crimson Ring Club bathhouse sauna (`bathhouse_sideroom_01`) heal region | 3 HP/s | original | [src:survev/shared/defs/mapObjects/buildings/baseBuildingDefs.ts:3928-3936] [src:derived/survev@9f64948d:src/defs/mapObjectDefs.js:22894-22900] [src:fandom/Health] [H] |
 | winter camp campfire heal region | 2 HP/s | fork | [src:survev/shared/defs/mapObjects/buildings/modeBuildingDefs.ts:87-91] [src:wikigg/Health] [M] |
 | Oasis heal region | 1 HP/s | fork | [src:survev/shared/defs/mapObjects/buildings/modeBuildingDefs.ts:1031-1035] [src:wikigg/Health] [M] |
@@ -100,6 +102,8 @@
 
 - CONFLICT medic-use-time: Mass Medicate use time × 0.75 [src:survev/server/src/game/objects/player.ts:3275] vs "increases the using speed by 25 %, equating to 20 % less use time" (× 0.8) [src:fandom/Mass_Medicate] [src:wikigg/Mass_Medicate]; proposed: × 0.8 (two wikis) with a knob [M]
 - CONFLICT takedown-hp: +25 HP [src:survev/shared/defs/gameObjects/perkDefs.ts:86] vs +15 HP / "similar to using a bandage" [src:wikigg/Takedown] [src:wikigg/Health] [src:fandom/Takedown]; proposed: 15 for 0.8.82 with a knob (wikis agree, survev has no source) [L]
+- CONFLICT gotw-regen: Gift of the Woods regenerates 1 HP/s, a fork value; it was 0.5 HP/s (survev's tier-1 boost rate) until fork v0.2.2 [src:survev/shared/defs/gameObjects/perkDefs.ts:81-84] [src:derived/survev-git-fddf75b8] [src:wikigg/Gift_of_the_Woods] vs 1 HP/s, "the exact same as 25 % Adrenaline" [src:fandom/Gift_of_the_Woods]; proposed: tie it to the tier-1 boost heal rate (1 HP/s with fandom's boost table, 0.5 with survev's) behind a knob [L]
+- CONFLICT loot-pickup-cancel: survev refuses non-gun pickups during a heal without cancelling it, and gun pickups go through [src:survev/server/src/game/objects/player.ts:3718-3723] vs "You cannot switch weapons, drop or pick up equipment, or attack while consuming or it will stop" [src:fandom/Consumables]; proposed: keep survev's refusal (the use is not lost) and log it [L]
 - CONFLICT gotw-while-downed: survev keeps Gift of the Woods regen while downed [src:survev/server/src/game/objects/player.ts:1555-1557] vs "You cannot gain health by any means while knocked out" [src:fandom/Health]; proposed: no regen while downed [M]
 
 ## Open questions

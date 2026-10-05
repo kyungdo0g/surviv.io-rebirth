@@ -51,7 +51,7 @@
 
 - Every player starts with `backpack00`; the pouch never drops and cannot be looted [src:survev/shared/gameConfig.ts:239] [src:survev/server/src/game/objects/player.ts:3895] [src:changelog/0.1.6] [H]
 - Backpacks cannot be dropped from the HUD; they drop only on death [src:fandom/Backpacks] [M]
-- Pickup rule: helmets, chests and packs are compared by quality = level × 10 (+1 if a helmet has a perk, +1 if it has a role; packs +maxPerks, default 1); a lower or equal item is refused ("Better item equipped" / "Item already equipped"), a better one swaps and the old one drops [src:survev/server/src/game/objects/player.ts:777-795] [src:survev/server/src/game/objects/player.ts:3851-3896] [src:changelog/0.1.6] [src:changelog/0.1.0] [H]
+- Pickup rule (survev): helmets, chests and packs are compared by quality = level × 10 (+1 if a helmet has a perk, +1 if it has a role; packs +`maxPerks`, default 1, the `maxPerks` part being fork); a lower-quality item is refused ("Better item equipped"), the same type is refused ("Item already equipped"), and any other item of equal or higher quality swaps in while the old one drops (so helmet03 ↔ helmet03_moon swap freely) [src:survev/server/src/game/objects/player.ts:777-795] [src:survev/server/src/game/objects/player.ts:3851-3896] [src:changelog/0.1.6] [src:changelog/0.1.0] [H]
 - Mobile players auto-pick up better gear they walk over [src:survev/server/src/game/objects/player.ts:2025-2029] [src:survev/server/src/game/objects/player.ts:2070-2079] [H]
 - Fandom: backpack worn colour now follows the outfit; earlier packs were coloured by level; the Ghillie Suit hides the pack [src:fandom/Backpacks] [M]
 - Backpack loot radius 1 [src:survev/shared/gameConfig.ts:450] [H]
@@ -118,7 +118,7 @@
 
 | id | en / ko name | base | perk / role / flags | where | sources |
 |---|---|---|---|---|---|
-| `helmet03_leader` | Commander Helmet (def "Leader Helmet") / 지휘관 헬멧 | helmet03 | worn sprite `player-helmet-leader.img` | aged Commander helmet (desert) | [src:survev/shared/defs/gameObjects/gearDefs.ts:674-682] [src:derived/survev@9f64948d:src/defs/gearDefs.js:544-552] [src:l10n/ko:game-helmet03_leader] [H] |
+| `helmet03_leader` | Commander Helmet (def "Leader Helmet") / 지휘관 헬멧 | helmet03 | worn sprite `player-helmet-leader.img`; no perk, role or `noDrop` in the def | no spawner in survev or in the relaunch map objects (unused in 0.8.82); fandom labels it "Commander Helmet (Aged)" and lists Leadership / Commander, which the def does not grant | [src:survev/shared/defs/gameObjects/gearDefs.ts:674-682] [src:derived/survev@9f64948d:src/defs/gearDefs.js:544-552] [src:l10n/ko:game-helmet03_leader] [src:kong/relaunch-client-defs] [src:fandom/Helmets] [M] |
 | `helmet03_forest` | Shishigami no Kabuto / 시시가미의 투구 | helmet03 | role `woods_king` (Gift of the Woods + Windwalk); green pulsing map indicator `player-king-woods.img` | woods Pavilion; added 0.7.5 | [src:survev/shared/defs/gameObjects/gearDefs.ts:683-705] [src:changelog/0.7.5] [src:wikigg/Shishigami_no_Kabuto] [src:l10n/ko:game-helmet03_forest] [H] |
 | `helmet03_moon` | Tsukuyomi no Kabuto / 츠쿠요미의 투구 | helmet03 | no perk | spring maps; added 0.7.3 | [src:survev/shared/defs/gameObjects/gearDefs.ts:706-715] [src:wikigg/Tsukuyomi_no_Kabuto] [src:l10n/ko:game-helmet03_moon] [H] |
 | `helmet03_lt` | Lieutenant Helmet / 부관 헬멧 | helmet03 | `noDrop`; Lieutenant role helmet | 50v50 Lieutenant | [src:survev/shared/defs/gameObjects/gearDefs.ts:716-726] [src:survev/shared/defs/gameObjects/roleDefs.ts:216] [src:l10n/ko:game-helmet03_lt] [H] |
@@ -129,7 +129,7 @@
 | `helmet03_grenadier` | Grenadier Helmet (no l10n key) | helmet03 | `noDrop`; Grenadier role (0.8.81) | 50v50 | [src:survev/shared/defs/gameObjects/gearDefs.ts:789-804] [src:changelog/0.8.81] [H] |
 | `helmet03_bugler` | Bugler Helmet (no l10n key) | helmet03 | `noDrop`; Bugler role (0.8.81) | 50v50 | [src:survev/shared/defs/gameObjects/gearDefs.ts:805-820] [src:changelog/0.8.81] [H] |
 | `helmet04_medic` | Medic Helmet (no l10n key) | helmet04 | `noDrop`; Medic role | 50v50 | [src:survev/shared/defs/gameObjects/gearDefs.ts:821-836] [src:survev/shared/defs/gameObjects/roleDefs.ts:244] [H] |
-| `helmet04_last_man_red` / `_blue` | Lone Survivr Helmet (en key `game-helmet04_lone_survivr`) | helmet04 | `noDrop`; Lone Survivr role, team-coloured sprite `player-helmet-last-man-01/02.img` | 50v50 | [src:survev/shared/defs/gameObjects/gearDefs.ts:837-868] [src:survev/client/src/en.json:413] [src:survev/shared/defs/gameObjects/roleDefs.ts:403-407] [H] |
+| `helmet04_last_man_red` / `_blue` | Lone Survivr Helmet / 론 서바이버 헬멧 (key `game-helmet04_lone_survivr`) | helmet04 | `noDrop`; Lone Survivr role, team-coloured sprite `player-helmet-last-man-01/02.img`; the role also wears `chest04` | 50v50 | [src:survev/shared/defs/gameObjects/gearDefs.ts:837-868] [src:survev/client/src/en.json:413] [src:l10n/ko:game-helmet04_lone_survivr] [src:survev/shared/defs/gameObjects/roleDefs.ts:403-411] [H] |
 | `helmet04_leader` | Commander Helmet / 지휘관 헬멧 | helmet04 | `noDrop`; Commander role | 50v50 | [src:survev/shared/defs/gameObjects/gearDefs.ts:869-884] [src:survev/shared/defs/gameObjects/roleDefs.ts:147] [src:l10n/ko:game-helmet04_leader] [H] |
 | `helmet04_captain` (fork) | Captain Helmet / 대장모 | helmet04 | `noDrop`; Captain role (fork) | 50v50 | [src:survev/shared/defs/gameObjects/gearDefs.ts:885-900] [src:l10n/ko:game-helmet04_captain] [H] |
 | `helmet04_classless` (fork) | Classless Helmet / — | helmet04 | `noDrop`; Classless role, cobalt (fork) | cobalt | [src:survev/shared/defs/gameObjects/gearDefs.ts:901-916] [src:wikigg/Equipment] [H] |
@@ -157,7 +157,7 @@
 - PMG-134 shots (fork) shrink the zoom radius by 1.5 per hit, never below the 1x radius (fork) [src:survev/server/src/game/objects/player.ts:2106-2109] [src:survev/server/src/game/objects/player.ts:4592-4597] [H]
 - Scope loot radius 1 [src:survev/shared/gameConfig.ts:453] [H]
 - survev scope table (estimate): 2x 24, 4x 5, 8x 1, 15x 0.02; Chrysanthemum bunker `tier_chrys_03`: 4x 7.5, 8x 5, 15x 0.25 [src:survev/shared/defs/maps/baseDefs.ts:140-145] [src:survev/shared/defs/maps/baseDefs.ts:205-209] [L]
-- 50v50 roles start with scopes: Commander, Marksman and Lone Survivr 8x; Lieutenant, Medic, Recon, Grenadier, Bugler 4x [src:survev/shared/defs/gameObjects/roleDefs.ts:156-414] [src:fandom/Scopes] [H]
+- 50v50 roles start with scopes: Commander, Marksman and Lone Survivr 8x; Lieutenant, Medic, Recon, Grenadier, Bugler 4x; the fork Captain role also gets 8x (fork); the cobalt Sniper class gets 2x [src:survev/shared/defs/gameObjects/roleDefs.ts:156-414] [src:survev/shared/defs/gameObjects/roleDefs.ts:188] [src:survev/shared/defs/gameObjects/roleDefs.ts:492] [src:fandom/Scopes] [H]
 - namu: there are 5 scope magnifications, and 1x is the default [src:namu/Surviv.io/장비] [M]
 
 ## Heals and boosts
@@ -175,7 +175,7 @@
 - The effect applies when the use timer completes; the item is consumed then [src:survev/server/src/game/objects/player.ts:1679-1712] [H]
 - While using an item the player moves at half speed, unless they have Field Medic (`field_medic`, +1 speed instead) [src:survev/server/src/game/objects/player.ts:4751-4765] [src:survev/shared/defs/gameObjects/perkDefs.ts:94-96] [src:fandom/Med_Kit] [H]
 - The Medic `aoe_heal` perk cuts use time to 0.75× and applies the item to nearby non-downed teammates (heal range 8 in config) [src:survev/server/src/game/objects/player.ts:3275] [src:survev/server/src/game/objects/player.ts:3279-3300] [src:survev/shared/gameConfig.ts:223] [H]
-- Bandage history: hotkey 7 (0.2.3); use time cut (0.3.5) and cut again (0.4.3, to 2.6 s); 0.7.1 removed the 75 HP heal cap and raised use time 2.6 → 3.0 s [src:changelog/0.3.5] [src:changelog/0.4.3] [src:changelog/0.7.1] [src:fandom/Bandage] [H]
+- Bandage history: medical items on hotkeys 7–0 (0.2.3); use time "slightly decreased" in 0.3.5 and again in 0.4.3 (the value before 0.7.1 was 2.6 s); 0.7.1 removed the 75 HP heal cap and raised use time 2.6 → 3.0 s [src:changelog/0.3.5] [src:changelog/0.4.3] [src:changelog/0.7.1] [src:fandom/Bandage] [H]
 - The en/ko string `game-healing-tooltip` "Cannot heal past 75 health." / "체력이 75를 넘어 치료할 수 없습니다." is a leftover from before 0.7.1 [src:survev/client/src/en.json:375] [src:l10n/ko:game-healing-tooltip] [src:changelog/0.7.1] [H]
 - Med Kit ("health pak" in early changelogs) restores to full and its use time grew by 1 s in 0.1.51; painkiller use time fell by 1 s in the same patch [src:changelog/0.1.51] [src:fandom/Med_Kit] [H]
 - Bandages spawn in stacks of 5 (`tier_medical`: bandage ×5 weight 16, healthkit 4, soda 15, painkiller 5; survev estimate) [src:survev/shared/defs/maps/baseDefs.ts:159-164] [src:fandom/Bandage] [M]
@@ -186,7 +186,7 @@
 - Adrenaline is capped at 100 and decays 0.375 per second (survev config; matches fandom and wiki.gg) [src:survev/shared/gameConfig.ts:193] [src:fandom/Adrenaline] [src:wikigg/Adrenaline] [H]
 - Breakpoints `[1, 1, 1.5, 0.5]` split the bar into 0–25, 25–50, 50–87.5, 87.5–100 [src:derived/survev@9f64948d:src/gameConfig.ts:123] [src:survev/server/src/game/objects/player.ts:72-84] [H]
 - survev regen per level: 0.5, 1.25, 1.5, 1.75 HP/s (`boostHealAmounts`, server-only value) [src:survev/shared/gameConfig.ts:195] [src:survev/server/src/game/objects/player.ts:1522-1532] [src:wikigg/Adrenaline] [M]
-- At 50 adrenaline or more the player gains +1.85 move speed (base 12) [src:survev/shared/gameConfig.ts:194] [src:survev/server/src/game/objects/player.ts:4734-4737] [src:wikigg/Adrenaline] [M]
+- At 50 adrenaline or more the player gains +1.85 move speed (base 12) [src:survev/shared/gameConfig.ts:194] [src:survev/server/src/game/objects/player.ts:4734-4737] [src:wikigg/Adrenaline] [src:fandom/Adrenaline] [H]
 - Adrenaline duration and speed bonus were slightly lowered in 0.4.1 and again in 0.4.3 [src:changelog/0.4.1] [src:changelog/0.4.3] [H]
 - Downed players lose all adrenaline [src:survev/server/src/game/objects/player.ts:1544-1546] [H]
 - Full boost/healing mechanics belong to `mechanics/boost.md` and `mechanics/healing.md` [src:derived/kb-layout] [L]
@@ -195,6 +195,11 @@
 
 - Fandom's backpack capacity template lists 40mm (10/20/30/40), heart_ammo and rainbow_ammo (1) and mine rows, which belong to post-0.8.82 items (post-0.8.82) [src:fandom/Backpacks] [M]
 - Flask (consumable sharing the soda sounds, used against Idle Freeze on snow maps) (post-0.8.82) [src:fandom/Soda] [src:fandom/Snowball] [L]
+- Flask details: snow map only, added 0.9.0 (13 Jan 2020), blocks Idle Freeze for 20 s (post-0.8.82) [src:fandom/Flask] [M]
+- Chocolate Box: 0.9.1 (10 Feb 2020) Soda replacement, +25 adrenaline and immunity to Heart weapons (post-0.8.82) [src:fandom/Chocolate_Box] [M]
+- Growler: 0.9.2 (9 Mar 2020), Saint Patrick map, grants Lucky (survive a lethal hit at 1 HP for 20 s) (post-0.8.82) [src:fandom/Growler] [M]
+- Gunchilada: in assets from 0.9.3 (6 Apr 2020), Sinko de Ammo event piñatas (post-0.8.82) [src:fandom/Gunchilada] [M]
+- Pulse Box: 4 May 2020, 0.2 s use, repels nearby items and enemies; Popsicle: Beach map, +10 % speed for 10 s (stacks), auto-used when Wet; Nitro Lace: Inferno map Pyro Crates, makes bullets apply Burning for a time (post-0.8.82) [src:fandom/Pulse_Box] [src:fandom/Popsicle] [src:fandom/Nitro_Lace] [M]
 
 ## Fork changes to original gear (revert list)
 
@@ -213,6 +218,8 @@
 - CONFLICT bandage-heal-wording: fandom says bandages heal "15% of a player's health" [src:fandom/Bandage] vs flat +15 HP [src:derived/survev@9f64948d:src/defs/gearDefs.js:139-161]; proposed: flat 15 HP (max health is 100, so equal) [H]
 - CONFLICT 15x-scope-level-fandom: fandom infobox gives the 15x scope `level` 8 [src:fandom/Scopes] vs def level 15 [src:derived/survev@9f64948d:src/defs/gearDefs.js:526-541]; proposed: 15 [H]
 - CONFLICT leader-helmet-name: def `name` "Leader Helmet" [src:survev/shared/defs/gameObjects/gearDefs.ts:674-682] vs displayed "Commander Helmet" [src:survev/client/src/en.json:406]; proposed: display l10n [H]
+- CONFLICT lone-survivr-helmet-id: fandom gives the Lone Survivr helmets the internal ids `helmet04_last_man_01` / `_02` [src:fandom/Helmets] vs defs `helmet04_last_man_red` / `helmet04_last_man_blue` [src:derived/survev@9f64948d:src/defs/gearDefs.js:707-738] [src:kong/relaunch-client-defs]; proposed: def ids (fandom used the sprite names) [H]
+- CONFLICT leader-helmet-aged: fandom calls `helmet03_leader` "Commander Helmet (Aged)" with Leadership and the Commander role [src:fandom/Helmets] vs a def with no perk, role or spawner [src:derived/survev@9f64948d:src/defs/gearDefs.js:544-552] [src:kong/relaunch-client-defs]; proposed: keep it as an unused plain level-3 skin [M]
 - CONFLICT lone-survivr-helmet-level: fandom infobox lists the Lone Survivr helmets as level 3 with 0.7 reduction [src:fandom/Helmets] vs defs level 4, 0.7 [src:derived/survev@9f64948d:src/defs/gearDefs.js:707-738]; proposed: level 4 [H]
 
 ## Open questions
