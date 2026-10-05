@@ -12,7 +12,8 @@
             "!docs/research/**/*.json",
             "!test-results",
             "!playwright-report",
-            "!tests/e2e/__screens__"
+            "!tests/e2e/__screens__",
+            "!apps/client/src/generated"
         ]
     },
     "formatter": {
