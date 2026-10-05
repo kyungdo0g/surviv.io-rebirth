@@ -1,6 +1,8 @@
-// Player: body, hands, feet (downed), backpack, chest armor, helmet and the held weapon, tinted from the outfit
-// and gear definitions and rotated to face `dir`. Sprite scales, offsets and idle hand poses follow survev
-// client/src/objects/player.ts (updateVisuals) and client/src/animData.ts (IdlePoses), in pixel units.
+// Player: body, hands, feet (downed), backpack, chest armour, helmet, a worn pan and the held weapon, tinted from
+// the outfit and gear definitions and rotated to face `dir`. The hands are bones posed by the weapon's idle pose
+// and the keyframed attack animations (anims.ts), guns kick back on every shot, and dual guns sit in both hands.
+// Sprite scales, offsets and layering follow survev client/src/objects/player.ts (updateVisuals, updateRotation,
+// addRecoil), in pixel units.
 import type { Vec2 } from "@rebirth/core";
 import {
     type BackpackDef,
@@ -16,47 +18,54 @@ import type { PlayerView } from "@rebirth/sim";
 import { Container, type Sprite } from "pixi.js";
 import type { ViewBounds } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
+import { AnimPlayer, BONE_COUNT, Bone, IDENTITY_POSE, IDLE_POSES, type Pose } from "./anims.ts";
+import { GunSprites } from "./playerGun.ts";
 import { boxAround, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
 
-type Pose = { l: Vec2; r: Vec2 };
-const p = (x: number, y: number): Vec2 => ({ x, y });
-/** idle hand positions per pose (survev animData.ts IdlePoses) */
-const IDLE_POSES: Record<string, Pose> = {
-    fists: { l: p(14, -12.25), r: p(14, 12.25) },
-    slash: { l: p(18, -8.25), r: p(6, 20.25) },
-    meleeTwoHanded: { l: p(10.5, -14.25), r: p(18, 6.25) },
-    meleeKatana: { l: p(8.5, 13.25), r: p(-3, 17.75) },
-    meleeNaginata: { l: p(19, -7.25), r: p(8.5, 24.25) },
-    machete: { l: p(14, -12.25), r: p(1, 17.75) },
-    cutlass: { l: p(14, -12.25), r: p(6, 16) },
-    rifle: { l: p(28, 5.25), r: p(14, 1.75) },
-    dualRifle: { l: p(5.75, -16), r: p(5.75, 16) },
-    bullpup: { l: p(28, 5.25), r: p(24, 1.75) },
-    minigun: { l: p(18, 7.25), r: p(54, 0) },
-    launcher: { l: p(20, 10), r: p(2, 22) },
-    pistol: { l: p(14, 1.75), r: p(14, 1.75) },
-    dualPistol: { l: p(15.75, -8.75), r: p(15.75, 8.75) },
-    throwable: { l: p(15.75, -9.625), r: p(15.75, 9.625) },
-    downed: { l: p(14, -12.25), r: p(14, 12.25) },
-};
-const DOWNED_FEET = { l: p(-15.75, -9), r: p(-15.75, 9) };
 /** backpack offsets behind the body per bag level 1..3 (survev player.ts) */
 const BAG_OFFSETS = [10.25, 11.5, 12.75];
 const PLAYER_Z_ORD = 18;
+/** hands slide back by recoil x this many pixels (survev updateRotation) */
+const RECOIL_PIXELS = 1.125;
 
 type WeaponDef = GunDef | MeleeDef | ThrowableDef;
 
-function idlePose(weapon: WeaponDef | undefined, downed: boolean): Pose {
-    if (downed) return IDLE_POSES.downed;
-    if (!weapon) return IDLE_POSES.fists;
-    if ("anim" in weapon && weapon.anim?.idlePose) return IDLE_POSES[weapon.anim.idlePose] ?? IDLE_POSES.fists;
-    if (weapon.type === "gun") {
-        if (weapon.pistol) return weapon.isDual ? IDLE_POSES.dualPistol : IDLE_POSES.pistol;
-        if (weapon.isBullpup) return IDLE_POSES.bullpup;
-        if (weapon.isLauncher) return IDLE_POSES.launcher;
-        return weapon.isDual ? IDLE_POSES.dualRifle : IDLE_POSES.rifle;
-    }
-    return weapon.type === "throwable" ? IDLE_POSES.throwable : IDLE_POSES.fists;
+function weaponDef(id: string): WeaponDef | undefined {
+    const def = id ? GameObjectDefs[id] : undefined;
+    return def && (def.type === "gun" || def.type === "melee" || def.type === "throwable") ? def : undefined;
+}
+
+/** Idle pose name for the held weapon (survev player.ts selectIdlePose). */
+export function idlePoseName(weapon: WeaponDef | undefined, downed: boolean): string {
+    let name = "fists";
+    if (downed) name = "downed";
+    else if (weapon && "anim" in weapon && weapon.anim?.idlePose) name = weapon.anim.idlePose;
+    else if (weapon?.type === "gun") {
+        if (weapon.pistol) name = weapon.isDual ? "dualPistol" : "pistol";
+        else if (weapon.isBullpup) name = "bullpup";
+        else if (weapon.isLauncher) name = "launcher";
+        else name = weapon.isDual ? "dualRifle" : "rifle";
+    } else if (weapon?.type === "throwable") name = "throwable";
+    return IDLE_POSES[name] ? name : "fists";
+}
+
+/** Attack animation for a melee swing; a lone "fists" anim is mirrored half the time (survev selectAnim). */
+function meleeAnim(weapon: WeaponDef | undefined): { name: string; mirror: boolean } {
+    const anims = weapon?.type === "melee" ? weapon.anim?.attackAnims : undefined;
+    if (!anims?.length) return { name: "fists", mirror: Math.random() < 0.5 };
+    const name = anims[Math.floor(Math.random() * anims.length)];
+    return { name, mirror: name === "fists" && anims.length === 1 && Math.random() < 0.5 };
+}
+
+function newPose(): Pose {
+    return { pivot: { x: 0, y: 0 }, rot: 0, pos: { x: 0, y: 0 } };
+}
+
+/** Applies a bone pose to a limb container: rotation about the body centre through the pivot. */
+function applyPose(c: Container, p: Pose): void {
+    c.position.set(p.pos.x, p.pos.y);
+    c.pivot.set(-p.pivot.x, -p.pivot.y);
+    c.rotation = p.rot;
 }
 
 export class PlayerRender implements ObjectRender<PlayerView> {
@@ -68,21 +77,33 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private readonly handR = new Container();
     private readonly footL = new Container();
     private readonly footR = new Container();
-    private readonly gun = new Container();
     private readonly sprites: Sprite[] = [];
     private readonly bodySprite: Sprite;
     private readonly chestSprite: Sprite;
     private readonly helmetSprite: Sprite;
     private readonly backpackSprite: Sprite;
+    private readonly hipSprite: Sprite;
     private readonly handLSprite: Sprite;
     private readonly handRSprite: Sprite;
     private readonly footLSprite: Sprite;
     private readonly footRSprite: Sprite;
-    private readonly gunSprite: Sprite;
     private readonly meleeSprite: Sprite;
+    private readonly gunL: GunSprites;
+    private readonly gunR: GunSprites;
     private data!: PlayerView;
     private visualsKey = "";
-    private pose: Pose = IDLE_POSES.fists;
+    private idlePose = "fists";
+    private weapon: WeaponDef | undefined;
+    private readonly anim = new AnimPlayer();
+    private readonly bones: Pose[] = Array.from({ length: BONE_COUNT }, newPose);
+    private animSeq = -1;
+    private actionSeq = -1;
+    private shotSeq = -1;
+    /** gun kick of each hand in pixels, decaying every frame */
+    recoilL = 0;
+    recoilR = 0;
+    private lastPos: Vec2 = { x: 0, y: 0 };
+    private lastDir: Vec2 = { x: 1, y: 0 };
 
     constructor(deps: ViewDeps, id: number) {
         this.deps = deps;
@@ -96,24 +117,25 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.chestSprite = sprite();
         this.helmetSprite = sprite();
         this.backpackSprite = sprite();
+        this.hipSprite = sprite();
         this.handLSprite = sprite();
         this.handRSprite = sprite();
         this.footLSprite = sprite();
         this.footRSprite = sprite();
-        this.gunSprite = sprite();
         this.meleeSprite = sprite();
+        this.gunL = new GunSprites(deps.renderer.pool);
+        this.gunR = new GunSprites(deps.renderer.pool);
         this.footL.addChild(this.footLSprite);
         this.footR.addChild(this.footRSprite);
-        this.handL.addChild(this.handLSprite);
-        this.gun.addChild(this.gunSprite);
-        this.gun.rotation = Math.PI * 0.5;
-        this.handR.addChild(this.gun, this.meleeSprite, this.handRSprite);
+        this.handL.addChild(this.gunL.container, this.handLSprite);
+        this.handR.addChild(this.gunR.container, this.meleeSprite, this.handRSprite);
         this.body.addChild(
             this.footL,
             this.footR,
             this.backpackSprite,
             this.bodySprite,
             this.chestSprite,
+            this.hipSprite,
             this.handL,
             this.handR,
             this.helmetSprite,
@@ -121,7 +143,12 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.container.addChild(this.body);
     }
 
-    setData(view: PlayerView, _isNew: boolean): void {
+    /** name of the running animation ("none" when idle; tests) */
+    get animName(): string {
+        return this.anim.name;
+    }
+
+    setData(view: PlayerView, isNew: boolean): void {
         this.data = view;
         const key = [
             view.outfit,
@@ -131,11 +158,55 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             view.activeWeapon,
             view.downed,
             view.scale,
+            !!view.wearingPan,
         ].join();
         if (key !== this.visualsKey) {
             this.visualsKey = key;
             this.updateVisuals(view);
         }
+        const anim = view.anim ?? { type: "none", seq: 0 };
+        const action = view.action ?? { type: "none", seq: 0, item: "", duration: 0 };
+        const shot = view.shot ?? { seq: 0, offHand: false };
+        if (isNew) {
+            this.animSeq = anim.seq;
+            this.actionSeq = action.seq;
+            this.shotSeq = shot.seq;
+            return;
+        }
+        if (anim.seq !== this.animSeq) {
+            this.animSeq = anim.seq;
+            this.startAnim(anim.type);
+        }
+        if (action.seq !== this.actionSeq) {
+            this.actionSeq = action.seq;
+            if (action.type !== "none") this.deps.fx?.actionStart(view, view.pos, view.dir);
+        }
+        if (shot.seq !== this.shotSeq) {
+            this.shotSeq = shot.seq;
+            this.onShot(view, shot.offHand);
+        }
+    }
+
+    private startAnim(type: string): void {
+        if (type === "melee") {
+            const a = meleeAnim(this.weapon);
+            this.anim.play(a.name, a.mirror, this.bones);
+        } else if (type === "cook" || type === "throw") {
+            this.anim.play(type, false, this.bones);
+        } else {
+            this.anim.stop(this.bones);
+        }
+    }
+
+    /** Hands and gun kick back (survev shot.ts: the firing hand, or both for a single gun). */
+    private onShot(view: PlayerView, offHand: boolean): void {
+        const gun = weaponDef(view.activeWeapon);
+        if (gun?.type !== "gun") return;
+        const left = offHand || !gun.isDual;
+        const right = !offHand || !gun.isDual;
+        if (left) this.recoilL += gun.worldImg.recoil;
+        if (right) this.recoilR += gun.worldImg.recoil;
+        this.deps.fx?.shot(view, this.lastPos, this.lastDir);
     }
 
     private updateVisuals(view: PlayerView): void {
@@ -195,39 +266,53 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             this.backpackSprite.tint = skin.backpackTint;
         }
 
-        const weapon = view.activeWeapon ? (GameObjectDefs[view.activeWeapon] as WeaponDef | undefined) : undefined;
-        this.pose = idlePose(weapon, view.downed);
+        // a pan in the melee slot hangs on the hip while another weapon is out
+        const hip = view.wearingPan ? (GameObjectDefs.pan as MeleeDef).hipImg : undefined;
+        this.hipSprite.visible = !!hip;
+        if (hip) {
+            tex.apply(this.hipSprite, hip.sprite, Math.max(hip.scale.x, hip.scale.y));
+            this.hipSprite.position.set(hip.pos.x, hip.pos.y);
+            this.hipSprite.scale.set(hip.scale.x, hip.scale.y);
+            this.hipSprite.rotation = hip.rot;
+            this.hipSprite.tint = hip.tint;
+        }
+
+        const weapon = weaponDef(view.activeWeapon);
+        if (weapon !== this.weapon && this.anim.active) this.anim.stop(this.bones);
+        this.weapon = weapon;
+        this.idlePose = idlePoseName(weapon, view.downed);
         this.updateWeapon(weapon, bodyScale, view.downed);
     }
 
     private updateWeapon(weapon: WeaponDef | undefined, bodyScale: number, downed: boolean): void {
         const tex = this.deps.textures;
-        this.gun.visible = false;
+        this.gunL.visible = false;
+        this.gunR.visible = false;
         this.meleeSprite.visible = false;
         this.placeLeftHand(false);
         if (downed || !weapon) return;
         if (weapon.type === "gun") {
-            const img = weapon.worldImg;
-            tex.apply(this.gunSprite, img.sprite, img.scale.y * 0.5);
-            this.gunSprite.anchor.set(0.5, 1);
-            this.gunSprite.scale.set((img.scale.x * 0.5) / bodyScale, (img.scale.y * 0.5) / bodyScale);
-            this.gunSprite.tint = img.tint;
-            const offset = weapon.isDual ? p(-5.95, 0) : p(-4.25, -1.75);
-            this.gun.position.set(offset.x + (img.gunOffset?.x ?? 0), offset.y + (img.gunOffset?.y ?? 0));
-            this.gun.visible = true;
+            this.gunR.setType(weapon, bodyScale, tex);
+            this.gunR.visible = true;
+            if (weapon.isDual) {
+                this.gunL.setType(weapon, bodyScale, tex);
+                this.gunL.visible = true;
+            }
+            const handsBelow = !!weapon.worldImg.handsBelow;
             // the gun is under the right hand unless the hands go below it; the left hand holds it from above
-            this.handR.setChildIndex(this.gun, img.handsBelow ? this.handR.children.length - 1 : 0);
-            this.placeLeftHand(!img.handsBelow && !img.magImg?.top);
+            // unless the magazine sits on top (survev updateVisuals)
+            this.handR.setChildIndex(this.gunR.container, handsBelow ? this.handR.children.length - 1 : 0);
+            this.placeLeftHand(!handsBelow && !this.gunR.magTop);
         } else if (weapon.type === "melee" && weapon.worldImg && weapon.baseType !== "fists") {
             const img = weapon.worldImg;
             tex.apply(this.meleeSprite, img.sprite, Math.max(img.scale.x, img.scale.y));
-            this.meleeSprite.pivot.set(-img.pos.x, -img.pos.y);
-            this.meleeSprite.rotation = img.rot;
             this.meleeSprite.scale.set(img.scale.x / bodyScale, img.scale.y / bodyScale);
             this.meleeSprite.tint = img.tint;
             this.meleeSprite.visible = true;
             const handIdx = this.handR.getChildIndex(this.handRSprite);
-            this.handR.setChildIndex(this.meleeSprite, img.renderOnHand ? handIdx : Math.max(handIdx - 1, 0));
+            const meleeIdx = this.handR.getChildIndex(this.meleeSprite);
+            const below = meleeIdx < handIdx;
+            if (!!img.renderOnHand === below) this.handR.swapChildren(this.meleeSprite, this.handRSprite);
             this.placeLeftHand(!!img.leftHandOntop);
         }
     }
@@ -245,17 +330,18 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.container.position.set(local.x, local.y);
         this.container.visible = !view.dead;
         const facing = dir ?? view.dir;
+        this.lastPos = pos;
+        this.lastDir = facing;
         this.body.rotation = -Math.atan2(facing.y, facing.x);
         this.body.scale.set(view.scale || 1);
-        this.handL.position.set(this.pose.l.x, this.pose.l.y);
-        this.handR.position.set(this.pose.r.x, this.pose.r.y);
-        const weapon = GameObjectDefs[view.activeWeapon] as WeaponDef | undefined;
-        if (weapon?.type === "gun" && weapon.worldImg.leftHandOffset && !view.downed) {
-            this.handL.position.x += weapon.worldImg.leftHandOffset.x;
-            this.handL.position.y += weapon.worldImg.leftHandOffset.y;
-        }
-        this.footL.position.set(DOWNED_FEET.l.x, DOWNED_FEET.l.y);
-        this.footR.position.set(DOWNED_FEET.r.x, DOWNED_FEET.r.y);
+
+        // survev player.ts: recoil decays proportionally plus a constant 1/s
+        const dt = ctx.dt;
+        this.recoilL = Math.max(0, this.recoilL - this.recoilL * dt * 5 - dt);
+        this.recoilR = Math.max(0, this.recoilR - this.recoilR * dt * 5 - dt);
+        this.anim.update(dt, this.bones, (effect) => this.deps.fx?.animEffect(view, pos, facing, effect));
+        this.anim.blend(IDLE_POSES[this.idlePose] ?? IDLE_POSES.fists, this.bones);
+        this.placeBones();
 
         // survev player.ts updateRenderLayer: players on stairs draw over the stairs when on the viewer's level
         let layer = view.layer;
@@ -270,6 +356,29 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.deps.renderer.add(this.container, layer, zOrd, zIdx);
     }
 
+    /** Poses the limbs and the melee weapon from the blended bones (survev updateRotation). */
+    private placeBones(): void {
+        const view = this.data;
+        applyPose(this.handL, this.bones[Bone.HandL]);
+        applyPose(this.handR, this.bones[Bone.HandR]);
+        applyPose(this.footL, this.bones[Bone.FootL]);
+        applyPose(this.footR, this.bones[Bone.FootR]);
+        const weapon = this.weapon;
+        if (weapon?.type === "melee" && weapon.worldImg) {
+            const bone = this.bones[Bone.MeleeR] ?? IDENTITY_POSE;
+            const img = weapon.worldImg;
+            this.meleeSprite.pivot.set(-(bone.pos.x + img.pos.x), -(bone.pos.y + img.pos.y));
+            this.meleeSprite.rotation = img.rot + bone.rot;
+            this.meleeSprite.position.set(-bone.pivot.x, -bone.pivot.y);
+        }
+        if (weapon?.type === "gun" && !view.downed && weapon.worldImg.leftHandOffset) {
+            this.handL.position.x += weapon.worldImg.leftHandOffset.x;
+            this.handL.position.y += weapon.worldImg.leftHandOffset.y;
+        }
+        this.handL.position.x -= this.recoilL * RECOIL_PIXELS;
+        this.handR.position.x -= this.recoilR * RECOIL_PIXELS;
+    }
+
     bounds(pos: Vec2): ViewBounds {
         return boxAround(pos, 4 * (this.data.scale || 1));
     }
@@ -281,6 +390,8 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     destroy(): void {
         this.container.removeFromParent();
         for (const s of this.sprites) this.deps.renderer.pool.release(s);
+        this.gunL.release(this.deps.renderer.pool);
+        this.gunR.release(this.deps.renderer.pool);
         this.container.destroy({ children: true });
     }
 }

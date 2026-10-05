@@ -1,16 +1,28 @@
 // Shared shapes of the per-object views that turn snapshot ObjectViews into Pixi display objects.
 import type { Vec2 } from "@rebirth/core";
 import type { MapDef } from "@rebirth/defs";
-import type { ObjectView } from "@rebirth/sim";
+import type { ObjectView, PlayerView } from "@rebirth/sim";
 import type { TextureStore } from "../assets/textures.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import type { Renderer } from "../render/renderer.ts";
+import type { AnimEffect } from "./anims.ts";
+
+/** Hooks the player view calls for sounds and particles (implemented by fx/effects.ts). */
+export interface PlayerFx {
+    /** an animation reached a sound or melee-hit keyframe */
+    animEffect(player: PlayerView, pos: Vec2, dir: Vec2, effect: AnimEffect): void;
+    /** a reload or item use started (`player.action` changed to a running action) */
+    actionStart(player: PlayerView, pos: Vec2, dir: Vec2): void;
+    /** a gun fired (`player.shot.seq` changed) */
+    shot(player: PlayerView, pos: Vec2, dir: Vec2): void;
+}
 
 /** Long-lived services every view needs. */
 export interface ViewDeps {
     renderer: Renderer;
     textures: TextureStore;
     mapDef: MapDef;
+    fx?: PlayerFx;
 }
 
 /** Per-frame state handed to every view. */

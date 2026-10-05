@@ -1,7 +1,7 @@
 // Keeps one render view per object id in sync with the snapshots, culls views outside the camera and updates
 // the visible ones every frame with interpolated positions.
 import type { Vec2 } from "@rebirth/core";
-import type { ObjectView, PlayerView, Snapshot } from "@rebirth/sim";
+import type { ObjectKind, ObjectView, PlayerView, Snapshot } from "@rebirth/sim";
 import type { SnapshotInterpolator } from "../net/interp.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import { BuildingRender } from "./building.ts";
@@ -29,6 +29,8 @@ export class ObjectWorld {
     visibleCount = 0;
     /** a structure entered or left the view since the last `takeStairMasks()` */
     private structuresDirty = false;
+    /** snapshots applied so far */
+    private applied = 0;
 
     constructor(deps: ViewDeps, interp: SnapshotInterpolator) {
         this.deps = deps;
@@ -61,7 +63,7 @@ export class ObjectWorld {
             case "decal":
                 return new DecalRender(this.deps, view.id);
             case "loot":
-                return new LootRender(this.deps, view.id);
+                return new LootRender(this.deps, view.id, this.applied > 0);
         }
     }
 
@@ -82,6 +84,14 @@ export class ObjectWorld {
             }
             entry.data = view;
             (entry.render as ObjectRender<ObjectView>).setData(view, isNew);
+        }
+        this.applied++;
+    }
+
+    /** Calls `cb` with the latest view of every object of `kind`. */
+    forEachView<K extends ObjectKind>(kind: K, cb: (view: Extract<ObjectView, { kind: K }>) => void): void {
+        for (const { data } of this.entries.values()) {
+            if (data.kind === kind) cb(data as Extract<ObjectView, { kind: K }>);
         }
     }
 
@@ -131,5 +141,6 @@ export class ObjectWorld {
 
     clear(): void {
         for (const id of [...this.entries.keys()]) this.remove(id);
+        this.applied = 0;
     }
 }

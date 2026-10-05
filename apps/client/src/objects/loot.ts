@@ -1,4 +1,7 @@
-// Loot on the ground: item image inside its rarity border, as in survev client/src/objects/loot.ts.
+// Loot on the ground: item image inside its border circle, as in survev client/src/objects/loot.ts. The border is
+// tinted with the gun's ammo colour (tintDark) or the def's borderTint. (Preloaded guns' special border needs an
+// `isPreloadedGun` flag the LootView does not carry yet.)
+// Freshly dropped loot pops in with an elastic scale (loot already lying there when it enters the view does not).
 // Border and item are sibling sprites because Pixi v8 multiplies tints down the hierarchy.
 import type { Vec2 } from "@rebirth/core";
 import { type AmmoDef, GameObjectDefs, type LootDef } from "@rebirth/defs";
@@ -9,6 +12,13 @@ import { toLocal } from "../render/renderer.ts";
 import { boxAround, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
 
 const LOOT_Z_ORD = 13;
+/** new loot farther than this from the viewer was already lying there and entered the view (no pop-in) */
+const FRESH_DIST = 24;
+
+/** survev math.easeOutElastic */
+function easeOutElastic(e: number, t = 0.3): number {
+    return 2 ** (e * -10) * Math.sin(((e - t / 4) * (Math.PI * 2)) / t) + 1;
+}
 
 export class LootRender implements ObjectRender<LootView> {
     readonly id: number;
@@ -18,13 +28,23 @@ export class LootRender implements ObjectRender<LootView> {
     private readonly item: Sprite;
     private imgScale = 0.3;
     private data!: LootView;
+    /** seconds since it appeared; starts past the pop-in for loot that was already there */
+    private ticker = 10;
+    private firstUpdate = true;
+    private readonly maybeFresh: boolean;
 
-    constructor(deps: ViewDeps, id: number) {
+    /** `maybeFresh`: created after the first snapshot, so it may have just been dropped */
+    constructor(deps: ViewDeps, id: number, maybeFresh = false) {
         this.deps = deps;
         this.id = id;
+        this.maybeFresh = maybeFresh;
         this.border = deps.renderer.pool.acquire();
         this.item = deps.renderer.pool.acquire();
         this.container.addChild(this.border, this.item);
+    }
+
+    get type(): string {
+        return this.data.type;
     }
 
     setData(view: LootView, isNew: boolean): void {
@@ -44,10 +64,17 @@ export class LootRender implements ObjectRender<LootView> {
         this.border.tint = ammo?.lootImg.tintDark ?? img.borderTint ?? 0;
     }
 
-    update(_ctx: FrameContext, pos: Vec2): void {
+    update(ctx: FrameContext, pos: Vec2): void {
+        if (this.firstUpdate) {
+            this.firstUpdate = false;
+            const near = Math.hypot(pos.x - ctx.localPos.x, pos.y - ctx.localPos.y) < FRESH_DIST;
+            if (this.maybeFresh && near) this.ticker = 0;
+        }
+        this.ticker += ctx.dt;
+        const pop = easeOutElastic(Math.min(1, Math.max(0, this.ticker)), 0.75);
         const local = toLocal(pos);
         this.container.position.set(local.x, local.y);
-        this.container.scale.set(this.imgScale);
+        this.container.scale.set(this.imgScale * pop);
         this.deps.renderer.add(this.container, this.data.layer, LOOT_Z_ORD, this.data.id);
     }
 
