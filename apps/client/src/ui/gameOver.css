@@ -55,6 +55,11 @@
     border-bottom: 2px solid rgba(255, 255, 255, 0.25);
 }
 
+/* team modes: rank and team kills side by side (survev .ui-stats-header-right / -left) */
+.ui-stats-header-team-kills {
+    margin-left: 32px;
+}
+
 .ui-stats-header-stat {
     font-size: 24px;
 }

@@ -4,7 +4,9 @@
 // the local player stays centered, with the player dot and the camera's view rectangle on top. M4: the red zone,
 // the next safe zone and the line to it, and the map indicators (air drop pings) are drawn over the map texture
 // inside the same mask (mapMarkers.ts). M5: the 50v50 air strike zones (airstrikeZones.ts) between the gas and the
-// indicators, like the original's container order.
+// indicators, like the original's container order. M6: teammate dots (minimapTeam.ts) over the indicators, the
+// followed player's own dot in its group colour (downed / dead icons), team pings (MapIndicators.addPlayerPing), and
+// `screenToWorld` for pings placed on the minimap.
 import { collider, math, type Vec2 } from "@rebirth/core";
 import {
     type BuildingDef,
@@ -23,6 +25,7 @@ import { buildingLocalBounds } from "../objects/building.ts";
 import type { Camera } from "../render/camera.ts";
 import { AirstrikeZones } from "./airstrikeZones.ts";
 import { MapIndicators, MinimapGas, type PingFields } from "./mapMarkers.ts";
+import { MinimapTeam, type MinimapTeamFrame, memberDot } from "./minimapTeam.ts";
 
 const MARGIN = 16;
 const SIZE = 256;
@@ -70,6 +73,8 @@ export interface MinimapFrame {
     gas: GasTracker | null;
     /** interpolation blend between the last two snapshots (the moving red zone) */
     alpha: number;
+    /** the followed player's group (team modes, M6) */
+    team?: MinimapTeamFrame | null;
 }
 
 export class Minimap {
@@ -80,6 +85,7 @@ export class Minimap {
     readonly gas = new MinimapGas();
     readonly indicators: MapIndicators;
     readonly airstrikeZones = new AirstrikeZones();
+    readonly team: MinimapTeam;
     private readonly mask = new Graphics();
     private readonly border = new Graphics();
     private readonly viewRect = new Graphics();
@@ -87,11 +93,17 @@ export class Minimap {
     private readonly playerInner: Sprite;
     private readonly map: MapData;
     private readonly texture: RenderTexture;
+    private readonly textures: TextureStore;
+    private localDotKey = "";
+    private localDotScale = 0.2;
     /** screen-space rectangle of the minimap (for tests) */
     rect = { x: 0, y: 0, width: 0, height: 0 };
+    /** screen position of the map's top-left corner and its on-screen size, as last drawn */
+    private mapOrigin = { x: 0, y: 0, size: 1 };
 
     constructor(app: Application, textures: TextureStore, map: MapData, terrain: TerrainShape) {
         this.map = map;
+        this.textures = textures;
         this.texture = Minimap.renderMapTexture(app, map, terrain);
         this.mapSprite = new Sprite(this.texture);
         this.mapSprite.anchor.set(0.5);
@@ -104,15 +116,44 @@ export class Minimap {
         // the local player is in their own group: group color 0 (survev ui.ts updatePlayerMapSprites)
         this.playerInner.tint = GameConfig.groupColors[0];
         this.indicators = new MapIndicators(textures);
-        // survev ui.ts container order: map, gas, safe zone, map sprites (pings), player dots, border
+        this.team = new MinimapTeam(textures);
+        // survev ui.ts container order: map, gas, safe zone, map sprites (pings, player dots), border
         this.clip.addChild(
             this.mapSprite,
             this.gas.container,
             this.airstrikeZones.mapContainer,
+            this.team.container,
             this.indicators.container,
         );
         this.container.addChild(this.clip, this.viewRect, this.playerOuter, this.playerInner, this.border, this.mask);
         this.clip.mask = this.mask;
+    }
+
+    /** teammate dots drawn (tests) */
+    get teamDots(): number {
+        return this.team.count;
+    }
+
+    /** The followed player's centre dot: group colour slot `idx`, the downed icon or a skull (M6). */
+    setLocalDot(idx: number, state: { dead: boolean; downed: boolean }): void {
+        const look = memberDot(state);
+        const key = `${idx}|${look.sprite}`;
+        if (key === this.localDotKey) return;
+        this.localDotKey = key;
+        this.textures.apply(this.playerInner, look.sprite, look.scale);
+        this.playerInner.tint = GameConfig.groupColors[idx] ?? GameConfig.groupColors[0];
+        this.localDotScale = look.scale;
+    }
+
+    /** World position under a screen point inside the minimap, or null outside it (pings on the map, M6). */
+    screenToWorld(p: Vec2): Vec2 | null {
+        const r = this.rect;
+        if (r.width <= 0 || p.x < r.x || p.y < r.y || p.x > r.x + r.width || p.y > r.y + r.height) return null;
+        const o = this.mapOrigin;
+        return {
+            x: ((p.x - o.x) / o.size) * this.map.width,
+            y: (1 - (p.y - o.y) / o.size) * this.map.height,
+        };
     }
 
     /** Applies a snapshot's map indicators; returns the pings that just appeared (sounds, edge indicators). */
@@ -214,6 +255,7 @@ export class Minimap {
         );
         const originX = this.mapSprite.x - mapSize / 2;
         const originY = this.mapSprite.y - mapSize / 2;
+        this.mapOrigin = { x: originX, y: originY, size: mapSize };
         const px = (p: Vec2) => ({
             x: originX + (p.x / this.map.width) * mapSize,
             y: originY + (1 - p.y / this.map.height) * mapSize,
@@ -240,15 +282,17 @@ export class Minimap {
         if (frame?.gas) this.gas.update(proj, frame.gas, playerPos, frame.alpha);
         this.airstrikeZones.updateMap(proj);
         this.indicators.update(frame?.dt ?? 0, proj);
+        this.team.update(frame?.dt ?? 0, proj, frame?.team ?? null);
 
         this.playerOuter.position.set(center.x, center.y);
         this.playerOuter.scale.set(0.3 * scale);
         this.playerInner.position.set(center.x, center.y);
-        this.playerInner.scale.set(0.2 * scale);
+        this.playerInner.scale.set(this.localDotScale * scale);
     }
 
     destroy(): void {
         this.indicators.clear();
+        this.team.clear();
         this.airstrikeZones.destroy();
         this.container.destroy({ children: true });
         this.texture.destroy(true);

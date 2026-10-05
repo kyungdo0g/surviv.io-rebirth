@@ -146,3 +146,123 @@ test("network: kill feed, alive counter, win and death screens, game_closed and 
     expect(alice.errors).toEqual([]);
     expect(bob.errors).toEqual([]);
 });
+
+// M6 party lobby (same file so the two-browser tests never run at the same time): Alice opens the start page and
+// creates a team, Bob joins it through the invite link `/?team=CODE`, Alice switches the room to duo and starts; both
+// land in the same game as one group (LocalPlayerState.team lists both), and leaving the game takes Alice back to the
+// lobby (gameComplete) while Bob plays on.
+test("network party: create, join by link, duo start, same team, back to the lobby", async ({ browser }) => {
+    test.setTimeout(240_000);
+    const M6 = "tests/e2e/__screens__/M6";
+    const newPage = async () => {
+        const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+        return { page, errors: collectErrors(page) };
+    };
+    const lobby = (p: Page) => p.evaluate(() => (window as any).__rebirth.menu?.lobby ?? null);
+    const alice = await newPage();
+    const a = alice.page;
+    await a.goto("/?menu=1&name=Alice");
+    await expect(a.locator("#start-menu")).toBeVisible();
+    await expect(a.locator("#player-name-input-solo")).toHaveValue("Alice");
+    await a.screenshot({ path: `${M6}/main-menu.png` });
+    await a.locator("#btn-create-team").click();
+    await a.waitForFunction(() => !!(window as any).__rebirth.menu?.lobby?.code, null, { timeout: 20_000 });
+    const code: string = (await lobby(a)).code;
+    expect(code).toMatch(/^[A-Za-z1-9]{4}$/);
+    await expect(a.locator("#team-code")).toHaveText(code);
+    await expect(a.locator("#team-url")).toContainText(`?team=${code}`);
+
+    const bob = await newPage();
+    const b = bob.page;
+    await b.goto(`/?team=${code}&name=Bob`);
+    for (const p of [a, b]) {
+        await p.waitForFunction(() => (window as any).__rebirth.menu?.lobby?.players.length === 2, null, {
+            timeout: 20_000,
+        });
+        await expect(p.locator("#team-menu-member-list .name").nth(0)).toHaveText("Alice");
+        await expect(p.locator("#team-menu-member-list .name").nth(1)).toHaveText("Bob");
+    }
+    expect((await lobby(a)).leader).toBe(true);
+    expect((await lobby(b)).leader).toBe(false);
+    await expect(a.locator("#team-menu-member-list .icon-leader")).toHaveCount(1);
+    await expect(a.locator("#team-menu-member-list .icon-kick")).toHaveCount(1);
+    await expect(b.locator("#team-menu-member-list .icon-kick")).toHaveCount(0);
+    await expect(a.locator("#btn-start-team")).toBeVisible();
+    await expect(b.locator("#btn-start-team")).toBeHidden();
+    await expect(b.locator("#msg-wait-reason")).toHaveText("Waiting for leader to start game ...");
+
+    // the leader picks duo: both lobbies follow
+    await a.locator("#btn-team-queue-mode-1").click();
+    for (const p of [a, b]) {
+        await p.waitForFunction(() => (window as any).__rebirth.menu.lobby.room.gameModeIdx === 1);
+        await expect(p.locator("#btn-team-queue-mode-1")).toHaveClass(/btn-hollow-selected/);
+        await expect(p.locator("#team-menu-member-list .team-menu-member")).toHaveCount(2);
+    }
+    await a.screenshot({ path: `${M6}/lobby-leader.png` });
+    await b.screenshot({ path: `${M6}/lobby-member.png` });
+
+    await a.locator("#btn-start-team").click();
+    for (const p of [a, b]) {
+        await p.waitForFunction(
+            () => {
+                const r = (window as any).__rebirth;
+                return r.mode === "network" && r.ready === true && r.menu.visible === false;
+            },
+            null,
+            { timeout: 90_000 },
+        );
+    }
+    const aliceId = await localId(a);
+    const bobId = await localId(b);
+    for (const p of [a, b]) {
+        await p.waitForFunction(
+            (ids) => {
+                const team = (window as any).__rebirth.local?.team ?? [];
+                return ids.every((id: number) => team.some((m: any) => m.playerId === id));
+            },
+            [aliceId, bobId],
+            { timeout: 20_000 },
+        );
+        await expect(p.locator("#ui-team .ui-team-member").nth(1)).toBeVisible();
+    }
+    const names = await a.evaluate(() => (window as any).__rebirth.local.team.map((m: any) => m.name));
+    expect(names).toEqual(expect.arrayContaining(["Alice", "Bob"]));
+    await a.screenshot({ path: `${M6}/network-team.png` });
+
+    // emotes and team pings go through the Emote message: Bob sees Alice's emote, Alice gets Bob's ping
+    await a.evaluate(() => (window as any).__rebirth.transport.emote({ type: "emote_thumbsup", isPing: false }));
+    await b.waitForFunction(
+        (id) => (window as any).__rebirth.emotes.received.some((e: any) => e.playerId === id && !e.isPing),
+        aliceId,
+        { timeout: 10_000 },
+    );
+    const bobPos = await b.evaluate(() => (window as any).__rebirth.player.pos);
+    await b.evaluate(
+        (pos) => (window as any).__rebirth.transport.emote({ type: "ping_danger", isPing: true, pos }),
+        bobPos,
+    );
+    await a.waitForFunction(
+        (id) =>
+            (window as any).__rebirth.emotes.received.some(
+                (e: any) => e.playerId === id && e.isPing && e.type === "ping_danger",
+            ),
+        bobId,
+        { timeout: 10_000 },
+    );
+    await a.waitForFunction(() => (window as any).__rebirth.emotes.mapPings === 1);
+
+    // Alice leaves the game: back in the lobby (gameComplete), Bob still in game
+    await a.evaluate(() => (window as any).__rebirth.playAgain());
+    await a.waitForFunction(() => {
+        const r = (window as any).__rebirth;
+        const l = r.menu.lobby;
+        return (
+            r.menu.visible &&
+            r.menu.panel === "lobby" &&
+            l?.players.find((p: any) => p.playerId === l.localPlayerId)?.inGame === false
+        );
+    });
+    await expect(a.locator("#msg-wait-reason")).toHaveText("Game in progress ...");
+    expect(alice.errors).toEqual([]);
+    expect(bob.errors).toEqual([]);
+});

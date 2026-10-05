@@ -3,7 +3,9 @@
 // - the red zone in black at 60 % outside the current circle, the next safe zone as a 1.5 px white ring and a 2 px
 //   green line from the player to the safe-zone centre (alpha 0.5 while already inside it);
 // - map indicators: map-event pings (air drop: `ping-map-airdrop.img` tinted 0xff6600 at scale 0.3 for the ping's
-//   mapLife, plus a growing `ping-map-pulse.img` ring for its pingLife) and item/role indicators with a pulse.
+//   mapLife, plus a growing `ping-map-pulse.img` ring for its pingLife) and item/role indicators with a pulse;
+// - team pings (M6, survev ui.ts createPing "Player pings"): the ping's map icon at scale 0.2 in the pinger's group
+//   colour for its mapLife and a pulse ring for its pingLife; a player's new ping replaces its previous one.
 import type { Vec2 } from "@rebirth/core";
 import { GameObjectDefs, type MapIndicatorDef } from "@rebirth/defs";
 import type { MapIndicatorView } from "@rebirth/sim";
@@ -117,6 +119,8 @@ export class MapIndicators {
     private readonly indicators = new Map<number, Indicator>();
     /** released ping sprites that outlive their indicator until their lifetime ends */
     private readonly loose: MapSprite[] = [];
+    /** each player's current team ping sprites */
+    private readonly playerPings = new Map<number, MapSprite[]>();
 
     constructor(textures: TextureStore) {
         this.textures = textures;
@@ -124,6 +128,22 @@ export class MapIndicators {
 
     get count(): number {
         return this.indicators.size;
+    }
+
+    /** team pings on the map (tests) */
+    get playerPingCount(): number {
+        return this.playerPings.size;
+    }
+
+    /** A team ping of `playerId` at `pos` in `tint`, replacing that player's previous one (survev createPing). */
+    addPlayerPing(playerId: number, type: string, pos: Vec2, tint: number): void {
+        const def = GameObjectDefs[type] as PingFields | undefined;
+        if (!def?.mapTexture) return;
+        for (const s of this.playerPings.get(playerId) ?? []) s.sprite.destroy();
+        const icon = this.addSprite(def.mapTexture, pos, 0.2, def.mapLife ?? 4, tint, 100);
+        const pulse = this.addSprite("ping-map-pulse.img", pos, 0, def.pingLife ?? 4, tint, 99);
+        pulse.pulse = true;
+        this.playerPings.set(playerId, [icon, pulse]);
     }
 
     /** Applies a snapshot's markers; returns the pings that just appeared (their sound and edge indicator). */
@@ -227,6 +247,15 @@ export class MapIndicators {
                 this.loose.splice(i, 1);
             }
         }
+        for (const [id, sprites] of this.playerPings) {
+            for (let i = sprites.length - 1; i >= 0; i--) {
+                if (this.step(sprites[i], dt, proj)) {
+                    sprites[i].sprite.destroy();
+                    sprites.splice(i, 1);
+                }
+            }
+            if (sprites.length === 0) this.playerPings.delete(id);
+        }
     }
 
     /** Advances one sprite; returns true once its lifetime is over. */
@@ -255,6 +284,8 @@ export class MapIndicators {
     clear(): void {
         for (const id of [...this.indicators.keys()]) this.remove(id);
         for (const s of this.loose.splice(0)) s.sprite.destroy();
+        for (const sprites of this.playerPings.values()) for (const s of sprites) s.sprite.destroy();
+        this.playerPings.clear();
     }
 
     destroy(): void {

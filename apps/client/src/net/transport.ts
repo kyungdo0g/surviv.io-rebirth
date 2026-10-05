@@ -1,5 +1,5 @@
 // How the client talks to a game: the in-browser loopback simulation (M1) or a WebSocket to a game server (M3).
-import type { MapData, PlayerInput, Snapshot, SpectateActionName } from "@rebirth/sim";
+import type { EmoteRequest, MapData, PlayerInput, Snapshot, SpectateActionName } from "@rebirth/sim";
 
 export interface Transport {
     /** Called once with the static map and the local player's object id (immediately if already joined). */
@@ -8,6 +8,12 @@ export interface Transport {
     sendInput(input: PlayerInput): void;
     /** Spectate request of the dead local player: begin, next or prev (the original Spectate message) (M4). */
     spectate(action: SpectateActionName): void;
+    /** Emote or team ping of the local player (the original Emote message; the server throttles them) (M6). */
+    emote(req: EmoteRequest): void;
+    /** 1 solo, 2 duo, 4 squad, once known (the original Joined teamMode) (M6) */
+    readonly teamMode?: number;
+    /** the local player's emote loadout, once known (the original Joined emotes; wheel slots 0-3) (M6) */
+    readonly emoteLoadout?: readonly string[];
     close(): void;
 }
 

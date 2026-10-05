@@ -4,6 +4,10 @@
 // damage taken and survival time, and the buttons "Play New Game" and, while players remain, "Spectate".
 // Timing: the screen fades in over 1 s after 2.5 s (1.75 s for a win); the card fades in 0.75 s later, its rows one
 // by one 250 ms apart, the buttons 500 ms after the last row.
+// M6 team modes (survev ui.ts getTitleDefeatText / getOverviewElems / showTeamAd): the loss title is "Your team was
+// eliminated.", the overview "Duo Rank #N" / "Squad Rank #N" and "Team Kills N", one card per member 250 px apart (dead
+// members marked); a player who dies while its team plays on gets the short "You died." screen with its kills and the
+// Play New Game / Spectate buttons.
 import type { GameOverEvent, PlayerStatsView } from "@rebirth/sim";
 import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { t } from "../l10n/index.ts";
@@ -28,6 +32,10 @@ export interface GameOverInfo {
     event: GameOverEvent;
     /** the local player's name (the card title) */
     name: string;
+    /** 1 solo, 2 duo, 4 squad (M6) */
+    teamMode?: number;
+    /** name of a team member (the cards of team modes) */
+    nameOf?: (id: number) => string;
     /** fallback stats when the event carries none */
     stats: PlayerStatsView | null;
     /** players still alive: "Spectate" is offered while any remain */
@@ -90,45 +98,100 @@ export class GameOverScreen {
         this.open = true;
         this.timed = [];
         this.screenShown = "";
-        const title = won ? t("game-chicken") : `${t("game-You")} ${t("game-you-died")}.`;
+        const teamMode = info.teamMode ?? 1;
+        const lossTitle = teamMode > 1 ? t("game-team-eliminated") : `${t("game-You")} ${t("game-you-died")}.`;
+        const title = won ? t("game-chicken") : lossTitle;
         const overview = el("div", "", "ui-stats-header-overview");
-        const rank = el("div", "");
-        rank.append(
-            el("span", "", "ui-stats-header-stat", `${t("game-solo-rank")} `),
-            el("span", "", "ui-stats-header-value", `#${ev.teamRank}`),
-        );
-        overview.append(rank);
+        const stat = (label: string, value: string) => {
+            const d = el("div", "");
+            d.append(
+                el("span", "", "ui-stats-header-stat", `${label} `),
+                el("span", "", "ui-stats-header-value", value),
+            );
+            return d;
+        };
+        const rankKey = teamMode >= 4 ? "game-squad-rank" : teamMode > 1 ? "game-duo-rank" : "game-solo-rank";
+        overview.append(stat(t(rankKey), `#${ev.teamRank}`));
+        if (teamMode > 1) {
+            const teamKills = ev.playerStats.reduce((sum, p) => sum + p.kills, 0);
+            const kills = stat(t("game-team-kills"), String(teamKills));
+            kills.className = "ui-stats-header-team-kills";
+            overview.append(kills);
+        }
         this.header.replaceChildren(el("div", "", "ui-stats-header-title", title), overview);
 
-        const stats = ev.playerStats[0] ?? info.stats;
-        const card = el("div", "", `ui-stats-info-player${stats?.dead ? " ui-stats-info-status" : ""}`);
-        const rows: HTMLElement[] = [el("div", "", "ui-stats-info-player-name", info.name)];
-        if (stats) {
-            const row = (label: string, value: string) => {
-                const r = el("div", "", "ui-stats-info");
-                r.append(el("div", "", "", label), el("div", "", "", value));
-                return r;
-            };
-            rows.push(
-                row(t("game-kills"), String(stats.kills)),
-                row(t("game-damage-dealt"), String(stats.damageDealt)),
-                row(t("game-damage-taken"), String(stats.damageTaken)),
-                row(t("game-survived"), humanizeTime(stats.timeAlive)),
-            );
-        }
-        card.append(...rows);
-        this.infoBox.replaceChildren(card);
-        this.timed.push({ el: card, at: this.delay + CARD_DELAY, shown: "" });
-        rows.forEach((r, i) => {
-            this.timed.push({ el: r, at: this.delay + CARD_DELAY + ELEM_FADE + i * ROW_DELAY, shown: "" });
+        const list = teamMode > 1 && ev.playerStats.length ? ev.playerStats : [ev.playerStats[0] ?? info.stats];
+        const cards: HTMLElement[] = [];
+        let rowCount = 0;
+        list.forEach((stats, cardIdx) => {
+            const name = teamMode > 1 && stats ? (info.nameOf?.(stats.playerId) ?? "") || info.name : info.name;
+            const card = el("div", "", `ui-stats-info-player${stats?.dead ? " ui-stats-info-status" : ""}`);
+            const rows: HTMLElement[] = [el("div", "", "ui-stats-info-player-name", name)];
+            if (stats) {
+                const row = (label: string, value: string) => {
+                    const r = el("div", "", "ui-stats-info");
+                    r.append(el("div", "", "", label), el("div", "", "", value));
+                    return r;
+                };
+                rows.push(
+                    row(t("game-kills"), String(stats.kills)),
+                    row(t("game-damage-dealt"), String(stats.damageDealt)),
+                    row(t("game-damage-taken"), String(stats.damageTaken)),
+                    row(t("game-survived"), humanizeTime(stats.timeAlive)),
+                );
+            }
+            card.append(...rows);
+            cards.push(card);
+            const base = this.delay + CARD_DELAY + cardIdx * ROW_DELAY;
+            this.timed.push({ el: card, at: base, shown: "" });
+            rows.forEach((r, i) => {
+                this.timed.push({ el: r, at: base + ELEM_FADE + i * ROW_DELAY, shown: "" });
+            });
+            rowCount = Math.max(rowCount, rows.length + cardIdx);
         });
+        this.infoBox.replaceChildren(...cards);
+        // cards sit 250 px apart around the centre (survev showStats)
+        this.infoBox.style.transform = cards.length > 1 ? `translateX(${-(cards.length - 1) * 125}px)` : "";
+        this.infoBox.style.display = "";
+        this.addButtons(!ev.gameOver && info.aliveCount > 0, this.delay + CARD_DELAY + (rowCount + 1) * ROW_DELAY);
+        this.startFade();
+    }
 
+    /**
+     * Team modes: the local player died while its team plays on (survev ui.ts showTeamAd): "You died." with its kill
+     * count, then Play New Game and Spectate (buttons from about 4.4 s).
+     */
+    showDeath(stats: PlayerStatsView): void {
+        this.won = false;
+        this.delay = LOSS_DELAY;
+        this.ticker = 0;
+        this.open = true;
+        this.timed = [];
+        this.screenShown = "";
+        const overview = el("div", "", "ui-stats-header-overview");
+        const kills = el("div", "");
+        kills.append(
+            el("span", "", "ui-stats-header-stat", `${t("game-kills")} `),
+            el("span", "", "ui-stats-header-value", String(stats.kills)),
+        );
+        overview.append(kills);
+        this.header.replaceChildren(
+            el("div", "", "ui-stats-header-title", `${t("game-You")} ${t("game-you-died")}.`),
+            overview,
+        );
+        this.infoBox.replaceChildren();
+        this.infoBox.style.transform = "";
+        this.infoBox.style.display = "none";
+        this.addButtons(true, this.delay + CARD_DELAY);
+        this.startFade();
+    }
+
+    private addButtons(canSpectate: boolean, at: number): void {
         const buttons: HTMLElement[] = [];
         const restart = this.button("ui-stats-restart btn-green btn-darken menu-option", t("game-play-new-game"), () =>
             this.cb.playAgain(),
         );
         buttons.push(restart);
-        const canSpectate = !ev.gameOver && info.aliveCount > 0;
         if (canSpectate) {
             buttons.push(
                 this.button("btn-green btn-darken menu-option ui-stats-spectate", t("game-spectate"), () =>
@@ -139,14 +202,12 @@ export class GameOverScreen {
             restart.classList.add("ui-stats-restart-wide");
         }
         this.options.replaceChildren(...buttons);
-        const elemIdx = rows.length + 1;
         buttons.forEach((b, i) => {
-            this.timed.push({
-                el: b,
-                at: this.delay + CARD_DELAY + (elemIdx + i) * ROW_DELAY + BUTTON_EXTRA_DELAY,
-                shown: "",
-            });
+            this.timed.push({ el: b, at: at + i * ROW_DELAY + BUTTON_EXTRA_DELAY, shown: "" });
         });
+    }
+
+    private startFade(): void {
         for (const item of this.timed) {
             item.el.style.opacity = "0";
             item.el.style.pointerEvents = "none";

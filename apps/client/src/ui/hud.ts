@@ -29,6 +29,10 @@ export interface HudFrame {
      * of an air drop crate, `button.useDelay`).
      */
     objectAction?: { label: string; time: number; duration: number } | null;
+    /** the followed player is knocked down: its health bar is red (M6) */
+    downed?: boolean;
+    /** name of the teammate being revived, shown in the revive pie label ("" on the downed side) (M6) */
+    actionTarget?: string;
 }
 
 const MEDICAL = ["bandage", "healthkit", "soda", "painkiller"] as const;
@@ -328,19 +332,19 @@ export class Hud {
             this.root.style.display = local ? "" : "none";
         });
         if (!local) return;
-        this.updateBars(local);
+        this.updateBars(local, !!frame.downed);
         this.updateWeapons(local);
         this.updateItems(local);
         this.updateGear(local);
-        this.updateAction(local, frame.dt, frame.objectAction ?? null);
+        this.updateAction(local, frame.dt, frame.objectAction ?? null, frame.actionTarget ?? "");
         this.updateInteraction(local.dead ? null : frame.interaction);
     }
 
-    private updateBars(local: LocalPlayerState): void {
+    private updateBars(local: LocalPlayerState, downed: boolean): void {
         const health = local.dead ? 0 : Math.max(local.health, 1);
-        const hKey = `${health.toFixed(1)}`;
+        const hKey = `${health.toFixed(1)}|${downed}`;
         this.p.set("health", hKey, () => {
-            const [r, g, b] = healthBarColor(health, false);
+            const [r, g, b] = healthBarColor(health, downed);
             this.health.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
             this.health.style.width = `${health}%`;
             this.healthDepleted.style.width = `${health}%`;
@@ -448,6 +452,7 @@ export class Hud {
         local: LocalPlayerState,
         dt: number,
         objectAction: { label: string; time: number; duration: number } | null,
+        actionTarget: string,
     ): void {
         const a = local.action;
         const playerAction = !local.dead && !!a && a.type !== "none" && a.duration > 0;
@@ -482,7 +487,11 @@ export class Hud {
         let label = "";
         if (objectRunning && objectAction) label = objectAction.label;
         else if (a?.type === "reload") label = t("game-reloading");
-        else if (a)
+        else if (a?.type === "revive") {
+            // survev ui.ts updateActionTimer: "Reviving <name>", the name left out on the downed side
+            const verb = t("game-reviving");
+            label = actionTarget ? (isSov() ? `${actionTarget} ${verb}` : `${verb} ${actionTarget}`) : verb;
+        } else if (a)
             label = isSov() ? `${itemName(a.item)} ${t("game-using")}` : `${t("game-using")} ${itemName(a.item)}`;
         this.p.set("pieLabel", label, () => {
             this.pieLabel.textContent = label;

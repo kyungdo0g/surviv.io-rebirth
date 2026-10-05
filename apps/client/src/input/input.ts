@@ -18,8 +18,13 @@ const PREVENT_DEFAULT = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRigh
 export class InputManager {
     private readonly down = new Set<BindCode>();
     private readonly pressed = new Set<BindCode>();
+    private readonly released = new Set<BindCode>();
     /** cursor in screen pixels; starts at the screen center */
     mouse: Vec2 = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    /** aim at this screen point instead of the cursor (the aim freezes while an emote wheel is open, M6) */
+    aimOverride: Vec2 | null = null;
+    /** the window lost focus since the last `endFrame()` (every held key and button was released) */
+    lostFocus = false;
     private seq = 0;
     /** one-shot actions queued by the HUD (slot and scope clicks), sent with the next input */
     private readonly queued: number[] = [];
@@ -37,7 +42,7 @@ export class InputManager {
             if (e.repeat) return;
             this.press(e.code);
         });
-        on<KeyboardEvent>(target, "keyup", (e) => this.down.delete(e.code));
+        on<KeyboardEvent>(target, "keyup", (e) => this.release(e.code));
         on<MouseEvent>(target, "mousemove", (e) => {
             this.mouse = { x: e.clientX, y: e.clientY };
         });
@@ -45,12 +50,16 @@ export class InputManager {
             this.mouse = { x: e.clientX, y: e.clientY };
             if (!onHud(e.target)) this.press(`Mouse${e.button}`);
         });
-        on<MouseEvent>(target, "mouseup", (e) => this.down.delete(`Mouse${e.button}`));
+        on<MouseEvent>(target, "mouseup", (e) => this.release(`Mouse${e.button}`));
         on<WheelEvent>(target, "wheel", (e) => {
             if (e.deltaY !== 0 && !onHud(e.target)) this.pressed.add(e.deltaY > 0 ? "WheelDown" : "WheelUp");
         });
         on<MouseEvent>(target, "contextmenu", (e) => e.preventDefault());
-        on(target, "blur", () => this.down.clear());
+        on(target, "blur", () => {
+            for (const code of this.down) this.released.add(code);
+            this.down.clear();
+            this.lostFocus = true;
+        });
     }
 
     /** Sends `action` (a defs `Input` value) with the next sampled input. */
@@ -68,6 +77,10 @@ export class InputManager {
         this.pressed.add(code);
     }
 
+    private release(code: BindCode): void {
+        if (this.down.delete(code)) this.released.add(code);
+    }
+
     isDown(codes: readonly BindCode[]): boolean {
         return codes.some((c) => this.down.has(c));
     }
@@ -77,9 +90,14 @@ export class InputManager {
         return this.pressed.has(code);
     }
 
+    /** true if `code` went up since the last `endFrame()` */
+    wasReleased(code: BindCode): boolean {
+        return this.released.has(code);
+    }
+
     /** Builds this frame's input; `playerPos` is where the local player is drawn (world space). */
     sample(camera: Camera, playerPos: Vec2): PlayerInput {
-        const mouseWorld = camera.screenToWorld(this.mouse);
+        const mouseWorld = camera.screenToWorld(this.aimOverride ?? this.mouse);
         const dx = mouseWorld.x - playerPos.x;
         const dy = mouseWorld.y - playerPos.y;
         const len = Math.hypot(dx, dy);
@@ -107,6 +125,8 @@ export class InputManager {
     /** Clears the one-frame "pressed" state; call once per frame after sampling. */
     endFrame(): void {
         this.pressed.clear();
+        this.released.clear();
+        this.lostFocus = false;
     }
 
     destroy(): void {

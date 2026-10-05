@@ -135,6 +135,24 @@ export function killMessage(e: KillEvent, names: PlayerNames, spectating: boolea
     return { text, count };
 }
 
+/**
+ * Centre message when the active player is knocked down (survev ui2.ts getDownedText, which the original leaves in
+ * English): "<killer> knocked YOU out with <weapon>", the red zone / air drop / air strike as the killer when no
+ * player did it; a spectator sees the spectated player's name instead of YOU.
+ */
+export function downedMessage(e: KillEvent, names: PlayerNames, spectating: boolean): string {
+    const you = spectating ? truncateName(names.name(e.targetId)) : t("game-you").toUpperCase();
+    let killer = e.killCreditId ? truncateName(names.name(e.killCreditId)) : "";
+    if (!killer) {
+        if (e.damageType === DamageType.Gas) killer = t("game-the-red-zone");
+        else if (e.damageType === DamageType.Airdrop) killer = t("game-the-air-drop");
+        else if (e.damageType === DamageType.Airstrike) killer = t("game-the-air-strike");
+    }
+    let damage = sourceName(e.itemSourceType || e.mapSourceType);
+    if (killer && e.killCreditId && e.damageType === DamageType.Airstrike) damage = t("game-an-air-strike");
+    return damage ? `${killer} knocked ${you} out ${t("game-with")} ${damage}` : `${killer} knocked ${you} out`;
+}
+
 interface Line {
     div: HTMLDivElement;
     text: HTMLDivElement;

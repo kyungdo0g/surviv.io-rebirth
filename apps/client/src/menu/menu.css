@@ -1,0 +1,474 @@
+/*
+ * Start menu and team lobby, styled like the original page (survev client/css/app.css: #start-menu, #team-menu,
+ * .menu-option, .btn-green, .btn-team-option, .btn-hollow; docs/research/ui/menus.md). Only the parts the rebirth
+ * menu has: name, play buttons, team buttons, how to play, the lobby and the join-by-code panel.
+ */
+#start-menu-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 20px;
+    font-family: "Roboto Condensed", "Noto Sans KR", Arial, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    background-color: #80af49;
+}
+
+#start-menu-wrapper[hidden],
+#start-menu-wrapper [hidden] {
+    display: none;
+}
+
+#start-background {
+    position: absolute;
+    inset: 0;
+    background-image: url(/assets/img/splashes/main.webp);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+#start-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+#start-main {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 124px;
+}
+
+#start-row-header {
+    background-image: url(/assets/img/surviv_logo_full.png);
+    background-repeat: no-repeat;
+    background-size: 396px;
+    background-position: center;
+    width: 396px;
+    height: 140px;
+    margin: 0 auto 42px;
+}
+
+#start-main-center {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.menu-block {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#start-menu {
+    padding: 20px;
+    width: 300px;
+}
+
+.menu-option {
+    border: 0;
+    border-radius: 5px;
+    box-sizing: border-box;
+    display: block;
+    height: 40px;
+    line-height: 38px;
+    margin-bottom: 8px;
+    text-align: center;
+    text-decoration: none;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.menu-option:focus {
+    outline: none;
+    box-shadow: 0 0 1px 1px #83af50;
+}
+
+.player-name-input {
+    background-color: #ffffff;
+    color: #000000;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 0;
+    cursor: text;
+}
+
+.btn-darken:hover,
+.btn-darken:active {
+    filter: brightness(80%);
+    transition: all 0.25s ease;
+}
+
+.btn-green {
+    background: #83af50;
+    border-bottom: 2px solid #5b7a38;
+    box-shadow: inset 0 -2px #5b7a38;
+    color: #ffffff;
+    font-size: 16px;
+    position: relative;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.btn-team-option {
+    background: #50afab;
+    border-bottom: 2px solid #387c79;
+    box-shadow: inset 0 -2px #387c79;
+    color: #ffffff;
+    font-size: 16px;
+    position: relative;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.btn-grey {
+    background: #7a7a7a;
+    border-bottom: 2px solid #3e3e3e;
+    box-shadow: inset 0 -2px #3e3e3e;
+    color: #ffffff;
+    font-size: 16px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.btns-double-row {
+    display: flex;
+}
+
+.btns-double-row > a:not(:last-child) {
+    margin-right: 4px;
+}
+
+.btn-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+#start-help {
+    display: none;
+    margin-top: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 17px;
+}
+
+#start-help.open {
+    display: block;
+}
+
+#start-help h1 {
+    font-size: 18px;
+    margin: 4px 0 6px;
+    color: #ffffff;
+}
+
+#start-help p {
+    margin: 0 0 4px;
+}
+
+#start-help .help-key {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+#server-warning {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -38px;
+    margin: auto;
+    width: 320px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: red;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+#server-warning.shown {
+    opacity: 1;
+}
+
+#start-top-right {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
+}
+
+.lang-option {
+    padding: 0 12px;
+    height: 32px;
+    line-height: 30px;
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background: rgba(0, 0, 0, 0.5);
+    color: #ffffff;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.lang-option.selected {
+    border-color: #00ff00;
+}
+
+#start-bottom-left {
+    position: absolute;
+    left: 12px;
+    bottom: 10px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* join by link or code (the original #team-mobile-link panel) */
+#team-join {
+    width: 300px;
+    padding: 20px;
+    text-align: center;
+}
+
+#team-join .team-join-help {
+    font-size: 16px;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+#team-link-input {
+    background-color: #ffffff;
+    color: #000000;
+    font-size: 16px;
+    padding: 0 8px;
+    text-align: center;
+}
+
+/* team lobby (the original #team-menu) */
+#team-menu {
+    position: relative;
+    width: 625px;
+    min-height: 325px;
+    padding: 12px;
+}
+
+#btn-team-leave {
+    position: absolute;
+    top: 20px;
+    right: 14px;
+    width: 140px;
+}
+
+#team-menu-connecting {
+    margin-top: 120px;
+    text-align: center;
+    font-size: 18px;
+    color: #ffffff;
+}
+
+#team-desc {
+    display: inline-block;
+    width: 70%;
+    margin: 6px 0 10px 12px;
+    text-align: left;
+    font-size: 14px;
+}
+
+#team-desc-text {
+    font-size: 16px;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#team-url {
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#team-copy-url {
+    display: inline-block;
+    margin-left: 6px;
+    width: 26px;
+    height: 26px;
+    vertical-align: middle;
+    background: url(/assets/img/gui/copy.svg) center / 70% no-repeat rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#team-code-text {
+    margin-top: 4px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+#team-code-text .label {
+    font-size: 16px;
+    font-weight: 400;
+}
+
+#team-menu-columns {
+    display: flex;
+    gap: 12px;
+}
+
+#team-menu-members {
+    width: 320px;
+    padding: 12px 0;
+}
+
+.team-menu-member {
+    display: flex;
+    align-items: center;
+}
+
+.team-menu-member > .icon {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    margin: 0 4px 8px;
+    border-radius: 6px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.team-menu-member > .icon-leader {
+    background-image: url(/assets/img/gui/crown.svg);
+}
+
+.team-menu-member > .icon-kick {
+    background-image: url(/assets/img/gui/close.svg);
+    background-size: 65%;
+    cursor: pointer;
+}
+
+.team-menu-member > .icon-kick:hover {
+    filter: brightness(60%);
+}
+
+.team-menu-member > .icon-in-game {
+    background-image: url(/assets/img/gui/player-gui.svg);
+    background-size: 85%;
+    animation: team-in-game-pulse 3s ease-out infinite;
+}
+
+@keyframes team-in-game-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.team-menu-member > .name {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    line-height: 36px;
+    margin-bottom: 8px;
+    padding: 0 8px;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 16px;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: default;
+}
+
+.team-menu-member > .name.name-self {
+    color: #00ff00;
+}
+
+.team-menu-member > .name.name-empty {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+#team-menu-options {
+    width: 280px;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.team-menu-options-buttons {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.btn-hollow {
+    flex: 1;
+    height: 40px;
+    line-height: 36px;
+    font-size: 16px;
+    text-align: center;
+    color: #ffffff;
+    background-color: transparent;
+    border: 2px solid #ffffff;
+    border-radius: 5px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.btn-hollow.btn-hollow-selected {
+    border-color: #00ff00;
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
+.btn-hollow.btn-opaque {
+    opacity: 0.5;
+    cursor: default;
+}
+
+#msg-wait-reason {
+    min-height: 40px;
+    line-height: 20px;
+    padding-top: 10px;
+    color: #ffffff;
+    font-size: 16px;
+    text-align: center;
+}
+
+.ui-spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+    vertical-align: middle;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: ui-spin 0.9s linear infinite;
+}
+
+@keyframes ui-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 850px), (max-height: 600px) {
+    #start-main {
+        margin-bottom: 0;
+        transform: scale(0.8);
+    }
+}

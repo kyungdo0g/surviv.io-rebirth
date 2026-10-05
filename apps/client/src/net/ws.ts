@@ -4,6 +4,8 @@
 // otherwise (packages/protocol InputThrottle). A dead player's spectate requests go out as Spectate messages. The
 // server closes a finished game 1.8 s after its winner was decided with a `game_closed` disconnect; after this
 // client saw its GameOver result that is the normal end of the game, not an error (`endedNormally`).
+// M6: find_game carries the team mode and auto fill; a party game connects straight to the /play URL (with its join
+// token) the lobby's joinGame message gave (`joinUrl`); emotes and pings go out as Emote messages.
 import {
     DisconnectReason,
     GameConnection,
@@ -12,7 +14,7 @@ import {
     MsgType,
     SpectateAction,
 } from "@rebirth/protocol";
-import type { PlayerInput, SpectateActionName } from "@rebirth/sim";
+import type { EmoteRequest, PlayerInput, SpectateActionName } from "@rebirth/sim";
 import { type Transport, TransportEvents } from "./transport.ts";
 
 export interface WsTransportOptions extends GameConnectionOptions {
@@ -20,6 +22,8 @@ export interface WsTransportOptions extends GameConnectionOptions {
     onDisconnect?: (reason: string) => void;
     /** Ping period for the round-trip estimate in `rttMs` (ms; 0 disables; default 2000) */
     pingIntervalMs?: number;
+    /** connect to this /play URL (carrying a join token, e.g. a party's joinGame) instead of calling find_game */
+    joinUrl?: string;
 }
 
 /** Player-facing text for a disconnect reason. */
@@ -79,7 +83,8 @@ export class WsTransport implements Transport {
             if (reason !== "closed" && !this.endedNormally) console.warn(`disconnected: ${reason}`);
             for (const cb of this.disconnectCbs) cb(reason);
         });
-        this.ready = this.connection.connect().then(() => {
+        const joining = opts.joinUrl ? this.connection.connectTo(opts.joinUrl) : this.connection.connect();
+        this.ready = joining.then(() => {
             const period = opts.pingIntervalMs ?? 2000;
             if (period > 0 && !this.closed) {
                 this.connection.ping();
@@ -124,6 +129,21 @@ export class WsTransport implements Transport {
         const value =
             action === "begin" ? SpectateAction.Begin : action === "next" ? SpectateAction.Next : SpectateAction.Prev;
         this.connection.send({ type: MsgType.Spectate, action: value });
+    }
+
+    /** the game's team mode from the Joined message (1 before it arrived) */
+    get teamMode(): number {
+        return this.connection.joined?.teamMode ?? 1;
+    }
+
+    /** the emote loadout from the Joined message */
+    get emoteLoadout(): readonly string[] | undefined {
+        return this.connection.joined?.emotes;
+    }
+
+    emote(req: EmoteRequest): void {
+        if (this.closed || !this.joined) return;
+        this.connection.sendEmote(req);
     }
 
     close(): void {

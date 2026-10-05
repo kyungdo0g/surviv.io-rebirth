@@ -71,6 +71,8 @@ export interface EmitterOptions {
     rateMult?: number;
     /** multiplies the particle speed (unit conversion of emitters measured in sprite pixels) */
     speedMult?: number;
+    /** overrides the particle def's colour (revive particles are purple, M6) */
+    color?: () => number;
 }
 
 /** A continuous particle source; move it by setting `pos`, stop it with `stop()`. */
@@ -86,6 +88,7 @@ export class Emitter {
     rateMult: number;
     speedMult: number;
     duration: number;
+    color: (() => number) | undefined;
     /** spawning is paused while disabled (the emitter keeps its place) */
     enabled = true;
     /** multiplies the alpha of its particles (ceiling fade of chimney smoke) */
@@ -107,6 +110,7 @@ export class Emitter {
         this.rateMult = opts.rateMult ?? 1;
         this.speedMult = opts.speedMult ?? 1;
         this.duration = opts.duration ?? Number.POSITIVE_INFINITY;
+        this.color = opts.color;
     }
 
     stop(): void {
@@ -236,7 +240,7 @@ export class ParticleSystem {
                     e.layer,
                     { x: e.pos.x + off.x, y: e.pos.y + off.y },
                     vel,
-                    { scale: e.scale, rot, zOrd: e.zOrd },
+                    { scale: e.scale, rot, zOrd: e.zOrd, color: e.color?.() },
                     e,
                 );
                 e.nextSpawn += pick(def.rate) * e.rateMult;

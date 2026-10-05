@@ -67,6 +67,15 @@ export const ko: Readonly<Record<string, string>> = {
     "game-level-3": "레벨 3",
     "game-level-4": "레벨 4",
     "game-sound": "소리",
+    "game-revive-teammate": "팀원 소생",
+    "game-revive-self": "본인 소생",
+    "game-reviving": "소생 중",
+    "game-cancel": "취소",
+    "game-is-down": "이(가) 쓰러졌습니다",
+    "game-team-eliminated": "당신 팀이 전멸했습니다.",
+    "game-duo-rank": "2인 팀전 등수",
+    "game-squad-rank": "분대(4인) 등수",
+    "game-team-kills": "팀 킬수",
 };
 
 /** "game-<id>" item names (l10n-ko.md: 의료품·탄약, 가방·방어구·스코프, 총기, 근접 무기, 투척 무기) */

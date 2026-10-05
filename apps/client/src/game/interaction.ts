@@ -7,6 +7,10 @@
 // touching a closed door that is locked, or a one-way door from the wrong side, plays its error sound (survev
 // player.ts isNearDoorError, at most every 0.5 s), and so does pressing F at a locked door (rebirth: feedback for a
 // refused interaction).
+// M6: a downed teammate within reviveRange on the player's layer, not already being revived, prompts "[F] Revive
+// Teammate" while the player stands with no action running; it wins over loot and objects. During an item use or a
+// revive the prompt is "[X] Cancel" (survev ui2.ts m_update "Reviving", InteractionType.Revive / Cancel). Revive Self
+// needs the Revivify perk, which the snapshot does not carry (TODO: LocalPlayerState perks).
 import { collider, math, type Vec2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
 import type { LocalPlayerState, ObstacleView, PlayerView } from "@rebirth/sim";
@@ -17,6 +21,8 @@ import type { ObjectWorld } from "../objects/world.ts";
 
 /** the prompt key: Interact (F) by default (survev ui2.ts getInteractionKey) */
 export const INTERACT_KEY = "F";
+/** the Cancel bind (X) */
+export const CANCEL_KEY = "X";
 /** a use counts as ours when the button flips this soon after our Interact press (s) */
 const USE_MATCH_WINDOW = 1;
 /** the door error sound repeats at most this often (s) */
@@ -31,6 +37,8 @@ export interface Prompt {
     /** obstacle id when the prompt is for a button or a door */
     obstacleId?: number;
     door?: boolean;
+    /** the downed teammate a revive prompt is for (M6) */
+    reviveId?: number;
 }
 
 interface PendingUse {
@@ -62,7 +70,12 @@ export class InteractionTracker {
 
     /** Nearest usable button or loot for the player, as the prompt to show. */
     find(world: ObjectWorld, local: LocalPlayerState | null, me: PlayerView | undefined, pos: Vec2): Prompt | null {
-        if (!local || !me || local.dead || me.downed) return null;
+        if (!local || !me || local.dead) return null;
+        const action = local.action?.type ?? "none";
+        if (action === "use" || (action === "revive" && !me.downed)) return { key: CANCEL_KEY, text: t("game-cancel") };
+        if (me.downed) return null;
+        const revive = action === "none" ? this.findRevive(world, local, me) : null;
+        if (revive) return revive;
         let prompt: Prompt | null = null;
         let bestPen = 0;
         world.forEachView("obstacle", (o) => {
@@ -90,6 +103,20 @@ export class InteractionTracker {
         });
         const loot = this.findLoot(world, local, me, pos);
         return loot ?? prompt;
+    }
+
+    /** A downed teammate the player can revive (survev ui2.ts m_update "Reviving"; distances from the snapshot). */
+    private findRevive(world: ObjectWorld, local: LocalPlayerState, me: PlayerView): Prompt | null {
+        for (const m of local.team ?? []) {
+            if (m.playerId === me.id) continue;
+            const view = world.get(m.playerId) as PlayerView | undefined;
+            if (view?.kind !== "player" || !view.downed || view.dead || view.action?.type === "revive") continue;
+            const d = Math.hypot(view.pos.x - me.pos.x, view.pos.y - me.pos.y);
+            if (d < GameConfig.player.reviveRange && sameLayer(view.layer, me.layer)) {
+                return { key: INTERACT_KEY, text: t("game-revive-teammate"), reviveId: view.id };
+            }
+        }
+        return null;
     }
 
     /**

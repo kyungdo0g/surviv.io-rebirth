@@ -3,6 +3,8 @@
 // particles, sounds), the red zone, planes and air drops, the DOM HUD and match UI, the minimap and the debug HUD.
 // M5: explosions, projectiles, smoke, recorders, ambience and interior music (worldFx.ts), air strike zones, door
 // prompts and errors, camera shake and the underground view.
+// M6: team play (teamPlay.ts: team HUD, names, minimap team dots, emote / ping wheels, emotes and pings), revive and
+// cancel prompts, the revive pie timer and the downed health bar.
 import type { Vec2 } from "@rebirth/core";
 import { getMapDef, Input, MapObjectDefs } from "@rebirth/defs";
 import {
@@ -40,6 +42,7 @@ import { Minimap, uiScale } from "../ui/minimap.ts";
 import { PingIndicator } from "../ui/pingIndicator.ts";
 import { InteractionTracker, type Prompt } from "./interaction.ts";
 import { MatchUi } from "./match.ts";
+import { TeamPlay } from "./teamPlay.ts";
 import { surfaceAt, WorldFx } from "./worldFx.ts";
 
 /** extra world units around the screen kept un-culled */
@@ -75,6 +78,7 @@ export class GameClient {
     readonly gasOverlay = new GasShape(WORLD_GAS_COLOR);
     readonly interactions: InteractionTracker;
     readonly pingIndicator: PingIndicator;
+    readonly teamPlay: TeamPlay;
     world: ObjectWorld | null = null;
     air: AirSystem | null = null;
     worldFx: WorldFx | null = null;
@@ -134,6 +138,17 @@ export class GameClient {
             killLeaderEnabled: true,
             spectate: (action) => this.transport.spectate(action),
             playAgain,
+            teamMode: () => this.teamPlay.teamMode,
+        });
+        this.teamPlay = new TeamPlay({
+            renderer: this.renderer,
+            textures,
+            audio: this.audio,
+            camera: this.camera,
+            hudRoot: this.ui.root,
+            transport,
+            minimap: () => this.minimap,
+            map: () => this.map,
         });
         transport.onJoin((map, playerId) => this.join(map, playerId));
         transport.onSnapshot((s) => this.onSnapshot(s));
@@ -144,6 +159,7 @@ export class GameClient {
         if (this.destroyed) return;
         this.match.reset(playerId);
         this.interactions.clear();
+        this.teamPlay.clear();
         if (this.map === map && this.world) {
             // same game, new local player (sandbox respawn): drop every view, the next snapshot rebuilds them
             this.world.clear();
@@ -231,6 +247,8 @@ export class GameClient {
         });
         this.audio.preload(["player_bullet_hit_01", "player_bullet_hit_02", "bullet_whiz_01", "punch_swing_01"]);
         this.audio.preload(["leader_assigned_01", "leader_dead_01", "ping_airdrop_01"], "ui");
+        // emotes and team pings (M6)
+        this.audio.preload(["emote_01", "ping_danger_01", "ping_coming_01", "ping_help_01"], "ui");
     }
 
     private onSnapshot(s: Snapshot): void {
@@ -239,6 +257,7 @@ export class GameClient {
         this.effects.beginSnapshot(s);
         this.world.applySnapshot(s);
         this.effects.endSnapshot(s);
+        this.teamPlay.applySnapshot(s, this.localId, this.world);
         this.worldFx?.apply(s);
         this.minimap?.airstrikeZones.apply(s.airstrikeZones ?? []);
         this.interp.push(s, performance.now() / 1000);
@@ -297,6 +316,7 @@ export class GameClient {
             prev: this.input.wasPressed("ArrowLeft"),
         });
         if (!world || !this.local) {
+            this.teamPlay.updateWheel(uiDt, this.input, null, false);
             this.renderer.update(dt);
             this.ui.update({ dt, local: null, interaction: null });
             this.input.endFrame();
@@ -307,6 +327,7 @@ export class GameClient {
         this.cameraPlaced = true;
 
         const spectating = this.match.spectating;
+        this.teamPlay.updateWheel(uiDt, this.input, this.local, !spectating);
         const input = this.input.sample(this.camera, this.visualPos);
         if (!spectating) {
             this.transport.sendInput(input);
@@ -318,6 +339,15 @@ export class GameClient {
         this.renderer.activeLayer = this.local.layer;
         const ctx = { dt, localPos: this.visualPos, localLayer: this.local.layer, localId: this.activeId };
         world.update(ctx, now, this.camera.viewBounds(CULL_MARGIN));
+        this.teamPlay.update({
+            dt: uiDt,
+            now,
+            world,
+            local: this.local,
+            localId: this.localId,
+            activeId: this.activeId,
+            spectating,
+        });
         this.air?.update({
             dt: uiDt,
             viewerPos: this.visualPos,
@@ -339,10 +369,19 @@ export class GameClient {
             dt: uiDt,
             gas: this.match.gas,
             alpha: this.interp.alpha(now),
+            team: this.teamPlay.minimapFrame(now),
         });
         this.interaction = spectating ? null : this.interactions.find(world, this.local, me, this.localPos);
         const objectAction = this.interactions.update(uiDt, world);
-        const frame: HudFrame = { dt, local: this.local, interaction: this.interaction, objectAction };
+        const targetId = this.local.action?.type === "revive" ? (this.local.action.targetId ?? 0) : 0;
+        const frame: HudFrame = {
+            dt,
+            local: this.local,
+            interaction: this.interaction,
+            objectAction,
+            downed: !!me?.downed,
+            actionTarget: targetId && !me?.downed ? this.match.name(targetId) : "",
+        };
         this.ui.update(frame);
         this.hud.update(dt, () => ({
             fps: this.renderer.fps(),
@@ -382,6 +421,7 @@ export class GameClient {
         this.worldFx = null;
         this.minimap?.destroy();
         this.minimap = null;
+        this.teamPlay.destroy();
         this.ui.destroy();
         this.match.dispose();
         this.renderer.destroy();

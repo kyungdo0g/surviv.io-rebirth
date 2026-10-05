@@ -3,10 +3,14 @@
 // Sandbox extras: standing dummy players in front of the local player, a starting gun, and respawning. The caller
 // picks the match rules through `extras.init` (GameInit: `sandbox` for a match that starts at once and never ends,
 // `gasStages` for a shortened red zone).
+// M6: a team game (GameOptions.teamMode 2 / 4) puts the local player and `teammates` idle teammates in one group (a
+// party key with no auto fill), next to each other; the dummies are enemies, one group each. Emotes go to Game.emote.
 import { v2 } from "@rebirth/core";
 import { GameObjectDefs, WeaponSlot } from "@rebirth/defs";
 import {
+    type AddPlayerOptions,
     BAG_ITEMS,
+    type EmoteRequest,
     emptyInput,
     Game,
     type GameInit,
@@ -26,11 +30,18 @@ const MAX_FRAME_DT = 0.25;
 /** dummies stand this far in front of the local player, this far apart */
 const DUMMY_DIST = 8;
 const DUMMY_SPACING = 3.5;
+/** teammates stand this far behind the local player, this far apart */
+const TEAMMATE_DIST = 4;
+const TEAMMATE_SPACING = 3;
+/** the sandbox party key of the local player's group */
+const LOCAL_GROUP = "sandbox-local";
 
 export interface LoopbackExtras {
     init?: GameInit;
-    /** extra players standing still in front of the local player */
+    /** extra players standing still in front of the local player (enemies in team modes) */
     dummies?: number;
+    /** team modes: idle teammates in the local player's group, standing behind it (M6) */
+    teammates?: number;
     /**
      * Comma-separated items for the local player: guns go to the primary (then secondary) slot with a full magazine and
      * reserve, bag items (throwables, heals, boosts, scopes) are filled to capacity; the first gun or throwable listed
@@ -44,6 +55,8 @@ export class LoopbackTransport implements Transport {
     playerId: number;
     /** ids of the sandbox dummies */
     readonly dummies: number[] = [];
+    /** ids of the sandbox teammates (team modes) */
+    readonly teammates: number[] = [];
     private readonly extras: LoopbackExtras;
     private readonly events = new TransportEvents();
     private accumulator = 0;
@@ -56,9 +69,14 @@ export class LoopbackTransport implements Transport {
     constructor(options: GameOptions, extras: LoopbackExtras = {}) {
         this.extras = extras;
         this.game = new Game(options, extras.init);
-        this.playerId = this.game.addPlayer("player");
+        const teamMode = options.teamMode ?? 1;
+        const teammates = teamMode > 1 ? Math.max(0, Math.min(teamMode - 1, Math.floor(extras.teammates ?? 0))) : 0;
+        this.playerId = this.game.addPlayer("player", this.localGroup(1 + teammates));
         this.setupLocal();
-        if (extras.dummies) this.spawnDummies(extras.dummies);
+        for (let i = 0; i < teammates; i++) {
+            this.teammates.push(this.game.addPlayer(`teammate ${i + 1}`, this.localGroup(1)));
+        }
+        if (extras.dummies || teammates) this.arrangeSandbox(extras.dummies ?? 0);
         // let the caller register its callbacks first
         queueMicrotask(() => {
             if (this.closed) return;
@@ -84,6 +102,23 @@ export class LoopbackTransport implements Transport {
         if (!this.closed) this.game.spectate(this.playerId, action);
     }
 
+    emote(req: EmoteRequest): void {
+        if (!this.closed) this.game.emote(this.playerId, req);
+    }
+
+    get teamMode(): number {
+        return this.game.options.teamMode ?? 1;
+    }
+
+    get emoteLoadout(): readonly string[] | undefined {
+        return this.game.getPlayer(this.playerId)?.emoteLoadout;
+    }
+
+    /** addPlayer options of the local group: a party key without auto fill (team modes only). */
+    private localGroup(partySize: number): AddPlayerOptions {
+        return (this.game.options.teamMode ?? 1) > 1 ? { group: LOCAL_GROUP, autoFill: false, partySize } : {};
+    }
+
     playerName(id: number): string | undefined {
         return this.game.getPlayer(id)?.name;
     }
@@ -91,7 +126,7 @@ export class LoopbackTransport implements Transport {
     /** Replaces the local player with a fresh one at a new spawn point (sandbox "play again"). */
     respawn(): void {
         this.game.removePlayer(this.playerId);
-        this.playerId = this.game.addPlayer("player");
+        this.playerId = this.game.addPlayer("player", this.localGroup(1));
         this.setupLocal();
         this.events.emitJoin(this.game.mapData, this.playerId);
         this.events.emitSnapshot(this.game.getSnapshot(this.playerId));
@@ -150,40 +185,57 @@ export class LoopbackTransport implements Transport {
         return this.game.world.query(box).every((e) => e.kind !== "obstacle" && e.kind !== "building");
     }
 
-    private dummySpots(center: { x: number; y: number }, n: number): Array<{ x: number; y: number }> | null {
-        const spots = Array.from({ length: n }, (_, i) => ({
-            x: center.x + DUMMY_DIST,
-            y: center.y + (i - (n - 1) / 2) * DUMMY_SPACING,
-        }));
+    /** Dummies in a row in front of `center`, teammates in a row behind it, or null when they do not fit there. */
+    private sandboxSpots(
+        center: { x: number; y: number },
+        n: number,
+        m: number,
+    ): Array<{ x: number; y: number }> | null {
+        const row = (count: number, dx: number, spacing: number) =>
+            Array.from({ length: count }, (_, i) => ({
+                x: center.x + dx,
+                y: center.y + (i - (count - 1) / 2) * spacing,
+            }));
+        const spots = [...row(n, DUMMY_DIST, DUMMY_SPACING), ...row(m, -TEAMMATE_DIST, TEAMMATE_SPACING)];
         const ok = spots.every((s) => this.clearPath(center, s) && this.openGround(center, s, 2.5));
         return ok ? spots : null;
     }
 
-    /** Adds `n` dummies facing the local player, moving the local player to open ground if needed. */
-    private spawnDummies(n: number): void {
+    /**
+     * Adds `n` dummies facing the local player and lines up its teammates behind it, moving the local player to open
+     * ground if needed.
+     */
+    private arrangeSandbox(n: number): void {
         const game = this.game;
         const self = game.getPlayer(this.playerId);
         if (!self) return;
+        const m = this.teammates.length;
         let center = v2.copy(self.pos);
-        let spots = this.dummySpots(center, n);
+        let spots = this.sandboxSpots(center, n, m);
         const { width, height } = game.mapData;
         for (let ring = 4; !spots && ring < width / 2; ring += 4) {
             for (let a = 0; a < 16 && !spots; a++) {
                 const ang = (a / 16) * Math.PI * 2;
                 const p = { x: self.pos.x + Math.cos(ang) * ring, y: self.pos.y + Math.sin(ang) * ring };
                 if (p.x < 60 || p.y < 60 || p.x > width - 60 || p.y > height - 60) continue;
-                spots = this.dummySpots(p, n);
+                spots = this.sandboxSpots(p, n, m);
                 if (spots) center = p;
             }
         }
         if (!spots) return;
         game.teleportPlayer(this.playerId, center);
-        spots.forEach((spot, i) => {
-            const id = game.addPlayer(`dummy ${i + 1}`);
+        const enemy: AddPlayerOptions = (game.options.teamMode ?? 1) > 1 ? { autoFill: false } : {};
+        spots.slice(0, n).forEach((spot, i) => {
+            const id = game.addPlayer(`dummy ${i + 1}`, enemy);
             game.teleportPlayer(id, spot);
             const toPlayer = v2.normalize(v2.sub(center, spot));
             game.setInput(id, { ...emptyInput(), toMouseDir: toPlayer, toMouseLen: DUMMY_DIST });
             this.dummies.push(id);
+        });
+        spots.slice(n).forEach((spot, i) => {
+            const id = this.teammates[i];
+            game.teleportPlayer(id, spot);
+            game.setInput(id, { ...emptyInput(), toMouseDir: { x: 1, y: 0 }, toMouseLen: DUMMY_DIST });
         });
     }
 

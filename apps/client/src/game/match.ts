@@ -7,6 +7,8 @@
 //   docs/research/ui/hud.md CONFLICT victory-music), and spectating (Begin / Next / Prev, arrow keys).
 // While spectating, snapshots follow the watched player (Snapshot.localPlayerId); the local id stays the one the
 // client joined with.
+// M6 teams: knock-outs show "<killer> knocked YOU out" to the downed player, the stats screen uses the team texts and
+// one card per member, and a death while the team plays on (Snapshot.playerStats) shows the short "You died." screen.
 import { GameObjectDefs, type RoleDef } from "@rebirth/defs";
 import type {
     KillEvent,
@@ -20,7 +22,7 @@ import type { AudioEngine, SoundHandle } from "../audio/audio.ts";
 import { GasTracker } from "../fx/gas.ts";
 import { t } from "../l10n/index.ts";
 import { GameOverScreen } from "../ui/gameOver.ts";
-import { killFeedColor, killFeedText, killMessage, type PlayerNames, roleFeed } from "../ui/killFeed.ts";
+import { downedMessage, killFeedColor, killFeedText, killMessage, type PlayerNames, roleFeed } from "../ui/killFeed.ts";
 import { gasAnnouncement, MatchHud } from "../ui/matchHud.ts";
 
 /** victory music of the original client (menu_music_01), started 1.3 s after the GameOver result */
@@ -39,6 +41,8 @@ export interface MatchUiOptions {
     spectate(action: SpectateActionName): void;
     /** "Play New Game" and "Leave Game" */
     playAgain(): void;
+    /** 1 solo, 2 duo, 4 squad (M6; the stats screen texts) */
+    teamMode?(): number;
 }
 
 export class MatchUi implements PlayerNames {
@@ -139,6 +143,11 @@ export class MatchUi implements PlayerNames {
         if (!this.spectating && s.local.kills !== undefined) this.setLocalKills(s.local.kills);
         this.hud.setSpectatorCount(s.local.spectatorCount ?? 0);
         if (s.local.stats && !this.spectating) this.setLocalStats(s.local.stats);
+        if (s.playerStats && !this.resultSeen && s.playerStats.playerId === this.localId) {
+            this.setLocalStats(s.playerStats);
+            this.gameOver.showDeath(s.playerStats);
+            this.hideKillIn = 2.5 - KILL_MESSAGE_HIDE_LEAD;
+        }
         if (s.gameOver) this.onGameOver(s);
         this.checkGasDamage(s, activePos);
         return activeChanged;
@@ -163,6 +172,8 @@ export class MatchUi implements PlayerNames {
         if (e.killCreditId === this.activeId) {
             const msg = killMessage(e, this, this.spectating);
             this.hud.showKillMessage(msg.text, msg.count);
+        } else if (e.targetId === this.activeId && e.downed && !e.killed) {
+            this.hud.showKillMessage(downedMessage(e, this, this.spectating), "");
         }
         if (e.killCreditId === this.localId && e.killed) this.setLocalKills(e.killerKills);
     }
@@ -193,6 +204,8 @@ export class MatchUi implements PlayerNames {
             name: this.name(this.localId) || "",
             stats,
             aliveCount: s.aliveCount ?? this.aliveCount,
+            teamMode: this.opts.teamMode?.() ?? 1,
+            nameOf: (id) => this.name(id),
         });
         const won = ev.winningTeamId !== 0 && ev.winningTeamId === ev.teamId;
         this.hideKillIn = (won ? 1.75 : 2.5) - KILL_MESSAGE_HIDE_LEAD;

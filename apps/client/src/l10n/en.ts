@@ -70,6 +70,15 @@ export const en: Readonly<Record<string, string>> = {
     "game-level-3": "Lvl. 3",
     "game-level-4": "Lvl. 4",
     "game-sound": "Sound",
+    "game-revive-teammate": "Revive Teammate",
+    "game-revive-self": "Revive Self",
+    "game-reviving": "Reviving",
+    "game-cancel": "Cancel",
+    "game-is-down": "is down",
+    "game-team-eliminated": "Your team was eliminated.",
+    "game-duo-rank": "Duo Rank",
+    "game-squad-rank": "Squad Rank",
+    "game-team-kills": "Team Kills",
 };
 
 /** "game-<id>" item names */

@@ -4,6 +4,7 @@
 import { math, type Vec2, v2 } from "@rebirth/core";
 import { type BuildingDef, MapObjectDefs } from "@rebirth/defs";
 import {
+    type EmoteRequest,
     type MapData,
     type MapObjectSpawn,
     type ObjectView,
@@ -161,6 +162,10 @@ export class FixtureTransport implements Transport {
             this.events.emitSnapshot(this.snapshot(true));
             this.raf = requestAnimationFrame(this.frame);
         });
+    }
+
+    emote(_req: EmoteRequest): void {
+        // the fixture has no simulation
     }
 
     onJoin(cb: Parameters<Transport["onJoin"]>[0]): void {

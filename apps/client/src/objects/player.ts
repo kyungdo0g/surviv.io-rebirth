@@ -4,10 +4,14 @@
 // Sprite scales, offsets and layering follow survev client/src/objects/player.ts (updateVisuals, updateRotation,
 // addRecoil), in pixel units. M5: a held throwable shows its `handImg` for the current throwable state (equip, then
 // cook once the pin is pulled, nothing while throwing), and heal/boost effect particles run while an item is used.
+// M6: downed players crawl (crawl_forward / crawl_backward every 3 units moved, the survev server's rule played on the
+// client), keep their hands under the body and bleed (a blood splat and a hit sound every second while no revive
+// runs, survev player.ts "Take bleeding damage"); a reviver plays the revive animation with its weapon hidden.
 import type { Vec2 } from "@rebirth/core";
 import {
     type BackpackDef,
     type ChestDef,
+    GameConfig,
     GameObjectDefs,
     type GunDef,
     type HelmetDef,
@@ -29,6 +33,9 @@ const BAG_OFFSETS = [10.25, 11.5, 12.75];
 const PLAYER_Z_ORD = 18;
 /** hands slide back by recoil x this many pixels (survev updateRotation) */
 const RECOIL_PIXELS = 1.125;
+/** a downed player crawls every this many units moved (survev server player.ts distSinceLastCrawl) */
+const CRAWL_DIST = 3;
+const BLEED_SOUND = "player_bullet_hit_02";
 
 type WeaponDef = GunDef | MeleeDef | ThrowableDef;
 type ThrowableState = "equip" | "cook" | "throwing";
@@ -107,6 +114,15 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private animSeq = -1;
     private actionSeq = -1;
     private shotSeq = -1;
+    /** weapon sprites hidden (downed or reviving) */
+    private weaponHidden = false;
+    private handsDowned = false;
+    /** last snapshot position and the distance crawled since the last crawl animation */
+    private lastPos: Vec2 | null = null;
+    private crawlDist = 0;
+    private bleedTicker = 0;
+    /** bleed splats spawned (tests) */
+    bleeds = 0;
     /** gun kick of each hand in pixels, decaying every frame */
     recoilL = 0;
     recoilR = 0;
@@ -185,10 +201,12 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         const anim = view.anim ?? { type: "none", seq: 0 };
         const action = view.action ?? { type: "none", seq: 0, item: "", duration: 0 };
         const shot = view.shot ?? { seq: 0, offHand: false };
+        this.trackCrawl(view);
         if (isNew) {
             this.animSeq = anim.seq;
             this.actionSeq = action.seq;
             this.shotSeq = shot.seq;
+            if (anim.type === "revive") this.startAnim(anim.type);
             return;
         }
         if (anim.seq !== this.animSeq) {
@@ -209,11 +227,32 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         if (type === "melee") {
             const a = meleeAnim(this.weapon);
             this.anim.play(a.name, a.mirror, this.bones);
-        } else if (type === "cook" || type === "throw") {
+        } else if (type === "cook" || type === "throw" || type === "revive") {
             this.anim.play(type, false, this.bones);
         } else {
             this.anim.stop(this.bones);
         }
+    }
+
+    /**
+     * Downed players crawl (survev server: every 3 units moved while no animation runs; forward when the movement is
+     * within 1 of the facing direction on both axes, else backward; the mirror is random, survev selectAnim).
+     */
+    private trackCrawl(view: PlayerView): void {
+        const last = this.lastPos;
+        this.lastPos = { x: view.pos.x, y: view.pos.y };
+        if (!view.downed || view.dead || !last) {
+            this.crawlDist = 0;
+            return;
+        }
+        const dx = view.pos.x - last.x;
+        const dy = view.pos.y - last.y;
+        const len = Math.hypot(dx, dy);
+        this.crawlDist += len;
+        if (this.anim.active || this.crawlDist <= CRAWL_DIST || len < 1e-6) return;
+        const forward = Math.abs(view.dir.x - dx / len) <= 1 && Math.abs(view.dir.y - dy / len) <= 1;
+        this.anim.play(forward ? "crawl_forward" : "crawl_backward", Math.random() < 0.5, this.bones);
+        this.crawlDist = 0;
     }
 
     /** Hands and gun kick back (survev shot.ts: the firing hand, or both for a single gun). */
@@ -297,10 +336,23 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         }
 
         const weapon = weaponDef(view.activeWeapon);
-        if (weapon !== this.weapon && this.anim.active) this.anim.stop(this.bones);
+        if (weapon !== this.weapon && this.anim.active && this.anim.name !== "revive") this.anim.stop(this.bones);
         this.weapon = weapon;
         this.idlePose = idlePoseName(weapon, view.downed);
-        this.updateWeapon(weapon, bodyScale, view.downed);
+        this.placeHands(view.downed);
+        this.weaponHidden = view.downed || this.anim.name === "revive";
+        this.updateWeapon(weapon, bodyScale, this.weaponHidden);
+    }
+
+    /** Hands go under the body (below the feet) while downed (survev updateVisuals wasDowned). */
+    private placeHands(downed: boolean): void {
+        if (downed === this.handsDowned) return;
+        this.handsDowned = downed;
+        this.body.removeChild(this.handL);
+        this.body.removeChild(this.handR);
+        const idx = downed ? this.body.getChildIndex(this.footL) : this.body.getChildIndex(this.hipSprite) + 1;
+        this.body.addChildAt(this.handR, idx);
+        this.body.addChildAt(this.handL, idx);
     }
 
     private updateWeapon(weapon: WeaponDef | undefined, bodyScale: number, downed: boolean): void {
@@ -396,8 +448,15 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             this.anim.stop(this.bones);
         }
         if (!this.anim.active) this.setThrowableState("equip");
+        // weapons are hidden while downed or reviving (survev updateVisuals)
+        const hideWeapon = view.downed || this.anim.name === "revive";
+        if (hideWeapon !== this.weaponHidden) {
+            this.weaponHidden = hideWeapon;
+            this.updateWeapon(this.weapon, view.scale || 1, hideWeapon);
+        }
         this.anim.blend(IDLE_POSES[this.idlePose] ?? IDLE_POSES.fists, this.bones);
         this.placeBones();
+        this.updateBleed(view, pos, dt, facing);
 
         // survev player.ts updateRenderLayer: players on stairs draw over the stairs when on the viewer's level
         let layer = view.layer;
@@ -411,6 +470,30 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             (view.scale > 1 ? 131072 : 0);
         this.deps.renderer.add(this.container, layer, zOrd, zIdx);
         this.emitters?.update(view, pos, layer, zOrd + 1);
+    }
+
+    /**
+     * Bleeding (survev player.ts "Take bleeding damage"): every bleedTickRate seconds while downed and not in an action
+     * (a revive pauses it), a blood splat flies backwards and a muffled hit sound plays at the player.
+     */
+    private updateBleed(view: PlayerView, pos: Vec2, dt: number, facing: Vec2): void {
+        this.bleedTicker -= dt;
+        const bleeding = view.downed && !view.dead && (view.action?.type ?? "none") === "none";
+        if (!bleeding || this.bleedTicker >= 0) return;
+        this.bleedTicker = GameConfig.player.bleedTickRate;
+        this.bleeds++;
+        const ang = ((Math.random() - 0.5) * Math.PI) / 3;
+        const c = Math.cos(ang);
+        const s = Math.sin(ang);
+        const vel = { x: -(facing.x * c - facing.y * s), y: -(facing.x * s + facing.y * c) };
+        this.deps.particles?.add("bloodSplat", view.layer, { x: pos.x, y: pos.y }, vel, { zOrd: PLAYER_Z_ORD + 1 });
+        this.deps.audio?.playSound(BLEED_SOUND, {
+            channel: "hits",
+            pos,
+            fallOff: 3,
+            layer: view.layer,
+            filter: "muffled",
+        });
     }
 
     /** Poses the limbs and the melee weapon from the blended bones (survev updateRotation). */

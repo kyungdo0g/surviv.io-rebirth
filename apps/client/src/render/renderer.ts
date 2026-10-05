@@ -48,6 +48,8 @@ export class Renderer {
     readonly undergroundFill = new Graphics();
     /** screen-space red zone between the world and the UI (survev game.ts scene order: layers, then gas) */
     readonly gas = new Container({ label: "gas" });
+    /** screen-space effects over the world and under the UI: emote bubbles, team pings (M6) */
+    readonly screen = new Container({ label: "screen-fx" });
     /** screen-space UI on top of the world (minimap, HUD) */
     readonly overlay = new Container({ label: "overlay" });
     /** hides the stairs layer inside structure masks while viewing the ground (survev renderer.ts layerMask) */
@@ -78,13 +80,14 @@ export class Renderer {
         this.world.interactiveChildren = false;
         this.overlay.interactiveChildren = false;
         this.gas.interactiveChildren = false;
-        app.stage.addChild(this.world, this.gas, this.overlay);
+        this.screen.interactiveChildren = false;
+        app.stage.addChild(this.world, this.gas, this.screen, this.overlay);
     }
 
     /** Removes the scene from the stage and frees it (the client is torn down for a new game). */
     destroy(): void {
         this.pool.clear();
-        for (const root of [this.world, this.gas, this.overlay]) {
+        for (const root of [this.world, this.gas, this.screen, this.overlay]) {
             root.removeFromParent();
             root.destroy({ children: true });
         }

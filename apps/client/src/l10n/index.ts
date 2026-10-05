@@ -1,14 +1,17 @@
-// Tiny string table lookup for the HUD: `?lang=ko` switches to Korean, anything else is English. Missing Korean
-// strings fall back to English, missing English strings to the key (like the original Localization.translate).
+// Tiny string table lookup for the HUD and the menus (menu.ts, M6): `?lang=ko` switches to Korean, anything else is
+// English. Missing Korean strings fall back to English, missing English strings to the key (like the original
+// Localization.translate).
 import { GameObjectDefs } from "@rebirth/defs";
 import { en, enHudItems, enItems } from "./en.ts";
 import { ko, koHudItems, koItems } from "./ko.ts";
+import { enMenu, koMenu } from "./menu.ts";
 
 export type Lang = "en" | "ko";
 
+const EN_UI: Readonly<Record<string, string>> = { ...en, ...enMenu };
 const TABLES = {
-    en: { ui: en, items: enItems, hud: enHudItems },
-    ko: { ui: ko, items: koItems, hud: koHudItems },
+    en: { ui: EN_UI, items: enItems, hud: enHudItems },
+    ko: { ui: { ...ko, ...koMenu } as Readonly<Record<string, string>>, items: koItems, hud: koHudItems },
 } as const;
 
 let lang: Lang = "en";
@@ -28,12 +31,12 @@ export function getLang(): Lang {
 
 /** UI string by key ("game-reloading"). */
 export function t(key: string): string {
-    return TABLES[lang].ui[key] ?? en[key] ?? key;
+    return TABLES[lang].ui[key] ?? EN_UI[key] ?? key;
 }
 
 /** UI string by key, or "" when no table has it (the original's translate() for optional parts). */
 export function tryT(key: string): string {
-    return TABLES[lang].ui[key] ?? en[key] ?? "";
+    return TABLES[lang].ui[key] ?? EN_UI[key] ?? "";
 }
 
 /** Localized item name (the original "game-<id>"), falling back to the definition name, then the id. */

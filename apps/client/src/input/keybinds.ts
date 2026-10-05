@@ -1,7 +1,8 @@
 // Default key bindings of the original client (survev client/src/inputBinds.ts defaultBinds), by
 // KeyboardEvent.code so they do not depend on the keyboard layout. Mouse buttons are "Mouse0".."Mouse4" and the
 // wheel is "WheelUp"/"WheelDown". Movement additionally accepts the arrow keys. Actions the original leaves unbound
-// (Loot, Use, Revive, Equip Other Gun, Previous/Next Scope) have an empty code list until rebinding exists.
+// (Loot, Use, Revive, Equip Other Gun, Previous/Next Scope) have an empty code list until rebinding exists. The emote
+// and team ping wheel binds never reach the server (controls.md: client only).
 import { Input } from "@rebirth/defs";
 
 export type BindCode = string;
@@ -36,12 +37,13 @@ export const ActionBinds: ReadonlyArray<{ action: number; codes: readonly BindCo
     { action: Input.UsePainkiller, codes: ["Digit0"] },
     { action: Input.SwapWeapSlots, codes: ["KeyT"] },
     { action: Input.CycleUIMode, codes: ["KeyV"] },
-    { action: Input.EmoteMenu, codes: ["Mouse2"] },
-    { action: Input.TeamPingMenu, codes: ["KeyC"] },
     { action: Input.Fullscreen, codes: ["KeyL"] },
 ];
 
 export const FireBind: readonly BindCode[] = ["Mouse0"];
+/** Emote Menu (hold right mouse) and Team Ping Hold (C): client-only wheels, never sent as inputs (M6, emoteWheel.ts) */
+export const EmoteMenuBind: BindCode = "Mouse2";
+export const TeamPingBind: BindCode = "KeyC";
 /** client-only toggles */
 export const DebugHudBind: BindCode = "F3";
 /**

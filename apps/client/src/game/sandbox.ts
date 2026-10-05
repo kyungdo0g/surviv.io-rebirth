@@ -1,12 +1,15 @@
 // Boots a game: the loopback simulation (default), a game on the server (`net`), or the renderer fixture, and
 // exposes the test surface on window.__rebirth. "Play New Game" respawns the local player in a sandbox, and
 // otherwise tears the client down and boots a fresh game (a new loopback match, or a new WebSocket game).
+// M6: games launched by the menu (menu/app.ts) pass `onQuit`: leaving the game ("Play New Game", "Leave Game", a lost
+// connection before the result) tears it down and hands control back to the menu instead.
 import type { Vec2 } from "@rebirth/core";
 import type { Application } from "pixi.js";
 import { TextureStore } from "../assets/textures.ts";
 import { AudioEngine } from "../audio/audio.ts";
 import { FixtureTransport } from "../dev/fixtures.ts";
 import { debugGlobals } from "../globals.ts";
+import { t } from "../l10n/index.ts";
 import { LoopbackTransport } from "../net/loopback.ts";
 import type { Transport } from "../net/transport.ts";
 import { describeDisconnect, WsTransport } from "../net/ws.ts";
@@ -36,12 +39,43 @@ export interface SandboxOptions {
     sandbox?: boolean;
     /** red-zone stage table: "fast" for the shortened one (gasStages.ts), else the original */
     gas?: string;
+    /** loopback team mode: 2 duo, 4 squad (M6) */
+    teamMode?: 1 | 2 | 4;
+    /** loopback team modes: idle teammates in the local player's group (M6) */
+    teammates?: number;
     /** play on a game server instead of the loopback simulation */
     net?: {
         /** HTTP origin of the server; "" uses the page's origin (the Vite dev server proxies /api and /play) */
         server: string;
         name: string;
+        /** find_game team mode (M6) */
+        teamMode?: 1 | 2 | 4;
+        /** find_game auto fill (M6) */
+        autoFill?: boolean;
+        /** a party's joinGame URL: connect to it instead of calling find_game (M6) */
+        joinUrl?: string;
     };
+    /**
+     * Leaving the game returns to the caller (the menu) with an error text for a failed or lost connection, instead of
+     * starting a new game (M6).
+     */
+    onQuit?: (error?: string) => void;
+}
+
+/** Menu text of a disconnect reason (survev main.ts getErrorString; index-* strings). */
+function quitError(reason: string): string {
+    switch (reason) {
+        case "find_game_failed":
+            return t("index-failed-finding-game");
+        case "invalid_protocol":
+            return t("index-invalid-protocol");
+        case "invalid_token":
+        case "join_timeout":
+        case "full":
+            return t("index-failed-joining-game");
+        default:
+            return t("index-host-closed");
+    }
 }
 
 /** textures and the (unlocked) audio engine outlive a game, so a new game starts warm */
@@ -56,6 +90,14 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
     let transport: Transport;
     let loopback: LoopbackTransport | null = null;
     let ws: WsTransport | null = null;
+    let client: GameClient | null = null;
+    let quitting = false;
+    const quit = (error?: string): void => {
+        if (quitting || !opts.onQuit) return;
+        quitting = true;
+        client?.destroy();
+        opts.onQuit(error);
+    };
     if (opts.fixture) {
         transport = new FixtureTransport();
     } else if (opts.net) {
@@ -63,17 +105,22 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
             baseUrl: opts.net.server,
             name: opts.net.name,
             mapName: opts.mapName,
+            teamMode: opts.net.teamMode,
+            autoFill: opts.net.autoFill,
+            joinUrl: opts.net.joinUrl,
             onDisconnect: (reason) => {
                 const normal = conn.endedNormally;
                 globals.disconnect = { reason, normal, message: describeDisconnect(reason) };
                 if (!normal) console.warn(`disconnected: ${describeDisconnect(reason)}`);
+                // like the original's onClose: a lost game without its result on screen goes back to the menu
+                if (!normal && !client?.match.gameOver.visible) quit(quitError(reason));
             },
         });
         ws = conn;
         transport = ws;
     } else {
         loopback = new LoopbackTransport(
-            { mapName: opts.mapName, seed: opts.seed },
+            { mapName: opts.mapName, seed: opts.seed, teamMode: opts.teamMode ?? 1 },
             {
                 init: {
                     spawnLoot: opts.loot ?? true,
@@ -81,14 +128,18 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
                     gasStages: gasStagesFor(opts.gas),
                 },
                 dummies: opts.dummies,
+                teammates: opts.teammates,
                 give: opts.give,
             },
         );
         transport = loopback;
     }
     const lb = loopback;
-    let client: GameClient | null = null;
     const playAgain = (): void => {
+        if (opts.onQuit) {
+            quit();
+            return;
+        }
         if (lb && (opts.sandbox ?? true)) {
             lb.respawn();
             return;
@@ -133,6 +184,7 @@ function exposeGlobals(
         },
     };
     globals.dummies = loopback?.dummies ?? [];
+    globals.teammates = loopback?.teammates ?? [];
     globals.worldToScreen = (p: Vec2) => client.worldToScreen(p);
     /** interpolated world position an object is drawn at, or null when it is not in view */
     globals.visualPos = (id: number) => client.world?.visualPos(id, performance.now() / 1000) ?? null;
@@ -161,6 +213,7 @@ function exposeGlobals(
     };
     globals.playerAnim = (id: number) => (client.world?.renderOf(id) as PlayerRender | undefined)?.animName ?? null;
     exposeM5(client);
+    exposeM6(client);
     globals.interaction = () => client.interaction;
     globals.audio = {
         get unlocked() {
@@ -261,6 +314,56 @@ function exposeGlobals(
             return client.pingIndicator.active;
         },
     };
+}
+
+/** M6 test hooks: team HUD, minimap team dots, names, emotes and pings, revive prompt. */
+function exposeM6(client: GameClient): void {
+    const globals = debugGlobals();
+    const team = client.teamPlay;
+    globals.team = {
+        get members() {
+            return team.team ?? [];
+        },
+        get hudRows() {
+            return team.hud.memberCount;
+        },
+        get indicators() {
+            return team.hud.indicatorCount;
+        },
+        get names() {
+            return team.names.shown;
+        },
+        get minimapDots() {
+            return client.minimap?.teamDots ?? 0;
+        },
+    };
+    globals.emotes = {
+        get received() {
+            return team.received;
+        },
+        get sent() {
+            return team.wheel.sent;
+        },
+        get bubbles() {
+            return team.emotes.bubbleCount;
+        },
+        get shown() {
+            return team.emotes.emotesShown;
+        },
+        get pings() {
+            return team.emotes.activePings;
+        },
+        get mapPings() {
+            return client.minimap?.indicators.playerPingCount ?? 0;
+        },
+        get wheel() {
+            return team.wheel.openWheel;
+        },
+    };
+    /** a player's view as last received (downed, action, anim), or null when not in view */
+    globals.playerView = (id: number) => client.world?.get(id) ?? null;
+    /** bleed splats a player's view has spawned */
+    globals.playerBleeds = (id: number) => (client.world?.renderOf(id) as PlayerRender | undefined)?.bleeds ?? 0;
 }
 
 /** M5 test hooks: explosions, projectiles, smoke, air strike zones, doors, roofs, layers and ambience. */

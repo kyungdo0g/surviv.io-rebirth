@@ -1,7 +1,8 @@
 import { defineConfig } from "vite";
 
 // The game server (apps/server, default port 8001) is proxied so `/?net=1` works from the dev server. The server
-// builds its WebSocket URL from the Host header, so the proxy must not rewrite the origin.
+// builds its WebSocket URL from the Host header, so the proxy must not rewrite the origin. /team_v2 is the party lobby
+// WebSocket (M6); its joinGame URLs point back at this origin's /play.
 const SERVER = process.env.REBIRTH_SERVER ?? "127.0.0.1:8001";
 
 export default defineConfig({
@@ -12,6 +13,7 @@ export default defineConfig({
             "/api": `http://${SERVER}`,
             "/health": `http://${SERVER}`,
             "/play": { target: `ws://${SERVER}`, ws: true },
+            "/team_v2": { target: `ws://${SERVER}`, ws: true },
         },
     },
     preview: { port: 4173, host: "127.0.0.1" },
