@@ -107,27 +107,25 @@ test.describe("loopback sandbox", () => {
             return {
                 sprites: r.renderer.spriteCount,
                 objects: r.renderer.objectCount,
-                terrain: r.renderer.terrainSource,
                 id: r.player.id,
             };
         });
-        expect(spawn.terrain).toBe("sim");
         expect(spawn.id).toBeGreaterThan(0);
         expect(spawn.objects).toBeGreaterThan(5);
         expect(spawn.sprites).toBeGreaterThan(10);
         await page.screenshot({ path: `${SCREENS}/spawn.png` });
 
-        // An 8x scope widens the zoom radius to 68 (GameConfig.scopeZoomRadius): the simulation streams the larger
+        // A 15x scope widens the zoom radius to 104 (GameConfig.scopeZoomRadius): the simulation streams the larger
         // view and the camera zooms out like the original, so far more of the map is on screen.
         const scoped = await page.evaluate(() => {
             const r = (window as any).__rebirth;
             const player = r.game.getPlayer?.(r.player.id);
             if (!player || !("scope" in player)) return false;
-            player.scope = "8xscope";
+            player.scope = "15xscope";
             return true;
         });
         expect(scoped).toBe(true);
-        await page.waitForFunction(() => (window as any).__rebirth.client.local?.zoom === 68, null, {
+        await page.waitForFunction(() => (window as any).__rebirth.client.local?.zoom === 104, null, {
             timeout: 15_000,
         });
         await page.waitForFunction(() => (window as any).__rebirth.renderer.spriteCount > 100, null, {
@@ -136,7 +134,7 @@ test.describe("loopback sandbox", () => {
         await page.waitForTimeout(2500); // zoom-out easing
         const wide = await page.evaluate(() => (window as any).__rebirth.renderer.spriteCount);
         expect(wide).toBeGreaterThan(100);
-        await page.screenshot({ path: `${SCREENS}/spawn-8x.png` });
+        await page.screenshot({ path: `${SCREENS}/spawn-15x.png` });
 
         const missing = await page.evaluate(() => (window as any).__rebirth.missingSprites as string[]);
         expect(missing.length).toBeLessThan(10);

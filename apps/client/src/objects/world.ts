@@ -27,6 +27,8 @@ export class ObjectWorld {
     private readonly entries = new Map<number, Entry>();
     /** views drawn last frame (not culled) */
     visibleCount = 0;
+    /** a structure entered or left the view since the last `takeStairMasks()` */
+    private structuresDirty = false;
 
     constructor(deps: ViewDeps, interp: SnapshotInterpolator) {
         this.deps = deps;
@@ -76,6 +78,7 @@ export class ObjectWorld {
                 entry = { render: this.create(view), data: view };
                 this.entries.set(view.id, entry);
                 isNew = true;
+                if (view.kind === "structure") this.structuresDirty = true;
             }
             entry.data = view;
             (entry.render as ObjectRender<ObjectView>).setData(view, isNew);
@@ -85,9 +88,21 @@ export class ObjectWorld {
     remove(id: number): void {
         const entry = this.entries.get(id);
         if (!entry) return;
+        if (entry.render instanceof StructureRender) this.structuresDirty = true;
         entry.render.destroy();
         this.entries.delete(id);
         this.interp.delete(id);
+    }
+
+    /** Stair masks of every structure in view when they changed since the last call, else null. */
+    takeStairMasks(): ViewBounds[] | null {
+        if (!this.structuresDirty) return null;
+        this.structuresDirty = false;
+        const masks: ViewBounds[] = [];
+        for (const { render } of this.entries.values()) {
+            if (render instanceof StructureRender) masks.push(...render.masks);
+        }
+        return masks;
     }
 
     /** Interpolated position of an object, or undefined when it is not in view. */

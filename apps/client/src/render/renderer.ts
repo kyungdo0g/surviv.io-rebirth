@@ -6,7 +6,7 @@
 
 import type { Vec2 } from "@rebirth/core";
 import { type Application, Container, Graphics, Sprite } from "pixi.js";
-import type { Camera } from "./camera.ts";
+import type { Camera, ViewBounds } from "./camera.ts";
 import { PIXELS_PER_UNIT } from "./camera.ts";
 import { SpritePool } from "./pool.ts";
 
@@ -47,12 +47,16 @@ export class Renderer {
     readonly undergroundFill = new Graphics();
     /** screen-space UI on top of the world (minimap, HUD) */
     readonly overlay = new Container({ label: "overlay" });
+    /** hides the stairs layer inside structure masks while viewing the ground (survev renderer.ts layerMask) */
+    readonly layerMask = new Graphics({ label: "layer-mask" });
 
     /** layer the local player is on (0 ground, 1 underground, 2/3 stairs) */
     activeLayer = 0;
     private layerAlpha = 0;
     private groundAlpha = 0;
     private zIdxCounter = 0;
+    private stairMasks: ViewBounds[] = [];
+    private stairMasksDirty = false;
 
     constructor(app: Application, camera: Camera) {
         this.app = app;
@@ -85,6 +89,38 @@ export class Renderer {
             .fill(color);
     }
 
+    /** World-space boxes of the structures in view that hide the stairs layer from the ground. */
+    setStairMasks(masks: ViewBounds[]): void {
+        this.stairMasks = masks;
+        this.stairMasksDirty = true;
+    }
+
+    private updateLayerMask(): void {
+        const mask = this.layerMask;
+        if (this.stairMasksDirty) {
+            this.stairMasksDirty = false;
+            mask.clear();
+            if (this.stairMasks.length) {
+                const pad = 1e5;
+                mask.rect(-pad, -pad, pad * 2, pad * 2).fill(0xffffff);
+                for (const m of this.stairMasks) {
+                    const x = m.min.x * PIXELS_PER_UNIT;
+                    const y = -m.max.y * PIXELS_PER_UNIT;
+                    mask.rect(x, y, (m.max.x - m.min.x) * PIXELS_PER_UNIT, (m.max.y - m.min.y) * PIXELS_PER_UNIT).cut();
+                }
+            }
+        }
+        const stairs = this.layers[2];
+        const active = this.activeLayer === 0 && this.stairMasks.length > 0;
+        if (active && stairs.mask !== mask) {
+            this.world.addChild(mask);
+            stairs.mask = mask;
+        } else if (!active && stairs.mask === mask) {
+            stairs.mask = null;
+            mask.removeFromParent();
+        }
+    }
+
     /**
      * Places `obj` in the render layer for an object on map layer `layer`, sorted by (zOrd, zIdx).
      * Objects on stairs (layer bit 2) go to layer 2, or layer 3 when zOrd >= 100 so tall objects (trees) are not
@@ -114,6 +150,7 @@ export class Renderer {
         this.terrain.visible = this.groundAlpha < 1;
         this.undergroundFill.alpha = this.groundAlpha;
         this.undergroundFill.visible = this.groundAlpha > 0;
+        this.updateLayerMask();
     }
 
     /** number of visible, textured sprites in the world (for tests and the debug HUD) */

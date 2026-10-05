@@ -1,5 +1,5 @@
 // Structure (bunker entrances, bridges): draws nothing itself; its layers are separate buildings. It keeps the
-// world-space stair masks for the layer mask (not drawn in M1) and the bounds for culling.
+// world-space stair masks (the renderer hides the stairs layer inside them from the ground) and culling bounds.
 // survev client/src/objects/structure.ts.
 import { collider, math, type Vec2 } from "@rebirth/core";
 import { MapObjectDefs, type StructureDef } from "@rebirth/defs";

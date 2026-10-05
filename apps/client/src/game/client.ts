@@ -2,7 +2,7 @@
 // camera, samples input every frame and draws the minimap and debug HUD.
 import type { Vec2 } from "@rebirth/core";
 import { getMapDef } from "@rebirth/defs";
-import type { LocalPlayerState, MapData, Snapshot, TerrainShape } from "@rebirth/sim";
+import { buildTerrain, type LocalPlayerState, type MapData, type Snapshot, type TerrainShape } from "@rebirth/sim";
 import type { Application, Ticker } from "pixi.js";
 import { mapSprites, outfitSprites } from "../assets/spriteSets.ts";
 import type { TextureStore } from "../assets/textures.ts";
@@ -16,7 +16,6 @@ import { Camera } from "../render/camera.ts";
 import { Renderer } from "../render/renderer.ts";
 import { DebugHud } from "../ui/debugHud.ts";
 import { Minimap } from "../ui/minimap.ts";
-import { buildTerrainShape } from "./terrainSource.ts";
 
 /** extra world units around the screen kept un-culled */
 const CULL_MARGIN = 4;
@@ -40,7 +39,6 @@ export class GameClient {
     minimap: Minimap | null = null;
     map: MapData | null = null;
     terrain: TerrainShape | null = null;
-    terrainSource: "sim" | "fallback" | "" = "";
     localId = -1;
     local: LocalPlayerState | null = null;
     /** latest snapshot tick */
@@ -73,16 +71,15 @@ export class GameClient {
         this.map = map;
         this.localId = playerId;
         const mapDef = getMapDef(map.mapName);
-        const terrain = buildTerrainShape(map);
-        this.terrain = terrain.shape;
-        this.terrainSource = terrain.source;
-        if (terrain.source === "fallback") console.warn("buildTerrain missing from @rebirth/sim: drawing rectangles");
+        // the same deterministic polygons the simulation uses for surfaces
+        const terrain = buildTerrain(map);
+        this.terrain = terrain;
         for (const old of this.renderer.terrain.removeChildren()) old.destroy();
-        this.renderer.terrain.addChild(createTerrainGraphics(map, terrain.shape));
+        this.renderer.terrain.addChild(createTerrainGraphics(map, terrain));
         this.renderer.setUnderground(mapDef.biome.colors.underground, map.width, map.height);
         this.app.renderer.background.color = mapDef.biome.colors.background;
         this.world = new ObjectWorld({ renderer: this.renderer, textures: this.textures, mapDef }, this.interp);
-        this.minimap = new Minimap(this.app, this.textures, map, terrain.shape);
+        this.minimap = new Minimap(this.app, this.textures, map, terrain);
         this.renderer.overlay.addChildAt(this.minimap.container, 0);
         this.camera.pos = { x: map.width / 2, y: map.height / 2 };
 
@@ -133,6 +130,8 @@ export class GameClient {
         this.renderer.activeLayer = this.local.layer;
         const ctx = { dt, localPos: this.visualPos, localLayer: this.local.layer, localId: this.localId };
         world.update(ctx, now, this.camera.viewBounds(CULL_MARGIN));
+        const masks = world.takeStairMasks();
+        if (masks) this.renderer.setStairMasks(masks);
         this.renderer.update(dt);
         this.minimap?.update(this.camera, this.visualPos);
         this.hud.update(dt, () => ({

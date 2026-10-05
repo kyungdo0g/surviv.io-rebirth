@@ -4,7 +4,7 @@ import type { Application } from "pixi.js";
 import { TextureStore } from "../assets/textures.ts";
 import { FixtureTransport } from "../dev/fixtures.ts";
 import { debugGlobals } from "../globals.ts";
-import { LoopbackTransport, simGameFactory } from "../net/loopback.ts";
+import { LoopbackTransport } from "../net/loopback.ts";
 import type { Transport } from "../net/transport.ts";
 import { GameClient } from "./client.ts";
 
@@ -21,12 +21,10 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
     const textures = new TextureStore();
     let transport: Transport;
     let loopback: LoopbackTransport | null = null;
-    const createGame = simGameFactory();
-    if (opts.fixture || !createGame) {
-        if (!opts.fixture) console.warn("@rebirth/sim does not export Game yet: running the renderer fixture");
+    if (opts.fixture) {
         transport = new FixtureTransport();
     } else {
-        loopback = new LoopbackTransport({ mapName: opts.mapName, seed: opts.seed }, createGame);
+        loopback = new LoopbackTransport({ mapName: opts.mapName, seed: opts.seed });
         transport = loopback;
     }
     const client = new GameClient(app, transport, textures, {
@@ -58,9 +56,6 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
         },
         get objectCount() {
             return client.world?.size ?? 0;
-        },
-        get terrainSource() {
-            return client.terrainSource;
         },
     };
     globals.minimap = {

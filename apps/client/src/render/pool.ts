@@ -14,6 +14,7 @@ export class SpritePool {
         }
         sprite.anchor.set(0.5, 0.5);
         sprite.position.set(0, 0);
+        sprite.pivot.set(0, 0);
         sprite.scale.set(1, 1);
         sprite.rotation = 0;
         sprite.tint = 0xffffff;
@@ -28,9 +29,5 @@ export class SpritePool {
         sprite.texture = Texture.EMPTY;
         sprite.visible = false;
         this.free.push(sprite);
-    }
-
-    get freeCount(): number {
-        return this.free.length;
     }
 }

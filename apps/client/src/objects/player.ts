@@ -280,10 +280,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
 
     destroy(): void {
         this.container.removeFromParent();
-        for (const s of this.sprites) {
-            s.pivot.set(0, 0);
-            this.deps.renderer.pool.release(s);
-        }
+        for (const s of this.sprites) this.deps.renderer.pool.release(s);
         this.container.destroy({ children: true });
     }
 }

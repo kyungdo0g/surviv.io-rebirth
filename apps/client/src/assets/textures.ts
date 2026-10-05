@@ -4,10 +4,12 @@
 // `window.__rebirth.missingSprites`.
 import { ImageSource, type Sprite, Texture } from "pixi.js";
 import manifestJson from "../generated/sprite-manifest.json";
+import spriteSizesJson from "../generated/sprite-sizes.json";
 import { debugGlobals } from "../globals.ts";
-import { atlasScale } from "./atlasScale.ts";
 
 const MANIFEST = manifestJson as Readonly<Record<string, string>>;
+/** sprite sizes in the original v0.8.82 atlases (scripts/sprite-sizes.ts) */
+const ORIGINAL_SIZES = spriteSizesJson as unknown as Readonly<Record<string, readonly [number, number]>>;
 const ASSET_ROOT = "/assets/";
 
 /** Zoom the rasterization targets: a 1920x1080 screen at the 1x scope radius, 960 / (28 * 16) ~ 2.1. */
@@ -20,10 +22,6 @@ const DEFAULT_CONCURRENCY = 8;
 /** Ids that mean "no image" in the definitions. */
 export function isEmptySprite(id: string | undefined): boolean {
     return !id || id === "none" || id === ".img" || id === "none.img";
-}
-
-export function hasSpriteFile(id: string): boolean {
-    return Object.hasOwn(MANIFEST, id);
 }
 
 function createPlaceholder(): Texture {
@@ -45,6 +43,20 @@ function createPlaceholder(): Texture {
     const texture = new Texture({ source: new ImageSource({ resource: canvas }) });
     texture.label = "placeholder";
     return texture;
+}
+
+/**
+ * Size the definitions' sprite scales are relative to: the sprite's size in the original atlas, which stored
+ * some images shrunk (large ceilings at 0.75 or 0.5). An SVG keeps its own size when its proportions differ from
+ * the original image (different art); raster gap-fills always take the original size.
+ */
+export function logicalSize(id: string, w: number, h: number, isSvg: boolean): [number, number] {
+    const orig = ORIGINAL_SIZES[id];
+    if (!orig) return [w, h];
+    if (!isSvg) return [orig[0], orig[1]];
+    const fx = orig[0] / w;
+    const fy = orig[1] / h;
+    return Math.abs(fx - fy) <= 0.03 * Math.max(fx, fy) ? [orig[0], orig[1]] : [w, h];
 }
 
 async function loadImage(src: string): Promise<HTMLImageElement> {
@@ -72,14 +84,6 @@ export class TextureStore {
         const globals = debugGlobals();
         globals.missingSprites ??= [];
         this.missing = globals.missingSprites;
-    }
-
-    /** Loaded texture for `id`, or undefined while it is not loaded yet (starts loading). */
-    peek(id: string, scale = 1): Texture | undefined {
-        if (isEmptySprite(id)) return Texture.EMPTY;
-        const tex = this.textures.get(id);
-        if (!tex) void this.request(id, scale);
-        return tex;
     }
 
     /**
@@ -124,7 +128,7 @@ export class TextureStore {
         await Promise.all(Array.from({ length: Math.max(1, concurrency) }, worker));
     }
 
-    /** Raster resolution for a sprite drawn at `scale` (definition scale, already including the atlas factor). */
+    /** Raster resolution for a sprite drawn at `scale` (definition scale relative to the logical size). */
     resolutionFor(scale: number): number {
         const res = Math.ceil(scale * REFERENCE_ZOOM * this.pixelRatio * 4) / 4;
         return Math.min(MAX_RESOLUTION, Math.max(MIN_RESOLUTION, res));
@@ -165,35 +169,33 @@ export class TextureStore {
         const file = MANIFEST[id];
         if (!file) return this.markMissing(id, "not in the sprite manifest");
         const url = ASSET_ROOT + file;
-        const atlas = atlasScale(id);
         try {
-            let source: ImageSource;
-            if (file.endsWith(".svg")) {
+            const isSvg = file.endsWith(".svg");
+            let img: HTMLImageElement;
+            if (isSvg) {
                 const res = await fetch(url);
                 if (!res.ok) return this.markMissing(id, `HTTP ${res.status}`);
-                const img = await loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(await res.text())}`);
-                const w = Math.max(1, img.width);
-                const h = Math.max(1, img.height);
-                const r = Math.min(this.resolutionFor(scale * atlas), MAX_TEXTURE_DIM / Math.max(w, h));
-                const canvas = document.createElement("canvas");
-                canvas.width = Math.max(1, Math.ceil(w * r));
-                canvas.height = Math.max(1, Math.ceil(h * r));
-                // CPU-backed canvas: hundreds of GPU-accelerated canvases overload the GPU process (software GL)
-                const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = "high";
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                // logical size = source size * atlas factor, whatever the raster resolution
-                source = new ImageSource({
-                    resource: canvas,
-                    alphaMode: "premultiply-alpha-on-upload",
-                    resolution: canvas.width / (w * atlas),
-                    autoGenerateMipmaps: true,
-                });
+                img = await loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(await res.text())}`);
             } else {
-                const img = await loadImage(url);
-                source = new ImageSource({ resource: img, resolution: 1 / atlas, autoGenerateMipmaps: true });
+                img = await loadImage(url);
             }
+            const [w, h] = logicalSize(id, Math.max(1, img.width), Math.max(1, img.height), isSvg);
+            const r = Math.min(this.resolutionFor(scale), MAX_TEXTURE_DIM / Math.max(w, h));
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.ceil(w * r));
+            canvas.height = Math.max(1, Math.ceil(h * r));
+            // CPU-backed canvas: hundreds of GPU-accelerated canvases overload the GPU process (software GL)
+            const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            // the texture reports the logical size whatever the raster resolution
+            const source = new ImageSource({
+                resource: canvas,
+                alphaMode: "premultiply-alpha-on-upload",
+                resolution: canvas.width / w,
+                autoGenerateMipmaps: true,
+            });
             const texture = new Texture({ source });
             texture.label = id;
             return texture;

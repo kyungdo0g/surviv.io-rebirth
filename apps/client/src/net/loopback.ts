@@ -1,7 +1,6 @@
 // Runs the authoritative simulation inside the page: fixed TICK_HZ steps driven by requestAnimationFrame through
 // an accumulator, a snapshot every SNAPSHOT_EVERY_TICKS ticks, and the local input applied before each step.
-import * as sim from "@rebirth/sim";
-import { type GameApi, type GameOptions, type PlayerInput, SNAPSHOT_EVERY_TICKS, TICK_HZ } from "@rebirth/sim";
+import { Game, type GameOptions, type PlayerInput, SNAPSHOT_EVERY_TICKS, TICK_HZ } from "@rebirth/sim";
 import { type Transport, TransportEvents } from "./transport.ts";
 
 const TICK_DT = 1 / TICK_HZ;
@@ -10,16 +9,8 @@ const MAX_TICKS_PER_FRAME = 25;
 /** longest frame time fed into the accumulator (s) */
 const MAX_FRAME_DT = 0.25;
 
-type GameFactory = (options: GameOptions) => GameApi;
-
-/** `new Game(options)` from @rebirth/sim, or undefined while the simulation package does not export it yet. */
-export function simGameFactory(): GameFactory | undefined {
-    const Game = (sim as unknown as { Game?: new (options: GameOptions) => GameApi }).Game;
-    return typeof Game === "function" ? (options) => new Game(options) : undefined;
-}
-
 export class LoopbackTransport implements Transport {
-    readonly game: GameApi;
+    readonly game: Game;
     readonly playerId: number;
     private readonly events = new TransportEvents();
     private accumulator = 0;
@@ -29,8 +20,8 @@ export class LoopbackTransport implements Transport {
     /** ticks simulated in the most recent frame (debug) */
     lastFrameTicks = 0;
 
-    constructor(options: GameOptions, createGame: GameFactory) {
-        this.game = createGame(options);
+    constructor(options: GameOptions) {
+        this.game = new Game(options);
         this.playerId = this.game.addPlayer("player");
         // let the caller register its callbacks first
         queueMicrotask(() => {
