@@ -1,0 +1,458 @@
+# Guns
+
+> Every gun def in survev `shared/defs/gameObjects/gunDefs.ts` (68 ids: 59 base guns from the original client, 6 fork guns, 3 fork winter skins), with the original v0.8.82 value next to each survev value that the fork changed.
+> "orig" values come from survev's first commit `9f64948d` (2023-12-11), which holds the decompiled original client defs (`src/defs/gunDefs.js`, `src/defs/bulletDefs.js`). They are cited as `derived/survev@9f64948d:<path>:<lines>`. The fandom infoboxes, which were written while surviv.io was live, match these values (see Conflicts for the few typos).
+> Bullet stats (damage, falloff, range, speed) live in `bullets.md`. The `dmg` column below is repeated for convenience only.
+
+## Provenance summary
+
+- survev's first commit `9f64948d` contains exactly 59 gun ids: mp5, mac10, ump9, vector, vector45, scorpion, vss, famas, hk416, m4a1, mk12, l86, m249, qbb97, scout_elite, ak47, scar, scarssr, an94, groza, grozas, dp28, bar, pkp, model94, mkg45, blr, mosin, sv98, awc, m39, svd, garand, m870, m1100, mp220, saiga, spas12, m1014, usas, m9, m9_dual, m9_cursed, m93r, m93r_dual, glock, glock_dual, p30l, p30l_dual, ot38, ot38_dual, ots38, ots38_dual, colt45, colt45_dual, m1911, m1911_dual, m1a1, deagle, deagle_dual, flare_gun, flare_gun_dual, potato_cannon, potato_smg, bugle [src:derived/survev@9f64948d:src/defs/gunDefs.js:1-3250] [H]
+- That set is the v0.8.82 gun roster: the newest original gun, the Spud Gun (`potato_smg`), is listed in the 0.8.82 changelog entry [src:changelog/0.8.82] [H]
+- `imbel` (IMD-2) and `spas16` (SPAS-16) are fork additions from survev commit `51bd6ceb` (2026-02-23, "feat: New Guns — Adds the SPAS-16 & IMD-2") (fork) [src:derived/survev-git-51bd6ceb] [src:wikigg/IMD-2] [src:wikigg/SPAS-16] [H]
+- `potato_lmg` (PMG-134) is a fork addition from survev commit `81a93957` (2026-03-29, "feat: potato lmg") (fork) [src:derived/survev-git-81a93957] [src:wikigg/PMG-134] [H]
+- `barrett` (Barrett M107), `sw500` (S&W 500) and `ash12` (ASh-12) are fork additions from survev commit `3f313672` (2026-06-29, "feat: .50 cal guns") (fork) [src:derived/survev-git-3f313672] [src:wikigg/Barrett_M107] [src:wikigg/S&W_500] [src:wikigg/ASh-12] [H]
+- `svd_winter`, `sv98_winter` and `awc_winter` are fork skins from survev commit `27403cea` (2025-12-29, "feat: Gun Models + Winter Skins"). They copy their base gun's stats and change only `worldImg.sprite` (`gun-svd-02`, `gun-sv98-02`, `gun-awc-02`) plus `noPotatoSwap: true` (fork) [src:survev/shared/defs/gameObjects/gunDefs.ts:3642-3666] [src:derived/survev-git-27403cea] [H]
+- The original game did briefly reskin the AWM-S world image for snow maps in 0.6.9, then reverted it around 1 Jan 2019. No winter gun skin exists in the 0.8.82 defs [src:wikigg/AWM-S] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1427-1478] [M]
+- None of the post-0.8.82 Kongregate-era guns (M134, M79, PKM, Hawk 12G, Heart Cannon, Lasr Gun, Rainbow Blaster, Water Gun, Flamethrower) exist in survev. See the section near the end of this file (post-0.8.82) [src:survev/shared/defs/gameObjects/gunDefs.ts:97-3666] [src:fandom/M134] [H]
+
+## What each GunDef field does (survev code)
+
+| field | meaning in code | sources |
+|---|---|---|
+| `fireMode` | `auto` fires every tick while the button is held and `cooldown <= 0`. `single` fires on a fresh press when `cooldown < 0`. `burst` queues `burstCount` shots spaced `burstDelay` apart, then adds `fireDelay` after the last one | [src:survev/server/src/game/weaponManager.ts:366-402] [H] |
+| `fireDelay` | sets the weapon cooldown after each shot. It also sets `shotSlowdownTimer`, the window in which `speed.attack` applies | [src:survev/server/src/game/weaponManager.ts:727] [src:survev/server/src/game/weaponManager.ts:741] [H] |
+| `burstCount`, `burstDelay` | shots per burst and the gap between them. Each shot in a burst uses 1 ammo | [src:survev/server/src/game/weaponManager.ts:383-401] [src:wikigg/Guns] [H] |
+| `burstSounds` | only `an94` has it (=1). Client-side shot sound grouping | [src:survev/shared/defs/gameObjects/gunDefs.ts:965-1014] [M] |
+| `maxClip` / `extendedClip` | magazine size without / with the Firepower perk (`firepower`) | [src:survev/server/src/game/weaponManager.ts:455-473] [H] |
+| `maxReload` / `extendedReload` | rounds added per reload action. A value below the clip size gives a shell-by-shell reload that repeats (`reloadAgain`) until the clip is full or ammo runs out | [src:survev/server/src/game/weaponManager.ts:549-596] [H] |
+| `reloadTime` | duration of one reload action, in seconds | [src:survev/server/src/game/weaponManager.ts:527-543] [H] |
+| `reloadTimeAlt`, `maxReloadAlt`, `extendedReloadAlt` | only on `mosin`. When the gun is empty and inventory ammo exceeds `maxReload`, an alt reload (3 s, 5 rounds) runs instead of the 0.9 s single-round reload | [src:survev/server/src/game/weaponManager.ts:530-541] [src:changelog/0.7.1] [H] |
+| `switchDelay` | cooldown set when the gun is equipped or swapped to. See the switch rules below | [src:survev/server/src/game/weaponManager.ts:136-169] [H] |
+| `deployGroup` | swapping between two guns of the same group while the current one is still on cooldown forces the full `switchDelay`, even during a free switch. Group 1 = m870, spas12, spas16 (fork). Group 3 = potato_cannon | [src:survev/server/src/game/weaponManager.ts:154-161] [src:changelog/0.6.0] [src:fandom/Deploy_Group] [H] |
+| `pullDelay` | client only. It delays the casing ejection by `pullDelay × 0.45` s and plays the `cycle` sound (rounds left) or the `pull` sound (empty) after a single-fire shot | [src:survev/client/src/objects/shot.ts:94] [src:survev/client/src/objects/shot.ts:202-219] [H] |
+| `aimDelay` | flag on scout_elite, mosin, sv98, awc, barrett. No survev client or server code reads it | [src:survev/shared/defs/gameObjects/gunDefs.ts:82] [src:derived/grep-aimDelay-no-readers] [H] |
+| `moveSpread`, `shotSpread` | spread cone in degrees. Standing = `shotSpread`. Moving (moved more than 0.01 units this tick) = `shotSpread + moveSpread`. The deviation is `random(-0.5, 0.5) × spread` | [src:survev/server/src/game/weaponManager.ts:841-851] [src:survev/server/src/game/weaponManager.ts:884-887] [src:wikigg/Guns] [H] |
+| `recoilTime` | first-shot accuracy timer. If at least `recoilTime` s have passed since the last shot, spread is 0. 1e10 on most guns, so they never get it | [src:survev/server/src/game/weaponManager.ts:847-851] [src:survev/server/src/game/weaponManager.ts:725] [src:fandom/First-Shot_Accuracy] [H] |
+| `bulletCount` | bullets spawned per shot (9 on buckshot and flechette shotguns, 18 on M1100, 2 on PMG-134) | [src:survev/server/src/game/weaponManager.ts:872-877] [H] |
+| `jitter` | pellet start-position scatter: each bullet after the first is offset by `random(-jitter, jitter) × 1.11` on x and on y. The default is 0.25 when the field is unset | [src:survev/server/src/game/weaponManager.ts:873] [src:survev/server/src/game/weaponManager.ts:889-898] [H] |
+| `barrelLength`, `barrelOffset` | the bullet spawns at `pos + perp(dir) × barrelOffset + dir × barrelLength`. It is clipped back if an obstacle is within `barrelLength + 1.5` | [src:survev/server/src/game/weaponManager.ts:751-805] [H] |
+| `isDual`, `dualOffset` | dual guns alternate hands each shot. The muzzle is offset sideways by `±dualOffset` | [src:survev/server/src/game/weaponManager.ts:751-754] [src:survev/server/src/game/weaponManager.ts:367-371] [H] |
+| `dualWieldType` | picking up a second copy of a gun you already hold turns the slot into this dual id. Dropping a dual drops two singles | [src:survev/server/src/game/objects/player.ts:3666-3711] [src:survev/server/src/game/weaponManager.ts:618-621] [src:changelog/0.3.1] [H] |
+| `bulletType` | the bullet def that is fired (see bullets.md) | [src:survev/server/src/game/weaponManager.ts:853] [H] |
+| `projType` | also launches this throwable projectile at `throwPhysics.speed` (potato guns) | [src:survev/server/src/game/weaponManager.ts:951-969] [H] |
+| `headshotMult` | on a player hit, with chance `headshotChance` = 0.15, damage × `headshotMult`. Headshots skip chest armour and take full helmet reduction. Non-headshots take chest reduction plus 0.3 × helmet reduction. Explosions and shrapnel never headshot | [src:survev/server/src/game/objects/player.ts:2459-2490] [src:survev/shared/gameConfig.ts:200] [src:fandom/Headshot] [H] |
+| `speed.equip` | added to the base move speed of 12 while the gun is held and no melee swing is running. The Small Arms perk replaces it for guns | [src:survev/server/src/game/objects/player.ts:4708-4720] [src:survev/shared/gameConfig.ts:201] [H] |
+| `speed.attack` | added to the move speed while `shotSlowdownTimer > 0`, that is for `fireDelay` s after each shot | [src:survev/server/src/game/objects/player.ts:4722-4724] [H] |
+| `quality` | with the Rare Potato perk, potato weapon swaps only choose defs with `quality === 1` | [src:survev/server/src/game/objects/player.ts:4062-4068] [src:changelog/0.7.52] [H] |
+| `ammoSpawnCount` | ammo dropped next to a spawned gun, split into two piles: `ceil(n/2)` on the left, the rest on the right, 0.75 units apart. On a potato swap the player gets `ammoSpawnCount − maxClip` ammo and the clip is full | [src:survev/server/src/game/objects/loot.ts:136-166] [src:survev/server/src/game/objects/player.ts:4104-4132] [H] |
+| `ammoInfinite` | reloads take no inventory ammo. The Endless Ammo perk has the same effect unless `ignoreEndlessAmmo` is set (flare guns) | [src:survev/server/src/game/weaponManager.ts:475-480] [H] |
+| `outsideOnly` | firing while indoors is refused with a `GunCannotFire` pickup message (flare guns) | [src:survev/server/src/game/weaponManager.ts:731-736] [H] |
+| `toMouseHit` | bullet distance is clamped to the cursor distance minus `barrelLength` (USAS-12 frag rounds explode at the cursor) | [src:survev/server/src/game/weaponManager.ts:916-930] [H] |
+| `noSplinter` | the Splinter Rounds perk does not split this gun's shots (usas, flare guns, potato guns, bugle) | [src:survev/server/src/game/weaponManager.ts:971-1003] [src:changelog/0.8.1] [H] |
+| `noPotatoSwap` | the gun is never rolled by, and never replaced by, potato swaps | [src:survev/server/src/game/objects/player.ts:4057-4098] [H] |
+| `noDrop` | the gun cannot be dropped or replaced by a pickup (m9_cursed, bugle) | [src:survev/server/src/game/weaponManager.ts:598-632] [src:survev/server/src/game/objects/player.ts:3781-3787] [H] |
+| `pistol`, `isBullpup`, `isLauncher`, `isMinigun` | client idle pose: pistol / dualPistol, bullpup, launcher, minigun, otherwise rifle / dualRifle | [src:survev/client/src/objects/player.ts:2119-2130] [H] |
+| `caseTiming` | `shoot` ejects a casing per shot. `reload` ejects `maxReload` casings when a reload starts (mp220, revolvers, sw500) | [src:survev/client/src/objects/shot.ts:231-250] [src:survev/client/src/objects/player.ts:1956-1965] [H] |
+| `ignoreDetune` | the bugle keeps its pitch. Other guns shift +300 cents when the shot is saturated and −300 with Splinter | [src:survev/client/src/objects/shot.ts:132-138] [H] |
+| `sound.shootLast` | sound for the last round in the clip (only M1 Garand: `garand_02`, the "ping") | [src:survev/shared/defs/gameObjects/gunDefs.ts:1754] [src:wikigg/M1_Garand] [H] |
+| `sound.fallOff` | sound falloff override of 3 on m4a1 and awc (suppressed guns) | [src:survev/shared/defs/gameObjects/gunDefs.ts:572] [src:survev/shared/defs/gameObjects/gunDefs.ts:1616] [H] |
+| `bulletTypeBonus` (orig only) | the original 9mm guns named a `*_bonus` bullet (speed and range × 1.25) for the 9mm Overpressure perk. survev removed the field and uses `PerkProperties.bonus_9mm` multipliers instead | [src:derived/survev@9f64948d:src/defs/gunDefs.js:24] [src:survev/shared/defs/gameObjects/perkDefs.ts:128-132] [H] |
+
+## Shared firing, switching and reload rules
+
+- Base move speed is 12. `speed.equip` and `speed.attack` from the gun def are added to it [src:survev/shared/gameConfig.ts:201] [src:survev/server/src/game/objects/player.ts:4705-4724] [H]
+- Switching to a gun normally sets its cooldown to its `switchDelay`. Switching to melee sets the cooldown to max(melee cooldown left, melee `switchDelay`) [src:survev/server/src/game/weaponManager.ts:145-167] [H]
+- Free switch: if `freeSwitchTimer < 0`, the switch costs only `baseSwitchDelay` = 0.25 s and the timer resets to `freeSwitchCooldown` = 1 s. So one quick swap per second is cheap [src:survev/server/src/game/weaponManager.ts:149-152] [src:survev/shared/gameConfig.ts:198-199] [H]
+- Quickswitching (fire, swap out and back) cancels the post-shot slowdown and, for slow bolt-action guns, raises the effective fire rate. Same-deploy-group shotguns (M870 + SPAS-12) are excluded by the full-cooldown rule [src:fandom/Quickswitching] [src:changelog/0.6.0] [M]
+- Original test servers before 0.8.3 put all sniper rifles in deploy group 2. This was removed after backlash, so no group 2 exists in 0.8.82 [src:fandom/Deploy_Group] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1-3250] [M]
+- Single-fire input buffering: a press while cooldown < 0.1 s is held over and fires when the cooldown expires (survev, desktop) (fork, added in survev v0.2.0 per the wiki) [src:survev/server/src/game/weaponManager.ts:373-381] [src:survev/server/src/game/weaponManager.ts:351-353] [src:wikigg/Guns] [M]
+- Firing with ammo ≤ 1 left schedules an automatic reload once the cooldown ends. Firing with 0 ammo does nothing (dry fire) [src:survev/server/src/game/weaponManager.ts:721-723] [src:survev/server/src/game/weaponManager.ts:361-364] [H]
+- A reload is cancelled by using items, reviving, switching weapons, dropping any item, or firing a magazine-fed gun that still has rounds. Players cannot shoot during a magazine reload [src:wikigg/Guns] [src:changelog/0.1.0] [M]
+- Shell-by-shell guns (`maxReload` < clip: m870, m1100, spas12, m1014, model94, mosin, potato_cannon, bugle) keep reloading one action at a time until full [src:survev/server/src/game/weaponManager.ts:585-592] [src:wikigg/Guns] [H]
+- The 0.1.0 changelog added a short delay before reloading the M870 and Mosin when the gun has been emptied [src:changelog/0.1.0] [H]
+- Since 0.7.1 the Mosin does a full 5-round clip reload when empty (`reloadTimeAlt` 3 s) [src:changelog/0.7.1] [src:survev/shared/defs/gameObjects/gunDefs.ts:1461-1515] [H]
+- First-shot accuracy (`recoilTime` < 1e10) in v0.8.82: deagle and deagle_dual 0.5 s, garand 0.36 s, m1014 0.5 s, colt45 and colt45_dual 0.35 s, mkg45 0.2 s. The fork adds ash12 at 0.35 s [src:derived/survev@9f64948d:src/defs/gunDefs.js:1241] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1590] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1886] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2643] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2888] [src:wikigg/Guns] [H]
+- The DEagle 50 was the first gun with first-shot accuracy (0.3.5) [src:changelog/0.3.5] [src:wikigg/DEagle_50] [H]
+- With first-shot accuracy plus Splinter Rounds, all three split bullets travel on one line and always hit together [src:fandom/First-Shot_Accuracy] [src:wikigg/Guns] [M]
+- Dual pistols: loot a second copy of an owned pistol to dual-wield it. Dropped duals split back into two singles (added 0.3.1) [src:changelog/0.3.1] [src:survev/server/src/game/weaponManager.ts:618-621] [H]
+- Picking up a single pistol identical to the one held converts the slot to its dual and keeps the loaded ammo; nothing is dropped [src:survev/server/src/game/objects/player.ts:3804-3840] [H]
+- Splinter Rounds (orig perk `splinter`): the main bullet does 0.6× damage and 2 extra bullets do 0.5× each. They deviate by `random(0.2, 0.25) × max(spread, 1)` degrees to each side and are skipped for `noSplinter` guns [src:survev/server/src/game/weaponManager.ts:971-1003] [src:survev/shared/defs/gameObjects/perkDefs.ts:37-40] [src:changelog/0.8.1] [H]
+- One In The Chamber (`chambered`) gives ×1.25 damage on the first and last round of the clip, and does not apply to 12-gauge guns (since 0.8.8) [src:survev/server/src/game/weaponManager.ts:815-836] [src:survev/shared/defs/gameObjects/perkDefs.ts:54-56] [src:changelog/0.8.8] [H]
+- In faction mode, firing reveals the shooter on the map for 1 s (`timeUntilHidden`) if any living enemy is within its zoom radius [src:survev/server/src/game/weaponManager.ts:1014-1025] [M]
+- Firing the flare gun as the faction leader sets `hasFiredFlare`. Leaders cannot drop a flare gun until it has been fired [src:survev/server/src/game/weaponManager.ts:1010-1012] [src:survev/server/src/game/weaponManager.ts:661-668] [H]
+- Firing the bugle with the Inspiration perk triggers `playBugle()` (team buff) [src:survev/server/src/game/weaponManager.ts:1006-1008] [src:changelog/0.8.81] [H]
+- Headshot chance is 15% for every bullet, rolled independently per pellet [src:survev/shared/gameConfig.ts:200] [src:fandom/Headshot] [src:namu/Surviv.io/무기] [H]
+- Fandom states that melee, the AWM-S, the Potato Cannon and the Heart Cannon never headshot, and that vests do not reduce headshots while helmets do [src:fandom/Headshot] [M]
+- Spawned guns drop with their ammo beside them on the ground. In 50v50 (Factions) airdrops, from 0.8.71, the guns come preloaded with their own ammo (`isPreloadedGun` gives `ammoSpawnCount` on pickup) [src:changelog/0.8.71] [src:survev/server/src/game/objects/player.ts:3789-3795] [H]
+- Mode gun pools: Desert has no 9mm guns (.45 ACP replaces them, with P30L and a rare M9 as exceptions); Woods spawns only shotguns and LMGs; Savannah spawns only pistols, SMGs, DMRs and snipers (plus SCAR-H); Potato mode makes every gun except Bugle and M9 Cursed reachable by swaps [src:wikigg/Guns] [M]
+- The Birthday mode limits drops to the first-release roster: M9, M870, AK-47, Mosin-Nagant, M39 EMR, MP5, Saiga-12 (fork; survev's own changelog lists "New mode: Birthday") [src:wikigg/Guns] [src:survev/client/public/changelogRec.html:386] [M]
+
+## Stat tables by class
+
+> Columns: clip / ext = `maxClip` / `extendedClip` (Firepower). `maxReload (ext)` = rounds per reload action. `reload s (alt)` = `reloadTime` (`reloadTimeAlt`). Spread values are degrees. `speed equip / attack` are added to the base move speed of 12. `dmg` = bullet damage (proj = damage dealt by a projectile). `recoilTime` 1e10 = no first-shot accuracy. `X (orig Y)` = survev value X, original value Y. prov: orig = in v0.8.82, fork = survev-only.
+
+### SMG
+
+| id | name (en) | ammo | fireMode | burst n×delay | clip / ext | maxReload (ext) | reload s (alt) | fireDelay | switchDelay | pullDelay | moveSpread / shotSpread | bullets × type (jitter) | dmg | hsMult | speed equip / attack | deployGroup | quality | dual→ | recoilTime | ammoSpawn | barrel | flags | prov | sources |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| mp5 | MP5 | 9mm | auto | — | 30 / 40 | 30 (40) | 2 | 0.09 | 0.75 | — | 4 / 3 | 1 × bullet_mp5 | 11 | 2 | 0 / 0 | — | 0 | — | 1e10 | 90 | 2.625 | orig bulletTypeBonus=bullet_mp5_bonus | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:98-144] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2-49] [src:fandom/MP5] [H] |
+| mac10 | MAC-10 | 9mm | auto | — | 32 / 50 | 32 (50) | 1.8 | 0.045 | 0.75 | — | 11 / 10 | 1 × bullet_mac10 | 9.25 | 2 | 0 / 0 | — | 0 | — | 1e10 | 96 | 2.45 | orig bulletTypeBonus=bullet_mac10_bonus | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:145-191] [src:derived/survev@9f64948d:src/defs/gunDefs.js:50-97] [src:fandom/MAC-10] [H] |
+| ump9 | UMP9 | 9mm | burst | 3×0.06 (orig 3×0.07) | 30 / 40 | 30 (40) | 1.9 | 0.3 (orig 0.35) | 0.75 | — | 3 / 1.5 | 1 × bullet_ump9 | 14.5 (orig 15) | 2 | 0 / 0 | — | 0 | — | 1e10 | 90 | 2.7 | orig bulletTypeBonus=bullet_ump9_bonus | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:192-240] [src:derived/survev@9f64948d:src/defs/gunDefs.js:98-147] [src:balance/111-114] [src:fandom/UMP9] [H] |
+| vector | Vector | 9mm | auto | — | 33 / 40 | 33 (40) | 1.6 | 0.038 | 0.75 | — | 4.5 / 2.5 | 1 × bullet_vector | 7.5 | 2 | 0 / 0 | — | 1 | — | 1e10 | 99 | 2.5 | orig bulletTypeBonus=bullet_vector_bonus | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:241-287] [src:derived/survev@9f64948d:src/defs/gunDefs.js:148-195] [src:fandom/Vector] [H] |
+| vector45 | Vector | 45acp | auto | — | 25 / 32 | 25 (32) | 1.6 | 0.044 | 0.75 | — | 6.5 / 4.5 | 1 × bullet_vector45 | 9.5 | 2 | 0 / 0 | — | 1 | — | 1e10 | 75 | 2.45 (orig 2.5) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:288-334] [src:derived/survev@9f64948d:src/defs/gunDefs.js:196-242] [src:fandom/Vector] [H] |
+| scorpion | CZ-3A1 | 9mm | auto | — | 30 / 40 | 30 (40) | 2.2 | 0.055 | 0.75 | — | 5 / 4 | 1 × bullet_scorpion | 10.75 | 2 | 0 / 0 | — | 1 | — | 1e10 | 90 | 3.5 (orig 3.6) | orig bulletTypeBonus=bullet_scorpion_bonus | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:335-381] [src:derived/survev@9f64948d:src/defs/gunDefs.js:243-290] [src:fandom/CZ-3A1] [H] |
+| m1a1 | M1A1 | 45acp | auto | — | 30 / 50 | 30 (50) | 2.8 | 0.095 | 0.75 | — | 6 / 6 | 1 × bullet_m1a1 | 13 | 2 | 0 / 0 | — | 0 | — | 1e10 | 90 | 2.8 | — | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:3004-3050] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2822-2868] [src:fandom/M1A1] [H] |
+| potato_smg | Spud Gun | potato_ammo | auto | — | 30 / 40 | 30 (40) | 2 | 0.09 | 0.75 | — | 4 / 3 | 1 × bullet_invis (orig 1 × bullet_potato) | proj | 2 | 0 / 0 | — | 0 | — | 1e10 | 0 | 3.25 | ammoInfinite, noSplinter, noPotatoSwap, projType=potato_smgshot | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:3465-3524] [src:derived/survev@9f64948d:src/defs/gunDefs.js:3132-3191] [src:fandom/Spud_Gun] [H] |
+
+### Assault rifle
+
+| id | name (en) | ammo | fireMode | burst n×delay | clip / ext | maxReload (ext) | reload s (alt) | fireDelay | switchDelay | pullDelay | moveSpread / shotSpread | bullets × type (jitter) | dmg | hsMult | speed equip / attack | deployGroup | quality | dual→ | recoilTime | ammoSpawn | barrel | flags | prov | sources |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ak47 | AK-47 | 762mm | auto | — | 30 / 40 | 30 (40) | 2.5 | 0.1 | 0.75 | — | 7.5 / 2.5 | 1 × bullet_ak47 | 13.5 | 2 | 0 / 0 | — | 0 | — | 1e10 | 90 | 3.15 | — | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:824-870] [src:derived/survev@9f64948d:src/defs/gunDefs.js:731-777] [src:fandom/AK-47] [H] |
+| scar | SCAR-H | 762mm | auto | — | 20 / 30 | 20 (30) | 2.7 | 0.09 | 0.75 | — | 5 / 2 | 1 × bullet_scar | 15 | 2 | 0 / 0 | — | 0 | — | 1e10 | 80 | 3.43 (orig 3.15) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:871-917] [src:derived/survev@9f64948d:src/defs/gunDefs.js:778-824] [src:fandom/SCAR-H] [H] |
+| an94 | AN-94 | 762mm | burst | 2×0.025 | 45 / 60 | 45 (60) | 2.35 | 0.24 | 0.75 | — | 4 / 1.5 | 1 × bullet_an94 | 20 (orig 17.5) | 2 | 0 / 0 | — | 1 | — | 1e10 | 90 | 3.4 (orig 3.25) | burstSounds=1 | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:965-1014] [src:derived/survev@9f64948d:src/defs/gunDefs.js:872-921] [src:balance/5-7] [src:fandom/AN-94] [H] |
+| groza | Groza | 762mm | auto | — | 30 / 40 | 30 (40) | 2.8 | 0.078 | 0.75 | — | 9 / 5 | 1 × bullet_groza | 12.5 | 2 | 0 / 0 | — | 0 (orig 1) | — | 1e10 | 90 | 2.7 (orig 2.6) | isBullpup | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1015-1063] [src:derived/survev@9f64948d:src/defs/gunDefs.js:922-970] [src:balance/105-106] [src:fandom/Groza] [H] |
+| grozas | Groza-S | 762mm | auto | — | 30 / 40 | 30 (40) | 2.8 | 0.078 | 0.75 | — | 7.5 / 3.5 | 1 × bullet_grozas | 13 | 2 | 0 / 0 | — | 1 | — | 1e10 | 90 | 3.4 (orig 3.3) | isBullpup | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1064-1112] [src:derived/survev@9f64948d:src/defs/gunDefs.js:971-1019] [src:fandom/Groza-S] [H] |
+| famas | FAMAS | 556mm | burst | 3×0.05 (orig 3×0.07) | 25 / 35 | 25 (35) | 2.3 | 0.35 | 0.75 | — | 2 / 1.1 | 1 × bullet_famas | 17 | 2 | 0 / 0 | — | 0 | — | 1e10 | 75 | 3.1 | isBullpup | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:429-479] [src:derived/survev@9f64948d:src/defs/gunDefs.js:339-389] [src:balance/116-117] [src:fandom/FAMAS] [H] |
+| hk416 | M416 | 556mm | auto | — | 30 / 40 | 30 (40) | 2.3 | 0.075 | 0.75 | — | 8 / 4 | 1 × bullet_hk416 | 11 | 2 | 0 / 0 | — | 0 | — | 1e10 | 90 | 2.7 | — | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:480-526] [src:derived/survev@9f64948d:src/defs/gunDefs.js:390-436] [src:fandom/M416] [H] |
+| m4a1 | M4A1-S | 556mm | auto | — | 30 / 40 | 30 (40) | 3.1 | 0.082 | 0.75 | — | 4 / 2 | 1 × bullet_m4a1 | 14 | 2 | 0 / 0 | — | 1 | — | 1e10 | 90 | 3.3 (orig 3.5) | sound.fallOff=3 | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:527-574] [src:derived/survev@9f64948d:src/defs/gunDefs.js:437-484] [src:fandom/M4A1-S] [H] |
+| ash12 | ASh-12 | 50AE | auto | — | 10 / 20 | 10 (20) | 3.1 | 0.1 | 0.75 | — | 3.5 / 3.5 | 1 × bullet_ash12 | 31 | 2 | -1 / 0 | — | 1 | — | 0.35 | 70 | 2.8 | — | fork | [src:survev/shared/defs/gameObjects/gunDefs.ts:3250-3300] [src:wikigg/ASh-12] [H] |
+
+### DMR
+
+| id | name (en) | ammo | fireMode | burst n×delay | clip / ext | maxReload (ext) | reload s (alt) | fireDelay | switchDelay | pullDelay | moveSpread / shotSpread | bullets × type (jitter) | dmg | hsMult | speed equip / attack | deployGroup | quality | dual→ | recoilTime | ammoSpawn | barrel | flags | prov | sources |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| mk12 | Mk 12 SPR | 556mm | single | — | 20 / 30 | 20 (30) | 2.4 | 0.18 | 0.75 | — | 3 / 1 | 1 × bullet_mk12 | 23 (orig 22.5) | 1.5 (orig 2) | 0 / 0 | — | 0 | — | 1e10 | 60 | 3.5 | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:575-621] [src:derived/survev@9f64948d:src/defs/gunDefs.js:485-531] [src:balance/48-52] [src:fandom/Mk_12_SPR] [H] |
+| m39 | M39 EMR | 762mm | single | — | 20 / 30 | 20 (30) | 2.5 | 0.23 | 0.75 | — | 4.25 / 1 | 1 × bullet_m39 | 28 (orig 27) | 1.5 (orig 2) | 0 / 0 | — | 0 | — | 1e10 | 60 | 3.5 | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1619-1665] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1479-1525] [src:balance/54-58] [src:fandom/M39_EMR] [H] |
+| garand | M1 Garand | 762mm | single | — | 8 / 8 | 8 (8) | 2.1 | 0.23 | 0.75 | — | 4 / 0.4 (orig 4 / 1) | 1 × bullet_garand | 44 (orig 35) | 1.44 (orig 2) | 0 / 0 | — | 1 | — | 0.36 | 40 | 3.8 (orig 3.6) | shootLast=garand_02 | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1713-1760] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1573-1620] [src:balance/84-90] [src:fandom/M1_Garand] [H] |
+| svd | SVD-63 | 762mm | single | — | 10 / 20 | 10 (20) | 2.5 | 0.25 | 0.75 | — | 4.5 / 1 | 1 × bullet_svd | 37 (orig 36) | 1.5 (orig 2) | 0 / 0 | — | 0 | — | 1e10 | 60 | 4.2 (orig 4) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1666-1712] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1526-1572] [src:balance/60-64] [src:fandom/SVD-63] [H] |
+| svd_winter | SVD-63 | 762mm | single | — | 10 / 20 | 10 (20) | 2.5 | 0.25 | 0.75 | — | 4.5 / 1 | 1 × bullet_svd | 37 | 1.5 | 0 / 0 | — | 0 | — | 1e10 | 60 | 4.2 | noPotatoSwap, skin of svd | fork (skin) | [src:survev/shared/defs/gameObjects/gunDefs.ts:3643-3649] [src:wikigg/SVD-63] [H] |
+| l86 | L86A2 | 556mm | single | — | 30 / 40 | 30 (40) | 2.9 | 0.19 | 0.75 | — | 3.5 / 1 | 1 × bullet_l86 | 25 (orig 26.5) | 1.5 (orig 2) | 0 / 0 | — | 0 | — | 1e10 | 90 | 3.7 (orig 3.25) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:622-668] [src:derived/survev@9f64948d:src/defs/gunDefs.js:532-578] [src:balance/66-72] [src:fandom/L86A2] [H] |
+| vss | VSS | 9mm | single | — | 20 / 30 | 20 (30) | 2.3 | 0.16 | 0.75 | — | 3 / 2 | 1 × bullet_vss | 24 (orig 22) | 1.5 (orig 2) | 0 / 0 | — | 0 (orig 1) | — | 1e10 | 60 | 3.7 | orig bulletTypeBonus=bullet_vss_bonus | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:382-428] [src:derived/survev@9f64948d:src/defs/gunDefs.js:291-338] [src:balance/37-46] [src:fandom/VSS] [H] |
+| mkg45 | Mk45G | 45acp | single | — | 13 / 26 | 13 (26) | 2.1 | 0.17 | 0.75 | — | 7.5 / 3.5 | 1 × bullet_mkg45 | 29 (orig 28) | 1.75 (orig 2) | 0 / 0 | — | 1 | — | 0.2 | 52 | 3.6 (orig 3.3) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1364-1410] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1224-1270] [src:balance/74-78] [src:fandom/Mk45G] [H] |
+| scarssr | Mk 20 SSR (def name "SCAR-SSR") | 308sub | single | — | 10 / 20 | 10 (20) | 2.7 | 0.3 | 0.75 | — | 5.5 / 1.5 | 1 × bullet_scarssr | 81 (orig 60) | 1.25 (orig 1.5) | 0 / 0 | — | 1 | — | 1e10 | 40 | 4.3 (orig 3.9) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:918-964] [src:derived/survev@9f64948d:src/defs/gunDefs.js:825-871] [src:balance/80-82] [src:fandom/Mk_20_SSR] [H] |
+
+### LMG
+
+| id | name (en) | ammo | fireMode | burst n×delay | clip / ext | maxReload (ext) | reload s (alt) | fireDelay | switchDelay | pullDelay | moveSpread / shotSpread | bullets × type (jitter) | dmg | hsMult | speed equip / attack | deployGroup | quality | dual→ | recoilTime | ammoSpawn | barrel | flags | prov | sources |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| dp28 | DP-28 | 762mm | auto | — | 60 / 80 | 60 (80) | 3.3 | 0.115 | 0.75 | — | 9 / 2 | 1 × bullet_dp28 | 14 | 2 | 0 / -2 | — | 0 | — | 1e10 | 120 | 3.8 (orig 3.75) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1113-1164] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1020-1071] [src:fandom/DP-28] [H] |
+| bar | BAR M1918 | 762mm | auto | — | 20 / 40 | 20 (40) | 2.7 | 0.12 | 0.75 | — | 8 / 2 | 1 × bullet_bar | 17.5 | 2 | 0 / -1.5 | — | 0 | — | 1e10 | 80 | 3.7 | — | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:1165-1211] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1072-1118] [src:fandom/BAR_M1918] [H] |
+| m249 | M249 | 556mm | auto | — | 100 / 150 | 100 (150) | 6.7 | 0.08 | 0.75 | — | 6 / 1.5 | 1 × bullet_m249 | 14 | 2 | 0 / -4 | — | 1 | — | 1e10 | 200 | 3.7 (orig 3.75) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:669-719] [src:derived/survev@9f64948d:src/defs/gunDefs.js:579-629] [src:fandom/M249] [H] |
+| qbb97 | QBB-97 | 556mm | auto | — | 75 / 95 | 75 (95) | 3.9 | 0.1 | 0.75 | — | 0.5 / 4 | 1 × bullet_qbb97 | 14 | 2 | 0 / -2 | — | 1 (orig —) | — | 1e10 | 150 | 3.1 | isBullpup (fork-added) | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:720-772] [src:derived/survev@9f64948d:src/defs/gunDefs.js:630-679] [src:fandom/QBB-97] [H] |
+| pkp | PKP Pecheneg | 762mm | auto | — | 200 / 250 | 200 (250) | 5 | 0.1 | 0.75 | — | 7.5 / 2.5 | 1 × bullet_pkp | 18 | 2 | 0 / -5 | — | 1 | — | 1e10 | 200 | 3.4 (orig 3.6) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1259-1313] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1119-1173] [src:fandom/PKP_Pecheneg] [H] |
+| imbel | IMD-2 | 556mm | auto | — | 40 / 50 | 40 (50) | 2.1 | 0.092 | 0.75 | — | 5 / 3 | 1 × bullet_imbel | 12 | 2 | 0 / -1 | — | 0 | — | 1e10 | 120 | 3.9 | — | fork | [src:survev/shared/defs/gameObjects/gunDefs.ts:1212-1258] [src:wikigg/IMD-2] [H] |
+| potato_lmg | PMG-134 | potato_ammo | auto | — | 150 / 250 | 150 (250) | 5.8 | 0.07 | 0.75 | — | 4 / 8 | 2 × bullet_invis | proj | 1.5 | -1.5 / -6 | — | 0 | — | 1e10 | 0 | 5 | isMinigun, ammoInfinite, noSplinter, noPotatoSwap, projType=potato_lmgshot | fork | [src:survev/shared/defs/gameObjects/gunDefs.ts:3525-3581] [src:wikigg/PMG-134] [H] |
+
+### Sniper rifle
+
+| id | name (en) | ammo | fireMode | burst n×delay | clip / ext | maxReload (ext) | reload s (alt) | fireDelay | switchDelay | pullDelay | moveSpread / shotSpread | bullets × type (jitter) | dmg | hsMult | speed equip / attack | deployGroup | quality | dual→ | recoilTime | ammoSpawn | barrel | flags | prov | sources |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| mosin | Mosin-Nagant | 762mm | single | — | 5 / 5 | 1 (1); alt 5 (5) | 0.9 (3) | 1.75 | 1 | 1 | 3 / 1 | 1 × bullet_mosin | 72 | 1.25 (orig 1.5) | 0 / 0 | — | 0 | — | 1e10 | 20 | 3.95 (orig 3.75) | aimDelay | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1461-1515] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1321-1375] [src:balance/102-103] [src:fandom/Mosin-Nagant] [H] |
+| sv98 | SV-98 | 762mm | single | — | 10 / 15 | 10 (15) | 2.7 | 1.5 | 1 | 0.8 | 2.5 / 1 | 1 × bullet_sv98 | 80 | 1.25 (orig 1.5) | 0 / 0 | — | 1 | — | 1e10 | 30 | 4.1 (orig 3.5) | aimDelay | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1516-1566] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1376-1426] [src:balance/92-93] [src:fandom/SV-98] [H] |
+| sv98_winter | SV-98 | 762mm | single | — | 10 / 15 | 10 (15) | 2.7 | 1.5 | 1 | 0.8 | 2.5 / 1 | 1 × bullet_sv98 | 80 | 1.25 | 0 / 0 | — | 1 | — | 1e10 | 30 | 4.1 | noPotatoSwap, aimDelay, skin of sv98 | fork (skin) | [src:survev/shared/defs/gameObjects/gunDefs.ts:3650-3656] [src:wikigg/SV-98] [H] |
+| awc | AWM-S | 308sub | single | — | 5 / 7 | 5 (7) | 3.6 | 1.5 | 1 | 1.4 | 4 / 0.5 | 1 × bullet_awc | 180 | 1 | 0 / 0 | — | 1 | — | 1e10 | 20 | 4 (orig 3.8) | aimDelay, sound.fallOff=3 | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1567-1618] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1427-1478] [src:balance/95-96] [src:fandom/AWM-S] [H] |
+| awc_winter | AWM-S | 308sub | single | — | 5 / 7 | 5 (7) | 3.6 | 1.5 | 1 | 1.4 | 4 / 0.5 | 1 × bullet_awc | 180 | 1 | 0 / 0 | — | 1 | — | 1e10 | 20 | 4 | noPotatoSwap, aimDelay, sound.fallOff=3, skin of awc | fork (skin) | [src:survev/shared/defs/gameObjects/gunDefs.ts:3657-3663] [src:wikigg/AWM-S] [H] |
+| scout_elite | Scout Elite | 556mm | single | — | 5 / 10 | 5 (10) | 2.6 | 1 | 1 | 1 | 1 / 1 | 1 × bullet_scout | 56 | 1.5 | 0 / 5 | — | 0 | — | 1e10 | 20 | 3.65 (orig 3.5) | aimDelay | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:773-823] [src:derived/survev@9f64948d:src/defs/gunDefs.js:680-730] [src:fandom/Scout_Elite] [H] |
+| model94 | Model 94 | 45acp | single | — | 8 / 8 | 1 (1) | 0.5 | 0.7 | 1 | 1 | 3 / 1.5 | 1 × bullet_model94 | 44 | 1.5 | 0 / 0 | — | 0 | — | 1e10 | 64 | 3.78 (orig 3.7) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1314-1363] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1174-1223] [src:fandom/Model_94] [H] |
+| blr | BLR 81 | 762mm | single | — | 3 / 5 | 3 (5) | 1.7 | 0.8 | 1 | 1 | 3 / 1.5 | 1 × bullet_blr | 56 | 1.5 | 0 / 0 | — | 0 | — | 1e10 | 30 | 3.85 (orig 3.8) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1411-1460] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1271-1320] [src:fandom/BLR_81] [H] |
+| barrett | Barrett M107 | 50AE | single | — | 10 / 12 | 10 (12) | 3.75 | 0.925 | 1 | — | 4 / 1 | 1 × bullet_barrett | 99 | 1.25 | -1 / -4 | — | 1 | — | 1e10 | 30 | 4.2 | aimDelay | fork | [src:survev/shared/defs/gameObjects/gunDefs.ts:3150-3201] [src:wikigg/Barrett_M107] [H] |
+
+### Shotgun
+
+| id | name (en) | ammo | fireMode | burst n×delay | clip / ext | maxReload (ext) | reload s (alt) | fireDelay | switchDelay | pullDelay | moveSpread / shotSpread | bullets × type (jitter) | dmg | hsMult | speed equip / attack | deployGroup | quality | dual→ | recoilTime | ammoSpawn | barrel | flags | prov | sources |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| m870 | M870 | 12gauge | single | — | 5 / 10 | 1 (1) | 0.75 | 0.9 | 0.9 | 0.9 | 2 / 10 | 9 × bullet_buckshot (1) | 12.5 | 1.5 | 0 / 0 | 1 | 0 | — | 1e10 | 10 | 3.15 | — | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:1761-1812] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1621-1672] [src:fandom/M870] [H] |
+| mp220 | MP220 | 12gauge | single | — | 2 / 2 | 2 (2) | 2.7 | 0.2 | 0.3 | — | 2 / 10 | 9 × bullet_buckshot (1) | 12.5 | 1.5 | 0 / 0 | — | 0 | — | 1e10 | 10 | 2.7 | caseTiming=reload | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:1861-1908] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1721-1768] [src:fandom/MP220] [H] |
+| saiga | Saiga-12 | 12gauge | auto | — | 5 / 8 | 5 (8) | 2.5 | 0.4 | 0.75 | — | 2 / 10 | 9 × bullet_buckshot (1) | 12.5 | 1.5 | 0 / 0 | — | 1 | — | 1e10 | 20 | 3.75 | — | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:1909-1956] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1769-1816] [src:fandom/Saiga-12] [H] |
+| spas12 | SPAS-12 | 12gauge | single | — | 9 / 12 | 1 (1) | 0.55 | 0.75 | 0.75 | 0.75 | 3 / 4 | 9 × bullet_flechette (0.2) | 8.75 | 1.5 | 0 / 0 | 1 | 0 | — | 1e10 | 18 | 2.8 | — | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:1957-2008] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1817-1868] [src:fandom/SPAS-12] [H] |
+| m1100 | M1100 | 12gauge | single | — | 4 / 8 | 1 (1) | 0.7 | 0.3 | 0.9 | — | 2 / 25 | 18 × bullet_birdshot (1) | 4 | 1.5 | 0 / 0 | — | 0 | — | 1e10 | 12 | 3.7 (orig 3.15) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:1813-1860] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1673-1720] [src:fandom/M1100] [H] |
+| usas | USAS-12 | 12gauge | auto | — | 10 / 20 | 10 (20) | 2.9 | 0.5 | 0.75 | — | 6 / 7 | 1 × bullet_frag (1) | 12 | 1 | 0 / -1 | — | 1 | — | 1e10 | 30 | 3.7 (orig 3.65) | noSplinter, toMouseHit | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2107-2156] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1917-1966] [src:fandom/USAS-12] [H] |
+| m1014 | Super 90 (def name "M1014") | 12gauge | single | — | 8 / 10 | 1 (1) | 0.52 | 0.4 | 0.75 | — | 4 / 4 | 1 × bullet_slug (0.2) | 77 | 1.25 (orig 1.5) | 0 / 0 | — | 1 | — | 0.5 | 16 | 3.3 (orig 3.2) | — | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2059-2106] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1869-1916] [src:balance/98-99] [src:fandom/Super_90] [H] |
+| spas16 | SPAS-16 | 12gauge | auto | — | 6 / 8 | 6 (8) | 2.9 | 0.35 | 0.75 | 0.75 | 1.5 / 5.5 | 9 × bullet_flechette (0.3) | 8.75 | 1.5 | 0 / -1 | 1 | 1 | — | 1e10 | 18 | 3.65 | — | fork | [src:survev/shared/defs/gameObjects/gunDefs.ts:2009-2058] [src:wikigg/SPAS-16] [H] |
+
+### Pistol
+
+| id | name (en) | ammo | fireMode | burst n×delay | clip / ext | maxReload (ext) | reload s (alt) | fireDelay | switchDelay | pullDelay | moveSpread / shotSpread | bullets × type (jitter) | dmg | hsMult | speed equip / attack | deployGroup | quality | dual→ | recoilTime | ammoSpawn | barrel | flags | prov | sources |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| m9 | M9 | 9mm | single | — | 15 / 30 | 15 (30) | 1.6 | 0.12 | 0.25 | — | 5 / 3 (orig 8 / 8) | 1 × bullet_m9 | 13 (orig 12) | 2 | 0 / 0 | — | 1 | m9_dual | 1e10 | 45 | 2.2 | pistol, orig bulletTypeBonus=bullet_m9_bonus | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2157-2205] [src:derived/survev@9f64948d:src/defs/gunDefs.js:1967-2016] [src:balance/9-16] [src:fandom/M9] [H] |
+| m9_dual | Dual M9 | 9mm | single | — | 30 / 60 | 30 (60) | 3.1 | 0.08 | 0.25 | — | 3.5 / 4 (orig 9 / 11) | 1 × bullet_m9 | 13 (orig 12) | 2 | 0 / 0 | — | 0 | — | 1e10 | 90 (orig 45) | 2.2 | pistol, isDual, dualOffset=0.55 (orig 0.6), orig bulletTypeBonus=bullet_m9_bonus | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2206-2255] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2017-2067] [src:balance/18-25] [src:fandom/M9] [H] |
+| m9_cursed | M9 Cursed | 9mm_cursed | single | — | 15 / 30 | 15 (30) | 1.6 | 0.12 | 0.25 | — | 3 / 3 (orig 8 / 8) | 1 × bullet_m9_cursed | 13 (orig 12) | 2 | 0 / 0 | — | 0 | — | 1e10 | 0 | 2.2 | pistol, ammoInfinite, noPotatoSwap, noDrop | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2256-2306] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2068-2118] [src:balance/9-16] [src:fandom/M9_Cursed] [H] |
+| glock | G18C | 9mm | auto | — | 17 / 31 | 17 (31) | 1.95 | 0.06 | 0.25 | — | 10 / 12 | 1 × bullet_glock | 9 | 2 | 0 / 0 | — | 0 | glock_dual | 1e10 | 51 | 2.2 | pistol, orig bulletTypeBonus=bullet_glock_bonus | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:2410-2458] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2224-2273] [src:fandom/G18C] [H] |
+| glock_dual | Dual G18C | 9mm | auto | — | 34 / 62 | 34 (62) | 3.8 | 0.03 | 0.25 | — | 16 / 18 | 1 × bullet_glock | 9 | 2 | 0 / 0 | — | 0 | — | 1e10 | 102 (orig 51) | 2.2 | pistol, isDual, dualOffset=0.55 (orig 0.6), orig bulletTypeBonus=bullet_glock_bonus | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2459-2508] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2274-2324] [src:fandom/G18C] [H] |
+| ot38 | OT-38 | 762mm | single | — | 5 / 5 | 5 (5) | 2 | 0.4 | 0.3 | — | 3 / 1.25 | 1 × bullet_ot38 | 26 | 2 | 0 / 0 | — | 0 | ot38_dual | 1e10 | 20 | 2.05 | pistol, caseTiming=reload | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:2608-2656] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2426-2474] [src:fandom/OT-38] [H] |
+| ot38_dual | Dual OT-38 | 762mm | single | — | 10 / 10 | 10 (10) | 3.8 | 0.2 | 0.3 | — | 4 / 1.75 | 1 × bullet_ot38 | 26 | 2 | 0 / 0 | — | 0 | — | 1e10 | 40 (orig 20) | 2.05 (orig 2) | pistol, isDual, caseTiming=reload, dualOffset=0.55 (orig 0.6) | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2657-2706] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2475-2524] [src:fandom/OT-38] [H] |
+| ots38 | OTs-38 | 762mm | single | — | 5 / 5 | 5 (5) | 2 | 0.36 | 0.3 | — | 2.4 / 1.2 | 1 × bullet_ots38 | 32 | 2 | 0 / 0 | — | 0 | ots38_dual | 1e10 | 20 | 2.1 (orig 2.05) | pistol, caseTiming=reload | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2707-2755] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2525-2573] [src:fandom/OTs-38] [H] |
+| ots38_dual | Dual OTs-38 | 762mm | single | — | 10 / 10 | 10 (10) | 3.8 | 0.18 | 0.3 | — | 2.8 / 1.4 | 1 × bullet_ots38 | 32 | 2 | 0 / 0 | — | 1 | — | 1e10 | 40 | 2.1 (orig 2) | pistol, isDual, caseTiming=reload, dualOffset=0.55 (orig 0.6) | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2756-2805] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2574-2623] [src:fandom/OTs-38] [H] |
+| m93r | M93R | 9mm | burst | 3×0.04 | 20 / 30 | 20 (30) | 1.8 | 0.28 | 0.25 | — | 4 / 4 | 1 × bullet_m93r | 12 | 2 | 0 / 0 | — | 0 | m93r_dual | 1e10 | 60 | 2.2 (orig 2.3) | orig bulletTypeBonus=bullet_m93r_bonus | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2307-2357] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2119-2170] [src:fandom/M93R] [H] |
+| m93r_dual | Dual M93R | 9mm | burst | 3×0.04 | 40 / 60 | 40 (60) | 3.3 | 0.18 | 0.25 | — | 6 / 7 | 1 × bullet_m93r | 12 | 2 | 0 / 0 | — | 0 | — | 1e10 | 120 (orig 60) | 2.2 | pistol, isDual, dualOffset=0.55 (orig 0.6), orig bulletTypeBonus=bullet_m93r_bonus | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2358-2409] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2171-2223] [src:fandom/M93R] [H] |
+| p30l | P30L | 9mm | single | — | 15 / 30 | 15 (30) | 1.2 | 0.14 | 0.25 | — | 1 / 2 | 1 × bullet_p30l | 21 | 2 | 1 / 1 | — | 0 (orig 1) | p30l_dual | 1e10 | 45 | 2.4 (orig 2.3) | pistol, orig bulletTypeBonus=bullet_p30l_bonus | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2509-2557] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2325-2374] [src:balance/108-109] [src:fandom/P30L] [H] |
+| p30l_dual | Dual P30L | 9mm | single | — | 30 / 60 | 30 (60) | 2.65 | 0.09 | 0.3 | — | 2 / 3 | 1 × bullet_p30l | 21 | 2 | 0 / 0 | — | 1 | — | 1e10 | 90 | 2.4 (orig 2.3) | pistol, isDual, dualOffset=0.55 (orig 0.6), orig bulletTypeBonus=bullet_p30l_bonus | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2558-2607] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2375-2425] [src:fandom/P30L] [H] |
+| deagle | DEagle 50 | 50AE | single | — | 7 / 9 | 7 (9) | 2.3 | 0.16 | 0.3 | — | 6 / 2.5 | 1 × bullet_deagle | 35 | 2 | 0 / 0 | — | 0 | deagle_dual | 0.5 | 56 | 2.5 (orig 1.855) | pistol | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:3051-3099] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2869-2917] [src:fandom/DEagle_50] [H] |
+| deagle_dual | Dual DEagle 50 | 50AE | single | — | 14 / 18 | 14 (18) | 4 | 0.12 | 0.3 | — | 7.5 / 3.5 | 1 × bullet_deagle | 35 | 2 | 0 / 0 | — | 1 | — | 0.5 | 98 | 2.5 (orig 2.4) | pistol, isDual, dualOffset=0.55 (orig 0.6) | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:3100-3149] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2918-2967] [src:fandom/DEagle_50] [H] |
+| colt45 | Peacemaker | 45acp | auto | — | 6 / 6 | 6 (6) | 3 | 0.12 | 0.3 | — | 3 / 16 | 1 × bullet_colt45 | 29 | 1.5 | 0 / 0 | — | 0 | colt45_dual | 0.35 | 48 | 2.55 (orig 2.26) | pistol, caseTiming=reload | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2806-2854] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2624-2672] [src:fandom/Peacemaker] [H] |
+| colt45_dual | Dual Peacemaker | 45acp | auto | — | 12 / 12 | 12 (12) | 5.1 | 0.13 | 0.3 | — | 3 / 16 | 1 × bullet_colt45 | 29 | 1.5 | 0 / 0 | — | 0 | — | 0.35 | 96 (orig 48) | 2.55 (orig 2.26) | pistol, isDual, caseTiming=reload, dualOffset=0.55 (orig 0.6) | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2855-2904] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2673-2722] [src:fandom/Peacemaker] [H] |
+| m1911 | M1911 | 45acp | single | — | 7 / 12 | 7 (12) | 2.1 | 0.13 | 0.25 | — | 3 / 2 (orig 7 / 6) | 1 × bullet_m1911 | 16 (orig 14) | 2 | 0 / 0 | — | 0 | m1911_dual | 1e10 | 28 | 2.1 | pistol | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2905-2953] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2723-2771] [src:balance/27-30] [src:fandom/M1911] [H] |
+| m1911_dual | Dual M1911 | 45acp | single | — | 14 / 24 | 14 (24) | 3.6 | 0.085 | 0.25 | — | 3.5 / 4 (orig 8 / 9.5) | 1 × bullet_m1911 | 16 (orig 14) | 2 | 0 / 0 | — | 0 | — | 1e10 | 56 (orig 28) | 2.1 | pistol, isDual, dualOffset=0.55 (orig 0.6) | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:2954-3003] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2772-2821] [src:balance/32-35] [src:fandom/M1911] [H] |
+| sw500 | S&W 500 | 50AE | single | — | 5 / 5 | 5 (5) | 2.7 | 0.65 | 0.3 | — | 3.5 / 1 | 1 × bullet_sw500 | 64 | 1.5 | 0.5 / 0 | — | 1 | — | 1e10 | 35 | 2.7 | pistol, caseTiming=reload | fork | [src:survev/shared/defs/gameObjects/gunDefs.ts:3202-3249] [src:wikigg/S&W_500] [H] |
+
+### Launcher / special
+
+| id | name (en) | ammo | fireMode | burst n×delay | clip / ext | maxReload (ext) | reload s (alt) | fireDelay | switchDelay | pullDelay | moveSpread / shotSpread | bullets × type (jitter) | dmg | hsMult | speed equip / attack | deployGroup | quality | dual→ | recoilTime | ammoSpawn | barrel | flags | prov | sources |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| potato_cannon | Potato Cannon | potato_ammo | single | — | 4 / 4 | 1 (1) | 1 | 1.2 | 0.9 | — | 2 / 1 | 1 × bullet_invis (orig 1 × bullet_potato) | proj | 1 | -3 / 0 | 3 | 0 | — | 1e10 | 0 | 3 | isLauncher, ammoInfinite, noSplinter, noPotatoSwap, projType=potato_cannonball | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:3406-3464] [src:derived/survev@9f64948d:src/defs/gunDefs.js:3073-3131] [src:wikigg/Potato_Cannon] [H] |
+| flare_gun | Flare Gun | flare | single | — | 1 / 1 | 1 (1) | 2 | 0.4 | 0.3 | — | 3 / 1.25 | 1 × bullet_flare | 0 | 2 | 0 / 0 | — | 0 | flare_gun_dual | 1e10 | 1 | 2 | pistol, outsideOnly, ignoreEndlessAmmo, noSplinter | orig | [src:survev/shared/defs/gameObjects/gunDefs.ts:3301-3352] [src:derived/survev@9f64948d:src/defs/gunDefs.js:2968-3019] [src:fandom/Flare_Gun] [H] |
+| flare_gun_dual | Dual Flare Gun | flare | single | — | 2 / 2 | 2 (2) | 3.5 | 0.3 | 0.3 | — | 3 / 1.25 | 1 × bullet_flare | 0 | 2 | 0 / 0 | — | 0 | — | 1e10 | 2 | 2 | pistol, isDual, outsideOnly, ignoreEndlessAmmo, noSplinter, dualOffset=0.55 (orig 0.6) | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:3353-3405] [src:derived/survev@9f64948d:src/defs/gunDefs.js:3020-3072] [src:fandom/Flare_Gun] [H] |
+| bugle | Bugle | bugle_ammo | single | — | 1 / 4 | 1 (1) | 0.01 | 1 | 0.3 | — | 1 / 1 | 1 × bullet_invis (orig 1 × bullet_bugle) | 0 | 1 | 0 / 0 | — | 0 | — | 1e10 | 0 | 3 | pistol, noSplinter, noPotatoSwap, noDrop, ignoreDetune | orig, fork-changed | [src:survev/shared/defs/gameObjects/gunDefs.ts:3582-3639] [src:derived/survev@9f64948d:src/defs/gunDefs.js:3192-3249] [src:fandom/Bugle] [H] |
+
+## Ammo types used by guns
+
+> Backpack capacities are listed for context only; the ammo items themselves belong to gear docs. The original client config has 4 capacity levels; survev has 5.
+
+| ammo id | en name | ko name | guns (v0.8.82) | bag sizes orig → survev | sources |
+|---|---|---|---|---|---|
+| `9mm` | 9mm | 9mm | mp5, mac10, ump9, vector, scorpion, vss, m9 (+dual), m93r (+dual), glock (+dual), p30l (+dual) | 120/240/330/420 → 120/240/330/420/510 | [src:survev/client/src/en.json:384] [src:l10n/ko:game-9mm] [src:derived/survev@9f64948d:src/gameConfig.ts:261] [src:survev/shared/gameConfig.ts:416] [H] |
+| `762mm` | 7.62mm | 7.62mm | ak47, scar, an94, groza, grozas, dp28, bar, pkp, blr, mosin, sv98, m39, svd, garand, ot38 (+dual), ots38 (+dual) | 90/180/240/300 → 90/180/240/300/360 | [src:survev/client/src/en.json:388] [src:l10n/ko:game-762mm] [src:derived/survev@9f64948d:src/gameConfig.ts:262] [src:survev/shared/gameConfig.ts:417] [H] |
+| `556mm` | 5.56mm | 5.56mm | famas, hk416, m4a1, mk12, l86, m249, qbb97, scout_elite; imbel (fork) | 90/180/240/300 → 90/180/240/300/360 | [src:survev/client/src/en.json:390] [src:l10n/ko:game-556mm] [src:derived/survev@9f64948d:src/gameConfig.ts:263] [src:survev/shared/gameConfig.ts:418] [H] |
+| `12gauge` | 12 gauge | 12게이지 | m870, m1100, mp220, saiga, spas12, m1014, usas; spas16 (fork) | 15/30/60/90 → 15/30/60/90/120 | [src:survev/client/src/en.json:386] [src:l10n/ko:game-12gauge] [src:derived/survev@9f64948d:src/gameConfig.ts:264] [src:survev/shared/gameConfig.ts:419] [H] |
+| `50AE` | .50 AE (survev en: ".50 Caliber") | .50 AE | deagle (+dual); sw500, barrett, ash12 (fork) | 49/98/147/196 → 50/100/150/200/250 | [src:changelog/0.3.5] [src:l10n/ko:game-50AE] [src:survev/client/src/en.json:392] [src:derived/survev@9f64948d:src/gameConfig.ts:265] [src:survev/shared/gameConfig.ts:420] [H] |
+| `308sub` | .308 Subsonic | .308 아음속탄 | awc, scarssr | 10/20/40/80 → 20/40/55/70/85 (fork) | [src:survev/client/src/en.json:394] [src:l10n/ko:game-308sub] [src:derived/survev@9f64948d:src/gameConfig.ts:266] [src:survev/shared/gameConfig.ts:421] [src:balance/252] [H] |
+| `45acp` | .45 ACP | .45 ACP | vector45, m1a1, model94, mkg45, colt45 (+dual), m1911 (+dual) | 90/180/240/300 → 90/180/240/300/360 | [src:survev/client/src/en.json:398] [src:l10n/ko:game-45acp] [src:derived/survev@9f64948d:src/gameConfig.ts:268] [src:survev/shared/gameConfig.ts:423] [H] |
+| `flare` | Flare | 섬광탄 | flare_gun (+dual) | 2/4/6/8 → 2/4/6/8/10 | [src:survev/client/src/en.json:396] [src:l10n/ko:game-flare] [src:derived/survev@9f64948d:src/gameConfig.ts:267] [src:survev/shared/gameConfig.ts:422] [H] |
+| `9mm_cursed` | — | — | m9_cursed (infinite, never in inventory) | — | [src:survev/shared/defs/gameObjects/gunDefs.ts:2256-2306] [H] |
+| `potato_ammo` | Potato ammo | — | potato_cannon, potato_smg; potato_lmg (fork). Infinite, not lootable | — | [src:survev/shared/defs/gameObjects/gearDefs.ts:563] [src:wikigg/Guns] [H] |
+| `bugle_ammo` | — | — | bugle. The charge is restored by the Inspiration perk, not by reloading | — | [src:survev/server/src/game/weaponManager.ts:505-516] [src:wikigg/Bugle] [H] |
+
+- The DEagle 50 introduced .50 AE ammo, which spawned only with the gun and was hidden from the ammo UI (0.3.5) [src:changelog/0.3.5] [H]
+- The ko tooltip for `game-50AE` names only the DEagle 50 (original text). The en tooltip adds the fork guns S&W 500, Barrett M107 and ASh-12 [src:l10n/ko:game-50AE-tooltip] [src:survev/client/src/en.json:392] [H]
+- Ammo ring colours: 9mm #FFAE00, 12 gauge #FF0000, 7.62mm #0066FF, 5.56mm #039E00, .50 #292929, .308 Subsonic #313800, Flare #D44600, .45 ACP #7900FF, potato #743F1E [src:wikigg/Guns] [M]
+
+## Per-gun facts (history, spawns, names)
+
+> "Spawns" lines quote the wikis (wiki.gg documents survev, so its spawn notes can include fork loot changes). The "survev main tiers" lines are computed from survev `baseDefs.ts` loot tables, which are survev estimates: many weights carry `// ?` comments, and the original client shipped `lootTable: {}`. Percentages are the gun's share within that tier.
+
+- Original loot tables are not in the client data: the original `main` map def has an empty `lootTable` [src:derived/survev@9f64948d:src/defs/modes/main.ts:63] [H]
+- survev marks many of its loot weights as guesses (`// ?`, "TODO get more data on this from original") [src:survev/shared/defs/maps/baseDefs.ts:95] [src:survev/shared/defs/maps/baseDefs.ts:338-370] [H]
+
+### SMGs
+
+- **mp5** MP5 — ko "MP5" [src:l10n/ko:game-mp5] [H]
+- mp5: part of the first-release roster (0.0.x); buffed in 0.0.5 (damage 10→11, speed 66→85, ammo spawn 60→90) and given more accuracy in 0.2.5 (shotSpread 4→3, moveSpread +3→+4) [src:wikigg/MP5] [src:changelog/0.0.5] [H]
+- mp5: spawns in common loot (ground, crates) everywhere except Desert and Woods; survev main `tier_guns` 11.7% [src:wikigg/MP5] [src:survev/shared/defs/maps/baseDefs.ts:253-286] [M]
+- **mac10** MAC-10 — ko "MAC-10"; added 0.1.7 ("Quadruple Update?!", Dec 19 2017) [src:l10n/ko:game-mac10] [src:changelog/0.1.7] [src:wikigg/MAC-10] [H]
+- mac10: 0.2.4 shotSpread 11→10, moveSpread +10→+11; tracer length 0.8→0.7 in 0.4.2 [src:wikigg/MAC-10] [M]
+- mac10: common anywhere except Woods/Desert; survev main `tier_guns` 7.0% [src:fandom/MAC-10] [src:wikigg/MAC-10] [src:survev/shared/defs/maps/baseDefs.ts:253-286] [M]
+- **ump9** UMP9 — ko "UMP9"; added 0.2.2 (Jan 23 2018); first burst gun [src:l10n/ko:game-ump9] [src:changelog/0.2.2] [src:wikigg/UMP9] [H]
+- ump9: 0.2.3 damage 16→17, falloff 0.8→0.75, speed 90→100; 0.2.5 damage 17→15, spread 1.1→1.5 / +2→+3, drop rate up [src:wikigg/UMP9] [src:changelog/0.2.5] [M]
+- ump9: original burst 3×0.07 s with fireDelay 0.35 and damage 15; survev 0.4.3 changed to 3×0.06 / 0.3 / 14.5 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:98-147] [src:balance/111-114] [H]
+- ump9: very common in crates and containers except Woods/Desert; survev main `tier_guns` 3.5% [src:fandom/UMP9] [src:wikigg/UMP9] [M]
+- **vector** Vector — ko "Vector"; added 0.3.6 (May 10 2018) [src:l10n/ko:game-vector] [src:changelog/0.3.6] [src:wikigg/Vector] [H]
+- vector: rare; mainly Hatchet Case (Hydra bunker, sometimes Storm bunker), airdrops, rarely chest/world loot; survev main `tier_hatchet` 48.2%, `tier_guns` 0.01% [src:fandom/Vector] [src:wikigg/Vector] [src:survev/shared/defs/maps/baseDefs.ts:333-340] [M]
+- vector: highest-RoF SMG (fireDelay 0.038), only dual G18C (0.03) is faster [src:survev/shared/defs/gameObjects/gunDefs.ts:241-287] [src:wikigg/Vector] [H]
+- **vector45** Vector (.45 ACP variant, same display name "Vector") — ko "Vector"; added 0.6.5 per wiki.gg (not named in the changelog) [src:l10n/ko:game-vector45] [src:wikigg/Vector_45] [M]
+- vector45: Desert only (Saloon basement 50/50 with Mk45G, Hardstone Boulders, desert airdrops) [src:wikigg/Vector_45] [src:fandom/Vector] [M]
+- **scorpion** CZ-3A1 — ko "CZ-3A1"; added 0.6.7 (Nov 29 2018), damage 10.5→10.75 in 0.6.71; suppressed [src:l10n/ko:game-scorpion] [src:changelog/0.6.7] [src:changelog/0.6.71] [src:wikigg/CZ-3A1] [H]
+- scorpion: in normal mode only from golden airdrops (`tier_airdrop_rare` 22.0% in survev); more common on Savannah [src:fandom/CZ-3A1] [src:wikigg/CZ-3A1] [src:survev/shared/defs/maps/baseDefs.ts] [M]
+- **m1a1** M1A1 — ko "M1A1"; added 0.6.5 (with M1911) for the desert map [src:l10n/ko:game-m1a1] [src:changelog/0.6.5] [src:wikigg/M1A1] [H]
+- m1a1: common in Desert (cattle crates, survev `tier_cattle_crate` 29.4%), absent from normal mode [src:wikigg/M1A1] [src:survev/shared/defs/maps/baseDefs.ts] [M]
+- **potato_smg** Spud Gun — ko "감자총"; added 0.8.82 (Dec 30 2019), the last weapon made by the original developers [src:l10n/ko:game-potato_smg] [src:changelog/0.8.82] [src:wikigg/Spud_Gun] [H]
+- potato_smg: Potato mode only — golden airdrop / Crimson Ring case (1/11 each per wiki), Rusted Silo in the Silo Shack (added 0.8.82); fires `potato_smgshot` projectiles with infinite potato ammo [src:wikigg/Spud_Gun] [src:changelog/0.8.82] [src:survev/shared/defs/gameObjects/gunDefs.ts:3465-3524] [M]
+
+### Assault rifles
+
+- **ak47** AK-47 — ko "AK-47"; first-release gun; 0.0.5 buff, 0.1.0 reload 3→2.5 s, 0.2.5 damage 13→13.5 and spread 1→2.5 / +4→+7.5 [src:l10n/ko:game-ak47] [src:changelog/0.0.5] [src:changelog/0.1.0] [src:changelog/0.2.5] [src:wikigg/AK-47] [H]
+- ak47: common everywhere except Woods/Savannah; survev main `tier_guns` 3.1%, `tier_chest` 20.5% [src:wikigg/AK-47] [src:survev/shared/defs/maps/baseDefs.ts:253-322] [M]
+- ak47: fandom's infobox uses internal id `ak`, survev and wiki.gg use `ak47` [src:fandom/AK-47] [src:wikigg/AK-47] [src:survev/shared/defs/gameObjects/gunDefs.ts:824] [M]
+- **scar** SCAR-H — ko "SCAR-H"; added 0.3.4 (Apr 10 2018); drop rate cut in 0.3.5 and 0.5.0 [src:l10n/ko:game-scar] [src:changelog/0.3.4] [src:changelog/0.3.5] [src:changelog/0.5.0] [src:wikigg/SCAR-H] [H]
+- scar: mainly the golden lockers in the Police Station (survev `tier_police` 50%), airdrops, very rarely world loot; the only AR allowed on Savannah [src:fandom/SCAR-H] [src:wikigg/SCAR-H] [src:wikigg/Guns] [M]
+- **an94** AN-94 — ko "AN-94"; added 0.7.0 (Jan 31 2019); 2-round burst (0.025 s) [src:l10n/ko:game-an94] [src:changelog/0.7.0] [src:wikigg/AN-94] [H]
+- an94: original bullet 17.5 dmg / speed 110; survev 20 / 120 (fork) [src:derived/survev@9f64948d:src/defs/bulletDefs.js:47-59] [src:balance/5-7] [H]
+- an94: not in normal mode; Blue Commander weapon in 50v50 (45 rounds + full 7.62 inventory), Blue faction crate under the Aged Faction Statue in Desert [src:wikigg/AN-94] [src:survev/shared/defs/gameObjects/roleDefs.ts:126-131] [M]
+- **groza** Groza — ko "Groza"; added 0.7.7 (May 30 2019) with Groza-S and P30L; bullpup [src:l10n/ko:game-groza] [src:changelog/0.7.7] [src:wikigg/Groza] [H]
+- groza: original quality 1, survev 0 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:922-970] [src:balance/105-106] [H]
+- **grozas** Groza-S — ko "Groza-S"; suppressed; added 0.7.7 [src:l10n/ko:game-grozas] [src:changelog/0.7.7] [H]
+- grozas: Crimson Ring case in the Club vault (75/101 per wiki; survev `tier_ring_case` 74.3%); Blue Lieutenant weapon in 50v50 [src:wikigg/Groza-S] [src:survev/shared/defs/maps/baseDefs.ts:293-298] [src:survev/shared/defs/gameObjects/roleDefs.ts:202-213] [M]
+- **famas** FAMAS — ko "FAMAS"; added 0.2.5 (Feb 20 2018); first bullpup; world image changed 0.7.8 [src:l10n/ko:game-famas] [src:changelog/0.2.5] [src:changelog/0.7.8] [src:wikigg/FAMAS] [H]
+- famas: original burstDelay 0.07; survev 0.05 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:339-389] [src:balance/116-117] [H]
+- **hk416** M416 — ko "M416"; added 0.2.5; named "HK416" until 0.4.2 (internal id stays `hk416`) [src:l10n/ko:game-hk416] [src:changelog/0.2.5] [src:wikigg/M416] [H]
+- hk416: common except Woods/Savannah; survev main `tier_guns` 4.7%, `tier_chest` 20.5% [src:wikigg/M416] [src:survev/shared/defs/maps/baseDefs.ts:253-322] [M]
+- **m4a1** M4A1-S — ko "M4A1-S"; added 0.6.0 (Sep 7 2018); suppressed; world image 0.6.7 [src:l10n/ko:game-m4a1] [src:changelog/0.6.0] [src:wikigg/M4A1-S] [H]
+- m4a1: golden airdrops and Hardstone blocks only; Red Lieutenant weapon in 50v50 [src:wikigg/M4A1-S] [src:survev/shared/defs/gameObjects/roleDefs.ts:202-213] [M]
+- **ash12** ASh-12 (fork) — no ko key; survev v0.3.1 Desert (Gold Crimson Case in The Reserve, Crimson airdrops, Saloon cellar), 50v50 airdrops from v0.4.0; full-auto .50 with FSA 0.35 s [src:wikigg/ASh-12] [src:survev/shared/defs/gameObjects/gunDefs.ts:3250-3300] [src:balance/329] [H]
+
+### DMRs
+
+- **mk12** Mk 12 SPR — ko "Mk 12 SPR"; added 0.2.5; 0.8.3 fireDelay 0.15→0.18 with damage 19.5→22.5 [src:l10n/ko:game-mk12] [src:changelog/0.2.5] [src:changelog/0.8.3] [src:wikigg/Mk_12_SPR] [H]
+- mk12: original headshotMult 2, damage 22.5; survev 1.5 / 23 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:485-531] [src:balance/48-52] [H]
+- mk12: rare; chests, treasure chests, meteor/airdrops, rarely world loot [src:fandom/Mk_12_SPR] [src:wikigg/Mk_12_SPR] [M]
+- **m39** M39 EMR — ko "M39 EMR"; first-release gun, first DMR; 0.1.51 accuracy up, 0.2.0 damage up, 0.2.5 RoF up, 0.8.3 fireDelay 0.2→0.23 with damage 24.5→27 [src:l10n/ko:game-m39] [src:changelog/0.1.51] [src:changelog/0.2.0] [src:changelog/0.2.5] [src:changelog/0.8.3] [src:wikigg/M39_EMR] [H]
+- m39: original headshotMult 2, damage 27; survev 1.5 / 28 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:1479-1525] [src:balance/54-58] [H]
+- **garand** M1 Garand — ko "M1 개런드"; added 0.5.0 (Jul 26 2018); 0.8.3 fireDelay 0.2→0.23, damage 32→35; last-round "ping" (`garand_02`) [src:l10n/ko:game-garand] [src:changelog/0.5.0] [src:changelog/0.8.3] [src:wikigg/M1_Garand] [H]
+- garand: original damage 35, speed 130, range 400, falloff 0.9, shotSpread 1, headshotMult 2; survev 44 / 144 / 444 / 0.94 / 0.4 / 1.44 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:1573-1620] [src:balance/84-90] [src:namu/Surviv.io/무기] [H]
+- garand: golden airdrops (survev `tier_airdrop_rare` 26.5%), more common on Desert because flare guns are more common there [src:fandom/M1_Garand] [src:wikigg/M1_Garand] [M]
+- **svd** SVD-63 — ko "SVD-63"; added 0.8.3 (Savannah) [src:l10n/ko:game-svd] [src:changelog/0.8.3] [src:wikigg/SVD-63] [H]
+- svd: original damage 36, headshotMult 2; survev 37 / 1.5 (fork); Blue Marksman weapon (90%) in 50v50 [src:derived/survev@9f64948d:src/defs/gunDefs.js:1526-1572] [src:balance/60-64] [src:survev/shared/defs/gameObjects/roleDefs.ts:263-275] [H]
+- svd_winter: fork winter skin of svd (snow maps) [src:wikigg/SVD-63] [src:survev/shared/defs/gameObjects/gunDefs.ts:3643-3649] [H]
+- **l86** L86A2 — ko "L86A2"; added 0.8.3 (Savannah); bullpup DMR [src:l10n/ko:game-l86] [src:changelog/0.8.3] [src:wikigg/L86A2] [H]
+- l86: original damage 26.5, headshotMult 2; survev 25 / 1.5 (fork); Red Marksman weapon (90%) in 50v50 [src:derived/survev@9f64948d:src/defs/bulletDefs.js:601-613] [src:balance/66-72] [src:survev/shared/defs/gameObjects/roleDefs.ts:263-275] [H]
+- **vss** VSS — ko "VSS"; added 0.8.3 (Savannah), magazine raised 10→20 (ext 20→30) on day one, added to normal map 0.8.35 [src:l10n/ko:game-vss] [src:changelog/0.8.3] [src:changelog/0.8.35] [src:wikigg/VSS] [H]
+- vss: original quality 1, damage 22, speed 95, falloff 0.8, headshotMult 2; survev quality 0, 24, 110, 0.85, 1.5 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:291-338] [src:derived/survev@9f64948d:src/defs/bulletDefs.js:482-495] [src:balance/37-46] [H]
+- **mkg45** Mk45G — ko "Mk45G"; added 0.8.5 (Oct 8 2019, desert map only); fastest-firing DMR, FSA 0.2 s [src:l10n/ko:game-mkg45] [src:changelog/0.8.5] [src:wikigg/Mk45G] [H]
+- mkg45: original damage 28, headshotMult 2; survev 29 / 1.75 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:1224-1270] [src:balance/74-78] [H]
+- mkg45: Desert Saloon basement (50/50 with Vector 45), regular airdrops, rare ground loot; also Savannah [src:wikigg/Mk45G] [M]
+- **scarssr** Mk 20 SSR (def name "SCAR-SSR") — ko "Mk 20 SSR"; added 0.8.3 (savannah map only); suppressed .308 DMR [src:l10n/ko:game-scarssr] [src:changelog/0.8.3] [src:wikigg/Mk_20_SSR] [H]
+- scarssr: original damage 60, headshotMult 1.5; survev 81 / 1.25 (fork) [src:derived/survev@9f64948d:src/defs/bulletDefs.js:153-166] [src:balance/80-82] [H]
+- scarssr: Savannah golden airdrops and rare ground loot, Desert Hardstone Boulders, 10% Marksman roll in 50v50 [src:wikigg/Mk_20_SSR] [src:fandom/Mk_20_SSR] [src:survev/shared/defs/gameObjects/roleDefs.ts:263-275] [M]
+
+### LMGs
+
+- **dp28** DP-28 — ko "DP-28"; added 0.1.6 ("LMGesus!", Dec 12 2017), first LMG; removed from airdrops and drop rate raised in 0.6.31 [src:l10n/ko:game-dp28] [src:changelog/0.1.6] [src:changelog/0.6.31] [src:wikigg/DP-28] [H]
+- dp28: most common LMG; survev main `tier_lmgs` 48.8%, `tier_guns` 0.58% [src:fandom/DP-28] [src:survev/shared/defs/maps/baseDefs.ts:341-347] [M]
+- **bar** BAR M1918 — ko "BAR M1918"; added 0.6.3 ("Into the woods", Oct 18 2018); added to normal map 0.6.31, removed from normal map 0.7.9 [src:l10n/ko:game-bar] [src:changelog/0.6.3] [src:changelog/0.6.31] [src:changelog/0.7.9] [src:wikigg/BAR_M1918] [H]
+- bar: in v0.8.82 the BAR is a Woods-map gun; survev re-added it to normal loot tables (`tier_guns` weight 0.05) (fork) [src:balance/146] [src:survev/shared/defs/maps/baseDefs.ts:262] [src:wikigg/BAR_M1918] [H]
+- **m249** M249 — ko "M249"; added 0.2.5 as "[REDACTED]"; belt-fed; world image 0.6.7 [src:l10n/ko:game-m249] [src:changelog/0.2.5] [src:wikigg/M249] [H]
+- m249: rarest gun — golden airdrops, Hardstone, extremely rare world loot; Lone Survivr gets M249 or PKP (50/50) in 50v50 [src:wikigg/M249] [src:namu/Surviv.io/무기] [src:survev/shared/defs/gameObjects/roleDefs.ts:383-395] [M]
+- **qbb97** QBB-97 — ko "QBB-97"; added 0.5.0; 0.5.02 shotSpread 3.75→4 and drop rate down; 0.6.0 drop rate down [src:l10n/ko:game-qbb97] [src:changelog/0.5.0] [src:changelog/0.5.02] [src:changelog/0.6.0] [src:wikigg/QBB-97] [H]
+- qbb97: original def has no `quality` and no `isBullpup`; survev added quality 1 and isBullpup in commit 3efad98e (2025-05-04) (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:630-679] [src:derived/survev-git-3efad98e] [H]
+- qbb97: airdrop uncommon tier, 1/121 cabin wall mount, very rare world loot [src:fandom/QBB-97] [M]
+- **pkp** PKP Pecheneg — ko "PKP 페체네그"; added 0.7.5 ("Hunt or be hunted", Apr 15 2019, with Woods King); desert airdrop rate up 0.7.51 [src:l10n/ko:game-pkp] [src:changelog/0.7.5] [src:changelog/0.7.51] [src:wikigg/PKP_Pecheneg] [H]
+- pkp: 200-round belt, 5 s reload; Hardstone blocks, Crimson Ring case (10/101), Hatchet case, golden airdrops, Woods Pavilion pot [src:wikigg/PKP_Pecheneg] [src:fandom/PKP_Pecheneg] [src:namu/Surviv.io/무기] [M]
+- **imbel** IMD-2 (fork) — ko "IMD-2" (fork-added key); survev v0.2.2 Woods LMG, Cobalt Tank pods [src:l10n/ko:game-imbel] [src:wikigg/IMD-2] [src:balance/237] [H]
+- **potato_lmg** PMG-134 (fork) — no ko key; survev v0.2.3 Potato vs Tomato, Potato mode from v0.3.02; minigun pose, 2 `potato_lmgshot` per shot [src:wikigg/PMG-134] [src:survev/shared/defs/gameObjects/gunDefs.ts:3525-3581] [H]
+
+### Sniper rifles
+
+- **mosin** Mosin-Nagant — ko "모신나강"; first-release gun, first sniper; 0.1.0 bullet speed up, 0.1.51 damage up, 0.4.0 headshot down / damage up, 0.6.2 first-shot delay, 0.7.1 full clip reload when empty [src:l10n/ko:game-mosin] [src:changelog/0.1.0] [src:changelog/0.1.51] [src:changelog/0.4.0] [src:changelog/0.6.2] [src:changelog/0.7.1] [src:wikigg/Mosin-Nagant] [H]
+- mosin: original headshotMult 1.5; survev 1.25 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:1321-1375] [src:balance/102-103] [H]
+- mosin: best source is the Tree cache (darker tree), also airdrops, very rare crates/world loot [src:wikigg/Mosin-Nagant] [M]
+- **sv98** SV-98 — ko "SV-98"; added 0.4.0 ("Log and load", Jun 2 2018); first-shot delay 0.6.2; Rare Potato roll 0.7.6 [src:l10n/ko:game-sv98] [src:changelog/0.4.0] [src:changelog/0.6.2] [src:wikigg/SV-98] [H]
+- sv98: original headshotMult 1.5; survev 1.25 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:1376-1426] [src:balance/92-93] [H]
+- sv98: golden containers at the Docks (1/26 golden container, with 4x scope), rare airdrops/world loot [src:fandom/SV-98] [src:wikigg/SV-98] [M]
+- sv98_winter: fork winter skin of sv98 [src:wikigg/SV-98] [src:survev/shared/defs/gameObjects/gunDefs.ts:3650-3656] [H]
+- **awc** AWM-S — ko "AWM-S"; added 0.5.0; 0.5.02 magazine 5→1, damage 300→180; 0.5.03 magazine back to 5, reload 3.6 s; 0.6.2 first-shot delay [src:l10n/ko:game-awc] [src:changelog/0.5.0] [src:changelog/0.5.02] [src:changelog/0.5.03] [src:changelog/0.6.2] [src:wikigg/AWM-S] [H]
+- awc: internal id `awc` (based on the AWC variant), headshotMult 1 (no extra headshot damage) [src:wikigg/AWM-S] [src:survev/shared/defs/gameObjects/gunDefs.ts:1567-1618] [H]
+- awc: golden airdrops and Hardstone only in most modes; namu lists it at 180 damage [src:wikigg/AWM-S] [src:namu/Surviv.io/무기] [M]
+- awc_winter: fork winter skin of awc [src:wikigg/AWM-S] [src:survev/shared/defs/gameObjects/gunDefs.ts:3657-3664] [H]
+- **scout_elite** Scout Elite — ko "스카우트 엘리트"; added 0.7.9 (Jun 25 2019) with the Scout Hut; +5 attack speed (mobile sniper) [src:l10n/ko:game-scout_elite] [src:changelog/0.7.9] [src:wikigg/Scout_Elite] [H]
+- scout_elite: internal id renamed `scout`→`scout_elite` in 0.8.81 (bullet stays `bullet_scout`) [src:wikigg/Scout_Elite] [src:survev/shared/defs/gameObjects/gunDefs.ts:773-823] [M]
+- scout_elite: guaranteed in the green pot of the Scout Hut; banned on Woods [src:wikigg/Scout_Elite] [M]
+- **model94** Model 94 — ko "Model 94"; added 0.6.1 (Sep 22 2018, desert map only); 0.8.3 reload 0.6→0.5 s, fireDelay 0.75→0.7, spread 2→1.5 / +3.5→+3 [src:l10n/ko:game-model94] [src:changelog/0.6.1] [src:changelog/0.8.3] [src:wikigg/Model_94] [H]
+- model94: first lever-action; Firepower does not raise its 8-round tube (`extendedClip` 8) [src:wikigg/Model_94] [src:survev/shared/defs/gameObjects/gunDefs.ts:1314-1363] [H]
+- **blr** BLR 81 — ko "BLR 81"; added 0.8.3 (Savannah) [src:l10n/ko:game-blr] [src:changelog/0.8.3] [src:wikigg/BLR_81] [H]
+- **barrett** Barrett M107 (fork) — no ko key; survev .50 sniper (99 dmg, 3× obstacle) from v0.4.0 airdrops, Savannah from 0.4.2; equip −1 / attack −4 [src:survev/shared/defs/gameObjects/gunDefs.ts:3150-3201] [src:balance/329-330] [src:balance/338] [src:wikigg/Barrett_M107] [H]
+
+### Shotguns
+
+- **m870** M870 — ko "M870"; first-release gun; 0.0.95 range down / fire delay up; 0.4.3 range down; 0.6.0 deploy group; 0.6.6 drop rate down; loot image renamed from `loot-weapon-pumpshotgun` (secret update Oct 13 2019) [src:l10n/ko:game-m870] [src:changelog/0.0.95] [src:changelog/0.4.3] [src:changelog/0.6.0] [src:changelog/0.6.6] [src:wikigg/M870] [H]
+- m870: namu lists 5 rounds, 12.5×9 damage, speed 66, reload 0.75 s ×5, 1.11 shots/s [src:namu/Surviv.io/무기] [M]
+- **mp220** MP220 — ko "MP220"; added 0.1.4 ("Here comes the boomstick!", Nov 28 2017); drop rate cut in 0.3.2, 0.3.5, 0.3.6, 0.6.0, 0.6.31; range down 0.4.3 [src:l10n/ko:game-mp220] [src:changelog/0.1.4] [src:changelog/0.3.2] [src:changelog/0.3.6] [src:changelog/0.6.31] [src:wikigg/MP220] [H]
+- mp220: breech-loaded 2-shot gun, Firepower does not change it (clip 2/2); original Grenadier role weapon (survev changed it to Saiga-12) [src:survev/shared/defs/gameObjects/gunDefs.ts:1861-1908] [src:balance/180] [H]
+- **saiga** Saiga-12 — ko "Saiga-12"; first-release gun; quality 1; drop rate cut 0.0.95, 0.1.51, 0.4.1, 0.3.5; world image 0.7.1 [src:l10n/ko:game-saiga] [src:changelog/0.0.95] [src:changelog/0.1.51] [src:changelog/0.4.1] [src:changelog/0.7.1] [src:wikigg/Saiga-12] [H]
+- saiga: survev gives it to the Grenadier (fork; original MP220) [src:survev/shared/defs/gameObjects/roleDefs.ts:321-325] [src:balance/180] [H]
+- **spas12** SPAS-12 — ko "SPAS-12"; added 0.4.2 ("Sun's out, guns out", Jun 21 2018); first flechette shotgun; drop rate up 0.6.31 [src:l10n/ko:game-spas12] [src:changelog/0.4.2] [src:changelog/0.6.31] [src:wikigg/SPAS-12] [H]
+- spas12: guaranteed from the Golden Pot in the Golden Hut [src:wikigg/SPAS-12] [src:fandom/SPAS-12] [M]
+- spas12: namu lists 9 rounds, 8.75×9, speed 88, range 45, reload 0.55 s ×9 [src:namu/Surviv.io/무기] [M]
+- **m1100** M1100 — ko "M1100"; added 0.6.6 ("Turkey shoot", Nov 19 2018); birdshot, 18 pellets; feather hit effect removed Nov 24 2018 [src:l10n/ko:game-m1100] [src:changelog/0.6.6] [src:wikigg/M1100] [H]
+- **usas** USAS-12 — ko "USAS-12"; added 0.6.3 (Woods); 0.6.95 drop rate and frag explosion radius decreased; frag rounds explode at the cursor (`toMouseHit`) [src:l10n/ko:game-usas] [src:changelog/0.6.3] [src:changelog/0.6.95] [src:wikigg/USAS-12] [H]
+- usas: Woods airdrops, Hatchet Case, Logging orange tree; 50v50 gold military airdrops; not in classic [src:fandom/USAS-12] [src:wikigg/USAS-12] [M]
+- **m1014** Super 90 (def name "M1014") — ko "Super 90"; added 0.7.0 (Jan 31 2019); slug, FSA 0.5 s [src:l10n/ko:game-m1014] [src:changelog/0.7.0] [src:wikigg/Super_90] [H]
+- m1014: original headshotMult 1.5; survev 1.25 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:1869-1916] [src:balance/98-99] [H]
+- m1014: Red Commander weapon in 50v50, Red faction crate in Desert; designed by moderator Eyyy for a gun concept contest [src:wikigg/Super_90] [src:fandom/Super_90] [src:survev/shared/defs/gameObjects/roleDefs.ts:126-131] [M]
+- **spas16** SPAS-16 (fork) — ko "SPAS-16" (fork-added key); survev v0.2.2 Workshop wall mount (Woods), Cobalt Demo gold pods [src:l10n/ko:game-spas16] [src:wikigg/SPAS-16] [src:balance/241] [H]
+
+### Pistols
+
+- **m9** M9 — ko "M9"; first-release gun; 0.0.5 buff, 0.1.0 more time between shots, 0.3.2 RoF down (single and dual), 0.6.0 drop rate down [src:l10n/ko:game-m9] [src:changelog/0.0.5] [src:changelog/0.1.0] [src:changelog/0.3.2] [src:changelog/0.6.0] [src:wikigg/M9] [H]
+- m9: original damage 12, spread 8/8 (dual 9/11); survev 13, 5/3 (dual 3.5/4) (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:1967-2067] [src:balance/9-25] [H]
+- m9: most common gun; devs added single M9s to rare tiers as a troll (Hardstone, airdrops, Rare Potato, Master Scavenger) [src:wikigg/M9] [M]
+- **m9_dual** Dual M9 — ko "듀얼 M9"; dual pistols since 0.3.1 [src:l10n/ko:game-m9_dual] [src:changelog/0.3.1] [H]
+- **m9_cursed** M9 Cursed — ko "저주받은 M9"; added 0.8.7 (Halloween) via the Dev Troll Special perk (`trick_m9`); infinite `9mm_cursed` ammo, cannot be dropped; no longer potato-swappable from 0.8.82 [src:l10n/ko:game-m9_cursed] [src:changelog/0.8.7] [src:wikigg/M9_Cursed] [H]
+- **glock** G18C — ko "G18C"; added 0.2.3 (Jan 30 2018); renamed from "Glock 18C" in 0.4.2 [src:l10n/ko:game-glock] [src:changelog/0.2.3] [src:wikigg/G18C] [H]
+- **glock_dual** Dual G18C — ko "듀얼 G18C"; fastest fireDelay in the game (0.03); Recon role weapon in 50v50 [src:l10n/ko:game-glock_dual] [src:survev/shared/defs/gameObjects/gunDefs.ts:2459-2508] [src:survev/shared/defs/gameObjects/roleDefs.ts:298-302] [H]
+- **ot38** OT-38 — ko "OT-38"; added 0.1.3 (Nov 24 2017), first gun added by update; 0.1.4 buff, 0.2.0 and 0.3.1 reload shortened; fictional revolver [src:l10n/ko:game-ot38] [src:changelog/0.1.3] [src:changelog/0.1.4] [src:changelog/0.3.1] [src:wikigg/OT-38] [H]
+- ot38: OT-38 Crate drops 4 OT-38s [src:wikigg/OT-38] [src:fandom/OT-38] [M]
+- **ot38_dual** Dual OT-38 — ko "듀얼 OT-38" [src:l10n/ko:game-ot38_dual] [H]
+- **ots38** OTs-38 — ko "OTs-38"; added 0.6.9 (Dec 19 2018); suppressed; suppression buffed 0.6.95 [src:l10n/ko:game-ots38] [src:changelog/0.6.9] [src:wikigg/OTs-38] [H]
+- **ots38_dual** Dual OTs-38 — ko "듀얼 OTs-38"; the OTs-38 always spawns as a dual: Hardstone blocks 1/10, Crimson Ring case 15/101, golden airdrops ≈19.8% [src:l10n/ko:game-ots38_dual] [src:wikigg/OTs-38] [M]
+- **m93r** M93R — ko "M93R"; added 0.6.0; only burst pistol; single def has `pistol: false` (rifle idle pose) while the dual has `pistol: true` [src:l10n/ko:game-m93r] [src:changelog/0.6.0] [src:survev/shared/defs/gameObjects/gunDefs.ts:2307-2409] [H]
+- **m93r_dual** Dual M93R — ko "듀얼 M93R" [src:l10n/ko:game-m93r_dual] [H]
+- **p30l** P30L — ko "P30L"; added 0.7.7; original quality 1 (survev 0, fork) [src:l10n/ko:game-p30l] [src:changelog/0.7.7] [src:balance/108-109] [H]
+- p30l: Golden Eye chest behind the sledgehammer wall in the Alternate Barn basement (dual ≈2.44%) [src:wikigg/P30L] [src:fandom/P30L] [M]
+- **p30l_dual** Dual P30L — ko "듀얼 P30L"; dual-wieldable from 0.7.9; HUD shows "Dual P30L" [src:l10n/ko:game-p30l_dual] [src:wikigg/P30L] [M]
+- **deagle** DEagle 50 — ko "데저트이글 50"; added 0.3.5 as "Desert Eagle", renamed 0.6.1; 0.4.1 spawn ammo 49→56; 0.8.8 world image [src:l10n/ko:game-deagle] [src:changelog/0.3.5] [src:changelog/0.4.1] [src:changelog/0.8.8] [src:wikigg/DEagle_50] [H]
+- deagle: DEagle Case in the Mansion (41/81 per wiki) [src:wikigg/DEagle_50] [M]
+- **deagle_dual** Dual DEagle 50 — ko "듀얼 데저트이글 50"; spawns with 98 ammo (not 2×56) [src:l10n/ko:game-deagle_dual] [src:survev/shared/defs/gameObjects/gunDefs.ts:3100-3149] [src:wikigg/DEagle_50] [H]
+- **colt45** Peacemaker — ko "피스메이커"; added 0.6.1 (desert map only); full-auto revolver ("fanning"), FSA 0.35 s, headshot 1.5 [src:l10n/ko:game-colt45] [src:changelog/0.6.1] [src:wikigg/Peacemaker] [src:fandom/Headshot] [H]
+- **colt45_dual** Dual Peacemaker — ko "듀얼 피스메이커"; 5.1 s reload, airdrops give the dual form since 0.8.5 [src:l10n/ko:game-colt45_dual] [src:wikigg/Peacemaker] [M]
+- **m1911** M1911 — ko "M1911"; added 0.6.5; original damage 14, spread 7/6 (dual 8/9.5); survev 16, 3/2 (dual 3.5/4) (fork) [src:l10n/ko:game-m1911] [src:changelog/0.6.5] [src:balance/27-35] [src:wikigg/M1911] [H]
+- **m1911_dual** Dual M1911 — ko "듀얼 M1911" [src:l10n/ko:game-m1911_dual] [H]
+- **sw500** S&W 500 (fork) — no ko key; survev v0.3.1 Desert (Reserve), Savannah from 0.4.3; cannot be dual-wielded [src:wikigg/S&W_500] [src:balance/346] [src:survev/shared/defs/gameObjects/gunDefs.ts:3202-3249] [H]
+
+### Launchers and special guns
+
+- **potato_cannon** Potato Cannon — ko "포테이토 캐논"; added 0.7.8 (Jun 7 2019, potato map only); explosion 100→95 and obstacle mult 1.2→1.3 on Jun 11 2019 [src:l10n/ko:game-potato_cannon] [src:changelog/0.7.8] [src:wikigg/Potato_Cannon] [H]
+- potato_cannon: golden airdrop / Crimson Ring case 10/11 in Potato mode; first gun with inherent infinite ammo and a hold slowdown (equip −3) [src:wikigg/Potato_Cannon] [src:survev/shared/defs/gameObjects/gunDefs.ts:3406-3464] [M]
+- **flare_gun** Flare Gun — ko "섬광탄 총"; added 0.5.0; airdrop-spawn bug fixed 0.6.95; no Endless Ammo since a secret update on Sep 24 2019 (`ignoreEndlessAmmo`); outdoors only [src:l10n/ko:game-flare_gun] [src:changelog/0.5.0] [src:changelog/0.6.95] [src:wikigg/Flare_Gun] [H]
+- flare_gun: the flare bullet calls an airdrop at the firing position (`addFlare` → `planeBarn.addAirdrop`) [src:survev/server/src/game/objects/bullet.ts:116-119] [H]
+- flare_gun: Commander gets a loaded flare gun in 50v50; Logging Complex Flare Case in Woods; more common in Desert [src:wikigg/Flare_Gun] [src:survev/shared/defs/gameObjects/roleDefs.ts:135] [M]
+- **flare_gun_dual** Dual Flare Gun — ko "듀얼 섬광탄 총"; added 0.7.4 [src:l10n/ko:game-flare_gun_dual] [src:changelog/0.7.4] [H]
+- **bugle** Bugle — ko "나팔"; added 0.8.81 (Dec 15 2019) for the Bugler role; defined as a pistol gun firing `bullet_bugle` (orig) / `bullet_invis` (fork); team sounds `bugle_01` red / `bugle_02` blue, `bugle_03` alt [src:l10n/ko:game-bugle] [src:changelog/0.8.81] [src:survev/shared/defs/gameObjects/gunDefs.ts:3582-3639] [H]
+- bugle: cannot reload on its own — the Inspiration perk recharges it [src:wikigg/Bugle] [src:survev/server/src/game/weaponManager.ts:505-516] [M]
+
+## Guns documented on wikis but absent from survev (post-0.8.82)
+
+| id | name | ammo | type | key stats (fandom infobox) | added | sources |
+|---|---|---|---|---|---|---|
+| `pkm` | PKM | 762mm | LMG | dmg 15, fireDelay 0.1, clip 100, reload 6 s | v0.9.0 "Stay frosty", Jan 13 2020 (Woods/Potato) (post-0.8.82) | [src:fandom/PKM] [M] |
+| `hawk12g` | Hawk 12G | 12gauge | pump shotgun, deploy group 1 | dmg 12.5, fireDelay 0.7, clip 5 | v0.9.0, Jan 13 2020 (Woods/Potato) (post-0.8.82) | [src:fandom/Hawk_12G] [src:fandom/Deploy_Group] [M] |
+| `m134` | M134 | 762mm | LMG (minigun) | dmg 10, fireDelay 0.055, clip 200, reload 8 s | v0.9.1 "Keep Your Enemies Closer", Feb 10 2020 (post-0.8.82) | [src:fandom/M134] [M] |
+| `m79` | M79 | 40mm | launcher, deploy group 3 | dmg 125 (explosion), clip 1, reload 2.3 s | v0.9.1 (post-0.8.82) | [src:fandom/M79] [src:fandom/40mm] [M] |
+| `heart_cannon` | Heart Cannon | heart_ammo | launcher, deploy group 3 | reskinned Potato Cannon, fireDelay 1.2, clip 4 | v0.9.1, Feb 10 2020 (Valentines) (post-0.8.82) | [src:fandom/Heart_Cannon] [M] |
+| `rainbow_blaster` | Rainbow Blaster | rainbow_ammo | blaster (charge) | 1000 explosion damage, 1 shot then discarded | v0.9.2, Mar 9 2020 (Saint Patrick) (post-0.8.82) | [src:fandom/Rainbow_Blaster] [src:fandom/Blasters] [M] |
+| `lasr_gun`, `lasr_gun_dual` | Lasr Gun | 12gauge | pistol | dmg 42, fireDelay 0.16, clip 7 (dual 14), FSA | v0.9.4, May 4 2020 (May 4th map) (post-0.8.82) | [src:fandom/Lasr_Gun] [src:fandom/First-Shot_Accuracy] [M] |
+| `waterGun` | Water Gun | 762mm | assault rifle | dmg 5.5 + water-balloon explosion 2, fireDelay 0.1, clip 30 | v0.9.5b "Beach Party", Jun 15 2020 (post-0.8.82) | [src:fandom/Water_Gun] [M] |
+| `m9A17` | Flamethrower | 9mm | event gun | dmg 4, fireDelay 0.015, clip 60, reload 4 s, burning DoT 5 s | Inferno map event (post-0.8.82) | [src:fandom/Flamethrower] [M] |
+
+- Gun Skins (Default, Military, Sand, Aquatic) were a loadout feature from v0.9.1 that was removed in v0.9.4 (post-0.8.82) [src:fandom/Gun_Skins] [M]
+- namu.wiki's 50v50 gold military airdrop list (2× USAS-12, M249, AWM-S, M134, M79) is a post-0.8.82 state, because M134 and M79 came in 0.9.1 [src:namu/Surviv.io/무기] [src:fandom/M134] [L]
+
+## Fork changes to original guns (revert list)
+
+> survev's `balance.txt` misses several of these. They were found by diffing survev's first commit against the pinned commit.
+
+- Dual pistols spawn with doubled ammo in survev: m9_dual 45→90, m93r_dual 60→120, glock_dual 51→102, ot38_dual 20→40, colt45_dual 48→96, m1911_dual 28→56. Survev commit f1a26a20 (2026-05-21); the wiki lists it under survev v0.3.02 (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:2017-2822] [src:derived/survev-git-f1a26a20] [src:wikigg/G18C] [H]
+- All duals: `dualOffset` 0.6→0.55 ("fix incorrect dual offset", survev c24527e0, 2025-04-29) (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:2017-3072] [src:derived/survev-git-c24527e0] [H]
+- Barrel lengths changed on 34 guns in survev c24527e0 and later model commits. Examples: deagle 1.855→2.5, sv98 3.5→4.1, scarssr 3.9→4.3, l86 3.25→3.7. This moves the bullet spawn point (fork) [src:derived/survev@9f64948d:src/defs/gunDefs.js:1-3250] [src:derived/survev-git-c24527e0] [H]
+- qbb97 gained `quality: 1` and `isBullpup: true` (survev 3efad98e) (fork) [src:derived/survev-git-3efad98e] [H]
+- bugle `barrelOffset` 0→0.16; potato_cannon / potato_smg `bullet_potato`→`bullet_invis`; bugle `bullet_bugle`→`bullet_invis` (survev ffcd8993, 2025-03-21) (fork) [src:derived/survev-git-ffcd8993] [src:derived/survev@9f64948d:src/defs/gunDefs.js:3073-3249] [H]
+- `bulletTypeBonus` removed from 9mm guns, with the 9mm Overpressure effect moved to multipliers (survev 7d27e9f9 "Remove 9mm Overpressure Artifact", 2026-03-08) (fork) [src:derived/survev-git-7d27e9f9] [src:survev/shared/defs/gameObjects/perkDefs.ts:128-132] [H]
+- Stat changes logged in balance.txt: an94 bullet, m9 family, m1911 family, vss, mk12, m39, svd, l86, mkg45, scarssr, garand, sv98, m1014, mosin, groza, p30l, ump9, famas (see table cells marked "orig") (fork) [src:balance/5-117] [H]
+- Grenadier role weapon MP220→Saiga-12 (fork) [src:balance/180] [H]
+- BAR re-added to normal-mode loot (fork) [src:balance/146] [H]
+
+## Conflicts
+
+- CONFLICT vss-damage: survev bullet_vss damage 24 [src:survev/shared/defs/gameObjects/bulletDefs.ts:546-559] vs balance.txt and wiki.gg 24.5 [src:balance/39-41] [src:wikigg/VSS]; proposed: irrelevant for the target, use original 22 [src:derived/survev@9f64948d:src/defs/bulletDefs.js:482-495] [L]
+- CONFLICT mkg45-headshot: survev headshotMult 1.75 [src:survev/shared/defs/gameObjects/gunDefs.ts:1364-1410] vs balance.txt 1.5 after 0.4.3 [src:balance/74-78]; proposed: use original 2 [src:derived/survev@9f64948d:src/defs/gunDefs.js:1224-1270] [L]
+- CONFLICT m9-dual-movespread: survev m9_dual moveSpread 3.5 [src:survev/shared/defs/gameObjects/gunDefs.ts:2206-2255] vs balance.txt and wiki.gg 5.5 [src:balance/22-24] [src:wikigg/M9]; proposed: use original 9 [src:derived/survev@9f64948d:src/defs/gunDefs.js:2017-2067] [L]
+- CONFLICT m9-cursed-movespread: survev m9_cursed moveSpread 3 [src:survev/shared/defs/gameObjects/gunDefs.ts:2256-2306] vs balance.txt "M9 + Cursed … -> 5" [src:balance/9-15]; proposed: use original 8 [src:derived/survev@9f64948d:src/defs/gunDefs.js:2068-2118] [L]
+- CONFLICT awc-headshot-roll: survev rolls headshots for every gun def that has `headshotMult`, so a 1× AWM-S headshot still skips vest reduction [src:survev/server/src/game/objects/player.ts:2459-2485] vs wikis saying 1× guns (AWM-S, Potato Cannon) never headshot, and balance.txt logging AWM-S headshotMult as "N/A -> 1" [src:fandom/Headshot] [src:wikigg/Guns] [src:balance/95-96]; proposed: skip the headshot roll when headshotMult is 1 (original behaviour), as a config knob [M]
+- CONFLICT scarssr-name: def `name` "SCAR-SSR" [src:survev/shared/defs/gameObjects/gunDefs.ts:918-964] vs displayed "Mk 20 SSR" [src:survev/client/src/en.json:672] [src:changelog/0.8.3]; proposed: display "Mk 20 SSR" (UI reads l10n `game-<id>`) [src:survev/client/src/ui/ui2.ts:1194] [H]
+- CONFLICT m1014-name: def `name` "M1014" [src:survev/shared/defs/gameObjects/gunDefs.ts:2059-2106] vs displayed "Super 90" [src:survev/client/src/en.json:629] [src:changelog/0.7.0]; proposed: display "Super 90" [H]
+- CONFLICT fandom-range-speed-swap: fandom infoboxes for M1911, OT-38, OTs-38 and Peacemaker swap bullet range and speed (e.g. M1911 range 80 / speed 88) [src:fandom/M1911] [src:fandom/OT-38] [src:fandom/OTs-38] [src:fandom/Peacemaker] vs original defs distance 88 / speed 80 etc. [src:derived/survev@9f64948d:src/defs/bulletDefs.js:324-376]; proposed: trust the defs [M]
+- CONFLICT fandom-stat-typos: fandom L86A2 moveSpread 3, OT-38 shotSpread 1.5, OTs-38 moveSpread 3, VSS speed 94, Mk 20 SSR obstacleDamage 1 and quality 0, Dual Flare Gun quality 1, M9 Cursed ammoSpawnCount 45, UMP9 bulletCount 3 [src:fandom/L86A2] [src:fandom/OT-38] [src:fandom/OTs-38] [src:fandom/VSS] [src:fandom/Mk_20_SSR] [src:fandom/Flare_Gun] [src:fandom/M9_Cursed] [src:fandom/UMP9] vs original defs 3.5, 1.25, 2.4, 95, 1.5 and 1, 0, 0, 1 [src:derived/survev@9f64948d:src/defs/gunDefs.js:1-3250]; proposed: trust the defs [M]
+- CONFLICT fandom-spudgun-dmg: fandom Spud Gun dmg 13 [src:fandom/Spud_Gun] vs bullet_potato damage 0, because the damage comes from the `potato_smgshot` projectile [src:derived/survev@9f64948d:src/defs/bulletDefs.js:670-683]; proposed: model the damage on the projectile (throwables docs) [L]
+- CONFLICT ump9-intro-date: wiki.gg says the UMP9 came in 0.2.2 on "January 23th, 2019" [src:wikigg/UMP9] vs changelog 0.2.2 dated Jan. 23, 2018 [src:changelog/0.2.2]; proposed: 2018 [M]
+- CONFLICT m870-range-namu: namu lists M870 range 29 [src:namu/Surviv.io/무기] vs bullet_buckshot distance 27 [src:derived/survev@9f64948d:src/defs/bulletDefs.js:206-218]; proposed: 27 (namu probably shows the value from before the 0.4.3 range cut) [L]
+- CONFLICT garand-reload-namu: namu lists M1 Garand reload 2 s [src:namu/Surviv.io/무기] vs def 2.1 s [src:derived/survev@9f64948d:src/defs/gunDefs.js:1573-1620]; proposed: 2.1 [L]
+- CONFLICT 308sub-capacity: balance.txt says .308 capacity became 20/40/60/80 [src:balance/252] vs survev config 20/40/55/70/85 [src:survev/shared/gameConfig.ts:421]; proposed: use original 10/20/40/80 [src:derived/survev@9f64948d:src/gameConfig.ts:266] [L]
+- CONFLICT 50ae-name: survev en name ".50 Caliber" [src:survev/client/src/en.json:392] vs ".50 AE" in ko l10n and the original changelog [src:l10n/ko:game-50AE] [src:changelog/0.3.5]; proposed: ".50 AE" for 0.8.82 [M]
+- CONFLICT qbb97-quality: original def has no `quality` [src:derived/survev@9f64948d:src/defs/gunDefs.js:630-679] vs survev and wiki.gg quality 1 [src:survev/shared/defs/gameObjects/gunDefs.ts:720-772] [src:wikigg/QBB-97]; proposed: omit (never chosen by Rare Potato) for 0.8.82 [M]
+
+## Open questions
+
+- What did `aimDelay` do? The 0.6.2 changelog says Mosin, SV-98 and AWM-S got "an added delay before the first shot fires", and the flag is on those three plus scout_elite (barrett in the fork). Nothing in survev reads it, so the delay length is unknown [src:changelog/0.6.2] [src:survev/shared/defs/gameObjects/gunDefs.ts:780] [src:derived/grep-aimDelay-no-readers] [L]
+- How did the original server apply `bulletTypeBonus` (9mm Overpressure)? The bonus bullets show speed and range × 1.25 with the same damage. The perk text also promises more damage and spread, but those multipliers are not in client data [src:derived/survev@9f64948d:src/defs/bulletDefs.js:791-834] [src:l10n/ko:game-bonus_9mm-desc] [L]
+- Original loot weights per tier are unknown: the client shipped no loot tables and survev's weights are estimates. Wiki fractions such as "Hatchet Case Vector 40/83" and "Crimson Ring Groza-S 75/101" are the best evidence [src:derived/survev@9f64948d:src/defs/modes/main.ts:63] [src:wikigg/Vector] [src:wikigg/Groza-S] [L]
+- Did the original have single-fire input buffering? Wiki.gg dates it to survev v0.2.0 (fork) [src:wikigg/Guns] [src:survev/server/src/game/weaponManager.ts:373-381] [L]
+- When exactly was the .45 Vector (`vector45`) added? Only wiki.gg's "0.6.5" claim exists; the changelog does not name it [src:wikigg/Vector_45] [L]
