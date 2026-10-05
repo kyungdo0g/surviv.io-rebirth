@@ -82,7 +82,12 @@ describe("joining", () => {
         expect(c.map?.objects.length).toBeGreaterThan(1000);
         const first = await c.waitForSnapshot();
         const second = await c.waitForSnapshot();
-        expect(second.tick - first.tick).toBe(SNAPSHOT_EVERY_TICKS);
+        // updates only go out on netsync ticks; under load the room catches up several ticks at once and two
+        // updates can arrive in the same event-loop turn, so the second waiter may see a later one
+        const delta = second.tick - first.tick;
+        expect(delta).toBeGreaterThan(0);
+        expect(delta % SNAPSHOT_EVERY_TICKS).toBe(0);
+        expect(first.tick % SNAPSHOT_EVERY_TICKS).toBe(0);
         expect(second.localPlayerId).toBe(c.joined?.playerId);
         const me = second.objects.find((o) => o.id === c.joined?.playerId);
         expect(me?.kind).toBe("player");
