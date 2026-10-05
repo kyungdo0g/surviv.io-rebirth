@@ -9,8 +9,10 @@ import type { PickupResult } from "../loot/pickup.ts";
 import type { ActionType, AnimType, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
 import { gunDef, TIME_EPS, WeaponManager } from "../weapons/weaponManager.ts";
 import { handleActions } from "./actions.ts";
+import { completeUse, updateBoost, updateFabricate, useItem } from "./consumables.ts";
 import type { SimContext } from "./context.ts";
 import type { Building } from "./entities.ts";
+import { VISION_RECOVERY_TIME } from "./smoke.ts";
 import { type Entity, sameLayer, type World } from "./world.ts";
 
 const PLAYER = GameConfig.player;
@@ -21,6 +23,8 @@ const PUSH_EPS = 0.001;
 const MAX_PENDING_ACTIONS = 32;
 /** Movement multiplier while a shot slowdown or an item use runs (survev recalculateSpeed). */
 const BUSY_SPEED_MULT = 0.5;
+/** Combat Medic speed bonus while using items when the player is not in a game (survev field_medic.speedBoost). */
+const FIELD_MEDIC_SPEED = 1;
 
 /** Number of collision sub-steps for one tick of movement (survev player.ts). */
 export function movementSteps(speed: number, dt: number): number {
@@ -64,12 +68,22 @@ export class Player implements InventoryOwner {
     insideZoomRegion = false;
     /** speed of the last tick in units per second (0 when standing still) */
     speed = 0;
+    /** intended velocity of the last tick (movement keys x speed); thrown grenades inherit part of it */
+    moveVel: Vec2 = { x: 0, y: 0 };
+    /** in smoke, or left it less than 0.5 s ago: the camera is forced to 1x (survev visionObscured) */
+    visionObscured = false;
+    private visionRecoveryTicker = 0;
+    /** seconds towards the next Fabricate refill */
+    fabricateTicker = 0;
+    /** the game this player is in (set by Game.addPlayer; throws need it to spawn projectiles) */
+    ctx: SimContext | null = null;
     input: PlayerInput = emptyInput();
     /** shootStart latched until a tick consumes it (inputs may arrive faster or slower than ticks) */
     shootStart = false;
     shootHold = false;
     private shootStartPending = false;
     private pendingActions: number[] = [];
+    private pendingUseItem = "";
 
     animType: AnimType = "none";
     animSeq = 0;
@@ -164,6 +178,7 @@ export class Player implements InventoryOwner {
     receiveInput(input: PlayerInput): void {
         this.input = { ...input, toMouseDir: v2.copy(input.toMouseDir), actions: [...input.actions] };
         if (input.shootStart) this.shootStartPending = true;
+        if (input.useItem) this.pendingUseItem = input.useItem;
         // bounded: a client flooding inputs between ticks cannot grow the queue without limit
         if (this.pendingActions.length < MAX_PENDING_ACTIONS) this.pendingActions.push(...input.actions);
     }
@@ -239,8 +254,11 @@ export class Player implements InventoryOwner {
         if (this.shotSlowdownTimer > 0 && def.speed?.attack !== undefined) speed += def.speed.attack;
         if (world.isOnWater(this.pos, this.layer)) speed -= PLAYER.waterSpeedPenalty;
         if (this.boost >= 50) speed += PLAYER.boostMoveSpeed;
-        // TODO(M5): cooking a throwable costs cookSpeedPenalty
-        if (this.shotSlowdownTimer > 0 || this.action.type === "use") speed *= BUSY_SPEED_MULT;
+        if (this.animType === "cook") speed -= PLAYER.cookSpeedPenalty;
+        // Combat Medic: no slowdown while using items, a small bonus instead
+        const medic = this.hasPerk("field_medic") && this.action.type === "use";
+        if (this.shotSlowdownTimer > 0 || (this.action.type === "use" && !medic)) speed *= BUSY_SPEED_MULT;
+        if (medic) speed += this.ctx?.rules.fieldMedicSpeedBonus ?? FIELD_MEDIC_SPEED;
         return math.clamp(speed, 1, 10000);
     }
 
@@ -262,6 +280,7 @@ export class Player implements InventoryOwner {
         if (this.dead) {
             this.pendingActions.length = 0;
             this.shootStartPending = false;
+            this.pendingUseItem = "";
             return;
         }
         const world = ctx.world;
@@ -274,7 +293,13 @@ export class Player implements InventoryOwner {
         const actions = this.pendingActions;
         this.pendingActions = [];
         handleActions(ctx, this, actions);
+        const use = this.pendingUseItem;
+        this.pendingUseItem = "";
+        if (use) useItem(ctx, this, use);
 
+        // boost heals and decays before the action and movement (survev player.ts update)
+        updateBoost(this, ctx.rules, dt);
+        updateFabricate(this, ctx.rules, dt);
         this.updateAction(dt);
         if (this.animType !== "none") {
             this.animTicker -= dt;
@@ -285,8 +310,10 @@ export class Player implements InventoryOwner {
         const movement = Player.movementFromInput(input);
         const moving = movement.x !== 0 || movement.y !== 0;
         this.speed = moving ? this.computeSpeed(world) : 0;
+        this.moveVel = v2.mul(movement, this.speed);
         const objs = moveWithCollision(world, this, movement, this.speed, dt, this.scratch);
         this.pickupTicker -= dt;
+        this.updateVision(ctx, dt);
         this.updateZoom(objs);
         this.pos = world.clampToMap(this.pos, this.rad);
         this.bounds = this.computeBounds();
@@ -307,7 +334,7 @@ export class Player implements InventoryOwner {
         const wm = this.weaponManager;
         let again = false;
         if (this.isReloading()) again = wm.reload();
-        // TODO(M5): "use" actions (heals and boosts) apply their item here
+        else if (action.type === "use") completeUse(this, action.item);
         this.cancelAction();
         if (again && wm.tryReload(carry)) return;
         const slot = wm.curWeapIdx;
@@ -316,7 +343,18 @@ export class Player implements InventoryOwner {
         }
     }
 
-    /** Scope zoom, overridden by building zoom regions while indoors (survev player.ts). */
+    /** Smoke obscures vision while the player touches a cloud and for 0.5 s after (survev player.ts update). */
+    private updateVision(ctx: SimContext, dt: number): void {
+        if (ctx.smokes.touches(this.pos, this.rad, this.layer)) {
+            this.visionObscured = true;
+            this.visionRecoveryTicker = 0;
+            return;
+        }
+        this.visionRecoveryTicker += dt;
+        if (this.visionRecoveryTicker >= VISION_RECOVERY_TIME - TIME_EPS) this.visionObscured = false;
+    }
+
+    /** Scope zoom, overridden by building zoom regions while indoors and by smoke (survev player.ts). */
     private updateZoom(objs: readonly Entity[]): void {
         const lowestZoom = ZOOM_RADIUS["1xscope"];
         let finalZoom = Math.max(lowestZoom, ZOOM_RADIUS[this.scope] ?? lowestZoom);
@@ -345,7 +383,7 @@ export class Player implements InventoryOwner {
             }
         }
         if (this.insideZoomRegion) finalZoom = regionZoom;
-        if (this.downed) finalZoom = lowestZoom;
+        if (this.visionObscured || this.downed) finalZoom = lowestZoom;
         this.zoom = finalZoom;
         if (outsideAllRegions) this.insideZoomRegion = false;
     }

@@ -16,6 +16,11 @@ export interface PlayerInput {
     shootHold: boolean;
     /** one-shot actions this frame: values of the defs `Input` constants (reload, interact, equip...) */
     actions: number[];
+    /**
+     * Bag item to use this frame (M5; the original InputMsg.useItem): a heal or boost starts its use action, a scope
+     * is equipped, a throwable is selected in the throwable slot. Absent or "" for none.
+     */
+    useItem?: string;
 }
 
 export function emptyInput(seq = 0): PlayerInput {

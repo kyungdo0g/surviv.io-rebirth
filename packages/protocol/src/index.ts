@@ -4,6 +4,7 @@ export * from "./bullets.ts";
 export * from "./codec.ts";
 export * from "./connection.ts";
 export * from "./constants.ts";
+export * from "./effects.ts";
 export * from "./headless.ts";
 export * from "./local.ts";
 export * from "./map.ts";

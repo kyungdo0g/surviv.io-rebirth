@@ -61,9 +61,8 @@ export const ObjectTypeCode = {
 export const OBJECT_TYPE_BITS = 4;
 
 /**
- * Update message section flags (u16). Sections appear in bit order (M4 added bits 6-14). Bit 15 is reserved to
- * announce a second flags word for the sections of the original UpdateMsg still to come (player status, group
- * status, explosions, emotes, air strike zones); a decoder rejects it until it is defined.
+ * Update message section flags (u16). Sections appear in bit order (M4 added bits 6-14). Bit 15 (Extended, M5)
+ * announces a second u16 flags word (UpdateExtFlag) right after the ack byte, for the sections after DeletePlayerIds.
  */
 export const UpdateFlag = {
     DeletedObjects: 1 << 0,
@@ -90,8 +89,26 @@ export const UpdateFlag = {
     PlayerInfos: 1 << 13,
     /** players removed from the game (original DeletePlayerIds) */
     DeletePlayerIds: 1 << 14,
-    /** reserved: ExtendedFlags (a second flags word for PlayerStatus, Explosions, Emotes...) */
-    Reserved: 0x8000,
+    /** a second flags word (UpdateExtFlag) follows the ack byte (M5) */
+    Extended: 0x8000,
+} as const;
+
+/**
+ * Extended Update section flags (u16 after the ack byte when UpdateFlag.Extended is set). Sections follow the
+ * DeletePlayerIds section in bit order (M5a: bits 0-3). Bits 4-15 are reserved for the sections still to come
+ * (player status, group status, emotes, ...); a decoder rejects them until they are defined.
+ */
+export const UpdateExtFlag = {
+    /** explosions since the previous update (original Explosions) */
+    Explosions: 1 << 0,
+    /** projectiles in view (sent every update while any) */
+    Projectiles: 1 << 1,
+    /** smoke clouds in view (sent every update while any) */
+    Smokes: 1 << 2,
+    /** live air strike zones (sent every update while any) */
+    AirstrikeZones: 1 << 3,
+    /** not defined yet */
+    Reserved: 0xfff0,
 } as const;
 
 /** Reasons carried by the Disconnect message (and the WebSocket close frame). */

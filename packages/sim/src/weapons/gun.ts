@@ -1,7 +1,8 @@
-// Firing one gun shot: muzzle position clipped against obstacles, spread, pellets with jitter, bullet spawn.
+// Firing one gun shot: muzzle position clipped against obstacles, spread, pellets with jitter, bullet spawn; potato
+// guns also launch their projectile, flare guns call an air drop, Explosive Rounds make bullets explode on impact.
 // Behaviour follows survev server/src/game/weaponManager.ts fireWeapon and docs/research/items/guns.md.
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, type GunDef, getDefOfType } from "@rebirth/defs";
+import { GameConfig, getDefOfType } from "@rebirth/defs";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
@@ -15,16 +16,8 @@ const DEFAULT_JITTER = 0.25;
 /** The player moved this tick when it travelled more than this (moveSpread applies) (survev). */
 const MOVE_SPREAD_EPS = 0.01;
 
-/**
- * Why a gun cannot fire yet, or null. Guns that need systems of a later milestone refuse to fire:
- * TODO(M5): projectile guns (potato cannon, spud gun: `isLauncher` / `projType`) need the projectile system;
- * TODO(M5): bullets with an `onHit` explosion (USAS-12 frag rounds) need explosions.
- */
-export function gunFireGate(def: GunDef): "projectile" | "explosion" | null {
-    if (def.isLauncher || def.projType) return "projectile";
-    if (getDefOfType("bullet", def.bulletType).onHit) return "explosion";
-    return null;
-}
+/** Projectiles of potato guns leave the muzzle at this height (survev fireWeapon addProjectile). */
+const PROJECTILE_HEIGHT = 0.5;
 
 interface MuzzleClip {
     len: number;
@@ -97,6 +90,10 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
 
     const rng = ctx.combatRng;
     const jitter = def.jitter ?? DEFAULT_JITTER;
+    const bulletDef = getDefOfType("bullet", def.bulletType);
+    // Explosive Rounds: bullets explode on impact (they peter out at max range) (perks.md explosive)
+    const onHitFx = player.hasPerk("explosive") ? "explosion_rounds" : undefined;
+    const projDef = def.projType ? getDefOfType("throwable", def.projType) : undefined;
     for (let i = 0; i < def.bulletCount; i++) {
         const deviation = firstShotAccuracy ? 0 : rng.range(-0.5, 0.5) * spread;
         const shotDir = v2.rotate(dir, math.deg2rad(deviation));
@@ -114,18 +111,36 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
             const t = v2.dot(v2.sub(clip.point, gunPos), clip.normal) / dn;
             if (t < startLen) startLen = t - 0.1;
         }
+        const shotPos = v2.add(gunPos, v2.mul(startDir, startLen));
         ctx.bullets.fire({
             shooterId: player.id,
             bulletType: def.bulletType,
             sourceType: weapon.type,
-            pos: v2.add(gunPos, v2.mul(startDir, startLen)),
+            pos: shotPos,
             dir: shotDir,
             layer,
             shotFx: i === 0,
             offHand,
+            onHitFx,
         });
+        // a flare calls an air drop where it is fired (survev BulletBarn.fireBullet addFlare; airdrop-airstrike.md)
+        if (bulletDef.addFlare) ctx.planes.addAirdrop(ctx.world.clampToMap(shotPos, 0));
+        // potato guns launch their projectile with the (invisible) bullet (survev fireWeapon projType)
+        if (def.projType && projDef) {
+            ctx.projectiles.add({
+                ownerId: player.id,
+                type: def.projType,
+                pos: shotPos,
+                posZ: PROJECTILE_HEIGHT,
+                layer,
+                vel: v2.mul(shotDir, projDef.throwPhysics.speed),
+                fuse: projDef.fuseTime,
+                throwDir: shotDir,
+                sourceType: weapon.type,
+            });
+        }
     }
-    // TODO(M5): bullet_flare (addFlare) calls in an airdrop where it is fired
+    // TODO(M8): Splinter Rounds side bullets (and their projectiles) need perk pickups
     player.shotSeq++;
     player.shotOffhand = offHand;
     return true;

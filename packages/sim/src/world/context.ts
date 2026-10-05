@@ -3,10 +3,14 @@
 import type { Rng } from "@rebirth/core";
 import type { BulletSystem } from "../combat/bullets.ts";
 import type { DamageParams } from "../combat/damage.ts";
+import type { ExplosionSystem } from "../combat/explosions.ts";
+import type { ProjectileSystem } from "../combat/projectiles.ts";
 import type { LootSystem } from "../loot/loot.ts";
+import type { PlaneSystem } from "../match/planes.ts";
 import type { SimRules } from "../rules.ts";
 import type { Obstacle } from "./entities.ts";
 import type { Player } from "./player.ts";
+import type { SmokeSystem } from "./smoke.ts";
 import type { World } from "./world.ts";
 
 export interface SimContext {
@@ -16,8 +20,18 @@ export interface SimContext {
     readonly combatRng: Rng;
     /** loot tier rolls, drop directions and push speeds */
     readonly lootRng: Rng;
+    /** projectile fuse variance and splits, shrapnel directions, explosion loot pushes and decals, smoke (M5) */
+    readonly fxRng: Rng;
     readonly bullets: BulletSystem;
     readonly loot: LootSystem;
+    /** thrown and launched projectiles (M5) */
+    readonly projectiles: ProjectileSystem;
+    /** queued explosions, resolved once per tick (M5) */
+    readonly explosions: ExplosionSystem;
+    /** smoke emitters and clouds (M5) */
+    readonly smokes: SmokeSystem;
+    /** planes: air drops (flare guns) and air strikes (strobes) (M4/M5) */
+    readonly planes: PlaneSystem;
     /** simulation time in seconds */
     readonly time: number;
     getPlayer(id: number): Player | undefined;

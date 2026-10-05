@@ -105,8 +105,9 @@ export interface PongMsg {
 }
 
 /**
- * Client -> server input (original layout minus the touch fields and useItem): seq u8, 4 move flags, shootStart,
- * shootHold, toMouseDir unit vec 10+10, toMouseLen 0..64 in 8 bits, actions (4-bit count of u8).
+ * Client -> server input (original layout minus the touch fields): seq u8, 4 move flags, shootStart, shootHold,
+ * toMouseDir unit vec 10+10, toMouseLen 0..64 in 8 bits, actions (4-bit count of u8), then (M5) a useItem bit and,
+ * when set, the item as a game type (the original always sends the game type, "" for none).
  */
 export interface InputMsg {
     type: typeof MsgType.Input;
@@ -129,6 +130,9 @@ export function writeInput(w: BitWriter, input: PlayerInput): void {
     const n = Math.min(input.actions.length, NetLimits.MaxInputActions);
     w.writeBits(n, 4);
     for (let i = 0; i < n; i++) w.writeUint8(clampUint(input.actions[i], 8));
+    const useItem = input.useItem ?? "";
+    w.writeBoolean(useItem !== "");
+    if (useItem !== "") writeGameType(w, useItem);
 }
 
 /** Decoded input; `toMouseDir` is renormalized but values are otherwise raw (servers still validate). */
@@ -144,7 +148,20 @@ export function readInput(r: BitReader): PlayerInput {
     const toMouseLen = dequantize(r.readBits(MOUSE_LEN_BITS), 0, NetLimits.MouseMaxDist, MOUSE_LEN_BITS);
     const actions: number[] = [];
     for (let n = r.readBits(4); n > 0; n--) actions.push(r.readUint8());
-    return { seq, moveLeft, moveRight, moveUp, moveDown, toMouseDir, toMouseLen, shootStart, shootHold, actions };
+    const input: PlayerInput = {
+        seq,
+        moveLeft,
+        moveRight,
+        moveUp,
+        moveDown,
+        toMouseDir,
+        toMouseLen,
+        shootStart,
+        shootHold,
+        actions,
+    };
+    if (r.readBoolean()) input.useItem = readGameType(r);
+    return input;
 }
 
 /** Client -> server spectate request (survev layout: action u8, see SpectateAction). */

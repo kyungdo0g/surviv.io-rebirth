@@ -1,13 +1,15 @@
 // Game: fixed-step authoritative simulation implementing the GameApi contract.
-// Tick order follows survev server/src/game/game.ts: start check, gas, players (gas damage, input actions,
-// movement, weapons), loot, bullets (then their queued damage), obstacle timers, planes and air drops, building
-// occupancy, spectators, then the end-of-tick match results.
+// Tick order follows survev server/src/game/game.ts: start check, gas, players (gas damage, input actions, boost,
+// movement, weapons), loot, bullets (then their queued damage), projectiles, explosions, smoke, obstacle timers,
+// planes, air strikes and air drops, building occupancy, spectators, then the end-of-tick match results.
 import { type Bounds, collider, type Rng, type Vec2, v2 } from "@rebirth/core";
 import { DamageType, GameConfig, type GasStage } from "@rebirth/defs";
 import { type GameApi, type GameOptions, type SpectateActionName, TICK_HZ } from "./api.ts";
 import { BulletSystem } from "./combat/bullets.ts";
 import { applyObstacleDamage, applyPlayerDamage } from "./combat/combat.ts";
 import type { DamageParams } from "./combat/damage.ts";
+import { ExplosionSystem } from "./combat/explosions.ts";
+import { ProjectileSystem } from "./combat/projectiles.ts";
 import { segmentIntersectsAabb } from "./geom/polygon.ts";
 import { emptyInput, type PlayerInput } from "./input.ts";
 import { spawnMapLoot } from "./loot/drops.ts";
@@ -26,6 +28,7 @@ import type { SimContext } from "./world/context.ts";
 import type { Building, Obstacle } from "./world/entities.ts";
 import { updateObstacleTimers } from "./world/interact.ts";
 import { Player } from "./world/player.ts";
+import { SmokeSystem } from "./world/smoke.ts";
 import { type Entity, World } from "./world/world.ts";
 
 /** Visible area margin around the camera, in world units (survev client.ts adds 4 to the zoom). */
@@ -90,8 +93,16 @@ export class Game implements GameApi, SimContext {
     combatRng: Rng;
     /** loot tier rolls and drop motion */
     lootRng: Rng;
+    /** projectiles, explosions and smoke (M5); replaceable by tests */
+    fxRng: Rng;
     readonly bullets: BulletSystem;
     readonly loot: LootSystem;
+    /** thrown grenades, potato gun shots, air strike bombs (M5) */
+    readonly projectiles: ProjectileSystem;
+    /** explosions, resolved once per tick (M5) */
+    readonly explosions: ExplosionSystem;
+    /** smoke emitters and clouds (M5) */
+    readonly smokes: SmokeSystem;
     /** red zone (M4) */
     readonly gas: Gas;
     /** match lifecycle: start, alive count, kills, kill leader, game over (M4) */
@@ -126,8 +137,12 @@ export class Game implements GameApi, SimContext {
         this.rng = subRng(options.seed, `game:${options.mapName}`);
         this.combatRng = subRng(options.seed, `combat:${options.mapName}`);
         this.lootRng = subRng(options.seed, `loot:${options.mapName}`);
+        this.fxRng = subRng(options.seed, `fx:${options.mapName}`);
         this.bullets = new BulletSystem(this);
         this.loot = new LootSystem(this.world, () => this.lootRng);
+        this.projectiles = new ProjectileSystem(this);
+        this.explosions = new ExplosionSystem(this);
+        this.smokes = new SmokeSystem(this);
         const gasRng = subRng(options.seed, `gas:${options.mapName}`);
         this.gas = new Gas(this.mapData.width, this.mapData.height, gasRng, init.gasStages);
         this.planes = new PlaneSystem(this, options.mapName, subRng(options.seed, `planes:${options.mapName}`));
@@ -230,6 +245,7 @@ export class Game implements GameApi, SimContext {
 
     addPlayer(name: string): number {
         const player = new Player(this.world.allocId(), name, this.findSpawnPos());
+        player.ctx = this;
         player.teamId = this.match.allocTeamId();
         this.playerMap.set(player.id, player);
         this.world.add(player);
@@ -338,6 +354,7 @@ export class Game implements GameApi, SimContext {
         const dt = 1 / TICK_HZ;
         // reports made during this step belong to the tick it completes
         this.bullets.tick = this.tickCount + 1;
+        this.explosions.tick = this.tickCount + 1;
         this.match.checkStart();
         this.gas.update();
         for (const player of this.playerMap.values()) {
@@ -356,6 +373,9 @@ export class Game implements GameApi, SimContext {
             if (d.target.kind === "player") this.damagePlayer(d.target, d.params);
             else this.damageObstacle(d.target, d.params);
         }
+        this.projectiles.update(dt);
+        this.explosions.update(dt);
+        this.smokes.update(dt);
         for (const obstacle of [...this.activeObstacles]) {
             if (!updateObstacleTimers(this, obstacle, dt)) this.activeObstacles.delete(obstacle);
         }
@@ -375,6 +395,17 @@ export class Game implements GameApi, SimContext {
         this.joinLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.leaveLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.bullets.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
+        this.explosions.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
+    }
+
+    /**
+     * Whether `other` is left out of `viewer`'s snapshot because it hides in smoke (rules.smokeHidesPlayers): its
+     * centre is inside a cloud and the viewer is farther than rules.smokeRevealDistance.
+     */
+    hiddenInSmoke(viewer: Player, other: Player): boolean {
+        if (!this.rules.smokeHidesPlayers || other === viewer || other.dead) return false;
+        if (v2.distance(viewer.pos, other.pos) <= this.rules.smokeRevealDistance) return false;
+        return this.smokes.contains(other.pos, other.layer);
     }
 
     /** Bullets reported after `sinceTick` whose drawn path crosses `view` (latest state, one entry per bullet). */
@@ -400,6 +431,7 @@ export class Game implements GameApi, SimContext {
         const objects: ObjectView[] = [];
         const view = viewBounds(player.pos, player.zoom);
         for (const obj of this.world.query(view, this.scratch)) {
+            if (obj.kind === "player" && this.hiddenInSmoke(player, obj)) continue;
             next.add(obj.id);
         }
         // the active player is always included
@@ -415,7 +447,8 @@ export class Game implements GameApi, SimContext {
         }
         deletedIds.sort((a, b) => a - b);
         this.visible.set(playerId, next);
-        const bullets = this.bulletEvents(this.lastSnapshotTick.get(playerId) ?? this.tickCount, view);
+        const sinceTick = this.lastSnapshotTick.get(playerId) ?? this.tickCount;
+        const bullets = this.bulletEvents(sinceTick, view);
         this.lastSnapshotTick.set(playerId, this.tickCount);
         const seq = this.lastEventSeq.get(playerId) ?? this.eventSeq;
         this.lastEventSeq.set(playerId, this.eventSeq);
@@ -440,6 +473,10 @@ export class Game implements GameApi, SimContext {
                 ? [...this.playerMap.values()].sort((a, b) => a.id - b.id).map(playerInfo)
                 : this.joinLog.since(seq),
             deletedPlayerIds: this.leaveLog.since(seq),
+            explosions: this.explosions.events(sinceTick, view),
+            projectiles: this.projectiles.views(view),
+            smokes: this.smokes.views(view),
+            airstrikeZones: this.planes.zoneViews(),
         };
         const gameOver = this.match.resultSince(owner.id, seq);
         if (gameOver) snapshot.gameOver = gameOver;

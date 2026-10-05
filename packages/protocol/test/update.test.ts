@@ -14,6 +14,7 @@ import {
     ObjectCache,
     ServerMsgDecoder,
     UpdateDecoder,
+    UpdateExtFlag,
     UpdateFlag,
 } from "../src/index.ts";
 import { assertClose } from "./close.ts";
@@ -24,15 +25,19 @@ import {
     randAirdrops,
     randBullets,
     randCtx,
+    randExplosions,
     randGameOver,
     randGas,
     randKills,
     randLocal,
     randPlanes,
     randPlayerInfos,
+    randProjectiles,
     randRoles,
+    randSmokes,
     randStats,
     randView,
+    randZones,
     snapshotTolerances,
 } from "./gen.ts";
 
@@ -71,6 +76,10 @@ function matchFields(
         spectatingId: rng.bool(0.2) ? localPlayerId : 0,
         playerInfos: randPlayerInfos(rng),
         deletedPlayerIds: rng.bool(0.8) ? [] : Array.from({ length: rng.int(1, 4) }, () => rng.int(1, 65535)),
+        explosions: randExplosions(rng, ctx),
+        projectiles: randProjectiles(rng, ctx),
+        smokes: randSmokes(rng, ctx),
+        airstrikeZones: randZones(rng, ctx),
     };
     if (rng.bool(0.1)) fields.gameOver = randGameOver(rng);
     if (rng.bool(0.1)) fields.playerStats = randStats(rng);
@@ -174,6 +183,10 @@ describe("Update message", () => {
             spectatingId: 0,
             playerInfos: [],
             deletedPlayerIds: [],
+            explosions: [],
+            projectiles: [],
+            smokes: [],
+            airstrikeZones: [],
         };
         const first = encoder.encode(snap, 0);
         decoder.decode(first);
@@ -258,6 +271,10 @@ describe("Update message", () => {
             spectatingId: 0,
             playerInfos: [],
             deletedPlayerIds: [],
+            explosions: [],
+            projectiles: [],
+            smokes: [],
+            airstrikeZones: [],
         };
         delete base.gameOver;
         delete base.playerStats;
@@ -319,5 +336,67 @@ describe("Update message", () => {
         expect(upd.snapshot.kills).toEqual(k);
         expect(upd.snapshot.gameOver).toBeDefined();
         expect(new UpdateDecoder(ctx)).toBeDefined();
+    });
+
+    it("announces the M5 sections with the extended flags word and rejects undefined extended flags", () => {
+        const rng = createRng(10);
+        const ctx = { width: 720, height: 720 };
+        const tol = snapshotTolerances(720);
+        const encoder = new ClientEncoder(new ObjectCache(ctx));
+        const decoder = new UpdateDecoder(ctx);
+        const seq = newSeq(rng);
+        const base = {
+            ...firstSnapshot(rng, ctx, seq),
+            bullets: [],
+            planes: [],
+            airdrops: [],
+            spectatingId: 0,
+            playerInfos: [],
+            deletedPlayerIds: [],
+            explosions: [],
+            projectiles: [],
+            smokes: [],
+            airstrikeZones: [],
+        };
+        decoder.decode(encoder.encode(base, 0));
+        const effects = {
+            ...base,
+            tick: base.tick + 3,
+            explosions: [{ type: "explosion_frag", pos: { x: 100, y: 200 }, layer: 0 }],
+            projectiles: [{ id: 7, type: "frag", pos: { x: 101, y: 201 }, posZ: 1.5, dir: { x: 0, y: 1 }, layer: 0 }],
+            smokes: [{ id: 3, pos: { x: 90, y: 210 }, rad: 6.2, layer: 0, interior: true }],
+            airstrikeZones: [{ id: 1, pos: { x: 300, y: 300 }, rad: 60, duration: 10.5, zoneT: 0.25 }],
+        };
+        const bytes = encoder.encode(effects, 0);
+        // type, tick, flags, ack, ext flags
+        const flags = bytes[5] | (bytes[6] << 8);
+        expect(flags).toBe(UpdateFlag.Extended);
+        expect(bytes[8] | (bytes[9] << 8)).toBe(
+            UpdateExtFlag.Explosions | UpdateExtFlag.Projectiles | UpdateExtFlag.Smokes | UpdateExtFlag.AirstrikeZones,
+        );
+        const decoded = decoder.decode(bytes).snapshot;
+        assertClose(
+            {
+                explosions: decoded.explosions,
+                projectiles: decoded.projectiles,
+                smokes: decoded.smokes,
+                airstrikeZones: decoded.airstrikeZones,
+            },
+            {
+                explosions: effects.explosions,
+                projectiles: effects.projectiles,
+                smokes: effects.smokes,
+                airstrikeZones: effects.airstrikeZones,
+            },
+            tol,
+        );
+        // nothing new: the lists come back empty and no extended word is sent
+        const again = encoder.encode({ ...base, tick: base.tick + 6 }, 0);
+        expect(again.length).toBe(8);
+        expect(decoder.decode(again).snapshot.projectiles).toEqual([]);
+        // an undefined extended section is refused
+        const bad = Uint8Array.from(bytes);
+        bad[9] |= 0x80;
+        expect(() => new UpdateDecoder(ctx).decode(bad)).toThrow(/unsupported section flags/);
     });
 });

@@ -2,7 +2,8 @@
 // when one is due, a plane spawns 15 s of flight away and flies at GameConfig.airdrop.planeVel over a drop point
 // inside the next safe circle, releases a crate that falls for GameConfig.airdrop.fallTime, crushes what is under
 // it and lands as an airdrop_crate_* obstacle that players open with Interact. Each release puts an air drop
-// marker on the minimap (MapIndicatorView "ping_airdrop" for the ping's mapLife).
+// marker on the minimap (MapIndicatorView "ping_airdrop" for the ping's mapLife). Air strike planes (strobes and the
+// 50v50 scheduled zones) fly over their target and drop iron bombs (match/airstrikes.ts).
 // Behaviour follows docs/research/mechanics/airdrop-airstrike.md (survev objects/plane.ts, objects/airdrop.ts).
 import { type Bounds, type Collider, collider, math, type Rng, type Vec2, v2 } from "@rebirth/core";
 import {
@@ -18,10 +19,18 @@ import { TICK_HZ } from "../api.ts";
 import type { DamageParams } from "../combat/damage.ts";
 import { toBounds, transformOri } from "../geom/transform.ts";
 import { randomPointInCircle } from "../mapgen/random.ts";
-import type { AirdropView, MapIndicatorView, PlaneView } from "../view.ts";
+import type { AirdropView, AirstrikeZoneView, MapIndicatorView, PlaneView } from "../view.ts";
 import { createMapEntity, type Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
 import { sameLayer, type World } from "../world/world.ts";
+import {
+    AIRSTRIKE_SPAWN_TIME,
+    AirstrikeZones,
+    type BombDropper,
+    bombPositions,
+    type StrikeState,
+    updateStrike,
+} from "./airstrikes.ts";
 import { EventLog } from "./events.ts";
 import type { Gas } from "./gas.ts";
 
@@ -58,6 +67,9 @@ export interface PlaneHost {
     readonly gas: Gas;
     readonly tick: number;
     readonly rules: { airdropCrushDamage: number; airdropCrushInstantKill: boolean };
+    /** air strike bombs are projectiles */
+    readonly projectiles: BombDropper;
+    players(): Iterable<Player>;
     damagePlayer(target: Player, params: DamageParams): void;
     damageObstacle(obstacle: Obstacle, params: DamageParams): void;
     wakeLoot(bounds: Bounds, layer: number): void;
@@ -79,6 +91,8 @@ export interface PlaneState {
     target: Vec2;
     crateType: string;
     crateCollider: Collider;
+    /** air strike planes: their bomb run */
+    strike?: StrikeState;
 }
 
 export interface FallingAirdrop {
@@ -106,6 +120,8 @@ export class PlaneSystem {
     readonly indicators: MapIndicator[] = [];
     /** indicators that died, reported once to every viewer */
     readonly deadIndicators = new EventLog<MapIndicator>();
+    /** 50v50 scheduled air strike zones */
+    readonly zones: AirstrikeZones;
     private readonly scheduled: ScheduledPlane[] = [];
     private readonly host: PlaneHost;
     private readonly rng: Rng;
@@ -127,6 +143,16 @@ export class PlaneSystem {
             max: { x: width + PLANE_BOUNDS_MARGIN, y: height + PLANE_BOUNDS_MARGIN },
         };
         for (let i = 0; i < MAX_INDICATORS; i++) this.freeIndicatorIds.push(i);
+        this.zones = new AirstrikeZones(
+            {
+                gas: host.gas,
+                world: host.world,
+                players: () => host.players(),
+                addAirstrike: (pos, dir, ownerId) => this.addAirstrike(pos, dir, ownerId),
+                addPing: (type, pos) => this.addPing(type, pos),
+            },
+            rng,
+        );
     }
 
     /** Queues the map's plane timings of a new circle (survev gas.ts advanceGasStage -> schedulePlane). */
@@ -142,7 +168,12 @@ export class PlaneSystem {
             const plane = this.planes[i];
             const vel = plane.type === Plane.Airdrop ? AIRDROP.planeVel : GameConfig.airstrike.planeVel;
             plane.pos = v2.add(plane.pos, v2.mul(plane.dir, vel * dt));
-            if (!plane.actionComplete && v2.distance(plane.pos, plane.target) < RELEASE_DIST) {
+            if (plane.strike) {
+                if (!plane.actionComplete) {
+                    const dropper = this.host.projectiles;
+                    plane.actionComplete = updateStrike(plane.strike, plane.pos, plane.target, plane.dir, dropper);
+                }
+            } else if (!plane.actionComplete && v2.distance(plane.pos, plane.target) < RELEASE_DIST) {
                 plane.actionComplete = true;
                 this.releaseCrate(plane);
             }
@@ -163,13 +194,51 @@ export class PlaneSystem {
             const s = this.scheduled[i];
             if (--s.ticks > 0) continue;
             this.scheduled.splice(i--, 1);
-            if (s.options.type === Plane.Airdrop) {
-                this.scheduleAirdrop(s.options.airdropType);
-            }
-            // TODO(M5): scheduled air strikes (50v50 zones: airstrikeZoneRad, numPlanes, wait, delay) need bombs,
-            // i.e. projectiles and explosions; they are skipped until then
+            if (s.options.type === Plane.Airdrop) this.scheduleAirdrop(s.options.airdropType);
+            else if (s.options.type === Plane.Airstrike) this.zones.schedule(s.options);
         }
+        this.zones.update(dt);
         this.expireIndicators();
+    }
+
+    /**
+     * An air strike plane: it spawns 2.5 s of flight behind `target`, flies along `dir` and bombs a strip starting at
+     * `target` (survev PlaneBarn.addAirStrike). `ownerId` is credited with the bombs (strobe thrower, 0 for the game).
+     */
+    addAirstrike(target: Vec2, dir: Vec2, ownerId: number): void {
+        const id = this.allocPlaneId();
+        if (id === 0) return;
+        const d = v2.normalizeSafe(dir, { x: 1, y: 0 });
+        const pos = v2.sub(target, v2.mul(d, GameConfig.airstrike.planeVel * AIRSTRIKE_SPAWN_TIME));
+        this.planes.push({
+            id,
+            type: Plane.Airstrike,
+            pos,
+            dir: d,
+            actionComplete: false,
+            target: v2.copy(target),
+            crateType: "",
+            crateCollider: collider.createCircle(target, 0),
+            strike: {
+                startPos: v2.copy(pos),
+                bombs: bombPositions(this.rng, target, d),
+                reachedTarget: false,
+                // the first bomb drops on the tick the plane passes the target (survev dropDelayCounter = 2)
+                dropCounter: 2,
+                ownerId,
+            },
+        });
+    }
+
+    /** A map marker of a ping def (ping_airdrop, ping_airstrike) for the ping's mapLife. */
+    addPing(type: string, pos: Vec2): void {
+        const ping = GameObjectDefs[type] as { mapLife?: number } | undefined;
+        this.addIndicator(type, pos, ping?.mapLife ?? 10);
+    }
+
+    /** Every live air strike zone. */
+    zoneViews(): AirstrikeZoneView[] {
+        return this.zones.views();
     }
 
     /**
@@ -297,8 +366,7 @@ export class PlaneSystem {
             landed: false,
             landedTicks: 0,
         });
-        const ping = GameObjectDefs.ping_airdrop as { mapLife?: number } | undefined;
-        this.addIndicator("ping_airdrop", plane.target, ping?.mapLife ?? 10);
+        this.addPing("ping_airdrop", plane.target);
     }
 
     /** Landing: crush players and obstacles under the crate, break destructible roofs, place the crate obstacle. */

@@ -7,8 +7,6 @@ import type { Game, Player, PlayerInput } from "../src/index.ts";
 import { constantRng, flatGame, giveGun, openSpot, send, spawnAt, steps } from "./combatHelpers.ts";
 import { hasFixture, histogramValues, loadFixture, Mismatches, TICK } from "./oracleHelpers.ts";
 
-/** Guns we refuse to fire until a later milestone (projectiles, explosive rounds). */
-const GATED = new Set(["usas", "potato_cannon", "potato_smg"]);
 const HOLD = { shootHold: true };
 const CLICK = { shootHold: true, shootStart: true };
 const READY_TICKS = 300;
@@ -137,7 +135,6 @@ describe.skipIf(!hasFixture("weapons"))("oracle: weapons.json", () => {
     it("matches every gun's magazine, pellets, fire intervals, reloads and switch delays", () => {
         const m = new Mismatches();
         for (const [gun, entry] of Object.entries<any>(fixture.guns)) {
-            if (GATED.has(gun)) continue;
             const def = getDefOfType("gun", gun);
             const want = entry.tick1000Hz;
             const ours = fireAndReload(gun);
@@ -233,7 +230,7 @@ describe.skipIf(!hasFixture("movement"))("oracle: movement.json", () => {
         expect(m.list).toEqual([]);
     });
 
-    it("matches boost, water and item-use speeds (firing and cooking are covered elsewhere / gated)", () => {
+    it("matches boost, water and item-use speeds (firing and cooking are covered elsewhere)", () => {
         const m = new Mismatches();
         const { game, p } = newShooter();
         const s = fixture.situations;

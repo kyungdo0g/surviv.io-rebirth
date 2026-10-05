@@ -4,8 +4,10 @@ import type { Rng, Vec2 } from "@rebirth/core";
 import { GameObjectRegistry, MapObjectRegistry } from "@rebirth/defs";
 import {
     type AirdropView,
+    type AirstrikeZoneView,
     type BulletEvent,
     damageSourceOf,
+    type ExplosionEvent,
     type GameOverEvent,
     type GasView,
     type KillEvent,
@@ -17,7 +19,9 @@ import {
     type PlayerInfoView,
     type PlayerInput,
     type PlayerStatsView,
+    type ProjectileView,
     type RoleAnnouncementEvent,
+    type SmokeView,
     type Snapshot,
 } from "@rebirth/sim";
 import { BAG_ITEMS, type NetCtx } from "../src/index.ts";
@@ -348,8 +352,49 @@ export function randPlayerInfos(rng: Rng): PlayerInfoView[] {
     }));
 }
 
+// M5 effects
+
+export function randExplosions(rng: Rng, ctx: NetCtx): ExplosionEvent[] {
+    return Array.from({ length: rng.bool(0.7) ? 0 : rng.int(1, 6) }, () => ({
+        type: randGameType(rng),
+        pos: randPos(rng, ctx),
+        layer: rng.int(0, 3),
+    }));
+}
+
+export function randProjectiles(rng: Rng, ctx: NetCtx): ProjectileView[] {
+    return Array.from({ length: rng.bool(0.6) ? 0 : rng.int(1, 12) }, () => ({
+        id: rng.int(1, 65535),
+        type: randGameType(rng),
+        pos: randPos(rng, ctx),
+        posZ: rng.range(0, 5),
+        dir: randUnit(rng),
+        layer: rng.int(0, 3),
+    }));
+}
+
+export function randSmokes(rng: Rng, ctx: NetCtx): SmokeView[] {
+    return Array.from({ length: rng.bool(0.6) ? 0 : rng.int(1, 11) }, () => ({
+        id: rng.int(1, 65535),
+        pos: randPos(rng, ctx),
+        rad: rng.range(0, 6.5),
+        layer: rng.int(0, 3),
+        interior: rng.bool(0.3),
+    }));
+}
+
+export function randZones(rng: Rng, ctx: NetCtx): AirstrikeZoneView[] {
+    return Array.from({ length: rng.bool(0.8) ? 0 : rng.int(1, 3) }, () => ({
+        id: rng.int(1, 255),
+        pos: randPos(rng, ctx),
+        rad: rng.range(0, 256),
+        duration: rng.range(0, 60),
+        zoneT: rng.next(),
+    }));
+}
+
 export function randInput(rng: Rng): PlayerInput {
-    return {
+    const input: PlayerInput = {
         seq: rng.int(0, 255),
         moveLeft: rng.bool(),
         moveRight: rng.bool(),
@@ -361,6 +406,8 @@ export function randInput(rng: Rng): PlayerInput {
         shootHold: rng.bool(),
         actions: Array.from({ length: rng.int(0, 15) }, () => rng.int(0, 255)),
     };
+    if (rng.bool(0.3)) input.useItem = rng.pick(GAME_TYPES.filter((t) => t !== ""));
+    return input;
 }
 
 export function randMap(rng: Rng): MapData {
@@ -448,6 +495,13 @@ export function netTolerances(maxExtent = 1024): TolFn {
         "planes.dir.x": 0.006,
         "planes.dir.y": 0.006,
         fallT: 1 / 127 / 2 + 1e-9,
+        posZ: 5 / 1023 / 2 + 1e-9,
+        "projectiles.dir.x": 0.012,
+        "projectiles.dir.y": 0.012,
+        "smokes.rad": 10 / 255 / 2 + 1e-9,
+        "airstrikeZones.rad": 256 / 255 / 2 + 1e-9,
+        "airstrikeZones.duration": 60 / 255 / 2 + 1e-9,
+        zoneT: 1 / 255 / 2 + 1e-9,
         maxDist: 1024 / 65535 / 2 + 1e-9,
         endDist: 1024 / 65535 / 2 + 1e-9,
         width: 1e-5,

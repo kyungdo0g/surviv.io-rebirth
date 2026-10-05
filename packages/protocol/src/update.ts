@@ -1,7 +1,8 @@
 // Update message: per-client delta of a Snapshot.
 //
 // Layout (after the type byte):
-//   tick u32, flags u16 (UpdateFlag), ack u8 (last input seq received)
+//   tick u32, flags u16 (UpdateFlag), ack u8 (last input seq received), [ext flags u16 (UpdateExtFlag) when the
+//   Extended flag is set]
 //   [DeletedObjects] u16 count x u16 id
 //   [FullObjects]    u16 count x full record     (records are byte aligned, objects.ts)
 //   [PartObjects]    u16 count x partial record
@@ -11,6 +12,7 @@
 //   [Gas] [GasT] [Planes] [Airdrops] [MapIndicators] [KillLeader]   match.ts sections (M4)
 //   [Spectating]     no payload: the active player is a spectated player
 //   [PlayerInfos] [DeletePlayerIds]   match.ts sections (M4), then align
+//   [Explosions] [Projectiles] [Smokes] [AirstrikeZones]   effects.ts sections (M5, extended flags), each aligned
 // `time` is not sent: it is tick / TICK_HZ like Game.time.
 //
 // A server frame per netsync (ClientEncoder.writeFrame) follows the original order: [AliveCounts when changed],
@@ -40,6 +42,7 @@ import { TICK_HZ } from "@rebirth/sim";
 import { readBullets, writeBullets } from "./bullets.ts";
 import { writeServerMsg } from "./codec.ts";
 import { MsgType, OBJECT_TYPE_BITS, UpdateFlag } from "./constants.ts";
+import { effectFlags, readEffects, writeEffects } from "./effects.ts";
 import {
     cloneLocal,
     emptyLocalState,
@@ -311,12 +314,15 @@ export class ClientEncoder {
         const leavers = snap.deletedPlayerIds ?? [];
         if (infos.length) flags |= UpdateFlag.PlayerInfos;
         if (leavers.length) flags |= UpdateFlag.DeletePlayerIds;
+        const ext = effectFlags(snap);
+        if (ext) flags |= UpdateFlag.Extended;
 
         w.alignToNextByte();
         w.writeUint8(MsgType.Update);
         w.writeUint32(tick >>> 0);
         w.writeUint16(flags);
         w.writeUint8(ack & 0xff);
+        if (ext) w.writeUint16(ext);
         if (deleted.length) {
             w.writeUint16(deleted.length);
             for (const id of deleted) w.writeUint16(id);
@@ -359,6 +365,7 @@ export class ClientEncoder {
         if (infos.length) writePlayerInfos(w, infos);
         if (leavers.length) writeDeletedPlayers(w, leavers);
         w.alignToNextByte();
+        writeEffects(w, ctx, snap, ext);
         const last = this.last;
         last.full = fulls.length;
         last.part = parts.length;
@@ -464,8 +471,7 @@ export class UpdateDecoder {
         const tick = r.readUint32();
         const flags = r.readUint16();
         const ack = r.readUint8();
-        if (flags & UpdateFlag.Reserved)
-            throw new RangeError(`Update: unsupported section flags 0x${flags.toString(16)}`);
+        const ext = flags & UpdateFlag.Extended ? r.readUint16() : 0;
         const deletedIds: number[] = [];
         if (flags & UpdateFlag.DeletedObjects) {
             for (let n = r.readUint16(); n > 0; n--) {
@@ -521,6 +527,7 @@ export class UpdateDecoder {
         const playerInfos = flags & UpdateFlag.PlayerInfos ? readPlayerInfos(r) : [];
         const deletedPlayerIds = flags & UpdateFlag.DeletePlayerIds ? readDeletedPlayers(r) : [];
         r.alignToNextByte();
+        const effects = readEffects(r, this.ctx, ext);
         const mapIndicators = [...deadIndicators, ...this.indicators.values()]
             .map((m) => ({ ...m, pos: { ...m.pos } }))
             .sort((a, b) => a.id - b.id);
@@ -545,6 +552,7 @@ export class UpdateDecoder {
             spectatingId: flags & UpdateFlag.Spectating ? this.localPlayerId : 0,
             playerInfos,
             deletedPlayerIds,
+            ...effects,
         };
         if (this.gas) {
             const g = this.gas;

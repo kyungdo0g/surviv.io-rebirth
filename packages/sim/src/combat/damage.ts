@@ -69,6 +69,8 @@ export function computeDamage(params: DamageParams, headshot: boolean, target: A
     if (headshot) damage *= headshotMultOf(params.gameSourceType) ?? 1;
     if (target.hasPerk("flak_jacket")) {
         reduce(params.isExplosion ? rules.flakJacketExplosionReduction : rules.flakJacketReduction);
+        // fandom's 91 % against explosions (conflicts.md flak-explosion-reduction; off by default like survev)
+        if (params.isExplosion && rules.flakJacketStacksOnExplosions) reduce(rules.flakJacketReduction);
     }
     if (target.hasPerk("steelskin")) reduce(rules.steelskinReduction);
     // air drop crushing goes through the perks only unless the knob says otherwise (conflicts.md

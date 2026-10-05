@@ -1,6 +1,7 @@
 // Bullets: swept per-tick flight, obstacle/player/pan collisions, ricochets, falloff; damage is queued and applied
-// after every bullet moved. Behaviour follows survev server/src/game/objects/bullet.ts and
-// docs/research/items/bullets.md "Server simulation".
+// after every bullet moved. Bullets with an on-hit explosion (USAS-12 frag rounds, Explosive Rounds) explode where
+// they stop. Behaviour follows survev server/src/game/objects/bullet.ts and docs/research/items/bullets.md
+// "Server simulation".
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { type BulletDef, DamageType, GameConfig, getDefOfType } from "@rebirth/defs";
 import { intersectSegmentSegment } from "../geom/polygon.ts";
@@ -34,6 +35,12 @@ export interface FireBulletParams {
     varianceT?: number;
     shotFx?: boolean;
     offHand?: boolean;
+    /** defs DamageType (default Player; shrapnel of air strike bombs: Airstrike) */
+    damageType?: number;
+    /** map object behind the hit (shrapnel of an exploding barrel) */
+    mapSourceType?: string;
+    /** explosion where the bullet stops, when its def has no `onHit` (Explosive Rounds: "explosion_rounds") */
+    onHitFx?: string;
 }
 
 export interface Bullet {
@@ -61,6 +68,12 @@ export interface Bullet {
     readonly damageSelf: boolean;
     readonly shotFx: boolean;
     readonly offHand: boolean;
+    readonly damageType: number;
+    readonly mapSourceType: string;
+    /** explosion spawned where the bullet stops ("" for none; Explosive Rounds peter out at max range) */
+    onHitFx: string;
+    /** Explosive Rounds bullets never ricochet (survev canReflect) */
+    readonly canReflect: boolean;
     alive: boolean;
     /** this bullet already spawned its ricochet (one per bullet per update) */
     reflected: boolean;
@@ -105,7 +118,10 @@ export function panSegment(player: Player, pos: Vec2, dir: Vec2): { p0: Vec2; p1
 }
 
 /** What the bullet system reads from the game; random streams and rules are read on use, so they can be swapped. */
-export type BulletContext = Pick<SimContext, "world" | "rules" | "combatRng" | "getPlayer">;
+export type BulletContext = Pick<SimContext, "world" | "rules" | "combatRng" | "getPlayer"> & {
+    /** queues an on-hit explosion (optional for bare bullet tests) */
+    readonly explosions?: Pick<SimContext["explosions"], "add">;
+};
 
 export class BulletSystem {
     private readonly ctx: BulletContext;
@@ -140,6 +156,7 @@ export class BulletSystem {
         const baseDistance = def.distance / GameConfig.bullet.reflectDistDecay ** reflectCount;
         const distance = math.clamp(baseDistance * variance + distAdj, 0, MAX_DISTANCE);
         const reflectObjId = p.reflectObjId ?? 0;
+        const onHitFx = def.onHit ?? p.onHitFx ?? "";
         const bullet: Bullet = {
             id: this.nextId++,
             shooterId: p.shooterId,
@@ -162,6 +179,10 @@ export class BulletSystem {
             damageSelf: reflectCount > 0 || def.shrapnel,
             shotFx: p.shotFx ?? false,
             offHand: p.offHand ?? false,
+            damageType: p.damageType ?? DamageType.Player,
+            mapSourceType: p.mapSourceType ?? "",
+            onHitFx,
+            canReflect: onHitFx !== "explosion_rounds",
             alive: true,
             reflected: false,
             hitPlayer: false,
@@ -207,8 +228,12 @@ export class BulletSystem {
             b.pos = w.clampToMap(b.pos, 0);
         }
         if (!b.def.skipCollision) this.collide(b, posOld);
-        if (math.eqAbs(b.distanceTraveled, b.distance, 0.001)) b.alive = false;
-        // TODO(M5): bullets with an onHit explosion (bullet_frag) explode where they die
+        if (math.eqAbs(b.distanceTraveled, b.distance, 0.001)) {
+            b.alive = false;
+            // Explosive Rounds peter out at max range; USAS-12 frag rounds still explode
+            if (b.onHitFx === "explosion_rounds") b.onHitFx = "";
+        }
+        if (!b.alive && !b.reflected && b.onHitFx) this.explodeOnHit(b);
         if (!b.alive && b.hitPlayer && b.reportTicks[b.reportTicks.length - 1] !== this.tick) {
             b.reportTicks.push(this.tick);
             this.reports.push({ tick: this.tick, bullet: b });
@@ -282,14 +307,32 @@ export class BulletSystem {
         }
     }
 
+    /** The bullet's on-hit explosion, 0.1 behind where it stopped so it is not inside an obstacle (survev). */
+    private explodeOnHit(b: Bullet): void {
+        let type = b.onHitFx;
+        // shotguns use the quieter explosion_rounds_sg (survev useExplosiveRoundsAlt)
+        if (type === "explosion_rounds" && this.ctx.rules.explosiveRoundsAltBullets.includes(b.bulletType)) {
+            type = "explosion_rounds_sg";
+        }
+        b.onHitFx = "";
+        this.ctx.explosions?.add(type, v2.sub(b.pos, v2.mul(b.dir, 0.1)), b.layer, {
+            gameSourceType: b.sourceType,
+            mapSourceType: b.mapSourceType,
+            damageType: b.damageType,
+            sourceId: b.shooterId,
+        });
+    }
+
     private params(b: Bullet, amount: number): DamageParams {
-        return {
+        const params: DamageParams = {
             amount,
-            damageType: DamageType.Player,
+            damageType: b.damageType,
             gameSourceType: b.sourceType,
             sourceId: b.shooterId,
             dir: v2.copy(b.dir),
         };
+        if (b.mapSourceType) params.mapSourceType = b.mapSourceType;
+        return params;
     }
 
     private collidePlayer(b: Bullet, posOld: Vec2, p: Player, out: Collision[]): void {
@@ -339,7 +382,7 @@ export class BulletSystem {
 
     /** Spawns the ricochet: mirrored direction, reflectCount + 1, range / 1.5^n, damage / (n + 1) (survev). */
     private reflect(b: Bullet, pos: Vec2, normal: Vec2, objId: number): void {
-        if (b.reflectCount >= GameConfig.bullet.maxReflect || b.reflected) return;
+        if (!b.canReflect || b.reflectCount >= GameConfig.bullet.maxReflect || b.reflected) return;
         b.reflected = true;
         const dot = v2.dot(b.dir, normal);
         this.fire({
@@ -354,6 +397,9 @@ export class BulletSystem {
             reflectObjId: objId,
             varianceT: b.varianceT,
             shotFx: false,
+            damageType: b.damageType,
+            mapSourceType: b.mapSourceType,
+            onHitFx: b.onHitFx,
         });
     }
 

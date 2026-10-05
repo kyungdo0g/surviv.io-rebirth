@@ -3,6 +3,8 @@
 import { Input, WeaponSlot } from "@rebirth/defs";
 import { SCOPE_LEVELS } from "../items/inventory.ts";
 import { closestLoot, pickupLoot } from "../loot/pickup.ts";
+import { throwThrowable } from "../weapons/throwable.ts";
+import { selectThrowable, useItem } from "./consumables.ts";
 import type { SimContext } from "./context.ts";
 import { interactableObstacles, useObstacle } from "./interact.ts";
 import type { Player } from "./player.ts";
@@ -23,9 +25,32 @@ export function handleActions(ctx: SimContext, player: Player, actions: readonly
                 wm.setCurWeapIndex(WeaponSlot.Secondary);
                 break;
             case Input.EquipThrowable:
-                // pressing it again cycles the throwable type
-                if (wm.curWeapIdx === WeaponSlot.Throwable) wm.showNextThrowable();
-                else wm.setCurWeapIndex(WeaponSlot.Throwable);
+                if (wm.curWeapIdx === WeaponSlot.Throwable) {
+                    // pressing it again drops a cooked throwable and cycles the type (survev handleInput)
+                    throwThrowable(ctx, player, true);
+                    if (wm.cooking) player.cancelAnim();
+                    wm.showNextThrowable();
+                } else {
+                    wm.setCurWeapIndex(WeaponSlot.Throwable);
+                }
+                break;
+            case Input.EquipFragGrenade:
+                selectThrowable(player, "frag");
+                break;
+            case Input.EquipSmokeGrenade:
+                selectThrowable(player, "smoke");
+                break;
+            case Input.UseBandage:
+                useItem(ctx, player, "bandage");
+                break;
+            case Input.UseHealthKit:
+                useItem(ctx, player, "healthkit");
+                break;
+            case Input.UseSoda:
+                useItem(ctx, player, "soda");
+                break;
+            case Input.UsePainkiller:
+                useItem(ctx, player, "painkiller");
                 break;
             case Input.EquipNextWeap:
             case Input.EquipPrevWeap: {
@@ -83,7 +108,6 @@ export function handleActions(ctx: SimContext, player: Player, actions: readonly
                 }
                 break;
             }
-            // TODO(M5): UseBandage/UseHealthKit/UseSoda/UsePainkiller, EquipFragGrenade/EquipSmokeGrenade
             default:
                 break;
         }

@@ -30,7 +30,7 @@ export function sanitizeInput(input: PlayerInput, prevDir: { x: number; y: numbe
         if (actions.length >= MAX_ACTIONS_PER_INPUT) break;
         if (Number.isInteger(a) && ACCEPTED_ACTIONS.has(a)) actions.push(a);
     }
-    return {
+    const out: PlayerInput = {
         seq: input.seq & 0xff,
         moveLeft: input.moveLeft === true,
         moveRight: input.moveRight === true,
@@ -42,4 +42,7 @@ export function sanitizeInput(input: PlayerInput, prevDir: { x: number; y: numbe
         shootHold: input.shootHold === true,
         actions,
     };
+    // the item to use (M5): any non-empty string; the simulation ignores ids that are not bag items
+    if (typeof input.useItem === "string" && input.useItem !== "") out.useItem = input.useItem;
+    return out;
 }

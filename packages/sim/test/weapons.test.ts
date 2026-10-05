@@ -142,13 +142,14 @@ describe("fire modes", () => {
         expect(p.speed).toBe(12);
     });
 
-    it("refuses to fire guns that need later systems (projectiles, explosive rounds)", () => {
-        for (const gun of ["usas", "potato_cannon"]) {
+    it("fires the guns of the M5 systems: USAS-12 frag rounds and the potato guns' projectiles", () => {
+        for (const gun of ["usas", "potato_cannon", "potato_smg"]) {
             const { game, p } = shooter(gun, 0);
             const ammo = p.weapons[WeaponSlot.Primary].ammo;
-            recordShots(game, p, 200, () => CLICK);
-            expect(p.shotSeq).toBe(0);
-            expect(p.weapons[WeaponSlot.Primary].ammo).toBe(ammo);
+            recordShots(game, p, 30, () => CLICK);
+            expect([gun, p.shotSeq > 0]).toEqual([gun, true]);
+            expect(p.weapons[WeaponSlot.Primary].ammo).toBeLessThan(ammo);
+            if (gun !== "usas") expect(game.projectiles.projectiles.length + game.explosions.count).toBeGreaterThan(0);
         }
     });
 });

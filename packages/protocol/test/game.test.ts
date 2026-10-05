@@ -1,6 +1,8 @@
 // Encoder/decoder delta consistency against the real simulation: 8 players move, aim, shoot and use actions at
 // random for 1200 ticks of a started match (a fast gas table so every gas mode shows, a forced air drop with its
-// plane, falling crate, minimap marker and opening, scripted kills for a kill leader, dead players spectating);
+// plane, falling crate, minimap marker and opening, scripted kills for a kill leader, dead players spectating;
+// M5: unarmed bots cook and throw snowballs and smokes, bots use sodas, a smoke cloud hides players,
+// an air strike zone with its planes, bombs and explosions);
 // every netsync frame goes through the encoder (shared per-game cache) and a decoder fed by the Map message, and
 // the decoded snapshot must equal Game.getSnapshot within quantization tolerance (deletions, loot, bullets, gas,
 // planes, air drops, indicators, kills, role announcements, alive count, GameOver, spectating included). Inputs go
@@ -22,7 +24,17 @@ import { assertClose } from "./close.ts";
 import { snapshotTolerances } from "./gen.ts";
 
 const GUNS = ["mp5", "ak47", "m870", "dp28", "spas12", "m249", "mac10", "famas"];
-const ACTIONS = [Input.Reload, Input.Loot, Input.Interact, Input.EquipPrimary, Input.EquipMelee, Input.EquipNextWeap];
+const ACTIONS = [
+    Input.Reload,
+    Input.Loot,
+    Input.Interact,
+    Input.EquipPrimary,
+    Input.EquipMelee,
+    Input.EquipNextWeap,
+    Input.UseBandage,
+    Input.UseSoda,
+    Input.EquipThrowable,
+];
 
 interface Bot {
     id: number;
@@ -89,7 +101,18 @@ describe("Update encoder/decoder against the simulation", () => {
         const addBot = (i: number) => {
             const id = game.addPlayer(`bot${i}`);
             game.teleportPlayer(id, v2.add(center, { x: rng.range(-12, 12), y: rng.range(-6, 6) }));
-            if (i % 4 !== 3) giveGun(game, id, GUNS[i % GUNS.length]);
+            const p = game.getPlayer(id)!;
+            p.backpack = "backpack03";
+            p.inv.set("bandage", 10);
+            p.inv.set("soda", 5);
+            if (i % 4 !== 3) {
+                giveGun(game, id, GUNS[i % GUNS.length]);
+            } else {
+                // unarmed bots throw snowballs and a smoke grenade (non-lethal, the scripted kills stay valid)
+                p.inv.set("snowball", 3);
+                p.inv.set("smoke", 1);
+                p.weaponManager.setCurWeapIndex(WeaponSlot.Throwable);
+            }
             const decoder = new ServerMsgDecoder();
             decoder.decode(mapFrame);
             bots.set(id, {
@@ -121,6 +144,12 @@ describe("Update encoder/decoder against the simulation", () => {
             gameOvers: 0,
             spectating: 0,
             buttons: 0,
+            explosions: 0,
+            projectiles: 0,
+            smokes: 0,
+            zones: 0,
+            uses: 0,
+            cooks: 0,
             infos: 0,
             leavers: 0,
         };
@@ -156,6 +185,10 @@ describe("Update encoder/decoder against the simulation", () => {
                 }
             }
             if (tick === 310) for (const id of ids.slice(4, 7)) game.spectate(id, "begin");
+            // a smoke cloud in the middle of the bots hides some of them from the others
+            if (tick === 250) game.smokes.addEmitter(center, 0);
+            // an air strike zone next to the bots: planes, falling bombs, explosions
+            if (tick === 920) game.planes.zones.addZone(v2.add(center, { x: 0, y: 32 }), 10, 3, 1.5, 1);
             if (tick === 420) game.spectate(ids[4], "next");
             if (tick === 900) {
                 // a living bot opens the landed crate
@@ -198,6 +231,12 @@ describe("Update encoder/decoder against the simulation", () => {
                 totals.gameOvers += snap.gameOver ? 1 : 0;
                 totals.spectating += snap.spectatingId ? 1 : 0;
                 totals.buttons += snap.objects.filter((o) => o.kind === "obstacle" && o.button?.onOff).length;
+                totals.explosions += snap.explosions?.length ?? 0;
+                totals.projectiles += snap.projectiles?.length ?? 0;
+                totals.smokes += snap.smokes?.length ?? 0;
+                totals.zones += snap.airstrikeZones?.length ?? 0;
+                totals.uses += snap.objects.filter((o) => o.kind === "player" && o.action?.type === "use").length;
+                totals.cooks += snap.objects.filter((o) => o.kind === "player" && o.anim?.type === "cook").length;
                 totals.infos += snap.playerInfos?.length ?? 0;
                 totals.leavers += snap.deletedPlayerIds?.length ?? 0;
                 lastBytes = bytes.length;
@@ -221,6 +260,12 @@ describe("Update encoder/decoder against the simulation", () => {
         expect(totals.gameOvers).toBeGreaterThan(3);
         expect(totals.spectating).toBeGreaterThan(10);
         expect(totals.buttons).toBeGreaterThan(0);
+        expect(totals.explosions).toBeGreaterThan(0);
+        expect(totals.projectiles).toBeGreaterThan(0);
+        expect(totals.smokes).toBeGreaterThan(0);
+        expect(totals.zones).toBeGreaterThan(0);
+        expect(totals.uses).toBeGreaterThan(0);
+        expect(totals.cooks).toBeGreaterThan(0);
         // 8 first snapshots listing 8 players, bot 8 joining (and its own first snapshot), bot 7 leaving
         expect(totals.infos).toBe(8 * 8 + 7 + 8);
         expect(totals.leavers).toBe(7);

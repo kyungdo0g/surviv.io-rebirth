@@ -1,12 +1,17 @@
 // Damage entry points shared by bullets and melee: player damage with death, obstacle damage with destruction.
 // Behaviour follows survev server/src/game/objects/player.ts (damage, kill) and obstacle.ts (damage, kill).
-import type { Vec2 } from "@rebirth/core";
+import { type Vec2, v2 } from "@rebirth/core";
 import { DamageType, GameObjectDefs, hasDef } from "@rebirth/defs";
 import { dropEverythingOnDeath, dropObstacleLoot, spawnDestroyType } from "../loot/drops.ts";
+import { throwThrowable } from "../weapons/throwable.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
 import { computeDamage, type DamageParams, rollHeadshot } from "./damage.ts";
+
+/** Martyrdom releases this many martyr_nades with a random velocity up to 5 (survev perkDefs martyrdom). */
+const MARTYRDOM_COUNT = 12;
+const MARTYRDOM_MAX_VEL = 5;
 
 /** Result of the last hit a player took (tests, kill feed later). */
 export interface HitRecord {
@@ -47,6 +52,8 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     player.dead = true;
     player.boost = 0;
     player.cancelAction();
+    // a cooked throwable drops at the feet (survev player.ts kill)
+    if (player.weaponManager.cooking) throwThrowable(ctx, player, true);
     player.cancelAnim();
     player.shootHold = false;
     const credit = params.sourceId ? ctx.getPlayer(params.sourceId) : undefined;
@@ -57,6 +64,19 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     }
     // kill feed, alive count, kill leader, game over (match/match.ts)
     ctx.onPlayerKilled(player, params, credit);
+    // TODO(M8): the Grenadier role and the Demo class trigger Martyrdom without the perk
+    if (player.hasPerk("martyrdom")) {
+        const { x, y } = player.pos;
+        ctx.projectiles.addSplit(
+            player.id,
+            "martyr_nade",
+            { x, y },
+            player.layer,
+            v2.create(0, 0),
+            MARTYRDOM_COUNT,
+            MARTYRDOM_MAX_VEL,
+        );
+    }
     dropEverythingOnDeath(ctx, player);
 }
 
@@ -76,7 +96,7 @@ export function applyObstacleDamage(ctx: SimContext, obstacle: Obstacle, params:
     const destroyed = obstacle.damage(params.amount);
     // loot resting against it may now move (survev forceLootUpdates)
     ctx.loot.wakeAround(obstacle.bounds, obstacle.layer);
-    if (destroyed) onObstacleDestroyed(ctx, obstacle, params.dir);
+    if (destroyed) onObstacleDestroyed(ctx, obstacle, params);
 }
 
 /** Kills an obstacle whatever its destructibility (opened air drop crates), with the usual destruction effects. */
@@ -84,12 +104,22 @@ export function destroyObstacle(ctx: SimContext, obstacle: Obstacle, dir?: Vec2)
     if (obstacle.dead) return;
     obstacle.kill();
     ctx.loot.wakeAround(obstacle.bounds, obstacle.layer);
-    onObstacleDestroyed(ctx, obstacle, dir);
+    onObstacleDestroyed(ctx, obstacle, { amount: 0, damageType: DamageType.Player, dir });
 }
 
-function onObstacleDestroyed(ctx: SimContext, obstacle: Obstacle, dir?: Vec2): void {
+function onObstacleDestroyed(ctx: SimContext, obstacle: Obstacle, params: DamageParams): void {
     spawnDestroyType(ctx, obstacle);
-    dropObstacleLoot(ctx, obstacle, dir);
-    // TODO(M5): obstacles with an `explosion` (barrels, propane tanks) explode on destruction
-    // TODO(M4): destroying walls breaks the doors and windows in them and damages the building ceiling
+    dropObstacleLoot(ctx, obstacle, params.dir);
+    // fire extinguishers release smoke (survev obstacle.ts kill createSmoke)
+    if (obstacle.def.createSmoke) ctx.smokes.addEmitter(obstacle.pos, obstacle.layer);
+    // barrels, propane tanks, stoves... explode, credited to whoever destroyed them (explosions.md "Obstacles")
+    if (obstacle.def.explosion) {
+        ctx.explosions.add(obstacle.def.explosion, obstacle.pos, obstacle.layer, {
+            gameSourceType: "",
+            mapSourceType: obstacle.type,
+            damageType: params.damageType,
+            sourceId: params.sourceId ?? 0,
+        });
+    }
+    // TODO(M5b): destroying walls breaks the doors and windows in them and damages the building ceiling
 }

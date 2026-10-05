@@ -53,6 +53,51 @@ export interface SimRules {
     spectateSwitchDelay: number;
     /** cooldown of spectate next/prev when not watching teammates (survev client.ts getSpectateCooldown) */
     spectateCooldown: number;
+    /**
+     * Explosion damage falloff (conflicts.md explosion-falloff-curve): "step" = full damage inside rad.min (or when
+     * the target touches the rad.min circle), else damage x (1 - dist / rad.max) (survev's current curve, "what
+     * surviv used from the data we got"); "smooth" = linear from rad.min to rad.max (survev before 7a59be97).
+     */
+    explosionFalloff: "step" | "smooth";
+    /**
+     * Flak Jacket also applies its general reduction to explosions (fandom's 91 %); survev applies only the 0.9
+     * explosion reduction (conflicts.md flak-explosion-reduction, unresolved: survev value, matches damage.json).
+     */
+    flakJacketStacksOnExplosions: boolean;
+    /**
+     * Boost heal rates per tier (conflicts.md boost-heal-tiers, open): "code" = survev boostHealAmounts
+     * 0.5 / 1.25 / 1.5 / 1.75 HP/s, "wiki" = fandom 1 / 3.75 / 4.75 / 5 HP/s. Decay and speed bonus are the same.
+     */
+    boostModel: "code" | "wiki";
+    /** Mass Medicate item use time multiplier (conflicts.md medic-use-time: x0.8 per two wikis; survev x0.75) */
+    aoeHealUseTimeMult: number;
+    /** Combat Medic: no slowdown while using items, plus this speed (survev perkDefs field_medic.speedBoost) */
+    fieldMedicSpeedBonus: number;
+    /** seconds a smoke emitter stays active; its clouds vanish then (conflicts.md smoke-duration: survev 16 s) */
+    smokeDuration: number;
+    /**
+     * Rebirth rule: players whose centre is inside a smoke cloud are left out of other players' snapshots unless
+     * the viewer is within `smokeRevealDistance` (the original only draws the smoke above them, so a modified
+     * client could see through it).
+     */
+    smokeHidesPlayers: boolean;
+    smokeRevealDistance: number;
+    /**
+     * Sideways offset between a strobe's strike lines (conflicts.md strobe-airstrike-offset: all on the strobe line
+     * for 0.8.82; survev offsets 0 / 5 / 5 / 10 / 10)
+     */
+    strobeAirstrikeOffset: number;
+    /** survev picks the side of the first offset strike at random ("was not in surviv"); off */
+    strobeRandomSide: boolean;
+    /**
+     * Broken Arrow's extra strikes are counted when the strike warning appears (fandom; conflicts.md
+     * broken-arrow-check-time) instead of when the strobe is thrown (survev)
+     */
+    brokenArrowAtPing: boolean;
+    /** bullets whose Explosive Rounds use the quieter explosion_rounds_sg (survev bullet useExplosiveRoundsAlt) */
+    explosiveRoundsAltBullets: readonly string[];
+    /** Fabricate fills the pack with frag grenades every this many seconds (original rule, fandom Fabricate) */
+    fabricateInterval: number;
 }
 
 export function defaultRules(): SimRules {
@@ -74,5 +119,23 @@ export function defaultRules(): SimRules {
         minActiveTime: GameConfig.player.minActiveTime,
         spectateSwitchDelay: 2,
         spectateCooldown: 1,
+        explosionFalloff: "step",
+        flakJacketStacksOnExplosions: false,
+        boostModel: "code",
+        aoeHealUseTimeMult: 0.8,
+        fieldMedicSpeedBonus: 1,
+        smokeDuration: 16,
+        smokeHidesPlayers: true,
+        smokeRevealDistance: 5,
+        strobeAirstrikeOffset: 0,
+        strobeRandomSide: false,
+        brokenArrowAtPing: true,
+        explosiveRoundsAltBullets: ["bullet_buckshot", "bullet_flechette", "bullet_frag", "bullet_birdshot"],
+        fabricateInterval: 12,
     };
+}
+
+/** Heal rate in HP/s of each boost tier under `model` (boost.md "Tier table: code vs wikis"). */
+export function boostHealAmounts(model: SimRules["boostModel"]): readonly number[] {
+    return model === "wiki" ? [1, 3.75, 4.75, 5] : GameConfig.player.boostHealAmounts;
 }

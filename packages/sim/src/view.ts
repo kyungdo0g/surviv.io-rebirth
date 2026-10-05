@@ -34,6 +34,27 @@
 // `{ sandbox: true }` (the match starts on the first step with a single player, never ends and always accepts
 // joins); servers pass `minPlayers`. Until the match starts `gas.mode` is "inactive" ("Waiting for players").
 // Dead players spectate through `Game.spectate(id, "begin" | "next" | "prev")` (the Spectate message).
+//
+// M5a additions (throwables, explosions, smoke, heals and boosts, air strikes; backward compatible in the same way:
+// optional in the types, always filled by the simulation and by the network decoder):
+// - Snapshot: `explosions` (ExplosionEvent list: explosions in view since the viewer's previous snapshot, the
+//   original UpdateMsg explosions), `projectiles` (ProjectileView list: thrown grenades, potato gun shots and air
+//   strike bombs in view, the original Projectile objects), `smokes` (SmokeView list: smoke clouds in view, the
+//   original Smoke objects) and `airstrikeZones` (AirstrikeZoneView list: every live 50v50 air strike zone, drawn
+//   on the map). Projectiles and smokes are snapshot lists rather than new ObjectView kinds, so consumers' switches
+//   over ObjectKind stay exhaustive; their ids are their own id spaces (not object ids).
+// - PlayerInput: `useItem` (optional GameObjectDefs id of a bag item to use: heal, boost, scope or throwable; the
+//   original InputMsg.useItem). The actions Input.UseBandage / UseHealthKit / UseSoda / UsePainkiller do the same
+//   for their item, Input.EquipFragGrenade / EquipSmokeGrenade select that throwable.
+// - Existing fields gain M5 values: PlayerView.anim "cook" / "throw" while a throwable is cooked and thrown;
+//   PlayerView.action and LocalPlayerState.action "use" with the heal/boost item while one is used;
+//   LocalPlayerState.boost decays and heals; LocalPlayerState.zoom is the 1x radius while the player is in smoke
+//   (and 0.5 s after leaving it); MapIndicatorView "ping_airstrike" marks strobe and scheduled air strikes;
+//   PlaneView "airstrike" planes; explosion scorch marks are DecalView objects (some fade after their def
+//   lifetime); KillEvent / DamageSource "explosion" and "airstrike".
+// - Smoke hides players: with `rules.smokeHidesPlayers` (default on) a player whose centre is inside a smoke cloud
+//   is left out of other players' snapshots unless the viewer is within `rules.smokeRevealDistance` (rebirth rule:
+//   the original client only draws the smoke above them). Bullets they fire are still reported.
 import type { Vec2 } from "@rebirth/core";
 
 export interface RiverData {
@@ -309,6 +330,60 @@ export interface Snapshot {
     playerInfos?: PlayerInfoView[];
     /** players removed from the game since the viewer's previous snapshot (M4; the original DeletePlayerIds) */
     deletedPlayerIds?: number[];
+    /** explosions whose radius touches the view since the viewer's previous snapshot, in order (M5) */
+    explosions?: ExplosionEvent[];
+    /** flying projectiles in view: thrown grenades, potato gun shots, air strike bombs (M5) */
+    projectiles?: ProjectileView[];
+    /** smoke clouds touching the view (M5) */
+    smokes?: SmokeView[];
+    /** every live air strike zone (M5; 50v50 scheduled air strikes) */
+    airstrikeZones?: AirstrikeZoneView[];
+}
+
+/** An explosion (the original UpdateMsg explosion record): the client plays its `explosionEffectType` (M5). */
+export interface ExplosionEvent {
+    /** GameObjectDefs explosion id, e.g. "explosion_frag" */
+    type: string;
+    pos: Vec2;
+    layer: number;
+}
+
+/** A flying projectile (the original Projectile object) (M5). */
+export interface ProjectileView {
+    /** projectile id (1..65535, its own id space, reused after a while) */
+    id: number;
+    /** GameObjectDefs throwable id (drawn with its `worldImg`), e.g. "frag", "bomb_iron", "potato_cannonball" */
+    type: string;
+    pos: Vec2;
+    /** height above the ground, 0..GameConfig.projectile.maxHeight (the client scales the sprite with it) */
+    posZ: number;
+    /** unit direction of travel */
+    dir: Vec2;
+    layer: number;
+}
+
+/** One smoke cloud (the original Smoke object): grows to its radius, drifts slowly, vanishes with its emitter (M5). */
+export interface SmokeView {
+    /** smoke id (1..65535, its own id space) */
+    id: number;
+    pos: Vec2;
+    /** current radius (at most 6.5) */
+    rad: number;
+    layer: number;
+    /** emitted inside a building (drawn below the roof) */
+    interior: boolean;
+}
+
+/** A 50v50 air strike zone: a yellow circle on the map for its whole duration (M5). */
+export interface AirstrikeZoneView {
+    /** zone id (1..255) */
+    id: number;
+    pos: Vec2;
+    rad: number;
+    /** total duration in seconds (at most 60) */
+    duration: number;
+    /** progress 0..1 (the client fades the circle in and out over 0.5 s at each end) */
+    zoneT: number;
 }
 
 /** Public info of a player (the original PlayerInfos record, without the heal/boost cosmetics). */

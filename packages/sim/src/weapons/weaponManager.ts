@@ -5,8 +5,9 @@ import { GameConfig, GameObjectDefs, type GunDef, getDef, hasDef, type MeleeDef,
 import { isBagItem, THROWABLE_LIST } from "../items/inventory.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
-import { fireGun, gunFireGate } from "./gun.ts";
+import { fireGun } from "./gun.ts";
 import { meleeDamage } from "./melee.ts";
+import { throwThrowable, updateThrowable } from "./throwable.ts";
 
 /** Float tolerance for timers that are decremented by dt every tick (0.1 - 10 * 0.01 is not exactly 0). */
 export const TIME_EPS = 1e-9;
@@ -53,6 +54,10 @@ export class WeaponManager {
     freeSwitchTimer = 0;
     /** seconds since the last shot or switch (first-shot accuracy) */
     recoilTicker = 0;
+    /** seconds the held throwable has been cooking */
+    cookTicker = 0;
+    /** a new throw may start once this is <= 0 (GameConfig.player.throwTime after each throw) */
+    throwableCooldown = 0;
 
     constructor(player: Player, loadout: ReadonlyArray<{ type: string; ammo: number }>) {
         this.player = player;
@@ -71,6 +76,11 @@ export class WeaponManager {
         return this.weapons[this.curWeapIdx];
     }
 
+    /** A throwable is being cooked (the cook animation runs; survev cookingThrowable). */
+    get cooking(): boolean {
+        return this.player.animType === "cook";
+    }
+
     /** Equips a slot with the switch delay rules (survev setCurWeapIndex). */
     setCurWeapIndex(idx: number, forceSwitch = false): void {
         const player = this.player;
@@ -86,7 +96,8 @@ export class WeaponManager {
         const curDef = getDef(this.activeWeapon || "fists");
         // a burst cannot be interrupted by a switch
         if (curDef.type === "gun" && curDef.fireMode === "burst" && this.bursts.length && !forceSwitch) return;
-        // TODO(M5): switching away while cooking a throwable throws it
+        // switching away while cooking drops the throwable at the feet (survev setCurWeapIndex)
+        if (this.cooking && idx !== WeaponSlot.Throwable) throwThrowable(player.ctx, player, true);
 
         player.cancelAnim();
         player.shotSlowdownTimer = 0;
@@ -186,6 +197,7 @@ export class WeaponManager {
     update(ctx: SimContext, dt: number): void {
         this.freeSwitchTimer -= dt;
         this.recoilTicker += dt;
+        this.throwableCooldown -= dt;
         for (const w of this.weapons) {
             w.cooldown -= dt;
             w.recoilTime -= dt;
@@ -195,7 +207,7 @@ export class WeaponManager {
         const def = getDef(this.activeWeapon || "fists");
         if (def.type === "gun") this.gunUpdate(ctx, def, dt);
         else if (def.type === "melee") this.meleeUpdate(ctx, def, dt);
-        // TODO(M5): throwables (cook on shootStart, throw on release) need the projectile system
+        updateThrowable(ctx, this.player, dt);
     }
 
     /**
@@ -211,7 +223,6 @@ export class WeaponManager {
             this.scheduledReload = false;
             this.tryReload();
         }
-        if (gunFireGate(def)) return;
         const carry = readyCarry(weapon.cooldown, dt);
         switch (def.fireMode) {
             case "auto":
