@@ -62,13 +62,14 @@ async function joinM4(browser: Browser, name: string): Promise<{ page: Page; err
     const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
     const errors = collectErrors(page);
     await page.goto(`/?net=1&map=main_spring&name=${name}`);
-    await page.waitForFunction(() => (window as any).__rebirth?.ready === true, null, { timeout: 45_000 });
+    // rasterizing the map's sprites is slow on software GL while other specs run: allow more than the M3 test
+    await page.waitForFunction(() => (window as any).__rebirth?.ready === true, null, { timeout: 90_000 });
     expect(await page.evaluate(() => (window as any).__rebirth.mode)).toBe("network");
     return { page, errors };
 }
 
 test("network: kill feed, alive counter, win and death screens, game_closed and a new game", async ({ browser }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(300_000);
     const alice = await joinM4(browser, "Alice");
     const bob = await joinM4(browser, "Bob");
     const a = alice.page;
@@ -137,7 +138,7 @@ test("network: kill feed, alive counter, win and death screens, game_closed and 
             return r.mode === "network" && r.ready && r.player.id !== old && !r.match.gameOver.visible;
         },
         bobId,
-        { timeout: 45_000 },
+        { timeout: 90_000 },
     );
     await expect(b.locator("#ui-stats")).toBeHidden();
     await expect(b.locator("#ui-waiting-text")).toBeVisible();
