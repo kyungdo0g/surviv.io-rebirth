@@ -111,7 +111,17 @@ export class ObjectCache {
         } else {
             const vals: number[] = new Array(codec.fields.length).fill(0);
             codec.quantize(view, this.ctx, vals);
-            e = { id: view.id, codec, tick, prevTick: -1, vals, prevVals: vals.slice(), mask: -1, full: null, part: null };
+            e = {
+                id: view.id,
+                codec,
+                tick,
+                prevTick: -1,
+                vals,
+                prevVals: vals.slice(),
+                mask: -1,
+                full: null,
+                part: null,
+            };
             this.entries.set(view.id, e);
         }
         this.stats.quantized++;
@@ -291,7 +301,8 @@ export class UpdateDecoder {
         const tick = r.readUint32();
         const flags = r.readUint16();
         const ack = r.readUint8();
-        if (flags & UpdateFlag.Reserved) throw new RangeError(`Update: unsupported section flags 0x${flags.toString(16)}`);
+        if (flags & UpdateFlag.Reserved)
+            throw new RangeError(`Update: unsupported section flags 0x${flags.toString(16)}`);
         const deletedIds: number[] = [];
         if (flags & UpdateFlag.DeletedObjects) {
             for (let n = r.readUint16(); n > 0; n--) {

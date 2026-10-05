@@ -6,8 +6,18 @@
 import type { BitReader, BitWriter } from "@rebirth/core";
 import type { PlayerInput } from "@rebirth/sim";
 import { MsgType, NetLimits } from "./constants.ts";
-import { clampUint, readGameType, readMapType, readUnitVec, writeCount, writeGameType, writeMapType } from "./quant.ts";
-import { dequantize, quantize, writeUnitVec } from "./quant.ts";
+import {
+    clampUint,
+    dequantize,
+    quantize,
+    readGameType,
+    readMapType,
+    readUnitVec,
+    writeCount,
+    writeGameType,
+    writeMapType,
+    writeUnitVec,
+} from "./quant.ts";
 
 /** Client -> server, first message on a connection. survev layout minus the token (it is in the /play URL). */
 export interface JoinMsg {
@@ -32,7 +42,14 @@ export function writeJoin(w: BitWriter, m: JoinMsg): void {
 export function readJoin(r: BitReader): JoinMsg {
     const protocol = r.readUint32();
     const name = r.readString(NetLimits.PlayerNameMaxBytes);
-    return { type: MsgType.Join, protocol, name, useTouch: r.readBoolean(), isMobile: r.readBoolean(), bot: r.readBoolean() };
+    return {
+        type: MsgType.Join,
+        protocol,
+        name,
+        useTouch: r.readBoolean(),
+        isMobile: r.readBoolean(),
+        bot: r.readBoolean(),
+    };
 }
 
 /** Server -> client after a successful join (original layout: teamMode u8, playerId u16, started, emotes). */

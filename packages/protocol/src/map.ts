@@ -16,7 +16,7 @@
 // mapPos = 16 bits per axis over [0, width] x [0, height] (quant.ts).
 import type { BitReader, BitWriter } from "@rebirth/core";
 import type { GroundPatchData, MapData, MapObjectSpawn, PlaceData, RiverData } from "@rebirth/sim";
-import { MsgType, NetLimits } from "./constants.ts";
+import { type MsgType, NetLimits } from "./constants.ts";
 import {
     clampUint,
     dequantize,
@@ -69,7 +69,10 @@ export function writeMap(w: BitWriter, map: MapData): void {
         writeMapType(w, o.type);
         writeMapPos(w, ctx, o.pos);
         w.writeBits(o.ori & 3, 2);
-        w.writeBits(quantize(o.scale, NetLimits.MapObjectMinScale, NetLimits.MapObjectMaxScale, SCALE_BITS), SCALE_BITS);
+        w.writeBits(
+            quantize(o.scale, NetLimits.MapObjectMinScale, NetLimits.MapObjectMaxScale, SCALE_BITS),
+            SCALE_BITS,
+        );
         w.writeBits(o.layer & 3, 2);
     }
     writeCount(w, map.groundPatches.length, 8);

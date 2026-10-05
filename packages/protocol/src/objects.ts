@@ -85,7 +85,7 @@ function codeOf<T extends string>(list: readonly T[], value: T | undefined): num
     return i < 0 ? 0 : i;
 }
 
-function valueOf<T>(list: readonly T[], code: number, what: string): T {
+function fromCode<T>(list: readonly T[], code: number, what: string): T {
     const v = list[code];
     if (v === undefined) throw new RangeError(`unknown ${what} code ${code}`);
     return v;
@@ -156,9 +156,9 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
             chest: gameTypeOf(v[11]),
             backpack: gameTypeOf(v[12]),
             scale: dequantize(v[13], NetLimits.PlayerMinScale, NetLimits.PlayerMaxScale, SCALE_BITS),
-            anim: { type: valueOf(ANIM_TYPES, v[14], "anim"), seq: v[15] },
+            anim: { type: fromCode(ANIM_TYPES, v[14], "anim"), seq: v[15] },
             action: {
-                type: valueOf(ACTION_TYPES, v[16], "action"),
+                type: fromCode(ACTION_TYPES, v[16], "action"),
                 seq: v[17],
                 item: gameTypeOf(v[18]),
                 duration: dequantize(v[19], 0, NetLimits.ActionMaxDuration, DURATION_BITS),
@@ -257,7 +257,14 @@ export const StructureCodec: ObjectCodec<StructureView> = {
         out[4] = v.layer & 3;
     },
     build(id, v, ctx) {
-        return { id, kind: "structure", type: mapTypeOf(v[0]), pos: dequantizePos(ctx, v[1], v[2]), layer: v[4], ori: v[3] };
+        return {
+            id,
+            kind: "structure",
+            type: mapTypeOf(v[0]),
+            pos: dequantizePos(ctx, v[1], v[2]),
+            layer: v[4],
+            ori: v[3],
+        };
     },
 };
 
@@ -302,7 +309,14 @@ export const LootCodec: ObjectCodec<LootView> = {
         out[4] = v.layer & 3;
     },
     build(id, v, ctx) {
-        return { id, kind: "loot", type: gameTypeOf(v[0]), pos: dequantizePos(ctx, v[1], v[2]), layer: v[4], count: v[3] };
+        return {
+            id,
+            kind: "loot",
+            type: gameTypeOf(v[0]),
+            pos: dequantizePos(ctx, v[1], v[2]),
+            layer: v[4],
+            count: v[3],
+        };
     },
 };
 

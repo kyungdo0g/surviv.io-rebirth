@@ -168,7 +168,7 @@ export class GameConnection {
     /** Sends raw bytes (tests use it for malformed packets). */
     sendRaw(bytes: Uint8Array<ArrayBuffer>): void {
         const ws = this.ws;
-        if (!ws || ws.readyState !== 1 || this.disconnectReason !== null) return;
+        if (ws?.readyState !== 1 || this.disconnectReason !== null) return;
         ws.send(bytes);
         this.bytesUp += bytes.byteLength;
         this.framesUp++;

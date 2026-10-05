@@ -54,12 +54,10 @@ export function diffClose(actual: unknown, expected: unknown, tol: TolFn, path: 
     const ke = definedKeys(expected);
     if (ka.join(",") !== ke.join(",")) return `${at}: keys [${ka}] != [${ke}]`;
     for (const k of ke) {
-        const d = diffClose(
-            (actual as Record<string, unknown>)[k],
-            (expected as Record<string, unknown>)[k],
-            tol,
-            [...path, k],
-        );
+        const d = diffClose((actual as Record<string, unknown>)[k], (expected as Record<string, unknown>)[k], tol, [
+            ...path,
+            k,
+        ]);
         if (d) return d;
     }
     return null;

@@ -2,14 +2,7 @@
 // tolerances of every field.
 import type { Rng, Vec2 } from "@rebirth/core";
 import { GameObjectRegistry, MapObjectRegistry } from "@rebirth/defs";
-import type {
-    BulletEvent,
-    LocalPlayerState,
-    MapData,
-    ObjectView,
-    PlayerInput,
-    Snapshot,
-} from "@rebirth/sim";
+import type { BulletEvent, LocalPlayerState, MapData, ObjectView, PlayerInput, Snapshot } from "@rebirth/sim";
 import { BAG_ITEMS, type NetCtx } from "../src/index.ts";
 import { type TolFn, tolTable } from "./close.ts";
 
