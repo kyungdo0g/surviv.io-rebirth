@@ -61,7 +61,7 @@ describe("PROTOCOL_HASH", () => {
         expect(Number.isInteger(PROTOCOL_HASH)).toBe(true);
         expect(PROTOCOL_HASH).toBeGreaterThanOrEqual(0);
         expect(PROTOCOL_HASH).toBeLessThan(2 ** 32);
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(1);
+        expect(PROTOCOL_SCHEMA_VERSION).toBe(2);
         expect(PROTOCOL_HASH).toBe(
             computeProtocolHash(PROTOCOL_SCHEMA_VERSION, GameObjectRegistry.types, MapObjectRegistry.types),
         );
@@ -70,9 +70,10 @@ describe("PROTOCOL_HASH", () => {
     it("changes when an id is added or the schema version changes", () => {
         const go = GameObjectRegistry.types;
         const mo = MapObjectRegistry.types;
-        expect(computeProtocolHash(1, [...go, "new_gun"], mo)).not.toBe(PROTOCOL_HASH);
-        expect(computeProtocolHash(1, go, [...mo, "new_obstacle"])).not.toBe(PROTOCOL_HASH);
-        expect(computeProtocolHash(2, go, mo)).not.toBe(PROTOCOL_HASH);
+        const v = PROTOCOL_SCHEMA_VERSION;
+        expect(computeProtocolHash(v, [...go, "new_gun"], mo)).not.toBe(PROTOCOL_HASH);
+        expect(computeProtocolHash(v, go, [...mo, "new_obstacle"])).not.toBe(PROTOCOL_HASH);
+        expect(computeProtocolHash(v + 1, go, mo)).not.toBe(PROTOCOL_HASH);
     });
 
     it("uses FNV-1a 32", () => {

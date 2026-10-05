@@ -10,7 +10,8 @@ import { DamageType, GameConfig, getDefOfType, type ThrowableDef } from "@rebirt
 import { randomPointInCircle } from "../mapgen/random.ts";
 import type { ProjectileView } from "../view.ts";
 import type { SimContext } from "../world/context.ts";
-import { sameLayer } from "../world/world.ts";
+import { checkStairs } from "../world/layers.ts";
+import { type Entity, sameLayer } from "../world/world.ts";
 
 /** Gravity in units/s^2 (survev: derived from recorded original potato cannon packets). */
 const GRAVITY = 10.5;
@@ -35,6 +36,8 @@ const STROBE_STRIKES = 3;
 const BROKEN_ARROW_BONUS = 2;
 const TIME_EPS = 1e-9;
 const MAX_ID = 0xffff;
+/** Projectiles test stairs with a tiny circle at their centre (survev projectile.ts checkStairs(objs, 0.01)). */
+const STAIRS_PROBE_RAD = 0.01;
 
 interface StrobeState {
     timeToPing: number;
@@ -58,7 +61,8 @@ export interface Projectile {
     velZ: number;
     dir: Vec2;
     readonly throwDir: Vec2;
-    readonly layer: number;
+    /** changes on stairs like a player's (M5b) */
+    layer: number;
     /** def.rad x 0.5; collisions use half of it */
     readonly rad: number;
     fuse: number;
@@ -94,6 +98,7 @@ export class ProjectileSystem {
     private readonly host: ProjectileHost;
     readonly projectiles: Projectile[] = [];
     private nextId = 1;
+    private readonly scratch: Entity[] = [];
 
     constructor(host: ProjectileHost) {
         this.host = host;
@@ -233,7 +238,8 @@ export class ProjectileSystem {
             max: { x: Math.max(posOld.x, p.pos.x) + p.rad, y: Math.max(posOld.y, p.pos.y) + p.rad },
         };
         let insideObstacle = false;
-        for (const obj of world.query(box)) {
+        const objs = world.query(box, this.scratch);
+        for (const obj of objs) {
             if (obj.kind === "obstacle") {
                 if (obj.dead || !sameLayer(p.layer, obj.layer)) continue;
                 const hit = collider.intersect(collider.createCircle(p.pos, rad), obj.collider);
@@ -277,7 +283,8 @@ export class ProjectileSystem {
         if (!insideObstacle) p.obstacleBelowHeight = 0;
         p.pos = world.clampToMap(p.pos, p.rad);
         if (p.dead) return;
-        // TODO(M5b): projectiles change layer on stairs like players (survev checkStairs)
+        // thrown projectiles go down (and up) stairs like players (survev projectile.ts checkStairs, radius 0.01)
+        p.layer = checkStairs(p.pos, STAIRS_PROBE_RAD, p.layer, objs).layer;
         if (p.posZ === p.obstacleBelowHeight && def.explodeOnImpact) {
             this.explode(p);
             return;

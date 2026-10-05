@@ -33,6 +33,7 @@ import {
     randPlanes,
     randPlayerInfos,
     randProjectiles,
+    randRecorders,
     randRoles,
     randSmokes,
     randStats,
@@ -80,6 +81,7 @@ function matchFields(
         projectiles: randProjectiles(rng, ctx),
         smokes: randSmokes(rng, ctx),
         airstrikeZones: randZones(rng, ctx),
+        recorders: randRecorders(rng, ctx),
     };
     if (rng.bool(0.1)) fields.gameOver = randGameOver(rng);
     if (rng.bool(0.1)) fields.playerStats = randStats(rng);

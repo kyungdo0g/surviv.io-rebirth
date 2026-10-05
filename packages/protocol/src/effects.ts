@@ -1,7 +1,7 @@
-// Update message sections of M5a (explosions, projectiles, smoke, air strike zones), announced by the extended
-// flags word (UpdateExtFlag). Layouts follow the original UpdateMsg explosion / air strike zone records and the
-// Projectile / Smoke object serializations (netcode.md "Update message", survev objectSerializeFns.ts) where they
-// exist; differences are noted per section. Projectiles and smokes are sent as complete lists every update while any
+// Update message sections of M5a (explosions, projectiles, smoke, air strike zones) and M5b (recorders), announced by
+// the extended flags word (UpdateExtFlag). Layouts follow the original UpdateMsg explosion / air strike zone records
+// and the Projectile / Smoke object serializations (netcode.md "Update message", survev objectSerializeFns.ts) where
+// they exist; differences are noted per section. Projectiles and smokes are sent as complete lists every update while any
 // is in view (like planes), not as delta-encoded objects.
 //
 //   Explosions:     u8 count x {pos mapPos, type game type, layer 2, align} (original record)
@@ -11,9 +11,18 @@
 //                   fields, interior as one bit instead of 6, plus the id), align
 //   AirstrikeZones: u8 count x {id u8, pos mapPos, rad float 0..256 8 bits, duration float 0..60 8 bits, zoneT float
 //                   0..1 8 bits} (original record with 16-bit positions, plus id and progress), align
+//   Recorders (M5b): u8 count x {id u16, type map type, pos mapPos, layer 2}, align; the recording's sound id is the
+//                   def's button.sound.on (the original client played it from the button seq of the obstacle)
 import type { BitReader, BitWriter } from "@rebirth/core";
-import { GameConfig } from "@rebirth/defs";
-import type { AirstrikeZoneView, ExplosionEvent, ProjectileView, SmokeView, Snapshot } from "@rebirth/sim";
+import { GameConfig, getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
+import type {
+    AirstrikeZoneView,
+    ExplosionEvent,
+    ProjectileView,
+    RecorderEvent,
+    SmokeView,
+    Snapshot,
+} from "@rebirth/sim";
 import { UpdateExtFlag } from "./constants.ts";
 import {
     clampUint,
@@ -22,10 +31,12 @@ import {
     quantize,
     readGameType,
     readMapPos,
+    readMapType,
     readUnitVec,
     writeCount,
     writeGameType,
     writeMapPos,
+    writeMapType,
     writeUnitVec,
 } from "./quant.ts";
 
@@ -144,8 +155,41 @@ export function readAirstrikeZones(r: BitReader, ctx: NetCtx): AirstrikeZoneView
     return out;
 }
 
+/** Sound of a recorder obstacle's recording (its def's button.sound.on; "" for unknown types). */
+export function recorderSound(type: string): string {
+    if (!hasMapObjectDef(type)) return "";
+    const def = getMapObjectDef(type);
+    return def.type === "obstacle" ? (def.button?.sound.on ?? "") : "";
+}
+
+export function writeRecorders(w: BitWriter, ctx: NetCtx, list: readonly RecorderEvent[]): void {
+    writeCount(w, list.length, 8);
+    for (const e of list) {
+        w.writeUint16(clampUint(e.id, 16));
+        writeMapType(w, e.type);
+        writeMapPos(w, ctx, e.pos);
+        w.writeBits(e.layer & 3, 2);
+    }
+    w.alignToNextByte();
+}
+
+export function readRecorders(r: BitReader, ctx: NetCtx): RecorderEvent[] {
+    const out: RecorderEvent[] = [];
+    for (let n = r.readUint8(); n > 0; n--) {
+        const id = r.readUint16();
+        const type = readMapType(r);
+        const pos = readMapPos(r, ctx);
+        const layer = r.readBits(2);
+        out.push({ id, type, sound: recorderSound(type), pos, layer });
+    }
+    r.alignToNextByte();
+    return out;
+}
+
 /** The M5 sections of a snapshot, as the decoder fills them (empty lists when absent). */
-export type EffectSections = Required<Pick<Snapshot, "explosions" | "projectiles" | "smokes" | "airstrikeZones">>;
+export type EffectSections = Required<
+    Pick<Snapshot, "explosions" | "projectiles" | "smokes" | "airstrikeZones" | "recorders">
+>;
 
 /** Extended flags announcing the non-empty M5 sections of `snap` (0: no extended flags word). */
 export function effectFlags(snap: Snapshot): number {
@@ -154,6 +198,7 @@ export function effectFlags(snap: Snapshot): number {
     if (snap.projectiles?.length) ext |= UpdateExtFlag.Projectiles;
     if (snap.smokes?.length) ext |= UpdateExtFlag.Smokes;
     if (snap.airstrikeZones?.length) ext |= UpdateExtFlag.AirstrikeZones;
+    if (snap.recorders?.length) ext |= UpdateExtFlag.Recorders;
     return ext;
 }
 
@@ -163,6 +208,7 @@ export function writeEffects(w: BitWriter, ctx: NetCtx, snap: Snapshot, ext: num
     if (ext & UpdateExtFlag.Projectiles) writeProjectiles(w, ctx, snap.projectiles ?? []);
     if (ext & UpdateExtFlag.Smokes) writeSmokes(w, ctx, snap.smokes ?? []);
     if (ext & UpdateExtFlag.AirstrikeZones) writeAirstrikeZones(w, ctx, snap.airstrikeZones ?? []);
+    if (ext & UpdateExtFlag.Recorders) writeRecorders(w, ctx, snap.recorders ?? []);
 }
 
 /** Reads the M5 sections announced by `ext`; throws on extended flags that are not defined yet. */
@@ -173,5 +219,6 @@ export function readEffects(r: BitReader, ctx: NetCtx, ext: number): EffectSecti
         projectiles: ext & UpdateExtFlag.Projectiles ? readProjectiles(r, ctx) : [],
         smokes: ext & UpdateExtFlag.Smokes ? readSmokes(r, ctx) : [],
         airstrikeZones: ext & UpdateExtFlag.AirstrikeZones ? readAirstrikeZones(r, ctx) : [],
+        recorders: ext & UpdateExtFlag.Recorders ? readRecorders(r, ctx) : [],
     };
 }

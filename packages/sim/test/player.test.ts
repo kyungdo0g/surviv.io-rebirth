@@ -241,6 +241,6 @@ describe("obstacles", () => {
         const door = world.get(1) as Obstacle;
         expect(door.door?.open).toBe(false);
         expect(door.blocking).toBe(true);
-        expect(door.toView().door).toEqual({ open: false, locked: false, canUse: true });
+        expect(door.toView().door).toEqual({ open: false, locked: false, canUse: true, seq: 0 });
     });
 });

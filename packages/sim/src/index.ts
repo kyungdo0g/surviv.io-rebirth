@@ -25,7 +25,7 @@ export {
 export { DEFAULT_MIN_PLAYERS, entityView, Game, type GameInit, VIEW_ASPECT, VIEW_MARGIN, viewBounds } from "./game.ts";
 export * from "./input.ts";
 export { BAG_ITEMS, gearLevel, gearQuality, Inventory, SCOPE_LEVELS, THROWABLE_LIST } from "./items/inventory.ts";
-export { dropGun, dropMelee, playerDropLoot, unknownLootTiers } from "./loot/drops.ts";
+export { destroyTypeOf, dropGun, dropMelee, playerDropLoot, unknownLootTiers } from "./loot/drops.ts";
 export { type AddLootOptions, Loot, LootSystem } from "./loot/loot.ts";
 export { pickEntry, type RolledItem, rollLootList, rollTier } from "./loot/lootTable.ts";
 export { closestLoot, freeGunSlot, type PickupResult, pickupLoot } from "./loot/pickup.ts";
@@ -40,12 +40,22 @@ export { type CircleChoice, Gas, gasCircle, gasTimeLeft } from "./match/gas.ts";
 export { KILL_LEADER_ROLE, Match, type MatchOptions, playerStats } from "./match/match.ts";
 export { type FallingAirdrop, type MapIndicator, type PlaneState, PlaneSystem } from "./match/planes.ts";
 export { type SpectateAction, SpectateSystem } from "./match/spectate.ts";
+export { UnlockSystem, type UnlockTiming, unlockTimings } from "./match/unlocks.ts";
 export { boostHealAmounts, defaultRules, type SimRules } from "./rules.ts";
 export type * from "./view.ts";
 export { fireGun } from "./weapons/gun.ts";
 export { meleeCollider, meleeDamage } from "./weapons/melee.ts";
+export { randomWeaponSwap } from "./weapons/potatoSwap.ts";
 export { cookThrowable, throwableDef, throwThrowable, updateThrowable } from "./weapons/throwable.ts";
 export { gunDef, TIME_EPS, WeaponManager, type WeaponSlotState } from "./weapons/weaponManager.ts";
+export {
+    breakWallAttachments,
+    goreRegionKill,
+    healRegionRate,
+    onBuildingObstacleDestroyed,
+    parentBuildingOf,
+    removeAnchoredDecals,
+} from "./world/buildings.ts";
 export {
     BOOST_TIER_EDGES,
     boostHealRate,
@@ -56,8 +66,40 @@ export {
     useItem,
 } from "./world/consumables.ts";
 export type { SimContext } from "./world/context.ts";
-export { Building, Decal, type MapEntity, Obstacle, Structure } from "./world/entities.ts";
-export { interactableObstacles, updateObstacleTimers, useObstacle } from "./world/interact.ts";
+export { BEHAVIOUR_FIELDS, type FieldStatus } from "./world/coverage.ts";
+export {
+    autoOpenDoors,
+    checkDoorLayer,
+    DOOR_USE_COOLDOWN,
+    interactDoor,
+    playerSide,
+    scheduleDoor,
+    setDoorOpen,
+    toggleDoor,
+    unlockDoor,
+    updateDoorTimers,
+} from "./world/doors.ts";
+export {
+    Building,
+    Decal,
+    type DelayedDoorAction,
+    type DoorState,
+    type MapEntity,
+    Obstacle,
+    type PuzzleState,
+    type Stair,
+    Structure,
+} from "./world/entities.ts";
+export {
+    interactableObstacles,
+    interactObstacle,
+    updateObstacleTimers,
+    useButton,
+    useObstacle,
+} from "./world/interact.ts";
+export { aimLayerOf, checkStairs, floorsVisible, type StairsResult } from "./world/layers.ts";
 export { moveWithCollision, Player, type PlayerActionType } from "./world/player.ts";
+export { PUZZLE_CODES, puzzleCode, puzzlePieceToggled, updatePuzzle } from "./world/puzzles.ts";
 export { type Smoke, type SmokeHost, SmokeSystem, VISION_RECOVERY_TIME } from "./world/smoke.ts";
+export { updateSurroundings } from "./world/surroundings.ts";
 export { type Entity, sameLayer, World } from "./world/world.ts";

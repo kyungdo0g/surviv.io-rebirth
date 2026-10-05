@@ -6,6 +6,7 @@ import type { DamageParams } from "../combat/damage.ts";
 import type { ExplosionSystem } from "../combat/explosions.ts";
 import type { ProjectileSystem } from "../combat/projectiles.ts";
 import type { LootSystem } from "../loot/loot.ts";
+import type { Gas } from "../match/gas.ts";
 import type { PlaneSystem } from "../match/planes.ts";
 import type { SimRules } from "../rules.ts";
 import type { Obstacle } from "./entities.ts";
@@ -30,8 +31,10 @@ export interface SimContext {
     readonly explosions: ExplosionSystem;
     /** smoke emitters and clouds (M5) */
     readonly smokes: SmokeSystem;
-    /** planes: air drops (flare guns) and air strikes (strobes) (M4/M5) */
+    /** planes: air drops (flare guns) and air strikes (strobes) (M4/M5); map pings ("ping_unlock", M5b) */
     readonly planes: PlaneSystem;
+    /** red zone (heal regions do not work in the gas, M5b) */
+    readonly gas: Gas;
     /** simulation time in seconds */
     readonly time: number;
     getPlayer(id: number): Player | undefined;
@@ -41,6 +44,8 @@ export interface SimContext {
     damageObstacle(obstacle: Obstacle, params: DamageParams): void;
     /** Called by killPlayer once the victim is dead and kill credit given: kill feed, alive count, game over. */
     onPlayerKilled(victim: Player, params: DamageParams, credit: Player | undefined): void;
-    /** Registers an obstacle whose timers (opening crate, button cooldown) must run every tick. */
+    /** Registers an obstacle whose timers (opening crate, button cooldown, door delays, regrowth) run every tick. */
     activateObstacle(obstacle: Obstacle): void;
+    /** A recorder was used: viewers in range get a RecorderEvent (M5b). */
+    onRecorderUsed(obstacle: Obstacle): void;
 }

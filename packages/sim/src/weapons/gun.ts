@@ -16,6 +16,8 @@ const DEFAULT_JITTER = 0.25;
 /** The player moved this tick when it travelled more than this (moveSpread applies) (survev). */
 const MOVE_SPREAD_EPS = 0.01;
 
+/** Radius of the gun probe that skips colliders of the other floor (survev: GameConfig.player.radius). */
+const PLAYER_RAD = GameConfig.player.radius;
 /** Projectiles of potato guns leave the muzzle at this height (survev fireWeapon addProjectile). */
 const PROJECTILE_HEIGHT = 0.5;
 
@@ -34,6 +36,8 @@ function clipMuzzle(
     gunLen: number,
     layer: number,
 ): MuzzleClip {
+    // firing down a stairwell the gun can start inside a collider of the other floor: that one is ignored (survev)
+    const ownFloor = player.layer & 1;
     let clip: MuzzleClip = {
         len: gunLen + CLIP_EXTRA,
         point: v2.add(gunPos, v2.mul(dir, gunLen + CLIP_EXTRA)),
@@ -44,6 +48,12 @@ function clipMuzzle(
     for (const obj of ctx.world.query(box, player.scratch)) {
         if (obj.kind !== "obstacle" || obj.dead || !obj.collidable) continue;
         if (!sameLayer(obj.layer, layer) || obj.height < GameConfig.bullet.height) continue;
+        if (
+            !sameLayer(ownFloor, layer) &&
+            collider.intersect(collider.createCircle(gunPos, PLAYER_RAD), obj.collider)
+        ) {
+            continue;
+        }
         const res = collider.intersectSegment(obj.collider, gunPos, clip.point);
         if (!res) continue;
         const colPos = v2.add(res.point, v2.mul(res.normal, 0.01));
@@ -75,8 +85,8 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     player.cancelAction();
     weapon.ammo--;
 
-    // TODO(M4+): firing down stairs uses the aim layer; players stay on their layer until stairs exist
-    const layer = player.layer;
+    // bullets fly on the aim layer: on stairs, facing down or up them shoots into that floor (survev fireWeapon)
+    const layer = player.aimLayer;
     const gunOff = def.isDual ? (def.dualOffset ?? 0) * (offHand ? 1 : -1) : def.barrelOffset;
     const gunPos = v2.add(player.pos, v2.mul(v2.perp(dir), gunOff));
     const gunLen = def.barrelLength;

@@ -20,11 +20,12 @@ import {
     type PlayerInput,
     type PlayerStatsView,
     type ProjectileView,
+    type RecorderEvent,
     type RoleAnnouncementEvent,
     type SmokeView,
     type Snapshot,
 } from "@rebirth/sim";
-import { BAG_ITEMS, type NetCtx } from "../src/index.ts";
+import { BAG_ITEMS, type NetCtx, recorderSound } from "../src/index.ts";
 import { type TolFn, tolTable } from "./close.ts";
 
 export const GAME_TYPES = GameObjectRegistry.types;
@@ -94,6 +95,7 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 },
                 shot: { seq: rng.int(0, 65535), offHand: rng.bool() },
                 wearingPan: rng.bool(),
+                healEffect: rng.bool(0.2),
             };
         case "obstacle": {
             const view: ObjectView = {
@@ -107,12 +109,14 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 healthT: rng.next(),
                 dead: rng.bool(0.2),
             };
-            if (rng.bool(0.3)) view.door = { open: rng.bool(), locked: rng.bool(), canUse: rng.bool() };
+            if (rng.bool(0.3)) {
+                view.door = { open: rng.bool(), locked: rng.bool(), canUse: rng.bool(), seq: rng.int(0, 65535) };
+            }
             if (rng.bool(0.2)) view.button = { onOff: rng.bool(), canUse: rng.bool(), seq: rng.int(0, 65535) };
             return view;
         }
-        case "building":
-            return {
+        case "building": {
+            const view: ObjectView = {
                 id,
                 kind,
                 type: randMapType(rng),
@@ -122,11 +126,24 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 occupied: rng.bool(),
                 ceilingDead: rng.bool(),
                 ceilingDamaged: rng.bool(),
+                occupiedDisabled: rng.bool(0.2),
             };
+            if (rng.bool(0.3)) view.puzzle = { solved: rng.bool(), errSeq: rng.int(0, 65535) };
+            return view;
+        }
         case "structure":
-            return { id, kind, type: randMapType(rng), pos, layer, ori: rng.int(0, 3) };
+            return { id, kind, type: randMapType(rng), pos, layer, ori: rng.int(0, 3), interiorSoundAlt: rng.bool() };
         case "decal":
-            return { id, kind, type: randMapType(rng), pos, layer, ori: rng.int(0, 3), scale: rng.range(0.125, 2.5) };
+            return {
+                id,
+                kind,
+                type: randMapType(rng),
+                pos,
+                layer,
+                ori: rng.int(0, 3),
+                scale: rng.range(0.125, 2.5),
+                goreKills: rng.bool(0.8) ? 0 : rng.int(0, 255),
+            };
         case "loot":
             return { id, kind, type: randGameType(rng), pos, layer, count: rng.int(0, 65535) };
     }
@@ -391,6 +408,21 @@ export function randZones(rng: Rng, ctx: NetCtx): AirstrikeZoneView[] {
         duration: rng.range(0, 60),
         zoneT: rng.next(),
     }));
+}
+
+/** Recorder events: map types that are recorders, so the decoder's sound lookup matches (M5b). */
+export function randRecorders(rng: Rng, ctx: NetCtx): RecorderEvent[] {
+    const recorders = MAP_TYPES.filter((t) => t.startsWith("recorder_"));
+    return Array.from({ length: rng.bool(0.8) ? 0 : rng.int(1, 3) }, () => {
+        const type = rng.pick(recorders);
+        return {
+            id: rng.int(1, 65535),
+            type,
+            sound: recorderSound(type),
+            pos: randPos(rng, ctx),
+            layer: rng.int(0, 3),
+        };
+    });
 }
 
 export function randInput(rng: Rng): PlayerInput {

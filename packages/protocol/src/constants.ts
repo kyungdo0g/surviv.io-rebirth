@@ -95,8 +95,8 @@ export const UpdateFlag = {
 
 /**
  * Extended Update section flags (u16 after the ack byte when UpdateFlag.Extended is set). Sections follow the
- * DeletePlayerIds section in bit order (M5a: bits 0-3). Bits 4-15 are reserved for the sections still to come
- * (player status, group status, emotes, ...); a decoder rejects them until they are defined.
+ * DeletePlayerIds section in bit order (M5a: bits 0-3, M5b: bit 4). Bits 5-15 are reserved for the sections still
+ * to come (player status, group status, emotes, ...); a decoder rejects them until they are defined.
  */
 export const UpdateExtFlag = {
     /** explosions since the previous update (original Explosions) */
@@ -107,8 +107,10 @@ export const UpdateExtFlag = {
     Smokes: 1 << 2,
     /** live air strike zones (sent every update while any) */
     AirstrikeZones: 1 << 3,
+    /** recorders used since the previous update (M5b) */
+    Recorders: 1 << 4,
     /** not defined yet */
-    Reserved: 0xfff0,
+    Reserved: 0xffe0,
 } as const;
 
 /** Reasons carried by the Disconnect message (and the WebSocket close frame). */

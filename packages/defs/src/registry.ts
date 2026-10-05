@@ -3,7 +3,11 @@
 import gameObjectsJson from "./generated/gameObjects.json" with { type: "json" };
 import mapObjectsJson from "./generated/mapObjects.json" with { type: "json" };
 
-export const PROTOCOL_SCHEMA_VERSION = 1;
+/**
+ * Bump whenever the wire format in @rebirth/protocol changes, so clients built against an older format are rejected
+ * at join (it feeds PROTOCOL_HASH). 1: M3 · 2: M4 match sections, M5a effects/extended flags, M5b doors/puzzles/recorders.
+ */
+export const PROTOCOL_SCHEMA_VERSION = 2;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

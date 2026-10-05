@@ -55,6 +55,33 @@
 // - Smoke hides players: with `rules.smokeHidesPlayers` (default on) a player whose centre is inside a smoke cloud
 //   is left out of other players' snapshots unless the viewer is within `rules.smokeRevealDistance` (rebirth rule:
 //   the original client only draws the smoke above them). Bullets they fire are still reported.
+//
+// M5b additions (buildings: doors, ceilings, layers and stairs, puzzles, unlocks, obstacle behaviours; backward
+// compatible in the same way: optional in the types, always filled by the simulation and by the network decoder):
+// - Doors move: when a door opens, a hinged door's `ori` turns a quarter away from the opener around its hinge
+//   (`pos` is the hinge and stays), a sliding door's `pos` moves by its def `slideOffset` along its local y axis;
+//   closing restores both. The collider changes instantly (survev); clients animate towards the new pos/ori at the
+//   def's `door.openSpeed`. ObstacleView `layer` may become 2/3 for doors next to stairs (usable from both floors).
+// - ObstacleView.door: `seq` (increments when an interaction starts: play the def's `door.sound.change`, e.g. a vault
+//   door's delayed opening). `locked` turns false when a scheduled unlock opens the door.
+// - BuildingView: `puzzle` ({solved, errSeq}: on an `errSeq` change play the def's `puzzle.sound.fail` near the
+//   pieces, once `solved` play `puzzle.sound.complete`), `occupiedDisabled` (a `disableBuildingOccupied` obstacle,
+//   the stove, died: the occupied emitters such as chimney smoke stop for good). `ceilingDead` (the def's
+//   `ceiling.destroy.wallCount` walls broke: play the collapse particles/sound and show the residue) and
+//   `ceilingDamaged` (a `damageCeiling` obstacle died) are now driven by the simulation.
+// - StructureView: `interiorSoundAlt` (a solved puzzle named by the def's `interiorSound.puzzle` switched the interior
+//   music to `soundAlt`, e.g. the club after the bathhouse switch, the saloon piano stopping).
+// - PlayerView: `healEffect` (standing in a building heal region, e.g. the bathhouse steam room: heal particles).
+// - DecalView: `goreKills` (players killed in the building's gore region: the club pool turns red along the def's
+//   `gore.fade`).
+// - Layers: players walk between layer 0 (ground) and 1 (underground) over structure stairs, through the "on stairs"
+//   layers 2 (upper half) and 3 (lower half); PlayerView.layer, LocalPlayerState.layer, projectiles and loot carry
+//   them. Snapshots leave out players and loot on the other floor while neither the viewer nor the object is on
+//   stairs (`rules.cullOtherFloors`, rebirth rule: the original client never draws the other floor, so this only
+//   hides what a modified client could reveal). Map objects of both floors are always sent.
+// - Snapshot: `recorders` (RecorderEvent list: recorders used in view since the viewer's previous snapshot; play the
+//   recording `sound`). Scheduled unlocks (MapDef gameConfig.unlocks, e.g. the Cobalt twins bunker) open their doors
+//   and add a "ping_unlock" MapIndicatorView at each door.
 import type { Vec2 } from "@rebirth/core";
 
 export interface RiverData {
@@ -138,6 +165,8 @@ export interface PlayerView extends BaseView {
     shot?: PlayerShot;
     /** a pan in the melee slot is worn on the back while another slot is selected (it reflects bullets) (M2) */
     wearingPan?: boolean;
+    /** standing in a building heal region (heal particles) (M5b) */
+    healEffect?: boolean;
 }
 
 export type AnimType = "none" | "melee" | "cook" | "throw";
@@ -172,7 +201,11 @@ export interface ObstacleView extends BaseView {
     /** health / maxHealth in 0..1 */
     healthT: number;
     dead: boolean;
-    door?: { open: boolean; locked: boolean; canUse: boolean };
+    /**
+     * Door state. `pos`/`ori` follow the door (see the M5b notes); `canUse` is false for doors only buttons or puzzles
+     * move and after an `openOnce` door was used; `seq` increments when an interaction starts (M5b).
+     */
+    door?: { open: boolean; locked: boolean; canUse: boolean; seq?: number };
     /**
      * Interactable obstacle (def `button`: air drop crates, switches) (M4). `onOff` flips and `seq` increments on
      * every use; `canUse` is false while it cannot be used (used once, cooling down). An air drop crate that was
@@ -186,19 +219,29 @@ export interface BuildingView extends BaseView {
     ori: number;
     /** true while any player is inside a ceiling zoom region (the roof fades) */
     occupied: boolean;
+    /** the def's `ceiling.destroy.wallCount` walls were destroyed: the roof collapsed (M5b) */
     ceilingDead: boolean;
+    /** a `damageCeiling` obstacle (stove) was destroyed: roof hole (M5b) */
     ceilingDamaged: boolean;
+    /** a `disableBuildingOccupied` obstacle was destroyed: occupied emitters (chimney smoke) stop for good (M5b) */
+    occupiedDisabled?: boolean;
+    /** buildings with a def `puzzle`: solved, and a counter of failed attempts (M5b) */
+    puzzle?: { solved: boolean; errSeq: number };
 }
 
 export interface StructureView extends BaseView {
     kind: "structure";
     ori: number;
+    /** the def's interiorSound plays its `soundAlt` (its puzzle was solved) (M5b) */
+    interiorSoundAlt?: boolean;
 }
 
 export interface DecalView extends BaseView {
     kind: "decal";
     ori: number;
     scale: number;
+    /** decals with a def `gore` (club pool): players killed in the building's gore region, at most 255 (M5b) */
+    goreKills?: number;
 }
 
 export interface LootView extends BaseView {
@@ -338,6 +381,20 @@ export interface Snapshot {
     smokes?: SmokeView[];
     /** every live air strike zone (M5; 50v50 scheduled air strikes) */
     airstrikeZones?: AirstrikeZoneView[];
+    /** recorders used in view since the viewer's previous snapshot, in order (M5b) */
+    recorders?: RecorderEvent[];
+}
+
+/** A recorder obstacle was used: the client plays its recording (the def's `button.sound.on`) at `pos` (M5b). */
+export interface RecorderEvent {
+    /** object id of the recorder obstacle */
+    id: number;
+    /** MapObjectDefs id, e.g. "recorder_04" */
+    type: string;
+    /** sound id of the recording (the def's button.sound.on), e.g. "log_04" */
+    sound: string;
+    pos: Vec2;
+    layer: number;
 }
 
 /** An explosion (the original UpdateMsg explosion record): the client plays its `explosionEffectType` (M5). */

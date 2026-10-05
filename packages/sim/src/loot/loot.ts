@@ -5,6 +5,7 @@ import { GameConfig, getDef, hasDef } from "@rebirth/defs";
 import { pointInBounds } from "../geom/polygon.ts";
 import { riverWaterAt } from "../mapgen/terrainQuery.ts";
 import type { LootView } from "../view.ts";
+import { checkStairs } from "../world/layers.ts";
 import { type Entity, sameLayer, type World } from "../world/world.ts";
 
 /** Side ammo stacks sit 0.75 left/right of a spawned gun (survev loot.ts AMMO_OFFSET_X/Y). */
@@ -23,6 +24,8 @@ const DRAG = 2.5;
 const SLEEP_EPS = 0.01;
 /** River current: the spline tangent times 0.5 per second (survev Loot.update). */
 const RIVER_PUSH = 0.5;
+/** Owned loot (smartLoot crates) becomes free for everyone after this many seconds (survev Loot.update). */
+const OWNER_TIME = 2;
 
 export interface AddLootOptions {
     /** initial speed along `dir` (default 4.75) */
@@ -36,6 +39,8 @@ export interface AddLootOptions {
     /** guns: carry ammoSpawnCount inside instead of side stacks (preload tables) */
     preloadGun?: boolean;
     source?: "player" | "obstacle" | "map";
+    /** only this player may pick it up, for 2 s or until it dies (smartLoot crates; 0 for anyone) */
+    ownerId?: number;
 }
 
 export class Loot {
@@ -60,6 +65,12 @@ export class Loot {
     pushed = false;
     /** position at the last physics step, for the sleep test */
     lastPos: Vec2;
+    /** only this player may pick it up (0: anyone) */
+    ownerId = 0;
+    /** seconds the owner has had it */
+    ownerTicker = 0;
+    /** drifting under a bridge (touched `lootOnly` stairs): floor surfaces no longer shield it from the river */
+    belowBridge = false;
 
     constructor(id: number, type: string, pos: Vec2, layer: number, count: number) {
         const def = getDef(type);
@@ -128,7 +139,8 @@ export class LootSystem {
         const def = getDef(type);
         const pushSpeed = opts.pushSpeed ?? DEFAULT_PUSH_SPEED;
         const dir = opts.dir ?? v2.randomUnit(this.rngOf());
-        const loot = this.spawn(type, pos, layer, count, pushSpeed, dir);
+        const ownerId = opts.ownerId ?? 0;
+        const loot = this.spawn(type, pos, layer, count, pushSpeed, dir, ownerId);
         if (opts.noSideAmmo || def.type !== "gun") return loot;
         if (opts.preloadGun && !def.ammoInfinite && opts.source !== "player") {
             loot.isPreloadedGun = true;
@@ -138,7 +150,15 @@ export class LootSystem {
         const ammoCount = opts.useCountForAmmo ? count : def.ammoSpawnCount;
         if (ammoCount <= 0) return loot;
         const half = Math.ceil(ammoCount / 2);
-        this.spawn(def.ammo, v2.add(pos, { x: -AMMO_OFFSET_X, y: AMMO_OFFSET_Y }), layer, half, pushSpeed, dir);
+        this.spawn(
+            def.ammo,
+            v2.add(pos, { x: -AMMO_OFFSET_X, y: AMMO_OFFSET_Y }),
+            layer,
+            half,
+            pushSpeed,
+            dir,
+            ownerId,
+        );
         if (ammoCount - half >= 1) {
             this.spawn(
                 def.ammo,
@@ -147,13 +167,23 @@ export class LootSystem {
                 ammoCount - half,
                 pushSpeed,
                 dir,
+                ownerId,
             );
         }
         return loot;
     }
 
-    private spawn(type: string, pos: Vec2, layer: number, count: number, pushSpeed: number, dir: Vec2): Loot {
+    private spawn(
+        type: string,
+        pos: Vec2,
+        layer: number,
+        count: number,
+        pushSpeed: number,
+        dir: Vec2,
+        ownerId = 0,
+    ): Loot {
         const loot = new Loot(this.world.allocId(), type, this.world.clampToMap(pos, 0), layer, count);
+        loot.ownerId = ownerId;
         loot.push(dir, pushSpeed);
         this.items.set(loot.id, loot);
         this.grid.insert(loot, loot.bounds);
@@ -181,8 +211,17 @@ export class LootSystem {
     update(dt: number): void {
         this.pushApart(dt);
         for (const loot of this.items.values()) {
+            if (loot.ownerId) this.updateOwner(loot, dt);
             if (loot.awake) this.step(loot, dt);
         }
+    }
+
+    /** Ownership ends after 2 s or when the owner died or left (survev Loot.update). */
+    private updateOwner(loot: Loot, dt: number): void {
+        loot.ownerTicker += dt;
+        const owner = this.world.get(loot.ownerId);
+        const gone = owner?.kind !== "player" || owner.dead || owner.disconnected;
+        if (loot.ownerTicker > OWNER_TIME || gone) loot.ownerId = 0;
     }
 
     /** Overlapping items on the same layer push each other apart; only pairs with an awake item are checked. */
@@ -228,17 +267,27 @@ export class LootSystem {
         loot.pos = v2.add(loot.pos, v2.mul(loot.vel, dt));
 
         let onFloor = false;
-        for (const obj of this.world.query(loot.bounds, this.scratch)) {
+        const objs = this.world.query(loot.bounds, this.scratch);
+        for (const obj of objs) {
             if (obj.kind === "obstacle") {
                 if (!obj.blocking || !sameLayer(obj.layer, loot.layer)) continue;
                 const res = collider.intersect({ type: 0, pos: loot.pos, rad: loot.rad }, obj.collider);
                 if (res) loot.pos = v2.add(loot.pos, v2.mul(res.dir, res.pen + 0.001));
-            } else if (obj.kind === "building" && obj.layer === loot.layer) {
+            } else if (obj.kind === "building" && obj.layer === loot.layer && !loot.belowBridge) {
                 // floors (bridges, houses) shield loot from river currents
                 if (obj.surfaces.some((s) => s.colliders.some((c) => collider.contains(c, loot.pos)))) onFloor = true;
             }
         }
-        if (!onFloor && loot.layer === 0 && pointInBounds(loot.pos, this.world.terrain.shoreBounds)) {
+        // stairs move loot between floors; `lootOnly` stairs carry river loot under bridges (survev Loot.update)
+        const stairs = checkStairs(loot.pos, loot.rad, loot.layer, objs, true);
+        loot.layer = stairs.layer;
+        if (loot.layer === 0) loot.belowBridge = false;
+        if (stairs.stair?.lootOnly) loot.belowBridge = true;
+        if (
+            !onFloor &&
+            (loot.layer === 0 || loot.belowBridge) &&
+            pointInBounds(loot.pos, this.world.terrain.shoreBounds)
+        ) {
             const river = riverWaterAt(this.world.terrain, loot.pos);
             if (river && !river.looped) {
                 const tangent = river.spline.getTangent(river.spline.getClosestT(loot.pos));

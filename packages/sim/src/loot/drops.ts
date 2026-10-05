@@ -17,6 +17,7 @@ import { randomPointInCircle } from "../mapgen/random.ts";
 import type { SimContext } from "../world/context.ts";
 import { createMapEntity, type Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
+import { sameLayer } from "../world/world.ts";
 import { type RolledItem, rollLootList, rollTier } from "./lootTable.ts";
 
 /** Push speed of obstacle loot, divided by the item count when several drop (survev obstacle.ts kill). */
@@ -66,11 +67,30 @@ export function spawnMapLoot(ctx: SimContext, spawns: readonly LootSpawn[]): voi
     }
 }
 
-/** The map object a destroyed obstacle turns into (broken windows, opened airdrop crates). */
-export function spawnDestroyType(ctx: SimContext, obstacle: Obstacle): void {
-    const type = obstacle.def.destroyType;
-    // TODO(M8): smartLoot class shells need roles
-    if (!type || obstacle.def.smartLoot || !hasMapObjectDef(type)) return;
+/** Loot of a smartLoot crate goes to the player who opened its shell if alive within this range (survev kill). */
+const SMART_LOOT_OWNER_RANGE = 8;
+
+/**
+ * Type of the object a destroyed obstacle turns into: its `destroyType`, completed with `_<role>` of the player who
+ * opened a `smartLoot` shell (Cobalt class pods: class_crate_common_<class>); "" for none (survev obstacle.ts kill).
+ */
+export function destroyTypeOf(obstacle: Obstacle, opener: Player | undefined): string {
+    const def = obstacle.def;
+    if (!def.destroyType) return "";
+    // TODO(M7): Cobalt classes give players a role; without one no class crate exists (as in survev)
+    if (def.smartLoot && opener) return `${def.destroyType}_${opener.role}`;
+    return def.destroyType;
+}
+
+/**
+ * The map object a destroyed obstacle turns into (broken windows, opened air drop crates, class pods). Like survev's
+ * genAuto it has no parent building. A smartLoot replacement remembers the player who broke the shell: its loot is
+ * theirs (survev shouldApplyLootOwner / ownerId).
+ */
+export function spawnDestroyType(ctx: SimContext, obstacle: Obstacle, source?: Player): void {
+    const opener = obstacle.interactedBy ? ctx.getPlayer(obstacle.interactedBy) : undefined;
+    const type = destroyTypeOf(obstacle, opener);
+    if (!type || !hasMapObjectDef(type)) return;
     const def = getMapObjectDef(type);
     if (def.type !== "obstacle") return;
     const entity = createMapEntity({
@@ -81,13 +101,32 @@ export function spawnDestroyType(ctx: SimContext, obstacle: Obstacle): void {
         ori: obstacle.ori,
         scale: ctx.lootRng.range(def.scale.createMin, def.scale.createMax),
         layer: obstacle.layer,
-        parentId: obstacle.parentId,
-    });
+        parentId: 0,
+    }) as Obstacle;
+    if (obstacle.def.smartLoot) {
+        entity.applyLootOwner = true;
+        entity.lootOwnerId = source?.id ?? 0;
+    }
     ctx.world.add(entity);
 }
 
+/** Owner of the loot of a smartLoot crate: its opener when alive, on its layer and close, else the breaker. */
+function lootOwnerOf(ctx: SimContext, obstacle: Obstacle, source: Player | undefined): number {
+    if (!obstacle.applyLootOwner) return 0;
+    const opener = obstacle.lootOwnerId ? ctx.getPlayer(obstacle.lootOwnerId) : undefined;
+    if (
+        opener &&
+        !opener.dead &&
+        sameLayer(opener.layer, obstacle.layer) &&
+        v2.distance(opener.pos, obstacle.pos) <= SMART_LOOT_OWNER_RANGE
+    ) {
+        return opener.id;
+    }
+    return source?.id ?? 0;
+}
+
 /** Drops an obstacle's `loot` list where it stood, pushed along the killing hit (survev obstacle.ts kill). */
-export function dropObstacleLoot(ctx: SimContext, obstacle: Obstacle, dir?: Vec2): void {
+export function dropObstacleLoot(ctx: SimContext, obstacle: Obstacle, dir?: Vec2, source?: Player): void {
     const def = obstacle.def;
     if (def.loot.length === 0) return;
     let lootPos = v2.copy(obstacle.pos);
@@ -96,6 +135,7 @@ export function dropObstacleLoot(ctx: SimContext, obstacle: Obstacle, dir?: Vec2
         lootPos = v2.add(obstacle.pos, v2.rotate(def.lootSpawn.offset, math.oriToRad(obstacle.ori)));
         pushSpeed *= def.lootSpawn.speedMult;
     }
+    const ownerId = lootOwnerOf(ctx, obstacle, source);
     const items: RolledItem[] = rollLootList(lootTables(ctx), def.loot, ctx.lootRng, warnUnknownTier);
     let rad = 0;
     if (items.length > 1) {
@@ -109,6 +149,7 @@ export function dropObstacleLoot(ctx: SimContext, obstacle: Obstacle, dir?: Vec2
             dir,
             preloadGun: item.preload,
             source: "obstacle",
+            ownerId,
         });
     }
 }

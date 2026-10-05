@@ -3,7 +3,15 @@
 import { type Vec2, v2 } from "@rebirth/core";
 import { DamageType, GameObjectDefs, hasDef } from "@rebirth/defs";
 import { dropEverythingOnDeath, dropObstacleLoot, spawnDestroyType } from "../loot/drops.ts";
+import { randomWeaponSwap } from "../weapons/potatoSwap.ts";
 import { throwThrowable } from "../weapons/throwable.ts";
+import {
+    breakWallAttachments,
+    goreRegionKill,
+    onBuildingObstacleDestroyed,
+    parentBuildingOf,
+    removeAnchoredDecals,
+} from "../world/buildings.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
@@ -78,6 +86,7 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
         );
     }
     dropEverythingOnDeath(ctx, player);
+    goreRegionKill(ctx, player);
 }
 
 /** Whether a damage source may hurt a plated obstacle (stone/armour plating needs a piercing melee weapon). */
@@ -99,27 +108,48 @@ export function applyObstacleDamage(ctx: SimContext, obstacle: Obstacle, params:
     if (destroyed) onObstacleDestroyed(ctx, obstacle, params);
 }
 
-/** Kills an obstacle whatever its destructibility (opened air drop crates), with the usual destruction effects. */
-export function destroyObstacle(ctx: SimContext, obstacle: Obstacle, dir?: Vec2): void {
+/**
+ * Kills an obstacle whatever its destructibility (opened air drop crates, doors in a broken wall), with the usual
+ * destruction effects. `params` defaults to a Player hit without a source.
+ */
+export function destroyObstacle(ctx: SimContext, obstacle: Obstacle, dir?: Vec2, params?: Partial<DamageParams>): void {
     if (obstacle.dead) return;
     obstacle.kill();
     ctx.loot.wakeAround(obstacle.bounds, obstacle.layer);
-    onObstacleDestroyed(ctx, obstacle, { amount: 0, damageType: DamageType.Player, dir });
+    onObstacleDestroyed(ctx, obstacle, { amount: 0, damageType: DamageType.Player, ...params, dir });
 }
 
+/**
+ * Destruction effects in survev's order (obstacle.ts kill): the `destroyType` replacement, the potato weapon swap,
+ * the regrow timer, loot, smoke, the explosion, then the parent building (roof, walls), the doors and broken windows
+ * of a broken wall, and anchored decals.
+ */
 function onObstacleDestroyed(ctx: SimContext, obstacle: Obstacle, params: DamageParams): void {
-    spawnDestroyType(ctx, obstacle);
-    dropObstacleLoot(ctx, obstacle, params.dir);
+    const def = obstacle.def;
+    const source = params.sourceId ? ctx.getPlayer(params.sourceId) : undefined;
+    spawnDestroyType(ctx, obstacle, source);
+    // potatoes swap the weapon that broke them (survev swapWeaponOnDestroy; modes/potato.md)
+    if (def.swapWeaponOnDestroy && source) randomWeaponSwap(ctx, source, params);
+    if (def.regrow && def.regrowTimer) {
+        obstacle.regrowTicker = def.regrowTimer;
+        ctx.activateObstacle(obstacle);
+    }
+    dropObstacleLoot(ctx, obstacle, params.dir, source);
     // fire extinguishers release smoke (survev obstacle.ts kill createSmoke)
-    if (obstacle.def.createSmoke) ctx.smokes.addEmitter(obstacle.pos, obstacle.layer);
+    if (def.createSmoke) ctx.smokes.addEmitter(obstacle.pos, obstacle.layer);
     // barrels, propane tanks, stoves... explode, credited to whoever destroyed them (explosions.md "Obstacles")
-    if (obstacle.def.explosion) {
-        ctx.explosions.add(obstacle.def.explosion, obstacle.pos, obstacle.layer, {
+    if (def.explosion) {
+        ctx.explosions.add(def.explosion, obstacle.pos, obstacle.layer, {
             gameSourceType: "",
             mapSourceType: obstacle.type,
             damageType: params.damageType,
             sourceId: params.sourceId ?? 0,
         });
     }
-    // TODO(M5b): destroying walls breaks the doors and windows in them and damages the building ceiling
+    const building = parentBuildingOf(ctx, obstacle);
+    if (building) onBuildingObstacleDestroyed(building, obstacle);
+    if (obstacle.isWall) {
+        breakWallAttachments(ctx, obstacle, params, (o, p) => destroyObstacle(ctx, o, p.dir, p));
+    }
+    if (def.isDecalAnchor && building) removeAnchoredDecals(ctx, building, obstacle);
 }

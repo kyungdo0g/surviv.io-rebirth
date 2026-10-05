@@ -12,7 +12,8 @@
 //   [Gas] [GasT] [Planes] [Airdrops] [MapIndicators] [KillLeader]   match.ts sections (M4)
 //   [Spectating]     no payload: the active player is a spectated player
 //   [PlayerInfos] [DeletePlayerIds]   match.ts sections (M4), then align
-//   [Explosions] [Projectiles] [Smokes] [AirstrikeZones]   effects.ts sections (M5, extended flags), each aligned
+//   [Explosions] [Projectiles] [Smokes] [AirstrikeZones] [Recorders]   effects.ts sections (M5/M5b, extended flags),
+//                    each aligned
 // `time` is not sent: it is tick / TICK_HZ like Game.time.
 //
 // A server frame per netsync (ClientEncoder.writeFrame) follows the original order: [AliveCounts when changed],

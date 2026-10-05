@@ -23,15 +23,59 @@ function defOf<T extends "obstacle" | "building" | "structure" | "decal">(
     return def as MapObjectDefOfType<T>;
 }
 
+/** Live state of a door obstacle (survev obstacle.ts door). */
+export interface DoorState {
+    open: boolean;
+    /** false: only buttons and puzzles move it (and `openOnce` doors after their first use) */
+    canUse: boolean;
+    /** locked doors never open automatically and refuse Interact until unlocked */
+    locked: boolean;
+    /** increments when an interaction starts (the client plays the def's change sound) */
+    seq: number;
+    closedPos: Vec2;
+    closedOri: number;
+    /** 0 both ways, else the side the door always swings to (-1 / 1; one-way auto doors open from that side) */
+    openOneWay: number;
+    openDelay: number;
+    openOnce: boolean;
+    autoOpen: boolean;
+    autoClose: boolean;
+    autoCloseDelay: number;
+    slideToOpen: boolean;
+    slideOffset: number;
+}
+
+/** A door action deferred by `openDelay`, a button's `useDelay` or an auto door's `autoCloseDelay`. */
+export interface DelayedDoorAction {
+    ticker: number;
+    type: "toggle" | "open" | "close";
+    /** player whose position decides the swing side (0 for none) */
+    playerId: number;
+    /** a button's `useDir`: its x component overrides the swing side */
+    dir?: Vec2;
+    lock?: "lock" | "unlock";
+}
+
+function normalizeOri(ori: number): number {
+    return ((ori % 4) + 4) % 4;
+}
+
 export class Obstacle {
     readonly kind = "obstacle";
     readonly id: number;
     readonly type: string;
     readonly def: ObstacleDef;
-    readonly pos: Vec2;
-    readonly ori: number;
-    readonly layer: number;
+    /** doors move when they open (see doors.ts); other obstacles never move */
+    pos: Vec2;
+    ori: number;
+    /** doors next to stairs take layer 2/3 so they work from both floors (survev checkLayer) */
+    layer: number;
+    readonly originalLayer: number;
     readonly parentId: number;
+    /** puzzle piece label (BuildingChildDef.puzzlePiece), "" for none */
+    readonly puzzlePiece: string;
+    /** faction team of faction-mode obstacles (def `teamId`; stored only, 0 for none) */
+    readonly teamId: number;
     readonly maxScale: number;
     readonly minScale: number;
     readonly maxHealth: number;
@@ -48,7 +92,7 @@ export class Obstacle {
     collider: Collider;
     /** broadphase bounds: the collider plus the sprite bounds (`def.aabb`, e.g. tree canopies) */
     bounds: Bounds;
-    readonly door?: { open: boolean; locked: boolean; canUse: boolean };
+    readonly door?: DoorState;
     /** interactable obstacles (def `button`: air drop crates, switches) */
     readonly button?: { onOff: boolean; canUse: boolean; seq: number };
     /** reach of Interact around the collider (button or door `interactionRad`; 0 when not interactable) */
@@ -59,7 +103,17 @@ export class Obstacle {
     interactCooldown = 0;
     /** player who used it last (0 for none) */
     interactedBy = 0;
-    /** set by the world to keep the broadphase in sync when the collider shrinks */
+    /** seconds until a dead `regrow` obstacle comes back (0: not scheduled) */
+    regrowTicker = 0;
+    /** deferred door action (openDelay, button useDelay, auto close) */
+    delayedDoor: DelayedDoorAction | null = null;
+    /** seconds until a button's `useExpiration` restores the door state below (0: none) */
+    useExpirationTicker = 0;
+    memorizedDoorState: { open: boolean; canUse: boolean; useDir: Vec2 } | null = null;
+    /** smartLoot replacement crates: their loot belongs to `lootOwnerId` (survev shouldApplyLootOwner) */
+    applyLootOwner = false;
+    lootOwnerId = 0;
+    /** set by the world to keep the broadphase in sync when the collider shrinks or moves */
     onBoundsChanged?: (obstacle: Obstacle) => void;
 
     constructor(spawn: GeneratedObject) {
@@ -67,9 +121,12 @@ export class Obstacle {
         this.type = spawn.type;
         this.def = defOf(spawn.type, "obstacle");
         this.pos = v2.copy(spawn.pos);
-        this.ori = spawn.ori;
+        this.ori = normalizeOri(spawn.ori);
         this.layer = spawn.layer;
+        this.originalLayer = spawn.layer;
         this.parentId = spawn.parentId;
+        this.puzzlePiece = spawn.puzzlePiece ?? "";
+        this.teamId = this.def.teamId ?? 0;
         this.scale = spawn.scale;
         this.maxScale = spawn.scale;
         // obstacles shrink to `scale.destroy` of their spawn scale as they lose health (survev obstacle.ts)
@@ -81,9 +138,26 @@ export class Obstacle {
         this.isWall = !!this.def.isWall;
         this.isTree = !!this.def.isTree;
         this.height = this.def.height;
-        if (this.def.door) {
-            // doors start closed (and collidable)
-            this.door = { open: false, locked: !!this.def.door.locked, canUse: this.def.door.canUse };
+        const door = this.def.door;
+        if (door) {
+            // doors start closed; `openOneWay` is a side (-1 / 1) or a boolean meaning 1 (survev door defs)
+            const oneWay = door.openOneWay === true ? 1 : door.openOneWay === false ? 0 : door.openOneWay;
+            this.door = {
+                open: false,
+                canUse: door.canUse,
+                locked: !!door.locked,
+                seq: 0,
+                closedPos: v2.copy(this.pos),
+                closedOri: this.ori,
+                openOneWay: oneWay,
+                openDelay: door.openDelay ?? 0,
+                openOnce: !!door.openOnce,
+                autoOpen: !!door.autoOpen,
+                autoClose: !!door.autoClose,
+                autoCloseDelay: door.autoCloseDelay ?? 0,
+                slideToOpen: !!door.slideToOpen,
+                slideOffset: door.slideOffset ?? 0,
+            };
         }
         if (this.def.button) this.button = { onOff: false, canUse: true, seq: 0 };
         this.interactionRad = this.def.button?.interactionRad ?? this.def.door?.interactionRad ?? 0;
@@ -97,8 +171,27 @@ export class Obstacle {
 
     private computeBounds(): Bounds {
         let b = toBounds(this.collider);
-        if (this.def.aabb) b = unionBounds(b, toBounds(transformOri(this.def.aabb, this.pos, this.ori, this.scale)));
+        if (this.def.aabb) {
+            b = unionBounds(b, toBounds(transformOri(this.def.aabb, this.pos, this.ori, this.scale)));
+        } else if (this.interactionRad > 0) {
+            // interactable obstacles reach `interactionRad` beyond their collider (survev updateCollider)
+            const m = this.interactionRad;
+            b = { min: { x: b.min.x - m, y: b.min.y - m }, max: { x: b.max.x + m, y: b.max.y + m } };
+        }
         return b;
+    }
+
+    private refreshShape(): void {
+        this.collider = this.computeCollider();
+        this.bounds = this.computeBounds();
+        this.onBoundsChanged?.(this);
+    }
+
+    /** Moves and turns the obstacle (doors); the collider follows immediately. */
+    setTransform(pos: Vec2, ori: number): void {
+        this.pos = v2.copy(pos);
+        this.ori = normalizeOri(ori);
+        this.refreshShape();
     }
 
     /** Applies damage; the obstacle shrinks with its health and dies at 0. Returns true when it was destroyed. */
@@ -112,9 +205,7 @@ export class Obstacle {
             this.healthT = 0;
             this.scale = this.minScale;
         }
-        this.collider = this.computeCollider();
-        this.bounds = this.computeBounds();
-        this.onBoundsChanged?.(this);
+        this.refreshShape();
         return this.dead;
     }
 
@@ -125,14 +216,26 @@ export class Obstacle {
         this.healthT = 0;
         this.dead = true;
         this.scale = this.minScale;
-        this.collider = this.computeCollider();
-        this.bounds = this.computeBounds();
-        this.onBoundsChanged?.(this);
+        this.refreshShape();
     }
 
-    /** Whether this obstacle currently blocks movement. */
+    /** A dead `regrow` obstacle comes back at full health and scale (survev obstacle.ts regrow). */
+    regrow(): void {
+        this.dead = false;
+        this.scale = this.maxScale;
+        this.health = this.maxHealth;
+        this.healthT = 1;
+        this.refreshShape();
+    }
+
+    /** Whether this obstacle currently blocks movement (open doors still block where their panel is). */
     get blocking(): boolean {
-        return this.collidable && !this.dead && !(this.door?.open ?? false);
+        return this.collidable && !this.dead;
+    }
+
+    /** Usable by Interact or a melee hit right now (survev `interactable`: button, else door canUse). */
+    get interactable(): boolean {
+        return !this.dead && (this.button ? this.button.canUse : (this.door?.canUse ?? false));
     }
 
     toView(): ObstacleView {
@@ -147,7 +250,8 @@ export class Obstacle {
             healthT: this.healthT,
             dead: this.dead,
         };
-        if (this.door) view.door = { ...this.door };
+        const door = this.door;
+        if (door) view.door = { open: door.open, locked: door.locked, canUse: door.canUse, seq: door.seq };
         if (this.button) view.button = { ...this.button };
         return view;
     }
@@ -158,6 +262,23 @@ export interface ZoomRegion {
     zoomOut?: Bounds;
     zoom?: number;
     noZoom?: boolean;
+}
+
+/** Live state of a building `puzzle` (survev building.ts puzzle). */
+export interface PuzzleState {
+    solved: boolean;
+    /** failed attempts (the client plays the fail sound on a change) */
+    errSeq: number;
+    /** labels of the pieces pressed so far */
+    inputCode: string[];
+    /** pieces stay locked until it runs out, then the puzzle resets (after an error or a completion) */
+    resetTicker: number;
+    /** the completeUseType obstacles are triggered when it runs out */
+    completeTicker: number;
+    /** no piece pressed for pieceResetDelay: counts as an error */
+    idleResetTicker: number;
+    /** player who pressed the last piece of the solution (0 for none) */
+    solvedBy: number;
 }
 
 export class Building {
@@ -175,10 +296,22 @@ export class Building {
     readonly surfaces: Array<{ type: string; colliders: Collider[] }>;
     /** ceiling zoom regions in world space */
     readonly zoomRegions: ZoomRegion[];
+    /** heal regions in world space (bathhouse steam room, oasis) */
+    readonly healRegions: Array<{ collision: Collider; healRate: number }>;
+    /** players dying here bloody the building's gore decals (club bathhouse pool) */
+    readonly goreRegion?: Bounds;
+    /** direct children (obstacles, decals, child buildings) */
     readonly childIds: number[] = [];
+    /** structure this building is a floor of (0 for none; set by the world) */
+    parentStructureId = 0;
     occupied = false;
     ceilingDead = false;
     ceilingDamaged = false;
+    /** a `disableBuildingOccupied` obstacle died: the occupied emitters stop for good */
+    occupiedDisabled = false;
+    /** walls still to break before the roof collapses (def `ceiling.destroy.wallCount`; Infinity without) */
+    wallsToDestroy: number;
+    readonly puzzle?: PuzzleState;
 
     constructor(spawn: GeneratedObject) {
         this.id = spawn.id;
@@ -200,10 +333,27 @@ export class Building {
             zoom: r.zoom,
             noZoom: r.noZoom,
         }));
+        this.healRegions = (this.def.healRegions ?? []).map((r) => ({
+            collision: transformOri(cleanCollider(r.collision), this.pos, this.ori, 1),
+            healRate: r.healRate,
+        }));
+        if (this.def.goreRegion) this.goreRegion = toBounds(transformOri(this.def.goreRegion, this.pos, this.ori, 1));
+        this.wallsToDestroy = this.def.ceiling.destroy?.wallCount ?? Number.POSITIVE_INFINITY;
+        if (this.def.puzzle) {
+            this.puzzle = {
+                solved: false,
+                errSeq: 0,
+                inputCode: [],
+                resetTicker: 0,
+                completeTicker: 0,
+                idleResetTicker: 0,
+                solvedBy: 0,
+            };
+        }
     }
 
     toView(): BuildingView {
-        return {
+        const view: BuildingView = {
             id: this.id,
             kind: "building",
             type: this.type,
@@ -213,7 +363,10 @@ export class Building {
             occupied: this.occupied,
             ceilingDead: this.ceilingDead,
             ceilingDamaged: this.ceilingDamaged,
+            occupiedDisabled: this.occupiedDisabled,
         };
+        if (this.puzzle) view.puzzle = { solved: this.puzzle.solved, errSeq: this.puzzle.errSeq };
+        return view;
     }
 }
 
@@ -257,6 +410,8 @@ export class Structure {
     readonly bounds: Bounds;
     readonly stairs: Stair[];
     readonly layerObjIds: number[] = [];
+    /** a solved puzzle switched the interior music to the def's `interiorSound.soundAlt` */
+    interiorSoundAlt = false;
 
     constructor(spawn: GeneratedObject) {
         this.id = spawn.id;
@@ -293,6 +448,7 @@ export class Structure {
             pos: v2.copy(this.pos),
             layer: this.layer,
             ori: this.ori,
+            interiorSoundAlt: this.interiorSoundAlt,
         };
     }
 }
@@ -311,6 +467,8 @@ export class Decal {
     readonly bounds: Bounds;
     /** ground surface override (e.g. "water" puddles) */
     readonly surface?: string;
+    /** gore decals (club pool): players killed in their building's gore region (at most 255) */
+    goreKills = 0;
 
     constructor(spawn: GeneratedObject) {
         this.id = spawn.id;
@@ -335,6 +493,7 @@ export class Decal {
             layer: this.layer,
             ori: this.ori,
             scale: this.scale,
+            goreKills: this.goreKills,
         };
     }
 }

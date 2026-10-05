@@ -4,6 +4,7 @@ import { type Circle, collider, type Vec2, v2 } from "@rebirth/core";
 import { DamageType, GameConfig, type MeleeDef } from "@rebirth/defs";
 import type { SimContext } from "../world/context.ts";
 import type { Obstacle } from "../world/entities.ts";
+import { interactObstacle } from "../world/interact.ts";
 import type { Player } from "../world/player.ts";
 import { type Entity, sameLayer } from "../world/world.ts";
 
@@ -98,6 +99,8 @@ export function meleeDamage(ctx: SimContext, player: Player, def: MeleeDef): voi
                 sourceId: player.id,
                 dir: v2.copy(player.dir),
             });
+            // punching a door or a button uses it (survev meleeDamage; changelog 0.2.6 "or by punching them")
+            if (hit.obj.interactable) interactObstacle(ctx, hit.obj, player);
         } else {
             ctx.damagePlayer(hit.obj, {
                 amount: def.damage,

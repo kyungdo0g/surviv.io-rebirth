@@ -76,6 +76,7 @@ const SCALE_BITS = 8;
 const HEALTH_BITS = 8;
 const DURATION_BITS = 8;
 const LOOT_COUNT_BITS = 16;
+const GORE_BITS = 8;
 
 const ANIM_TYPES: readonly AnimType[] = ["none", "melee", "cook", "throw"];
 const ACTION_TYPES: readonly ActionType[] = ["none", "reload", "use"];
@@ -98,8 +99,9 @@ const mapScaleOf = (n: number): number =>
     dequantize(n, NetLimits.MapObjectMinScale, NetLimits.MapObjectMaxScale, SCALE_BITS);
 
 /**
- * Player. Groups: 0 movement (pos, dir), 1 status (layer, dead, downed, wearingPan), 2 active weapon, 3 gear,
- * 4 scale, 5 animation, 6 action, 7 last shot. Seq counters are sent mod 2^16 (the original used 3 bits).
+ * Player. Groups: 0 movement (pos, dir), 1 status (layer, dead, downed, wearingPan, healEffect (M5b)), 2 active
+ * weapon, 3 gear, 4 scale, 5 animation, 6 action, 7 last shot. Seq counters are sent mod 2^16 (the original used
+ * 3 bits).
  */
 export const PlayerCodec: ObjectCodec<PlayerView> = {
     kind: "player",
@@ -114,6 +116,7 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
         f(3, 5), f(SEQ_BITS, 5),
         f(3, 6), f(SEQ_BITS, 6), f(GT, 6), f(DURATION_BITS, 6),
         f(SEQ_BITS, 7), f(1, 7),
+        f(1, 1),
     ],
     groupCount: 8,
     quantize(v, ctx, out) {
@@ -139,6 +142,7 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
         out[19] = quantize(v.action?.duration ?? 0, 0, NetLimits.ActionMaxDuration, DURATION_BITS);
         out[20] = (v.shot?.seq ?? 0) & SEQ_MASK;
         out[21] = b(v.shot?.offHand);
+        out[22] = b(v.healEffect);
     },
     build(id, v, ctx) {
         return {
@@ -165,13 +169,15 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
             },
             shot: { seq: v[20], offHand: v[21] === 1 },
             wearingPan: v[7] === 1,
+            healEffect: v[22] === 1,
         };
     },
 };
 
 /**
  * Obstacle. Static: type, pos, ori, layer, isDoor, isButton. Groups: 0 scale, 1 health (healthT, dead), 2 door
- * state, 3 button state (onOff, canUse, seq mod 2^16; M4).
+ * state (open, locked, canUse, seq mod 2^16 (M5b)), 3 button state (onOff, canUse, seq mod 2^16; M4). A door that
+ * opens or closes moves or turns, which changes static fields: it is sent as a full record (like survev's setDirty).
  */
 export const ObstacleCodec: ObjectCodec<ObstacleView> = {
     kind: "obstacle",
@@ -184,6 +190,7 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
         f(1, 2, 5), f(1, 2, 5), f(1, 2, 5),
         f(1, S),
         f(1, 3, 12), f(1, 3, 12), f(SEQ_BITS, 3, 12),
+        f(SEQ_BITS, 2, 5),
     ],
     groupCount: 4,
     quantize(v, ctx, out) {
@@ -203,6 +210,7 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
         out[13] = b(v.button?.onOff);
         out[14] = b(v.button?.canUse);
         out[15] = (v.button?.seq ?? 0) & SEQ_MASK;
+        out[16] = (v.door?.seq ?? 0) & SEQ_MASK;
     },
     build(id, v, ctx) {
         const view: ObstacleView = {
@@ -216,18 +224,27 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
             healthT: dequantize(v[7], 0, 1, HEALTH_BITS),
             dead: v[8] === 1,
         };
-        if (v[5] === 1) view.door = { open: v[9] === 1, locked: v[10] === 1, canUse: v[11] === 1 };
+        if (v[5] === 1) view.door = { open: v[9] === 1, locked: v[10] === 1, canUse: v[11] === 1, seq: v[16] };
         if (v[12] === 1) view.button = { onOff: v[13] === 1, canUse: v[14] === 1, seq: v[15] };
         return view;
     },
 };
 
-/** Building. Static: type, pos, ori, layer. Group 0: occupied, ceilingDead, ceilingDamaged. */
+/**
+ * Building. Static: type, pos, ori, layer, hasPuzzle. Group 0: occupied, ceilingDead, ceilingDamaged,
+ * occupiedDisabled (M5b). Group 1 (buildings with a puzzle, M5b): solved, errSeq mod 2^16 (the original sent the
+ * same puzzle pair).
+ */
 export const BuildingCodec: ObjectCodec<BuildingView> = {
     kind: "building",
     code: ObjectTypeCode.Building,
-    fields: [f(MT, S), f(P, S), f(P, S), f(2, S), f(2, S), f(1, 0), f(1, 0), f(1, 0)],
-    groupCount: 1,
+    // biome-ignore format: one field per wire value
+    fields: [
+        f(MT, S), f(P, S), f(P, S), f(2, S), f(2, S),
+        f(1, 0), f(1, 0), f(1, 0), f(1, 0),
+        f(1, S), f(1, 1, 9), f(SEQ_BITS, 1, 9),
+    ],
+    groupCount: 2,
     quantize(v, ctx, out) {
         out[0] = mapTypeId(v.type);
         out[1] = quantizeX(ctx, v.pos.x);
@@ -237,9 +254,13 @@ export const BuildingCodec: ObjectCodec<BuildingView> = {
         out[5] = b(v.occupied);
         out[6] = b(v.ceilingDead);
         out[7] = b(v.ceilingDamaged);
+        out[8] = b(v.occupiedDisabled);
+        out[9] = b(v.puzzle !== undefined);
+        out[10] = b(v.puzzle?.solved);
+        out[11] = (v.puzzle?.errSeq ?? 0) & SEQ_MASK;
     },
     build(id, v, ctx) {
-        return {
+        const view: BuildingView = {
             id,
             kind: "building",
             type: mapTypeOf(v[0]),
@@ -249,22 +270,26 @@ export const BuildingCodec: ObjectCodec<BuildingView> = {
             occupied: v[5] === 1,
             ceilingDead: v[6] === 1,
             ceilingDamaged: v[7] === 1,
+            occupiedDisabled: v[8] === 1,
         };
+        if (v[9] === 1) view.puzzle = { solved: v[10] === 1, errSeq: v[11] };
+        return view;
     },
 };
 
-/** Structure: static only (type, pos, ori, layer). */
+/** Structure. Static: type, pos, ori, layer. Group 0: interiorSoundAlt (M5b; the original sent it too). */
 export const StructureCodec: ObjectCodec<StructureView> = {
     kind: "structure",
     code: ObjectTypeCode.Structure,
-    fields: [f(MT, S), f(P, S), f(P, S), f(2, S), f(2, S)],
-    groupCount: 0,
+    fields: [f(MT, S), f(P, S), f(P, S), f(2, S), f(2, S), f(1, 0)],
+    groupCount: 1,
     quantize(v, ctx, out) {
         out[0] = mapTypeId(v.type);
         out[1] = quantizeX(ctx, v.pos.x);
         out[2] = quantizeY(ctx, v.pos.y);
         out[3] = v.ori & 3;
         out[4] = v.layer & 3;
+        out[5] = b(v.interiorSoundAlt);
     },
     build(id, v, ctx) {
         return {
@@ -274,16 +299,17 @@ export const StructureCodec: ObjectCodec<StructureView> = {
             pos: dequantizePos(ctx, v[1], v[2]),
             layer: v[4],
             ori: v[3],
+            interiorSoundAlt: v[5] === 1,
         };
     },
 };
 
-/** Decal: static only (type, pos, ori, layer, scale). */
+/** Decal. Static: type, pos, ori, layer, scale. Group 0: goreKills u8 (M5b; the original sent it too). */
 export const DecalCodec: ObjectCodec<DecalView> = {
     kind: "decal",
     code: ObjectTypeCode.Decal,
-    fields: [f(MT, S), f(P, S), f(P, S), f(2, S), f(2, S), f(SCALE_BITS, S)],
-    groupCount: 0,
+    fields: [f(MT, S), f(P, S), f(P, S), f(2, S), f(2, S), f(SCALE_BITS, S), f(GORE_BITS, 0)],
+    groupCount: 1,
     quantize(v, ctx, out) {
         out[0] = mapTypeId(v.type);
         out[1] = quantizeX(ctx, v.pos.x);
@@ -291,6 +317,7 @@ export const DecalCodec: ObjectCodec<DecalView> = {
         out[3] = v.ori & 3;
         out[4] = v.layer & 3;
         out[5] = mapScale(v.scale);
+        out[6] = Math.min(Math.max(Math.round(v.goreKills ?? 0), 0), 2 ** GORE_BITS - 1);
     },
     build(id, v, ctx) {
         return {
@@ -301,6 +328,7 @@ export const DecalCodec: ObjectCodec<DecalView> = {
             layer: v[4],
             ori: v[3],
             scale: mapScaleOf(v[5]),
+            goreKills: v[6],
         };
     },
 };

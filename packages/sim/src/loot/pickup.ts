@@ -29,7 +29,10 @@ const RETURN_SPEED_MAX = 4.5;
 /** Loot search radius around the player (survev: rad + 5). */
 const SEARCH_EXTRA = 5;
 
-/** Nearest loot whose pickup circle the player's centre is inside (centre distance < player rad + loot rad). */
+/**
+ * Nearest loot on the player's layer whose pickup circle the player's centre is inside (centre distance < player
+ * rad + loot rad).
+ */
 export function closestLoot(ctx: SimContext, player: Player): Loot | undefined {
     const r = player.rad + SEARCH_EXTRA;
     const box = { min: v2.sub(player.pos, { x: r, y: r }), max: v2.add(player.pos, { x: r, y: r }) };
@@ -37,6 +40,8 @@ export function closestLoot(ctx: SimContext, player: Player): Loot | undefined {
     let bestDist = Number.MAX_VALUE;
     for (const obj of ctx.world.query(box, player.scratch)) {
         if (obj.kind !== "loot" || obj.destroyed || !sameLayer(obj.layer, player.layer)) continue;
+        // owned loot (smartLoot crates) is only for its owner for a while (survev getClosestLoot)
+        if (obj.ownerId !== 0 && obj.ownerId !== player.id) continue;
         const rad = player.rad + obj.rad;
         const distSq = v2.distanceSqr(player.pos, obj.pos);
         if (distSq < rad * rad && distSq < bestDist) {

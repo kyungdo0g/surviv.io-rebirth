@@ -1,7 +1,8 @@
 // Game: fixed-step authoritative simulation implementing the GameApi contract.
 // Tick order follows survev server/src/game/game.ts: start check, gas, players (gas damage, input actions, boost,
 // movement, weapons), loot, bullets (then their queued damage), projectiles, explosions, smoke, obstacle timers,
-// planes, air strikes and air drops, building occupancy, spectators, then the end-of-tick match results.
+// building puzzles and scheduled unlocks (M5b), planes, air strikes and air drops, building occupancy, spectators,
+// then the end-of-tick match results.
 import { type Bounds, collider, type Rng, type Vec2, v2 } from "@rebirth/core";
 import { DamageType, GameConfig, type GasStage } from "@rebirth/defs";
 import { type GameApi, type GameOptions, type SpectateActionName, TICK_HZ } from "./api.ts";
@@ -22,12 +23,16 @@ import { Gas } from "./match/gas.ts";
 import { Match } from "./match/match.ts";
 import { PlaneSystem } from "./match/planes.ts";
 import { SpectateSystem } from "./match/spectate.ts";
+import { UnlockSystem } from "./match/unlocks.ts";
 import { defaultRules, type SimRules } from "./rules.ts";
-import type { BulletEvent, MapData, ObjectView, PlayerInfoView, Snapshot } from "./view.ts";
+import type { BulletEvent, MapData, ObjectView, PlayerInfoView, RecorderEvent, Snapshot } from "./view.ts";
 import type { SimContext } from "./world/context.ts";
+import { checkDoorLayer } from "./world/doors.ts";
 import type { Building, Obstacle } from "./world/entities.ts";
 import { updateObstacleTimers } from "./world/interact.ts";
+import { floorsVisible } from "./world/layers.ts";
 import { Player } from "./world/player.ts";
+import { updatePuzzle } from "./world/puzzles.ts";
 import { SmokeSystem } from "./world/smoke.ts";
 import { type Entity, World } from "./world/world.ts";
 
@@ -110,7 +115,13 @@ export class Game implements GameApi, SimContext {
     /** planes, falling air drops and minimap indicators (M4) */
     readonly planes: PlaneSystem;
     readonly spectators: SpectateSystem;
+    /** scheduled door unlocks of MapDef gameConfig.unlocks (M5b) */
+    readonly unlocks: UnlockSystem;
+    /** buildings with a puzzle, updated every tick (M5b) */
+    readonly puzzleBuildings: Building[];
     private readonly playerMap = new Map<number, Player>();
+    /** recorders used, reported once to viewers in range (event sequence numbers, like kills) (M5b) */
+    private readonly recorderReports: Array<{ seq: number; tick: number; event: RecorderEvent }> = [];
     /** ids each player saw in its previous snapshot */
     private readonly visible = new Map<number, Set<number>>();
     /** tick of each player's previous snapshot (bullet reports after it are new to that player) */
@@ -146,7 +157,16 @@ export class Game implements GameApi, SimContext {
         const gasRng = subRng(options.seed, `gas:${options.mapName}`);
         this.gas = new Gas(this.mapData.width, this.mapData.height, gasRng, init.gasStages);
         this.planes = new PlaneSystem(this, options.mapName, subRng(options.seed, `planes:${options.mapName}`));
-        this.gas.onCircle = (circleIdx) => this.planes.scheduleCircle(circleIdx);
+        this.unlocks = new UnlockSystem(this);
+        this.gas.onCircle = (circleIdx) => {
+            this.planes.scheduleCircle(circleIdx);
+            this.unlocks.onCircle(circleIdx);
+        };
+        this.puzzleBuildings = this.world.buildings.filter((b) => b.puzzle !== undefined);
+        // doors next to stairs work from both floors (survev obstacle.ts constructor checkLayer)
+        for (const obj of this.world.objects.values()) {
+            if (obj.kind === "obstacle" && obj.door) checkDoorLayer(this.world, obj);
+        }
         this.match = new Match(this, {
             sandbox: init.sandbox ?? false,
             minPlayers: init.minPlayers ?? DEFAULT_MIN_PLAYERS,
@@ -303,10 +323,14 @@ export class Game implements GameApi, SimContext {
         return this.spectators.targetOf(playerId);
     }
 
-    /** Moves a player instantly (tests and debug tools). */
-    teleportPlayer(id: number, pos: Vec2): void {
+    /** Moves a player instantly, optionally to another layer (tests and debug tools). */
+    teleportPlayer(id: number, pos: Vec2, layer?: number): void {
         const player = this.playerMap.get(id);
         if (!player) return;
+        if (layer !== undefined) {
+            player.layer = layer;
+            player.aimLayer = layer;
+        }
         player.pos = this.world.clampToMap(pos, player.rad);
         player.posOld = v2.copy(player.pos);
         player.bounds = player.computeBounds();
@@ -327,6 +351,15 @@ export class Game implements GameApi, SimContext {
 
     activateObstacle(obstacle: Obstacle): void {
         this.activeObstacles.add(obstacle);
+    }
+
+    onRecorderUsed(obstacle: Obstacle): void {
+        const sound = obstacle.def.button?.sound.on ?? "";
+        this.recorderReports.push({
+            seq: this.nextEventSeq(),
+            tick: this.tickCount,
+            event: { id: obstacle.id, type: obstacle.type, sound, pos: v2.copy(obstacle.pos), layer: obstacle.layer },
+        });
     }
 
     wakeLoot(bounds: Bounds, layer: number): void {
@@ -379,6 +412,8 @@ export class Game implements GameApi, SimContext {
         for (const obstacle of [...this.activeObstacles]) {
             if (!updateObstacleTimers(this, obstacle, dt)) this.activeObstacles.delete(obstacle);
         }
+        for (const building of this.puzzleBuildings) updatePuzzle(this, building, dt);
+        this.unlocks.update(dt);
         this.planes.update(dt);
         // a building is occupied while any living player is inside one of its ceiling zoom regions
         const occupied = new Set<Building>();
@@ -396,6 +431,36 @@ export class Game implements GameApi, SimContext {
         this.leaveLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.bullets.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
         this.explosions.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
+        let stale = 0;
+        while (
+            stale < this.recorderReports.length &&
+            this.recorderReports[stale].tick < this.tickCount - BULLET_REPORT_TICKS
+        ) {
+            stale++;
+        }
+        if (stale > 0) this.recorderReports.splice(0, stale);
+    }
+
+    /**
+     * Whether `other` is left out of `viewer`'s snapshot because it is a player or loot on the other floor while
+     * neither of them is on stairs (rules.cullOtherFloors; map objects of both floors are always sent).
+     */
+    private otherFloor(viewer: Player, other: { kind: string; layer: number }): boolean {
+        if (!this.rules.cullOtherFloors || (other.kind !== "player" && other.kind !== "loot")) return false;
+        return !floorsVisible(viewer.layer, other.layer);
+    }
+
+    /** Recorders used after event sequence number `sinceSeq` inside `view`, in order. */
+    private recorderEvents(sinceSeq: number, view: Bounds): RecorderEvent[] {
+        const out: RecorderEvent[] = [];
+        for (const { seq, event } of this.recorderReports) {
+            const p = event.pos;
+            if (seq <= sinceSeq || p.x < view.min.x || p.x > view.max.x || p.y < view.min.y || p.y > view.max.y) {
+                continue;
+            }
+            out.push({ ...event, pos: v2.copy(p) });
+        }
+        return out;
     }
 
     /**
@@ -432,6 +497,7 @@ export class Game implements GameApi, SimContext {
         const view = viewBounds(player.pos, player.zoom);
         for (const obj of this.world.query(view, this.scratch)) {
             if (obj.kind === "player" && this.hiddenInSmoke(player, obj)) continue;
+            if (obj !== player && this.otherFloor(player, obj)) continue;
             next.add(obj.id);
         }
         // the active player is always included
@@ -477,6 +543,7 @@ export class Game implements GameApi, SimContext {
             projectiles: this.projectiles.views(view),
             smokes: this.smokes.views(view),
             airstrikeZones: this.planes.zoneViews(),
+            recorders: this.recorderEvents(seq, view),
         };
         const gameOver = this.match.resultSince(owner.id, seq);
         if (gameOver) snapshot.gameOver = gameOver;

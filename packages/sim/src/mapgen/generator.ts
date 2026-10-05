@@ -35,6 +35,8 @@ export type SpawnedKind = Exclude<MapObjectType, "loot_spawner">;
 export interface GeneratedObject extends MapObjectSpawn {
     kind: SpawnedKind;
     parentId: number;
+    /** puzzle piece label of a building child (BuildingChildDef.puzzlePiece; absent for other objects) */
+    puzzlePiece?: string;
 }
 
 /** A loot spawner placed on the map (its loot is rolled by the loot system, not at generation). */
@@ -342,7 +344,16 @@ export class MapGenerator {
             if (!partType) continue;
             const partOri = child.inheritOri === false ? child.ori : (child.ori + o) % 4;
             const partPos = math.addAdjust(pos, child.pos, o);
-            this.genAuto(partType, partPos, layer, partOri, child.scale, building.id, child.ignoreMapSpawnReplacement);
+            const part = this.genAuto(
+                partType,
+                partPos,
+                layer,
+                partOri,
+                child.scale,
+                building.id,
+                child.ignoreMapSpawnReplacement,
+            );
+            if (part && child.puzzlePiece) part.puzzlePiece = child.puzzlePiece;
         }
 
         this.addBounds(building, def, parentId !== 0);

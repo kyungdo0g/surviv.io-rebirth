@@ -13,6 +13,7 @@ import { completeUse, updateBoost, updateFabricate, useItem } from "./consumable
 import type { SimContext } from "./context.ts";
 import type { Building } from "./entities.ts";
 import { VISION_RECOVERY_TIME } from "./smoke.ts";
+import { updateSurroundings } from "./surroundings.ts";
 import { type Entity, sameLayer, type World } from "./world.ts";
 
 const PLAYER = GameConfig.player;
@@ -45,7 +46,15 @@ export class Player implements InventoryOwner {
     dir: Vec2 = { x: 1, y: 0 };
     /** facing before this tick (pan sweep) */
     dirOld: Vec2 = { x: 1, y: 0 };
+    /** 0 ground, 1 underground, 2/3 on stairs (upper / lower half) (M5b) */
     layer = 0;
+    /** layer its bullets fly on: on stairs, facing down or up them shoots into that floor (M5b) */
+    aimLayer = 0;
+    /** standing in a building heal region this tick (M5b) */
+    healEffect = false;
+    /** class / role id ("" for none) */
+    // TODO(M7): Cobalt classes; TODO(M8): roles (kill leader, faction roles)
+    role = "";
     scale = 1;
     health: number = PLAYER.health;
     boost = 0;
@@ -315,6 +324,7 @@ export class Player implements InventoryOwner {
         this.pickupTicker -= dt;
         this.updateVision(ctx, dt);
         this.updateZoom(objs);
+        updateSurroundings(ctx, this, objs, dt);
         this.pos = world.clampToMap(this.pos, this.rad);
         this.bounds = this.computeBounds();
         world.updateBounds(this);
@@ -417,6 +427,7 @@ export class Player implements InventoryOwner {
             },
             shot: { seq: this.shotSeq, offHand: this.shotOffhand },
             wearingPan: this.wearingPan,
+            healEffect: this.healEffect && !this.dead,
         };
     }
 

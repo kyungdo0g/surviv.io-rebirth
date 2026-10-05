@@ -98,6 +98,18 @@ export interface SimRules {
     explosiveRoundsAltBullets: readonly string[];
     /** Fabricate fills the pack with frag grenades every this many seconds (original rule, fandom Fabricate) */
     fabricateInterval: number;
+    /**
+     * Circle and wait overrides of MapDef gameConfig.unlocks timings, by unlocked type (conflicts.md
+     * twins-unlock-time: the original twins bunker opened 0:45 into the third waiting phase, circle 2 + 5 s; the ported
+     * cobalt def holds survev's fork timing, circle 1 + 30 s). `{}` restores the def timings.
+     */
+    unlockOverrides: Readonly<Record<string, { circleIdx: number; wait: number }>>;
+    /**
+     * Rebirth rule: players and loot on the other floor (layer 0 vs 1) are left out of snapshots while neither the
+     * viewer nor the object is on stairs. The original sent every object in view but its client never draws the other
+     * floor, so this only hides what a modified client could reveal.
+     */
+    cullOtherFloors: boolean;
 }
 
 export function defaultRules(): SimRules {
@@ -132,6 +144,8 @@ export function defaultRules(): SimRules {
         brokenArrowAtPing: true,
         explosiveRoundsAltBullets: ["bullet_buckshot", "bullet_flechette", "bullet_frag", "bullet_birdshot"],
         fabricateInterval: 12,
+        unlockOverrides: { bunker_twins_sublevel_01: { circleIdx: 2, wait: 5 } },
+        cullOtherFloors: true,
     };
 }
 

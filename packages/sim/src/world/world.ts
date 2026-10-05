@@ -45,12 +45,19 @@ export class World {
             if (entity instanceof Building) this.buildings.push(entity);
             maxId = Math.max(maxId, spawn.id);
         }
-        // link children to their parents
+        // link children to their parents (parents are generated before their children)
         for (const spawn of gen.objects) {
             if (!spawn.parentId) continue;
             const parent = this.objects.get(spawn.parentId);
-            if (parent instanceof Building) parent.childIds.push(spawn.id);
-            else if (parent instanceof Structure) parent.layerObjIds.push(spawn.id);
+            const child = this.objects.get(spawn.id);
+            if (parent instanceof Building) {
+                parent.childIds.push(spawn.id);
+                // a building inside a structure floor belongs to that structure too (survev building.ts)
+                if (child instanceof Building) child.parentStructureId = parent.parentStructureId;
+            } else if (parent instanceof Structure) {
+                parent.layerObjIds.push(spawn.id);
+                if (child instanceof Building) child.parentStructureId = parent.id;
+            }
         }
         this.nextId = maxId + 1;
     }

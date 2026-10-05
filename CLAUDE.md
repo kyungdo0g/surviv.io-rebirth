@@ -32,6 +32,7 @@ Fork-only survev content (barrett, ash12, sw500, imbel, reserve_* buildings, ...
 - Node 22 runs `.ts` directly: relative imports use explicit `.ts` extensions; no `enum`, `namespace` or parameter properties (`erasableSyntaxOnly`); use `as const` objects.
 - `packages/sim` and `packages/core` must stay deterministic: never `Math.random`, `Date.now` or `performance.now` there — use the seeded rng and the simulation clock (tests enforce this).
 - Keep files under ~600 lines; split systems instead of growing god objects.
+- Any change to the wire format in `packages/protocol` must bump `PROTOCOL_SCHEMA_VERSION` in `packages/defs/src/registry.ts`.
 - Formatting/lint: Biome (4 spaces, 120 columns, double quotes). Run `pnpm format` before committing.
 - Every gameplay rule should cite its source (KB file or survev path) in a short comment when the value is not self-evident.
 
