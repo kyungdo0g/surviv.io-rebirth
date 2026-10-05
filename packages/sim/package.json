@@ -1,0 +1,13 @@
+{
+    "name": "@rebirth/sim",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "dependencies": {
+        "@rebirth/core": "workspace:*",
+        "@rebirth/defs": "workspace:*"
+    }
+}
