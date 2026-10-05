@@ -3,7 +3,7 @@
 // (each client quantizing and serializing every object it sees itself). Two layouts: players spread over the map
 // (random spawns) and clustered in a 60 x 34 area (late game / hot drop). Also checks both produce identical bytes.
 //   node apps/server/scripts/bench-encode.ts
-import { createRng, v2 } from "@rebirth/core";
+import { BitWriter, createRng, v2 } from "@rebirth/core";
 import { getDefOfType, Input, WeaponSlot } from "@rebirth/defs";
 import { ClientEncoder, ObjectCache } from "@rebirth/protocol";
 import { emptyInput, Game, type PlayerInput, SNAPSHOT_EVERY_TICKS, type Snapshot } from "@rebirth/sim";
@@ -23,6 +23,16 @@ interface Result {
     sharedRecords: number;
     privateRecords: number;
     bytesPerUpdate: number;
+}
+
+/** Every client's update, written like GameRoom.netsync does (one writer, pooled copies). */
+function encodeAll(ids: number[], encoders: Map<number, ClientEncoder>, snaps: Snapshot[]): Buffer[] {
+    const w = new BitWriter(128 * 1024);
+    return ids.map((id, i) => {
+        const start = w.byteLength;
+        encoders.get(id)!.write(w, snaps[i], 0);
+        return Buffer.from(w.getBuffer().subarray(start));
+    });
 }
 
 function run(layout: "spread" | "clustered"): Result {
@@ -82,18 +92,15 @@ function run(layout: "spread" | "clustered"): Result {
         const t0 = performance.now();
         const snaps: Snapshot[] = ids.map((id) => game.getSnapshot(id));
         const t1 = performance.now();
-        const outShared: Uint8Array[] = [];
-        for (let i = 0; i < ids.length; i++) outShared.push(sharedEnc.get(ids[i])!.encode(snaps[i], 0));
+        const outShared = encodeAll(ids, sharedEnc, snaps);
         const t2 = performance.now();
-        const outPriv: Uint8Array[] = [];
-        for (let i = 0; i < ids.length; i++) outPriv.push(privEnc.get(ids[i])!.encode(snaps[i], 0));
+        const outPriv = encodeAll(ids, privEnc, snaps);
         const t3 = performance.now();
         snapshotMs += t1 - t0;
         sharedMs += t2 - t1;
         privateMs += t3 - t2;
         for (let i = 0; i < ids.length; i++) {
-            if (!Buffer.from(outShared[i]).equals(Buffer.from(outPriv[i])))
-                throw new Error("shared/private bytes differ");
+            if (!outShared[i].equals(outPriv[i])) throw new Error("shared/private bytes differ");
             bytes += outShared[i].length;
             updates++;
         }

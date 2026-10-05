@@ -92,6 +92,28 @@ describe("game host", () => {
         expect(host.rooms.size).toBe(0);
     });
 
+    it("drops a game whose loop throws and keeps running the others", () => {
+        const host = new GameHost(makeConfig({ log: false }));
+        const bad = host.createRoom("main");
+        const good = host.createRoom("main");
+        bad.advance = () => {
+            throw new Error("boom");
+        };
+        const errors: unknown[] = [];
+        const original = console.error;
+        console.error = (...args: unknown[]) => errors.push(args);
+        try {
+            host.loop(0);
+            host.loop(100);
+        } finally {
+            console.error = original;
+        }
+        expect(host.rooms.has(bad.id)).toBe(false);
+        expect(host.rooms.has(good.id)).toBe(true);
+        expect(good.game.tick).toBe(5);
+        expect(errors.length).toBe(1);
+    });
+
     it("skips updates for congested sockets", () => {
         const host = new GameHost(makeConfig({ log: false, maxBufferedBytes: 1024 }));
         const room = host.createRoom("main");

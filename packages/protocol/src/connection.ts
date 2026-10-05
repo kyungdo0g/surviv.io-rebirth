@@ -122,15 +122,21 @@ export class GameConnection {
     /** Connects to a /play URL (with its token) and joins. */
     connectTo(url: string): Promise<JoinResult> {
         const Impl = this.options.WebSocketImpl ?? WebSocket;
-        const ws = new Impl(url);
+        let ws: WebSocket;
+        try {
+            ws = new Impl(url);
+        } catch (err) {
+            this.end(DisconnectReason.ConnectionLost);
+            return Promise.reject(err);
+        }
         ws.binaryType = "arraybuffer";
         this.ws = ws;
         const timeoutMs = this.options.timeoutMs ?? 10_000;
         const result = new Promise<JoinResult>((resolve, reject) => {
             const timer = setTimeout(() => {
-                this.joinWaiter = null;
-                reject(new Error("join timed out"));
-                this.close();
+                // rejects the waiter with the reason, then drops the socket
+                this.end(DisconnectReason.JoinTimeout);
+                if (ws.readyState <= 1) ws.close(1000);
             }, timeoutMs);
             this.joinWaiter = {
                 resolve: (r) => {

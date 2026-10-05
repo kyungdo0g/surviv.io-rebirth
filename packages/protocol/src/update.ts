@@ -43,6 +43,10 @@ import {
 } from "./objects.ts";
 import type { NetCtx } from "./quant.ts";
 
+/** Object ids are u16 on the wire (original protocol). The simulation never reuses ids, so hosts stop adding
+ * players to a game whose ids approach this limit. */
+export const MAX_OBJECT_ID = 0xffff;
+
 export interface UpdateMsg {
     type: typeof MsgType.Update;
     snapshot: Snapshot;
@@ -179,7 +183,7 @@ export class ClientEncoder {
     private readonly known = new Map<number, number>();
     private activePlayerId = -1;
     private local: LocalQuant | null = null;
-    private readonly present = new Set<number>();
+    private lastTick = -1;
     readonly last: EncodeStats = { full: 0, part: 0, deleted: 0, bullets: 0, bytes: 0 };
 
     constructor(cache: ObjectCache) {
@@ -191,17 +195,17 @@ export class ClientEncoder {
         return this.known.size;
     }
 
-    /** Appends one Update message (type byte, payload, alignment) for `snap` to `w`. */
+    /** Appends one Update message (type byte, payload, alignment) for `snap` to `w`. Ticks must increase. */
     write(w: BitWriter, snap: Snapshot, ack: number): void {
         const start = w.byteLength;
         const tick = snap.tick;
+        if (tick <= this.lastTick) throw new RangeError(`snapshot tick ${tick} is not after ${this.lastTick}`);
+        this.lastTick = tick;
         const cache = this.cache;
         const fulls: Uint8Array[] = [];
         const parts: Uint8Array[] = [];
-        const present = this.present;
-        present.clear();
         for (const view of snap.objects) {
-            present.add(view.id);
+            if (view.id > MAX_OBJECT_ID) throw new RangeError(`object id ${view.id} does not fit the u16 wire id`);
             const e = cache.get(view, tick);
             const knownAt = this.known.get(view.id);
             if (knownAt !== e.tick) {
@@ -214,9 +218,10 @@ export class ClientEncoder {
             }
             this.known.set(view.id, tick);
         }
+        // every object of this snapshot was stamped with `tick`: the others left the view
         const deleted: number[] = [];
-        for (const id of this.known.keys()) {
-            if (present.has(id)) continue;
+        for (const [id, at] of this.known) {
+            if (at === tick) continue;
             deleted.push(id);
             this.known.delete(id);
         }

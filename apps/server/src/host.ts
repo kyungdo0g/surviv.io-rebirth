@@ -61,7 +61,7 @@ export class GameHost {
     findRoom(mapName: string): GameRoom | null {
         let best: GameRoom | null = null;
         for (const room of this.rooms.values()) {
-            if (room.mapName !== mapName) continue;
+            if (room.mapName !== mapName || !room.hasIdHeadroom()) continue;
             if (room.playerCount + this.tokens.pendingFor(room.id) >= this.config.maxPlayers) continue;
             // the oldest joinable game fills first (survev gameProcessManager)
             if (!best || room.createdAt < best.createdAt) best = room;
@@ -87,7 +87,15 @@ export class GameHost {
 
     /** One loop iteration: advance every game, then housekeeping. Public for tests. */
     loop(now = performance.now()): void {
-        for (const room of this.rooms.values()) room.advance(now);
+        for (const room of [...this.rooms.values()]) {
+            try {
+                room.advance(now);
+            } catch (err) {
+                // one broken game must not take the others down: drop it and disconnect its players
+                console.error(`game ${room.id} crashed:`, err);
+                this.closeRoom(room);
+            }
+        }
         const wall = Date.now();
         if (wall - this.lastSweep >= SWEEP_INTERVAL_MS) {
             this.lastSweep = wall;

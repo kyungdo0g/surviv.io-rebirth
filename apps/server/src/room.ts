@@ -3,12 +3,15 @@
 // Update, encoded through the game's shared ObjectCache.
 import { randomUUID } from "node:crypto";
 import { BitWriter } from "@rebirth/core";
-import { ClientEncoder, encodeMapMsg, MsgType, ObjectCache, writeServerMsg } from "@rebirth/protocol";
+import { ClientEncoder, encodeMapMsg, MAX_OBJECT_ID, MsgType, ObjectCache, writeServerMsg } from "@rebirth/protocol";
 import { Game, type PlayerInput, SNAPSHOT_EVERY_TICKS, TICK_HZ } from "@rebirth/sim";
 import type { ServerConfig } from "./config.ts";
 import { type Percentiles, roundSummary, SampleWindow } from "./stats.ts";
 
 const TICK_MS = 1000 / TICK_HZ;
+/** ids kept free for the loot, players and other objects a running game still creates */
+const ID_HEADROOM = 8192;
+const MIN_NETSYNC_BYTES = 4096;
 
 /** What a room needs from a connection. */
 export interface RoomMember {
@@ -60,6 +63,8 @@ export class GameRoom {
     private droppedTicks = 0;
     private skippedUpdates = 0;
     private bytesSent = 0;
+    /** initial capacity of the next netsync's writer */
+    private netsyncBytes = MIN_NETSYNC_BYTES;
     /** set to false to give every member a private cache (benchmarks) */
     sharedCache = true;
 
@@ -78,7 +83,14 @@ export class GameRoom {
     }
 
     get isFull(): boolean {
-        return this.seats.size >= this.config.maxPlayers;
+        return this.seats.size >= this.config.maxPlayers || !this.hasIdHeadroom();
+    }
+
+    /** Whether object ids still fit the u16 wire id with room to spare (the simulation never reuses ids). */
+    hasIdHeadroom(): boolean {
+        let max = 0;
+        for (const id of this.game.world.objects.keys()) if (id > max) max = id;
+        return max < MAX_OBJECT_ID - ID_HEADROOM;
     }
 
     /** Adds a player for `member`; returns its id and the first frame (Joined + Map). */
@@ -141,6 +153,9 @@ export class GameRoom {
     }
 
     private netsync(): void {
+        // one writer for every member's update (sized from the previous netsync): a fresh typed array per client
+        // costs more than the encoding itself; each update is copied out into a small pooled Buffer at once
+        const w = new BitWriter(this.netsyncBytes);
         for (const [playerId, seat] of this.seats) {
             // a congested socket skips this update; its encoder sends full records for what it missed
             if (seat.member.bufferedAmount > this.config.maxBufferedBytes) {
@@ -148,12 +163,13 @@ export class GameRoom {
                 continue;
             }
             const snap = this.game.getSnapshot(playerId);
-            const w = new BitWriter(1024);
+            const start = w.byteLength;
             seat.encoder.write(w, snap, seat.member.ack);
-            const bytes = w.getBuffer();
+            const bytes = Buffer.from(w.getBuffer().subarray(start));
             this.bytesSent += bytes.length;
             seat.member.sendFrame(bytes);
         }
+        this.netsyncBytes = Math.max(MIN_NETSYNC_BYTES, Math.ceil(w.byteLength * 1.25));
         this.cache.maybeSweep(this.game.tick);
     }
 

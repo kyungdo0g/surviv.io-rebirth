@@ -75,6 +75,13 @@ describe("Update message", () => {
         expect(partials).toBeGreaterThan(1000);
     }, 60_000);
 
+    it("refuses object ids that do not fit the u16 wire id", () => {
+        const rng = createRng(8);
+        const ctx = { width: 720, height: 720 };
+        const snap = firstSnapshot(rng, ctx, { v: 70_000 });
+        expect(() => new ClientEncoder(new ObjectCache(ctx)).encode(snap, 0)).toThrow(/u16/);
+    });
+
     it("sends unchanged objects and local state as nothing", () => {
         const rng = createRng(5);
         const ctx = { width: 720, height: 720 };
