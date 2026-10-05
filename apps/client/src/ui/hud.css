@@ -21,7 +21,7 @@
 }
 
 #ui-game .ui-hidden {
-    display: none !important;
+    display: none;
 }
 
 .ui-outline-hover {
@@ -255,14 +255,15 @@
     position: absolute;
     left: 50%;
     top: 33.3%;
-    width: 0;
-    height: 0;
+    width: 72px;
+    height: 72px;
+    margin: -36px 0 0 -36px;
 }
 
 #ui-pie-timer svg {
     position: absolute;
-    left: -36px;
-    top: -36px;
+    left: 0;
+    top: 0;
     width: 72px;
     height: 72px;
     overflow: visible;
@@ -270,9 +271,9 @@
 
 #ui-pie-timer .ui-pie-count {
     position: absolute;
-    left: -40px;
-    top: -16px;
-    width: 80px;
+    left: 0;
+    top: 20px;
+    width: 72px;
     font-size: 24px;
     font-weight: bold;
     text-align: center;
@@ -286,7 +287,8 @@
 
 #ui-pie-timer .ui-pie-label {
     position: absolute;
-    top: 69.5px;
+    left: 50%;
+    top: 105.5px;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.5);
     border-radius: 5px;
@@ -489,10 +491,15 @@
     bottom: 2px;
     width: 100%;
     font-size: 16px;
+    letter-spacing: -0.5px;
     font-weight: bold;
     text-align: center;
     text-shadow: 1px 1px #000000;
     white-space: nowrap;
+}
+
+:lang(ko) .ui-armor-level {
+    font-size: 13px;
 }
 
 /* bottom right: weapon slots */
@@ -532,8 +539,8 @@
     background: rgba(0, 0, 0, 0.4);
 }
 
-.ui-weapon-switch.ui-weapon-empty {
-    pointer-events: none !important;
+#ui-game .ui-weapon-switch.ui-weapon-empty {
+    pointer-events: none;
 }
 
 #ui-weapon-id-1 {
@@ -682,5 +689,4 @@
         right: 260px;
         bottom: 80px;
     }
-
 }

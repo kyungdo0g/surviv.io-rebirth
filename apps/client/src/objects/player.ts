@@ -102,8 +102,6 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     /** gun kick of each hand in pixels, decaying every frame */
     recoilL = 0;
     recoilR = 0;
-    private lastPos: Vec2 = { x: 0, y: 0 };
-    private lastDir: Vec2 = { x: 1, y: 0 };
 
     constructor(deps: ViewDeps, id: number) {
         this.deps = deps;
@@ -206,7 +204,8 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         const right = !offHand || !gun.isDual;
         if (left) this.recoilL += gun.worldImg.recoil;
         if (right) this.recoilR += gun.worldImg.recoil;
-        this.deps.fx?.shot(view, this.lastPos, this.lastDir);
+        // casings start from the networked position, like the original (shot.ts uses m_netData.m_pos)
+        this.deps.fx?.shot(view, view.pos, view.dir);
     }
 
     private updateVisuals(view: PlayerView): void {
@@ -330,8 +329,6 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.container.position.set(local.x, local.y);
         this.container.visible = !view.dead;
         const facing = dir ?? view.dir;
-        this.lastPos = pos;
-        this.lastDir = facing;
         this.body.rotation = -Math.atan2(facing.y, facing.x);
         this.body.scale.set(view.scale || 1);
 

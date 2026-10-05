@@ -3,13 +3,13 @@
 // Behaviour follows survev client/src/objects/player.ts (update: switch sounds; playActionStartEffect;
 // animPlaySound; animMeleeCollision), shot.ts (casings, cycle/pull sounds) and the PickupMsg handler.
 import { collider, math, type Vec2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, type GunDef, type MeleeDef, MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, type GunDef, MapObjectDefs, type MeleeDef, type ObstacleDef } from "@rebirth/defs";
 import type { LocalPlayerState, ObstacleView, PlayerView, Snapshot } from "@rebirth/sim";
 import type { AudioEngine, SoundHandle } from "../audio/audio.ts";
 import type { AnimEffect } from "../objects/anims.ts";
 import type { PlayerFx } from "../objects/types.ts";
 import type { ObjectWorld } from "../objects/world.ts";
-import { type BulletScene, BulletSystem } from "./bullets.ts";
+import type { BulletScene, BulletSystem } from "./bullets.ts";
 import type { ParticleSystem } from "./particles.ts";
 
 /** players draw at zOrd 18; casings and melee hit particles go just above them */
@@ -47,6 +47,8 @@ export class GameEffects implements PlayerFx, BulletScene {
     /** a gun switch within this window plays the gun's full deploy sound (survev gunSwitchCooldown) */
     private gunSwitchCooldown = 0;
     private dryFired = false;
+    /** weapon set whose sounds were last preloaded */
+    private preloadKey = "";
 
     constructor(audio: AudioEngine, particles: ParticleSystem, bullets: BulletSystem) {
         this.audio = audio;
@@ -155,6 +157,9 @@ export class GameEffects implements PlayerFx, BulletScene {
 
     /** Loads the sounds of the local loadout so their first play is not dropped. */
     preloadWeapons(local: LocalPlayerState): void {
+        const key = local.weapons.map((w) => w.type).join();
+        if (key === this.preloadKey) return;
+        this.preloadKey = key;
         const names: Array<string | undefined> = ["gun_switch_01"];
         for (const w of local.weapons) {
             const def = w.type ? (GameObjectDefs[w.type] as { sound?: Record<string, string> }) : undefined;
@@ -260,14 +265,25 @@ export class GameEffects implements PlayerFx, BulletScene {
         }> = [];
         this.forEachObstacle((o) => {
             const odef = MapObjectDefs[o.type] as ObstacleDef | undefined;
-            if (!odef || o.dead || odef.height < GameConfig.player.meleeHeight || !sameLayer(o.layer, player.layer & 1)) {
+            if (
+                !odef ||
+                o.dead ||
+                odef.height < GameConfig.player.meleeHeight ||
+                !sameLayer(o.layer, player.layer & 1)
+            ) {
                 return;
             }
             const col = collider.transform(odef.collision, o.pos, math.oriToRad(o.ori), o.scale);
             const res = collider.intersect(circle, col);
             if (!res) return;
-            const point = { x: center.x + res.dir.x * (def.attack.rad - res.pen), y: center.y + res.dir.y * (def.attack.rad - res.pen) };
-            const vel = rotate({ x: -res.dir.x * HIT_PARTICLE_SPEED, y: -res.dir.y * HIT_PARTICLE_SPEED }, (Math.random() - 0.5) * (Math.PI / 3));
+            const point = {
+                x: center.x + res.dir.x * (def.attack.rad - res.pen),
+                y: center.y + res.dir.y * (def.attack.rad - res.pen),
+            };
+            const vel = rotate(
+                { x: -res.dir.x * HIT_PARTICLE_SPEED, y: -res.dir.y * HIT_PARTICLE_SPEED },
+                (Math.random() - 0.5) * (Math.PI / 3),
+            );
             hits.push({
                 prio: 1,
                 pen: res.pen,

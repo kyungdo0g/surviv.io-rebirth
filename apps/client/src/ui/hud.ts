@@ -157,7 +157,11 @@ export class Hud {
             const level = scope.replace("xscope", "");
             const div = el(
                 "div",
-                { id: `ui-scope-${scope}`, cls: "ui-zoom ui-zoom-inactive ui-hidden", click: () => this.selectScope(scope) },
+                {
+                    id: `ui-scope-${scope}`,
+                    cls: "ui-zoom ui-zoom-inactive ui-hidden",
+                    click: () => this.selectScope(scope),
+                },
                 el("div", { cls: "ui-zoom-level" }, level, el("span", { cls: "ui-zoom-append" }, "x")),
             );
             this.scopes.set(scope, div);
@@ -181,7 +185,11 @@ export class Hud {
             img.draggable = false;
             const div = el(
                 "div",
-                { id: `ui-loot-${item}`, cls: "ui-loot ui-outline-hover", click: () => this.cb.action(MEDICAL_INPUT[item]) },
+                {
+                    id: `ui-loot-${item}`,
+                    cls: "ui-loot ui-outline-hover",
+                    click: () => this.cb.action(MEDICAL_INPUT[item]),
+                },
                 count,
                 img,
             );
@@ -303,7 +311,9 @@ export class Hud {
     update(frame: HudFrame): void {
         const local = frame.local;
         this.lastLocal = local;
-        this.root.style.display = local ? "" : "none";
+        this.p.set("root", !!local, () => {
+            this.root.style.display = local ? "" : "none";
+        });
         if (!local) return;
         this.updateBars(local);
         this.updateWeapons(local);
@@ -439,6 +449,14 @@ export class Hud {
             this.pie.style.display = running ? "block" : "none";
         });
         if (!running) return;
+        // a third of the way down, scaled by the HUD scale factor (survev pieTimer.ts update, ui.ts resize)
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const clamp = (v: number) => Math.min(1, Math.max(0.75, v));
+        const top = Math.round((h / 3) * Math.min(1, clamp(w / 1280) * clamp(h / 1024)));
+        this.p.set("pieTop", top, () => {
+            this.pie.style.top = `${top}px`;
+        });
         let label = "";
         if (a.type === "reload") label = t("game-reloading");
         else label = isSov() ? `${itemName(a.item)} ${t("game-using")}` : `${t("game-using")} ${itemName(a.item)}`;
@@ -447,7 +465,8 @@ export class Hud {
         });
         const frac = Math.min(1, this.action.time / this.action.duration);
         const circumference = 2 * Math.PI * 35;
-        this.pieArc.setAttribute("stroke-dashoffset", String(circumference * (1 - frac)));
+        const offset = (circumference * (1 - frac)).toFixed(1);
+        this.p.set("pieArc", offset, () => this.pieArc.setAttribute("stroke-dashoffset", offset));
         const remaining = Math.max(0, this.action.duration - this.action.time).toFixed(1);
         this.p.set("pieCount", remaining, () => {
             this.pieCount.textContent = remaining;

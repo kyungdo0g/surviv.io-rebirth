@@ -216,15 +216,7 @@ function buildAnimations(): Record<string, AnimDef> {
         axeSwing: axeLike("woodaxe"),
         hammerSwing: axeLike("stonehammer"),
         katanaSwing: twoHanded("katana", { x: 8.5, y: 13.25 }, { x: -3, y: 17.75 }, 0.3, PI * 0.2, 0.9, -PI * 1.2),
-        naginataSwing: twoHanded(
-            "naginata",
-            { x: 19, y: -7.25 },
-            { x: 8.5, y: 24.25 },
-            0.3,
-            PI * 0.3,
-            0.9,
-            -PI * 0.85,
-        ),
+        naginataSwing: twoHanded("naginata", { x: 19, y: -7.25 }, { x: 8.5, y: 24.25 }, 0.3, PI * 0.3, 0.9, -PI * 0.85),
         sawSwing: {
             keyframes: [
                 frame(0, { [R]: pose(1, 17.75) }),

@@ -5,12 +5,19 @@
 // player-bullet-trail-02, x-scale 0.8, y-scale tracerWidth, length min(tracerLength * 15, travelled / 2), container
 // pivot 14.5 so the head sits on the bullet, ×6/s shrink after impact, reflected bullets at half alpha).
 import { type Collider, collider, math, type Vec2 } from "@rebirth/core";
-import { type BulletDef, GameConfig, GameObjectDefs, type GunDef, type MapDef, type ObstacleDef } from "@rebirth/defs";
-import { MapObjectDefs } from "@rebirth/defs";
+import {
+    type BulletDef,
+    GameConfig,
+    GameObjectDefs,
+    type GunDef,
+    type MapDef,
+    MapObjectDefs,
+    type ObstacleDef,
+} from "@rebirth/defs";
 import type { BulletEvent, ObstacleView, PlayerView } from "@rebirth/sim";
 import { Container, type Sprite } from "pixi.js";
-import type { AudioEngine } from "../audio/audio.ts";
 import type { TextureStore } from "../assets/textures.ts";
+import type { AudioEngine } from "../audio/audio.ts";
 import { type Renderer, toLocal } from "../render/renderer.ts";
 import type { ParticleSystem } from "./particles.ts";
 
@@ -198,8 +205,15 @@ export class BulletSystem {
      * splat. Returns the stop point, or null when the bullet flies on.
      */
     private collide(t: Tracer, a: Vec2, b: Vec2, scene: BulletScene): Vec2 | null {
-        const hits: Array<{ dist: number; point: Vec2; normal: Vec2; obstacle?: ObstacleDef; player?: PlayerView; id: number; stop: boolean }> =
-            [];
+        const hits: Array<{
+            dist: number;
+            point: Vec2;
+            normal: Vec2;
+            obstacle?: ObstacleDef;
+            player?: PlayerView;
+            id: number;
+            stop: boolean;
+        }> = [];
         const minX = Math.min(a.x, b.x);
         const maxX = Math.max(a.x, b.x);
         const minY = Math.min(a.y, b.y);
@@ -220,7 +234,15 @@ export class BulletSystem {
             if (!sameLayer(view.layer, t.layer) && !(view.layer & 2)) return;
             const rad = GameConfig.player.radius * (view.scale || 1);
             const hit = collider.intersectSegment({ type: 0, pos: view.pos, rad }, a, b);
-            if (hit) hits.push({ dist: hit.dist, point: hit.point, normal: hit.normal, player: view, id: view.id, stop: true });
+            if (hit)
+                hits.push({
+                    dist: hit.dist,
+                    point: hit.point,
+                    normal: hit.normal,
+                    player: view,
+                    id: view.id,
+                    stop: true,
+                });
         });
         hits.sort((x, y) => x.dist - y.dist);
         for (const h of hits) {

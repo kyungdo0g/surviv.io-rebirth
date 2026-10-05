@@ -7,7 +7,18 @@ import { join } from "node:path";
 const LIVE = "research-cache/live";
 const OUT = "apps/client/src/generated/l10n-en-items.json";
 const DEFS = "packages/defs/src/generated/gameObjects.json";
-const ITEM_TYPES = new Set(["gun", "melee", "throwable", "ammo", "heal", "boost", "helmet", "chest", "backpack", "scope"]);
+const ITEM_TYPES = new Set([
+    "gun",
+    "melee",
+    "throwable",
+    "ammo",
+    "heal",
+    "boost",
+    "helmet",
+    "chest",
+    "backpack",
+    "scope",
+]);
 
 const bundle = process.argv[2] ?? join(LIVE, readdirSync(LIVE).find((f) => /^app\..*\.js$/.test(f))!);
 const src = readFileSync(bundle, "utf8");

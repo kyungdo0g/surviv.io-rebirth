@@ -13,9 +13,9 @@ import {
     type TerrainShape,
 } from "@rebirth/sim";
 import type { Application, Ticker } from "pixi.js";
-import { AudioEngine } from "../audio/audio.ts";
 import { mapSprites, outfitSprites } from "../assets/spriteSets.ts";
 import type { TextureStore } from "../assets/textures.ts";
+import { AudioEngine } from "../audio/audio.ts";
 import { BulletSystem } from "../fx/bullets.ts";
 import { GameEffects } from "../fx/effects.ts";
 import { ParticleSystem } from "../fx/particles.ts";
