@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.vite/
+coverage/
+*.log
+.DS_Store
+
+# raw scraped wiki dumps (CC BY-SA, regenerable via tools/scrape)
+research-cache/
+
+# reference clone of survev (regenerable via tools/port-survev/fetch.sh)
+.survev/
+
+# playwright
+test-results/
+playwright-report/
