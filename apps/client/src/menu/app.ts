@@ -87,6 +87,8 @@ export class MenuApp {
             if (input) input.value = opts.name.slice(0, 16);
         }
         this.exposeGlobals();
+        // nothing is drawn under the menu: the render loop only runs during a game
+        app.stop();
         if (opts.teamCode) this.openParty(opts.teamCode);
     }
 
@@ -98,6 +100,7 @@ export class MenuApp {
         if (this.client) return;
         this.menu.setError("");
         this.menu.hide();
+        this.app.start();
         this.partyGame = false;
         const autoFill = loadSetting(FILL_KEY) !== "false";
         this.client = bootSandbox(this.app, {
@@ -148,6 +151,7 @@ export class MenuApp {
         this.lobby.joiningGame = true;
         this.menu.setError("");
         this.menu.hide();
+        this.app.start();
         this.partyGame = true;
         this.client = bootSandbox(this.app, {
             mapName: this.opts.mapName,
@@ -185,6 +189,7 @@ export class MenuApp {
     /** The game was left or lost: back to the lobby (party games) or the start page. */
     private gameEnded(error?: string): void {
         this.client = null;
+        this.app.stop();
         const party = this.partyGame ? this.party : null;
         this.partyGame = false;
         if (party) {

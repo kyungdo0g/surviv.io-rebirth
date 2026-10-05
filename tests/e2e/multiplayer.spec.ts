@@ -50,6 +50,9 @@ test("two network clients share a game, see each other and see each other move",
 
     await alice.screenshot({ path: "tests/e2e/__screens__/M3/alice-sees-bob.png" });
     await bob.screenshot({ path: "tests/e2e/__screens__/M3/bob-sees-alice.png" });
+    // manually created contexts outlive the test: close them so two idle games do not slow the next tests down
+    await alice.context().close();
+    await bob.context().close();
 });
 
 // M4 over the network (same file so the two-browser tests never run at the same time): the network has no debug
@@ -145,6 +148,8 @@ test("network: kill feed, alive counter, win and death screens, game_closed and 
     expect(await b.evaluate(() => (window as any).__rebirth.disconnect ?? null)).toBeNull();
     expect(alice.errors).toEqual([]);
     expect(bob.errors).toEqual([]);
+    await a.context().close();
+    await b.context().close();
 });
 
 // M6 party lobby (same file so the two-browser tests never run at the same time): Alice opens the start page and
@@ -159,6 +164,8 @@ test("network party: create, join by link, duo start, same team, back to the lob
         return { page, errors: collectErrors(page) };
     };
     const lobby = (p: Page) => p.evaluate(() => (window as any).__rebirth.menu?.lobby ?? null);
+    // contexts of earlier tests that are still open would keep rendering their games
+    for (const ctx of browser.contexts()) await ctx.close();
     const alice = await newPage();
     const a = alice.page;
     await a.goto("/?menu=1&name=Alice");
@@ -166,7 +173,7 @@ test("network party: create, join by link, duo start, same team, back to the lob
     await expect(a.locator("#player-name-input-solo")).toHaveValue("Alice");
     await a.screenshot({ path: `${M6}/main-menu.png` });
     await a.locator("#btn-create-team").click();
-    await a.waitForFunction(() => !!(window as any).__rebirth.menu?.lobby?.code, null, { timeout: 20_000 });
+    await a.waitForFunction(() => !!(window as any).__rebirth.menu?.lobby?.code, null, { timeout: 45_000 });
     const code: string = (await lobby(a)).code;
     expect(code).toMatch(/^[A-Za-z1-9]{4}$/);
     await expect(a.locator("#team-code")).toHaveText(code);
@@ -177,7 +184,7 @@ test("network party: create, join by link, duo start, same team, back to the lob
     await b.goto(`/?team=${code}&name=Bob`);
     for (const p of [a, b]) {
         await p.waitForFunction(() => (window as any).__rebirth.menu?.lobby?.players.length === 2, null, {
-            timeout: 20_000,
+            timeout: 45_000,
         });
         await expect(p.locator("#team-menu-member-list .name").nth(0)).toHaveText("Alice");
         await expect(p.locator("#team-menu-member-list .name").nth(1)).toHaveText("Bob");
@@ -198,6 +205,8 @@ test("network party: create, join by link, duo start, same team, back to the lob
         await expect(p.locator("#btn-team-queue-mode-1")).toHaveClass(/btn-hollow-selected/);
         await expect(p.locator("#team-menu-member-list .team-menu-member")).toHaveCount(2);
     }
+    // the button under the cursor is darkened on hover: move away for the screenshot
+    await a.mouse.move(5, 5);
     await a.screenshot({ path: `${M6}/lobby-leader.png` });
     await b.screenshot({ path: `${M6}/lobby-member.png` });
 
@@ -265,4 +274,7 @@ test("network party: create, join by link, duo start, same team, back to the lob
     await expect(a.locator("#msg-wait-reason")).toHaveText("Game in progress ...");
     expect(alice.errors).toEqual([]);
     expect(bob.errors).toEqual([]);
+    // manual contexts outlive the test: close them so they do not load the next ones
+    await a.context().close();
+    await b.context().close();
 });

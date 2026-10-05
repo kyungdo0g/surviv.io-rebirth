@@ -79,4 +79,5 @@ test("menu and lobby: Korean strings, join by pasted link, kicked, full room, un
     await b.waitForFunction(() => (window as any).__rebirth.menu.panel === "start");
     await expect(b.locator("#server-warning")).toHaveText("팀으로부터 쫓겨났습니다!");
     expect(leader.errors).toEqual([]);
+    for (const p of [a, b, d]) await p.context().close();
 });
