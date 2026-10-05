@@ -12,11 +12,15 @@ import type { WorldModel } from "../perception/world.ts";
 import { addCombatLayer, freeDir, grenadeOpportunity, planFight, selectTarget } from "./combat.ts";
 import { type BehaviourName, type BrainCtx, BrainMemory, emptyIntent, type Intent } from "./context.ts";
 import { bestLoot, lootScore, planExplore, planLoot } from "./explore.ts";
+import { planLayerEscape } from "./layers.ts";
 import { bestBreakable, breakScore, planBreak } from "./scavenge.ts";
 import { fleeScore, healScore, planFlee, planHeal, planZone, zoneScore } from "./survival.ts";
 import { planDowned, planRegroup, planRevive, regroupScore, reviveScore } from "./team.ts";
 
+/** Bonus of the current behaviour; larger right after switching, so near-equal scores do not flip-flop. */
 const HYSTERESIS = 0.08;
+const COMMIT_BONUS = 0.12;
+const COMMIT_TIME = 1.5;
 const EXPLORE_SCORE = 0.12;
 /** Projectiles worth running from. */
 const DANGEROUS = new Set(["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron"]);
@@ -79,6 +83,12 @@ export class Brain {
             return intent;
         }
         if (self.downed) return planDowned(ctx);
+        // off the ground floor (stairs, underground): walk back up first
+        const upstairs = planLayerEscape(ctx);
+        if (upstairs) {
+            addCombatLayer(ctx, upstairs);
+            return upstairs;
+        }
 
         const loot = bestLoot(ctx);
         const crate = bestBreakable(ctx);
@@ -96,8 +106,9 @@ export class Brain {
         let best = options[options.length - 1];
         let bestScore = Number.NEGATIVE_INFINITY;
         const scores: Partial<Record<BehaviourName, number>> = {};
+        const bonus = HYSTERESIS + (now - this.mem.currentSince < COMMIT_TIME ? COMMIT_BONUS : 0);
         for (const opt of options) {
-            const s = opt[1] + (opt[0] === this.mem.current ? HYSTERESIS : 0);
+            const s = opt[1] + (opt[0] === this.mem.current ? bonus : 0);
             scores[opt[0]] = opt[1];
             if (s > bestScore) {
                 bestScore = s;
@@ -106,6 +117,7 @@ export class Brain {
         }
         this.lastScores = scores;
         const intent = best[2]();
+        if (intent.behaviour !== this.mem.current) this.mem.currentSince = now;
         this.mem.current = intent.behaviour;
         this.manageWeapons(ctx, intent);
         if (!intent.throwPlan && (intent.behaviour === "fight" || intent.behaviour === "zone")) {
@@ -159,7 +171,10 @@ export class Brain {
         for (const p of ctx.model.projectiles) {
             if (!DANGEROUS.has(p.type)) continue;
             const d = v2.distance(p.pos, me);
-            if (d > 11 || (ctx.now - ctx.mem.lastThrow < 1.5 && d < 4)) continue;
+            if (d > 11) continue;
+            // its own grenade, flying to where it was thrown, is no threat
+            const own = ctx.mem.lastThrowPos;
+            if (own && ctx.now - ctx.mem.lastThrow < 5 && v2.distance(p.pos, own) < v2.distance(me, own)) continue;
             away = v2.add(away, v2.mul(v2.normalizeSafe(v2.sub(me, p.pos)), 1 / Math.max(d, 1)));
         }
         if (v2.lengthSqr(away) < 1e-9) return;
@@ -181,12 +196,14 @@ function fightScore(ctx: BrainCtx): number {
         if (!t.visible || d > 6) return 0;
         const attacked = ctx.now - ctx.model.lastHurt < 2;
         if (attacked) return 0.7;
-        return isMeleeWeapon(t.activeWeapon) && d < 5 ? ctx.params.meleeAggression : 0;
+        return isMeleeWeapon(t.activeWeapon) && d < 4 ? ctx.params.meleeAggression : 0;
     }
     if (!t.visible) return 0.5 * Math.max(0, 1 - (ctx.now - t.lastSeen) / (ctx.params.memory + 0.01));
     const shootingAtMe = ctx.now - t.lastShotAt < 2;
     const reach = Math.max(...ctx.guns.filter(hasAmmo).map((g) => g.info.maxEngage), 10);
     if (d > reach * 1.4 && !shootingAtMe) return 0.35;
     if (t.downed && ctx.visibleEnemies.some((e) => !e.downed && e !== t)) return 0.5;
-    return 0.78;
+    // shot at, or too close to ignore: fight; an enemy that has not noticed the bot is a choice (looting may win)
+    const threatened = shootingAtMe || ctx.now - ctx.model.lastHurt < 3 || d < 12;
+    return threatened ? 0.78 : ctx.params.aggression;
 }

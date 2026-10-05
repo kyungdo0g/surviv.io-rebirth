@@ -3,8 +3,8 @@
 // progress while walking) and sidesteps out of it, and asks to open closed doors the path runs into.
 import type { Rng, Vec2 } from "@rebirth/core";
 import { v2 } from "@rebirth/core";
-import type { WorldModel } from "../perception/world.ts";
 import { colliderCenter, distanceToCollider, segmentHits } from "../geom.ts";
+import type { WorldModel } from "../perception/world.ts";
 import { findPath } from "./astar.ts";
 
 export interface SteerResult {
@@ -44,6 +44,8 @@ export class PathFollower {
     private failures = 0;
     private lastDoorUse = Number.NEGATIVE_INFINITY;
     private forceReplan = false;
+    /** plan again at this time (a deferred replan) */
+    private replanAt = Number.POSITIVE_INFINITY;
     private readonly rng: Rng;
     /** total stuck events (diagnostics, tests) */
     stuckEvents = 0;
@@ -54,6 +56,7 @@ export class PathFollower {
 
     clear(): void {
         this.goal = null;
+        this.replanAt = Number.POSITIVE_INFINITY;
         this.points = [];
         this.idx = 0;
         this.failures = 0;
@@ -63,6 +66,7 @@ export class PathFollower {
     private plan(model: WorldModel, pos: Vec2, goal: Vec2, now: number): void {
         const grid = model.nav;
         this.forceReplan = false;
+        this.replanAt = Number.POSITIVE_INFINITY;
         if (v2.distance(pos, goal) < DIRECT_DIST && grid.lineWalkable(pos, goal)) {
             this.planTime = now;
             this.idx = 0;
@@ -117,7 +121,10 @@ export class PathFollower {
                 return true;
             }
         }
-        return now - this.planTime < 0.75;
+        if (now - this.planTime >= 0.75) return false;
+        // searched very recently: keep the current plan a little longer, then plan again
+        this.replanAt = Math.min(this.replanAt, this.planTime + 0.75);
+        return true;
     }
 
     steer(model: WorldModel, goal: Vec2, now: number, arriveDist = 1): SteerResult {
@@ -130,18 +137,22 @@ export class PathFollower {
             this.stuckCount = 0;
             return { dir: null, openDoor: 0, arrived: true, failed: false };
         }
-        const moved = this.goal === null || v2.distance(goal, this.goal) > Math.max(1.5, 0.15 * dist);
-        let replan = this.forceReplan || this.points.length === 0;
-        if (moved) {
-            if (this.goal === null || v2.distance(goal, this.goal) > 6) {
+        const shift = this.goal === null ? Number.POSITIVE_INFINITY : v2.distance(goal, this.goal);
+        let replan = this.forceReplan || this.points.length === 0 || now >= this.replanAt;
+        if (shift > Math.max(1.5, 0.15 * dist)) {
+            if (shift > 6) {
                 this.failures = 0;
                 this.stuckCount = 0;
             }
             this.goal = v2.copy(goal);
-            replan = replan || !this.retarget(model, pos, goal, now);
+            // a new destination (behaviour switch) plans at once; a goal drifting along adapts the current plan
+            replan = replan || shift > 0.35 * dist || !this.retarget(model, pos, goal, now);
         }
         // complete plans are refreshed now and then (doors, destroyed obstacles), partial ones sooner
         if (now - this.planTime > (this.complete ? 6 : 2)) replan = true;
+        // walked the whole plan without reaching the goal (an old or partial plan)
+        const last = this.points[this.points.length - 1];
+        if (last && v2.distance(pos, last) < 0.9 && v2.distance(last, goal) > 1.5) replan = true;
         if (replan) this.plan(model, pos, goal, now);
 
         if (now < this.unstickUntil) return { dir: this.unstickDir, openDoor: 0, arrived: false, failed: false };
@@ -176,7 +187,7 @@ export class PathFollower {
         const side = this.rng.bool() ? 1 : -1;
         const angle = side * this.rng.range(Math.PI * 0.45, Math.PI * 0.8);
         this.unstickDir = v2.rotate(dir, angle);
-        this.unstickUntil = now + this.rng.range(0.25, 0.55);
+        this.unstickUntil = now + this.rng.range(0.15, 0.35);
         this.forceReplan = true;
     }
 

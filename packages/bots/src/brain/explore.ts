@@ -9,8 +9,8 @@ import { lootValue, slotToReplace } from "../knowledge/loot.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
 import type { SeenLoot } from "../perception/world.ts";
 import { addCombatLayer } from "./combat.ts";
-import { onTheWay } from "./survival.ts";
 import { type BrainCtx, emptyIntent, type Intent, reachable } from "./context.ts";
+import { onTheWay } from "./survival.ts";
 
 const LOOT_RADIUS = GameConfig.lootRadius as Readonly<Record<string, number>>;
 const MAX_LOOT_DIST = 70;
@@ -76,10 +76,11 @@ export function planLoot(ctx: BrainCtx, choice: LootChoice): Intent {
     const l = choice.loot;
     mem.lootTarget = l.id;
     intent.goal = v2.copy(l.pos);
-    intent.arriveDist = 0.3;
+    intent.arriveDist = 0.6;
     const pickR = 1 + lootRad(l.type) - 0.3;
     if (choice.dist < pickR) {
-        intent.stop = choice.dist < 0.5;
+        // in reach: Loot takes the closest item, no need to stand on it (items often rest against obstacles)
+        intent.stop = true;
         const isGun = !!gunInfo(l.type);
         const replace = isGun ? slotToReplace(self) : null;
         const sameType = self.weapons.some((w) => w.type === l.type);

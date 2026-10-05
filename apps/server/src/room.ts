@@ -5,7 +5,8 @@
 // the member's previous frame (broadcast), PlayerStats / GameOver only the member's own result (per player), as in
 // the original (netcode.md "Message framing"). The host closes the room `gameOverGraceMs` after the game ended.
 // Team rooms (M6a) run a duo or squad game: a join may carry a party's group data, and members' emote requests go
-// to the game.
+// to the game. With BOT_FILL (M6b) a room fills its game with in-process bots while it is joinable (bots.ts); bots are
+// players of the game, not members: they have no seat, so player counts, emptiness and room stats are about humans.
 import { randomUUID } from "node:crypto";
 import { BitWriter } from "@rebirth/core";
 import { GameConfig } from "@rebirth/defs";
@@ -19,6 +20,7 @@ import {
     type SpectateActionName,
     TICK_HZ,
 } from "@rebirth/sim";
+import { BotFill } from "./bots.ts";
 import type { ServerConfig } from "./config.ts";
 import { type Percentiles, roundSummary, SampleWindow } from "./stats.ts";
 
@@ -48,8 +50,11 @@ export interface RoomStats {
     /** 1 solo, 2 duo, 4 squad */
     teamMode: number;
     players: number;
-    /** living players in the game (disconnected ones included) */
+    /** living players in the game (disconnected ones and bots included) */
     alive: number;
+    /** fill bots in the game (alive or dead), and the living ones; never counted in `players` */
+    bots: number;
+    botsAlive: number;
     started: boolean;
     over: boolean;
     tick: number;
@@ -90,6 +95,8 @@ export class GameRoom {
     private netsyncBytes = MIN_NETSYNC_BYTES;
     /** set to false to give every member a private cache (benchmarks) */
     sharedCache = true;
+    /** bot fill (null when BOT_FILL is 0) */
+    readonly bots: BotFill | null;
 
     constructor(config: ServerConfig, mapName: string, seed: number, now: number, teamMode: 1 | 2 | 4 = 1) {
         this.config = config;
@@ -100,6 +107,18 @@ export class GameRoom {
         this.mapMsg = encodeMapMsg(this.game.mapData);
         this.createdAt = now;
         this.emptySince = now;
+        this.bots =
+            config.botFill > 0
+                ? new BotFill(this.game, {
+                      target: config.botFill,
+                      difficulty: config.botDifficulty,
+                      joinIntervalTicks: Math.round((config.botFillIntervalMs / 1000) * TICK_HZ),
+                      seed: seed >>> 0,
+                      onError: (err) => {
+                          if (this.bots?.errors === 1) console.error(`game ${this.id}: a bot failed (dropped):`, err);
+                      },
+                  })
+                : null;
     }
 
     get playerCount(): number {
@@ -110,9 +129,13 @@ export class GameRoom {
         return this.seats.size >= this.config.maxPlayers || !this.hasIdHeadroom();
     }
 
-    /** Whether find_game may route a new player here: seats left and the game's join window open. */
+    /**
+     * Whether find_game may route a new player here: seats left and the game's join window open. A game full of
+     * players still takes a human when a fill bot can give up its seat.
+     */
     canJoin(): boolean {
-        return !this.isFull && this.game.canJoin();
+        if (this.isFull) return false;
+        return this.game.canJoin() || (this.bots?.canMakeRoom() ?? false);
     }
 
     /** Whether object ids still fit the u16 wire id with room to spare (the simulation never reuses ids). */
@@ -127,6 +150,8 @@ export class GameRoom {
      * the first frame (Joined + Map).
      */
     join(member: RoomMember, name: string, group?: AddPlayerOptions): { playerId: number; frame: Uint8Array } {
+        // a human takes the seat of a fill bot when the game is at its target or full
+        this.bots?.makeRoom();
         const playerId = this.game.addPlayer(name, group);
         if (this.config.debugSpawnTogether) this.spawnNearFirstPlayer(playerId);
         const cache = this.sharedCache ? this.cache : new ObjectCache(this.cache.ctx);
@@ -205,6 +230,8 @@ export class GameRoom {
     /** One simulation tick, plus the netsync when a snapshot is due. */
     tick(): void {
         const t0 = performance.now();
+        // bots read their snapshots and set their inputs before the step, like inputs arriving from sockets
+        this.bots?.update();
         this.game.step();
         const t1 = performance.now();
         this.tickTimes.add(t1 - t0);
@@ -252,6 +279,8 @@ export class GameRoom {
             teamMode: this.teamMode,
             players: this.seats.size,
             alive: this.game.aliveCount,
+            bots: this.bots?.count ?? 0,
+            botsAlive: this.bots?.aliveCount ?? 0,
             started: this.game.started,
             over: this.game.over,
             tick: this.game.tick,

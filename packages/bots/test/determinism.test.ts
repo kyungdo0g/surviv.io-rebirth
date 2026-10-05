@@ -25,7 +25,8 @@ describe("bot determinism", () => {
             readFileSync(file, "utf8")
                 .split("\n")
                 .forEach((line, i) => {
-                    for (const token of FORBIDDEN) if (line.includes(token)) offenders.push(`${file}:${i + 1}: ${token}`);
+                    for (const token of FORBIDDEN)
+                        if (line.includes(token)) offenders.push(`${file}:${i + 1}: ${token}`);
                 });
         }
         expect(offenders).toEqual([]);

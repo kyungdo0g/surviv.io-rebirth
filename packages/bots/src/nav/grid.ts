@@ -232,7 +232,7 @@ export class NavGrid implements RasterGrid {
             if (!def.collidable || !onGroundLayer(obj.layer)) continue;
             const col = obstacleCollider(def, obj.pos, obj.ori, obj.scale);
             const door = def.door;
-            if (door && door.canUse && !door.locked) {
+            if (door?.canUse && !door.locked) {
                 this.doors.set(obj.id, { id: obj.id, type: obj.type, collider: col });
                 this.markDoor(col);
                 continue;
@@ -331,9 +331,9 @@ export class NavGrid implements RasterGrid {
         if (this.known.has(view.id)) return;
         this.known.add(view.id);
         const def = obstacleDef(view.type);
-        if (!def || !def.collidable || !onGroundLayer(view.layer)) return;
+        if (!def?.collidable || !onGroundLayer(view.layer)) return;
         const col = obstacleCollider(def, view.pos, view.ori, view.scale);
-        if (def.door && def.door.canUse && !def.door.locked) {
+        if (def.door?.canUse && !def.door.locked) {
             this.doors.set(view.id, { id: view.id, type: view.type, collider: col });
             this.markDoor(col);
             this.version++;

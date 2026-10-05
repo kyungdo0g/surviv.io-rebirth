@@ -12,8 +12,8 @@ import { ThrowController, TriggerController } from "./brain/trigger.ts";
 import { type Difficulty, type DifficultyParams, difficultyParams } from "./difficulty.ts";
 import { angleOf, dirOf } from "./geom.ts";
 import { gunInfo } from "./knowledge/weapons.ts";
-import { NavGrid } from "./nav/grid.ts";
 import { PathFollower } from "./nav/follower.ts";
+import { NavGrid } from "./nav/grid.ts";
 import { WorldModel } from "./perception/world.ts";
 
 export interface BotOptions {
@@ -83,7 +83,8 @@ export class Bot {
         }
         const hurt = model.lastHealthLoss === model.time;
         let sighted = false;
-        for (const c of model.contacts.values()) if (c.visible && c.firstSeen === model.time && !c.teammate) sighted = true;
+        for (const c of model.contacts.values())
+            if (c.visible && c.firstSeen === model.time && !c.teammate) sighted = true;
         const due = model.snapshots % this.params.thinkEvery === 0;
         if (due || hurt || sighted || this.lastThink === Number.NEGATIVE_INFINITY) this.think();
         this.updateSteering();
@@ -163,7 +164,8 @@ export class Bot {
         const self = this.model.self;
         input.toMouseDir = dirOf(this.aim.angle);
         if (self.dead) return input;
-        if (this.moveDir) this.keys(input, this.moveDir);
+        const still = this.throws.active && this.throws.holdStill(this.clock);
+        if (this.moveDir && !still) this.keys(input, this.moveDir);
         else this.moveErr = { x: 0, y: 0 };
 
         const throwing = this.throws.active ? this.throws.update(this.clock, self) : null;

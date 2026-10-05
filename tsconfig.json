@@ -1,5 +1,13 @@
 {
     "extends": "./tsconfig.base.json",
-    "include": ["packages/*/src", "packages/*/test", "apps/server/src", "apps/server/test", "tools", "tests/soak"],
+    "include": [
+        "packages/*/src",
+        "packages/*/test",
+        "packages/bots/scripts",
+        "apps/server/src",
+        "apps/server/test",
+        "tools",
+        "tests/soak"
+    ],
     "exclude": ["node_modules", ".survev", "research-cache"]
 }

@@ -59,13 +59,16 @@ export function gunInfo(id: string): GunInfo | undefined {
         return undefined;
     }
     const def = GameObjectDefs[id] as GunDef;
-    const bullet = hasDef(def.bulletType) ? (GameObjectDefs[def.bulletType] as { damage?: number; distance?: number; speed?: number }) : {};
+    const bullet = hasDef(def.bulletType)
+        ? (GameObjectDefs[def.bulletType] as { damage?: number; distance?: number; speed?: number })
+        : {};
     const damage = bullet.damage ?? 0;
     const range = bullet.distance ?? 0;
     const useless = USELESS.has(id) || damage <= 0;
     const cls = useless ? "useless" : classify(def, range);
     const burst = def.fireMode === "burst" ? (def.burstCount ?? 1) : 1;
-    const cycle = def.fireMode === "burst" ? (def.fireDelay + (burst - 1) * (def.burstDelay ?? 0)) / burst : def.fireDelay;
+    const cycle =
+        def.fireMode === "burst" ? (def.fireDelay + (burst - 1) * (def.burstDelay ?? 0)) / burst : def.fireDelay;
     const perShot = damage * def.bulletCount;
     // pellets spread: a shotgun lands roughly two thirds of them at its fighting range
     const hitRate = def.bulletCount > 1 ? 0.65 : Math.max(0.35, 1 - (def.shotSpread + def.moveSpread * 0.5) / 30);

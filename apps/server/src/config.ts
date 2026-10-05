@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { MapDefs } from "@rebirth/defs";
 import { z } from "zod";
+import type { BotDifficultySetting } from "./bots.ts";
 
 export interface ServerConfig {
     port: number;
@@ -50,6 +51,15 @@ export interface ServerConfig {
     partyJoinTimeoutMs: number;
     /** party members silent for this long are dropped (survev: 8 minutes; clients keepAlive every 45 s) */
     partyIdleMs: number;
+    /**
+     * Bot fill (rebirth): players per game that in-process bots fill up to while the game is joinable; 0 turns bots
+     * off. Humans joining a full game take the seat of a bot that has not fought yet (bots.ts).
+     */
+    botFill: number;
+    /** difficulty of fill bots: easy, normal, hard or mixed (a third each) */
+    botDifficulty: BotDifficultySetting;
+    /** milliseconds between two bot joins (bots trickle in like players; 0: all at once) */
+    botFillIntervalMs: number;
 }
 
 const DEFAULT_CLIENT_DIST = fileURLToPath(new URL("../../client/dist", import.meta.url));
@@ -91,6 +101,9 @@ const EnvSchema = z.object({
         .int()
         .min(1000)
         .default(8 * 60 * 1000),
+    BOT_FILL: z.coerce.number().int().min(0).max(255).default(0),
+    BOT_DIFFICULTY: z.enum(["easy", "normal", "hard", "mixed"]).default("normal"),
+    BOT_FILL_INTERVAL_MS: z.coerce.number().int().min(0).default(250),
 });
 
 /** Validated configuration; throws an Error listing every invalid variable. */
@@ -126,6 +139,9 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         partyMaxMsgsPerSecond: e.PARTY_MAX_MSGS_PER_SECOND,
         partyJoinTimeoutMs: e.PARTY_JOIN_TIMEOUT_MS,
         partyIdleMs: e.PARTY_IDLE_MS,
+        botFill: e.BOT_FILL,
+        botDifficulty: e.BOT_DIFFICULTY,
+        botFillIntervalMs: e.BOT_FILL_INTERVAL_MS,
     };
 }
 

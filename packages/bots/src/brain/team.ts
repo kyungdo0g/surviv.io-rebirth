@@ -7,8 +7,9 @@ import type { TeamMemberView } from "@rebirth/sim";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 
 const REVIVE_RANGE = GameConfig.player.reviveRange;
-/** Followers regroup when farther than this from their leader. */
-const REGROUP_DIST = 22;
+/** Followers start regrouping farther than this from their leader, and stop once within REGROUP_DONE. */
+const REGROUP_DIST = 26;
+const REGROUP_DONE = 10;
 
 /** Living teammates (not the bot itself), with the freshest position known. */
 function mates(ctx: BrainCtx): Array<TeamMemberView & { at: Vec2 }> {
@@ -86,10 +87,19 @@ function leaderOf(ctx: BrainCtx): (TeamMemberView & { at: Vec2 }) | undefined {
 export function regroupScore(ctx: BrainCtx): number {
     if (!ctx.teamMode) return 0;
     const leader = leaderOf(ctx);
-    if (!leader) return 0;
+    const mem = ctx.mem;
+    if (!leader) {
+        mem.regrouping = false;
+        return 0;
+    }
     const d = v2.distance(leader.at, ctx.self.pos);
-    if (d < REGROUP_DIST) return 0;
-    return Math.min(0.7, 0.42 + (d - REGROUP_DIST) / 120);
+    // a band between starting and stopping keeps the follower from flip-flopping at one distance
+    if (mem.regrouping ? d < REGROUP_DONE : d < REGROUP_DIST) {
+        mem.regrouping = false;
+        return 0;
+    }
+    mem.regrouping = true;
+    return Math.min(0.7, 0.45 + Math.max(0, d - REGROUP_DIST) / 120);
 }
 
 export function planRegroup(ctx: BrainCtx): Intent {
@@ -97,7 +107,7 @@ export function planRegroup(ctx: BrainCtx): Intent {
     const leader = leaderOf(ctx);
     if (!leader) return intent;
     intent.goal = v2.copy(leader.at);
-    intent.arriveDist = 8;
+    intent.arriveDist = REGROUP_DONE - 2;
     return intent;
 }
 

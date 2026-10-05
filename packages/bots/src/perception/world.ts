@@ -14,12 +14,13 @@ import {
     type ObstacleView,
     type PlayerView,
     type ProjectileView,
-    type Snapshot,
     type SmokeView,
+    type Snapshot,
     type TeamMemberView,
     viewBounds,
 } from "@rebirth/sim";
 import { distToSegment, obstacleCollider, obstacleDef, pointInBounds } from "../geom.ts";
+import { gunInfo } from "../knowledge/weapons.ts";
 import { NavGrid } from "../nav/grid.ts";
 import { roofRegions } from "./roofs.ts";
 
@@ -73,6 +74,8 @@ export interface Contact {
     shotSeq: number;
     /** being revived / reviving (action type "revive") */
     reviving: boolean;
+    /** last time this player was seen holding a gun (it keeps it when it switches to its fists) */
+    lastArmedAt: number;
 }
 
 export interface SeenLoot {
@@ -170,7 +173,6 @@ export class WorldModel {
 
     observe(snap: Snapshot): void {
         this.snapshots++;
-        const prevTime = this.time;
         this.time = snap.time;
         this.tick = snap.tick;
         if (this.selfId === 0) this.selfId = snap.localPlayerId;
@@ -192,7 +194,7 @@ export class WorldModel {
                 break;
             }
         }
-        this.updateSelf(snap.local, me, prevTime);
+        this.updateSelf(snap.local, me);
         this.view = viewBounds(this.self.pos, this.self.zoom);
         this.team = snap.local.team ?? [];
         this.teammates.clear();
@@ -204,7 +206,7 @@ export class WorldModel {
         this.updateBullets();
     }
 
-    private updateSelf(local: LocalPlayerState, me: PlayerView | undefined, prevTime: number): void {
+    private updateSelf(local: LocalPlayerState, me: PlayerView | undefined): void {
         const s = this.self;
         const prevHealth = s.health;
         s.id = this.selfId;
@@ -235,7 +237,6 @@ export class WorldModel {
             this.lastHealthLoss = this.time;
             if (!this.inGasNow()) this.lastHurt = this.time;
         }
-        void prevTime;
     }
 
     /** The bot stands in the red zone right now. */
@@ -331,6 +332,7 @@ export class WorldModel {
                 lastShotAt: Number.NEGATIVE_INFINITY,
                 shotSeq,
                 reviving: o.action?.type === "revive",
+                lastArmedAt: gunInfo(o.activeWeapon) ? now : Number.NEGATIVE_INFINITY,
             };
             this.contacts.set(o.id, c);
             return;
@@ -358,6 +360,7 @@ export class WorldModel {
         c.lastSeen = now;
         c.teammate = teammate;
         c.reviving = o.action?.type === "revive";
+        if (gunInfo(o.activeWeapon)) c.lastArmedAt = now;
     }
 
     private seeObstacle(o: ObstacleView): SeenObstacle | undefined {

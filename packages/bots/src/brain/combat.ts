@@ -3,10 +3,10 @@
 // back while moving, grenade opportunities and target leading. The bot only uses contacts from its own snapshots.
 import { type Vec2, v2 } from "@rebirth/core";
 import { WeaponSlot } from "@rebirth/defs";
+import { colliderCenter, colliderRadius } from "../geom.ts";
 import { currentGun, fightSlot, hasAmmo } from "../knowledge/arsenal.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
 import type { Contact, WorldModel } from "../perception/world.ts";
-import { colliderCenter, colliderRadius } from "../geom.ts";
 import { type BrainCtx, emptyIntent, type Intent, type ThrowPlan } from "./context.ts";
 
 const MELEE_REACH = 2.4;
@@ -138,7 +138,9 @@ export function planFight(ctx: BrainCtx): Intent {
         intent.arriveDist = 4;
         return intent;
     }
-    if (mem.engagedTarget !== t.id || now > mem.strafeUntil + 5) {
+    // tactics for this engagement (re-rolled for every new target and every few seconds)
+    if (mem.engagedTarget !== t.id || now > mem.tacticsUntil) {
+        mem.tacticsUntil = now + rng.range(4, 8);
         mem.strafing = rng.bool(params.strafeChance);
         mem.useCover = rng.bool(params.coverChance);
         mem.standStill = rng.bool(params.standStillChance);
@@ -152,6 +154,20 @@ export function planFight(ctx: BrainCtx): Intent {
         if (cover) {
             intent.goal = cover;
             intent.arriveDist = 0.6;
+            return intent;
+        }
+    }
+    if (!empty && !reloading && !model.lineOfFire(me, t.pos)) {
+        // something stands between: with a grenade, keep a safe throwing distance and let it decide (the explosion
+        // reaches 12 units); without, go around the cover (the path leads past it) until the shot is clear
+        const frags = FRAG_TYPES.some((it) => (self.inventory[it] ?? 0) > 0);
+        if (frags && d < 11) {
+            intent.moveDir = freeDir(model, me, v2.neg(toT));
+            return intent;
+        }
+        if (!frags || d > 26) {
+            intent.goal = v2.copy(t.pos);
+            intent.arriveDist = Math.max(6, info.idealMin);
             return intent;
         }
     }
@@ -192,7 +208,7 @@ export function planFight(ctx: BrainCtx): Intent {
  */
 export function addCombatLayer(ctx: BrainCtx, intent: Intent): void {
     const t = ctx.target;
-    if (!t || !t.visible || !ctx.armed) return;
+    if (!t?.visible || !ctx.armed) return;
     const d = ctx.targetDist;
     const slot = fightSlot(ctx.self, ctx.guns, d);
     if (slot === WeaponSlot.Melee) return;
@@ -211,15 +227,23 @@ export function grenadeOpportunity(ctx: BrainCtx, thinkDt: number): ThrowPlan | 
     const t = ctx.target;
     if (!t) return null;
     const d = ctx.targetDist;
-    if (d < 9 || d > 26) return null;
+    // the frag's blast reaches 12 units (explosion_frag rad.max): never closer than 10
+    if (d < 10 || d > 27) return null;
     const hiding = !t.visible && now - t.lastSeen < 2.5;
     const behindCover = t.visible && !ctx.model.lineOfFire(self.pos, t.pos);
     let cluster = 0;
     for (const e of ctx.enemies) if (e !== t && e.visible && v2.distance(e.pos, t.pos) < 6) cluster++;
     if (!hiding && !behindCover && cluster === 0 && !t.downed) return null;
-    if (!rng.bool(Math.min(1, params.grenadeRate * thinkDt * (cluster > 0 ? 2 : 1)))) return null;
+    // a group, or an enemy camping behind its cover, is the best moment for a grenade
+    const camping = v2.length(t.vel) < 2 && (hiding || behindCover);
+    const boost = (cluster > 0 ? 2 : 1) * (camping ? 2 : 1);
+    if (!rng.bool(Math.min(1, params.grenadeRate * thinkDt * boost))) return null;
     mem.lastThrow = now;
-    return { item, pos: v2.add(t.pos, v2.mul(t.vel, 0.6)), cook: rng.range(1.2, 2.2) };
+    mem.lastThrowPos = v2.copy(t.pos);
+    // lead a moving target a little (at most 3 units: velocity estimates are noisy)
+    let lead = v2.mul(t.vel, 0.6);
+    if (v2.length(lead) > 3) lead = v2.mul(v2.normalize(lead), 3);
+    return { item, pos: v2.add(t.pos, lead), cook: rng.range(1.2, 2.2) };
 }
 
 /** Whether the bot holds a usable gun in its hands (loaded or with reserve). */

@@ -27,9 +27,17 @@ export function cachedMap(mapName: string, seed: number, teamMode: 1 | 2 | 4 = 1
     return gen;
 }
 
-/** Gas stages at 1/8 of the real durations (at least 1 s), for quick matches. */
+/** Gas stages at 1/8 of the real durations (at least 1 s): the first circles come within seconds. */
 export const FAST_GAS: GasStage[] = GameConfig.gas.stages.map((st, i) =>
     i === 0 ? st : { ...st, duration: Math.max(1, st.duration / 8) },
+);
+
+/**
+ * Gas stages at 1/4 of the real durations (about two minutes for the whole zone): fast matches where the late circles
+ * still leave time to walk in (at 1/8 the last circles close faster than anyone can run).
+ */
+export const QUICK_GAS: GasStage[] = GameConfig.gas.stages.map((st, i) =>
+    i === 0 ? st : { ...st, duration: Math.max(1, st.duration / 4) },
 );
 
 /** A game on the main 12345 terrain with no map objects (and no loot), plus optional obstacles. */
@@ -65,7 +73,10 @@ export function openSpot(game: Game, half = 30): Vec2 {
     const w = game.mapData.width;
     for (let r = 0; r < w / 2; r += 7) {
         for (let a = 0; a < 16; a++) {
-            const p = { x: w / 2 + Math.cos((a / 16) * Math.PI * 2) * r, y: w / 2 + Math.sin((a / 16) * Math.PI * 2) * r };
+            const p = {
+                x: w / 2 + Math.cos((a / 16) * Math.PI * 2) * r,
+                y: w / 2 + Math.sin((a / 16) * Math.PI * 2) * r,
+            };
             let dry = true;
             for (let dx = -half; dx <= half && dry; dx += 3) {
                 for (let dy = -half; dy <= half && dry; dy += 3) {

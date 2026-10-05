@@ -1,10 +1,13 @@
-// Entry point: `node apps/server/src/index.ts` (env: PORT, HOST, MAX_PLAYERS, MAP_NAME... see config.ts).
+// Entry point: `node apps/server/src/index.ts` (env: PORT, HOST, MAX_PLAYERS, MAP_NAME, BOT_FILL, BOT_DIFFICULTY...
+// see config.ts).
 import { loadConfig } from "./config.ts";
 import { startServer } from "./server.ts";
 
 const config = loadConfig();
 const server = await startServer(config);
 console.log(`listening on ${server.url}${config.clientDist ? ` (serving ${config.clientDist})` : ""}`);
+if (config.botFill > 0)
+    console.log(`bot fill: games fill up to ${config.botFill} players (${config.botDifficulty} bots)`);
 
 let stopping = false;
 const shutdown = (signal: string) => {

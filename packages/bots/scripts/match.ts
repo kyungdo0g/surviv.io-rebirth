@@ -59,7 +59,9 @@ for (const p of report.players) {
     byDifficulty.set(p.difficulty, e);
 }
 const dead = report.players.filter((p) => p.dead).length;
-console.log(`match: ${report.players.length} bots, ${values.mode}, map ${values.map}, seed ${values.seed}, gas ${values.gas}`);
+console.log(
+    `match: ${report.players.length} bots, ${values.mode}, map ${values.map}, seed ${values.seed}, gas ${values.gas}`,
+);
 console.log(`duration: ${r2(report.gameSeconds)} game s (${report.ticks} ticks), wall ${r2(report.wallMs / 1000)} s`);
 console.log(
     `result: ${report.over ? "game over" : "NOT OVER (tick budget)"}, winner${winners.length === 1 ? "" : "s"}: ${

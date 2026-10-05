@@ -38,6 +38,8 @@ export interface DifficultyParams {
     strafeChance: number;
     /** probability of using cover while reloading / healing in a fight */
     coverChance: number;
+    /** utility of starting a gunfight with an enemy that has not engaged the bot (it still fights back when shot) */
+    aggression: number;
     /** utility of starting a fist fight with an unarmed player close by while unarmed (0 never) */
     meleeAggression: number;
     /** chance per second to throw a grenade when a good opportunity exists */
@@ -74,7 +76,8 @@ export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> 
         standStillChance: 0,
         strafeChance: 0.25,
         coverChance: 0.1,
-        meleeAggression: 0.3,
+        aggression: 0.45,
+        meleeAggression: 0.1,
         grenadeRate: 0.05,
         healBelow: 45,
         boostAbove: 0,
@@ -100,7 +103,8 @@ export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> 
         standStillChance: 0.4,
         strafeChance: 0.7,
         coverChance: 0.5,
-        meleeAggression: 0.42,
+        aggression: 0.56,
+        meleeAggression: 0.2,
         grenadeRate: 0.2,
         healBelow: 60,
         boostAbove: 25,
@@ -126,7 +130,8 @@ export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> 
         standStillChance: 0.85,
         strafeChance: 0.95,
         coverChance: 0.85,
-        meleeAggression: 0.55,
+        aggression: 0.68,
+        meleeAggression: 0.3,
         grenadeRate: 0.4,
         healBelow: 70,
         boostAbove: 50,

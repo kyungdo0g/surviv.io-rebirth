@@ -14,8 +14,9 @@ describe("gas", () => {
         const game = mainGame({ gasStages: FAST_GAS, minPlayers: 1 }, 4);
         game.rules.minActiveTime = 0;
         const party = { group: "zone", autoFill: false, partySize: 4 };
-        // the first safe circle is centred in the south-west: the north-east corner is outside it
-        const center: Vec2 = { x: 250, y: 250 };
+        // the first safe circle is centred in the south-west (not clamped: 75% of its radius stays on the map); the
+        // north-east corner is outside it
+        const center: Vec2 = { x: 300, y: 300 };
         game.gas.chooseCenter = () => center;
         const grid = NavGrid.forMap(game.mapData);
         const rad = FAST_GAS[1].rad * game.gas.mapSize;
@@ -39,6 +40,7 @@ describe("gas", () => {
         expect(ticks).toBeGreaterThan(0);
         const circle = gasCircle(game.gas.view());
         expect(circle.rad).toBeCloseTo(rad, 0);
+        expect(circle.pos).toEqual(center);
         for (const b of bots) {
             const p = game.getPlayer(b.playerId)!;
             expect(p.dead).toBe(false);

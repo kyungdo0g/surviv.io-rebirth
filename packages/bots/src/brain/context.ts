@@ -78,6 +78,7 @@ export class BrainMemory {
     // fight
     strafeSign = 1;
     strafeUntil = 0;
+    tacticsUntil = 0;
     standStill = false;
     engagedTarget = 0;
     engageStart = 0;
@@ -103,12 +104,18 @@ export class BrainMemory {
     lastReviveRequest = Number.NEGATIVE_INFINITY;
     lastLootRequest = Number.NEGATIVE_INFINITY;
     lastThrow = Number.NEGATIVE_INFINITY;
+    lastThrowPos: Vec2 | null = null;
     lastSmoke = Number.NEGATIVE_INFINITY;
+    lastUseObstacle = Number.NEGATIVE_INFINITY;
     /** goal the path follower could not reach, and until when it is avoided */
     failedGoal: Vec2 | null = null;
     failedUntil = 0;
     order: BotOrder | null = null;
+    /** a follower walking back to its leader (team modes) */
+    regrouping = false;
     current: BehaviourName = "idle";
+    /** when the current behaviour was chosen */
+    currentSince = 0;
 }
 
 export interface BrainCtx {

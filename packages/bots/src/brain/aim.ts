@@ -34,7 +34,14 @@ export class AimController {
      * Advances the aim by `dt` towards `wanted` (null: drift towards `idle`, the walking direction). Returns the
      * angle the bot believes is right (wanted plus its error) so callers can tell when the aim is on it.
      */
-    update(dt: number, now: number, wanted: number | null, idle: number | null, targetId: number, targetSpeed: number): number {
+    update(
+        dt: number,
+        now: number,
+        wanted: number | null,
+        idle: number | null,
+        targetId: number,
+        targetSpeed: number,
+    ): number {
         const p = this.params;
         const maxTurn = p.turnRateDeg * DEG * dt;
         if (wanted === null) {

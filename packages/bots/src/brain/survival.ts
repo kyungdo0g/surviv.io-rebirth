@@ -107,11 +107,18 @@ export function zonePressure(model: WorldModel): number {
     return need / Math.max(gasTimeLeft(gas) + nextMoveDuration(gas), 1);
 }
 
-/** Whether going to `p` keeps the bot on its way to the safe zone (or the zone does not press yet). */
+/**
+ * Whether going to `p` keeps the bot on its way to the safe zone: never out of the next circle while the zone closes
+ * in, and only towards the circle once the zone presses.
+ */
 export function onTheWay(model: WorldModel, p: Vec2): boolean {
     const gas = model.gas;
-    if (!gas || gas.mode === "inactive" || zonePressure(model) < 0.3) return true;
-    return v2.distance(p, gas.posNew) < v2.distance(model.self.pos, gas.posNew) + 3;
+    if (!gas || gas.mode === "inactive") return true;
+    const selfDist = v2.distance(model.self.pos, gas.posNew);
+    const targetDist = v2.distance(p, gas.posNew);
+    if (gas.mode === "moving" && selfDist < gas.radNew && targetDist > gas.radNew - 2) return false;
+    if (zonePressure(model) < 0.3) return true;
+    return targetDist < selfDist + 3;
 }
 
 /** A point well inside the next safe circle, along the line from the bot to the circle centre. */
@@ -136,7 +143,11 @@ export function zoneScore(ctx: BrainCtx): number {
     if (!gas || gas.mode === "inactive") return 0;
     if (model.inGasNow()) return gas.damage >= 5 ? 0.97 : 0.93;
     const dist = v2.distance(self.pos, gas.posNew);
-    const margin = Math.min(6, gas.radNew * 0.25);
+    // once rotating, keep going until comfortably inside (no flip-flop on the boundary)
+    const margin = Math.min(
+        ctx.mem.current === "zone" ? 14 : 6,
+        gas.radNew * (ctx.mem.current === "zone" ? 0.4 : 0.25),
+    );
     if (dist < gas.radNew - margin) {
         // inside the next circle; late circles keep the bot away from the edge of the current one
         const c = gasCircle(gas);
@@ -157,11 +168,23 @@ export function planZone(ctx: BrainCtx): Intent {
 }
 
 /** Utility of running away (0..1): unarmed against an armed enemy, badly hurt, or outnumbered. */
+/** Seconds an enemy that left view still counts as a threat to run from (it is probably still there). */
+const THREAT_MEMORY = 2.5;
+
+/** Standing enemies seen recently within `range`. */
+function threatsOf(ctx: BrainCtx, range: number): BrainCtx["enemies"] {
+    const { self, now } = ctx;
+    return ctx.enemies.filter(
+        (e) => !e.downed && now - e.lastSeen < THREAT_MEMORY && v2.distance(e.pos, self.pos) < range,
+    );
+}
+
 export function fleeScore(ctx: BrainCtx): number {
     const { self } = ctx;
-    const threats = ctx.visibleEnemies.filter((e) => !e.downed && v2.distance(e.pos, self.pos) < 35);
+    const threats = threatsOf(ctx, 35);
     if (threats.length === 0) return 0;
-    const armedThreat = threats.some((e) => !isMeleeWeapon(e.activeWeapon));
+    // a player seen with a gun a moment ago still has it, even while it punches a crate
+    const armedThreat = threats.some((e) => !isMeleeWeapon(e.activeWeapon) || ctx.now - e.lastArmedAt < 15);
     if (!ctx.armed && armedThreat) return threats.some((e) => v2.distance(e.pos, self.pos) < 4) ? 0.5 : 0.8;
     const hasHeals = (self.inventory.healthkit ?? 0) + (self.inventory.bandage ?? 0) > 0;
     if (self.health < 25 && hasHeals) return 0.72;
@@ -169,11 +192,10 @@ export function fleeScore(ctx: BrainCtx): number {
     return 0;
 }
 
-
 export function planFlee(ctx: BrainCtx): Intent {
     const intent = emptyIntent("flee");
     const { self, model, now, mem } = ctx;
-    const threats = ctx.visibleEnemies.filter((e) => !e.downed);
+    const threats = threatsOf(ctx, 60);
     let away = { x: 0, y: 0 };
     for (const e of threats) {
         const d = Math.max(1, v2.distance(e.pos, self.pos));
@@ -186,7 +208,7 @@ export function planFlee(ctx: BrainCtx): Intent {
     }
     const dir = v2.normalizeSafe(away);
     const goal = v2.add(self.pos, v2.mul(dir, 25));
-    const cell = model.nav.nearestWalkable(goal, 10);
+    const cell = model.nav.nearestWalkable(goal, 10, ctx.myComp);
     intent.goal = cell >= 0 ? model.nav.center(cell) : goal;
     intent.arriveDist = 3;
     if (threats.length && self.inventory.smoke > 0 && now - mem.lastSmoke > 12) {

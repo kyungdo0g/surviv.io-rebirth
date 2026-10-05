@@ -51,7 +51,8 @@ export class TriggerController {
         const gun = info.def;
         if (gun.fireMode === "single") {
             let interval = Math.max(gun.fireDelay, 0.05) + this.gap;
-            if (dist > 18 && gun.recoilTime < 2 && this.params.name !== "easy") interval = Math.max(interval, gun.recoilTime);
+            if (dist > 18 && gun.recoilTime < 2 && this.params.name !== "easy")
+                interval = Math.max(interval, gun.recoilTime);
             if (now - this.lastClick < interval) return { shootStart: false, shootHold: false };
             this.lastClick = now;
             const [lo, hi] = this.params.clickDelay;
@@ -83,14 +84,15 @@ export interface ThrowOut extends TriggerOut {
 }
 
 /**
- * Mouse distance that lands a throwable `dist` units away. The throw speed scales with the mouse distance up to
- * GameConfig.player.throwableMaxMouseDist; the flight plus ground slide carries a full-strength frag about 26 units
- * (calibrated against the simulation in test/throw.test.ts).
+ * Mouse distance that lands a throwable `dist` units away. The throw speed scales linearly with the mouse distance up
+ * to GameConfig.player.throwableMaxMouseDist (18); flight plus ground slide carry a full-strength frag about 30 units
+ * and a smoke grenade about 22 from the hand, 0.5 ahead of the player (calibrated against the simulation in
+ * test/throw.test.ts).
  */
 export function throwMouseLen(item: string, dist: number): number {
     const max = GameConfig.player.throwableMaxMouseDist;
-    const fullRange = item === "smoke" ? 19 : 26;
-    return Math.max(0, Math.min(max, (dist / fullRange) * max));
+    const fullRange = item === "smoke" ? 22.4 : 30;
+    return Math.max(0, Math.min(max, ((dist - 0.5) / (fullRange - 0.5)) * max));
 }
 
 export class ThrowController {
@@ -103,6 +105,13 @@ export class ThrowController {
 
     get active(): boolean {
         return this.phase !== "idle";
+    }
+
+    /** The thrower should stand still: the last moments of the cook and the release (its motion adds to the throw). */
+    holdStill(now: number): boolean {
+        const plan = this.plan;
+        if (!plan) return false;
+        return this.phase === "release" || (this.phase === "cook" && now - this.phaseAt >= plan.cook - 0.3);
     }
 
     start(plan: ThrowPlan, now: number): void {
@@ -125,7 +134,8 @@ export class ThrowController {
         out.mouseLen = throwMouseLen(plan.item, v2.distance(self.pos, plan.pos));
         switch (this.phase) {
             case "equip": {
-                const ready = self.curWeapIdx === WeaponSlot.Throwable && self.weapons[WeaponSlot.Throwable]?.type === plan.item;
+                const ready =
+                    self.curWeapIdx === WeaponSlot.Throwable && self.weapons[WeaponSlot.Throwable]?.type === plan.item;
                 if (ready) {
                     this.phase = "cook";
                     this.phaseAt = now;

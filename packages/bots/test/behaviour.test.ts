@@ -56,7 +56,7 @@ describe("bot behaviours", () => {
         const game = flatGame({ sandbox: true });
         const spot = openSpot(game);
         const bot = placeBot(game, spot, { seed: 6, difficulty: "hard" });
-        const dummy = placePlayer(game, "dummy", v2.add(spot, { x: 4, y: 0 }));
+        const dummy = placePlayer(game, "dummy", v2.add(spot, { x: 3, y: 0 }));
         const ticks = runUntil(game, [bot], () => dummy.dead, 3000);
         expect(ticks).toBeGreaterThan(0);
     });
