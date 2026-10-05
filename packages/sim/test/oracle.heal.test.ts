@@ -14,6 +14,7 @@ import {
 } from "../src/index.ts";
 import { flatGame, giveGun, openSpot, send, spawnAt, steps } from "./combatHelpers.ts";
 import { hasFixture, loadFixture, Mismatches, TICK } from "./oracleHelpers.ts";
+import { addAt, flatTeamGame } from "./teamHelpers.ts";
 
 const EVENT_AT_TICKS = 100;
 
@@ -175,7 +176,18 @@ describe.skipIf(!hasFixture("heal"))("oracle: heal.json", () => {
             compareUse(m, "walking", use(game, p, "bandage", press(game, p, { moveRight: true })), want.walking);
         }
         {
-            // TODO(M6): knockedDown needs the downed state of team modes
+            // knocked down 1 s into the bandage (duo, a teammate standing): the use is cancelled, health 10 -> 100
+            const game = flatTeamGame(2);
+            const at = openSpot(game, 20);
+            addAt(game, "mate", { x: at.x, y: at.y + 4 }, { group: "duo", partySize: 2 });
+            const p = addAt(game, "p", at, { group: "duo", partySize: 2 });
+            steps(game, 100);
+            p.health = 10;
+            const ev = () => game.damagePlayer(p, { amount: 50, damageType: DamageType.Player, dir: { x: 1, y: 0 } });
+            compareUse(m, "knockedDown", use(game, p, "bandage", ev), want.knockedDown);
+            m.equal("knockedDown downed", p.downed, true);
+        }
+        {
             const { game, p } = fresh(10);
             withGun(game, p, WeaponSlot.Primary);
             p.weaponManager.weapons[WeaponSlot.Primary].ammo = 5;

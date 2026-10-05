@@ -1,9 +1,16 @@
-// Single-use join tokens issued by POST /api/find_game and consumed by the /play WebSocket (survev game.ts
-// joinTokens: 10 s lifetime).
+// Single-use join tokens issued by POST /api/find_game (and the party rooms, M6a) and consumed by the /play WebSocket
+// (survev game.ts joinTokens: 10 s lifetime). A token may carry the group data of a party (survev groupData): every
+// member's token names the same party key, so the members land in the same group.
 import { randomUUID } from "node:crypto";
+import type { AddPlayerOptions } from "@rebirth/sim";
 
-interface TokenEntry {
+/** What a consumed token grants: a seat in a game, in a party's group in team modes. */
+export interface JoinTicket {
     gameId: string;
+    group?: AddPlayerOptions;
+}
+
+interface TokenEntry extends JoinTicket {
     expiresAt: number;
 }
 
@@ -21,18 +28,26 @@ export class JoinTokens {
         return this.tokens.size;
     }
 
-    issue(gameId: string): string {
+    issue(gameId: string, group?: AddPlayerOptions): string {
         const token = randomUUID();
-        this.tokens.set(token, { gameId, expiresAt: this.now() + this.ttlMs });
+        const entry: TokenEntry = { gameId, expiresAt: this.now() + this.ttlMs };
+        if (group) entry.group = { ...group };
+        this.tokens.set(token, entry);
         return token;
+    }
+
+    /** The ticket of a valid token, which is consumed; null for unknown, used or expired tokens. */
+    consumeTicket(token: string): JoinTicket | null {
+        const entry = this.tokens.get(token);
+        if (!entry) return null;
+        this.tokens.delete(token);
+        if (entry.expiresAt < this.now()) return null;
+        return entry.group ? { gameId: entry.gameId, group: entry.group } : { gameId: entry.gameId };
     }
 
     /** The game id of a valid token, which is consumed; null for unknown, used or expired tokens. */
     consume(token: string): string | null {
-        const entry = this.tokens.get(token);
-        if (!entry) return null;
-        this.tokens.delete(token);
-        return entry.expiresAt >= this.now() ? entry.gameId : null;
+        return this.consumeTicket(token)?.gameId ?? null;
     }
 
     /** Outstanding (unexpired) tokens for a game: seats reserved by find_game. */

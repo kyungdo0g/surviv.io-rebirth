@@ -86,6 +86,23 @@ describe("client messages", () => {
         expect([0, 1, 2, 3, 200].map(spectateActionName)).toEqual([null, "begin", "next", "prev", null]);
     });
 
+    it("Emote round-trips (M6a: original layout, positions over 0..1024 with 16 bits, only for pings)", () => {
+        const posTol = 1024 / 65535 / 2 + 1e-9;
+        forCases(31, (rng) => {
+            const isPing = rng.bool();
+            const msg: ClientMsg = {
+                type: MsgType.Emote,
+                emote: isPing
+                    ? { type: randGameType(rng), isPing, pos: { x: rng.range(0, 1024), y: rng.range(0, 1024) } }
+                    : { type: randGameType(rng), isPing },
+            };
+            const bytes = encodeClientMsg(msg);
+            // type byte + 16 + 16 + 10 + 1 bits, padded
+            expect(bytes.length).toBe(1 + 6);
+            assertClose(clientRoundTrip(msg), msg, (path) => (path.includes("pos") ? posTol : 0));
+        });
+    });
+
     it("several messages share one frame", () => {
         forCases(4, (rng) => {
             const msgs: ClientMsg[] = Array.from({ length: rng.int(1, 5) }, () =>

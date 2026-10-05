@@ -1,7 +1,7 @@
 // GameHost: runs the games of this server on one wall-clock timer, hands out join tokens, creates a game when none
-// can take another player (full at maxPlayers, counting seats reserved by unexpired tokens, or past its join
+// can take the joining players (full at maxPlayers, counting seats reserved by unexpired tokens, or past its join
 // window: survev game.ts canJoin), closes games `gameOverGraceMs` after they ended and removes games that stayed
-// empty for the grace period.
+// empty for the grace period. Games are per map and team mode (M6a: duo and squad games).
 import { randomInt } from "node:crypto";
 import { MapDefs } from "@rebirth/defs";
 import type { ServerConfig } from "./config.ts";
@@ -58,25 +58,30 @@ export class GameHost {
         return this.rooms.get(id);
     }
 
-    /** A game of `mapName` that can take one more player, created if needed; null when the server is full. */
-    findRoom(mapName: string): GameRoom | null {
+    /**
+     * A game of `mapName` and `teamMode` that can take `seats` more players (a party), created if needed; null when
+     * the server is full.
+     */
+    findRoom(mapName: string, teamMode: 1 | 2 | 4 = 1, seats = 1): GameRoom | null {
         let best: GameRoom | null = null;
         for (const room of this.rooms.values()) {
-            if (room.mapName !== mapName || !room.canJoin()) continue;
-            if (room.playerCount + this.tokens.pendingFor(room.id) >= this.config.maxPlayers) continue;
+            if (room.mapName !== mapName || room.teamMode !== teamMode || !room.canJoin()) continue;
+            if (room.playerCount + this.tokens.pendingFor(room.id) + seats > this.config.maxPlayers) continue;
             // the oldest joinable game fills first (survev gameProcessManager)
             if (!best || room.createdAt < best.createdAt) best = room;
         }
         if (best) return best;
-        if (this.rooms.size >= this.config.maxGames) return null;
-        return this.createRoom(mapName);
+        if (this.rooms.size >= this.config.maxGames || seats > this.config.maxPlayers) return null;
+        return this.createRoom(mapName, teamMode);
     }
 
-    createRoom(mapName: string): GameRoom {
+    createRoom(mapName: string, teamMode: 1 | 2 | 4 = 1): GameRoom {
         if (!Object.hasOwn(MapDefs, mapName)) throw new Error(`unknown map "${mapName}"`);
-        const room = new GameRoom(this.config, mapName, randomInt(0, 2 ** 32 - 1), Date.now());
+        const room = new GameRoom(this.config, mapName, randomInt(0, 2 ** 32 - 1), Date.now(), teamMode);
         this.rooms.set(room.id, room);
-        if (this.config.log) console.log(`game ${room.id} created (${mapName}, seed ${room.game.options.seed})`);
+        if (this.config.log) {
+            console.log(`game ${room.id} created (${mapName}, team mode ${teamMode}, seed ${room.game.options.seed})`);
+        }
         return room;
     }
 

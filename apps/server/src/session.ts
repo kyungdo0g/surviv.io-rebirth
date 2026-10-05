@@ -1,5 +1,5 @@
-// One game WebSocket: token check, Join (protocol hash first), Input validation, Ping/Pong, per-socket message rate
-// limit, and Disconnect + close for every failure (survev client.ts / gameProcess.ts).
+// One game WebSocket: token check, Join (protocol hash first), Input validation, Ping/Pong, Spectate, Emote (M6a),
+// per-socket message rate limit, and Disconnect + close for every failure (survev client.ts / gameProcess.ts).
 import { BitWriter } from "@rebirth/core";
 import { PROTOCOL_HASH } from "@rebirth/defs";
 import {
@@ -19,6 +19,7 @@ import type { ServerConfig } from "./config.ts";
 import type { GameHost } from "./host.ts";
 import { sanitizeInput } from "./input.ts";
 import type { GameRoom, RoomMember } from "./room.ts";
+import type { JoinTicket } from "./tokens.ts";
 
 /** Visible name: control characters removed, trimmed, "Player" when empty (the reader caps it at 16 bytes). */
 export function sanitizeName(name: string): string {
@@ -43,7 +44,7 @@ export class ClientSession implements RoomMember {
     private readonly host: GameHost;
     private readonly config: ServerConfig;
     private readonly onClosed: (s: ClientSession) => void;
-    private gameId: string | null;
+    private ticket: JoinTicket | null;
     private joinTimer: ReturnType<typeof setTimeout> | null = null;
     private windowStart = 0;
     private windowCount = 0;
@@ -60,14 +61,14 @@ export class ClientSession implements RoomMember {
         this.host = deps.host;
         this.config = deps.config;
         this.onClosed = deps.onClosed;
-        this.gameId = token ? this.host.tokens.consume(token) : null;
+        this.ticket = token ? this.host.tokens.consumeTicket(token) : null;
         ws.on("message", (data, isBinary) => this.onMessage(data, isBinary));
         ws.on("close", () => this.cleanup());
         ws.on("error", () => this.cleanup());
         ws.on("pong", () => {
             this.alive = true;
         });
-        if (this.gameId === null) {
+        if (this.ticket === null) {
             this.disconnect(DisconnectReason.InvalidToken);
             return;
         }
@@ -180,15 +181,22 @@ export class ClientSession implements RoomMember {
                 if (action) this.room.spectate(this.playerId, action);
                 break;
             }
+            case MsgType.Emote:
+                if (this.state !== "joined" || !this.room) {
+                    this.disconnect(DisconnectReason.InvalidPacket);
+                    return;
+                }
+                this.room.emote(this.playerId, msg.emote);
+                break;
         }
     }
 
     private join(name: string): void {
-        if (this.state !== "connecting" || this.gameId === null) {
+        if (this.state !== "connecting" || this.ticket === null) {
             this.disconnect(DisconnectReason.InvalidPacket);
             return;
         }
-        const room = this.host.getRoom(this.gameId);
+        const room = this.host.getRoom(this.ticket.gameId);
         if (!room) {
             this.disconnect(DisconnectReason.GameClosed);
             return;
@@ -203,7 +211,7 @@ export class ClientSession implements RoomMember {
         }
         if (this.joinTimer) clearTimeout(this.joinTimer);
         this.joinTimer = null;
-        const { playerId, frame } = room.join(this, sanitizeName(name));
+        const { playerId, frame } = room.join(this, sanitizeName(name), this.ticket.group);
         this.room = room;
         this.playerId = playerId;
         this.state = "joined";

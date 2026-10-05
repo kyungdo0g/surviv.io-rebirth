@@ -211,7 +211,7 @@ export function writeEffects(w: BitWriter, ctx: NetCtx, snap: Snapshot, ext: num
     if (ext & UpdateExtFlag.Recorders) writeRecorders(w, ctx, snap.recorders ?? []);
 }
 
-/** Reads the M5 sections announced by `ext`; throws on extended flags that are not defined yet. */
+/** Reads the M5 sections announced by `ext` (the M6a sections follow, update.ts); throws on undefined flags. */
 export function readEffects(r: BitReader, ctx: NetCtx, ext: number): EffectSections {
     if (ext & UpdateExtFlag.Reserved) throw new RangeError(`Update: unsupported section flags 0x${ext.toString(16)}`);
     return {

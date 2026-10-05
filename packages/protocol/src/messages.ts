@@ -4,7 +4,7 @@
 // Layouts follow the original 0.8.82 messages (docs/research/engine/netcode.md "Client → server messages" and
 // "Server → client messages"); differences are noted per message.
 import type { BitReader, BitWriter } from "@rebirth/core";
-import type { PlayerInput } from "@rebirth/sim";
+import type { EmoteRequest, PlayerInput } from "@rebirth/sim";
 import { MsgType, NetLimits } from "./constants.ts";
 import {
     clampUint,
@@ -162,6 +162,15 @@ export function readInput(r: BitReader): PlayerInput {
     };
     if (r.readBoolean()) input.useItem = readGameType(r);
     return input;
+}
+
+/**
+ * Client -> server emote or ping request (M6a; original layout: pos vec 0..1024 16+16 bits, type game type, isPing
+ * bit; teams.ts writeEmoteRequest). The position matters for pings only.
+ */
+export interface EmoteMsg {
+    type: typeof MsgType.Emote;
+    emote: EmoteRequest;
 }
 
 /** Client -> server spectate request (survev layout: action u8, see SpectateAction). */

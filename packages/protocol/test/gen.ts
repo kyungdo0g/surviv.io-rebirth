@@ -86,9 +86,9 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 chest: randGameType(rng),
                 backpack: randGameType(rng),
                 scale: rng.range(0.75, 2),
-                anim: { type: rng.pick(["none", "melee", "cook", "throw"] as const), seq: rng.int(0, 65535) },
+                anim: { type: rng.pick(["none", "melee", "cook", "throw", "revive"] as const), seq: rng.int(0, 65535) },
                 action: {
-                    type: rng.pick(["none", "reload", "use"] as const),
+                    type: rng.pick(["none", "reload", "use", "revive"] as const),
                     seq: rng.int(0, 65535),
                     item: randGameType(rng),
                     duration: rng.range(0, 8.5),
@@ -184,10 +184,11 @@ export function randLocal(rng: Rng): LocalPlayerState {
         chest: randGameType(rng),
         backpack: randGameType(rng),
         action: {
-            type: rng.pick(["none", "reload", "use"] as const),
+            type: rng.pick(["none", "reload", "use", "revive"] as const),
             item: randGameType(rng),
             time: rng.range(0, 8.5),
             duration: rng.range(0, 8.5),
+            targetId: rng.bool(0.7) ? 0 : rng.int(1, 65535),
         },
         cooldowns: {
             weapons: Array.from({ length: rng.int(0, 7) }, () => rng.range(0, 4)),
@@ -526,6 +527,10 @@ export function netTolerances(maxExtent = 1024): TolFn {
         "planes.pos.y": 2048 / 1023 / 2 + 1e-9,
         "planes.dir.x": 0.006,
         "planes.dir.y": 0.006,
+        // team status (M6a): 11-bit positions over the map extent, 7-bit health
+        "team.pos.x": maxExtent / 2047 / 2 + 1e-9,
+        "team.pos.y": maxExtent / 2047 / 2 + 1e-9,
+        "team.health": 100 / 127 / 2 + 1e-9,
         fallT: 1 / 127 / 2 + 1e-9,
         posZ: 5 / 1023 / 2 + 1e-9,
         "projectiles.dir.x": 0.012,

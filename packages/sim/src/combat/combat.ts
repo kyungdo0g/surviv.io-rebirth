@@ -1,5 +1,6 @@
 // Damage entry points shared by bullets and melee: player damage with death, obstacle damage with destruction.
-// Behaviour follows survev server/src/game/objects/player.ts (damage, kill) and obstacle.ts (damage, kill).
+// Behaviour follows survev server/src/game/objects/player.ts (damage, kill) and obstacle.ts (damage, kill); lethal
+// damage goes through the team rules (match/teams.ts handlePlayerDeath: knock or death, M6a).
 import { type Vec2, v2 } from "@rebirth/core";
 import { DamageType, GameObjectDefs, hasDef } from "@rebirth/defs";
 import { dropEverythingOnDeath, dropObstacleLoot, spawnDestroyType } from "../loot/drops.ts";
@@ -13,6 +14,7 @@ import {
     removeAnchoredDecals,
 } from "../world/buildings.ts";
 import type { SimContext } from "../world/context.ts";
+import { downPlayer } from "../world/downed.ts";
 import type { Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
 import { computeDamage, type DamageParams, rollHeadshot } from "./damage.ts";
@@ -31,15 +33,19 @@ export interface HitRecord {
 
 export function applyPlayerDamage(ctx: SimContext, target: Player, params: DamageParams): void {
     if (target.dead) return;
-    // TODO(M6): teammates cannot hurt each other (survev player.ts damage) once teams exist
+    // the buffer right after a knock (downed-revive.md "The down itself")
+    if (target.downed && target.downedDamageTicker > 0) return;
+    const source = params.sourceId ? ctx.getPlayer(params.sourceId) : undefined;
+    // teammates cannot hurt each other unless the target left; self damage stays (damage-armor.md "Pipeline order" 2)
+    if (source && source !== target && source.teamId === target.teamId && !target.disconnected) return;
     const headshot = rollHeadshot(params, ctx.rules, ctx.combatRng);
     let damage = computeDamage(params, headshot, target, ctx.rules);
     // overkill is clamped to the remaining health
     if (target.health - damage < 0) damage = target.health;
-    const source = params.sourceId ? ctx.getPlayer(params.sourceId) : undefined;
     target.damageTaken += damage;
     if (source && source !== target) {
-        source.damageDealt += damage;
+        // damage to a (disconnected) group member is not counted as dealt (survev damage)
+        if (source.groupId !== target.groupId) source.damageDealt += damage;
         target.lastDamagedBy = source.id;
     }
     target.health = Math.max(0, Math.min(100, target.health - damage));
@@ -49,12 +55,17 @@ export function applyPlayerDamage(ctx: SimContext, target: Player, params: Damag
         sourceId: params.sourceId ?? 0,
         gameSourceType: params.gameSourceType ?? "",
     };
-    // TODO(M6): downed state in team modes; solo players die at 0 HP
-    if (target.health === 0) killPlayer(ctx, target, params);
+    if (target.health > 0) return;
+    // Revivify downs its holder even in solo; otherwise the team rules decide between a knock and a death
+    if (!target.downed && target.hasPerk("self_revive")) downPlayer(ctx, target, params);
+    else ctx.onLethalDamage(target, params);
 }
 
-/** Kills a player: kill credit, everything it carried drops (survev player.ts kill). */
-export function killPlayer(ctx: SimContext, player: Player, params: DamageParams): void {
+/**
+ * Kills a player: kill credit, everything it carried drops (survev player.ts kill). `creditId` overrides the credited
+ * player (the knocker of a downed player, M6a); killing a teammate credits no kill.
+ */
+export function killPlayer(ctx: SimContext, player: Player, params: DamageParams, creditId?: number): void {
     if (player.dead) return;
     player.downed = false;
     player.dead = true;
@@ -64,11 +75,11 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     if (player.weaponManager.cooking) throwThrowable(ctx, player, true);
     player.cancelAnim();
     player.shootHold = false;
-    const credit = params.sourceId ? ctx.getPlayer(params.sourceId) : undefined;
+    const creditSource = creditId ?? params.sourceId;
+    const credit = creditSource ? ctx.getPlayer(creditSource) : undefined;
     if (credit) {
         player.killedBy = credit.id;
-        // TODO(M6): no credit for killing a teammate
-        if (credit !== player) credit.kills++;
+        if (credit !== player && credit.teamId !== player.teamId) credit.kills++;
     }
     // kill feed, alive count, kill leader, game over (match/match.ts)
     ctx.onPlayerKilled(player, params, credit);

@@ -2,7 +2,7 @@
 // clients: POST /api/find_game, open the WebSocket, send Join, decode every server frame. Uses only the
 // WebSocket/fetch globals that browsers and Node 22 both provide.
 import { PROTOCOL_HASH } from "@rebirth/defs";
-import type { MapData, PlayerInput } from "@rebirth/sim";
+import type { EmoteRequest, MapData, PlayerInput } from "@rebirth/sim";
 import { type ClientMsg, encodeClientMsg, ProtocolError, type ServerMsg, ServerMsgDecoder } from "./codec.ts";
 import { DisconnectReason, MsgType } from "./constants.ts";
 import type { JoinedMsg } from "./messages.ts";
@@ -11,6 +11,10 @@ import type { UpdateMsg } from "./update.ts";
 export interface FindGameRequest {
     mapName?: string;
     region?: string;
+    /** 1 solo (default), 2 duo, 4 squad (M6a) */
+    teamMode?: 1 | 2 | 4;
+    /** team modes: may be grouped with strangers (default true) (M6a) */
+    autoFill?: boolean;
 }
 
 export interface FindGameResponse {
@@ -25,6 +29,10 @@ export interface GameConnectionOptions {
     name?: string;
     mapName?: string;
     region?: string;
+    /** find_game team mode (M6a) */
+    teamMode?: 1 | 2 | 4;
+    /** find_game auto fill (M6a) */
+    autoFill?: boolean;
     useTouch?: boolean;
     isMobile?: boolean;
     bot?: boolean;
@@ -111,6 +119,8 @@ export class GameConnection {
             res = await findGame(this.options.baseUrl ?? "", {
                 mapName: this.options.mapName,
                 region: this.options.region,
+                teamMode: this.options.teamMode,
+                autoFill: this.options.autoFill,
             });
         } catch (err) {
             this.end(DisconnectReason.FindGameFailed);
@@ -182,6 +192,11 @@ export class GameConnection {
 
     sendInput(input: PlayerInput): void {
         this.send({ type: MsgType.Input, input });
+    }
+
+    /** Sends an emote or ping request (M6a; the server throttles them). */
+    sendEmote(emote: EmoteRequest): void {
+        this.send({ type: MsgType.Emote, emote });
     }
 
     /** Sends a Ping; `rttMs` updates when the Pong arrives. */

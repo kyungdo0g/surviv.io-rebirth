@@ -14,6 +14,8 @@
 //   [PlayerInfos] [DeletePlayerIds]   match.ts sections (M4), then align
 //   [Explosions] [Projectiles] [Smokes] [AirstrikeZones] [Recorders]   effects.ts sections (M5/M5b, extended flags),
 //                    each aligned
+//   [PlayerStatus] [GroupStatus] [Emotes]   teams.ts sections (M6a, extended flags), each aligned: the team HUD rows
+//                    (LocalPlayerState.team, sent when their wire values change) and the emote events
 // `time` is not sent: it is tick / TICK_HZ like Game.time.
 //
 // A server frame per netsync (ClientEncoder.writeFrame) follows the original order: [AliveCounts when changed],
@@ -42,7 +44,7 @@ import type {
 import { TICK_HZ } from "@rebirth/sim";
 import { readBullets, writeBullets } from "./bullets.ts";
 import { writeServerMsg } from "./codec.ts";
-import { MsgType, OBJECT_TYPE_BITS, UpdateFlag } from "./constants.ts";
+import { MsgType, OBJECT_TYPE_BITS, UpdateExtFlag, UpdateFlag } from "./constants.ts";
 import { effectFlags, readEffects, writeEffects } from "./effects.ts";
 import {
     cloneLocal,
@@ -86,6 +88,19 @@ import {
     writePartRecord,
 } from "./objects.ts";
 import type { NetCtx } from "./quant.ts";
+import {
+    type GroupStatusRecord,
+    type PlayerStatusRecord,
+    quantizeGroupStatus,
+    quantizePlayerStatus,
+    readEmotes,
+    readGroupStatus,
+    readPlayerStatus,
+    teamFromStatus,
+    writeEmotes,
+    writeGroupStatus,
+    writePlayerStatus,
+} from "./teams.ts";
 
 /** Object ids are u16 on the wire (original protocol). The simulation never reuses ids, so hosts stop adding
  * players to a game whose ids approach this limit. */
@@ -226,6 +241,12 @@ function sameValues(a: readonly number[] | null, b: readonly number[]): boolean 
     return true;
 }
 
+function sameRecords(a: readonly number[][] | null, b: readonly number[][]): boolean {
+    if (!a || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) if (!sameValues(a[i], b[i])) return false;
+    return true;
+}
+
 /** Per-client update encoder (one per connection). */
 export class ClientEncoder {
     readonly cache: ObjectCache;
@@ -240,6 +261,9 @@ export class ClientEncoder {
     private killLeader: number[] | null = null;
     private readonly indicators = new Map<number, number[]>();
     private aliveCount = -1;
+    /** last sent team status wire values (M6a) */
+    private playerStatus: number[][] | null = null;
+    private groupStatus: number[][] | null = null;
     readonly last: EncodeStats = { full: 0, part: 0, deleted: 0, bullets: 0, bytes: 0 };
 
     constructor(cache: ObjectCache) {
@@ -315,7 +339,16 @@ export class ClientEncoder {
         const leavers = snap.deletedPlayerIds ?? [];
         if (infos.length) flags |= UpdateFlag.PlayerInfos;
         if (leavers.length) flags |= UpdateFlag.DeletePlayerIds;
-        const ext = effectFlags(snap);
+        const team = snap.local.team;
+        const statusQ = team ? quantizePlayerStatus(team, ctx) : null;
+        const statusChanged = statusQ !== null && !sameRecords(this.playerStatus, statusQ);
+        const groupQ = team ? quantizeGroupStatus(team) : null;
+        const groupChanged = groupQ !== null && !sameRecords(this.groupStatus, groupQ);
+        const emotes = snap.emotes ?? [];
+        let ext = effectFlags(snap);
+        if (statusChanged) ext |= UpdateExtFlag.PlayerStatus;
+        if (groupChanged) ext |= UpdateExtFlag.GroupStatus;
+        if (emotes.length) ext |= UpdateExtFlag.Emotes;
         if (ext) flags |= UpdateFlag.Extended;
 
         w.alignToNextByte();
@@ -367,6 +400,15 @@ export class ClientEncoder {
         if (leavers.length) writeDeletedPlayers(w, leavers);
         w.alignToNextByte();
         writeEffects(w, ctx, snap, ext);
+        if (statusChanged && statusQ) {
+            writePlayerStatus(w, statusQ);
+            this.playerStatus = statusQ;
+        }
+        if (groupChanged && groupQ) {
+            writeGroupStatus(w, groupQ);
+            this.groupStatus = groupQ;
+        }
+        if (emotes.length) writeEmotes(w, ctx, emotes);
         const last = this.last;
         last.full = fulls.length;
         last.part = parts.length;
@@ -462,6 +504,10 @@ export class UpdateDecoder {
     private gasT = 0;
     private killLeader: KillLeaderView | null = null;
     private readonly indicators = new Map<number, MapIndicatorView>();
+    /** player names from PlayerInfos (team HUD rows) and the latest team status sections (M6a) */
+    private readonly names = new Map<number, string>();
+    private teamStatus: PlayerStatusRecord[] | null = null;
+    private readonly groupStatus = new Map<number, GroupStatusRecord>();
 
     constructor(ctx: NetCtx) {
         this.ctx = { width: ctx.width, height: ctx.height };
@@ -527,8 +573,17 @@ export class UpdateDecoder {
         if (flags & UpdateFlag.KillLeader) this.killLeader = readKillLeader(r);
         const playerInfos = flags & UpdateFlag.PlayerInfos ? readPlayerInfos(r) : [];
         const deletedPlayerIds = flags & UpdateFlag.DeletePlayerIds ? readDeletedPlayers(r) : [];
+        for (const info of playerInfos) this.names.set(info.playerId, info.name);
         r.alignToNextByte();
         const effects = readEffects(r, this.ctx, ext);
+        if (ext & UpdateExtFlag.PlayerStatus) this.teamStatus = readPlayerStatus(r, this.ctx);
+        if (ext & UpdateExtFlag.GroupStatus) {
+            this.groupStatus.clear();
+            for (const g of readGroupStatus(r)) this.groupStatus.set(g.playerId, g);
+        }
+        const emotes = ext & UpdateExtFlag.Emotes ? readEmotes(r, this.ctx) : [];
+        if (this.teamStatus) this.local.team = teamFromStatus(this.teamStatus, this.groupStatus, this.names);
+        for (const id of deletedPlayerIds) this.names.delete(id);
         const mapIndicators = [...deadIndicators, ...this.indicators.values()]
             .map((m) => ({ ...m, pos: { ...m.pos } }))
             .sort((a, b) => a.id - b.id);
@@ -554,6 +609,7 @@ export class UpdateDecoder {
             playerInfos,
             deletedPlayerIds,
             ...effects,
+            emotes,
         };
         if (this.gas) {
             const g = this.gas;

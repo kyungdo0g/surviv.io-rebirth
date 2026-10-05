@@ -4,10 +4,21 @@
 // [GameOver] Kill... RoleAnnouncement... The Kill and RoleAnnouncement messages carry every kill of the game since
 // the member's previous frame (broadcast), PlayerStats / GameOver only the member's own result (per player), as in
 // the original (netcode.md "Message framing"). The host closes the room `gameOverGraceMs` after the game ended.
+// Team rooms (M6a) run a duo or squad game: a join may carry a party's group data, and members' emote requests go
+// to the game.
 import { randomUUID } from "node:crypto";
 import { BitWriter } from "@rebirth/core";
+import { GameConfig } from "@rebirth/defs";
 import { ClientEncoder, encodeMapMsg, MAX_OBJECT_ID, MsgType, ObjectCache, writeServerMsg } from "@rebirth/protocol";
-import { Game, type PlayerInput, SNAPSHOT_EVERY_TICKS, type SpectateActionName, TICK_HZ } from "@rebirth/sim";
+import {
+    type AddPlayerOptions,
+    type EmoteRequest,
+    Game,
+    type PlayerInput,
+    SNAPSHOT_EVERY_TICKS,
+    type SpectateActionName,
+    TICK_HZ,
+} from "@rebirth/sim";
 import type { ServerConfig } from "./config.ts";
 import { type Percentiles, roundSummary, SampleWindow } from "./stats.ts";
 
@@ -34,6 +45,8 @@ interface Seat {
 export interface RoomStats {
     id: string;
     mapName: string;
+    /** 1 solo, 2 duo, 4 squad */
+    teamMode: number;
     players: number;
     /** living players in the game (disconnected ones included) */
     alive: number;
@@ -53,6 +66,8 @@ export interface RoomStats {
 export class GameRoom {
     readonly id: string = randomUUID();
     readonly mapName: string;
+    /** 1 solo, 2 duo, 4 squad (M6a) */
+    readonly teamMode: 1 | 2 | 4;
     readonly game: Game;
     readonly cache: ObjectCache;
     /** the Map message, encoded once and copied into every join frame */
@@ -76,10 +91,11 @@ export class GameRoom {
     /** set to false to give every member a private cache (benchmarks) */
     sharedCache = true;
 
-    constructor(config: ServerConfig, mapName: string, seed: number, now: number) {
+    constructor(config: ServerConfig, mapName: string, seed: number, now: number, teamMode: 1 | 2 | 4 = 1) {
         this.config = config;
         this.mapName = mapName;
-        this.game = new Game({ mapName, seed: seed >>> 0 }, { minPlayers: config.minPlayers });
+        this.teamMode = teamMode;
+        this.game = new Game({ mapName, seed: seed >>> 0, teamMode }, { minPlayers: config.minPlayers });
         this.cache = new ObjectCache({ width: this.game.mapData.width, height: this.game.mapData.height });
         this.mapMsg = encodeMapMsg(this.game.mapData);
         this.createdAt = now;
@@ -106,9 +122,12 @@ export class GameRoom {
         return max < MAX_OBJECT_ID - ID_HEADROOM;
     }
 
-    /** Adds a player for `member`; returns its id and the first frame (Joined + Map). */
-    join(member: RoomMember, name: string): { playerId: number; frame: Uint8Array } {
-        const playerId = this.game.addPlayer(name);
+    /**
+     * Adds a player for `member` (in team modes into the group `group` picks: party key, auto fill); returns its id and
+     * the first frame (Joined + Map).
+     */
+    join(member: RoomMember, name: string, group?: AddPlayerOptions): { playerId: number; frame: Uint8Array } {
+        const playerId = this.game.addPlayer(name, group);
         if (this.config.debugSpawnTogether) this.spawnNearFirstPlayer(playerId);
         const cache = this.sharedCache ? this.cache : new ObjectCache(this.cache.ctx);
         this.seats.set(playerId, { member, encoder: new ClientEncoder(cache), name });
@@ -119,7 +138,8 @@ export class GameRoom {
             teamMode: this.game.options.teamMode ?? 1,
             playerId,
             started: this.game.started,
-            emotes: [],
+            // the emote loadout (wheel, win and death slots); loadouts are not modelled: the original defaults
+            emotes: [...GameConfig.defaultEmoteLoadout],
         });
         w.writeBytes(this.mapMsg);
         return { playerId, frame: w.getBuffer() };
@@ -156,6 +176,11 @@ export class GameRoom {
     /** Spectate request of a member (ignored while its player lives). */
     spectate(playerId: number, action: SpectateActionName): void {
         if (this.seats.has(playerId)) this.game.spectate(playerId, action);
+    }
+
+    /** Emote or ping request of a member (the game validates and throttles it, M6a). */
+    emote(playerId: number, request: EmoteRequest): void {
+        if (this.seats.has(playerId)) this.game.emote(playerId, request);
     }
 
     /** Runs the ticks due at wall-clock time `now` (ms). */
@@ -224,6 +249,7 @@ export class GameRoom {
         return {
             id: this.id,
             mapName: this.mapName,
+            teamMode: this.teamMode,
             players: this.seats.size,
             alive: this.game.aliveCount,
             started: this.game.started,

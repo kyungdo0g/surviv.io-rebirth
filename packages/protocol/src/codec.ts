@@ -15,6 +15,7 @@ import { type MapMsg, readMap, writeMap } from "./map.ts";
 import {
     type AliveCountsMsg,
     type DisconnectMsg,
+    type EmoteMsg,
     type GameOverMsg,
     type InputMsg,
     type JoinedMsg,
@@ -44,10 +45,11 @@ import {
     writePlayerStats,
     writeRoleAnnouncement,
 } from "./messages.ts";
+import { readEmoteRequest, writeEmoteRequest } from "./teams.ts";
 import { UpdateDecoder, type UpdateMsg } from "./update.ts";
 
 /** Messages a client sends. */
-export type ClientMsg = JoinMsg | InputMsg | PingMsg | SpectateMsg;
+export type ClientMsg = JoinMsg | InputMsg | PingMsg | SpectateMsg | EmoteMsg;
 
 /** Stateless server messages (Update is written by a ClientEncoder, Map by `writeMapMsg`). */
 export type ServerSimpleMsg =
@@ -87,6 +89,9 @@ export function writeClientMsg(w: BitWriter, msg: ClientMsg): void {
             break;
         case MsgType.Spectate:
             w.writeUint8(msg.action);
+            break;
+        case MsgType.Emote:
+            writeEmoteRequest(w, msg.emote);
             break;
     }
     w.alignToNextByte();
@@ -190,6 +195,8 @@ export function decodeClientFrame(bytes: Uint8Array): ClientMsg[] {
                 return { type: MsgType.Ping, nonce: r.readUint32() };
             case MsgType.Spectate:
                 return { type: MsgType.Spectate, action: r.readUint8() };
+            case MsgType.Emote:
+                return { type: MsgType.Emote, emote: readEmoteRequest(r) };
             default:
                 throw new ProtocolError(`unexpected client message type ${type}`);
         }

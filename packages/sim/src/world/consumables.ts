@@ -6,6 +6,7 @@ import { GameConfig, getDef, hasDef, WeaponSlot } from "@rebirth/defs";
 import { isBagItem, SCOPE_LEVELS, THROWABLE_LIST } from "../items/inventory.ts";
 import { boostHealAmounts, type SimRules } from "../rules.ts";
 import type { SimContext } from "./context.ts";
+import { teammatesInRange } from "./downed.ts";
 import type { Player } from "./player.ts";
 
 const PLAYER = GameConfig.player;
@@ -73,14 +74,15 @@ export function useItem(ctx: SimContext, player: Player, item: string): void {
     switch (def.type) {
         case "heal": {
             const aoe = player.hasPerk("aoe_heal");
-            // refused at full health (Mass Medicate excepted), during another use or while cooking a throwable
-            if ((!aoe && player.health >= def.maxHeal) || player.action.type === "use" || isCooking(player)) return;
+            // refused at full health (Mass Medicate excepted), during another use or a revive, while cooking
+            const busy = player.action.type === "use" || player.action.type === "revive";
+            if ((!aoe && player.health >= def.maxHeal) || busy || isCooking(player)) return;
             startUse(ctx, player, item, def.useTime);
             break;
         }
         case "boost":
             // boosts have no fullness check: a soda at 100 boost is wasted (boost.md)
-            if (player.action.type === "use" || isCooking(player)) return;
+            if (player.action.type === "use" || player.action.type === "revive" || isCooking(player)) return;
             startUse(ctx, player, item, def.useTime);
             break;
         case "scope":
@@ -93,8 +95,10 @@ export function useItem(ctx: SimContext, player: Player, item: string): void {
 }
 
 function startUse(ctx: SimContext, player: Player, item: string, useTime: number): void {
-    // TODO(M6): a Mass Medicate medic emotes the item and the effect reaches teammates within medicHealRange
-    const mult = player.hasPerk("aoe_heal") ? ctx.rules.aoeHealUseTimeMult : 1;
+    const aoe = player.hasPerk("aoe_heal");
+    // a Mass Medicate medic always shows the item it uses (survev useHealingItem / useBoostItem)
+    if (aoe) ctx.addEmote(player, "emote_loot", item);
+    const mult = aoe ? ctx.rules.aoeHealUseTimeMult : 1;
     player.cancelAction();
     player.doAction(item, "use", useTime * mult);
 }
@@ -122,13 +126,22 @@ export function updateFabricate(player: Player, rules: Pick<SimRules, "fabricate
     player.inv.give("frag", player.inv.capacity("frag"));
 }
 
-/** Effect of a completed use action: heal (capped at 100) or boost (capped at 100), then one item is used up. */
-export function completeUse(player: Player, item: string): void {
+/**
+ * Effect of a completed use action: heal (capped at 100) or boost (capped at 100), then one item is used up. With a
+ * game context, a Mass Medicate medic gives the effect to every standing teammate within medicHealRange (8 u, itself
+ * included; survev applyActionFunc, boost.md / heal-actions.md).
+ */
+export function completeUse(player: Player, item: string, ctx?: SimContext): void {
     if (!hasDef(item)) return;
     const def = getDef(item);
-    // TODO(M6): Mass Medicate applies the effect to every non-downed teammate within medicHealRange
-    if (def.type === "heal") player.health = Math.min(PLAYER.health, player.health + def.heal);
-    else if (def.type === "boost") player.boost = Math.min(MAX_BOOST, player.boost + def.boost);
-    else return;
+    if (def.type !== "heal" && def.type !== "boost") return;
+    const targets =
+        ctx && player.hasPerk("aoe_heal")
+            ? teammatesInRange(ctx, player, PLAYER.medicHealRange).filter((p) => !p.downed)
+            : [player];
+    for (const t of targets) {
+        if (def.type === "heal") t.health = Math.min(PLAYER.health, t.health + def.heal);
+        else t.boost = Math.min(MAX_BOOST, t.boost + def.boost);
+    }
     player.inv.take(item, 1);
 }

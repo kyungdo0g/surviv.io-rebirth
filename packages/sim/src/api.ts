@@ -1,6 +1,6 @@
 // Public API of the simulation. `Game` in game.ts implements `GameApi`.
 import type { PlayerInput } from "./input.ts";
-import type { MapData, Snapshot } from "./view.ts";
+import type { AddPlayerOptions, EmoteRequest, MapData, Snapshot } from "./view.ts";
 
 /** Fixed simulation rate. */
 export const TICK_HZ = 100;
@@ -11,7 +11,7 @@ export interface GameOptions {
     /** MapDefs key */
     mapName: string;
     seed: number;
-    /** 1 solo, 2 duo, 4 squad */
+    /** 1 solo (default), 2 duo, 4 squad (M6a: groups, knocks and revives) */
     teamMode?: 1 | 2 | 4;
 }
 
@@ -25,8 +25,11 @@ export interface GameApi {
     readonly tick: number;
     /** simulation time in seconds */
     readonly time: number;
-    /** Spawns a player at a valid spawn point and returns its object id. */
-    addPlayer(name: string): number;
+    /**
+     * Spawns a player at a valid spawn point and returns its object id. Team modes: `opts` picks the group (party key,
+     * auto fill) and teammates spawn next to each other (M6a).
+     */
+    addPlayer(name: string, opts?: AddPlayerOptions): number;
     removePlayer(id: number): void;
     /** Latest input for a player; applied on the next step. */
     setInput(playerId: number, input: PlayerInput): void;
@@ -38,4 +41,6 @@ export interface GameApi {
     canJoin(): boolean;
     /** Spectate request of a dead player; ignored for living players (M4). */
     spectate(playerId: number, action: SpectateActionName): void;
+    /** Emote or ping request (the original Emote message); throttled, invalid requests are ignored (M6a). */
+    emote(playerId: number, request: EmoteRequest): void;
 }

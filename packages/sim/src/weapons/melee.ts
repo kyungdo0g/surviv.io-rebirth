@@ -84,8 +84,8 @@ export function meleeDamage(ctx: SimContext, player: Player, def: MeleeDef): voi
         // a player behind an obstacle closer than itself along the swing line is not hit
         const blocked = obstacleDist(obstacles, player.pos, dir, reach, GameConfig.player.meleeHeight, player.layer);
         if (blocked.dist < distToPlayer) continue;
-        // TODO(M6): teammates get priority 2 once teams exist
-        hits.push({ obj, prio: 0, pen: res.pen, dir });
+        // enemies first, then obstacles, teammates last (they take no damage unless disconnected)
+        hits.push({ obj, prio: obj.teamId === player.teamId ? 2 : 0, pen: res.pen, dir });
     }
     hits.sort((a, b) => (a.prio === b.prio ? b.pen - a.pen : a.prio - b.prio));
     const count = def.cleave ? hits.length : Math.min(hits.length, 1);

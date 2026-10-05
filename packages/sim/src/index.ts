@@ -35,11 +35,14 @@ export type { GeneratedObject, LootSpawn } from "./mapgen/generator.ts";
 export { buildTerrain, createTerrain, type River, type Terrain, terrainToShape } from "./mapgen/terrain.ts";
 export { isTerrainWater, type TerrainSurface, terrainSurfaceAt } from "./mapgen/terrainQuery.ts";
 export { AIRSTRIKE_SPAWN_TIME, AirstrikeZones, bombPositions, type StrikeState } from "./match/airstrikes.ts";
+export { EmoteSystem, updateEmoteThrottle } from "./match/emotes.ts";
 export { damageSourceOf, EventLog } from "./match/events.ts";
 export { type CircleChoice, Gas, gasCircle, gasTimeLeft } from "./match/gas.ts";
 export { KILL_LEADER_ROLE, Match, type MatchOptions, playerStats } from "./match/match.ts";
 export { type FallingAirdrop, type MapIndicator, type PlaneState, PlaneSystem } from "./match/planes.ts";
+export { canPlayerSpawn, randomSpawnPos, teammateSpawnPos } from "./match/spawn.ts";
 export { type SpectateAction, SpectateSystem } from "./match/spectate.ts";
+export { Group, killAllDowned, TEAMMATE_SPAWN_RADIUS, TeamSystem } from "./match/teams.ts";
 export { UnlockSystem, type UnlockTiming, unlockTimings } from "./match/unlocks.ts";
 export { boostHealAmounts, defaultRules, type SimRules } from "./rules.ts";
 export type * from "./view.ts";
@@ -79,6 +82,16 @@ export {
     unlockDoor,
     updateDoorTimers,
 } from "./world/doors.ts";
+export {
+    acceptsWhileDowned,
+    bleedDamage,
+    completeRevive,
+    downPlayer,
+    playerToRevive,
+    startRevive,
+    teammatesInRange,
+    updateDowned,
+} from "./world/downed.ts";
 export {
     Building,
     Decal,

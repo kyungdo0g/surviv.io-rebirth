@@ -82,7 +82,39 @@
 // - Snapshot: `recorders` (RecorderEvent list: recorders used in view since the viewer's previous snapshot; play the
 //   recording `sound`). Scheduled unlocks (MapDef gameConfig.unlocks, e.g. the Cobalt twins bunker) open their doors
 //   and add a "ping_unlock" MapIndicatorView at each door.
+//
+// M6a additions (teams, downed and revive, emotes and pings; backward compatible in the same way: optional in the types,
+// always filled by the simulation in the modes they apply to, and by the network decoder):
+// - Teams (GameOptions.teamMode 2 duo / 4 squad): players are grouped (PlayerInfoView.groupId is the real group, teamId
+//   equals it; solo keeps one group per player). Teammates spawn within GameConfig.player.teammateSpawnRadius of the
+//   group's spawn point, cannot hurt each other (unless the target is disconnected; self damage stays), and do not
+//   collide (players never collide). The match ends when one group has living (downed included) players left;
+//   GameOverEvent.teamId / winningTeamId are group ids, teamRank ranks groups and playerStats lists every member of
+//   the viewer's group. A player who dies while its group plays on gets `playerStats` once; every member gets
+//   `gameOver` once, when its group is eliminated or wins. `aliveCount` stays the number of living players.
+// - Downed: in team modes lethal damage knocks the player down (PlayerView.downed; draw the crawl pose) unless no
+//   teammate is left standing, in which case it dies and every downed teammate dies with it (team wipe). A downed
+//   player bleeds, crawls slowly, has no weapon use (forced to the melee slot, a pan is worn on the back) and its
+//   camera is forced to 1x. KillEvent `downed` true / `killed` false reports a knock (killerId = killCreditId = the
+//   knocker); finishing a downed player credits the knocker for bleed-outs, environment kills and kills by its
+//   team (KillEvent killerId 0 for bleed-outs: "finally bled out" / "finally killed").
+// - Revive: Input.Interact (or Input.Revive) next to a downed teammate starts an 8 s revive: the reviver's
+//   PlayerView.anim is "revive" and both players' action type is "revive"; LocalPlayerState.action.targetId is the
+//   revived player for the reviver and 0 for the downed side. Moving more than 5 units apart, damage-free cancels
+//   (Input.Cancel, shooting, switching weapons) of either side, or the target dying cancel it. Revivify (self_revive)
+//   lets a downed holder revive itself the same way.
+// - LocalPlayerState: `team` (TeamMemberView list, team modes only; never in solo), `action.targetId`.
+// - Snapshot: `emotes` (EmoteEvent list since the viewer's previous snapshot: emotes of players in view, team-only
+//   emotes and pings of the viewer's group). Clients send EmoteRequests (Game.emote / the Emote message); the server
+//   throttles them like the original (6 in a row block emotes for 9 s, the counter decays by 1 every 3 s).
+// - New types: TeamMemberView, EmoteEvent, EmoteRequest, AddPlayerOptions (viewTeams.ts); GameApi.addPlayer takes an
+//   optional AddPlayerOptions (party key, auto fill), GameApi.emote(playerId, request).
 import type { Vec2 } from "@rebirth/core";
+import type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+import type { EmoteEvent, TeamMemberView } from "./viewTeams.ts";
+
+export type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+export type { AddPlayerOptions, EmoteEvent, EmoteRequest, TeamMemberView } from "./viewTeams.ts";
 
 export interface RiverData {
     width: number;
@@ -169,14 +201,16 @@ export interface PlayerView extends BaseView {
     healEffect?: boolean;
 }
 
-export type AnimType = "none" | "melee" | "cook" | "throw";
+/** "revive": the reviver's 8 s revive animation (M6a) */
+export type AnimType = "none" | "melee" | "cook" | "throw" | "revive";
 
 export interface PlayerAnim {
     type: AnimType;
     seq: number;
 }
 
-export type ActionType = "none" | "reload" | "use";
+/** "revive": reviving a teammate, being revived or self reviving (M6a) */
+export type ActionType = "none" | "reload" | "use" | "revive";
 
 export interface PlayerAction {
     type: ActionType;
@@ -271,8 +305,11 @@ export interface LocalPlayerState {
     helmet?: string;
     chest?: string;
     backpack?: string;
-    /** running timed action with its progress, for the reload/use bar (M2) */
-    action?: { type: ActionType; item: string; time: number; duration: number };
+    /**
+     * running timed action with its progress, for the reload/use bar (M2); `targetId` (M6a): the player being revived
+     * for a reviver (its own id while self reviving), 0 otherwise
+     */
+    action?: { type: ActionType; item: string; time: number; duration: number; targetId?: number };
     /** seconds until each weapon slot can fire/attack again (0 = ready) and until the next free switch (M2) */
     cooldowns?: { weapons: number[]; freeSwitch: number };
     kills?: number;
@@ -283,6 +320,8 @@ export interface LocalPlayerState {
     stats?: MatchStats;
     /** number of players spectating this player (M4) */
     spectatorCount?: number;
+    /** team modes: every member of the player's group, itself included (M6a; absent in solo) */
+    team?: TeamMemberView[];
 }
 
 /** Match stats of one player, as shown on the death and win screens. Integers (damage rounded, whole seconds). */
@@ -383,64 +422,8 @@ export interface Snapshot {
     airstrikeZones?: AirstrikeZoneView[];
     /** recorders used in view since the viewer's previous snapshot, in order (M5b) */
     recorders?: RecorderEvent[];
-}
-
-/** A recorder obstacle was used: the client plays its recording (the def's `button.sound.on`) at `pos` (M5b). */
-export interface RecorderEvent {
-    /** object id of the recorder obstacle */
-    id: number;
-    /** MapObjectDefs id, e.g. "recorder_04" */
-    type: string;
-    /** sound id of the recording (the def's button.sound.on), e.g. "log_04" */
-    sound: string;
-    pos: Vec2;
-    layer: number;
-}
-
-/** An explosion (the original UpdateMsg explosion record): the client plays its `explosionEffectType` (M5). */
-export interface ExplosionEvent {
-    /** GameObjectDefs explosion id, e.g. "explosion_frag" */
-    type: string;
-    pos: Vec2;
-    layer: number;
-}
-
-/** A flying projectile (the original Projectile object) (M5). */
-export interface ProjectileView {
-    /** projectile id (1..65535, its own id space, reused after a while) */
-    id: number;
-    /** GameObjectDefs throwable id (drawn with its `worldImg`), e.g. "frag", "bomb_iron", "potato_cannonball" */
-    type: string;
-    pos: Vec2;
-    /** height above the ground, 0..GameConfig.projectile.maxHeight (the client scales the sprite with it) */
-    posZ: number;
-    /** unit direction of travel */
-    dir: Vec2;
-    layer: number;
-}
-
-/** One smoke cloud (the original Smoke object): grows to its radius, drifts slowly, vanishes with its emitter (M5). */
-export interface SmokeView {
-    /** smoke id (1..65535, its own id space) */
-    id: number;
-    pos: Vec2;
-    /** current radius (at most 6.5) */
-    rad: number;
-    layer: number;
-    /** emitted inside a building (drawn below the roof) */
-    interior: boolean;
-}
-
-/** A 50v50 air strike zone: a yellow circle on the map for its whole duration (M5). */
-export interface AirstrikeZoneView {
-    /** zone id (1..255) */
-    id: number;
-    pos: Vec2;
-    rad: number;
-    /** total duration in seconds (at most 60) */
-    duration: number;
-    /** progress 0..1 (the client fades the circle in and out over 0.5 s at each end) */
-    zoneT: number;
+    /** emotes and pings the viewer may see, since its previous snapshot, in order (M6a) */
+    emotes?: EmoteEvent[];
 }
 
 /** Public info of a player (the original PlayerInfos record, without the heal/boost cosmetics). */
@@ -534,7 +517,7 @@ export interface KillEvent {
     itemSourceType: string;
     /** MapObjectDefs id of the obstacle that dealt it (exploding barrel), "" for none */
     mapSourceType: string;
-    /** knocked down, not killed (team modes, M6: always false for now) */
+    /** knocked down, not killed (team modes, M6a) */
     downed: boolean;
     killed: boolean;
 }

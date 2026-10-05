@@ -78,8 +78,9 @@ const DURATION_BITS = 8;
 const LOOT_COUNT_BITS = 16;
 const GORE_BITS = 8;
 
-const ANIM_TYPES: readonly AnimType[] = ["none", "melee", "cook", "throw"];
-const ACTION_TYPES: readonly ActionType[] = ["none", "reload", "use"];
+// "revive" (M6a): code 4 / 3 (the original Anim.Revive is 6 and Action.Revive 4; our codes are list indices)
+const ANIM_TYPES: readonly AnimType[] = ["none", "melee", "cook", "throw", "revive"];
+const ACTION_TYPES: readonly ActionType[] = ["none", "reload", "use", "revive"];
 
 function codeOf<T extends string>(list: readonly T[], value: T | undefined): number {
     const i = list.indexOf(value ?? list[0]);

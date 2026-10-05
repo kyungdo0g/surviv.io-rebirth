@@ -1,18 +1,21 @@
-// One-shot input actions (equip, reload, interact, scopes...) applied at the start of a player's tick.
-// Behaviour follows survev server/src/game/objects/player.ts handleInput.
+// One-shot input actions (equip, reload, interact, revive, scopes...) applied at the start of a player's tick.
+// Behaviour follows survev server/src/game/objects/player.ts handleInput and shouldAcceptInput (downed players, M6a).
 import { Input, WeaponSlot } from "@rebirth/defs";
 import { SCOPE_LEVELS } from "../items/inventory.ts";
 import { closestLoot, pickupLoot } from "../loot/pickup.ts";
 import { throwThrowable } from "../weapons/throwable.ts";
 import { selectThrowable, useItem } from "./consumables.ts";
 import type { SimContext } from "./context.ts";
+import { acceptsWhileDowned, playerToRevive, startRevive } from "./downed.ts";
 import { interactableObstacles, useObstacle } from "./interact.ts";
 import type { Player } from "./player.ts";
 
 export function handleActions(ctx: SimContext, player: Player, actions: readonly number[]): void {
     const wm = player.weaponManager;
+    // the mobile client sends Interact then Cancel: a revive started by the Interact survives the Cancel (survev)
+    let ignoreCancel = false;
     for (const action of actions) {
-        // TODO(M6): downed players only accept Interact, Use, Revive and Cancel
+        if (player.downed && !acceptsWhileDowned(player, action)) continue;
         switch (action) {
             case Input.StowWeapons:
             case Input.EquipMelee:
@@ -78,17 +81,23 @@ export function handleActions(ctx: SimContext, player: Player, actions: readonly
                 wm.swapWeaponSlots();
                 break;
             case Input.Reload:
-                wm.scheduledReload = true;
+                if (player.action.type !== "revive") wm.scheduledReload = true;
                 break;
             case Input.Cancel:
-                player.cancelAction();
+                if (!ignoreCancel) player.cancelAction();
+                break;
+            case Input.Revive:
+                startRevive(ctx, player, playerToRevive(ctx, player));
                 break;
             case Input.Interact:
             case Input.Loot: {
-                // TODO(M6): Interact also revives teammates
-                const loot = closestLoot(ctx, player);
+                // Interact revives a downed teammate in reach (a downed player only itself, with Revivify), picks up
+                // loot and uses every button in reach (survev player.ts handleInput: revive, loot, then obstacles)
+                if (action === Input.Interact && (!player.downed || player.hasPerk("self_revive"))) {
+                    if (startRevive(ctx, player, playerToRevive(ctx, player))) ignoreCancel = true;
+                }
+                const loot = player.downed ? undefined : closestLoot(ctx, player);
                 if (loot) pickupLoot(ctx, player, loot);
-                // Interact uses every button in reach as well (survev player.ts: revive, loot, then obstacles)
                 if (action === Input.Interact) {
                     for (const obstacle of interactableObstacles(ctx, player)) useObstacle(ctx, obstacle, player);
                 }

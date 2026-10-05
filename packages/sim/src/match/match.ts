@@ -1,8 +1,12 @@
-// Match lifecycle (solo rules): waiting until the start condition, the join window, alive count, kill events with
-// kill credit, the kill leader, game over with the winner and ranks, and each player's GameOver result.
-// Behaviour follows survev server/src/game/game.ts (start, canJoin, checkGameOver), gameModeManager.ts (solo
-// alive count, isGameStarted) and objects/player.ts (kill, promoteToKillLeader, addGameOverMsg);
-// docs/research/ui/hud.md (kill feed, kill leader, death and win screens).
+// Match lifecycle: waiting until the start condition, the join window, alive count, kill (and knock, M6a) events with
+// kill credit, the kill leader, game over with the winner and ranks, and each player's GameOver result. Team modes
+// (M6a) count groups: the match starts with two groups, ends when one group is left alive (downed members count), ranks
+// groups, sends PlayerStats to a player who died while its group plays on and GameOver to every member of a group once
+// it is eliminated or wins.
+// Behaviour follows survev server/src/game/game.ts (start, canJoin, checkGameOver), gameModeManager.ts (alive count,
+// isGameStarted, getWinningTeamId, showStatsMsg, getGameoverPlayers, getPlayersSortedByRank) and objects/player.ts
+// (kill, down, promoteToKillLeader, addGameOverMsg); docs/research/ui/hud.md (kill feed, kill leader, death and win
+// screens).
 import { DamageType, getMapDef } from "@rebirth/defs";
 import { TICK_HZ } from "../api.ts";
 import type { DamageParams } from "../combat/damage.ts";
@@ -10,13 +14,12 @@ import type { GameOverEvent, KillEvent, KillLeaderView, PlayerStatsView, RoleAnn
 import type { Player } from "../world/player.ts";
 import { damageSourceOf, EventLog } from "./events.ts";
 import type { Gas } from "./gas.ts";
+import type { Group } from "./teams.ts";
 
 /** Role id announced for the kill leader (GameObjectDefs role). */
 export const KILL_LEADER_ROLE = "kill_leader";
 /** Events are kept this long for viewers that skip snapshots (congested sockets). */
 const EVENT_RETENTION_TICKS = 30 * TICK_HZ;
-/** Team ids are u8 on the wire (GameOver teamId / winningTeamId); 0 means none. */
-const MAX_TEAM_ID = 255;
 
 export interface MatchOptions {
     /**
@@ -34,6 +37,8 @@ export interface MatchHost {
     readonly gas: Gas;
     readonly options: { mapName: string };
     readonly rules: { joinWindowSeconds: number; killLeaderMinKills: number; minActiveTime: number };
+    /** groups (M6a); solo: one per player */
+    readonly teams: { readonly teamMode: number; aliveGroups(except?: Player): Group[] };
     players(): Iterable<Player>;
     getPlayer(id: number): Player | undefined;
     nextEventSeq(): number;
@@ -53,11 +58,14 @@ export class Match {
     readonly kills = new EventLog<KillEvent>();
     readonly roles = new EventLog<RoleAnnouncementEvent>();
     readonly results = new EventLog<{ playerId: number; event: GameOverEvent }>();
+    /** team modes: stats of players who died while their group plays on (the original PlayerStats message) */
+    readonly statsResults = new EventLog<{ playerId: number; stats: PlayerStatsView }>();
     private readonly host: MatchHost;
     private readonly killLeaderEnabled: boolean;
     private readonly maxPlayers: number;
     private nextKilledIndex = 0;
     private readonly resultSent = new Set<number>();
+    private readonly statsSent = new Set<number>();
     private pendingResults: Player[] = [];
 
     constructor(host: MatchHost, options: MatchOptions) {
@@ -96,25 +104,27 @@ export class Match {
         return !this.started || this.startedSeconds < this.host.rules.joinWindowSeconds;
     }
 
-    /** Smallest team id no current player uses (solo: every player is its own team). */
-    allocTeamId(): number {
-        const used = new Set<number>();
-        for (const p of this.host.players()) used.add(p.teamId);
-        for (let id = 1; id <= MAX_TEAM_ID; id++) if (!used.has(id)) return id;
-        return MAX_TEAM_ID;
+    private get teamMode(): number {
+        return this.host.teams.teamMode;
+    }
+
+    /** Groups with a living (possibly downed) member; solo: living players (survev modeManager.aliveCount). */
+    aliveGroupCount(except?: Player): number {
+        return this.host.teams.aliveGroups(except).length;
     }
 
     /**
-     * Start check, run at the beginning of a tick: the match starts once `minPlayers` living players have been
-     * alive for `minActiveTime` (survev cantDespawnAliveCount > 1), at once in a sandbox. Returns true on the start.
+     * Start check, run at the beginning of a tick: the match starts once `minPlayers` living players (team modes:
+     * groups with such a player) have been alive for `minActiveTime` (survev cantDespawnAliveCount > 1), at once in a
+     * sandbox. Returns true on the start.
      */
     checkStart(): boolean {
         if (this.started) return false;
         if (!this.options.sandbox) {
-            let ready = 0;
             const minTime = this.host.rules.minActiveTime - 1e-9;
-            for (const p of this.host.players()) if (!p.dead && p.timeAlive >= minTime) ready++;
-            if (ready < Math.max(1, this.options.minPlayers)) return false;
+            const ready = new Set<number>();
+            for (const p of this.host.players()) if (!p.dead && p.timeAlive >= minTime) ready.add(p.groupId);
+            if (ready.size < Math.max(1, this.options.minPlayers)) return false;
         }
         this.started = true;
         this.startTick = this.host.tick;
@@ -145,10 +155,31 @@ export class Match {
         if (victimWasLeader) {
             this.logRole({ playerId: victim.id, killerId: sourcePlayer?.id ?? 0, assigned: false, killed: true });
         }
-        if (this.killLeaderEnabled && credit && credit !== victim) this.updateKillLeader(credit);
+        const counted = credit && credit !== victim && credit.teamId !== victim.teamId;
+        if (this.killLeaderEnabled && counted) this.updateKillLeader(credit);
         if (victimWasLeader && this.killLeaderId === victim.id) this.killLeaderId = 0;
         this.checkGameOver();
         this.pendingResults.push(victim);
+    }
+
+    /**
+     * `victim` was knocked down (M6a; survev down): a Kill event with `downed` true, the knocker as killer and credit.
+     */
+    onPlayerDowned(victim: Player, params: DamageParams, source: Player | undefined): void {
+        const itemSourceType = params.gameSourceType ?? "";
+        const mapSourceType = params.mapSourceType ?? "";
+        this.logKill({
+            targetId: victim.id,
+            killerId: source?.id ?? 0,
+            killCreditId: source?.id ?? 0,
+            killerKills: 0,
+            damageType: params.damageType,
+            source: damageSourceOf(params.damageType, itemSourceType, mapSourceType),
+            itemSourceType,
+            mapSourceType,
+            downed: true,
+            killed: false,
+        });
     }
 
     /**
@@ -177,16 +208,17 @@ export class Match {
         if (!player.dead) this.checkGameOver(player);
     }
 
-    /** Solo game over: started and at most one player alive (survev game.ts checkGameOver). */
+    /** Game over: started and at most one player (team modes: group) alive (survev game.ts checkGameOver). */
     private checkGameOver(removed?: Player): void {
         if (this.over || !this.started || this.options.sandbox) return;
-        const living = this.living().filter((p) => p !== removed);
-        if (living.length > 1) return;
+        const groups = this.host.teams.aliveGroups(removed);
+        if (groups.length > 1) return;
         this.over = true;
         this.overTick = this.host.tick;
-        const winner = living[0];
-        this.winningTeamId = winner?.teamId ?? 0;
-        this.winnerIds = winner ? [winner.id] : [];
+        const winner = groups[0];
+        const living = winner ? winner.players.filter((p) => p !== removed && !p.dead) : [];
+        this.winningTeamId = living[0]?.teamId ?? 0;
+        this.winnerIds = living.map((p) => p.id).sort((a, b) => a - b);
     }
 
     /**
@@ -196,24 +228,52 @@ export class Match {
     endTick(): void {
         const pending = this.pendingResults;
         this.pendingResults = [];
-        for (const p of pending) this.addResult(p);
-        if (this.over) for (const p of this.living()) this.addResult(p);
+        for (const p of pending) {
+            // team modes: a player whose group plays on gets its stats; the group's GameOver comes when it is out
+            if (this.teamMode > 1 && !this.over && this.groupPlaysOn(p)) this.addStats(p);
+            else this.addGroupResult(p);
+        }
+        if (this.over) for (const p of this.living()) this.addGroupResult(p);
         const minTick = this.host.tick - EVENT_RETENTION_TICKS;
         this.kills.prune(minTick);
         this.roles.prune(minTick);
         this.results.prune(minTick);
+        this.statsResults.prune(minTick);
     }
 
-    private addResult(player: Player): void {
+    /** A member other than `p` is alive and connected while other groups remain (survev showStatsMsg). */
+    private groupPlaysOn(p: Player): boolean {
+        const group = p.group;
+        if (!group || group.allDeadOrDisconnected) return false;
+        return this.aliveGroupCount() > 1;
+    }
+
+    private addStats(player: Player): void {
+        if (this.statsSent.has(player.id)) return;
+        this.statsSent.add(player.id);
+        this.statsResults.push(this.host.nextEventSeq(), this.host.tick, {
+            playerId: player.id,
+            stats: playerStats(player),
+        });
+    }
+
+    /** GameOver for `player` and, in team modes, every member of its group (survev getGameoverPlayers). */
+    private addGroupResult(player: Player): void {
+        const members = this.teamMode > 1 && player.group ? player.group.players : [player];
+        for (const m of members) this.addResult(m, members);
+    }
+
+    private addResult(player: Player, members: readonly Player[]): void {
         if (this.resultSent.has(player.id)) return;
         this.resultSent.add(player.id);
         const won = this.winningTeamId !== 0 && this.winningTeamId === player.teamId;
         const event: GameOverEvent = {
             teamId: player.teamId,
-            teamRank: won ? 1 : this.aliveCount + 1,
+            // the GameOver goes out after the alive count was updated (survev addGameOverMsg)
+            teamRank: won ? 1 : this.aliveGroupCount() + 1,
             gameOver: this.winningTeamId !== 0,
             winningTeamId: this.winningTeamId,
-            playerStats: [playerStats(player)],
+            playerStats: members.map(playerStats),
         };
         this.results.push(this.host.nextEventSeq(), this.host.tick, { playerId: player.id, event });
     }
@@ -224,6 +284,12 @@ export class Match {
         return undefined;
     }
 
+    /** The PlayerStats of `playerId` logged after `seq`, if any (team modes). */
+    statsSince(playerId: number, seq: number): PlayerStatsView | undefined {
+        for (const r of this.statsResults.since(seq)) if (r.playerId === playerId) return r.stats;
+        return undefined;
+    }
+
     killLeader(): KillLeaderView {
         const p = this.killLeaderId ? this.host.getPlayer(this.killLeaderId) : undefined;
         return p ? { id: p.id, kills: p.kills } : { id: 0, kills: 0 };
@@ -231,15 +297,29 @@ export class Match {
 
     /**
      * Final ranking: survivors first, then the dead from the last to the first killed (survev
-     * getPlayersSortedByRank); players dying in the same tick share no rank here, the later index ranks higher.
+     * getPlayersSortedByRank); players dying in the same tick share no rank here, the later index ranks higher. Team
+     * modes rank groups by their last member to die and give every member the group's rank.
      */
     ranking(): Array<{ playerId: number; rank: number }> {
-        const players = [...this.host.players()].sort((a, b) => {
-            const ka = a.dead ? a.killedIndex : Number.MAX_SAFE_INTEGER;
-            const kb = b.dead ? b.killedIndex : Number.MAX_SAFE_INTEGER;
-            return kb - ka || a.id - b.id;
+        const lastDeath = (p: Player) => (p.dead ? p.killedIndex : Number.MAX_SAFE_INTEGER);
+        if (this.teamMode <= 1) {
+            const players = [...this.host.players()].sort((a, b) => lastDeath(b) - lastDeath(a) || a.id - b.id);
+            return players.map((p, i) => ({ playerId: p.id, rank: i + 1 }));
+        }
+        const groups = new Map<number, Player[]>();
+        for (const p of this.host.players()) {
+            const list = groups.get(p.groupId);
+            if (list) list.push(p);
+            else groups.set(p.groupId, [p]);
+        }
+        const ranked = [...groups.values()]
+            .map((players) => ({ players, last: Math.max(...players.map(lastDeath)) }))
+            .sort((a, b) => b.last - a.last || a.players[0].id - b.players[0].id);
+        const out: Array<{ playerId: number; rank: number }> = [];
+        ranked.forEach((g, i) => {
+            for (const p of g.players) out.push({ playerId: p.id, rank: i + 1 });
         });
-        return players.map((p, i) => ({ playerId: p.id, rank: i + 1 }));
+        return out;
     }
 
     private logKill(event: KillEvent): void {

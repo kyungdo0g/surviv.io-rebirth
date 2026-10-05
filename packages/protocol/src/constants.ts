@@ -21,7 +21,7 @@ export const MsgType = {
     Spectate: 11,
     /** reserved, not implemented */
     DropItem: 12,
-    /** reserved, not implemented */
+    /** client -> server emote or ping request (M6a) */
     Emote: 13,
     PlayerStats: 14,
     /** original ad-status message (reserved, never used) */
@@ -95,8 +95,8 @@ export const UpdateFlag = {
 
 /**
  * Extended Update section flags (u16 after the ack byte when UpdateFlag.Extended is set). Sections follow the
- * DeletePlayerIds section in bit order (M5a: bits 0-3, M5b: bit 4). Bits 5-15 are reserved for the sections still
- * to come (player status, group status, emotes, ...); a decoder rejects them until they are defined.
+ * DeletePlayerIds section in bit order (M5a: bits 0-3, M5b: bit 4, M6a: bits 5-7). Bits 8-15 are reserved for the
+ * sections still to come; a decoder rejects them until they are defined.
  */
 export const UpdateExtFlag = {
     /** explosions since the previous update (original Explosions) */
@@ -109,8 +109,14 @@ export const UpdateExtFlag = {
     AirstrikeZones: 1 << 3,
     /** recorders used since the previous update (M5b) */
     Recorders: 1 << 4,
+    /** team positions, dead and downed of the viewer's group, when they changed (original PlayerStatus, M6a) */
+    PlayerStatus: 1 << 5,
+    /** team health and disconnected flags, when they changed (original GroupStatus, M6a) */
+    GroupStatus: 1 << 6,
+    /** emotes and pings since the previous update (original Emotes, M6a) */
+    Emotes: 1 << 7,
     /** not defined yet */
-    Reserved: 0xffe0,
+    Reserved: 0xff00,
 } as const;
 
 /** Reasons carried by the Disconnect message (and the WebSocket close frame). */

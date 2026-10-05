@@ -1,10 +1,10 @@
 // Update message property tests: random snapshot sequences (objects appearing, changing and leaving, local state,
 // bullets, the M4 match state: gas, planes, air drops, map indicators, kill leader, spectating, and the events
-// carried by separate messages: kills, role announcements, alive count, GameOver, PlayerStats) go through a
-// ClientEncoder frame and a ServerMsgDecoder; every decoded snapshot must equal the input within quantization
-// tolerance.
+// carried by separate messages: kills, role announcements, alive count, GameOver, PlayerStats; M6a: the team HUD
+// rows and emotes) go through a ClientEncoder frame and a ServerMsgDecoder; every decoded snapshot must equal the
+// input within quantization tolerance.
 import { BitWriter, createRng, type Rng } from "@rebirth/core";
-import type { MapIndicatorView, ObjectView, Snapshot } from "@rebirth/sim";
+import type { MapIndicatorView, ObjectView, Snapshot, TeamMemberView } from "@rebirth/sim";
 import { TICK_HZ } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import {
@@ -41,15 +41,25 @@ import {
     randZones,
     snapshotTolerances,
 } from "./gen.ts";
+import { mutateTeam, randEmotes, randTeam } from "./genTeams.ts";
 
 interface Seq {
     nextId: { v: number };
     airdropIds: { v: number };
     indicators: Map<number, MapIndicatorView>;
+    /** team HUD rows of the sequence (null: solo) and the names the decoder learnt from PlayerInfos */
+    team: TeamMemberView[] | null;
+    names: Map<number, string>;
 }
 
 function newSeq(rng: Rng): Seq {
-    return { nextId: { v: rng.int(1, 60000) }, airdropIds: { v: rng.int(1, 60000) }, indicators: new Map() };
+    return {
+        nextId: { v: rng.int(1, 60000) },
+        airdropIds: { v: rng.int(1, 60000) },
+        indicators: new Map(),
+        team: null,
+        names: new Map(),
+    };
 }
 
 /** Match state and events of a random snapshot (indicators evolve consistently with `seq`). */
@@ -75,13 +85,17 @@ function matchFields(
         killLeader:
             !prev?.killLeader || rng.bool(0.2) ? { id: rng.int(0, 65535), kills: rng.int(0, 255) } : prev.killLeader,
         spectatingId: rng.bool(0.2) ? localPlayerId : 0,
-        playerInfos: randPlayerInfos(rng),
-        deletedPlayerIds: rng.bool(0.8) ? [] : Array.from({ length: rng.int(1, 4) }, () => rng.int(1, 65535)),
+        // team members keep the names the decoder learnt (never re-announced or removed by the random lists)
+        playerInfos: randPlayerInfos(rng).filter((p) => !seq.names.has(p.playerId)),
+        deletedPlayerIds: (rng.bool(0.8) ? [] : Array.from({ length: rng.int(1, 4) }, () => rng.int(1, 65535))).filter(
+            (id) => !seq.names.has(id),
+        ),
         explosions: randExplosions(rng, ctx),
         projectiles: randProjectiles(rng, ctx),
         smokes: randSmokes(rng, ctx),
         airstrikeZones: randZones(rng, ctx),
         recorders: randRecorders(rng, ctx),
+        emotes: randEmotes(rng, ctx),
     };
     if (rng.bool(0.1)) fields.gameOver = randGameOver(rng);
     if (rng.bool(0.1)) fields.playerStats = randStats(rng);
@@ -101,11 +115,16 @@ function evolve(rng: Rng, ctx: { width: number; height: number }, prev: Snapshot
     }
     for (let n = rng.int(0, 6); n > 0; n--) objects.push(randView(rng, ctx, seq.nextId.v++));
     objects.sort((a, b) => a.id - b.id);
+    let local = rng.bool(0.5) ? mutateLocal(rng, prev.local) : prev.local;
+    if (seq.team) {
+        seq.team = mutateTeam(rng, ctx, seq.team);
+        local = { ...local, team: seq.team };
+    }
     return {
         tick: prev.tick + rng.int(1, 6),
         time: 0,
         localPlayerId: prev.localPlayerId,
-        local: rng.bool(0.5) ? mutateLocal(rng, prev.local) : prev.local,
+        local,
         objects,
         deletedIds,
         bullets: randBullets(rng, ctx),
@@ -117,15 +136,26 @@ function firstSnapshot(rng: Rng, ctx: { width: number; height: number }, seq: Se
     const localPlayerId = seq.nextId.v++;
     const objects: ObjectView[] = [randView(rng, ctx, localPlayerId, "player")];
     for (let n = rng.int(0, 20); n > 0; n--) objects.push(randView(rng, ctx, seq.nextId.v++));
+    const local = randLocal(rng);
+    const fields = matchFields(rng, ctx, seq, null, localPlayerId);
+    if (rng.bool(0.5)) {
+        // a team mode sequence: the members are announced in this first snapshot, like the server does
+        const ids = [localPlayerId, ...Array.from({ length: rng.int(0, 3) }, () => seq.nextId.v++)];
+        seq.team = randTeam(rng, ctx, ids, seq.names);
+        local.team = seq.team;
+        const infos = seq.team.map((m) => ({ playerId: m.playerId, teamId: 1, groupId: 1, name: m.name }));
+        fields.playerInfos = [...infos, ...(fields.playerInfos ?? []).filter((p) => !seq.names.has(p.playerId))];
+        fields.deletedPlayerIds = (fields.deletedPlayerIds ?? []).filter((id) => !seq.names.has(id));
+    }
     return {
         tick: rng.int(0, 1000),
         time: 0,
         localPlayerId,
-        local: randLocal(rng),
+        local,
         objects,
         deletedIds: [],
         bullets: randBullets(rng, ctx),
-        ...matchFields(rng, ctx, seq, null, localPlayerId),
+        ...fields,
     };
 }
 
@@ -189,6 +219,7 @@ describe("Update message", () => {
             projectiles: [],
             smokes: [],
             airstrikeZones: [],
+            emotes: [],
         };
         const first = encoder.encode(snap, 0);
         decoder.decode(first);

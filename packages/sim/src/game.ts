@@ -2,9 +2,9 @@
 // Tick order follows survev server/src/game/game.ts: start check, gas, players (gas damage, input actions, boost,
 // movement, weapons), loot, bullets (then their queued damage), projectiles, explosions, smoke, obstacle timers,
 // building puzzles and scheduled unlocks (M5b), planes, air strikes and air drops, building occupancy, spectators,
-// then the end-of-tick match results.
-import { type Bounds, collider, type Rng, type Vec2, v2 } from "@rebirth/core";
-import { DamageType, GameConfig, type GasStage } from "@rebirth/defs";
+// group spawn positions and team status (M6a), then the end-of-tick match results.
+import { type Bounds, type Rng, type Vec2, v2 } from "@rebirth/core";
+import { DamageType, type GasStage } from "@rebirth/defs";
 import { type GameApi, type GameOptions, type SpectateActionName, TICK_HZ } from "./api.ts";
 import { BulletSystem } from "./combat/bullets.ts";
 import { applyObstacleDamage, applyPlayerDamage } from "./combat/combat.ts";
@@ -17,15 +17,26 @@ import { spawnMapLoot } from "./loot/drops.ts";
 import { LootSystem } from "./loot/loot.ts";
 import { type GenerateMapResult, generateMap } from "./mapgen/generate.ts";
 import { subRng } from "./mapgen/random.ts";
-import { terrainSurfaceAt } from "./mapgen/terrainQuery.ts";
+import { EmoteSystem } from "./match/emotes.ts";
 import { EventLog } from "./match/events.ts";
 import { Gas } from "./match/gas.ts";
 import { Match } from "./match/match.ts";
 import { PlaneSystem } from "./match/planes.ts";
+import { canPlayerSpawn } from "./match/spawn.ts";
 import { SpectateSystem } from "./match/spectate.ts";
+import { TeamSystem } from "./match/teams.ts";
 import { UnlockSystem } from "./match/unlocks.ts";
 import { defaultRules, type SimRules } from "./rules.ts";
-import type { BulletEvent, MapData, ObjectView, PlayerInfoView, RecorderEvent, Snapshot } from "./view.ts";
+import type {
+    AddPlayerOptions,
+    BulletEvent,
+    EmoteRequest,
+    MapData,
+    ObjectView,
+    PlayerInfoView,
+    RecorderEvent,
+    Snapshot,
+} from "./view.ts";
 import type { SimContext } from "./world/context.ts";
 import { checkDoorLayer } from "./world/doors.ts";
 import type { Building, Obstacle } from "./world/entities.ts";
@@ -40,12 +51,8 @@ import { type Entity, World } from "./world/world.ts";
 export const VIEW_MARGIN = 4;
 /** The client camera keeps a 16:9 aspect: `zoom` is half the larger screen dimension (survev client.ts). */
 export const VIEW_ASPECT = 16 / 9;
-/** Placement attempts for a spawn point (survev map.ts getRandomSpawnPos). */
-const SPAWN_ATTEMPTS = 500;
-/** Join / leave events are kept this long for viewers that skip snapshots. */
+/** Join / leave events (and emotes, M6a) are kept this long for viewers that skip snapshots. */
 const PLAYER_EVENT_RETENTION_TICKS = 30 * TICK_HZ;
-/** Players never spawn this close to a falling or landed air drop (survev map.ts). */
-const AIRDROP_SPAWN_CLEARANCE = 8;
 /** Bullet reports older than this many ticks are forgotten (a client that slept longer misses them). */
 const BULLET_REPORT_TICKS = TICK_HZ;
 
@@ -61,7 +68,7 @@ export function entityView(entity: Entity): ObjectView {
 }
 
 function playerInfo(p: Player): PlayerInfoView {
-    return { playerId: p.id, teamId: p.teamId, groupId: p.teamId, name: p.name };
+    return { playerId: p.id, teamId: p.teamId, groupId: p.groupId, name: p.name };
 }
 
 /** Optional construction parameters for tests, tools and the client's loopback. */
@@ -115,6 +122,10 @@ export class Game implements GameApi, SimContext {
     /** planes, falling air drops and minimap indicators (M4) */
     readonly planes: PlaneSystem;
     readonly spectators: SpectateSystem;
+    /** groups: solo one per player, duo / squad parties and auto fill (M6a) */
+    readonly teams: TeamSystem;
+    /** emotes and pings (M6a) */
+    readonly emotes: EmoteSystem;
     /** scheduled door unlocks of MapDef gameConfig.unlocks (M5b) */
     readonly unlocks: UnlockSystem;
     /** buildings with a puzzle, updated every tick (M5b) */
@@ -163,6 +174,8 @@ export class Game implements GameApi, SimContext {
             this.unlocks.onCircle(circleIdx);
         };
         this.puzzleBuildings = this.world.buildings.filter((b) => b.puzzle !== undefined);
+        this.teams = new TeamSystem(this, options.teamMode ?? 1);
+        this.emotes = new EmoteSystem(this);
         // doors next to stairs work from both floors (survev obstacle.ts constructor checkLayer)
         for (const obj of this.world.objects.values()) {
             if (obj.kind === "obstacle" && obj.door) checkDoorLayer(this.world, obj);
@@ -218,55 +231,24 @@ export class Game implements GameApi, SimContext {
 
     /** Whether a player may spawn at `pos`: on grass, dry, not inside obstacles or buildings (survev canPlayerSpawn). */
     canPlayerSpawn(pos: Vec2): boolean {
-        if (terrainSurfaceAt(this.world.terrain, pos) !== "grass") return false;
-        if (this.world.isOnWater(pos, 0)) return false;
-        // never under a falling air drop (survev map.ts getRandomSpawnPos; changelog 0.6.95)
-        for (const drop of this.planes.airdrops) if (v2.distance(drop.pos, pos) < AIRDROP_SPAWN_CLEARANCE) return false;
-        const rad = GameConfig.player.radius;
-        const circle = collider.createCircle(pos, rad);
-        const box = { min: { x: pos.x - rad, y: pos.y - rad }, max: { x: pos.x + rad, y: pos.y + rad } };
-        for (const obj of this.world.query(box, this.scratch)) {
-            if (obj.layer !== 0) continue;
-            if (obj.kind === "obstacle") {
-                if (obj.blocking && collider.intersect(circle, obj.collider)) return false;
-            } else if (obj.kind === "building") {
-                for (const s of obj.surfaces) {
-                    if (s.colliders.some((c) => collider.intersect(circle, c))) return false;
-                }
-                for (const r of obj.zoomRegions) {
-                    if (r.zoomIn && collider.intersect(circle, { type: 1, min: r.zoomIn.min, max: r.zoomIn.max })) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
+        return canPlayerSpawn(this, pos);
     }
 
-    private findSpawnPos(): Vec2 {
-        const { width, height, shoreInset } = this.mapData;
-        const minDist = GameConfig.player.minSpawnRad;
-        let fallback: Vec2 | null = null;
-        for (let i = 0; i < SPAWN_ATTEMPTS; i++) {
-            const pos = {
-                x: this.rng.range(shoreInset, width - shoreInset),
-                y: this.rng.range(shoreInset, height - shoreInset),
-            };
-            if (!this.canPlayerSpawn(pos)) continue;
-            fallback ??= pos;
-            let crowded = false;
-            for (const p of this.playerMap.values()) {
-                if (!p.dead && v2.distance(p.pos, pos) < minDist) crowded = true;
-            }
-            if (!crowded) return pos;
-        }
-        return fallback ?? { x: width / 2, y: height / 2 };
+    /** 1 solo, 2 duo, 4 squad (M6a) */
+    get teamMode(): number {
+        return this.teams.teamMode;
     }
 
-    addPlayer(name: string): number {
-        const player = new Player(this.world.allocId(), name, this.findSpawnPos());
+    /**
+     * Adds a player: solo players get their own group and a random spawn point; in team modes `opts` (party key, auto
+     * fill) picks the group and teammates spawn next to the group's spawn position (M6a).
+     */
+    addPlayer(name: string, opts: AddPlayerOptions = {}): number {
+        const id = this.world.allocId();
+        const group = this.teams.assign(opts);
+        const player = new Player(id, name, this.teams.spawnPos(group, this.rng));
         player.ctx = this;
-        player.teamId = this.match.allocTeamId();
+        this.teams.add(player, group);
         this.playerMap.set(player.id, player);
         this.world.add(player);
         this.visible.set(player.id, new Set());
@@ -287,18 +269,21 @@ export class Game implements GameApi, SimContext {
         this.newViewers.delete(id);
         this.world.remove(player);
         this.spectators.remove(id);
+        // a revive in progress ends with the player
+        player.cancelAction();
+        this.teams.remove(player);
         this.match.onPlayerRemoved(player);
         this.leaveLog.push(this.nextEventSeq(), this.tickCount, id);
     }
 
     /**
-     * The player's client left. A living player that joined less than `rules.minActiveTime` ago despawns; any other
-     * player stays in the game, idle (survev client.ts onClose / player.ts canDespawn).
+     * The player's client left. A living, standing player that joined less than `rules.minActiveTime` ago despawns; any
+     * other player stays in the game, idle (survev client.ts onClose / player.ts canDespawn: not downed).
      */
     disconnectPlayer(id: number): void {
         const player = this.playerMap.get(id);
         if (!player) return;
-        if (!player.dead && player.timeAlive < this.rules.minActiveTime - 1e-9) {
+        if (!player.dead && !player.downed && player.timeAlive < this.rules.minActiveTime - 1e-9) {
             this.removePlayer(id);
             return;
         }
@@ -347,6 +332,24 @@ export class Game implements GameApi, SimContext {
 
     onPlayerKilled(victim: Player, params: DamageParams, credit: Player | undefined): void {
         this.match.onPlayerKilled(victim, params, credit);
+    }
+
+    onLethalDamage(target: Player, params: DamageParams): void {
+        this.teams.handlePlayerDeath(this, target, params);
+    }
+
+    onPlayerDowned(victim: Player, params: DamageParams, source: Player | undefined): void {
+        this.match.onPlayerDowned(victim, params, source);
+    }
+
+    addEmote(player: Player, type: string, itemType = ""): void {
+        this.emotes.add(player, type, itemType);
+    }
+
+    /** An emote or ping request of a player (the original Emote message; throttled, M6a). */
+    emote(playerId: number, request: EmoteRequest): void {
+        const player = this.playerMap.get(playerId);
+        if (player && !player.disconnected) this.emotes.request(player, request);
     }
 
     activateObstacle(obstacle: Obstacle): void {
@@ -425,10 +428,12 @@ export class Game implements GameApi, SimContext {
         for (const b of occupied) b.occupied = true;
         this.occupied = occupied;
         this.spectators.update(dt);
+        this.teams.update(dt);
         this.tickCount++;
         this.match.endTick();
         this.joinLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.leaveLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
+        this.emotes.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.bullets.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
         this.explosions.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
         let stale = 0;
@@ -518,11 +523,14 @@ export class Game implements GameApi, SimContext {
         this.lastSnapshotTick.set(playerId, this.tickCount);
         const seq = this.lastEventSeq.get(playerId) ?? this.eventSeq;
         this.lastEventSeq.set(playerId, this.eventSeq);
+        const local = player.localState();
+        const team = this.teams.teamView(player);
+        if (team) local.team = team;
         const snapshot: Snapshot = {
             tick: this.tickCount,
             time: this.time,
             localPlayerId: player.id,
-            local: player.localState(),
+            local,
             objects,
             deletedIds,
             bullets,
@@ -544,9 +552,12 @@ export class Game implements GameApi, SimContext {
             smokes: this.smokes.views(view),
             airstrikeZones: this.planes.zoneViews(),
             recorders: this.recorderEvents(seq, view),
+            emotes: this.emotes.eventsFor(player, next, seq),
         };
         const gameOver = this.match.resultSince(owner.id, seq);
         if (gameOver) snapshot.gameOver = gameOver;
+        const stats = this.match.statsSince(owner.id, seq);
+        if (stats) snapshot.playerStats = stats;
         return snapshot;
     }
 }

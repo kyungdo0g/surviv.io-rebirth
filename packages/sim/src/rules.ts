@@ -110,6 +110,33 @@ export interface SimRules {
      * floor, so this only hides what a modified client could reveal.
      */
     cullOtherFloors: boolean;
+    /**
+     * Bleed escalation on maps whose `bleedDamageMult` is not 1 (Faction; conflicts.md bleed-escalation-shape):
+     * "linear" = bleedDamage x downedCount x mult (survev), "compound" = bleedDamage x mult^downedCount (survev's first
+     * implementation, closer to wiki.gg's "25 % faster than the previous time").
+     */
+    bleedEscalation: "linear" | "compound";
+    /** invulnerability right after being downed (GameConfig.player.downedDamageBuffer 0.1 s; oracle revive.json) */
+    downedDamageBuffer: number;
+    /**
+     * Players downed once the red zone has fully closed (radius <= 0.1) get 50 HP instead of 100 (survev 2025 fix
+     * against endless Revivify loops; conflicts.md down-health-50: not in 0.8.82, off).
+     */
+    downHealthFinalCircle: boolean;
+    /** survev adds the forced melee's equip bonus while downed (conflicts.md downed-melee-equip-bonus: off) */
+    downedEquipBonus: boolean;
+    /**
+     * Reviver speed (conflicts.md reviver-speed): "half" = the normal speed formula x 0.5 (fandom "0.5x speed
+     * multiplier"), "survev" = downedMoveSpeed + 2 plus the weapon's equip speed (survev's self-declared estimate).
+     */
+    reviverSpeed: "half" | "survev";
+    /**
+     * A teammate's completed revive of a Mass Medicate medic also revives the downed teammates in the medic's 6 unit
+     * aura (conflicts.md medic-revived-aoe: wikis and the original client's aura; survev only on the medic's own revives).
+     */
+    medicRevivedAoe: boolean;
+    /** seconds between team status refreshes: positions, dead, downed (original PlayerStatus rate, net.ts 0.25 s) */
+    teamStatusInterval: number;
 }
 
 export function defaultRules(): SimRules {
@@ -146,6 +173,13 @@ export function defaultRules(): SimRules {
         fabricateInterval: 12,
         unlockOverrides: { bunker_twins_sublevel_01: { circleIdx: 2, wait: 5 } },
         cullOtherFloors: true,
+        bleedEscalation: "linear",
+        downedDamageBuffer: GameConfig.player.downedDamageBuffer,
+        downHealthFinalCircle: false,
+        downedEquipBonus: false,
+        reviverSpeed: "half",
+        medicRevivedAoe: true,
+        teamStatusInterval: 0.25,
     };
 }
 

@@ -7,7 +7,8 @@
 //   3 layer    2 bits                         4 weapons curWeapIdx 2 bits, count 3 bits, count x {type 10, ammo u8}
 //   5 inventory for each GameConfig.bagSizes item: has bit [+ count 9 bits] (original layout)
 //   6 gear     scope, outfit, helmet, chest, backpack (10 bits each)
-//   7 action   type 3 bits, item 10 bits, time and duration float 0..8.5 8 bits each
+//   7 action   type 3 bits, item 10 bits, time and duration float 0..8.5 8 bits each, targetId u16 (M6a, the
+//              original active player data carries it too)
 //   8 cooldowns count 3 bits, count x float 0..4 8 bits, freeSwitch float 0..4 8 bits
 //   9 kills u8   10 dead bit   11 killedBy u16
 //  12 stats (M4) kills u8, damageDealt u16, damageTaken u16, timeAlive u16 (integers, like the PlayerStats record)
@@ -23,7 +24,7 @@ export const BAG_ITEMS: readonly string[] = Object.keys(GameConfig.bagSizes);
 
 const SECTION_COUNT = 14;
 export const LOCAL_ALL_DIRTY = (1 << SECTION_COUNT) - 1;
-const ACTION_TYPES: readonly ActionType[] = ["none", "reload", "use"];
+const ACTION_TYPES: readonly ActionType[] = ["none", "reload", "use", "revive"];
 const STAT_BITS = 8;
 const TIME_BITS = 8;
 const COUNT_BITS = 9;
@@ -59,6 +60,7 @@ export function quantizeLocal(s: LocalPlayerState): LocalQuant {
             gameTypeId(action?.item ?? ""),
             quantize(action?.time ?? 0, 0, NetLimits.ActionMaxDuration, TIME_BITS),
             quantize(action?.duration ?? 0, 0, NetLimits.ActionMaxDuration, TIME_BITS),
+            clampUint(action?.targetId ?? 0, 16),
         ],
         cooldowns,
         [clampUint(s.kills ?? 0, 8)],
@@ -116,6 +118,7 @@ export function writeLocal(w: BitWriter, q: LocalQuant, mask: number): void {
         w.writeBits(a[1], 10);
         w.writeBits(a[2], TIME_BITS);
         w.writeBits(a[3], TIME_BITS);
+        w.writeBits(a[4], 16);
     }
     if (mask & 256) {
         const c = q[8];
@@ -152,7 +155,7 @@ export function emptyLocalState(): LocalPlayerState {
         helmet: "",
         chest: "",
         backpack: "",
-        action: { type: "none", item: "", time: 0, duration: 0 },
+        action: { type: "none", item: "", time: 0, duration: 0, targetId: 0 },
         cooldowns: { weapons: [], freeSwitch: 0 },
         kills: 0,
         dead: false,
@@ -197,7 +200,7 @@ export function readLocal(r: BitReader, s: LocalPlayerState): void {
         const item = gameTypeOf(r.readBits(10));
         const time = dequantize(r.readBits(TIME_BITS), 0, NetLimits.ActionMaxDuration, TIME_BITS);
         const duration = dequantize(r.readBits(TIME_BITS), 0, NetLimits.ActionMaxDuration, TIME_BITS);
-        s.action = { type, item, time, duration };
+        s.action = { type, item, time, duration, targetId: r.readBits(16) };
     }
     if (mask & 256) {
         const weapons: number[] = [];
@@ -227,5 +230,6 @@ export function cloneLocal(s: LocalPlayerState): LocalPlayerState {
         action: s.action ? { ...s.action } : undefined,
         cooldowns: s.cooldowns ? { weapons: [...s.cooldowns.weapons], freeSwitch: s.cooldowns.freeSwitch } : undefined,
         stats: s.stats ? { ...s.stats } : undefined,
+        team: s.team?.map((m) => ({ ...m, pos: { x: m.pos.x, y: m.pos.y } })),
     };
 }

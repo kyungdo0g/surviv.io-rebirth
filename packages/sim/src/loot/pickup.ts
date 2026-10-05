@@ -82,7 +82,8 @@ export function freeGunSlot(player: Player, type: string): GunSlotChoice {
  * Leftovers (bag overflow, swapped gear, refused items) go back on the ground behind the player.
  */
 export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupResult | null {
-    if (loot.destroyed || !hasDef(loot.type)) return null;
+    // downed players cannot pick anything up (survev pickupLoot; downed-revive.md "While downed")
+    if (loot.destroyed || player.downed || !hasDef(loot.type)) return null;
     const def = getDef(loot.type);
     if ((player.action.type === "use" && def.type !== "gun") || player.pickupTicker > 0) return null;
     player.pickupTicker = PICKUP_COOLDOWN;

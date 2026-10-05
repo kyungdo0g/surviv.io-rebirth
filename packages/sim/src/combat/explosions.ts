@@ -214,7 +214,8 @@ export class ExplosionSystem {
             obj.push(dir, damage * this.host.fxRng.range(LOOT_PUSH_MIN, LOOT_PUSH_MAX));
             return;
         }
-        // TODO(M6): teammates of the source take no damage (and potato explosions have teamDamage false)
+        // teammates of the source take no damage: the player damage pipeline drops teammate hits (potato explosions'
+        // teamDamage false is informational, explosions.md "Friendly fire and credit")
         // TODO(M8): spud gun shots enlarge and slow the target (survev incrementFat; fandom Spud_Gun)
         const params = {
             amount: obj.kind === "obstacle" ? damage * e.def.obstacleDamage : damage,

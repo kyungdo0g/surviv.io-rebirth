@@ -1,6 +1,7 @@
 // What the per-player systems (weapons, melee, pickups, drops) may touch: the world, the shared systems, the
 // seeded random streams and the damage entry points. `Game` implements it.
 import type { Rng } from "@rebirth/core";
+import type { GameOptions } from "../api.ts";
 import type { BulletSystem } from "../combat/bullets.ts";
 import type { DamageParams } from "../combat/damage.ts";
 import type { ExplosionSystem } from "../combat/explosions.ts";
@@ -15,6 +16,8 @@ import type { SmokeSystem } from "./smoke.ts";
 import type { World } from "./world.ts";
 
 export interface SimContext {
+    /** map name and team mode (M6a: bleed damage of the map, revives only in team modes) */
+    readonly options: GameOptions;
     readonly world: World;
     readonly rules: SimRules;
     /** spread, pellet jitter, bullet range jitter and headshot rolls */
@@ -44,6 +47,12 @@ export interface SimContext {
     damageObstacle(obstacle: Obstacle, params: DamageParams): void;
     /** Called by killPlayer once the victim is dead and kill credit given: kill feed, alive count, game over. */
     onPlayerKilled(victim: Player, params: DamageParams, credit: Player | undefined): void;
+    /** A player reached 0 HP: the team rules knock it down or kill it (M6a, match/teams.ts). */
+    onLethalDamage(target: Player, params: DamageParams): void;
+    /** Called by downPlayer once the victim is down: the Kill event with `downed` true (M6a). */
+    onPlayerDowned(victim: Player, params: DamageParams, source: Player | undefined): void;
+    /** An emote over `player` that is not a client request (the Mass Medicate medic's "emote_loot", M6a). */
+    addEmote(player: Player, type: string, itemType?: string): void;
     /** Registers an obstacle whose timers (opening crate, button cooldown, door delays, regrowth) run every tick. */
     activateObstacle(obstacle: Obstacle): void;
     /** A recorder was used: viewers in range get a RecorderEvent (M5b). */

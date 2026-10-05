@@ -1,16 +1,20 @@
 // Player state, per-tick update (actions, animations, movement, zoom, weapons), and its views.
-// Behaviour follows survev server/src/game/objects/player.ts (update, recalculateSpeed, doAction, zoom).
+// Behaviour follows survev server/src/game/objects/player.ts (update, recalculateSpeed, doAction, cancelAction, zoom);
+// downed players and revives (M6a) live in downed.ts.
 import { type Bounds, collider, math, type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, getDef, WeaponSlot } from "@rebirth/defs";
 import type { HitRecord } from "../combat/combat.ts";
 import { emptyInput, type PlayerInput } from "../input.ts";
 import { Inventory, type InventoryOwner, isBagItem, SCOPE_LEVELS, THROWABLE_LIST } from "../items/inventory.ts";
 import type { PickupResult } from "../loot/pickup.ts";
+import { updateEmoteThrottle } from "../match/emotes.ts";
+import type { Group } from "../match/teams.ts";
 import type { ActionType, AnimType, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
 import { gunDef, TIME_EPS, WeaponManager } from "../weapons/weaponManager.ts";
 import { handleActions } from "./actions.ts";
 import { completeUse, updateBoost, updateFabricate, useItem } from "./consumables.ts";
 import type { SimContext } from "./context.ts";
+import { applyKnockback, completeRevive, updateDowned } from "./downed.ts";
 import type { Building } from "./entities.ts";
 import { VISION_RECOVERY_TIME } from "./smoke.ts";
 import { updateSurroundings } from "./surroundings.ts";
@@ -26,6 +30,8 @@ const MAX_PENDING_ACTIONS = 32;
 const BUSY_SPEED_MULT = 0.5;
 /** Combat Medic speed bonus while using items when the player is not in a game (survev field_medic.speedBoost). */
 const FIELD_MEDIC_SPEED = 1;
+/** Action timers stop here (survev clamps to net.Constants.ActionMaxDuration 8.5 s). */
+const ACTION_MAX_TIME = 8.5;
 
 /** Number of collision sub-steps for one tick of movement (survev player.ts). */
 export function movementSteps(speed: number, dt: number): number {
@@ -33,7 +39,7 @@ export function movementSteps(speed: number, dt: number): number {
 }
 
 /** Internal action type; "reloadAlt" is the Mosin's full-clip reload and shows as "reload". */
-export type PlayerActionType = "none" | "reload" | "reloadAlt" | "use";
+export type PlayerActionType = "none" | "reload" | "reloadAlt" | "use" | "revive";
 
 export class Player implements InventoryOwner {
     readonly kind = "player";
@@ -97,7 +103,8 @@ export class Player implements InventoryOwner {
     animType: AnimType = "none";
     animSeq = 0;
     private animTicker = 0;
-    readonly action = { type: "none" as PlayerActionType, item: "", time: 0, duration: 0, seq: 0 };
+    /** `targetId`: the player a reviver revives (itself for a self revive), 0 otherwise (M6a) */
+    readonly action = { type: "none" as PlayerActionType, item: "", time: 0, duration: 0, seq: 0, targetId: 0 };
     shotSeq = 0;
     shotOffhand = false;
     wearingPan = false;
@@ -114,8 +121,30 @@ export class Player implements InventoryOwner {
     lastHit: HitRecord | null = null;
     lastPickup: { type: string; result: PickupResult } | null = null;
 
-    /** team id (solo: one per player, 1-255; the GameOver message's teamId) (M4) */
+    /** team id (solo: one per player, 1-255; the GameOver message's teamId) (M4); duo/squad: the group id (M6a) */
     teamId = 0;
+    /** group id (solo: the team id) and the group itself (M6a) */
+    groupId = 0;
+    group: Group | null = null;
+    /** times knocked down this match (bleed escalation) (M6a) */
+    downedCount = 0;
+    /** damage is ignored while this runs, right after a knock (M6a) */
+    downedDamageTicker = 0;
+    /** seconds until the next bleed tick (M6a) */
+    bleedTicker = 0;
+    /** id of the player who knocked this one down (kill credit), 0 for none (M6a) */
+    downedBy = 0;
+    /** knock-back velocity of a fresh knock (M6a) */
+    knockback: Vec2 = { x: 0, y: 0 };
+    /** the player this one revives (itself for a self revive) / the player reviving this one (M6a) */
+    playerBeingRevived: Player | null = null;
+    revivedBy: Player | null = null;
+    /** emote throttle (survev emoteCounter / emoteSoftTicker / emoteHardTicker) (M6a) */
+    emoteCounter = 0;
+    emoteSoftTicker = 0;
+    emoteHardTicker = 0;
+    /** emote wheel (slots 0-3), win and death emotes (GameConfig.defaultEmoteLoadout; no loadouts yet) */
+    readonly emoteLoadout: string[] = [...GameConfig.defaultEmoteLoadout];
     /** seconds alive (match stats, start condition) */
     timeAlive = 0;
     /** seconds in the gas since entering it, counted from rules.gasDamageRampFromCircle (escalation rule) */
@@ -192,22 +221,45 @@ export class Player implements InventoryOwner {
         if (this.pendingActions.length < MAX_PENDING_ACTIONS) this.pendingActions.push(...input.actions);
     }
 
-    doAction(item: string, type: PlayerActionType, duration: number): void {
+    doAction(item: string, type: PlayerActionType, duration: number, targetId = 0): void {
         // an action already in progress is not replaced (survev doAction)
         if (this.action.type !== "none") return;
         this.action.type = type;
         this.action.item = item;
         this.action.time = 0;
         this.action.duration = duration;
+        this.action.targetId = targetId;
         this.action.seq++;
     }
 
+    /** Cancels the running action; a revive is cancelled on both sides (survev cancelAction). */
     cancelAction(): void {
         if (this.action.type === "none") return;
+        const revived = this.playerBeingRevived;
+        if (revived) {
+            this.playerBeingRevived = null;
+            if (revived === this.revivedBy) {
+                this.revivedBy = null;
+            } else {
+                revived.revivedBy = null;
+                revived.cancelAction();
+                this.cancelAnim();
+            }
+        }
+        const reviver = this.revivedBy;
+        if (reviver) {
+            this.revivedBy = null;
+            if (reviver.playerBeingRevived) {
+                reviver.playerBeingRevived = null;
+                reviver.cancelAction();
+                reviver.cancelAnim();
+            }
+        }
         this.action.type = "none";
         this.action.item = "";
         this.action.time = 0;
         this.action.duration = 0;
+        this.action.targetId = 0;
         this.action.seq++;
     }
 
@@ -254,19 +306,31 @@ export class Player implements InventoryOwner {
         }
     }
 
-    /** Move speed for this tick (survev recalculateSpeed; docs/research/mechanics/movement.md). */
+    /**
+     * Move speed for this tick (survev recalculateSpeed; docs/research/mechanics/movement.md). Downed players crawl at
+     * downedMoveSpeed, 2 while being revived or self reviving, without the melee equip bonus (rules.downedEquipBonus);
+     * a reviver moves at half its normal speed (rules.reviverSpeed; conflicts.md reviver-speed).
+     */
     computeSpeed(world: World): number {
-        let speed = this.downed ? PLAYER.downedMoveSpeed : PLAYER.moveSpeed;
+        const rules = this.ctx?.rules;
+        const reviving = this.action.type === "revive";
+        const reviver = reviving && this.action.targetId !== 0 && !(this.downed && this.hasPerk("self_revive"));
+        const survevReviver = reviver && rules?.reviverSpeed === "survev";
+        let speed = PLAYER.moveSpeed;
+        if (survevReviver) speed = PLAYER.downedMoveSpeed + 2;
+        else if (this.downed) speed = reviving ? PLAYER.downedRezMoveSpeed : PLAYER.downedMoveSpeed;
         const def = getDef(this.activeWeapon || "fists") as { speed?: { equip?: number; attack?: number } };
         // the equip bonus is lost while a melee hit is pending
-        if (this.weaponManager.meleeAttacks.length === 0) speed += def.speed?.equip ?? 0;
+        const equip = !this.downed || (rules?.downedEquipBonus ?? false);
+        if (equip && this.weaponManager.meleeAttacks.length === 0) speed += def.speed?.equip ?? 0;
         if (this.shotSlowdownTimer > 0 && def.speed?.attack !== undefined) speed += def.speed.attack;
         if (world.isOnWater(this.pos, this.layer)) speed -= PLAYER.waterSpeedPenalty;
         if (this.boost >= 50) speed += PLAYER.boostMoveSpeed;
         if (this.animType === "cook") speed -= PLAYER.cookSpeedPenalty;
         // Combat Medic: no slowdown while using items, a small bonus instead
         const medic = this.hasPerk("field_medic") && this.action.type === "use";
-        if (this.shotSlowdownTimer > 0 || (this.action.type === "use" && !medic)) speed *= BUSY_SPEED_MULT;
+        const busy = this.action.type === "use" && !medic;
+        if (this.shotSlowdownTimer > 0 || busy || (reviver && !survevReviver)) speed *= BUSY_SPEED_MULT;
         if (medic) speed += this.ctx?.rules.fieldMedicSpeedBonus ?? FIELD_MEDIC_SPEED;
         return math.clamp(speed, 1, 10000);
     }
@@ -309,13 +373,19 @@ export class Player implements InventoryOwner {
         // boost heals and decays before the action and movement (survev player.ts update)
         updateBoost(this, ctx.rules, dt);
         updateFabricate(this, ctx.rules, dt);
-        this.updateAction(dt);
+        // revive range, damage buffer, bleeding (may kill), emote throttle (M6a)
+        updateDowned(ctx, this, dt);
+        if (this.dead) return;
+        updateEmoteThrottle(this, dt);
+        this.updateAction(ctx, dt);
         if (this.animType !== "none") {
             this.animTicker -= dt;
             if (this.animTicker <= TIME_EPS) this.cancelAnim();
         }
 
         this.posOld = v2.copy(this.pos);
+        const slide = applyKnockback(this, dt);
+        if (slide) this.pos = v2.add(this.pos, slide);
         const movement = Player.movementFromInput(input);
         const moving = movement.x !== 0 || movement.y !== 0;
         this.speed = moving ? this.computeSpeed(world) : 0;
@@ -329,22 +399,29 @@ export class Player implements InventoryOwner {
         this.bounds = this.computeBounds();
         world.updateBounds(this);
 
-        this.weaponManager.update(ctx, dt);
+        // a downed player's weapons do nothing, cooldowns included (survev weaponManager.update)
+        if (!this.downed) this.weaponManager.update(ctx, dt);
         this.shotSlowdownTimer = Math.max(0, this.shotSlowdownTimer - dt);
         this.shootStart = false;
     }
 
     /** Advances the running action; a finished shell reload chains the next shell in the same tick. */
-    private updateAction(dt: number): void {
+    private updateAction(ctx: SimContext, dt: number): void {
         const action = this.action;
         if (action.type === "none") return;
-        action.time += dt;
+        action.time = Math.min(action.time + dt, ACTION_MAX_TIME);
         if (action.time < action.duration - TIME_EPS) return;
+        if (action.type === "revive") {
+            // only the reviver's side completes a revive; the downed side waits for it (survev update)
+            if (this.playerBeingRevived) completeRevive(ctx, this);
+            if (!this.revivedBy || this.playerBeingRevived === this.revivedBy) this.cancelAction();
+            return;
+        }
         const carry = Math.max(0, action.time - action.duration);
         const wm = this.weaponManager;
         let again = false;
         if (this.isReloading()) again = wm.reload();
-        else if (action.type === "use") completeUse(this, action.item);
+        else if (action.type === "use") completeUse(this, action.item, ctx);
         this.cancelAction();
         if (again && wm.tryReload(carry)) return;
         const slot = wm.curWeapIdx;
@@ -453,6 +530,7 @@ export class Player implements InventoryOwner {
                 item: this.action.item,
                 time: this.action.time,
                 duration: this.action.duration,
+                targetId: this.action.targetId,
             },
             cooldowns: {
                 weapons: wm.weapons.map((w) => Math.max(0, w.cooldown)),

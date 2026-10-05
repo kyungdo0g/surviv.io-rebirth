@@ -42,6 +42,14 @@ export interface ServerConfig {
     minPlayers: number;
     /** a game is closed (its clients disconnected) this long after a winner was decided (survev: 1.8 s) */
     gameOverGraceMs: number;
+    /** party lobby sockets per IP (survev teamMenu: 5) */
+    partyMaxConnectionsPerIp: number;
+    /** party lobby messages per second per socket (survev: 50) */
+    partyMaxMsgsPerSecond: number;
+    /** time a party socket may take to create or join a room (survev: 5 s) */
+    partyJoinTimeoutMs: number;
+    /** party members silent for this long are dropped (survev: 8 minutes; clients keepAlive every 45 s) */
+    partyIdleMs: number;
 }
 
 const DEFAULT_CLIENT_DIST = fileURLToPath(new URL("../../client/dist", import.meta.url));
@@ -75,6 +83,14 @@ const EnvSchema = z.object({
     DEBUG_SPAWN_TOGETHER: bool.default(false),
     MIN_PLAYERS: z.coerce.number().int().min(1).max(255).default(2),
     GAME_OVER_GRACE_MS: z.coerce.number().int().min(0).default(1800),
+    PARTY_MAX_CONNECTIONS_PER_IP: z.coerce.number().int().min(1).default(5),
+    PARTY_MAX_MSGS_PER_SECOND: z.coerce.number().int().min(1).default(50),
+    PARTY_JOIN_TIMEOUT_MS: z.coerce.number().int().min(1).default(5000),
+    PARTY_IDLE_MS: z.coerce
+        .number()
+        .int()
+        .min(1000)
+        .default(8 * 60 * 1000),
 });
 
 /** Validated configuration; throws an Error listing every invalid variable. */
@@ -106,6 +122,10 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         debugSpawnTogether: e.DEBUG_SPAWN_TOGETHER,
         minPlayers: e.MIN_PLAYERS,
         gameOverGraceMs: e.GAME_OVER_GRACE_MS,
+        partyMaxConnectionsPerIp: e.PARTY_MAX_CONNECTIONS_PER_IP,
+        partyMaxMsgsPerSecond: e.PARTY_MAX_MSGS_PER_SECOND,
+        partyJoinTimeoutMs: e.PARTY_JOIN_TIMEOUT_MS,
+        partyIdleMs: e.PARTY_IDLE_MS,
     };
 }
 
