@@ -11,7 +11,8 @@
   "refs": [
    "balance/6",
    "survev/shared/defs/gameObjects/bulletDefs.ts:67",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:49"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:49",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -26,7 +27,8 @@
   "refs": [
    "balance/7",
    "survev/shared/defs/gameObjects/bulletDefs.ts:71",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:53"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:53",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -41,7 +43,8 @@
   "refs": [
    "balance/10",
    "survev/shared/defs/gameObjects/bulletDefs.ts:299",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:274"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:274",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -56,7 +59,8 @@
   "refs": [
    "balance/10",
    "survev/shared/defs/gameObjects/bulletDefs.ts:312",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:287"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:287",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -71,7 +75,8 @@
   "refs": [
    "balance/13",
    "survev/shared/defs/gameObjects/gunDefs.ts:2177",
-   "derived/git-9f64948d:src/defs/gunDefs.js:1987"
+   "derived/git-9f64948d:src/defs/gunDefs.js:1987",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -86,7 +91,8 @@
   "refs": [
    "balance/13",
    "survev/shared/defs/gameObjects/gunDefs.ts:2278",
-   "derived/git-9f64948d:src/defs/gunDefs.js:2090"
+   "derived/git-9f64948d:src/defs/gunDefs.js:2090",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -101,7 +107,8 @@
   "refs": [
    "balance/16",
    "survev/shared/defs/gameObjects/gunDefs.ts:2178",
-   "derived/git-9f64948d:src/defs/gunDefs.js:1988"
+   "derived/git-9f64948d:src/defs/gunDefs.js:1988",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -116,7 +123,8 @@
   "refs": [
    "balance/16",
    "survev/shared/defs/gameObjects/gunDefs.ts:2279",
-   "derived/git-9f64948d:src/defs/gunDefs.js:2091"
+   "derived/git-9f64948d:src/defs/gunDefs.js:2091",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -131,7 +139,8 @@
   "refs": [
    "balance/19",
    "survev/shared/defs/gameObjects/bulletDefs.ts:299",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:274"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:274",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -146,7 +155,8 @@
   "refs": [
    "balance/22",
    "survev/shared/defs/gameObjects/gunDefs.ts:2227",
-   "derived/git-9f64948d:src/defs/gunDefs.js:2038"
+   "derived/git-9f64948d:src/defs/gunDefs.js:2038",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -161,7 +171,8 @@
   "refs": [
    "balance/25",
    "survev/shared/defs/gameObjects/gunDefs.ts:2228",
-   "derived/git-9f64948d:src/defs/gunDefs.js:2039"
+   "derived/git-9f64948d:src/defs/gunDefs.js:2039",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -176,7 +187,8 @@
   "refs": [
    "balance/28",
    "survev/shared/defs/gameObjects/bulletDefs.ts:391",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:366"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:366",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -191,7 +203,8 @@
   "refs": [
    "balance/29",
    "survev/shared/defs/gameObjects/gunDefs.ts:2925",
-   "derived/git-9f64948d:src/defs/gunDefs.js:2743"
+   "derived/git-9f64948d:src/defs/gunDefs.js:2743",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -206,7 +219,8 @@
   "refs": [
    "balance/30",
    "survev/shared/defs/gameObjects/gunDefs.ts:2926",
-   "derived/git-9f64948d:src/defs/gunDefs.js:2744"
+   "derived/git-9f64948d:src/defs/gunDefs.js:2744",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -221,7 +235,8 @@
   "refs": [
    "balance/33",
    "survev/shared/defs/gameObjects/bulletDefs.ts:391",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:366"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:366",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -236,7 +251,8 @@
   "refs": [
    "balance/34",
    "survev/shared/defs/gameObjects/gunDefs.ts:2975",
-   "derived/git-9f64948d:src/defs/gunDefs.js:2793"
+   "derived/git-9f64948d:src/defs/gunDefs.js:2793",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -251,7 +267,8 @@
   "refs": [
    "balance/35",
    "survev/shared/defs/gameObjects/gunDefs.ts:2976",
-   "derived/git-9f64948d:src/defs/gunDefs.js:2794"
+   "derived/git-9f64948d:src/defs/gunDefs.js:2794",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -266,7 +283,8 @@
   "refs": [
    "balance/38",
    "survev/shared/defs/gameObjects/gunDefs.ts:385",
-   "derived/git-9f64948d:src/defs/gunDefs.js:294"
+   "derived/git-9f64948d:src/defs/gunDefs.js:294",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -281,7 +299,8 @@
   "refs": [
    "balance/39",
    "survev/shared/defs/gameObjects/bulletDefs.ts:548",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:484"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:484",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -296,7 +315,8 @@
   "refs": [
    "balance/42",
    "survev/shared/defs/gameObjects/bulletDefs.ts:552",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:488"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:488",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -311,7 +331,8 @@
   "refs": [
    "balance/43",
    "survev/shared/defs/gameObjects/bulletDefs.ts:550",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:486"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:486",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -326,7 +347,8 @@
   "refs": [
    "balance/44",
    "survev/shared/defs/gameObjects/gunDefs.ts:404",
-   "derived/git-9f64948d:src/defs/gunDefs.js:314"
+   "derived/git-9f64948d:src/defs/gunDefs.js:314",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -341,7 +363,8 @@
   "refs": [
    "balance/49",
    "survev/shared/defs/gameObjects/bulletDefs.ts:667",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:590"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:590",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -356,7 +379,8 @@
   "refs": [
    "balance/50",
    "survev/shared/defs/gameObjects/gunDefs.ts:597",
-   "derived/git-9f64948d:src/defs/gunDefs.js:507"
+   "derived/git-9f64948d:src/defs/gunDefs.js:507",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -371,7 +395,8 @@
   "refs": [
    "balance/55",
    "survev/shared/defs/gameObjects/bulletDefs.ts:187",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:169"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:169",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -386,7 +411,8 @@
   "refs": [
    "balance/56",
    "survev/shared/defs/gameObjects/gunDefs.ts:1641",
-   "derived/git-9f64948d:src/defs/gunDefs.js:1501"
+   "derived/git-9f64948d:src/defs/gunDefs.js:1501",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -401,7 +427,8 @@
   "refs": [
    "balance/61",
    "survev/shared/defs/gameObjects/bulletDefs.ts:200",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:182"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:182",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -416,7 +443,8 @@
   "refs": [
    "balance/62",
    "survev/shared/defs/gameObjects/gunDefs.ts:1688",
-   "derived/git-9f64948d:src/defs/gunDefs.js:1548"
+   "derived/git-9f64948d:src/defs/gunDefs.js:1548",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -431,7 +459,8 @@
   "refs": [
    "balance/67",
    "survev/shared/defs/gameObjects/bulletDefs.ts:680",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:603"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:603",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -446,7 +475,8 @@
   "refs": [
    "balance/70",
    "survev/shared/defs/gameObjects/gunDefs.ts:644",
-   "derived/git-9f64948d:src/defs/gunDefs.js:554"
+   "derived/git-9f64948d:src/defs/gunDefs.js:554",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -461,7 +491,8 @@
   "refs": [
    "balance/75",
    "survev/shared/defs/gameObjects/bulletDefs.ts:417",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:392"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:392",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -476,7 +507,8 @@
   "refs": [
    "balance/76",
    "survev/shared/defs/gameObjects/gunDefs.ts:1386",
-   "derived/git-9f64948d:src/defs/gunDefs.js:1246"
+   "derived/git-9f64948d:src/defs/gunDefs.js:1246",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -491,7 +523,8 @@
   "refs": [
    "balance/81",
    "survev/shared/defs/gameObjects/bulletDefs.ts:173",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:155"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:155",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -506,7 +539,8 @@
   "refs": [
    "balance/82",
    "survev/shared/defs/gameObjects/gunDefs.ts:940",
-   "derived/git-9f64948d:src/defs/gunDefs.js:847"
+   "derived/git-9f64948d:src/defs/gunDefs.js:847",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -521,7 +555,8 @@
   "refs": [
    "balance/85",
    "survev/shared/defs/gameObjects/bulletDefs.ts:213",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:195"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:195",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -536,7 +571,8 @@
   "refs": [
    "balance/86",
    "survev/shared/defs/gameObjects/gunDefs.ts:1732",
-   "derived/git-9f64948d:src/defs/gunDefs.js:1592"
+   "derived/git-9f64948d:src/defs/gunDefs.js:1592",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -551,7 +587,8 @@
   "refs": [
    "balance/87",
    "survev/shared/defs/gameObjects/bulletDefs.ts:217",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:199"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:199",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -566,7 +603,8 @@
   "refs": [
    "balance/88",
    "survev/shared/defs/gameObjects/bulletDefs.ts:216",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:198"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:198",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -581,7 +619,8 @@
   "refs": [
    "balance/89",
    "survev/shared/defs/gameObjects/bulletDefs.ts:215",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:197"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:197",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -596,7 +635,8 @@
   "refs": [
    "balance/90",
    "survev/shared/defs/gameObjects/gunDefs.ts:1735",
-   "derived/git-9f64948d:src/defs/gunDefs.js:1595"
+   "derived/git-9f64948d:src/defs/gunDefs.js:1595",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -611,7 +651,8 @@
   "refs": [
    "balance/93",
    "survev/shared/defs/gameObjects/gunDefs.ts:1540",
-   "derived/git-9f64948d:src/defs/gunDefs.js:1400"
+   "derived/git-9f64948d:src/defs/gunDefs.js:1400",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -644,7 +685,8 @@
    "balance/99",
    "survev/shared/defs/gameObjects/gunDefs.ts:2082",
    "derived/git-9f64948d:src/defs/gunDefs.js:1892",
-   "survev/client/src/en.json:629"
+   "survev/client/src/en.json:629",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -659,7 +701,8 @@
   "refs": [
    "balance/103",
    "survev/shared/defs/gameObjects/gunDefs.ts:1488",
-   "derived/git-9f64948d:src/defs/gunDefs.js:1348"
+   "derived/git-9f64948d:src/defs/gunDefs.js:1348",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -674,7 +717,8 @@
   "refs": [
    "balance/106",
    "survev/shared/defs/gameObjects/gunDefs.ts:1018",
-   "derived/git-9f64948d:src/defs/gunDefs.js:925"
+   "derived/git-9f64948d:src/defs/gunDefs.js:925",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -689,7 +733,8 @@
   "refs": [
    "balance/109",
    "survev/shared/defs/gameObjects/gunDefs.ts:2512",
-   "derived/git-9f64948d:src/defs/gunDefs.js:2328"
+   "derived/git-9f64948d:src/defs/gunDefs.js:2328",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -704,7 +749,8 @@
   "refs": [
    "balance/112",
    "survev/shared/defs/gameObjects/gunDefs.ts:206",
-   "derived/git-9f64948d:src/defs/gunDefs.js:112"
+   "derived/git-9f64948d:src/defs/gunDefs.js:112",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -719,7 +765,8 @@
   "refs": [
    "balance/113",
    "survev/shared/defs/gameObjects/bulletDefs.ts:495",
-   "derived/git-9f64948d:src/defs/bulletDefs.js:431"
+   "derived/git-9f64948d:src/defs/bulletDefs.js:431",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -734,7 +781,8 @@
   "refs": [
    "balance/114",
    "survev/shared/defs/gameObjects/gunDefs.ts:205",
-   "derived/git-9f64948d:src/defs/gunDefs.js:111"
+   "derived/git-9f64948d:src/defs/gunDefs.js:111",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -749,7 +797,8 @@
   "refs": [
    "balance/117",
    "survev/shared/defs/gameObjects/gunDefs.ts:444",
-   "derived/git-9f64948d:src/defs/gunDefs.js:354"
+   "derived/git-9f64948d:src/defs/gunDefs.js:354",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -764,7 +813,8 @@
   "refs": [
    "balance/120",
    "survev/shared/defs/gameObjects/explosionsDefs.ts:143",
-   "derived/git-9f64948d:src/defs/explosionsDefs.js:112"
+   "derived/git-9f64948d:src/defs/explosionsDefs.js:112",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -779,7 +829,8 @@
   "refs": [
    "balance/121",
    "survev/shared/defs/gameObjects/throwableDefs.ts:443",
-   "derived/git-9f64948d:src/defs/throwableDefs.js:370"
+   "derived/git-9f64948d:src/defs/throwableDefs.js:370",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -794,7 +845,8 @@
   "refs": [
    "balance/124",
    "survev/shared/defs/gameObjects/explosionsDefs.ts:156",
-   "derived/git-9f64948d:src/defs/explosionsDefs.js:122"
+   "derived/git-9f64948d:src/defs/explosionsDefs.js:122",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -824,7 +876,8 @@
   "refs": [
    "balance/126",
    "survev/shared/defs/gameObjects/throwableDefs.ts:508",
-   "derived/git-9f64948d:src/defs/throwableDefs.js:435"
+   "derived/git-9f64948d:src/defs/throwableDefs.js:435",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -839,7 +892,8 @@
   "refs": [
    "balance/129",
    "survev/shared/defs/gameObjects/explosionsDefs.ts:169",
-   "derived/git-9f64948d:src/defs/explosionsDefs.js:132"
+   "derived/git-9f64948d:src/defs/explosionsDefs.js:132",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -854,7 +908,8 @@
   "refs": [
    "balance/132",
    "survev/shared/defs/gameObjects/explosionsDefs.ts:183",
-   "derived/git-9f64948d:src/defs/explosionsDefs.js:143"
+   "derived/git-9f64948d:src/defs/explosionsDefs.js:143",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -910,12 +965,13 @@
   "originalValue": "absent",
   "line": 146,
   "confidence": "H",
-  "note": "\"Added bar to normal loot tables\" (fork 0.1.2); BAR was originally woods-only",
+  "note": "\"Added bar to normal loot tables\" (fork 0.1.2); BAR was not normal-map loot in v0.8.82 (added to the normal map in 0.6.31, removed in 0.7.9)",
   "refs": [
    "balance/146",
    "survev/shared/defs/maps/baseDefs.ts:262",
    "derived/git-ae55c9a8",
-   "derived/git-ae55c9a8"
+   "changelog/0.6.31",
+   "changelog/0.7.9"
   ],
   "maps": [
    "main",
@@ -1082,7 +1138,8 @@
    "balance/159",
    "survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1241",
    "survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:1193",
-   "derived/git-919b1cc2"
+   "derived/git-919b1cc2",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -1100,7 +1157,8 @@
    "balance/162",
    "survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:956",
    "survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:914",
-   "derived/git-919b1cc2"
+   "derived/git-919b1cc2",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -1118,7 +1176,8 @@
    "balance/165",
    "survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:486",
    "survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:458",
-   "derived/git-919b1cc2"
+   "derived/git-919b1cc2",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -1334,13 +1393,17 @@
   "target": "PerkProperties.final_bugle",
   "field": "bonusDamageMult/effectRange/hasteDuration/scaleOnDeath",
   "forkValue": "bonusDamageMult 1.08, effectRange 60, hasteDuration 5, scaleOnDeath 0.2",
-  "originalValue": "unknown (balance.txt only says \"adjusted (overall buff)\")",
+  "originalValue": "survev before the fork change (ae55c9a8): effectRange 60, haste 5 s, scale +0.2 for 5 s, damage x1.08 via saturated bullets (ammoBonusDamageMult) - numerically identical to HEAD; fandom and wiki.gg give +20% size, +4.8 speed and +8% damage for 6 s",
   "line": 178,
   "confidence": "L",
-  "note": "Last Breath (id final_bugle); no pre-change values found in survev history",
+  "note": "Last Breath (id final_bugle); no numeric difference between survev's pre-0.1.2 code and HEAD, so balance.txt's \"overall buff\" cannot be located; the 5 s vs 6 s duration is open",
   "refs": [
    "balance/178",
-   "survev/shared/defs/gameObjects/perkDefs.ts:48"
+   "survev/shared/defs/gameObjects/perkDefs.ts:48",
+   "derived/git-ae55c9a8:server/src/game/objects/player.ts:4341",
+   "derived/git-ae55c9a8:server/src/game/weaponManager.ts:570",
+   "fandom/Last_Breath",
+   "wikigg/Last_Breath"
   ]
  },
  {
@@ -2251,7 +2314,8 @@
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:396",
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:405",
    "derived/git-06d5d5a6",
-   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:8941"
+   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:8941",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -3106,7 +3170,8 @@
    "balance/252",
    "survev/shared/gameConfig.ts:421",
    "derived/git-9f64948d:src/gameConfig.ts:266",
-   "derived/git-a252477e"
+   "derived/git-a252477e",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -3450,7 +3515,8 @@
    "balance/268",
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:749",
    "derived/git-764f9638",
-   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9273"
+   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9273",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -3470,7 +3536,8 @@
    "balance/274",
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:821",
    "derived/git-764f9638",
-   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9300"
+   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9300",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4182,7 +4249,8 @@
   "refs": [
    "balance/293",
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1299",
-   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9662"
+   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9662",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4214,7 +4282,8 @@
   "refs": [
    "balance/295",
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1378",
-   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9734"
+   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9734",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4292,7 +4361,8 @@
   "refs": [
    "balance/303",
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1265",
-   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9628"
+   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9628",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4307,7 +4377,8 @@
   "refs": [
    "balance/304",
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1296",
-   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9657"
+   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9657",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4322,7 +4393,8 @@
   "refs": [
    "balance/305",
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1298",
-   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9657"
+   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9657",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4337,7 +4409,8 @@
   "refs": [
    "balance/306",
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1307",
-   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9672"
+   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9672",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4352,7 +4425,8 @@
   "refs": [
    "balance/307",
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1309",
-   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9672"
+   "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9672",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4638,7 +4712,8 @@
    "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1285",
    "survev/shared/defs/maps/baseDefs.ts:540",
    "derived/git-ae55c9a8:shared/defs/mapObjectDefs.ts:9650",
-   "derived/git-8562702c"
+   "derived/git-8562702c",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4683,7 +4758,8 @@
   "refs": [
    "balance/326",
    "survev/shared/defs/gameObjects/meleeDefs.ts:1001",
-   "derived/git-9f64948d:src/defs/meleeDefs.js:871"
+   "derived/git-9f64948d:src/defs/meleeDefs.js:871",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4698,7 +4774,8 @@
   "refs": [
    "balance/326",
    "survev/shared/defs/gameObjects/meleeDefs.ts:1010",
-   "derived/git-9f64948d:src/defs/meleeDefs.js:881"
+   "derived/git-9f64948d:src/defs/meleeDefs.js:881",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4713,7 +4790,8 @@
   "refs": [
    "balance/326",
    "survev/shared/defs/gameObjects/meleeDefs.ts:1396",
-   "derived/git-9f64948d:src/defs/meleeDefs.js:1201"
+   "derived/git-9f64948d:src/defs/meleeDefs.js:1201",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4728,7 +4806,8 @@
   "refs": [
    "balance/326",
    "survev/shared/defs/gameObjects/meleeDefs.ts:1396",
-   "derived/git-9f64948d:src/defs/meleeDefs.js:1201"
+   "derived/git-9f64948d:src/defs/meleeDefs.js:1201",
+   "kong/relaunch-client-defs"
   ]
  },
  {
@@ -4819,11 +4898,13 @@
   "forkValue": "1.2 / 1.2",
   "originalValue": "1.25 / 1.25",
   "line": 335,
-  "confidence": "M",
-  "note": "original from balance.txt; survev hard-coded the old 1.25 before moving it to PerkProperties",
+  "confidence": "H",
+  "note": "the original client's ten bullet_*_bonus bullets are exactly 1.25x the speed and distance of their base bullets (e.g. bullet_mp5 85/100 -> bullet_mp5_bonus 106.25/125); survev hard-coded 1.25 before moving it to PerkProperties",
   "refs": [
    "balance/335",
    "survev/shared/defs/gameObjects/perkDefs.ts:130",
+   "derived/git-9f64948d:src/defs/bulletDefs.js:792",
+   "kong/relaunch-client-defs",
    "survev/client/public/changelogRec.html:73"
   ]
  },
@@ -5230,12 +5311,15 @@
   "forkValue": 0.2,
   "originalValue": 0.1,
   "line": 349,
-  "confidence": "H",
-  "note": "balance.txt calls this a rarity decrease; the weight doubled; survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
+  "confidence": "L",
+  "note": "balance.txt calls this a rarity decrease; the weight doubled (commit 9ae131c9); survev had no own Savannah loot table before 2025-08 (367a7b3d), and that first table listed sv98 twice in this tier (0.5 inherited from the base table plus 0.1) until 0a582469 (2026-01-16) removed the 0.5 copy, so the original is unverified",
   "refs": [
    "balance/349",
    "survev/shared/defs/maps/savannahDefs.ts:103",
-   "derived/git-b31fd75d"
+   "derived/git-b31fd75d",
+   "derived/git-9ae131c9",
+   "derived/git-367a7b3d",
+   "derived/git-0a582469"
   ],
   "balanceValue": "0.1 -> 0.2"
  },
@@ -5267,7 +5351,8 @@
   "refs": [
    "survev/shared/defs/gameObjects/gunDefs.ts:2215",
    "derived/git-9f64948d",
-   "survev/client/public/changelogRec.html:197"
+   "survev/client/public/changelogRec.html:197",
+   "kong/relaunch-client-defs"
   ],
   "unlisted": true
  },
@@ -5283,7 +5368,8 @@
   "refs": [
    "survev/shared/defs/gameObjects/gunDefs.ts:2367",
    "derived/git-9f64948d",
-   "survev/client/public/changelogRec.html:197"
+   "survev/client/public/changelogRec.html:197",
+   "kong/relaunch-client-defs"
   ],
   "unlisted": true
  },
@@ -5299,7 +5385,8 @@
   "refs": [
    "survev/shared/defs/gameObjects/gunDefs.ts:2466",
    "derived/git-9f64948d",
-   "survev/client/public/changelogRec.html:197"
+   "survev/client/public/changelogRec.html:197",
+   "kong/relaunch-client-defs"
   ],
   "unlisted": true
  },
@@ -5315,7 +5402,8 @@
   "refs": [
    "survev/shared/defs/gameObjects/gunDefs.ts:2664",
    "derived/git-9f64948d",
-   "survev/client/public/changelogRec.html:197"
+   "survev/client/public/changelogRec.html:197",
+   "kong/relaunch-client-defs"
   ],
   "unlisted": true
  },
@@ -5331,7 +5419,8 @@
   "refs": [
    "survev/shared/defs/gameObjects/gunDefs.ts:2862",
    "derived/git-9f64948d",
-   "survev/client/public/changelogRec.html:197"
+   "survev/client/public/changelogRec.html:197",
+   "kong/relaunch-client-defs"
   ],
   "unlisted": true
  },
@@ -5347,7 +5436,8 @@
   "refs": [
    "survev/shared/defs/gameObjects/gunDefs.ts:2963",
    "derived/git-9f64948d",
-   "survev/client/public/changelogRec.html:197"
+   "survev/client/public/changelogRec.html:197",
+   "kong/relaunch-client-defs"
   ],
   "unlisted": true
  },
@@ -5407,11 +5497,13 @@
   "originalValue": "bullet_<gun>_bonus bullets for 9mm Overpressure",
   "line": null,
   "confidence": "H",
-  "note": "survev commit 7d27e9f9 \"Remove 9mm Overpressure Artifact\"",
+  "note": "the bonus bullet defs were deleted in 2462d0b9 (2026-01-27, \"High-Velocity Rounds + Speed/Distance Refactor\"); the guns' leftover bulletTypeBonus fields went in 7d27e9f9 (\"Remove 9mm Overpressure Artifact\")",
   "refs": [
    "survev/shared/defs/gameObjects/perkDefs.ts:130",
    "derived/git-9f64948d:src/defs/gunDefs.js:24",
-   "derived/git-7d27e9f9"
+   "derived/git-2462d0b9",
+   "derived/git-7d27e9f9",
+   "kong/relaunch-client-defs"
   ],
   "unlisted": true
  },
@@ -5442,7 +5534,8 @@
   "refs": [
    "survev/shared/defs/gameObjects/throwableDefs.ts:367",
    "derived/git-9f64948d:src/defs/throwableDefs.js:296",
-   "survev/client/public/changelogRec.html:404"
+   "survev/client/public/changelogRec.html:404",
+   "kong/relaunch-client-defs"
   ],
   "unlisted": true
  },
@@ -5490,7 +5583,8 @@
    "survev/shared/gameConfig.ts:420",
    "derived/git-9f64948d:src/gameConfig.ts:265",
    "survev/client/public/changelogRec.html:61",
-   "survev/client/public/changelogRec.html:167"
+   "survev/client/public/changelogRec.html:167",
+   "kong/relaunch-client-defs"
   ],
   "unlisted": true
  },
@@ -10691,6 +10785,250 @@
    "derived/git-ae55c9a8",
    "survev/shared/defs/maps/baseDefs.ts:93"
   ],
+  "unlisted": true
+ },
+ {
+  "section": "roles",
+  "target": "healer.perks",
+  "field": "perks",
+  "forkValue": "field_medic, combat_stims",
+  "originalValue": "field_medic, windwalk",
+  "confidence": "H",
+  "note": "Medic class (Cobalt); windwalk -> self_revive (60e406c7, 2026-03-08, \"Placeholder Medic Nerf\") -> combat_stims (fork 0.3.0); Combat Stimulants is a fork perk",
+  "refs": [
+   "survev/shared/defs/gameObjects/roleDefs.ts:463",
+   "derived/git-9f64948d:src/defs/roleDefs.js:105",
+   "kong/relaunch-client-defs",
+   "derived/git-60e406c7",
+   "derived/git-28c4b09b",
+   "survev/client/public/changelogRec.html:234"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "roles",
+  "target": "demo.perks",
+  "field": "perks",
+  "forkValue": "amped_explosives, flak_jacket",
+  "originalValue": "fabricate, flak_jacket",
+  "confidence": "H",
+  "note": "Demo class (Cobalt); fork 0.3.0 \"The Demo class now receives Hyperfragmentation instead of Fabricate\"; Hyperfragmentation (amped_explosives) is a fork perk",
+  "refs": [
+   "survev/shared/defs/gameObjects/roleDefs.ts:531",
+   "derived/git-9f64948d:src/defs/roleDefs.js:153",
+   "kong/relaunch-client-defs",
+   "derived/git-daf9f39b",
+   "survev/client/public/changelogRec.html:235"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "roles",
+  "target": "faction.gameConfig.roles.timings",
+  "field": "promotion order",
+  "forkValue": "all roles in turn: leader, lieutenant, marksman, recon, grenadier, medic, bugler (waits 50-74 s)",
+  "originalValue": "leader, then ONE of lieutenant/marksman/recon/grenadier, then medic and bugler",
+  "confidence": "H",
+  "note": "fork 0.0.18 (4a45bce2) \"All role promotions will now be given out\"; survev's earlier code (a7a91a25) and fandom both describe the single random pick; the wait times are survev's own (42f052d8) and the originals are unknown",
+  "refs": [
+   "survev/shared/defs/maps/factionDefs.ts:194",
+   "survev/client/public/changelogRec.html:509",
+   "derived/git-4a45bce2",
+   "derived/git-a7a91a25",
+   "fandom/Lieutenant",
+   "fandom/50v50_Map"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "lootTables",
+  "target": "case_02.loot",
+  "field": "loot",
+  "forkValue": "deagle_dual x1 (preloaded)",
+  "originalValue": "deagle x1 + deagle x1",
+  "confidence": "H",
+  "note": "dual DEagle case; changed with the fork 0.1.2 preloaded-guns work (2c269832)",
+  "refs": [
+   "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:197",
+   "kong/relaunch-client-defs",
+   "derived/git-ae55c9a8",
+   "derived/git-2c269832"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "lootTables",
+  "target": "chest_01.loot",
+  "field": "loot",
+  "forkValue": "tier_chest x3-4 + tier_pirate_melee x1 + tier_pirate_outfits x1",
+  "originalValue": "tier_chest x3-4 + tier_pirate_melee x1 + outfitRoyalFortune x1",
+  "confidence": "H",
+  "note": "river chest; tier_pirate_outfits is a fork tier (Beach update, c061aba1)",
+  "refs": [
+   "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:319",
+   "kong/relaunch-client-defs",
+   "derived/git-ae55c9a8",
+   "derived/git-c061aba1"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "lootTables",
+  "target": "crate_03.loot",
+  "field": "loot",
+  "forkValue": "tier_throwables x2-4 + tier_fragtastic x1",
+  "originalValue": "tier_throwables x2-4",
+  "confidence": "H",
+  "note": "grenade crate; tier_fragtastic drops the post-0.8.82 Fragtastic outfit (65e4a091)",
+  "refs": [
+   "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:451",
+   "kong/relaunch-client-defs",
+   "derived/git-ae55c9a8",
+   "derived/git-65e4a091"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "lootTables",
+  "target": "crate_11sv.loot",
+  "field": "loot",
+  "forkValue": "backpack04_cloud x1 instead of tier_airdrop_armor x1",
+  "originalValue": "tier_airdrop_armor x1 (rest unchanged)",
+  "confidence": "H",
+  "note": "contents of the Savannah gold airdrop (airdrop_crate_02sv); Experimental Pack is fork 0.4.2 (24275240)",
+  "refs": [
+   "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:683",
+   "kong/relaunch-client-defs",
+   "derived/git-ae55c9a8",
+   "derived/git-24275240"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "lootTables",
+  "target": "mil_crate_03.loot",
+  "field": "loot",
+  "forkValue": "ots38_dual x1 + outfitSpetsnaz x1",
+  "originalValue": "ots38_dual x1",
+  "confidence": "H",
+  "note": "outfit added when pass items left the loot pools (6f847834)",
+  "refs": [
+   "survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1448",
+   "kong/relaunch-client-defs",
+   "derived/git-ae55c9a8",
+   "derived/git-6f847834"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "lootTables",
+  "target": "locker_03.loot",
+  "field": "loot",
+  "forkValue": "ak47 x1 + backpack02 x1 + tier_khaki_outfit x1",
+  "originalValue": "ak47 x1 + backpack02 x1",
+  "confidence": "H",
+  "note": "\"old outfits added to base loot pool\" (750b9445, 2025-10-21)",
+  "refs": [
+   "survev/shared/defs/mapObjects/obstacles/furnitureDefs.ts:951",
+   "kong/relaunch-client-defs",
+   "derived/git-ae55c9a8",
+   "derived/git-750b9445"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "lootTables",
+  "target": "squash_01.loot",
+  "field": "loot",
+  "forkValue": "turkey_shoot x1 + tier_world x0-1",
+  "originalValue": "turkey_shoot x1 + tier_fruit_xp x1",
+  "confidence": "H",
+  "note": "survev comments out tier_fruit_xp (\"TODO: enable with artifacts\", fc6f5412)",
+  "refs": [
+   "survev/shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:775",
+   "kong/relaunch-client-defs",
+   "derived/git-ae55c9a8",
+   "derived/git-fc6f5412"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "stats",
+  "target": "bugle.barrelOffset",
+  "field": "barrelOffset",
+  "forkValue": 0.16,
+  "originalValue": 0,
+  "confidence": "H",
+  "note": "cosmetic muzzle position; part of survev's barrel-length pass (c24527e0)",
+  "refs": [
+   "survev/shared/defs/gameObjects/gunDefs.ts:3602",
+   "derived/git-9f64948d",
+   "kong/relaunch-client-defs",
+   "derived/git-c24527e0"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "other",
+  "target": "GameConfig.player.downedDamageBuffer",
+  "field": "downedDamageBuffer",
+  "forkValue": "0.1 s of damage immunity after being knocked",
+  "originalValue": "none (survev added 1 s in fork 0.0.18, cut to 0.1 s in fork 0.0.19)",
+  "confidence": "M",
+  "note": "server rule; only survev's changelog documents it",
+  "refs": [
+   "survev/shared/gameConfig.ts:209",
+   "derived/git-ad3d7ca7",
+   "survev/client/public/changelogRec.html:510",
+   "survev/client/public/changelogRec.html:501"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "other",
+  "target": "leader flare auto-fire",
+  "field": "flareTimer",
+  "forkValue": "Commander's flare gun fires itself 15 s after promotion",
+  "originalValue": "manual only",
+  "confidence": "M",
+  "note": "fork 0.1.2 \"Commanders now fire their flare gun automatically after 15 seconds\" (b0937ce7)",
+  "refs": [
+   "survev/server/src/game/objects/player.ts:887",
+   "survev/client/public/changelogRec.html:436",
+   "derived/git-b0937ce7"
+  ],
+  "line": null,
+  "unlisted": true
+ },
+ {
+  "section": "lootTables",
+  "target": "lootTable.tier_airdrop_uncommon[sv98] (duplicate)",
+  "field": "weight",
+  "forkValue": "absent",
+  "originalValue": "0.5",
+  "maps": [
+   "savannah"
+  ],
+  "confidence": "L",
+  "note": "survev's first Savannah table (367a7b3d) listed sv98 twice in this tier (0.5 from the base table and 0.1); 0a582469 (\"fix: duplicated item on loot table\") removed the 0.5 copy",
+  "refs": [
+   "survev/shared/defs/maps/savannahDefs.ts:103",
+   "derived/git-367a7b3d",
+   "derived/git-0a582469"
+  ],
+  "line": null,
   "unlisted": true
  }
 ]

@@ -2087,7 +2087,10 @@
   "name": "Bugle",
   "defRef": "shared/defs/gameObjects/gunDefs.ts:3582",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-ffcd8993"
+  ]
  },
  "bugler": {
   "status": "original",
@@ -3311,7 +3314,10 @@
   ],
   "defRef": "shared/defs/mapObjects/buildings/bunkerDefs.ts:7282",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-f0107b35"
+  ]
  },
  "bunker_twins_compartment_01": {
   "status": "original",
@@ -3321,7 +3327,10 @@
   ],
   "defRef": "shared/defs/mapObjects/buildings/bunkerDefs.ts:7685",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-f0107b35"
+  ]
  },
  "bunker_twins_stairs_01": {
   "status": "original",
@@ -3341,7 +3350,10 @@
   ],
   "defRef": "shared/defs/mapObjects/buildings/bunkerDefs.ts:7348",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-f0107b35"
+  ]
  },
  "bush_01": {
   "status": "original",
@@ -4116,7 +4128,10 @@
   ],
   "defRef": "shared/defs/mapObjects/obstacles/crateDefs.ts:195",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-2c269832"
+  ]
  },
  "case_03": {
   "status": "original",
@@ -4326,7 +4341,10 @@
   ],
   "defRef": "shared/defs/mapObjects/obstacles/crateDefs.ts:315",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-c061aba1"
+  ]
  },
  "chest_01cb": {
   "status": "original",
@@ -4832,7 +4850,10 @@
   "name": "Dual Peacemaker",
   "defRef": "shared/defs/gameObjects/gunDefs.ts:2855",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "survev/client/public/changelogRec.html:197"
+  ]
  },
  "combat_stims": {
   "status": "fork",
@@ -5696,7 +5717,10 @@
   ],
   "defRef": "shared/defs/mapObjects/obstacles/crateDefs.ts:448",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-65e4a091"
+  ]
  },
  "crate_03x": {
   "status": "original",
@@ -5870,7 +5894,10 @@
   ],
   "defRef": "shared/defs/mapObjects/obstacles/crateDefs.ts:678",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-24275240"
+  ]
  },
  "crate_11tr": {
   "status": "original",
@@ -6914,7 +6941,11 @@
   "name": "Demo",
   "defRef": "shared/defs/gameObjects/roleDefs.ts:523",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-daf9f39b",
+   "survev/client/public/changelogRec.html:235"
+  ]
  },
  "deposit_box_01": {
   "status": "original",
@@ -6982,7 +7013,11 @@
   ],
   "defRef": "shared/defs/mapObjects/buildings/modeBuildingDefs.ts:5601",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "balance/317",
+   "derived/git-94bf1f97"
+  ]
  },
  "dock_01": {
   "status": "original",
@@ -9479,7 +9514,21 @@
   "name": "50v50",
   "defRef": "shared/defs/maps/factionDefs.ts:1",
   "firstSeen": "0b3851a1 2023-12-31",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "balance/260",
+   "balance/261",
+   "balance/263",
+   "balance/270",
+   "balance/278",
+   "balance/279",
+   "balance/280",
+   "balance/281",
+   "balance/282",
+   "balance/283",
+   "balance/329",
+   "survev/client/public/changelogRec.html:509"
+  ]
  },
  "faction_potato": {
   "status": "fork",
@@ -9756,7 +9805,10 @@
   "name": "Dual G18C",
   "defRef": "shared/defs/gameObjects/gunDefs.ts:2459",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "survev/client/public/changelogRec.html:197"
+  ]
  },
  "gotw": {
   "status": "original",
@@ -10104,7 +10156,12 @@
   "name": "Medic",
   "defRef": "shared/defs/gameObjects/roleDefs.ts:453",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-60e406c7",
+   "derived/git-28c4b09b",
+   "survev/client/public/changelogRec.html:234"
+  ]
  },
  "healthkit": {
   "status": "original",
@@ -11220,7 +11277,10 @@
   ],
   "defRef": "shared/defs/mapObjects/obstacles/furnitureDefs.ts:946",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-750b9445"
+  ]
  },
  "logging_complex_01": {
   "status": "original",
@@ -11830,7 +11890,10 @@
   "name": "Dual M93R",
   "defRef": "shared/defs/gameObjects/gunDefs.ts:2358",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "survev/client/public/changelogRec.html:197"
+  ]
  },
  "m9_cursed": {
   "status": "original",
@@ -13002,7 +13065,10 @@
   ],
   "defRef": "shared/defs/mapObjects/obstacles/crateDefs.ts:1445",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-6f847834"
+  ]
  },
  "mil_crate_04": {
   "status": "original",
@@ -13197,7 +13263,10 @@
   "name": "Dual OT-38",
   "defRef": "shared/defs/gameObjects/gunDefs.ts:2657",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "survev/client/public/changelogRec.html:197"
+  ]
  },
  "ots38": {
   "status": "original",
@@ -13655,7 +13724,7 @@
   "status": "original",
   "kind": "outfit",
   "evidence": [
-   "Original tree costume (renamed): same def as the original outfitTree (obstacleType tree_07), renamed by survev; outfitTree was removed in aeb229b5 [src:survev/shared/defs/gameObjects/outfitDefs.ts:1357] [src:derived/git-9f64948d:src/defs/outfitDefs.js:914]",
+   "Original tree costume (renamed): same def as the original outfitTree (\"Tree Costume\", obstacleType tree_07); survev renamed outfitTree to outfitHalloweenTree in 929cee54 (2025-04-01) [src:survev/shared/defs/gameObjects/outfitDefs.ts:1357] [src:derived/git-9f64948d:src/defs/outfitDefs.js:914] [src:kong/relaunch-client-defs]",
    "first appears in survev commit 929cee54 (2025-04-01) \"feat: eggs on potato spring\" [src:survev/shared/defs/gameObjects/outfitDefs.ts:1357] [src:derived/git-929cee54]"
   ],
   "name": "Barkskin",
@@ -15753,7 +15822,7 @@
   "status": "original",
   "kind": "quest",
   "evidence": [
-   "Top 8 in Duos quest: missing from the v0.8.82 client questDefs, but fandom records its removal in a March 2020 update, so it existed in the target era; survev says it \"Added back\" the quest [src:fandom/Changelog] [src:survev/client/public/changelogRec.html:170]",
+   "Top 8 in Duos quest: missing from the v0.8.82 client questDefs (survev import and the 2026 relaunch client list 24 quests), but fandom records its removal in the 0.9.2 update (2020-03-09), so it existed in the target era; survev says it \"Added back\" the quest [src:fandom/Changelog] [src:survev/client/public/changelogRec.html:170] [src:kong/relaunch-client-defs]",
    "first appears in survev commit 2b6d1265 (2026-07-15) \"feat: add back top in duos quest\" [src:survev/shared/defs/gameObjects/questDefs.ts:139] [src:derived/git-2b6d1265]"
   ],
   "defRef": "shared/defs/gameObjects/questDefs.ts:139",
@@ -17321,7 +17390,10 @@
   ],
   "defRef": "shared/defs/mapObjects/obstacles/mapObstacleDefs.ts:763",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "derived/git-fc6f5412"
+  ]
  },
  "squash_02": {
   "status": "fork",
@@ -17891,7 +17963,10 @@
   "name": "Strobe",
   "defRef": "shared/defs/gameObjects/throwableDefs.ts:357",
   "firstSeen": "9f64948d 2023-12-11",
-  "confidence": "H"
+  "confidence": "H",
+  "forkModified": [
+   "survev/client/public/changelogRec.html:404"
+  ]
  },
  "sv98": {
   "status": "original",

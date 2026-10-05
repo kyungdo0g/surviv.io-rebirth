@@ -41,7 +41,7 @@
 
 | field | main / main_spring / main_summer | src |
 |---|---|---|
-| baseWidth × baseHeight | 512 × 512 | [src:survev/shared/defs/maps/baseDefs.ts:814-815, derived/survev@9f64948d:src/defs/modes/main.ts:66-67] [H] |
+| baseWidth × baseHeight | 512 × 512 | [src:survev/shared/defs/maps/baseDefs.ts:814-815, derived/survev@9f64948d:src/defs/modes/main.ts:65-66] [H] |
 | scale small (solo, duo) / large (squad) | 1.1875 / 1.28125 | [src:survev/shared/defs/maps/baseDefs.ts:816] [H] |
 | extension | 112 | [src:survev/shared/defs/maps/baseDefs.ts:817] [H] |
 | resulting size | 720 × 720 (solo/duo), 768 × 768 (squad) = width·scale + extension | [src:survev/server/src/game/map.ts:283-287, derived/512x1.1875+112] [H] |
@@ -68,7 +68,7 @@
 | Fowl Forest | 0.73, 0.47 | – | [src:survev/shared/defs/maps/baseDefs.ts:864-867] [H] |
 | Ranchito Pollo | 0.53, 0.25 | "chicken farm" in Spanish | [src:survev/shared/defs/maps/baseDefs.ts:868-871, fandom/Maps] [H] |
 
-- The same 8 places are in survev's first-commit main def, so they are not a fork addition [src:derived/survev@9f64948d:src/defs/modes/main.ts:90-123] [H]
+- The same 8 places are in survev's first-commit main def, so they are not a fork addition [src:derived/survev@9f64948d:src/defs/modes/main.ts:89-123] [H]
 - survev.wiki.gg lists only 7 of them (no Todesfelde) [src:wikigg/Classic_mode] [M]
 
 ## Biome and colours
