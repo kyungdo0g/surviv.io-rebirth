@@ -41,7 +41,7 @@
 | 15 | Waiting | 15 | 0 | 22 | 7 | 0 | 0 | 0 | 0 | [src:survev/server/src/game/objects/gas.ts:105-110] [src:fandom/Red_Zone] [H] |
 | 16 | Moving | 15 | 0 | 22 | 7 | 0 | 0 | 0 | 0 | [src:survev/server/src/game/objects/gas.ts:111-116] [src:fandom/Red_Zone] [H] |
 
-- Fandom's "Area Left" column (100 %, 64 %, 31 %, 14 %, 6 %, 1.8 %, 0.6 %, 0.15 %, 0 %) equals π·fraction² for survev's fractions, an independent check of the radius table [src:fandom/Red_Zone] [src:derived/pi-r2-of-GasStages-fractions] [H]
+- Fandom's "Area Left" column (100 %, 64 %, 31 %, 14 %, 6 %, 1.8 %, 0.6 %, 0.15 %, 0 %) is shifted one step: step N lists the area at the start of step N, which equals π·fraction² of survev's previous circle (step 0 = 100 %), an independent check of the radius table [src:fandom/Red_Zone] [src:derived/pi-r2-of-GasStages-fractions] [H]
 - Fandom numbers the circles as steps 0–8 (eight closing steps, then step 8 with 0 s and 22 damage) [src:fandom/Red_Zone] [M]
 - Fandom itself notes "the damage values have no real confirmation" [src:fandom/Red_Zone] [M]
 
@@ -91,7 +91,7 @@
 - A global ticker sets `doDamage` once every 2 s, so every player in gas takes damage on the same tick. The ticker runs from game creation, so the first tick after start lands on the global 2 s grid [src:survev/server/src/game/objects/gas.ts:248-254] [M]
 - On a damage tick a player in gas takes `stage.damage` with `DamageType.Gas` [src:survev/server/src/game/objects/player.ts:1648-1663] [src:fandom/Red_Zone] [H]
 - Gas (and bleeding) damage skips headshots, armor, Flak Jacket and Steelskin reduction [src:survev/server/src/game/objects/player.ts:2454-2457] [src:fandom/Flak_Jacket] [src:fandom/Perks] [H]
-- Flak Jacket and Cast Ironskin briefly reduced red-zone and air-drop damage as a bug in v0.8.8. This was fixed on December 4, 2019, so it is not present in 0.8.82 [src:fandom/Flak_Jacket] [src:fandom/Cast_Ironskin] [M]
+- Flak Jacket and Cast Ironskin reduced red-zone and air-drop damage as a bug in v0.8.8 (Dec 2, 2019). The December 4, 2019 fix only says they "no longer reduce damage from Red Zone", so the red-zone part is absent in 0.8.82; both pages' trivia still say the perks survive air-drop crushing (see `airdrop-airstrike.md`) [src:fandom/Flak_Jacket] [src:fandom/Cast_Ironskin] [M]
 - Gas damage applies to downed players too, on top of bleeding. A downed player killed while bleeding is reported as "finally bled out" [src:survev/server/src/game/objects/player.ts:1648-1669] [src:l10n/en:game-finally-bled-out] [src:fandom/Red_Zone] [M]
 - Kill feed text for gas deaths: "<player> died outside the safe zone" (`game-died-outside`), with "The red zone" (`game-the-red-zone`) as the killer name for knock-outs [src:l10n/en:game-died-outside] [src:l10n/en:game-the-red-zone] [src:fandom/Kill_Counter] [H]
 - Building heal regions (e.g. steam rocks in the bathhouse sauna) do not heal a player who is in gas [src:survev/server/src/game/objects/player.ts:2144-2149] [src:fandom/Steam_Rock] [src:fandom/Crimson_Ring_Club] [H]
@@ -100,8 +100,8 @@
 ## Fork-only gas changes (do not port for 0.8.82)
 
 - (fork) Escalation, added 2026-04-04 (survev commit `4e195a72`): while `circleIdx > 2` (from circle 3, t ≥ 4:30), `timeInsideGas` accumulates. Each tick deals `damage × (1 + 0.025 × timeInsideGas)`, and leaving the gas resets the timer. Example: 20 s inside gives ×1.5 [src:survev/server/src/game/objects/player.ts:1648-1669] [src:derived/survev-git-4e195a72] [src:wikigg/50v50_mode] [H]
-- (fork) Disconnected players take a flat 22 per tick wherever the zone is, added 2026-03-23 (`a39e9ea8`). wiki.gg describes it as intentional [src:survev/server/src/game/objects/player.ts:1654] [src:derived/survev-git-a39e9ea8] [src:wikigg/Red_Zone] [H]
-- (fork) A player downed while `currentRad ≤ 0.1` (final circle) is downed with 50 HP instead of 100, added 2025-04-20 (`042e29c7`) to stop infinite Revivify revives [src:survev/server/src/game/objects/player.ts:2590-2592] [src:derived/survev-git-042e29c7] [M]
+- (fork) Disconnected players standing in gas take 22 per tick regardless of the stage (still multiplied by the escalation factor), added 2026-03-23 (`a39e9ea8`). wiki.gg describes it as intentional [src:survev/server/src/game/objects/player.ts:1653-1661] [src:derived/survev-git-a39e9ea8] [src:wikigg/Red_Zone] [H]
+- (fork) A player downed while `currentRad ≤ 0.1` u (the zone has fully closed, i.e. at the very end of stage 16, not merely the last circle) is downed with 50 HP instead of 100, added 2025-04-20 (`042e29c7`, "down players with 50 health on last gas stage … fixes revivify infinite revive") [src:survev/server/src/game/objects/player.ts:2590-2592] [src:derived/survev-git-042e29c7] [M]
 - Fandom (documenting the original) says that after several revives "some other feature kicks in and being knocked by red zone makes you have less health", so the original had some anti-Revivify rule whose exact form is unknown [src:fandom/Revivify] [L]
 
 ## Per-mode overrides
@@ -136,7 +136,7 @@
 - CONFLICT gas-first-wait: first wait is 80 s (survev stage 1, fandom step 0) [src:survev/server/src/game/objects/gas.ts:21-26] [src:fandom/Red_Zone] vs "after 1 minute and 15 seconds the safe zone will start shrinking" [src:wikigg/Red_Zone]; proposed: keep 80 s; wiki.gg is loose prose [L]
 - CONFLICT gas-final-damage: final-circle damage 22 per 2 s [src:survev/server/src/game/objects/gas.ts:93-116] [src:fandom/Red_Zone] vs "24 damage every 2 seconds" in the late stages [src:fandom/Med_Kit]; proposed: 22 (two sources agree), configurable [L]
 - CONFLICT gas-vestigial-damage: early-circle damage 1.4 / 2.2 per tick [src:survev/server/src/game/objects/gas.ts:21-44] [src:fandom/Red_Zone] vs `damagePerTick` 0.012 / 0.02 (×100 = 1.2 / 2.0) in survev's first import [src:derived/survev@9f64948d:src/gameConfig.ts:87-101]; proposed: use the stage table; treat the old block as an earlier balance [L]
-- CONFLICT gas-revivify-final-circle: survev downs players at 50 HP once `currentRad ≤ 0.1` (fork fix) [src:survev/server/src/game/objects/player.ts:2590-2592] vs the original having some health penalty after multiple revives [src:fandom/Revivify] vs namu saying gas damage never exceeds 100 while reviving, allowing endless survival [src:namu/Surviv.io]; proposed: ship without the penalty for 0.8.82 fidelity but keep the 50 HP rule behind a flag [L]
+- CONFLICT gas-revivify-final-circle: survev downs players at 50 HP once `currentRad ≤ 0.1` u, i.e. after the zone has fully closed (fork fix) [src:survev/server/src/game/objects/player.ts:2590-2592] vs the original having some health penalty after multiple revives [src:fandom/Revivify] vs namu saying gas damage never exceeds 100 while reviving, allowing endless survival [src:namu/Surviv.io]; proposed: ship without the penalty for 0.8.82 fidelity but keep the 50 HP rule behind a flag [L]
 - CONFLICT gas-escalation: time-in-gas escalation and flat 22 for disconnected players exist in survev [src:survev/server/src/game/objects/player.ts:1648-1669] [src:wikigg/Red_Zone] vs both added in 2026 fork commits, with no trace in original sources [src:derived/survev-git-4e195a72] [src:derived/survev-git-a39e9ea8]; proposed: disable both for 0.8.82, keep as fork options [M]
 
 ## Open questions
