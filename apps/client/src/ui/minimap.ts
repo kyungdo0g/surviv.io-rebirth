@@ -20,7 +20,7 @@ import type { GasTracker } from "../fx/gas.ts";
 import { drawTerrain } from "../map/terrain.ts";
 import { buildingLocalBounds } from "../objects/building.ts";
 import type { Camera } from "../render/camera.ts";
-import { MapIndicators, MinimapGas } from "./mapMarkers.ts";
+import { MapIndicators, MinimapGas, type PingFields } from "./mapMarkers.ts";
 
 const MARGIN = 16;
 const SIZE = 256;
@@ -107,8 +107,8 @@ export class Minimap {
         this.clip.mask = this.mask;
     }
 
-    /** Applies a snapshot's map indicators; returns the ping defs that just appeared (for their sounds). */
-    applyIndicators(list: readonly MapIndicatorView[]): Array<{ sound?: string }> {
+    /** Applies a snapshot's map indicators; returns the pings that just appeared (sounds, edge indicators). */
+    applyIndicators(list: readonly MapIndicatorView[]): Array<{ def: PingFields; pos: Vec2 }> {
         return this.indicators.apply(list);
     }
 

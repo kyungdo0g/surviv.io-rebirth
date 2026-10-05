@@ -1,7 +1,6 @@
 /*
- * Battle-royale HUD and the stats screen, sized and coloured like the original desktop HUD (survev
- * client/css/game.css and app.css; docs/research/ui/hud.md). The HUD parts live in #ui-game (click-through except
- * [data-hud-click]); #ui-stats is its own full-screen layer.
+ * Battle-royale HUD (matchHud.ts), sized and coloured like the original desktop HUD (survev client/css/game.css
+ * and app.css; docs/research/ui/hud.md). The parts live in #ui-game (click-through except [data-hud-click]).
  */
 
 /* top right: alive counter, kill counter (big map only) */
@@ -348,8 +347,7 @@
     border-radius: 5px;
 }
 
-#ui-game .menu-option,
-#ui-stats .menu-option {
+#ui-game .menu-option {
     display: block;
     box-sizing: border-box;
     width: 100%;
@@ -372,8 +370,7 @@
     box-shadow: inset 0 -2px #387c79;
 }
 
-#ui-game .btn-darken:hover,
-#ui-stats .btn-darken:hover {
+#ui-game .btn-darken:hover {
     filter: brightness(80%);
     transition: all 0.25s ease;
 }
@@ -423,174 +420,4 @@
     inset: 0;
     opacity: 0;
     background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0) 45%, rgba(255, 0, 0, 0.55) 100%);
-}
-
-/* stats screen */
-#ui-stats {
-    position: fixed;
-    inset: 0;
-    z-index: 2;
-    color: #ffffff;
-    font-family: "Roboto Condensed", "Noto Sans KR", Arial, sans-serif;
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-#ui-stats-bg {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    background: rgba(0, 0, 0, 0.75);
-}
-
-#ui-stats-contents {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    transform: translateX(-50%);
-    text-align: center;
-    opacity: 0;
-}
-
-#ui-stats-contents-inner {
-    margin-top: 75px;
-}
-
-.ui-stats-header-title {
-    font-weight: bold;
-    font-size: 48px;
-    margin: 20px;
-    color: gold;
-}
-
-.ui-stats-header-overview {
-    display: inline;
-    margin: 10px;
-    font-size: 16px;
-}
-
-.ui-stats-header-overview div {
-    display: inline;
-    padding-bottom: 12px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.25);
-}
-
-.ui-stats-header-stat {
-    font-size: 24px;
-}
-
-.ui-stats-header-value {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-#ui-stats-info-box {
-    position: relative;
-    left: 50%;
-    margin: 50px auto 0;
-    height: 190px;
-    display: flex;
-}
-
-.ui-stats-info-player {
-    position: relative;
-    width: 250px;
-    background-color: rgba(0, 0, 0, 0.75);
-    border-radius: 4px;
-    border: 2px solid black;
-    transform: translateX(-50%);
-    z-index: 0;
-}
-
-.ui-stats-info-status::after {
-    content: "";
-    display: block;
-    position: absolute;
-    top: 15%;
-    left: 25%;
-    width: 100%;
-    height: 100%;
-    background-image: url(/assets/img/gui/skull.svg);
-    background-repeat: no-repeat;
-    background-size: 128px;
-    opacity: 0.1;
-    z-index: -1;
-}
-
-.ui-stats-info-player-name {
-    color: gold;
-    font-size: 24px;
-    font-weight: bold;
-    font-style: italic;
-    margin: 8px auto;
-    max-width: 240px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.ui-stats-info {
-    display: flex;
-    height: 36px;
-    margin: auto;
-}
-
-.ui-stats-info > div {
-    padding: 8px;
-    font-size: 18px;
-    line-height: 12px;
-    text-align: left;
-    font-weight: bold;
-}
-
-.ui-stats-info > div:first-child {
-    width: 55%;
-    margin-right: 4px;
-    text-align: right;
-    font-weight: normal;
-}
-
-#ui-stats-options {
-    position: absolute;
-    left: 50%;
-    margin-top: 20px;
-    min-height: 60px;
-    z-index: 1;
-}
-
-#ui-stats-options .menu-option {
-    pointer-events: auto;
-}
-
-.btn-green {
-    position: relative;
-    background: #83af50;
-    border-bottom: 2px solid #5b7a38;
-    box-shadow: inset 0 -2px #5b7a38;
-}
-
-#ui-stats .ui-stats-restart {
-    position: absolute;
-    left: -72px;
-    width: 200px;
-    margin: auto auto 20px;
-    transform: translateX(-50%);
-}
-
-#ui-stats .ui-stats-restart.ui-stats-restart-wide {
-    left: 0;
-    width: 225px;
-}
-
-#ui-stats .ui-stats-spectate {
-    position: absolute;
-    left: 102px;
-    width: 125px;
-    transform: translateX(-50%);
-    background: #50afab;
-    border-bottom: 2px solid #387c79;
-    box-shadow: inset 0 -2px #387c79;
 }

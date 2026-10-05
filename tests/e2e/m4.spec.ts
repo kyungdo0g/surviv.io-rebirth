@@ -50,13 +50,12 @@ test.describe("M4 red zone, air drops, kills and results", () => {
         // the minimap draws the zone, the next safe circle and the line to it; stand just outside the safe ring
         expect(await standAtEdge(page, "safe", 4)).toBe(true);
         await page.waitForTimeout(800);
+        // (the black zone is only drawn where the minimap window reaches outside the red circle)
         const mapGas = await page.evaluate(() => (window as any).__rebirth.minimap.gas);
-        expect(mapGas).toEqual({ zone: true, ring: true, line: true });
+        expect(mapGas).toMatchObject({ ring: true, line: true });
         const rect = await page.evaluate(() => (window as any).__rebirth.minimap.rect);
-        await page.screenshot({
-            path: `${SCREENS}/minimap-gas.png`,
-            clip: { x: 0, y: rect.y - 50, width: rect.x + rect.width + 16, height: rect.height + 66 },
-        });
+        const minimapClip = { x: 0, y: rect.y - 50, width: rect.x + rect.width + 16, height: rect.height + 66 };
+        await page.screenshot({ path: `${SCREENS}/minimap-safe-zone.png`, clip: minimapClip });
 
         // advancing: the announcement, the pulsing danger icon
         await page.waitForFunction(() => (window as any).__rebirth.gas.mode === "moving", null, { timeout: 20_000 });
@@ -71,8 +70,13 @@ test.describe("M4 red zone, air drops, kills and results", () => {
         // a player just outside the red zone takes the stage damage every 2 s
         expect(await standAtEdge(page, "gas", 3)).toBe(true);
         await page.waitForTimeout(600);
-        // the red overlay covers the screen outside the circle
+        // the red overlay covers the screen outside the circle, the minimap shows the zone in black
         expect(await page.evaluate(() => (window as any).__rebirth.gas.overlayVisible)).toBe(true);
+        expect(await page.evaluate(() => (window as any).__rebirth.minimap.gas)).toMatchObject({
+            zone: true,
+            line: true,
+        });
+        await page.screenshot({ path: `${SCREENS}/minimap-gas.png`, clip: minimapClip });
         await page.screenshot({ path: `${SCREENS}/gas-overlay.png` });
         const inGas = await page.evaluate(() => {
             const r = (window as any).__rebirth;
@@ -115,8 +119,9 @@ test.describe("M4 red zone, air drops, kills and results", () => {
         );
         await page.screenshot({ path: `${SCREENS}/plane-overhead.png` });
         await page.waitForFunction(() => (window as any).__rebirth.air.airdrops > 0, null, { timeout: 20_000 });
-        // the drop marker pulses on the minimap
+        // the drop marker pulses on the minimap; the screen-edge indicator runs (hidden while the drop is on screen)
         await page.waitForFunction(() => (window as any).__rebirth.minimap.indicators > 0, null, { timeout: 10_000 });
+        expect(await page.evaluate(() => (window as any).__rebirth.air.pingIndicator)).toBe(true);
         await page.waitForTimeout(2000);
         await page.screenshot({ path: `${SCREENS}/falling-crate.png` });
         // it lands (8 s fall) as the air drop obstacle; the falling sprite goes away
@@ -199,6 +204,31 @@ test.describe("M4 red zone, air drops, kills and results", () => {
         await expect(page.locator(".ui-player-kills")).toHaveText("1");
         await expect(page.locator("#ui-leaderboard-alive")).toHaveText("1");
         await page.screenshot({ path: `${SCREENS}/kill-feed.png` });
+        expect(errors).toEqual([]);
+    });
+
+    test("three kills make the local player kill leader", async ({ page }) => {
+        const errors = collectErrors(page);
+        await boot(page, "/?sandbox=1&map=main&seed=1&give=ak47&dummies=3&loot=0");
+        const ids = await page.evaluate(() => ({
+            me: (window as any).__rebirth.player.id as number,
+            dummies: (window as any).__rebirth.dummies as number[],
+        }));
+        for (const dummy of ids.dummies) await damage(page, dummy, 100, ids.me);
+        // GameConfig.player.killLeaderMinKills = 3: the role is announced in the feed in orange
+        await expect.poll(() => killFeed(page), { timeout: 10_000 }).toContain("player promoted to Kill Leader!");
+        await expect(page.locator("#ui-kill-leader-name")).toHaveText("player");
+        await expect(page.locator("#ui-kill-leader-count")).toHaveText("3");
+        await expect(page.locator("#ui-kill-count")).toHaveText("3 Kills");
+        const color = await page.evaluate(
+            () =>
+                [...document.querySelectorAll<HTMLElement>(".killfeed-text")].find((e) =>
+                    e.textContent?.includes("Kill Leader"),
+                )?.style.color,
+        );
+        expect(color).toBe("rgb(255, 132, 0)");
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: `${SCREENS}/kill-leader.png` });
         expect(errors).toEqual([]);
     });
 

@@ -49,8 +49,9 @@ export async function killFeed(page: Page): Promise<string[]> {
 
 /** Waits until the stats screen, buttons included, has faded in. */
 export async function waitForStats(page: Page): Promise<void> {
+    // the screen fades in from 2.5 s and its buttons appear about 6 s after the result (slow software GL: wait longer)
     await page.waitForFunction(() => (window as any).__rebirth.match.gameOver.settled === true, null, {
-        timeout: 30_000,
+        timeout: 60_000,
     });
     await expect(page.locator("#ui-stats")).toBeVisible();
 }

@@ -34,6 +34,7 @@ import { Renderer } from "../render/renderer.ts";
 import { DebugHud } from "../ui/debugHud.ts";
 import { Hud, type HudFrame } from "../ui/hud.ts";
 import { Minimap, uiScale } from "../ui/minimap.ts";
+import { PingIndicator } from "../ui/pingIndicator.ts";
 import { InteractionTracker, type Prompt } from "./interaction.ts";
 import { MatchUi } from "./match.ts";
 
@@ -69,6 +70,7 @@ export class GameClient {
     readonly effects: GameEffects;
     readonly gasOverlay = new GasShape(WORLD_GAS_COLOR);
     readonly interactions = new InteractionTracker();
+    readonly pingIndicator: PingIndicator;
     world: ObjectWorld | null = null;
     air: AirSystem | null = null;
     minimap: Minimap | null = null;
@@ -108,6 +110,8 @@ export class GameClient {
         this.hud = new DebugHud(!!opts.showDebugHud);
         this.debugZoom = opts.debugZoom;
         this.renderer.overlay.addChild(this.hud.container);
+        this.pingIndicator = new PingIndicator(textures);
+        this.renderer.overlay.addChild(this.pingIndicator.container);
         this.particles = new ParticleSystem(this.renderer, textures);
         this.bullets = new BulletSystem(this.renderer, textures, this.audio, this.particles);
         this.effects = new GameEffects(this.audio, this.particles, this.bullets);
@@ -204,7 +208,8 @@ export class GameClient {
         if (this.minimap && s.mapIndicators?.length) {
             for (const ping of this.minimap.applyIndicators(s.mapIndicators)) {
                 // map-event pings always play at full volume (survev emote.ts addPing)
-                this.audio.playSound(ping.sound, { channel: "ui" });
+                this.audio.playSound(ping.def.sound, { channel: "ui" });
+                if (ping.def.mapEvent) this.pingIndicator.show(ping.def, ping.pos);
             }
         }
         if (!this.local) this.effects.preloadWeapons(s.local);
@@ -241,7 +246,7 @@ export class GameClient {
         const dt = Math.min(ticker.deltaMS / 1000, 0.1);
         // DOM timers (kill feed, announcements, stats screen) follow the wall clock like the original's jQuery
         // animations, even when frames are slow
-        const uiDt = Math.min(ticker.deltaMS / 1000, 0.5);
+        const uiDt = Math.min(ticker.deltaMS / 1000, 1);
         const now = performance.now() / 1000;
         if (this.input.wasPressed(DebugHudBind)) this.hud.toggle();
         if (this.input.wasPressed(MuteBind)) this.audio.toggleMute();
@@ -286,6 +291,7 @@ export class GameClient {
         if (masks) this.renderer.setStairMasks(masks);
         this.renderer.update(dt);
         this.renderGas(now);
+        this.pingIndicator.update(uiDt, this.camera);
         this.minimap?.update(this.camera, this.visualPos, {
             dt: uiDt,
             gas: this.match.gas,
@@ -333,7 +339,7 @@ export class GameClient {
         this.minimap?.destroy();
         this.minimap = null;
         this.ui.destroy();
-        this.match.gameOver.root.remove();
+        this.match.dispose();
         this.renderer.destroy();
         if (this.ownsAudio) this.audio.destroy();
     }

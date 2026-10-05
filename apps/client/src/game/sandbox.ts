@@ -253,5 +253,9 @@ function exposeGlobals(
         get airdrops() {
             return client.air?.counts.airdrops ?? 0;
         },
+        /** the screen-edge air drop indicator is running */
+        get pingIndicator() {
+            return client.pingIndicator.active;
+        },
     };
 }

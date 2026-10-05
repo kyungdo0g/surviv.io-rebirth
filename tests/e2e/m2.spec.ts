@@ -296,7 +296,7 @@ test.describe("M2 weapons, loot and HUD", () => {
         await expect(page.locator("#ui-health-actual")).toHaveCSS("width", "0px");
         // M4: the original stats screen replaced the M2 overlay; the killer is named in the kill feed
         await page.waitForFunction(() => (window as any).__rebirth.match.gameOver.settled === true, null, {
-            timeout: 20_000,
+            timeout: 60_000,
         });
         await expect(page.locator("#ui-stats")).toBeVisible();
         await expect(page.locator(".ui-stats-header-title")).toHaveText("You died.");

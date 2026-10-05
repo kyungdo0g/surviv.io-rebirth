@@ -7,6 +7,7 @@
 import type { GameOverEvent, PlayerStatsView } from "@rebirth/sim";
 import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { t } from "../l10n/index.ts";
+import "./gameOver.css";
 import { humanizeTime } from "./matchHud.ts";
 
 const LOSS_DELAY = 2.5;
@@ -37,6 +38,8 @@ interface Timed {
     el: HTMLElement;
     /** seconds after the screen opened */
     at: number;
+    /** opacity written last */
+    shown: string;
 }
 
 function el(tag: string, id: string, cls = "", text = ""): HTMLElement {
@@ -59,6 +62,7 @@ export class GameOverScreen {
     private ticker = 0;
     private delay = LOSS_DELAY;
     private open = false;
+    private screenShown = "";
     /** the screen shows a win (tests) */
     won = false;
 
@@ -85,6 +89,7 @@ export class GameOverScreen {
         this.ticker = 0;
         this.open = true;
         this.timed = [];
+        this.screenShown = "";
         const title = won ? t("game-chicken") : `${t("game-You")} ${t("game-you-died")}.`;
         const overview = el("div", "", "ui-stats-header-overview");
         const rank = el("div", "");
@@ -113,9 +118,9 @@ export class GameOverScreen {
         }
         card.append(...rows);
         this.infoBox.replaceChildren(card);
-        this.timed.push({ el: card, at: this.delay + CARD_DELAY });
+        this.timed.push({ el: card, at: this.delay + CARD_DELAY, shown: "" });
         rows.forEach((r, i) => {
-            this.timed.push({ el: r, at: this.delay + CARD_DELAY + ELEM_FADE + i * ROW_DELAY });
+            this.timed.push({ el: r, at: this.delay + CARD_DELAY + ELEM_FADE + i * ROW_DELAY, shown: "" });
         });
 
         const buttons: HTMLElement[] = [];
@@ -139,11 +144,16 @@ export class GameOverScreen {
             this.timed.push({
                 el: b,
                 at: this.delay + CARD_DELAY + (elemIdx + i) * ROW_DELAY + BUTTON_EXTRA_DELAY,
+                shown: "",
             });
         });
-        for (const item of this.timed) item.el.style.opacity = "0";
+        for (const item of this.timed) {
+            item.el.style.opacity = "0";
+            item.el.style.pointerEvents = "none";
+        }
+        this.bg.style.opacity = "0";
+        this.contents.style.opacity = "0";
         this.root.style.display = "block";
-        this.update(0);
     }
 
     private button(cls: string, text: string, click: () => void): HTMLElement {
@@ -163,15 +173,20 @@ export class GameOverScreen {
     }
 
     update(dt: number): void {
-        if (!this.open) return;
+        if (!this.open || this.settled) return;
         this.ticker += dt;
-        const screen = Math.min(1, Math.max(0, (this.ticker - this.delay) / SCREEN_FADE));
-        this.bg.style.opacity = screen.toFixed(3);
-        this.contents.style.opacity = screen.toFixed(3);
-        this.bg.style.display = "block";
+        const screen = Math.min(1, Math.max(0, (this.ticker - this.delay) / SCREEN_FADE)).toFixed(3);
+        if (screen !== this.screenShown) {
+            this.screenShown = screen;
+            this.bg.style.opacity = screen;
+            this.contents.style.opacity = screen;
+        }
         for (const item of this.timed) {
             const o = Math.min(1, Math.max(0, (this.ticker - item.at) / ELEM_FADE));
-            item.el.style.opacity = o.toFixed(3);
+            const shown = o.toFixed(3);
+            if (shown === item.shown) continue;
+            item.shown = shown;
+            item.el.style.opacity = shown;
             item.el.style.pointerEvents = o > 0.1 ? "" : "none";
         }
     }

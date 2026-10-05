@@ -8,8 +8,15 @@
 // While spectating, snapshots follow the watched player (Snapshot.localPlayerId); the local id stays the one the
 // client joined with.
 import { GameObjectDefs, type RoleDef } from "@rebirth/defs";
-import type { KillEvent, PlayerInfoView, RoleAnnouncementEvent, Snapshot, SpectateActionName } from "@rebirth/sim";
-import type { AudioEngine } from "../audio/audio.ts";
+import type {
+    KillEvent,
+    MatchStats,
+    PlayerInfoView,
+    RoleAnnouncementEvent,
+    Snapshot,
+    SpectateActionName,
+} from "@rebirth/sim";
+import type { AudioEngine, SoundHandle } from "../audio/audio.ts";
 import { GasTracker } from "../fx/gas.ts";
 import { t } from "../l10n/index.ts";
 import { GameOverScreen } from "../ui/gameOver.ts";
@@ -51,6 +58,8 @@ export class MatchUi implements PlayerNames {
     private hideKillIn = -1;
     private lastHealth = -1;
     private lastActive = -1;
+    private statsKey = "";
+    private victoryMusic: SoundHandle | null = null;
 
     constructor(opts: MatchUiOptions) {
         this.opts = opts;
@@ -86,6 +95,9 @@ export class MatchUi implements PlayerNames {
         this.hideKillIn = -1;
         this.lastHealth = -1;
         this.lastActive = -1;
+        this.statsKey = "";
+        this.opts.audio.stop(this.victoryMusic);
+        this.victoryMusic = null;
         this.gas.clear();
         this.gameOver.hide();
         this.hud.setSpectating(null);
@@ -126,10 +138,18 @@ export class MatchUi implements PlayerNames {
         }
         if (!this.spectating && s.local.kills !== undefined) this.setLocalKills(s.local.kills);
         this.hud.setSpectatorCount(s.local.spectatorCount ?? 0);
-        if (s.local.stats && !this.spectating) this.hud.setLocalStats(s.local.stats);
+        if (s.local.stats && !this.spectating) this.setLocalStats(s.local.stats);
         if (s.gameOver) this.onGameOver(s);
         this.checkGasDamage(s, activePos);
         return activeChanged;
+    }
+
+    /** The "Your Results" table, rebuilt only when a number changed. */
+    private setLocalStats(stats: MatchStats): void {
+        const key = `${stats.kills}|${stats.damageDealt}|${stats.damageTaken}|${stats.timeAlive}`;
+        if (key === this.statsKey) return;
+        this.statsKey = key;
+        this.hud.setLocalStats(stats);
     }
 
     private setLocalKills(kills: number): void {
@@ -167,9 +187,7 @@ export class MatchUi implements PlayerNames {
         if (!ev || this.resultSeen) return;
         this.resultSeen = true;
         const stats = ev.playerStats.find((p) => p.playerId === this.localId) ?? ev.playerStats[0] ?? null;
-        if (stats) {
-            this.hud.setLocalStats(stats);
-        }
+        if (stats) this.setLocalStats(stats);
         this.gameOver.show({
             event: ev,
             name: this.name(this.localId) || "",
@@ -178,7 +196,12 @@ export class MatchUi implements PlayerNames {
         });
         const won = ev.winningTeamId !== 0 && ev.winningTeamId === ev.teamId;
         this.hideKillIn = (won ? 1.75 : 2.5) - KILL_MESSAGE_HIDE_LEAD;
-        if (won) this.opts.audio.playSound(VICTORY_MUSIC, { channel: "music", delay: VICTORY_MUSIC_DELAY_MS });
+        if (won) {
+            this.victoryMusic = this.opts.audio.playSound(VICTORY_MUSIC, {
+                channel: "music",
+                delay: VICTORY_MUSIC_DELAY_MS,
+            });
+        }
     }
 
     /** Rebirth addition: flash when the followed player's health dropped while standing in the red zone. */
@@ -192,6 +215,13 @@ export class MatchUi implements PlayerNames {
         const circle = this.gas.circle(1);
         if (!this.gas.active || !circle || !(this.gas.view && this.gas.view.damage > 0)) return;
         if (Math.hypot(pos.x - circle.pos.x, pos.y - circle.pos.y) >= circle.rad) this.hud.flashGas();
+    }
+
+    /** The game is torn down: stop what keeps playing (the victory music) and drop the stats layer. */
+    dispose(): void {
+        this.opts.audio.stop(this.victoryMusic);
+        this.victoryMusic = null;
+        this.gameOver.root.remove();
     }
 
     /** Per frame: timers, animations and the spectate keys (Left / Right arrows, survev game.ts). */

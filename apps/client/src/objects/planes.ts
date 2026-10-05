@@ -23,6 +23,8 @@ const PLANE_ELEVATE_MULT = 1.25;
 const PLANE_ALPHA = 0.75;
 const PLANE_ALPHA_MULT = 0.75;
 const PLANE_ELEVATE_TIME = 2;
+/** a plane that left the view before its drop is forgotten after this long (s) */
+const PLANE_UNSEEN_TIME = 2;
 /** the client snaps a plane to the server position once they drift this far apart */
 const PLANE_RECONCILE_DIST = 8;
 const PLANE_Z_ORD = 1501;
@@ -48,6 +50,8 @@ interface PlaneState {
     sound: SoundHandle | null;
     soundThrottle: number;
     seen: boolean;
+    /** seconds since the plane was last in a snapshot */
+    unseen: number;
 }
 
 interface AirdropState {
@@ -121,14 +125,15 @@ export class AirSystem {
                 this.planes.set(data.id, p);
             }
             p.seen = true;
+            p.unseen = 0;
             p.actionComplete = data.actionComplete;
             if (Math.hypot(p.pos.x - data.pos.x, p.pos.y - data.pos.y) > PLANE_RECONCILE_DIST) {
                 p.pos = { x: data.pos.x, y: data.pos.y };
             }
         }
-        // a plane that left the view is freed once fully elevated (survev Plane.m_free)
+        // a plane that left the view is freed once fully elevated (survev Plane.m_free), or after a while
         for (const p of [...this.planes.values()]) {
-            if (!p.seen && p.elevateTime >= PLANE_ELEVATE_TIME) this.freePlane(p);
+            if (!p.seen && (p.elevateTime >= PLANE_ELEVATE_TIME || p.unseen > PLANE_UNSEEN_TIME)) this.freePlane(p);
         }
 
         for (const a of this.airdrops.values()) a.seen = false;
@@ -165,6 +170,7 @@ export class AirSystem {
             sound: null,
             soundThrottle: 0,
             seen: true,
+            unseen: 0,
         };
     }
 
@@ -210,6 +216,7 @@ export class AirSystem {
     private updatePlane(p: PlaneState, f: AirFrame, layer: number): void {
         const config = planeConfig(p.type);
         const audio = this.deps.audio;
+        p.unseen += f.dt;
         p.pos = { x: p.pos.x + p.dir.x * f.dt * config.planeVel, y: p.pos.y + p.dir.y * f.dt * config.planeVel };
         let rangeMult = config.soundRangeMult;
         if (p.actionComplete) {

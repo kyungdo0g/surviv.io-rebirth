@@ -9,6 +9,8 @@ import { Mesh, MeshGeometry, type Shader, Texture } from "pixi.js";
 
 /** the annulus reaches this many pixels past the farthest corner of the covered area */
 const OUTER_MARGIN = 16;
+/** width in pixels of the fade at the circle's edge (the original's edge is aliased: antialias is off) */
+const FEATHER = 1.5;
 /** segments of the hole (survev gas.ts) */
 const SEGMENTS = 512;
 /** in-world gas colour and alpha (survev game.ts new Gas -> GasRenderer(0xff0000), alpha 0.6) */
@@ -16,6 +18,23 @@ export const WORLD_GAS_COLOR = 0xff0000;
 /** minimap gas colour (survev ui.ts new GasRenderer(canvasMode, 0x000000)) */
 export const MAP_GAS_COLOR = 0x000000;
 const GAS_ALPHA = 0.6;
+
+let edgeTex: Texture | null = null;
+
+/** 2x1 texture, transparent then white: sampled linearly between the texel centres it gives the edge fade. */
+function edgeTexture(): Texture {
+    if (edgeTex) return edgeTex;
+    const canvas = document.createElement("canvas");
+    canvas.width = 2;
+    canvas.height = 1;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(1, 0, 1, 1);
+    }
+    edgeTex = Texture.from(canvas);
+    return edgeTex;
+}
 
 export interface Circle {
     pos: Vec2;
@@ -109,19 +128,18 @@ export class GasShape {
             this.unit[i * 2] = Math.sin(theta);
             this.unit[i * 2 + 1] = Math.cos(theta);
         }
-        // vertex 2i: inner ring, 2i + 1: outer ring; one quad per segment
-        const indices = new Uint32Array(SEGMENTS * 6);
+        // vertex 3i: the circle, 3i + 1: FEATHER px further out, 3i + 2: past the covered area; the band between the
+        // first two rings fades in (anti-aliased edge), the rest is solid
+        const indices = new Uint32Array(SEGMENTS * 12);
+        const uvs = new Float32Array(SEGMENTS * 6);
         for (let i = 0; i < SEGMENTS; i++) {
-            const a = i * 2;
-            const b = ((i + 1) % SEGMENTS) * 2;
-            indices.set([a, a + 1, b, b, a + 1, b + 1], i * 6);
+            const a = i * 3;
+            const b = ((i + 1) % SEGMENTS) * 3;
+            indices.set([a, a + 1, b, b, a + 1, b + 1, a + 1, a + 2, b + 1, b + 1, a + 2, b + 2], i * 12);
+            uvs.set([0.25, 0.5, 0.75, 0.5, 0.75, 0.5], i * 6);
         }
-        this.geometry = new MeshGeometry({
-            positions: new Float32Array(SEGMENTS * 4),
-            uvs: new Float32Array(SEGMENTS * 4),
-            indices,
-        });
-        this.display = new Mesh({ geometry: this.geometry, texture: Texture.WHITE });
+        this.geometry = new MeshGeometry({ positions: new Float32Array(SEGMENTS * 6), uvs, indices });
+        this.display = new Mesh({ geometry: this.geometry, texture: edgeTexture() });
         this.display.label = "gas";
         this.display.tint = color;
         this.display.alpha = GAS_ALPHA;
@@ -143,14 +161,18 @@ export class GasShape {
             this.display.visible = false;
             return;
         }
+        const feather = Math.min(inner + FEATHER, outer);
         const positions = this.geometry.positions;
         for (let i = 0; i < SEGMENTS; i++) {
             const ux = this.unit[i * 2];
             const uy = this.unit[i * 2 + 1];
-            positions[i * 4] = pos.x + ux * inner;
-            positions[i * 4 + 1] = pos.y + uy * inner;
-            positions[i * 4 + 2] = pos.x + ux * outer;
-            positions[i * 4 + 3] = pos.y + uy * outer;
+            const k = i * 6;
+            positions[k] = pos.x + ux * inner;
+            positions[k + 1] = pos.y + uy * inner;
+            positions[k + 2] = pos.x + ux * feather;
+            positions[k + 3] = pos.y + uy * feather;
+            positions[k + 4] = pos.x + ux * outer;
+            positions[k + 5] = pos.y + uy * outer;
         }
         this.geometry.getBuffer("aPosition").update();
         this.display.visible = true;
