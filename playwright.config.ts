@@ -17,10 +17,19 @@ export default defineConfig({
             ],
         },
     },
-    webServer: {
-        command: "pnpm --filter @rebirth/client dev",
-        url: "http://127.0.0.1:5173",
-        reuseExistingServer: true,
-        timeout: 60_000,
-    },
+    webServer: [
+        {
+            command: "pnpm --filter @rebirth/client dev",
+            url: "http://127.0.0.1:5173",
+            reuseExistingServer: true,
+            timeout: 60_000,
+        },
+        {
+            command: "node apps/server/src/index.ts",
+            url: "http://127.0.0.1:8001/health",
+            reuseExistingServer: true,
+            timeout: 60_000,
+            env: { PORT: "8001", HOST: "127.0.0.1", DEBUG_SPAWN_TOGETHER: "1", LOG: "0" },
+        },
+    ],
 });

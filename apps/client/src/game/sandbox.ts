@@ -1,5 +1,5 @@
-// Boots a local game: the loopback simulation (default) or the renderer fixture, and exposes the test surface
-// on window.__rebirth.
+// Boots a game: the loopback simulation (default), a game on the server (`net`), or the renderer fixture, and
+// exposes the test surface on window.__rebirth.
 import type { Vec2 } from "@rebirth/core";
 import type { Application } from "pixi.js";
 import { TextureStore } from "../assets/textures.ts";
@@ -7,6 +7,7 @@ import { FixtureTransport } from "../dev/fixtures.ts";
 import { debugGlobals } from "../globals.ts";
 import { LoopbackTransport } from "../net/loopback.ts";
 import type { Transport } from "../net/transport.ts";
+import { describeDisconnect, WsTransport } from "../net/ws.ts";
 import type { PlayerRender } from "../objects/player.ts";
 import { GameClient } from "./client.ts";
 
@@ -23,14 +24,32 @@ export interface SandboxOptions {
     loot?: boolean;
     /** gun id given to the local player in slot 1 with full ammo */
     give?: string;
+    /** play on a game server instead of the loopback simulation */
+    net?: {
+        /** HTTP origin of the server; "" uses the page's origin (the Vite dev server proxies /api and /play) */
+        server: string;
+        name: string;
+    };
 }
 
 export function bootSandbox(app: Application, opts: SandboxOptions): GameClient {
     const textures = new TextureStore();
     let transport: Transport;
     let loopback: LoopbackTransport | null = null;
+    let ws: WsTransport | null = null;
     if (opts.fixture) {
         transport = new FixtureTransport();
+    } else if (opts.net) {
+        ws = new WsTransport({
+            baseUrl: opts.net.server,
+            name: opts.net.name,
+            mapName: opts.mapName,
+            onDisconnect: (reason) => {
+                debugGlobals().disconnect = { reason, message: describeDisconnect(reason) };
+                console.warn(`disconnected: ${describeDisconnect(reason)}`);
+            },
+        });
+        transport = ws;
     } else {
         loopback = new LoopbackTransport(
             { mapName: opts.mapName, seed: opts.seed },
@@ -42,12 +61,15 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
     const client = new GameClient(app, transport, textures, {
         showDebugHud: opts.showDebugHud,
         debugZoom: opts.debugZoom,
-        onRespawn: lb ? () => lb.respawn() : undefined,
+        onRespawn: lb ? () => lb.respawn() : ws ? () => location.reload() : undefined,
         playerName: lb ? (id) => lb.playerName(id) : undefined,
     });
 
     const globals = debugGlobals();
-    globals.mode = loopback ? "loopback" : "fixture";
+    globals.mode = loopback ? "loopback" : ws ? "network" : "fixture";
+    transport.onSnapshot((s) => {
+        globals.lastSnapshot = s;
+    });
     globals.client = client;
     globals.transport = transport;
     globals.game = loopback?.game;

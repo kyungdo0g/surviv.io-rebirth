@@ -18,7 +18,10 @@
         "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm kb:check",
         "e2e": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers playwright test",
         "assets": "node tools/assets/import.ts",
-        "dev": "pnpm --filter @rebirth/client dev"
+        "dev": "pnpm --filter @rebirth/client dev",
+        "server": "pnpm --filter @rebirth/server dev",
+        "build": "pnpm --filter @rebirth/client build",
+        "start": "pnpm build && CLIENT_DIST=apps/client/dist node apps/server/src/index.ts"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.5.15",

@@ -2,6 +2,8 @@
 // /?sandbox=1&map=<name>&seed=<n>) the loopback sandbox on the main map. Debug: &debug=1 shows the HUD (F3
 // toggles it), &zoom=<radius> overrides the camera zoom radius. Sandbox: &dummies=<n> standing dummies in front of
 // the player, &loot=0 removes the map loot, &give=<gunId> a gun with full ammo in slot 1. &lang=ko Korean HUD.
+// Network: &net=1 joins a game on the server through the dev proxy, or &server=<http origin> a specific server;
+// &name=<player name>.
 import { Application } from "pixi.js";
 import { mountGallery } from "./dev/gallery.ts";
 import { bootSandbox } from "./game/sandbox.ts";
@@ -28,6 +30,10 @@ async function main() {
         return;
     }
     const seed = Number(route.get("seed") ?? 1);
+    const net =
+        route.get("net") === "1" || route.has("server")
+            ? { server: route.get("server") ?? "", name: route.get("name") ?? "Player" }
+            : undefined;
     bootSandbox(app, {
         mapName: route.get("map") ?? "main",
         seed: Number.isFinite(seed) ? seed : 1,
@@ -37,6 +43,7 @@ async function main() {
         dummies: Math.max(0, Math.min(16, Math.floor(Number(route.get("dummies") ?? 0) || 0))),
         loot: route.get("loot") !== "0",
         give: route.get("give") ?? undefined,
+        net,
     });
 }
 

@@ -36,6 +36,8 @@ export interface ServerConfig {
     trustProxy: boolean;
     /** log joins, leaves and game lifecycle */
     log: boolean;
+    /** testing aid: players joining a game with others spawn next to its first player */
+    debugSpawnTogether: boolean;
 }
 
 const DEFAULT_CLIENT_DIST = fileURLToPath(new URL("../../client/dist", import.meta.url));
@@ -66,6 +68,7 @@ const EnvSchema = z.object({
     PUBLIC_URL: z.url().optional(),
     TRUST_PROXY: bool.default(false),
     LOG: bool.default(true),
+    DEBUG_SPAWN_TOGETHER: bool.default(false),
 });
 
 /** Validated configuration; throws an Error listing every invalid variable. */
@@ -94,6 +97,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         publicUrl: e.PUBLIC_URL ?? null,
         trustProxy: e.TRUST_PROXY,
         log: e.LOG,
+        debugSpawnTogether: e.DEBUG_SPAWN_TOGETHER,
     };
 }
 

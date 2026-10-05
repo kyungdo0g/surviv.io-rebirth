@@ -96,6 +96,7 @@ export class GameRoom {
     /** Adds a player for `member`; returns its id and the first frame (Joined + Map). */
     join(member: RoomMember, name: string): { playerId: number; frame: Uint8Array } {
         const playerId = this.game.addPlayer(name);
+        if (this.config.debugSpawnTogether) this.spawnNearFirstPlayer(playerId);
         const cache = this.sharedCache ? this.cache : new ObjectCache(this.cache.ctx);
         this.seats.set(playerId, { member, encoder: new ClientEncoder(cache), name });
         this.emptySince = null;
@@ -110,6 +111,23 @@ export class GameRoom {
         });
         w.writeBytes(this.mapMsg);
         return { playerId, frame: w.getBuffer() };
+    }
+
+    /** DEBUG_SPAWN_TOGETHER: moves a new player to a free spot a few units from the room's first player. */
+    private spawnNearFirstPlayer(playerId: number): void {
+        const first = [...this.seats.keys()][0];
+        const anchor = first === undefined ? undefined : this.game.getPlayer(first)?.pos;
+        if (!anchor) return;
+        for (let ring = 1; ring <= 6; ring++) {
+            for (let i = 0; i < 12; i++) {
+                const a = (i / 12) * Math.PI * 2;
+                const pos = { x: anchor.x + Math.cos(a) * ring * 3, y: anchor.y + Math.sin(a) * ring * 3 };
+                if (this.game.canPlayerSpawn(pos)) {
+                    this.game.teleportPlayer(playerId, pos);
+                    return;
+                }
+            }
+        }
     }
 
     leave(playerId: number, now: number): void {
