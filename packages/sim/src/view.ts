@@ -9,6 +9,31 @@
 //   `killedBy`. `weapons` now carries the real per-slot ammo and `inventory` the real item counts.
 // - Snapshot: `bullets` (BulletEvent list: bullets fired near the viewer since its previous snapshot).
 // - New types: PlayerAnim, PlayerAction, PlayerShot, BulletEvent, AnimType, ActionType.
+//
+// M4 additions (battle-royale loop; backward compatible in the same way: optional in the types, always filled by
+// the simulation; the network decoder fills them too):
+// - Snapshot: `gas` (GasView), `planes` (PlaneView list, planes in view), `airdrops` (AirdropView list, falling
+//   crates in view), `mapIndicators` (MapIndicatorView list, minimap markers), `kills` (KillEvent list: every
+//   kill in the game since the viewer's previous snapshot), `roleAnnouncements` (kill leader promoted / killed),
+//   `aliveCount`, `killLeader` ({id, kills}, id 0 = none), `gameOver` (GameOverEvent, present once, in the
+//   snapshot right after the viewer died or the match ended), `playerStats` (team modes only, M6),
+//   `spectatingId` (0, or the id of the player being spectated), `playerInfos` (names and teams of the players
+//   that joined since the viewer's previous snapshot; every player in its first snapshot) and `deletedPlayerIds`
+//   (players removed from the game since then).
+// - Spectating (the original activePlayerId): while a dead player spectates, its snapshots follow the spectated
+//   player: `localPlayerId` is the spectated player's id, `local` its state and `objects` are culled around it.
+//   `spectatingId` equals `localPlayerId` then; the client's own id is the one it got on join.
+// - LocalPlayerState: `stats` (match stats so far, integers), `spectatorCount`.
+// - ObstacleView: `button` (interactable obstacles: air drop crates, switches).
+// - New types: GasView, GasModeName, PlaneView, PlaneType, AirdropView, MapIndicatorView, KillEvent,
+//   DamageSource, RoleAnnouncementEvent, KillLeaderView, GameOverEvent, PlayerStatsView, MatchStats,
+//   PlayerInfoView.
+// Helpers living next to the contract: `gasCircle(gas)` (current red-zone circle) and `gasTimeLeft(gas)` in
+// match/gas.ts, `damageSourceOf()` in match/events.ts.
+// Match lifecycle knobs are construction options (GameInit in game.ts): the client's loopback passes
+// `{ sandbox: true }` (the match starts on the first step with a single player, never ends and always accepts
+// joins); servers pass `minPlayers`. Until the match starts `gas.mode` is "inactive" ("Waiting for players").
+// Dead players spectate through `Game.spectate(id, "begin" | "next" | "prev")` (the Spectate message).
 import type { Vec2 } from "@rebirth/core";
 
 export interface RiverData {
@@ -127,6 +152,12 @@ export interface ObstacleView extends BaseView {
     healthT: number;
     dead: boolean;
     door?: { open: boolean; locked: boolean; canUse: boolean };
+    /**
+     * Interactable obstacle (def `button`: air drop crates, switches) (M4). `onOff` flips and `seq` increments on
+     * every use; `canUse` is false while it cannot be used (used once, cooling down). An air drop crate that was
+     * used plays its opening for `button.useDelay` seconds, then dies and its `destroyType` crate appears.
+     */
+    button?: { onOff: boolean; canUse: boolean; seq: number };
 }
 
 export interface BuildingView extends BaseView {
@@ -184,6 +215,19 @@ export interface LocalPlayerState {
     dead?: boolean;
     /** id of the player credited with the kill, 0 when alive or killed by the environment */
     killedBy?: number;
+    /** match stats so far (M4) */
+    stats?: MatchStats;
+    /** number of players spectating this player (M4) */
+    spectatorCount?: number;
+}
+
+/** Match stats of one player, as shown on the death and win screens. Integers (damage rounded, whole seconds). */
+export interface MatchStats {
+    kills: number;
+    damageDealt: number;
+    damageTaken: number;
+    /** seconds alive */
+    timeAlive: number;
 }
 
 /**
@@ -233,6 +277,176 @@ export interface Snapshot {
     deletedIds: number[];
     /** bullets fired near the viewer since its previous snapshot (M2) */
     bullets?: BulletEvent[];
+    /** red zone (M4) */
+    gas?: GasView;
+    /** air drop / air strike planes whose body (radius `planeRad`) touches the view (M4) */
+    planes?: PlaneView[];
+    /** falling air drop crates in view, kept 1 s after landing (M4) */
+    airdrops?: AirdropView[];
+    /**
+     * Minimap markers, sent to everyone (M4). Live markers, plus the ones removed since the viewer's previous
+     * snapshot with `dead` true (once); drop a marker when it arrives dead.
+     */
+    mapIndicators?: MapIndicatorView[];
+    /** every kill in the game since the viewer's previous snapshot, in order (M4; the original Kill messages) */
+    kills?: KillEvent[];
+    /** role events since the viewer's previous snapshot (M4: kill leader promoted / killed) */
+    roleAnnouncements?: RoleAnnouncementEvent[];
+    /** living players (M4) */
+    aliveCount?: number;
+    /** current kill leader; id 0 while nobody has GameConfig.player.killLeaderMinKills kills (M4) */
+    killLeader?: KillLeaderView;
+    /** the viewer's result, present in exactly one snapshot: after it died, or when it won (M4) */
+    gameOver?: GameOverEvent;
+    /** team modes: stats of the viewer after it died while its team plays on, present once (M6; never in solo) */
+    playerStats?: PlayerStatsView;
+    /** id of the player being spectated (= localPlayerId while spectating), 0 when not spectating (M4) */
+    spectatingId?: number;
+    /**
+     * Players that joined since the viewer's previous snapshot; every player of the game in the viewer's first
+     * snapshot (M4; the original PlayerInfos). Keep them: kill feed, kill leader and result screens need the names.
+     */
+    playerInfos?: PlayerInfoView[];
+    /** players removed from the game since the viewer's previous snapshot (M4; the original DeletePlayerIds) */
+    deletedPlayerIds?: number[];
+}
+
+/** Public info of a player (the original PlayerInfos record, without the heal/boost cosmetics). */
+export interface PlayerInfoView {
+    playerId: number;
+    /** team (solo: one per player; matches GameOverEvent.teamId / winningTeamId) */
+    teamId: number;
+    /** group (solo: the team id) */
+    groupId: number;
+    /** at most 16 UTF-8 bytes on the wire */
+    name: string;
+}
+
+export type GasModeName = "inactive" | "waiting" | "moving";
+
+/**
+ * Red zone state (the original gas section plus its progress `gasT`). Before the match starts the gas is
+ * "inactive" (the client shows "Waiting for players"). Each circle has a "waiting" stage (the next safe circle
+ * `posNew`/`radNew` is shown, the zone does not move) and a "moving" stage (the zone closes linearly from
+ * `posOld`/`radOld` to `posNew`/`radNew` over `duration`). The current circle is `gasCircle(gas)`.
+ */
+export interface GasView {
+    mode: GasModeName;
+    /** index into GameConfig.gas.stages; stages.length once the last stage has ended (the zone stays closed) */
+    stage: number;
+    /** -1 before the first circle; incremented when each waiting stage starts */
+    circleIdx: number;
+    /** duration of the current stage in seconds */
+    duration: number;
+    /** progress through the current stage, 0..1 (time left = duration * (1 - gasT)) */
+    gasT: number;
+    posOld: Vec2;
+    posNew: Vec2;
+    radOld: number;
+    radNew: number;
+    /** damage dealt every GameConfig.gas.damageTickRate seconds to players outside the circle (ignores armor) */
+    damage: number;
+}
+
+export type PlaneType = "airdrop" | "airstrike";
+
+export interface PlaneView {
+    /** plane id (1..255, not an object id) */
+    id: number;
+    pos: Vec2;
+    /** unit flight direction */
+    dir: Vec2;
+    planeType: PlaneType;
+    /** the plane released its crate (air drop) or bombs (air strike) */
+    actionComplete: boolean;
+}
+
+/** A falling air drop crate (the original Airdrop object). When it lands, the crate obstacle appears. */
+export interface AirdropView {
+    /** object id (unique among objects) */
+    id: number;
+    pos: Vec2;
+    /** fall progress 0..1 over GameConfig.airdrop.fallTime */
+    fallT: number;
+    landed: boolean;
+}
+
+export interface MapIndicatorView {
+    /** indicator id 0..15 (reused after the indicator died) */
+    id: number;
+    /** GameObjectDefs id, e.g. "ping_airdrop" (drawn with its `mapTexture`) */
+    type: string;
+    pos: Vec2;
+    /** the indicator was removed: the client drops it */
+    dead: boolean;
+    equipped: boolean;
+}
+
+/** How a player died, derived from the damage type and the source defs (kill feed wording). */
+export type DamageSource = "gun" | "melee" | "explosion" | "gas" | "bleed" | "airdrop" | "airstrike" | "other";
+
+/** One kill (the original Kill message). */
+export interface KillEvent {
+    /** the player who died (or was downed, M6) */
+    targetId: number;
+    /** player whose hit caused it; 0 for the environment (gas, air drop) and for bleeding */
+    killerId: number;
+    /** player credited with the kill (0 for none; the victim itself for a suicide) */
+    killCreditId: number;
+    /** kill count of the credited player after this kill */
+    killerKills: number;
+    /** defs DamageType (Player 0, Bleeding 1, Gas 2, Airdrop 3, Airstrike 4) */
+    damageType: number;
+    source: DamageSource;
+    /** GameObjectDefs id of the weapon, "" for none */
+    itemSourceType: string;
+    /** MapObjectDefs id of the obstacle that dealt it (exploding barrel), "" for none */
+    mapSourceType: string;
+    /** knocked down, not killed (team modes, M6: always false for now) */
+    downed: boolean;
+    killed: boolean;
+}
+
+/** A role event (the original RoleAnnouncement message): "promoted to Kill Leader!" / "killed Kill Leader!". */
+export interface RoleAnnouncementEvent {
+    playerId: number;
+    /** who killed the role holder (0 when not killed) */
+    killerId: number;
+    /** GameObjectDefs role id, e.g. "kill_leader" */
+    role: string;
+    assigned: boolean;
+    killed: boolean;
+}
+
+export interface KillLeaderView {
+    /** 0 for none */
+    id: number;
+    kills: number;
+}
+
+/** End-of-life stats of one player (the original PlayerStats record; integers). */
+export interface PlayerStatsView {
+    playerId: number;
+    /** whole seconds alive */
+    timeAlive: number;
+    kills: number;
+    dead: boolean;
+    damageDealt: number;
+    damageTaken: number;
+}
+
+/** The viewer's match result (the original GameOver message). */
+export interface GameOverEvent {
+    /** the viewer's team (solo: a per-player id) */
+    teamId: number;
+    /** final rank of the viewer's team: 1 for the winner, else living teams + 1 when it was eliminated */
+    teamRank: number;
+    /** the match is over (a winner exists) */
+    gameOver: boolean;
+    /** team id of the winner, 0 while the match goes on */
+    winningTeamId: number;
+    /** stats of the viewer's team members (solo: the viewer) */
+    playerStats: PlayerStatsView[];
 }
 
 /** Terrain polygons derived deterministically from MapData by `buildTerrain(map)` (client and server share it). */

@@ -1,6 +1,7 @@
 // GameHost: runs the games of this server on one wall-clock timer, hands out join tokens, creates a game when none
-// can take another player (full at maxPlayers, counting seats reserved by unexpired tokens) and removes games that
-// stayed empty for the grace period.
+// can take another player (full at maxPlayers, counting seats reserved by unexpired tokens, or past its join
+// window: survev game.ts canJoin), closes games `gameOverGraceMs` after they ended and removes games that stayed
+// empty for the grace period.
 import { randomInt } from "node:crypto";
 import { MapDefs } from "@rebirth/defs";
 import type { ServerConfig } from "./config.ts";
@@ -61,7 +62,7 @@ export class GameHost {
     findRoom(mapName: string): GameRoom | null {
         let best: GameRoom | null = null;
         for (const room of this.rooms.values()) {
-            if (room.mapName !== mapName || !room.hasIdHeadroom()) continue;
+            if (room.mapName !== mapName || !room.canJoin()) continue;
             if (room.playerCount + this.tokens.pendingFor(room.id) >= this.config.maxPlayers) continue;
             // the oldest joinable game fills first (survev gameProcessManager)
             if (!best || room.createdAt < best.createdAt) best = room;
@@ -94,7 +95,10 @@ export class GameHost {
                 // one broken game must not take the others down: drop it and disconnect its players
                 console.error(`game ${room.id} crashed:`, err);
                 this.closeRoom(room);
+                continue;
             }
+            // the game ended: its clients got GameOver, the room closes after the grace period (survev stopTicker)
+            if (room.overSince !== null && now - room.overSince >= this.config.gameOverGraceMs) this.closeRoom(room);
         }
         const wall = Date.now();
         if (wall - this.lastSweep >= SWEEP_INTERVAL_MS) {

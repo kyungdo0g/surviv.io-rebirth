@@ -61,9 +61,9 @@ export const ObjectTypeCode = {
 export const OBJECT_TYPE_BITS = 4;
 
 /**
- * Update message section flags (u16). Sections appear in bit order. Bits 6-15 are reserved for the sections of the
- * original UpdateMsg still to come (gas, player infos/status, explosions, emotes, planes...); a decoder rejects them
- * until they are defined, and bit 15 is kept to announce a second flags word.
+ * Update message section flags (u16). Sections appear in bit order (M4 added bits 6-14). Bit 15 is reserved to
+ * announce a second flags word for the sections of the original UpdateMsg still to come (player status, group
+ * status, explosions, emotes, air strike zones); a decoder rejects it until it is defined.
  */
 export const UpdateFlag = {
     DeletedObjects: 1 << 0,
@@ -72,9 +72,26 @@ export const UpdateFlag = {
     ActivePlayerId: 1 << 3,
     LocalPlayer: 1 << 4,
     Bullets: 1 << 5,
-    /** reserved: Gas 6, GasCircle 7, PlayerInfos 8, DeletePlayerIds 9, PlayerStatus 10, GroupStatus 11,
-     * Explosions 12, Emotes 13, Planes 14, ExtendedFlags 15 */
-    Reserved: 0xffc0,
+    /** gas state changed (original Gas section + stage, circleIdx, damage) */
+    Gas: 1 << 6,
+    /** gas progress changed (original GasCircle) */
+    GasT: 1 << 7,
+    /** planes in view (sent every update while any) */
+    Planes: 1 << 8,
+    /** falling air drops in view (sent every update while any) */
+    Airdrops: 1 << 9,
+    /** new, changed and removed map indicators */
+    MapIndicators: 1 << 10,
+    /** kill leader changed */
+    KillLeader: 1 << 11,
+    /** the update follows a spectated player (no payload; ActivePlayerId names it) */
+    Spectating: 1 << 12,
+    /** players that joined (original PlayerInfos) */
+    PlayerInfos: 1 << 13,
+    /** players removed from the game (original DeletePlayerIds) */
+    DeletePlayerIds: 1 << 14,
+    /** reserved: ExtendedFlags (a second flags word for PlayerStatus, Explosions, Emotes...) */
+    Reserved: 0x8000,
 } as const;
 
 /** Reasons carried by the Disconnect message (and the WebSocket close frame). */
@@ -98,8 +115,22 @@ export type DisconnectReasonValue = (typeof DisconnectReason)[keyof typeof Disco
 /** WebSocket close code used together with a Disconnect message (application range 4000-4999). */
 export const CLOSE_CODE_DISCONNECT = 4000;
 
-/** Spectate actions (survev spectateMsg.ts). */
+/** Spectate actions (survev spectateMsg.ts; the 0.8.82 message used one flag per action). */
 export const SpectateAction = { None: 0, Begin: 1, Next: 2, Prev: 3 } as const;
+
+/** Spectate action of the wire to the simulation's name (null for None / unknown values). */
+export function spectateActionName(action: number): "begin" | "next" | "prev" | null {
+    switch (action) {
+        case SpectateAction.Begin:
+            return "begin";
+        case SpectateAction.Next:
+            return "next";
+        case SpectateAction.Prev:
+            return "prev";
+        default:
+            return null;
+    }
+}
 
 /** Value limits and quantization ranges (survev shared/net/net.ts Constants, same in 0.8.82). */
 export const NetLimits = {

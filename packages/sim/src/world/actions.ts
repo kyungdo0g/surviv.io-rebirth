@@ -4,6 +4,7 @@ import { Input, WeaponSlot } from "@rebirth/defs";
 import { SCOPE_LEVELS } from "../items/inventory.ts";
 import { closestLoot, pickupLoot } from "../loot/pickup.ts";
 import type { SimContext } from "./context.ts";
+import { interactableObstacles, useObstacle } from "./interact.ts";
 import type { Player } from "./player.ts";
 
 export function handleActions(ctx: SimContext, player: Player, actions: readonly number[]): void {
@@ -59,11 +60,18 @@ export function handleActions(ctx: SimContext, player: Player, actions: readonly
                 break;
             case Input.Interact:
             case Input.Loot: {
-                // TODO(M4): Interact also opens doors and revives teammates
+                // TODO(M6): Interact also revives teammates
                 const loot = closestLoot(ctx, player);
                 if (loot) pickupLoot(ctx, player, loot);
+                // Interact uses every button in reach as well (survev player.ts: revive, loot, then obstacles)
+                if (action === Input.Interact) {
+                    for (const obstacle of interactableObstacles(ctx, player)) useObstacle(ctx, obstacle, player);
+                }
                 break;
             }
+            case Input.Use:
+                for (const obstacle of interactableObstacles(ctx, player)) useObstacle(ctx, obstacle, player);
+                break;
             case Input.EquipNextScope:
             case Input.EquipPrevScope: {
                 const step = action === Input.EquipNextScope ? 1 : -1;

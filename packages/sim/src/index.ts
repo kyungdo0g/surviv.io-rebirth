@@ -5,11 +5,12 @@ export {
     applyObstacleDamage,
     applyPlayerDamage,
     canDamageObstacle,
+    destroyObstacle,
     type HitRecord,
     killPlayer,
 } from "./combat/combat.ts";
 export { type ArmorState, canHeadshot, computeDamage, type DamageParams, rollHeadshot } from "./combat/damage.ts";
-export { entityView, Game, type GameInit, VIEW_ASPECT, VIEW_MARGIN, viewBounds } from "./game.ts";
+export { DEFAULT_MIN_PLAYERS, entityView, Game, type GameInit, VIEW_ASPECT, VIEW_MARGIN, viewBounds } from "./game.ts";
 export * from "./input.ts";
 export { BAG_ITEMS, gearLevel, gearQuality, Inventory, SCOPE_LEVELS, THROWABLE_LIST } from "./items/inventory.ts";
 export { dropGun, dropMelee, playerDropLoot, unknownLootTiers } from "./loot/drops.ts";
@@ -21,6 +22,11 @@ export { type GenerateMapResult, generateMap, type SpawnSource, type SpawnStat }
 export type { GeneratedObject, LootSpawn } from "./mapgen/generator.ts";
 export { buildTerrain, createTerrain, type River, type Terrain, terrainToShape } from "./mapgen/terrain.ts";
 export { isTerrainWater, type TerrainSurface, terrainSurfaceAt } from "./mapgen/terrainQuery.ts";
+export { damageSourceOf, EventLog } from "./match/events.ts";
+export { type CircleChoice, Gas, gasCircle, gasTimeLeft } from "./match/gas.ts";
+export { KILL_LEADER_ROLE, Match, type MatchOptions, playerStats } from "./match/match.ts";
+export { type FallingAirdrop, type MapIndicator, type PlaneState, PlaneSystem } from "./match/planes.ts";
+export { type SpectateAction, SpectateSystem } from "./match/spectate.ts";
 export { defaultRules, type SimRules } from "./rules.ts";
 export type * from "./view.ts";
 export { fireGun, gunFireGate } from "./weapons/gun.ts";
@@ -28,5 +34,6 @@ export { meleeCollider, meleeDamage } from "./weapons/melee.ts";
 export { gunDef, TIME_EPS, WeaponManager, type WeaponSlotState } from "./weapons/weaponManager.ts";
 export type { SimContext } from "./world/context.ts";
 export { Building, Decal, type MapEntity, Obstacle, Structure } from "./world/entities.ts";
+export { interactableObstacles, updateObstacleTimers, useObstacle } from "./world/interact.ts";
 export { moveWithCollision, Player, type PlayerActionType } from "./world/player.ts";
 export { type Entity, sameLayer, World } from "./world/world.ts";

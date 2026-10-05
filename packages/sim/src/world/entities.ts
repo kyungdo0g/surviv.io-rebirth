@@ -49,6 +49,16 @@ export class Obstacle {
     /** broadphase bounds: the collider plus the sprite bounds (`def.aabb`, e.g. tree canopies) */
     bounds: Bounds;
     readonly door?: { open: boolean; locked: boolean; canUse: boolean };
+    /** interactable obstacles (def `button`: air drop crates, switches) */
+    readonly button?: { onOff: boolean; canUse: boolean; seq: number };
+    /** reach of Interact around the collider (button or door `interactionRad`; 0 when not interactable) */
+    readonly interactionRad: number;
+    /** seconds until a used `destroyOnUse` button dies (0: not scheduled) */
+    killTicker = 0;
+    /** seconds until a button with `useCooldown` can be used again */
+    interactCooldown = 0;
+    /** player who used it last (0 for none) */
+    interactedBy = 0;
     /** set by the world to keep the broadphase in sync when the collider shrinks */
     onBoundsChanged?: (obstacle: Obstacle) => void;
 
@@ -75,6 +85,8 @@ export class Obstacle {
             // doors start closed (and collidable)
             this.door = { open: false, locked: !!this.def.door.locked, canUse: this.def.door.canUse };
         }
+        if (this.def.button) this.button = { onOff: false, canUse: true, seq: 0 };
+        this.interactionRad = this.def.button?.interactionRad ?? this.def.door?.interactionRad ?? 0;
         this.collider = this.computeCollider();
         this.bounds = this.computeBounds();
     }
@@ -106,6 +118,18 @@ export class Obstacle {
         return this.dead;
     }
 
+    /** Destroys the obstacle whatever its health and destructibility (opened air drop crates, crushed objects). */
+    kill(): void {
+        if (this.dead) return;
+        this.health = 0;
+        this.healthT = 0;
+        this.dead = true;
+        this.scale = this.minScale;
+        this.collider = this.computeCollider();
+        this.bounds = this.computeBounds();
+        this.onBoundsChanged?.(this);
+    }
+
     /** Whether this obstacle currently blocks movement. */
     get blocking(): boolean {
         return this.collidable && !this.dead && !(this.door?.open ?? false);
@@ -124,6 +148,7 @@ export class Obstacle {
             dead: this.dead,
         };
         if (this.door) view.door = { ...this.door };
+        if (this.button) view.button = { ...this.button };
         return view;
     }
 }

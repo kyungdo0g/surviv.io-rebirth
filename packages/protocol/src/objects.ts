@@ -169,7 +169,10 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
     },
 };
 
-/** Obstacle. Static: type, pos, ori, layer, isDoor. Groups: 0 scale, 1 health (healthT, dead), 2 door state. */
+/**
+ * Obstacle. Static: type, pos, ori, layer, isDoor, isButton. Groups: 0 scale, 1 health (healthT, dead), 2 door
+ * state, 3 button state (onOff, canUse, seq mod 2^16; M4).
+ */
 export const ObstacleCodec: ObjectCodec<ObstacleView> = {
     kind: "obstacle",
     code: ObjectTypeCode.Obstacle,
@@ -179,8 +182,10 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
         f(SCALE_BITS, 0),
         f(HEALTH_BITS, 1), f(1, 1),
         f(1, 2, 5), f(1, 2, 5), f(1, 2, 5),
+        f(1, S),
+        f(1, 3, 12), f(1, 3, 12), f(SEQ_BITS, 3, 12),
     ],
-    groupCount: 3,
+    groupCount: 4,
     quantize(v, ctx, out) {
         out[0] = mapTypeId(v.type);
         out[1] = quantizeX(ctx, v.pos.x);
@@ -194,6 +199,10 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
         out[9] = b(v.door?.open);
         out[10] = b(v.door?.locked);
         out[11] = b(v.door?.canUse);
+        out[12] = b(v.button !== undefined);
+        out[13] = b(v.button?.onOff);
+        out[14] = b(v.button?.canUse);
+        out[15] = (v.button?.seq ?? 0) & SEQ_MASK;
     },
     build(id, v, ctx) {
         const view: ObstacleView = {
@@ -208,6 +217,7 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
             dead: v[8] === 1,
         };
         if (v[5] === 1) view.door = { open: v[9] === 1, locked: v[10] === 1, canUse: v[11] === 1 };
+        if (v[12] === 1) view.button = { onOff: v[13] === 1, canUse: v[14] === 1, seq: v[15] };
         return view;
     },
 };

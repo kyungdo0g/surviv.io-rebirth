@@ -17,6 +17,7 @@ import {
     ServerMsgDecoder,
     type ServerSimpleMsg,
     SpectateAction,
+    spectateActionName,
 } from "../src/index.ts";
 import { assertClose, exact } from "./close.ts";
 import { netTolerances, randGameType, randInput, randMap, randMapType, randString } from "./gen.ts";
@@ -82,6 +83,7 @@ describe("client messages", () => {
             const spec: ClientMsg = { type: MsgType.Spectate, action: rng.pick(Object.values(SpectateAction)) };
             assertClose(clientRoundTrip(spec), spec, exact);
         });
+        expect([0, 1, 2, 3, 200].map(spectateActionName)).toEqual([null, "begin", "next", "prev", null]);
     });
 
     it("several messages share one frame", () => {

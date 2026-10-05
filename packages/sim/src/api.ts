@@ -15,6 +15,9 @@ export interface GameOptions {
     teamMode?: 1 | 2 | 4;
 }
 
+/** Spectate requests of a dead player (the original Spectate message: Begin, Next, Prev). */
+export type SpectateActionName = "begin" | "next" | "prev";
+
 export interface GameApi {
     readonly options: GameOptions;
     readonly mapData: MapData;
@@ -31,4 +34,8 @@ export interface GameApi {
     step(): void;
     /** Snapshot of the world as `playerId` sees it. Tracks per-player state for deletedIds. */
     getSnapshot(playerId: number): Snapshot;
+    /** Whether a new player may join this game now (join window, player limit, game over) (M4). */
+    canJoin(): boolean;
+    /** Spectate request of a dead player; ignored for living players (M4). */
+    spectate(playerId: number, action: SpectateActionName): void;
 }

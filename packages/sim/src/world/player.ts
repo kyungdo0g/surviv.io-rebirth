@@ -6,7 +6,7 @@ import type { HitRecord } from "../combat/combat.ts";
 import { emptyInput, type PlayerInput } from "../input.ts";
 import { Inventory, type InventoryOwner, isBagItem, SCOPE_LEVELS, THROWABLE_LIST } from "../items/inventory.ts";
 import type { PickupResult } from "../loot/pickup.ts";
-import type { ActionType, AnimType, LocalPlayerState, PlayerView } from "../view.ts";
+import type { ActionType, AnimType, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
 import { gunDef, TIME_EPS, WeaponManager } from "../weapons/weaponManager.ts";
 import { handleActions } from "./actions.ts";
 import type { SimContext } from "./context.ts";
@@ -90,6 +90,19 @@ export class Player implements InventoryOwner {
     damageTaken = 0;
     lastHit: HitRecord | null = null;
     lastPickup: { type: string; result: PickupResult } | null = null;
+
+    /** team id (solo: one per player, 1-255; the GameOver message's teamId) (M4) */
+    teamId = 0;
+    /** seconds alive (match stats, start condition) */
+    timeAlive = 0;
+    /** seconds in the gas since entering it, counted from rules.gasDamageRampFromCircle (escalation rule) */
+    timeInsideGas = 0;
+    /** order of death in the match (0 first); -1 while alive (ranks) */
+    killedIndex = -1;
+    /** the client left; the player stays in the game (survev: players older than minActiveTime do not despawn) */
+    disconnected = false;
+    /** players spectating this one */
+    spectatorCount = 0;
 
     /** buildings whose ceiling zoom region the player is inside (updated every tick) */
     readonly occupiedBuildings: Building[] = [];
@@ -399,6 +412,18 @@ export class Player implements InventoryOwner {
             kills: this.kills,
             dead: this.dead,
             killedBy: this.killedBy,
+            stats: this.matchStats(),
+            spectatorCount: this.spectatorCount,
+        };
+    }
+
+    /** Match stats as the client shows them: damage rounded, whole seconds (the original PlayerStats record). */
+    matchStats(): MatchStats {
+        return {
+            kills: this.kills,
+            damageDealt: Math.round(this.damageDealt),
+            damageTaken: Math.round(this.damageTaken),
+            timeAlive: Math.floor(this.timeAlive + 1e-9),
         };
     }
 }

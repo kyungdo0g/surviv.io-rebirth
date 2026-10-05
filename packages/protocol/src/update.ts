@@ -8,7 +8,14 @@
 //   [ActivePlayerId] u16
 //   [LocalPlayer]    local.ts sections, then align
 //   [Bullets]        bullets.ts records, then align
+//   [Gas] [GasT] [Planes] [Airdrops] [MapIndicators] [KillLeader]   match.ts sections (M4)
+//   [Spectating]     no payload: the active player is a spectated player
+//   [PlayerInfos] [DeletePlayerIds]   match.ts sections (M4), then align
 // `time` is not sent: it is tick / TICK_HZ like Game.time.
+//
+// A server frame per netsync (ClientEncoder.writeFrame) follows the original order: [AliveCounts when changed],
+// Update, [PlayerStats], [GameOver], Kill..., RoleAnnouncement... (netcode.md "Message framing"). The client's
+// ServerMsgDecoder attaches the events of a frame to that frame's Update snapshot.
 //
 // Server side, an ObjectCache shared by every client of a game quantizes each object at most once per tick and
 // builds its full/partial record bytes at most once per tick (lazily, when a client needs them). Its generation is
@@ -18,9 +25,20 @@
 // Each client has a ClientEncoder: the ticks at which it last received every object it knows, its last sent local
 // state and active player id.
 import { BitReader, BitWriter } from "@rebirth/core";
-import type { BulletEvent, LocalPlayerState, ObjectView, Snapshot } from "@rebirth/sim";
+import type {
+    AirdropView,
+    BulletEvent,
+    GasView,
+    KillLeaderView,
+    LocalPlayerState,
+    MapIndicatorView,
+    ObjectView,
+    PlaneView,
+    Snapshot,
+} from "@rebirth/sim";
 import { TICK_HZ } from "@rebirth/sim";
 import { readBullets, writeBullets } from "./bullets.ts";
+import { writeServerMsg } from "./codec.ts";
 import { MsgType, OBJECT_TYPE_BITS, UpdateFlag } from "./constants.ts";
 import {
     cloneLocal,
@@ -31,6 +49,28 @@ import {
     readLocal,
     writeLocal,
 } from "./local.ts";
+import {
+    quantizeGas,
+    quantizeGasT,
+    quantizeIndicator,
+    quantizeKillLeader,
+    readAirdrops,
+    readDeletedPlayers,
+    readGas,
+    readGasT,
+    readIndicators,
+    readKillLeader,
+    readPlanes,
+    readPlayerInfos,
+    writeAirdrops,
+    writeDeletedPlayers,
+    writeGas,
+    writeGasT,
+    writeIndicators,
+    writeKillLeader,
+    writePlanes,
+    writePlayerInfos,
+} from "./match.ts";
 import {
     codecByCode,
     codecOf,
@@ -176,6 +216,12 @@ export interface EncodeStats {
     bytes: number;
 }
 
+function sameValues(a: readonly number[] | null, b: readonly number[]): boolean {
+    if (!a || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+}
+
 /** Per-client update encoder (one per connection). */
 export class ClientEncoder {
     readonly cache: ObjectCache;
@@ -184,6 +230,12 @@ export class ClientEncoder {
     private activePlayerId = -1;
     private local: LocalQuant | null = null;
     private lastTick = -1;
+    /** last sent wire values of the M4 sections */
+    private gas: number[] | null = null;
+    private gasT = -1;
+    private killLeader: number[] | null = null;
+    private readonly indicators = new Map<number, number[]>();
+    private aliveCount = -1;
     readonly last: EncodeStats = { full: 0, part: 0, deleted: 0, bullets: 0, bytes: 0 };
 
     constructor(cache: ObjectCache) {
@@ -230,6 +282,16 @@ export class ClientEncoder {
         const localMask = localDirtyMask(this.local, localQ);
         this.local = localQ;
         const bullets: readonly BulletEvent[] = snap.bullets ?? [];
+        const ctx = cache.ctx;
+        const gasQ = snap.gas ? quantizeGas(snap.gas, ctx) : null;
+        const gasChanged = gasQ !== null && !sameValues(this.gas, gasQ);
+        const gasTQ = snap.gas ? quantizeGasT(snap.gas.gasT) : -1;
+        const gasTChanged = gasTQ >= 0 && gasTQ !== this.gasT;
+        const planes: readonly PlaneView[] = snap.planes ?? [];
+        const airdrops: readonly AirdropView[] = snap.airdrops ?? [];
+        const indicators = this.indicatorRecords(snap.mapIndicators ?? []);
+        const leaderQ = snap.killLeader ? quantizeKillLeader(snap.killLeader) : null;
+        const leaderChanged = leaderQ !== null && !sameValues(this.killLeader, leaderQ);
 
         let flags = 0;
         if (deleted.length) flags |= UpdateFlag.DeletedObjects;
@@ -238,6 +300,17 @@ export class ClientEncoder {
         if (snap.localPlayerId !== this.activePlayerId) flags |= UpdateFlag.ActivePlayerId;
         if (localMask) flags |= UpdateFlag.LocalPlayer;
         if (bullets.length) flags |= UpdateFlag.Bullets;
+        if (gasChanged) flags |= UpdateFlag.Gas;
+        if (gasTChanged) flags |= UpdateFlag.GasT;
+        if (planes.length) flags |= UpdateFlag.Planes;
+        if (airdrops.length) flags |= UpdateFlag.Airdrops;
+        if (indicators.length) flags |= UpdateFlag.MapIndicators;
+        if (leaderChanged) flags |= UpdateFlag.KillLeader;
+        if (snap.spectatingId) flags |= UpdateFlag.Spectating;
+        const infos = snap.playerInfos ?? [];
+        const leavers = snap.deletedPlayerIds ?? [];
+        if (infos.length) flags |= UpdateFlag.PlayerInfos;
+        if (leavers.length) flags |= UpdateFlag.DeletePlayerIds;
 
         w.alignToNextByte();
         w.writeUint8(MsgType.Update);
@@ -268,6 +341,23 @@ export class ClientEncoder {
             writeBullets(w, cache.ctx, bullets);
             w.alignToNextByte();
         }
+        if (gasChanged && gasQ) {
+            writeGas(w, gasQ);
+            this.gas = gasQ;
+        }
+        if (gasTChanged) {
+            writeGasT(w, gasTQ);
+            this.gasT = gasTQ;
+        }
+        if (planes.length) writePlanes(w, planes);
+        if (airdrops.length) writeAirdrops(w, ctx, airdrops);
+        if (indicators.length) writeIndicators(w, indicators);
+        if (leaderChanged && leaderQ) {
+            writeKillLeader(w, leaderQ);
+            this.killLeader = leaderQ;
+        }
+        if (infos.length) writePlayerInfos(w, infos);
+        if (leavers.length) writeDeletedPlayers(w, leavers);
         w.alignToNextByte();
         const last = this.last;
         last.full = fulls.length;
@@ -277,10 +367,74 @@ export class ClientEncoder {
         last.bytes = w.byteLength - start;
     }
 
+    /**
+     * Map indicator records to send: new or changed live indicators, dead ones (once), and a dead record for any
+     * indicator the client knows that is gone from the snapshot. Updates the known set.
+     */
+    private indicatorRecords(list: readonly MapIndicatorView[]): number[][] {
+        const ctx = this.cache.ctx;
+        const out: number[][] = [];
+        const listed = new Set<number>();
+        for (const ind of list) {
+            const q = quantizeIndicator(ind, ctx);
+            listed.add(q[0]);
+            if (ind.dead) {
+                out.push(q);
+                this.indicators.delete(q[0]);
+            } else if (!sameValues(this.indicators.get(q[0]) ?? null, q)) {
+                out.push(q);
+                this.indicators.set(q[0], q);
+            }
+        }
+        for (const [id, q] of this.indicators) {
+            if (listed.has(id)) continue;
+            out.push([q[0], 1, q[2], q[3], q[4], q[5]]);
+            this.indicators.delete(id);
+        }
+        return out;
+    }
+
     /** One Update message as its own frame. */
     encode(snap: Snapshot, ack: number): Uint8Array<ArrayBuffer> {
         const w = new BitWriter(1024);
         this.write(w, snap, ack);
+        return w.getBuffer();
+    }
+
+    /**
+     * Every message one netsync sends to this client for `snap`, in the original order: AliveCounts (when the count
+     * changed), the Update, then the viewer's PlayerStats / GameOver and the broadcast Kill / RoleAnnouncement
+     * messages carried by the snapshot's events.
+     */
+    writeFrame(w: BitWriter, snap: Snapshot, ack: number): void {
+        if (snap.aliveCount !== undefined && snap.aliveCount !== this.aliveCount) {
+            writeServerMsg(w, { type: MsgType.AliveCounts, teamAliveCounts: [snap.aliveCount] });
+            this.aliveCount = snap.aliveCount;
+        }
+        this.write(w, snap, ack);
+        if (snap.playerStats) writeServerMsg(w, { type: MsgType.PlayerStats, stats: snap.playerStats });
+        if (snap.gameOver) writeServerMsg(w, { type: MsgType.GameOver, ...snap.gameOver });
+        for (const k of snap.kills ?? []) {
+            writeServerMsg(w, {
+                type: MsgType.Kill,
+                damageType: k.damageType,
+                itemSourceType: k.itemSourceType,
+                mapSourceType: k.mapSourceType,
+                targetId: k.targetId,
+                killerId: k.killerId,
+                killCreditId: k.killCreditId,
+                killerKills: k.killerKills,
+                downed: k.downed,
+                killed: k.killed,
+            });
+        }
+        for (const r of snap.roleAnnouncements ?? []) writeServerMsg(w, { type: MsgType.RoleAnnouncement, ...r });
+    }
+
+    /** One netsync frame (see writeFrame). */
+    encodeFrame(snap: Snapshot, ack: number): Uint8Array<ArrayBuffer> {
+        const w = new BitWriter(1024);
+        this.writeFrame(w, snap, ack);
         return w.getBuffer();
     }
 }
@@ -296,6 +450,10 @@ export class UpdateDecoder {
     private readonly objects = new Map<number, DecodedObject>();
     private readonly local: LocalPlayerState = emptyLocalState();
     private localPlayerId = 0;
+    private gas: Omit<GasView, "gasT"> | null = null;
+    private gasT = 0;
+    private killLeader: KillLeaderView | null = null;
+    private readonly indicators = new Map<number, MapIndicatorView>();
 
     constructor(ctx: NetCtx) {
         this.ctx = { width: ctx.width, height: ctx.height };
@@ -344,6 +502,28 @@ export class UpdateDecoder {
             bullets = readBullets(r, this.ctx);
             r.alignToNextByte();
         }
+        if (flags & UpdateFlag.Gas) this.gas = readGas(r, this.ctx);
+        if (flags & UpdateFlag.GasT) this.gasT = readGasT(r);
+        const planes = flags & UpdateFlag.Planes ? readPlanes(r) : [];
+        const airdrops = flags & UpdateFlag.Airdrops ? readAirdrops(r, this.ctx) : [];
+        const deadIndicators: MapIndicatorView[] = [];
+        if (flags & UpdateFlag.MapIndicators) {
+            for (const ind of readIndicators(r, this.ctx)) {
+                if (ind.dead) {
+                    this.indicators.delete(ind.id);
+                    deadIndicators.push(ind);
+                } else {
+                    this.indicators.set(ind.id, ind);
+                }
+            }
+        }
+        if (flags & UpdateFlag.KillLeader) this.killLeader = readKillLeader(r);
+        const playerInfos = flags & UpdateFlag.PlayerInfos ? readPlayerInfos(r) : [];
+        const deletedPlayerIds = flags & UpdateFlag.DeletePlayerIds ? readDeletedPlayers(r) : [];
+        r.alignToNextByte();
+        const mapIndicators = [...deadIndicators, ...this.indicators.values()]
+            .map((m) => ({ ...m, pos: { ...m.pos } }))
+            .sort((a, b) => a.id - b.id);
         const ids = [...this.objects.keys()].sort((a, b) => a - b);
         const objects: ObjectView[] = [];
         for (const id of ids) {
@@ -359,7 +539,18 @@ export class UpdateDecoder {
             objects,
             deletedIds,
             bullets,
+            planes,
+            airdrops,
+            mapIndicators,
+            spectatingId: flags & UpdateFlag.Spectating ? this.localPlayerId : 0,
+            playerInfos,
+            deletedPlayerIds,
         };
+        if (this.gas) {
+            const g = this.gas;
+            snapshot.gas = { ...g, posOld: { ...g.posOld }, posNew: { ...g.posNew }, gasT: this.gasT };
+        }
+        if (this.killLeader) snapshot.killLeader = { ...this.killLeader };
         return { type: MsgType.Update, snapshot, ack };
     }
 

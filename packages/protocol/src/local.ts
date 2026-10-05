@@ -10,6 +10,8 @@
 //   7 action   type 3 bits, item 10 bits, time and duration float 0..8.5 8 bits each
 //   8 cooldowns count 3 bits, count x float 0..4 8 bits, freeSwitch float 0..4 8 bits
 //   9 kills u8   10 dead bit   11 killedBy u16
+//  12 stats (M4) kills u8, damageDealt u16, damageTaken u16, timeAlive u16 (integers, like the PlayerStats record)
+//  13 spectatorCount u8 (M4; the original active player data carries it too)
 import type { BitReader, BitWriter } from "@rebirth/core";
 import { GameConfig } from "@rebirth/defs";
 import type { ActionType, LocalPlayerState } from "@rebirth/sim";
@@ -19,7 +21,7 @@ import { clampUint, dequantize, gameTypeId, gameTypeOf, quantize } from "./quant
 /** Bag items in protocol order (GameConfig.bagSizes key order, like the original). */
 export const BAG_ITEMS: readonly string[] = Object.keys(GameConfig.bagSizes);
 
-const SECTION_COUNT = 12;
+const SECTION_COUNT = 14;
 export const LOCAL_ALL_DIRTY = (1 << SECTION_COUNT) - 1;
 const ACTION_TYPES: readonly ActionType[] = ["none", "reload", "use"];
 const STAT_BITS = 8;
@@ -62,6 +64,13 @@ export function quantizeLocal(s: LocalPlayerState): LocalQuant {
         [clampUint(s.kills ?? 0, 8)],
         [s.dead ? 1 : 0],
         [clampUint(s.killedBy ?? 0, 16)],
+        [
+            clampUint(s.stats?.kills ?? 0, 8),
+            clampUint(s.stats?.damageDealt ?? 0, 16),
+            clampUint(s.stats?.damageTaken ?? 0, 16),
+            clampUint(s.stats?.timeAlive ?? 0, 16),
+        ],
+        [clampUint(s.spectatorCount ?? 0, 8)],
     ];
 }
 
@@ -116,6 +125,14 @@ export function writeLocal(w: BitWriter, q: LocalQuant, mask: number): void {
     if (mask & 512) w.writeBits(q[9][0], 8);
     if (mask & 1024) w.writeBits(q[10][0], 1);
     if (mask & 2048) w.writeBits(q[11][0], 16);
+    if (mask & 4096) {
+        const st = q[12];
+        w.writeBits(st[0], 8);
+        w.writeBits(st[1], 16);
+        w.writeBits(st[2], 16);
+        w.writeBits(st[3], 16);
+    }
+    if (mask & 8192) w.writeBits(q[13][0], 8);
 }
 
 /** Default local state before the first update (every section is sent in the first update anyway). */
@@ -140,6 +157,8 @@ export function emptyLocalState(): LocalPlayerState {
         kills: 0,
         dead: false,
         killedBy: 0,
+        stats: { kills: 0, damageDealt: 0, damageTaken: 0, timeAlive: 0 },
+        spectatorCount: 0,
     };
 }
 
@@ -190,6 +209,13 @@ export function readLocal(r: BitReader, s: LocalPlayerState): void {
     if (mask & 512) s.kills = r.readBits(8);
     if (mask & 1024) s.dead = r.readBits(1) === 1;
     if (mask & 2048) s.killedBy = r.readBits(16);
+    if (mask & 4096) {
+        const kills = r.readBits(8);
+        const damageDealt = r.readBits(16);
+        const damageTaken = r.readBits(16);
+        s.stats = { kills, damageDealt, damageTaken, timeAlive: r.readBits(16) };
+    }
+    if (mask & 8192) s.spectatorCount = r.readBits(8);
 }
 
 /** Deep copy (decoders hand out copies so callers can never corrupt the decoder state). */
@@ -200,5 +226,6 @@ export function cloneLocal(s: LocalPlayerState): LocalPlayerState {
         inventory: { ...s.inventory },
         action: s.action ? { ...s.action } : undefined,
         cooldowns: s.cooldowns ? { weapons: [...s.cooldowns.weapons], freeSwitch: s.cooldowns.freeSwitch } : undefined,
+        stats: s.stats ? { ...s.stats } : undefined,
     };
 }

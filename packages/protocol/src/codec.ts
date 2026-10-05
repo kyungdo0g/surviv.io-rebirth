@@ -2,7 +2,14 @@
 // byte boundary; the reader stops at the end of the frame or at a None (0) type byte (survev net.ts MsgStream,
 // docs/research/engine/netcode.md "Message framing").
 import { BitReader, BitWriter } from "@rebirth/core";
-import type { MapData } from "@rebirth/sim";
+import {
+    damageSourceOf,
+    type GameOverEvent,
+    type KillEvent,
+    type MapData,
+    type PlayerStatsView,
+    type RoleAnnouncementEvent,
+} from "@rebirth/sim";
 import { MsgType } from "./constants.ts";
 import { type MapMsg, readMap, writeMap } from "./map.ts";
 import {
@@ -189,16 +196,95 @@ export function decodeClientFrame(bytes: Uint8Array): ClientMsg[] {
     });
 }
 
+/** A Kill message as the simulation's KillEvent (the damage source is derived from the defs). */
+export function killEventOf(m: KillMsg): KillEvent {
+    return {
+        targetId: m.targetId,
+        killerId: m.killerId,
+        killCreditId: m.killCreditId,
+        killerKills: m.killerKills,
+        damageType: m.damageType,
+        source: damageSourceOf(m.damageType, m.itemSourceType, m.mapSourceType),
+        itemSourceType: m.itemSourceType,
+        mapSourceType: m.mapSourceType,
+        downed: m.downed,
+        killed: m.killed,
+    };
+}
+
 /**
  * Client-side decoder: Map messages set up the map extent and a fresh UpdateDecoder, Updates are applied to its
- * object cache. One instance per connection.
+ * object cache. The event messages of a frame (Kill, RoleAnnouncement, GameOver, PlayerStats) and the latest
+ * AliveCounts are attached to the frame's Update snapshot (`kills`, `roleAnnouncements`, `gameOver`,
+ * `playerStats`, `aliveCount`), so decoded snapshots equal Game.getSnapshot. One instance per connection.
  */
 export class ServerMsgDecoder {
     private updates: UpdateDecoder | null = null;
+    private aliveCount = 0;
+    private kills: KillEvent[] = [];
+    private roles: RoleAnnouncementEvent[] = [];
+    private gameOver: GameOverEvent | null = null;
+    private playerStats: PlayerStatsView | null = null;
+
+    /** `ctx`: start with this map extent instead of waiting for a Map message (tests). */
+    constructor(ctx?: { width: number; height: number }) {
+        if (ctx) this.updates = new UpdateDecoder(ctx);
+    }
 
     /** Decodes a server frame; throws ProtocolError on anything malformed. */
     decode(bytes: Uint8Array): ServerMsg[] {
-        return readFrame<ServerMsg>(bytes, (type, r) => this.readOne(type, r));
+        const msgs = readFrame<ServerMsg>(bytes, (type, r) => this.readOne(type, r));
+        let last: UpdateMsg | null = null;
+        for (const msg of msgs) {
+            switch (msg.type) {
+                case MsgType.AliveCounts:
+                    this.aliveCount = msg.teamAliveCounts.reduce((a, b) => a + b, 0);
+                    break;
+                case MsgType.Kill:
+                    this.kills.push(killEventOf(msg));
+                    break;
+                case MsgType.RoleAnnouncement:
+                    this.roles.push({
+                        playerId: msg.playerId,
+                        killerId: msg.killerId,
+                        role: msg.role,
+                        assigned: msg.assigned,
+                        killed: msg.killed,
+                    });
+                    break;
+                case MsgType.GameOver:
+                    this.gameOver = {
+                        teamId: msg.teamId,
+                        teamRank: msg.teamRank,
+                        gameOver: msg.gameOver,
+                        winningTeamId: msg.winningTeamId,
+                        playerStats: msg.playerStats.map((p) => ({ ...p })),
+                    };
+                    break;
+                case MsgType.PlayerStats:
+                    this.playerStats = { ...msg.stats };
+                    break;
+                case MsgType.Update:
+                    msg.snapshot.kills = [];
+                    msg.snapshot.roleAnnouncements = [];
+                    last = msg;
+                    break;
+            }
+        }
+        for (const msg of msgs) if (msg.type === MsgType.Update) msg.snapshot.aliveCount = this.aliveCount;
+        if (last) {
+            // events of a frame belong to its update (they may follow it, as in the original frame order)
+            const snap = last.snapshot;
+            snap.kills = this.kills;
+            snap.roleAnnouncements = this.roles;
+            if (this.gameOver) snap.gameOver = this.gameOver;
+            if (this.playerStats) snap.playerStats = this.playerStats;
+            this.kills = [];
+            this.roles = [];
+            this.gameOver = null;
+            this.playerStats = null;
+        }
+        return msgs;
     }
 
     private readOne(type: number, r: BitReader): ServerMsg {

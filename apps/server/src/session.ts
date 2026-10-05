@@ -11,6 +11,7 @@ import {
     NetLimits,
     peekJoinProtocol,
     type ServerSimpleMsg,
+    spectateActionName,
     writeServerMsg,
 } from "@rebirth/protocol";
 import type { RawData, WebSocket } from "ws";
@@ -170,9 +171,15 @@ export class ClientSession implements RoomMember {
             case MsgType.Ping:
                 this.send({ type: MsgType.Pong, nonce: msg.nonce });
                 break;
-            case MsgType.Spectate:
-                // spectating arrives with death and game over (later milestones)
+            case MsgType.Spectate: {
+                if (this.state !== "joined" || !this.room) {
+                    this.disconnect(DisconnectReason.InvalidPacket);
+                    return;
+                }
+                const action = spectateActionName(msg.action);
+                if (action) this.room.spectate(this.playerId, action);
                 break;
+            }
         }
     }
 
@@ -188,6 +195,10 @@ export class ClientSession implements RoomMember {
         }
         if (room.isFull) {
             this.disconnect(DisconnectReason.Full);
+            return;
+        }
+        if (room.game.over) {
+            this.disconnect(DisconnectReason.GameClosed);
             return;
         }
         if (this.joinTimer) clearTimeout(this.joinTimer);

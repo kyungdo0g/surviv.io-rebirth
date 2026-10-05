@@ -71,6 +71,9 @@ export function computeDamage(params: DamageParams, headshot: boolean, target: A
         reduce(params.isExplosion ? rules.flakJacketExplosionReduction : rules.flakJacketReduction);
     }
     if (target.hasPerk("steelskin")) reduce(rules.steelskinReduction);
+    // air drop crushing goes through the perks only unless the knob says otherwise (conflicts.md
+    // airdrop-crush-damage)
+    if (params.damageType === DamageType.Airdrop && !rules.airdropCrushArmor) return damage;
     if (!headshot) reduce(reductionOf(target.chest));
     reduce(reductionOf(target.helmet) * (headshot ? 1 : 0.3));
     return damage;

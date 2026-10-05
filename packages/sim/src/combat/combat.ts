@@ -1,5 +1,6 @@
 // Damage entry points shared by bullets and melee: player damage with death, obstacle damage with destruction.
 // Behaviour follows survev server/src/game/objects/player.ts (damage, kill) and obstacle.ts (damage, kill).
+import type { Vec2 } from "@rebirth/core";
 import { DamageType, GameObjectDefs, hasDef } from "@rebirth/defs";
 import { dropEverythingOnDeath, dropObstacleLoot, spawnDestroyType } from "../loot/drops.ts";
 import type { SimContext } from "../world/context.ts";
@@ -54,6 +55,8 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
         // TODO(M6): no credit for killing a teammate
         if (credit !== player) credit.kills++;
     }
+    // kill feed, alive count, kill leader, game over (match/match.ts)
+    ctx.onPlayerKilled(player, params, credit);
     dropEverythingOnDeath(ctx, player);
 }
 
@@ -73,9 +76,20 @@ export function applyObstacleDamage(ctx: SimContext, obstacle: Obstacle, params:
     const destroyed = obstacle.damage(params.amount);
     // loot resting against it may now move (survev forceLootUpdates)
     ctx.loot.wakeAround(obstacle.bounds, obstacle.layer);
-    if (!destroyed) return;
+    if (destroyed) onObstacleDestroyed(ctx, obstacle, params.dir);
+}
+
+/** Kills an obstacle whatever its destructibility (opened air drop crates), with the usual destruction effects. */
+export function destroyObstacle(ctx: SimContext, obstacle: Obstacle, dir?: Vec2): void {
+    if (obstacle.dead) return;
+    obstacle.kill();
+    ctx.loot.wakeAround(obstacle.bounds, obstacle.layer);
+    onObstacleDestroyed(ctx, obstacle, dir);
+}
+
+function onObstacleDestroyed(ctx: SimContext, obstacle: Obstacle, dir?: Vec2): void {
     spawnDestroyType(ctx, obstacle);
-    dropObstacleLoot(ctx, obstacle, params.dir);
+    dropObstacleLoot(ctx, obstacle, dir);
     // TODO(M5): obstacles with an `explosion` (barrels, propane tanks) explode on destruction
     // TODO(M4): destroying walls breaks the doors and windows in them and damages the building ceiling
 }

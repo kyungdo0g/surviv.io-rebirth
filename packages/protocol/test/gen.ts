@@ -2,7 +2,24 @@
 // tolerances of every field.
 import type { Rng, Vec2 } from "@rebirth/core";
 import { GameObjectRegistry, MapObjectRegistry } from "@rebirth/defs";
-import type { BulletEvent, LocalPlayerState, MapData, ObjectView, PlayerInput, Snapshot } from "@rebirth/sim";
+import {
+    type AirdropView,
+    type BulletEvent,
+    damageSourceOf,
+    type GameOverEvent,
+    type GasView,
+    type KillEvent,
+    type LocalPlayerState,
+    type MapData,
+    type MapIndicatorView,
+    type ObjectView,
+    type PlaneView,
+    type PlayerInfoView,
+    type PlayerInput,
+    type PlayerStatsView,
+    type RoleAnnouncementEvent,
+    type Snapshot,
+} from "@rebirth/sim";
 import { BAG_ITEMS, type NetCtx } from "../src/index.ts";
 import { type TolFn, tolTable } from "./close.ts";
 
@@ -87,6 +104,7 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 dead: rng.bool(0.2),
             };
             if (rng.bool(0.3)) view.door = { open: rng.bool(), locked: rng.bool(), canUse: rng.bool() };
+            if (rng.bool(0.2)) view.button = { onOff: rng.bool(), canUse: rng.bool(), seq: rng.int(0, 65535) };
             return view;
         }
         case "building":
@@ -123,6 +141,7 @@ export function mutateView(rng: Rng, ctx: NetCtx, view: ObjectView): ObjectView 
         out[k] = fresh[k];
     }
     if (view.kind === "obstacle" && rng.bool(0.5)) out.door = (view as { door?: unknown }).door;
+    if (view.kind === "obstacle" && rng.bool(0.5)) out.button = (view as { button?: unknown }).button;
     return out as unknown as ObjectView;
 }
 
@@ -156,6 +175,13 @@ export function randLocal(rng: Rng): LocalPlayerState {
         kills: rng.int(0, 255),
         dead: rng.bool(),
         killedBy: rng.int(0, 65535),
+        stats: {
+            kills: rng.int(0, 255),
+            damageDealt: rng.int(0, 65535),
+            damageTaken: rng.int(0, 65535),
+            timeAlive: rng.int(0, 65535),
+        },
+        spectatorCount: rng.int(0, 255),
     };
 }
 
@@ -194,6 +220,132 @@ export function randBullets(rng: Rng, ctx: NetCtx): BulletEvent[] {
         out.push(b);
     }
     return out;
+}
+
+// M4 match state and events
+
+export function randGas(rng: Rng, ctx: NetCtx): GasView {
+    return {
+        mode: rng.pick(["inactive", "waiting", "moving"] as const),
+        stage: rng.int(0, 17),
+        circleIdx: rng.int(-1, 7),
+        duration: rng.pick([0, 80, 30, 65, 25, 50, 20, 40, 15, 10, 5, 6]),
+        gasT: rng.next(),
+        posOld: randPos(rng, ctx),
+        posNew: randPos(rng, ctx),
+        radOld: rng.range(0, 1000),
+        radNew: rng.range(0, 1000),
+        damage: rng.pick([0, 1.4, 2.2, 3.5, 7.5, 10, 14, 22]),
+    };
+}
+
+export function randPlanes(rng: Rng): PlaneView[] {
+    return Array.from({ length: rng.bool(0.6) ? 0 : rng.int(1, 4) }, () => ({
+        id: rng.int(1, 255),
+        pos: { x: rng.range(-256, 1280), y: rng.range(-256, 1280) },
+        dir: randUnit(rng),
+        planeType: rng.pick(["airdrop", "airstrike"] as const),
+        actionComplete: rng.bool(),
+    }));
+}
+
+export function randAirdrops(rng: Rng, ctx: NetCtx, ids: { v: number }): AirdropView[] {
+    return Array.from({ length: rng.bool(0.6) ? 0 : rng.int(1, 3) }, () => ({
+        id: ids.v++ & 0xffff,
+        pos: randPos(rng, ctx),
+        fallT: rng.next(),
+        landed: rng.bool(0.2),
+    }));
+}
+
+export function randIndicator(rng: Rng, ctx: NetCtx, id: number): MapIndicatorView {
+    return { id, type: randGameType(rng), pos: randPos(rng, ctx), dead: false, equipped: rng.bool(0.2) };
+}
+
+/**
+ * Next indicator list from the live ones (`live`, updated in place): some die (listed dead once), some move, some
+ * appear with a free id.
+ */
+export function evolveIndicators(rng: Rng, ctx: NetCtx, live: Map<number, MapIndicatorView>): MapIndicatorView[] {
+    const out: MapIndicatorView[] = [];
+    for (const [id, ind] of live) {
+        if (rng.bool(0.2)) {
+            out.push({ ...ind, dead: true });
+            live.delete(id);
+        } else if (rng.bool(0.3)) {
+            live.set(id, { ...ind, pos: randPos(rng, ctx), equipped: rng.bool(0.2) });
+        }
+    }
+    for (let n = rng.int(0, 2); n > 0; n--) {
+        const free = Array.from({ length: 16 }, (_, i) => i).filter(
+            (i) => !live.has(i) && !out.some((o) => o.id === i),
+        );
+        if (free.length === 0) break;
+        const id = rng.pick(free);
+        live.set(id, randIndicator(rng, ctx, id));
+    }
+    out.push(...live.values());
+    return out.map((m) => ({ ...m, pos: { ...m.pos } })).sort((a, b) => a.id - b.id);
+}
+
+export function randKills(rng: Rng): KillEvent[] {
+    return Array.from({ length: rng.bool(0.7) ? 0 : rng.int(1, 4) }, () => {
+        const damageType = rng.int(0, 4);
+        const itemSourceType = rng.bool(0.3) ? "" : randGameType(rng);
+        const mapSourceType = rng.bool(0.8) ? "" : randMapType(rng);
+        return {
+            targetId: rng.int(1, 65535),
+            killerId: rng.int(0, 65535),
+            killCreditId: rng.int(0, 65535),
+            killerKills: rng.int(0, 255),
+            damageType,
+            source: damageSourceOf(damageType, itemSourceType, mapSourceType),
+            itemSourceType,
+            mapSourceType,
+            downed: rng.bool(0.2),
+            killed: rng.bool(0.8),
+        };
+    });
+}
+
+export function randRoles(rng: Rng): RoleAnnouncementEvent[] {
+    return Array.from({ length: rng.bool(0.8) ? 0 : rng.int(1, 2) }, () => ({
+        playerId: rng.int(1, 65535),
+        killerId: rng.int(0, 65535),
+        role: rng.pick(["kill_leader", "the_hunted", "leader"]),
+        assigned: rng.bool(),
+        killed: rng.bool(),
+    }));
+}
+
+export function randStats(rng: Rng): PlayerStatsView {
+    return {
+        playerId: rng.int(1, 65535),
+        timeAlive: rng.int(0, 65535),
+        kills: rng.int(0, 255),
+        dead: rng.bool(),
+        damageDealt: rng.int(0, 65535),
+        damageTaken: rng.int(0, 65535),
+    };
+}
+
+export function randGameOver(rng: Rng): GameOverEvent {
+    return {
+        teamId: rng.int(1, 255),
+        teamRank: rng.int(1, 80),
+        gameOver: rng.bool(),
+        winningTeamId: rng.int(0, 255),
+        playerStats: Array.from({ length: rng.int(1, 4) }, () => randStats(rng)),
+    };
+}
+
+export function randPlayerInfos(rng: Rng): PlayerInfoView[] {
+    return Array.from({ length: rng.bool(0.7) ? 0 : rng.int(1, 5) }, () => ({
+        playerId: rng.int(1, 65535),
+        teamId: rng.int(0, 255),
+        groupId: rng.int(0, 255),
+        name: randString(rng, 16),
+    }));
 }
 
 export function randInput(rng: Rng): PlayerInput {
@@ -259,6 +411,10 @@ export function netTolerances(maxExtent = 1024): TolFn {
     return tolTable({
         "pos.x": pos,
         "pos.y": pos,
+        "posOld.x": pos,
+        "posOld.y": pos,
+        "posNew.x": pos,
+        "posNew.y": pos,
         "min.x": pos,
         "min.y": pos,
         "max.x": pos,
@@ -282,6 +438,16 @@ export function netTolerances(maxExtent = 1024): TolFn {
         boost: 100 / 255 / 2 + 1e-9,
         "cooldowns.weapons": 4 / 255 / 2 + 1e-9,
         freeSwitch: 4 / 255 / 2 + 1e-9,
+        "gas.duration": 1e-5,
+        "gas.damage": 1e-5,
+        "gas.gasT": 1 / 65535 / 2 + 1e-9,
+        radOld: 2048 / 65535 / 2 + 1e-9,
+        radNew: 2048 / 65535 / 2 + 1e-9,
+        "planes.pos.x": 2048 / 1023 / 2 + 1e-9,
+        "planes.pos.y": 2048 / 1023 / 2 + 1e-9,
+        "planes.dir.x": 0.006,
+        "planes.dir.y": 0.006,
+        fallT: 1 / 127 / 2 + 1e-9,
         maxDist: 1024 / 65535 / 2 + 1e-9,
         endDist: 1024 / 65535 / 2 + 1e-9,
         width: 1e-5,

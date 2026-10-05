@@ -25,4 +25,8 @@ export interface SimContext {
     damagePlayer(target: Player, params: DamageParams): void;
     /** Obstacle damage: plating rules, then loot, destroyType and wakes on destruction. */
     damageObstacle(obstacle: Obstacle, params: DamageParams): void;
+    /** Called by killPlayer once the victim is dead and kill credit given: kill feed, alive count, game over. */
+    onPlayerKilled(victim: Player, params: DamageParams, credit: Player | undefined): void;
+    /** Registers an obstacle whose timers (opening crate, button cooldown) must run every tick. */
+    activateObstacle(obstacle: Obstacle): void;
 }

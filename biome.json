@@ -13,7 +13,8 @@
             "!test-results",
             "!playwright-report",
             "!tests/e2e/__screens__",
-            "!apps/client/src/generated"
+            "!apps/client/src/generated",
+            "!assets/fandom-gapfill.json"
         ]
     },
     "formatter": {

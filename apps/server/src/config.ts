@@ -38,6 +38,10 @@ export interface ServerConfig {
     log: boolean;
     /** testing aid: players joining a game with others spawn next to its first player */
     debugSpawnTogether: boolean;
+    /** living players (alive for 10 s) a game needs to start (original: 2) */
+    minPlayers: number;
+    /** a game is closed (its clients disconnected) this long after a winner was decided (survev: 1.8 s) */
+    gameOverGraceMs: number;
 }
 
 const DEFAULT_CLIENT_DIST = fileURLToPath(new URL("../../client/dist", import.meta.url));
@@ -69,6 +73,8 @@ const EnvSchema = z.object({
     TRUST_PROXY: bool.default(false),
     LOG: bool.default(true),
     DEBUG_SPAWN_TOGETHER: bool.default(false),
+    MIN_PLAYERS: z.coerce.number().int().min(1).max(255).default(2),
+    GAME_OVER_GRACE_MS: z.coerce.number().int().min(0).default(1800),
 });
 
 /** Validated configuration; throws an Error listing every invalid variable. */
@@ -98,6 +104,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         trustProxy: e.TRUST_PROXY,
         log: e.LOG,
         debugSpawnTogether: e.DEBUG_SPAWN_TOGETHER,
+        minPlayers: e.MIN_PLAYERS,
+        gameOverGraceMs: e.GAME_OVER_GRACE_MS,
     };
 }
 
