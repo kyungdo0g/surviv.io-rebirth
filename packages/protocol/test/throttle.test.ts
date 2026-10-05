@@ -81,4 +81,15 @@ describe("InputThrottle", () => {
         expect(inputChanged(a, { ...a, shootHold: true })).toBe(true);
         expect(inputChanged(null, a)).toBe(true);
     });
+
+    it("treats useItem as a one-shot: sent at once and kept when coalesced", () => {
+        const { throttle, sent, advance } = harness();
+        throttle.push({ ...emptyInput(1) });
+        expect(inputChanged(sent[0], { ...emptyInput(2), useItem: "bandage" })).toBe(true);
+        advance(2);
+        throttle.push({ ...emptyInput(2), useItem: "bandage" });
+        throttle.push({ ...emptyInput(3) });
+        advance(20);
+        expect(sent.map((s) => s.useItem ?? "")).toEqual(["", "bandage"]);
+    });
 });

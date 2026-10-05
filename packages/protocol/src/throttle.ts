@@ -1,7 +1,7 @@
 // Client input throttle: at most one Input message per `minIntervalMs` (one per 60 Hz frame), sent at once when the
 // input changed, delayed to the next slot when the previous send was too recent, and repeated every `keepaliveMs`
 // when nothing changes (the original client sends on change or after 1 s; netcode.md "Rates and timing").
-// One-shot parts (shootStart, actions) of inputs coalesced into one message are merged, never dropped.
+// One-shot parts (shootStart, actions, useItem) of inputs coalesced into one message are merged, never dropped.
 import type { PlayerInput } from "@rebirth/sim";
 import { NetLimits } from "./constants.ts";
 import { quantize, quantizeUnit } from "./quant.ts";
@@ -19,7 +19,7 @@ export interface InputThrottleOptions {
 /** Whether `next` must be sent given the last sent input (compared as wire values). */
 export function inputChanged(prev: PlayerInput | null, next: PlayerInput): boolean {
     if (!prev) return true;
-    if (next.shootStart || next.actions.length > 0) return true;
+    if (next.shootStart || next.actions.length > 0 || next.useItem) return true;
     if (
         prev.moveLeft !== next.moveLeft ||
         prev.moveRight !== next.moveRight ||
@@ -66,6 +66,9 @@ export class InputThrottle {
         if (this.pending) {
             merged.shootStart ||= this.pending.shootStart;
             merged.actions = [...this.pending.actions, ...input.actions].slice(0, NetLimits.MaxInputActions);
+            // the wire carries one useItem per message: keep the earlier request (a second one within the same
+            // 16 ms slot is dropped)
+            merged.useItem = this.pending.useItem || input.useItem;
         }
         this.pending = merged;
         const now = this.now();
