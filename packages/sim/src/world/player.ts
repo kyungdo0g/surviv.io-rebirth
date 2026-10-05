@@ -17,6 +17,8 @@ const PLAYER = GameConfig.player;
 const ZOOM_RADIUS = GameConfig.scopeZoomRadius.desktop;
 /** Extra distance pushed out of an obstacle so the next sub-step starts clear (survev player.ts). */
 const PUSH_EPS = 0.001;
+/** One-shot input actions kept between two ticks at most. */
+const MAX_PENDING_ACTIONS = 32;
 /** Movement multiplier while a shot slowdown or an item use runs (survev recalculateSpeed). */
 const BUSY_SPEED_MULT = 0.5;
 
@@ -149,7 +151,8 @@ export class Player implements InventoryOwner {
     receiveInput(input: PlayerInput): void {
         this.input = { ...input, toMouseDir: v2.copy(input.toMouseDir), actions: [...input.actions] };
         if (input.shootStart) this.shootStartPending = true;
-        this.pendingActions.push(...input.actions);
+        // bounded: a client flooding inputs between ticks cannot grow the queue without limit
+        if (this.pendingActions.length < MAX_PENDING_ACTIONS) this.pendingActions.push(...input.actions);
     }
 
     doAction(item: string, type: PlayerActionType, duration: number): void {

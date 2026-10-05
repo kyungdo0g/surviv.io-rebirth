@@ -33,7 +33,14 @@ interface MuzzleClip {
 }
 
 /** Nearest obstacle surface between the gun and barrelLength + 1.5 ahead (survev fireWeapon clipping). */
-function clipMuzzle(ctx: SimContext, player: Player, gunPos: Vec2, dir: Vec2, gunLen: number, layer: number): MuzzleClip {
+function clipMuzzle(
+    ctx: SimContext,
+    player: Player,
+    gunPos: Vec2,
+    dir: Vec2,
+    gunLen: number,
+    layer: number,
+): MuzzleClip {
     let clip: MuzzleClip = {
         len: gunLen + CLIP_EXTRA,
         point: v2.add(gunPos, v2.mul(dir, gunLen + CLIP_EXTRA)),
@@ -55,7 +62,7 @@ function clipMuzzle(ctx: SimContext, player: Player, gunPos: Vec2, dir: Vec2, gu
 
 /**
  * Fires the active gun once. `cooldown` is the new weapon cooldown (fireDelay plus the carried remainder), or
- * null for burst shots, whose timing the burst queue owns. Returns true when bullets were fired.
+ * null to leave it unchanged. Returns true when bullets were fired.
  */
 export function fireGun(ctx: SimContext, player: Player, offHand: boolean, cooldown: number | null): boolean {
     const wm = player.weaponManager;

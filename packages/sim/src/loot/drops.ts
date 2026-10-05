@@ -2,7 +2,15 @@
 // Behaviour follows survev server/src/game/map.ts (loot_spawner), objects/obstacle.ts (kill), objects/player.ts
 // (dropLoot, kill) and weaponManager.ts (_dropGun, dropMelee).
 import { math, type Vec2, v2 } from "@rebirth/core";
-import { GameObjectDefs, getDef, getMapDef, getMapObjectDef, hasMapObjectDef, type LootTableEntry, WeaponSlot } from "@rebirth/defs";
+import {
+    GameObjectDefs,
+    getDef,
+    getMapDef,
+    getMapObjectDef,
+    hasMapObjectDef,
+    type LootTableEntry,
+    WeaponSlot,
+} from "@rebirth/defs";
 import { gearLevel, isBagItem } from "../items/inventory.ts";
 import type { LootSpawn } from "../mapgen/generator.ts";
 import { randomPointInCircle } from "../mapgen/random.ts";
@@ -106,7 +114,13 @@ export function dropObstacleLoot(ctx: SimContext, obstacle: Obstacle, dir?: Vec2
 }
 
 /** A player throws an item behind itself (survev player.ts dropLoot: speed 7.5..11 against the facing). */
-export function playerDropLoot(ctx: SimContext, player: Player, type: string, count = 1, useCountForAmmo = false): void {
+export function playerDropLoot(
+    ctx: SimContext,
+    player: Player,
+    type: string,
+    count = 1,
+    useCountForAmmo = false,
+): void {
     ctx.loot.addLoot(type, player.pos, player.layer, count, {
         useCountForAmmo,
         pushSpeed: ctx.lootRng.range(7.5, 11),

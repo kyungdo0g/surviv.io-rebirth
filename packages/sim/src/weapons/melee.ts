@@ -25,7 +25,14 @@ export function meleeCollider(player: Player, def: MeleeDef): Circle {
 }
 
 /** Distance along the ray until the first obstacle of the list at least `height` tall (survev intersectSegmentDist). */
-function obstacleDist(obstacles: readonly Obstacle[], pos: Vec2, dir: Vec2, len: number, height: number, layer: number) {
+function obstacleDist(
+    obstacles: readonly Obstacle[],
+    pos: Vec2,
+    dir: Vec2,
+    len: number,
+    height: number,
+    layer: number,
+) {
     let dist = len;
     let id = 0;
     const end = v2.add(pos, v2.mul(dir, len));

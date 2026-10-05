@@ -224,7 +224,14 @@ export class BulletSystem {
                 const res = collider.intersectSegment(obj.collider, posOld, b.pos);
                 if (res) {
                     const dist = v2.distanceSqr(res.point, b.startPos);
-                    collisions.push({ type: "obstacle", obj, collidable: obj.collidable, point: res.point, normal: res.normal, dist });
+                    collisions.push({
+                        type: "obstacle",
+                        obj,
+                        collidable: obj.collidable,
+                        point: res.point,
+                        normal: res.normal,
+                        dist,
+                    });
                 }
             } else if (obj.kind === "player") {
                 this.collidePlayer(b, posOld, obj, collisions);
@@ -305,13 +312,24 @@ export class BulletSystem {
         }
         const body = collider.intersectSegment(collider.createCircle(p.pos, p.rad), posOld, b.pos);
         const bodyNormal = body && v2.normalizeSafe(v2.sub(body.point, p.pos), v2.neg(b.dir));
-        if (body && bodyNormal && (!pan || v2.distanceSqr(body.point, b.startPos) < v2.distanceSqr(pan.point, b.startPos))) {
+        if (
+            body &&
+            bodyNormal &&
+            (!pan || v2.distanceSqr(body.point, b.startPos) < v2.distanceSqr(pan.point, b.startPos))
+        ) {
             const dist = v2.distanceSqr(body.point, b.startPos);
             out.push({ type: "player", obj: p, collidable: true, point: body.point, normal: bodyNormal, dist });
             // Cast Ironskin: the hit also ricochets off the body
             if (p.hasPerk("steelskin")) {
                 const point = v2.add(body.point, v2.mul(bodyNormal, 0.1));
-                out.push({ type: "pan", obj: p, collidable: false, point, normal: bodyNormal, dist: v2.distanceSqr(point, b.startPos) });
+                out.push({
+                    type: "pan",
+                    obj: p,
+                    collidable: false,
+                    point,
+                    normal: bodyNormal,
+                    dist: v2.distanceSqr(point, b.startPos),
+                });
             }
         } else if (pan) {
             const dist = v2.distanceSqr(pan.point, b.startPos);

@@ -46,7 +46,7 @@ export function rollTier(
             return undefined;
         }
         const entry = pickEntry(table, rng);
-        if (!entry || !entry.name) return undefined;
+        if (!entry?.name) return undefined;
         if (!entry.name.startsWith("tier_")) return entry;
         name = entry.name;
     }

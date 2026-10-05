@@ -86,7 +86,14 @@ export class Loot {
     }
 
     toView(): LootView {
-        return { id: this.id, kind: "loot", type: this.type, pos: v2.copy(this.pos), layer: this.layer, count: this.count };
+        return {
+            id: this.id,
+            kind: "loot",
+            type: this.type,
+            pos: v2.copy(this.pos),
+            layer: this.layer,
+            count: this.count,
+        };
     }
 }
 

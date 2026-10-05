@@ -1,7 +1,13 @@
 // @rebirth/sim: deterministic game simulation. The contract (api, input, view) is what consumers depend on.
 export * from "./api.ts";
 export { type Bullet, BulletSystem, type FireBulletParams, panSegment } from "./combat/bullets.ts";
-export { applyObstacleDamage, applyPlayerDamage, canDamageObstacle, type HitRecord, killPlayer } from "./combat/combat.ts";
+export {
+    applyObstacleDamage,
+    applyPlayerDamage,
+    canDamageObstacle,
+    type HitRecord,
+    killPlayer,
+} from "./combat/combat.ts";
 export { type ArmorState, canHeadshot, computeDamage, type DamageParams, rollHeadshot } from "./combat/damage.ts";
 export { entityView, Game, type GameInit, VIEW_ASPECT, VIEW_MARGIN, viewBounds } from "./game.ts";
 export * from "./input.ts";

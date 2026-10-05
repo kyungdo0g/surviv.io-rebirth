@@ -29,7 +29,12 @@ export function applyPlayerDamage(ctx: SimContext, target: Player, params: Damag
         target.lastDamagedBy = source.id;
     }
     target.health = Math.max(0, Math.min(100, target.health - damage));
-    target.lastHit = { amount: damage, headshot, sourceId: params.sourceId ?? 0, gameSourceType: params.gameSourceType ?? "" };
+    target.lastHit = {
+        amount: damage,
+        headshot,
+        sourceId: params.sourceId ?? 0,
+        gameSourceType: params.gameSourceType ?? "",
+    };
     // TODO(M6): downed state in team modes; solo players die at 0 HP
     if (target.health === 0) killPlayer(ctx, target, params);
 }

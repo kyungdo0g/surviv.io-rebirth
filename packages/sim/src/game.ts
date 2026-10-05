@@ -194,8 +194,8 @@ export class Game implements GameApi, SimContext {
         // bullet damage is applied after every bullet moved (survev BulletBarn.update)
         const damages = this.bullets.damages.splice(0);
         for (const d of damages) {
-            if (d.target.kind === "player") applyPlayerDamage(this, d.target, d.params);
-            else applyObstacleDamage(this, d.target, d.params);
+            if (d.target.kind === "player") this.damagePlayer(d.target, d.params);
+            else this.damageObstacle(d.target, d.params);
         }
         // a building is occupied while any living player is inside one of its ceiling zoom regions
         const occupied = new Set<Building>();

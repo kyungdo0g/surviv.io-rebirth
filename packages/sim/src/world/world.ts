@@ -1,11 +1,11 @@
 // The live world: object registry, broadphase grid and ground queries shared by every system.
 import { type Bounds, collider, Grid, type Vec2 } from "@rebirth/core";
 import { pointInPolygon } from "../geom/polygon.ts";
+import type { Loot } from "../loot/loot.ts";
 import type { GenerateMapResult } from "../mapgen/generate.ts";
 import type { Terrain } from "../mapgen/terrain.ts";
 import { riverWaterAt } from "../mapgen/terrainQuery.ts";
 import type { MapData } from "../view.ts";
-import type { Loot } from "../loot/loot.ts";
 import { Building, createMapEntity, type MapEntity, Obstacle, Structure } from "./entities.ts";
 import type { Player } from "./player.ts";
 

@@ -1,16 +1,7 @@
 // Weapon slots, switching, fire modes, reloads and melee scheduling of one player.
 // Behaviour follows survev server/src/game/weaponManager.ts (setCurWeapIndex, setWeapon, gunUpdate, meleeUpdate,
 // tryReload, reload) and docs/research/items/guns.md "Shared firing, switching and reload rules".
-import {
-    GameConfig,
-    GameObjectDefs,
-    type GunDef,
-    getDef,
-    getDefOfType,
-    hasDef,
-    type MeleeDef,
-    WeaponSlot,
-} from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, type GunDef, getDef, hasDef, type MeleeDef, WeaponSlot } from "@rebirth/defs";
 import { isBagItem, THROWABLE_LIST } from "../items/inventory.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
@@ -19,6 +10,15 @@ import { meleeDamage } from "./melee.ts";
 
 /** Float tolerance for timers that are decremented by dt every tick (0.1 - 10 * 0.01 is not exactly 0). */
 export const TIME_EPS = 1e-9;
+
+/**
+ * Whether a weapon whose cooldown was just decremented is ready, and if so how far (<= 0) past its ready time the
+ * current tick is: the remainder when it became ready during this tick, 0 when it was already idle before.
+ */
+export function readyCarry(cooldown: number, dt: number): number | null {
+    if (cooldown > TIME_EPS) return null;
+    return cooldown > -dt + TIME_EPS ? Math.min(cooldown, 0) : 0;
+}
 
 export interface WeaponSlotState {
     type: string;
@@ -199,8 +199,10 @@ export class WeaponManager {
     }
 
     /**
-     * Fire modes. Cooldowns carry their sub-tick remainder into the next shot, so a held trigger fires exactly
-     * every fireDelay on average instead of drifting up to the next tick (survev resets the cooldown to fireDelay).
+     * Fire modes. A weapon is ready on the tick its cooldown reaches 0, and the sub-tick remainder carries into
+     * the next cooldown, so a held trigger fires exactly every fireDelay on average. survev instead resets the
+     * cooldown to fireDelay and compares with <= 0 (auto) / < 0 (single, burst), which with a fixed dt adds a tick
+     * of float residue to many intervals (tools/oracle README "Fixed-step float residue").
      */
     private gunUpdate(ctx: SimContext, def: GunDef, dt: number): void {
         const player = this.player;
@@ -210,19 +212,17 @@ export class WeaponManager {
             this.tryReload();
         }
         if (gunFireGate(def)) return;
+        const carry = readyCarry(weapon.cooldown, dt);
         switch (def.fireMode) {
             case "auto":
-                // ready when the cooldown has run out (<= 0)
-                if (player.shootHold && weapon.cooldown <= TIME_EPS) {
-                    const carry = weapon.cooldown > -dt + TIME_EPS ? Math.min(weapon.cooldown, 0) : 0;
+                if (player.shootHold && carry !== null) {
                     fireGun(ctx, player, this.offHand, def.fireDelay + carry);
                     this.offHand = !this.offHand;
                 }
                 break;
             case "single":
-                // one shot per click, once the cooldown is below 0 (survev compares with < 0)
-                if (player.shootStart && weapon.cooldown < -TIME_EPS) {
-                    const carry = weapon.cooldown >= -dt - TIME_EPS ? weapon.cooldown : 0;
+                // one shot per click
+                if (player.shootStart && carry !== null) {
                     fireGun(ctx, player, this.offHand, def.fireDelay + carry);
                     this.offHand = !this.offHand;
                 }
@@ -230,16 +230,18 @@ export class WeaponManager {
             case "burst": {
                 const count = def.burstCount ?? 1;
                 const delay = def.burstDelay ?? 0;
-                if (player.shootHold && weapon.cooldown < -TIME_EPS && this.bursts.length === 0) {
-                    const carry = weapon.cooldown >= -dt - TIME_EPS ? weapon.cooldown : 0;
+                if (player.shootHold && carry !== null && this.bursts.length === 0) {
                     for (let i = 0; i < count; i++) this.bursts.push(carry + i * delay);
                     // the next burst may start fireDelay after the last shot of this one
                     weapon.cooldown = carry + (count - 1) * delay + def.fireDelay;
                     this.offHand = !this.offHand;
                 }
                 while (this.bursts.length && this.bursts[0] <= TIME_EPS) {
-                    this.bursts.shift();
-                    fireGun(ctx, player, this.offHand, null);
+                    const due = this.bursts.shift() ?? 0;
+                    // every shot restarts the cooldown, so a burst cut short by an empty magazine can reload
+                    // fireDelay after its last real shot (survev fireWeapon sets cooldown = fireDelay)
+                    const shotCarry = due > -dt + TIME_EPS ? Math.min(due, 0) : 0;
+                    fireGun(ctx, player, this.offHand, def.fireDelay + shotCarry);
                 }
                 break;
             }
@@ -250,12 +252,12 @@ export class WeaponManager {
         const player = this.player;
         const weapon = this.activeSlot;
         const attack = def.attack;
+        const carry = readyCarry(weapon.cooldown, dt);
         if (
             player.animType !== "melee" &&
             (player.shootStart || (player.shootHold && def.autoAttack)) &&
-            weapon.cooldown < -TIME_EPS
+            carry !== null
         ) {
-            const carry = weapon.cooldown >= -dt - TIME_EPS ? weapon.cooldown : 0;
             player.cancelAction();
             player.playAnim("melee", attack.cooldownTime + carry);
             weapon.cooldown = attack.cooldownTime + carry;
@@ -312,7 +314,8 @@ export class WeaponManager {
         const def = gunDef(weapon.type);
         if (!def) return false;
         const stats = this.ammoStats(def);
-        const maxReload = player.action.type === "reloadAlt" && stats.maxReloadAlt ? stats.maxReloadAlt : stats.maxReload;
+        const maxReload =
+            player.action.type === "reloadAlt" && stats.maxReloadAlt ? stats.maxReloadAlt : stats.maxReload;
         const space = stats.maxClip - weapon.ammo;
         if (space <= 0) return false;
         let amount = Math.min(maxReload, space);
@@ -324,15 +327,5 @@ export class WeaponManager {
         weapon.ammo += amount;
         this.bursts.length = 0;
         return weapon.ammo < stats.maxClip && (infinite || player.inv.has(def.ammo));
-    }
-
-    /** Ammo stats of the active gun, or undefined when no gun is held. */
-    activeGun(): GunDef | undefined {
-        return gunDef(this.activeWeapon);
-    }
-
-    /** Melee def of the melee slot. */
-    meleeDef(): MeleeDef {
-        return getDefOfType("melee", this.weapons[WeaponSlot.Melee].type || "fists");
     }
 }
