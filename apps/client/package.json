@@ -10,6 +10,7 @@
     "dependencies": {
         "@rebirth/core": "workspace:*",
         "@rebirth/defs": "workspace:*",
+        "@rebirth/protocol": "workspace:*",
         "@rebirth/sim": "workspace:*",
         "pixi.js": "^8.22.0"
     },

@@ -5,6 +5,13 @@ import type { PlayerInput } from "@rebirth/sim";
 import type { Camera } from "../render/camera.ts";
 import { ActionBinds, type BindCode, FireBind, MovementBinds } from "./keybinds.ts";
 
+/** HUD elements that take clicks (weapon slots, scopes, items) carry this attribute; presses on them do not fire */
+export const HUD_INTERACTIVE_ATTR = "data-hud-click";
+
+function onHud(target: EventTarget | null): boolean {
+    return target instanceof Element && target.closest(`[${HUD_INTERACTIVE_ATTR}]`) !== null;
+}
+
 /** keys whose browser default (scrolling, find, focus change) would disturb the game */
 const PREVENT_DEFAULT = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "Tab", "F3"]);
 
@@ -14,6 +21,8 @@ export class InputManager {
     /** cursor in screen pixels; starts at the screen center */
     mouse: Vec2 = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     private seq = 0;
+    /** one-shot actions queued by the HUD (slot and scope clicks), sent with the next input */
+    private readonly queued: number[] = [];
     private readonly listeners: Array<[EventTarget, string, EventListener]> = [];
 
     constructor(target: Window = window) {
@@ -32,14 +41,19 @@ export class InputManager {
         });
         on<MouseEvent>(target, "mousedown", (e) => {
             this.mouse = { x: e.clientX, y: e.clientY };
-            this.press(`Mouse${e.button}`);
+            if (!onHud(e.target)) this.press(`Mouse${e.button}`);
         });
         on<MouseEvent>(target, "mouseup", (e) => this.down.delete(`Mouse${e.button}`));
         on<WheelEvent>(target, "wheel", (e) => {
-            if (e.deltaY !== 0) this.pressed.add(e.deltaY > 0 ? "WheelDown" : "WheelUp");
+            if (e.deltaY !== 0 && !onHud(e.target)) this.pressed.add(e.deltaY > 0 ? "WheelDown" : "WheelUp");
         });
         on<MouseEvent>(target, "contextmenu", (e) => e.preventDefault());
         on(target, "blur", () => this.down.clear());
+    }
+
+    /** Sends `action` (a defs `Input` value) with the next sampled input. */
+    queueAction(action: number): void {
+        this.queued.push(action);
     }
 
     private press(code: BindCode): void {
@@ -62,7 +76,7 @@ export class InputManager {
         const dx = mouseWorld.x - playerPos.x;
         const dy = mouseWorld.y - playerPos.y;
         const len = Math.hypot(dx, dy);
-        const actions: number[] = [];
+        const actions: number[] = this.queued.splice(0);
         for (const bind of ActionBinds) {
             if (bind.codes.some((c) => this.pressed.has(c))) actions.push(bind.action);
         }

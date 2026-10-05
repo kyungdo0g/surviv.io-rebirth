@@ -179,7 +179,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         }
         if (action.seq !== this.actionSeq) {
             this.actionSeq = action.seq;
-            if (action.type !== "none") this.deps.fx?.actionStart(view, view.pos, view.dir);
+            this.deps.fx?.actionStart(view, view.pos, view.dir);
         }
         if (shot.seq !== this.shotSeq) {
             this.shotSeq = shot.seq;

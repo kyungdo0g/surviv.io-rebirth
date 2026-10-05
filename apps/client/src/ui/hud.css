@@ -1,0 +1,686 @@
+/*
+ * In-game HUD, laid out like the original desktop ("Lg") HUD: sizes, colours and positions follow the original
+ * game.css (survev client/css/game.css; docs/research/ui/hud.md). Everything is click-through except elements
+ * marked [data-hud-click].
+ */
+#ui-game {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    color: #ffffff;
+    font-family: "Roboto Condensed", Arial, "WenQuanYi Zen Hei", sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow: hidden;
+    z-index: 1;
+}
+
+#ui-game [data-hud-click] {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+#ui-game .ui-hidden {
+    display: none !important;
+}
+
+.ui-outline-hover {
+    border: 2px solid rgba(0, 255, 0, 0);
+    box-sizing: content-box;
+}
+
+.ui-outline-hover:hover {
+    transition: border 100ms ease-out;
+    border: 2px solid #00ff00;
+}
+
+/* top centre: scopes */
+#ui-top-center-scopes {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: flex-start;
+    white-space: nowrap;
+}
+
+.ui-zoom {
+    position: relative;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 36px;
+    width: 64px;
+    height: 64px;
+    opacity: 0.6;
+    text-align: center;
+    transition: all 100ms ease-in;
+}
+
+.ui-zoom-active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.ui-zoom-inactive {
+    margin-left: -8px;
+    margin-right: -8px;
+    transform: scale(0.5);
+}
+
+.ui-zoom-inactive:hover {
+    opacity: 1;
+}
+
+.ui-zoom-level {
+    margin-top: 12px;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.ui-zoom-append {
+    font-size: 24px;
+}
+
+/* top right: kill counter */
+#ui-leaderboard-wrapper {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 88px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#ui-kill-counter {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    margin-bottom: 8px;
+    padding: 8px;
+    height: 64px;
+    line-height: 64px;
+}
+
+.ui-player-kills {
+    font-size: 54px;
+}
+
+.ui-kill-counter-header {
+    font-size: 24px;
+}
+
+/* right centre: medical items and ammo */
+#ui-right-center {
+    position: absolute;
+    top: 40%;
+    right: 12px;
+    transform: translateY(-50%);
+    opacity: 0.75;
+    transition: opacity 0.25s ease-out;
+}
+
+#ui-right-center:hover {
+    opacity: 1;
+}
+
+#ui-medical-interactive {
+    margin-bottom: 32px;
+}
+
+.ui-loot {
+    position: relative;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    width: 85px;
+    height: 32px;
+    margin-left: auto;
+    margin-bottom: 5px;
+    transition: transform 100ms ease-in;
+}
+
+.ui-loot:hover {
+    transform: scale(1.1);
+}
+
+.ui-loot .ui-loot-count {
+    position: absolute;
+    font-size: 24px;
+    font-weight: bold;
+    left: 10px;
+    top: 1px;
+    text-shadow: 1px 1px #000000;
+}
+
+.ui-loot .ui-loot-image {
+    position: absolute;
+    height: 30px;
+    width: 30px;
+    right: 5px;
+    top: 1px;
+}
+
+#ui-ammo-interactive {
+    width: 90px;
+    margin-left: auto;
+}
+
+.ui-ammo {
+    position: relative;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    display: inline-block;
+    height: 52px;
+    width: 35px;
+    margin: 0 3px 5px;
+    vertical-align: top;
+}
+
+.ui-ammo .ui-loot-count {
+    position: absolute;
+    font-size: 20px;
+    font-weight: bold;
+    top: 26px;
+    width: 100%;
+    text-align: center;
+    text-shadow: 1px 1px #000000;
+}
+
+.ui-ammo .ui-loot-image,
+.ui-ammo .ui-loot-overlay {
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    right: 6px;
+    top: 5px;
+    border-radius: 2px;
+}
+
+@media (max-height: 864px), (max-width: 1024px) {
+    #ui-right-center {
+        top: 42%;
+        transform-origin: right;
+        transform: translateY(-50%) scale(0.8);
+    }
+
+    #ui-medical-interactive {
+        margin-bottom: 8px;
+    }
+}
+
+@media (max-height: 640px) {
+    #ui-right-center {
+        transform: translateY(-50%) scale(0.7);
+    }
+}
+
+/* lower centre: interaction prompt */
+#ui-lower-center {
+    position: absolute;
+    bottom: 40%;
+    left: 50%;
+}
+
+#ui-interaction {
+    display: flex;
+}
+
+#ui-interaction-press {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    font-weight: 700;
+    margin-left: -24px;
+    text-align: center;
+    font-size: 42px;
+    height: 48px;
+    width: 48px;
+    line-height: 48px;
+}
+
+#ui-interaction-outer {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    margin-left: 10px;
+    padding: 0 15px;
+    height: 48px;
+    white-space: nowrap;
+}
+
+#ui-interaction-description {
+    font-size: 24px;
+    line-height: 48px;
+    text-align: center;
+}
+
+/* action pie timer (the original draws it with Pixi at one third of the screen height) */
+#ui-pie-timer {
+    position: absolute;
+    left: 50%;
+    top: 33.3%;
+    width: 0;
+    height: 0;
+}
+
+#ui-pie-timer svg {
+    position: absolute;
+    left: -36px;
+    top: -36px;
+    width: 72px;
+    height: 72px;
+    overflow: visible;
+}
+
+#ui-pie-timer .ui-pie-count {
+    position: absolute;
+    left: -40px;
+    top: -16px;
+    width: 80px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 32px;
+    text-shadow:
+        -1px -1px #000000,
+        1px -1px #000000,
+        -1px 1px #000000,
+        1px 1px #000000;
+}
+
+#ui-pie-timer .ui-pie-label {
+    position: absolute;
+    top: 69.5px;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    padding: 0 28px;
+    height: 36px;
+    line-height: 36px;
+    font-size: 24px;
+    font-weight: 100;
+    white-space: nowrap;
+}
+
+/* bottom centre: equipped ammo, boost and health */
+#ui-equipped-ammo-wrapper {
+    position: absolute;
+    left: 50%;
+    bottom: 62px;
+    transform: translateX(-50%);
+}
+
+#ui-bullet-counter {
+    position: relative;
+    width: 175px;
+    height: 56px;
+    margin-bottom: 12px;
+    text-align: center;
+    text-shadow: 2px 2px #000000;
+}
+
+#ui-current-clip {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    font-size: 44px;
+    font-weight: bold;
+    width: 100px;
+    height: 50px;
+    line-height: 50px;
+}
+
+#ui-remaining-ammo {
+    position: absolute;
+    left: 82%;
+    top: 18px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 32px;
+    width: 65px;
+    height: 32px;
+}
+
+#ui-bottom-center-0 {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+}
+
+#ui-boost-counter {
+    display: flex;
+    width: 412px;
+    transition: opacity 0.25s;
+}
+
+.ui-boost-base {
+    background: rgba(0, 0, 0, 0.4);
+    height: 10px;
+    margin: 0 3px 8px;
+}
+
+.ui-boost-base .ui-bar-inner {
+    border-radius: inherit;
+    width: 0;
+    height: 10px;
+}
+
+#ui-boost-counter-0 {
+    width: 100px;
+    margin-left: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+#ui-boost-counter-0 .ui-bar-inner {
+    background: #ff901a;
+}
+
+#ui-boost-counter-1 {
+    width: 100px;
+}
+
+#ui-boost-counter-1 .ui-bar-inner {
+    background: #ff751a;
+}
+
+#ui-boost-counter-2 {
+    width: 150px;
+}
+
+#ui-boost-counter-2 .ui-bar-inner {
+    background: #ff6616;
+}
+
+#ui-boost-counter-3 {
+    width: 50px;
+    margin-right: 0;
+    border-radius: 0 3px 3px 0;
+}
+
+#ui-boost-counter-3 .ui-bar-inner {
+    background: #ff5600;
+}
+
+#ui-health-counter {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    width: 400px;
+    height: 32px;
+    padding: 6px;
+}
+
+#ui-health-container {
+    position: relative;
+    width: 400px;
+    height: 32px;
+}
+
+#ui-health-container .ui-bar-inner {
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 5px;
+    width: 100%;
+    height: 32px;
+}
+
+#ui-health-actual {
+    z-index: 1;
+}
+
+#ui-health-depleted {
+    z-index: 0;
+    background: #929292;
+    transition: width 1s ease-out;
+}
+
+#ui-health-actual.ui-bar-danger {
+    animation: ui-pulse 0.5s ease-out infinite alternate;
+}
+
+@keyframes ui-pulse {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.4;
+    }
+}
+
+/* bottom centre right: gear */
+#ui-bottom-center-right {
+    position: absolute;
+    bottom: 12px;
+    left: 71%;
+}
+
+.ui-armor-counter {
+    position: absolute;
+    bottom: 0;
+    width: 48px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+}
+
+#ui-armor-helmet {
+    right: 4px;
+}
+
+#ui-armor-chest {
+    left: 4px;
+}
+
+#ui-armor-backpack {
+    left: 60px;
+}
+
+.ui-armor-image {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    height: 36px;
+    width: 36px;
+}
+
+.ui-armor-level {
+    position: absolute;
+    bottom: 2px;
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 1px 1px #000000;
+    white-space: nowrap;
+}
+
+/* bottom right: weapon slots */
+#ui-bottom-right {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+}
+
+#ui-weapon-container {
+    position: relative;
+    width: 192px;
+    height: 274px;
+}
+
+.ui-weapon-switch {
+    position: absolute;
+    right: 0;
+    width: 83.33%;
+    height: 60px;
+    opacity: 0.6;
+    border-radius: 5px;
+    border: 2px solid transparent;
+    transition:
+        width 0.09s ease-out,
+        opacity 0.15s linear,
+        background-color 0.1s;
+}
+
+.ui-weapon-switch:hover {
+    border-color: #00ff00;
+}
+
+.ui-weapon-switch.ui-weapon-equipped {
+    width: 100%;
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.ui-weapon-switch.ui-weapon-empty {
+    pointer-events: none !important;
+}
+
+#ui-weapon-id-1 {
+    bottom: 210px;
+}
+
+#ui-weapon-id-2 {
+    bottom: 140px;
+}
+
+#ui-weapon-id-3 {
+    bottom: 70px;
+}
+
+#ui-weapon-id-4 {
+    bottom: 0;
+}
+
+.ui-weapon-name {
+    position: absolute;
+    right: 8px;
+    top: 34px;
+    font-size: 18px;
+    font-weight: bold;
+    white-space: nowrap;
+    text-shadow: 1px 1px #000000;
+}
+
+.ui-weapon-number {
+    position: absolute;
+    right: 8px;
+    top: 0;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 1px 1px #000000;
+}
+
+.ui-weapon-image {
+    position: absolute;
+    left: 4px;
+    top: 0;
+    height: 60px;
+    width: 60px;
+}
+
+#ui-weapon-id-4 .ui-weapon-image {
+    height: 52px;
+    width: 52px;
+    top: 4px;
+}
+
+.ui-weapon-ammo {
+    position: absolute;
+    right: 78px;
+    top: 26px;
+    width: 32px;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 34px;
+    text-align: center;
+}
+
+/* death overlay (sandbox) */
+#ui-death {
+    position: absolute;
+    left: 50%;
+    top: 30%;
+    transform: translateX(-50%);
+    min-width: 360px;
+    padding: 24px 32px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 5px;
+    text-align: center;
+}
+
+#ui-death-title {
+    font-size: 40px;
+    font-weight: bold;
+}
+
+#ui-death-killer {
+    margin-top: 8px;
+    font-size: 22px;
+}
+
+#ui-death-respawn {
+    margin-top: 20px;
+    display: inline-block;
+    padding: 10px 28px;
+    font-size: 22px;
+    font-weight: bold;
+    background: #50afab;
+    border-bottom: 4px solid #387c79;
+    border-radius: 5px;
+}
+
+#ui-death-respawn:hover {
+    background: #5fc1bd;
+}
+
+/* the original shrinks the HUD on smaller screens (game.css media queries) */
+@media (max-height: 768px), (max-width: 1200px) {
+    #ui-top-center-scopes {
+        transform: translateX(-50%) scale(0.85);
+        transform-origin: top center;
+    }
+
+    #ui-leaderboard-wrapper {
+        transform-origin: top right;
+        transform: scale(0.85);
+    }
+
+    #ui-bottom-right {
+        transform-origin: bottom right;
+        transform: scale(0.7);
+    }
+
+    #ui-lower-center {
+        transform-origin: left bottom;
+        transform: scale(0.85);
+        bottom: 33%;
+    }
+}
+
+@media (max-height: 768px), (max-width: 1300px) {
+    #ui-bottom-center-right {
+        left: 73%;
+        transform: scale(0.7);
+        transform-origin: bottom center;
+    }
+}
+
+@media (max-width: 1000px) {
+    #ui-bottom-center-0,
+    #ui-equipped-ammo-wrapper {
+        transform: translateX(-50%) scale(0.75);
+        transform-origin: bottom center;
+    }
+
+    #ui-equipped-ammo-wrapper {
+        bottom: 46px;
+    }
+
+    #ui-bottom-center-right {
+        left: auto;
+        right: 260px;
+        bottom: 80px;
+    }
+
+}

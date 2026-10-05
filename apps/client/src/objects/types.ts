@@ -11,7 +11,7 @@ import type { AnimEffect } from "./anims.ts";
 export interface PlayerFx {
     /** an animation reached a sound or melee-hit keyframe */
     animEffect(player: PlayerView, pos: Vec2, dir: Vec2, effect: AnimEffect): void;
-    /** a reload or item use started (`player.action` changed to a running action) */
+    /** a reload or item use started or was cancelled (`player.action.seq` changed) */
     actionStart(player: PlayerView, pos: Vec2, dir: Vec2): void;
     /** a gun fired (`player.shot.seq` changed) */
     shot(player: PlayerView, pos: Vec2, dir: Vec2): void;

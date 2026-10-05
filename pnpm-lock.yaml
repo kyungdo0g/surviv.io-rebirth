@@ -32,6 +32,9 @@ importers:
       '@rebirth/defs':
         specifier: workspace:*
         version: link:../../packages/defs
+      '@rebirth/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
       '@rebirth/sim':
         specifier: workspace:*
         version: link:../../packages/sim
