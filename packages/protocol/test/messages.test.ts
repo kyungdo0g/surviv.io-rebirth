@@ -103,6 +103,17 @@ describe("client messages", () => {
         });
     });
 
+    it("PerkModeRoleSelect round-trips (M7a: original layout, role game type + 6 pad bits)", () => {
+        forCases(5, (rng) => {
+            const msg: ClientMsg = {
+                type: MsgType.PerkModeRoleSelect,
+                role: rng.pick(["tank", "scout", randGameType(rng)]),
+            };
+            expect(encodeClientMsg(msg).length).toBe(1 + 2);
+            assertClose(clientRoundTrip(msg), msg, exact);
+        });
+    });
+
     it("several messages share one frame", () => {
         forCases(4, (rng) => {
             const msgs: ClientMsg[] = Array.from({ length: rng.int(1, 5) }, () =>

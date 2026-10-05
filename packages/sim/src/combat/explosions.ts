@@ -9,6 +9,8 @@
 import { type Bounds, type Collider, collider, math, type Vec2, v2 } from "@rebirth/core";
 import { type ExplosionDef, getDefOfType, getMapObjectDef, hasDef, hasMapObjectDef } from "@rebirth/defs";
 import type { Loot } from "../loot/loot.ts";
+import { windwalkTrigger } from "../perks/effects.ts";
+import { incrementFat } from "../perks/perks.ts";
 import type { ExplosionEvent } from "../view.ts";
 import type { SimContext } from "../world/context.ts";
 import { createMapEntity, type Decal, type Obstacle } from "../world/entities.ts";
@@ -63,7 +65,7 @@ type Target = Player | Obstacle | Loot;
 
 export type ExplosionHost = Pick<
     SimContext,
-    "world" | "rules" | "fxRng" | "bullets" | "smokes" | "damagePlayer" | "damageObstacle"
+    "world" | "rules" | "fxRng" | "bullets" | "smokes" | "damagePlayer" | "damageObstacle" | "getPlayer"
 >;
 
 function colliderOf(obj: Target): Collider {
@@ -167,6 +169,19 @@ export class ExplosionSystem {
             if (obj.kind !== "loot" && obj.dead) continue;
             targets.push({ obj, col: colliderOf(obj) });
         }
+        // Windwalk holders near an enemy explosion get their burst (conflicts.md perk-windwalk-explosions)
+        if (this.host.rules.perks.windwalkOnExplosions) {
+            const sourceTeam = e.source.sourceId ? (this.host.getPlayer(e.source.sourceId)?.teamId ?? 0) : 0;
+            for (const { obj } of targets) {
+                if (
+                    obj.kind !== "player" ||
+                    v2.distance(obj.pos, pos) > this.host.rules.perks.windwalkTriggerDistance
+                ) {
+                    continue;
+                }
+                windwalkTrigger(this.host.rules.perks, obj, sourceTeam);
+            }
+        }
         const center = collider.createCircle(pos, CENTER_RAD);
         const damaged = new Set<number>();
         const step = Math.min(Math.acos(1 - (RAY_GAP / rad) ** 2 / 2), MAX_RAY_STEP);
@@ -216,7 +231,8 @@ export class ExplosionSystem {
         }
         // teammates of the source take no damage: the player damage pipeline drops teammate hits (potato explosions'
         // teamDamage false is informational, explosions.md "Friendly fire and credit")
-        // TODO(M8): spud gun shots enlarge and slow the target (survev incrementFat; fandom Spud_Gun)
+        // Spud Gun shots enlarge the target, teammates too (survev explosion.ts incrementFat; throwables.md)
+        if (obj.kind === "player" && e.type === "explosion_potato_smgshot") incrementFat(obj);
         const params = {
             amount: obj.kind === "obstacle" ? damage * e.def.obstacleDamage : damage,
             damageType: e.source.damageType,

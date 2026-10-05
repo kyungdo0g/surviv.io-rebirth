@@ -16,9 +16,12 @@
 //                    each aligned
 //   [PlayerStatus] [GroupStatus] [Emotes]   teams.ts sections (M6a, extended flags), each aligned: the team HUD rows
 //                    (LocalPlayerState.team, sent when their wire values change) and the emote events
+//   [FactionStatus]  teams.ts section (M7a, extended flags): the viewer's faction (Snapshot.factionStatus) when it
+//                    changed
 // `time` is not sent: it is tick / TICK_HZ like Game.time.
 //
-// A server frame per netsync (ClientEncoder.writeFrame) follows the original order: [AliveCounts when changed],
+// A server frame per netsync (ClientEncoder.writeFrame) follows the original order: [AliveCounts when changed: one
+// count, or [Red, Blue] in 50v50 (Snapshot.teamAliveCounts)],
 // Update, [PlayerStats], [GameOver], Kill..., RoleAnnouncement... (netcode.md "Message framing"). The client's
 // ServerMsgDecoder attaches the events of a frame to that frame's Update snapshot.
 //
@@ -33,6 +36,7 @@ import { BitReader, BitWriter } from "@rebirth/core";
 import type {
     AirdropView,
     BulletEvent,
+    FactionMemberView,
     GasView,
     KillLeaderView,
     LocalPlayerState,
@@ -83,13 +87,16 @@ import type { NetCtx } from "./quant.ts";
 import {
     type GroupStatusRecord,
     type PlayerStatusRecord,
+    quantizeFactionStatus,
     quantizeGroupStatus,
     quantizePlayerStatus,
     readEmotes,
+    readFactionStatus,
     readGroupStatus,
     readPlayerStatus,
     teamFromStatus,
     writeEmotes,
+    writeFactionStatus,
     writeGroupStatus,
     writePlayerStatus,
 } from "./teams.ts";
@@ -138,10 +145,12 @@ export class ClientEncoder {
     private gasT = -1;
     private killLeader: number[] | null = null;
     private readonly indicators = new Map<number, number[]>();
-    private aliveCount = -1;
+    private aliveCounts: number[] | null = null;
     /** last sent team status wire values (M6a) */
     private playerStatus: number[][] | null = null;
     private groupStatus: number[][] | null = null;
+    /** last sent faction status wire values (M7a) */
+    private factionStatus: number[][] | null = null;
     readonly last: EncodeStats = { full: 0, part: 0, deleted: 0, bullets: 0, bytes: 0 };
 
     constructor(cache: ObjectCache) {
@@ -223,10 +232,13 @@ export class ClientEncoder {
         const groupQ = team ? quantizeGroupStatus(team) : null;
         const groupChanged = groupQ !== null && !sameRecords(this.groupStatus, groupQ);
         const emotes = snap.emotes ?? [];
+        const factionQ = snap.factionStatus ? quantizeFactionStatus(snap.factionStatus, ctx) : null;
+        const factionChanged = factionQ !== null && !sameRecords(this.factionStatus, factionQ);
         let ext = effectFlags(snap);
         if (statusChanged) ext |= UpdateExtFlag.PlayerStatus;
         if (groupChanged) ext |= UpdateExtFlag.GroupStatus;
         if (emotes.length) ext |= UpdateExtFlag.Emotes;
+        if (factionChanged) ext |= UpdateExtFlag.FactionStatus;
         if (ext) flags |= UpdateFlag.Extended;
 
         w.alignToNextByte();
@@ -287,6 +299,10 @@ export class ClientEncoder {
             this.groupStatus = groupQ;
         }
         if (emotes.length) writeEmotes(w, ctx, emotes);
+        if (factionChanged && factionQ) {
+            writeFactionStatus(w, factionQ);
+            this.factionStatus = factionQ;
+        }
         const last = this.last;
         last.full = fulls.length;
         last.part = parts.length;
@@ -335,9 +351,10 @@ export class ClientEncoder {
      * messages carried by the snapshot's events.
      */
     writeFrame(w: BitWriter, snap: Snapshot, ack: number): void {
-        if (snap.aliveCount !== undefined && snap.aliveCount !== this.aliveCount) {
-            writeServerMsg(w, { type: MsgType.AliveCounts, teamAliveCounts: [snap.aliveCount] });
-            this.aliveCount = snap.aliveCount;
+        const counts = snap.teamAliveCounts ?? (snap.aliveCount !== undefined ? [snap.aliveCount] : null);
+        if (counts && !sameValues(this.aliveCounts, counts)) {
+            writeServerMsg(w, { type: MsgType.AliveCounts, teamAliveCounts: [...counts] });
+            this.aliveCounts = [...counts];
         }
         this.write(w, snap, ack);
         if (snap.playerStats) writeServerMsg(w, { type: MsgType.PlayerStats, stats: snap.playerStats });
@@ -386,6 +403,7 @@ export class UpdateDecoder {
     private readonly names = new Map<number, string>();
     private teamStatus: PlayerStatusRecord[] | null = null;
     private readonly groupStatus = new Map<number, GroupStatusRecord>();
+    private factionStatus: FactionMemberView[] | null = null;
 
     constructor(ctx: NetCtx) {
         this.ctx = { width: ctx.width, height: ctx.height };
@@ -460,6 +478,7 @@ export class UpdateDecoder {
             for (const g of readGroupStatus(r)) this.groupStatus.set(g.playerId, g);
         }
         const emotes = ext & UpdateExtFlag.Emotes ? readEmotes(r, this.ctx) : [];
+        if (ext & UpdateExtFlag.FactionStatus) this.factionStatus = readFactionStatus(r, this.ctx);
         if (this.teamStatus) this.local.team = teamFromStatus(this.teamStatus, this.groupStatus, this.names);
         for (const id of deletedPlayerIds) this.names.delete(id);
         const mapIndicators = [...deadIndicators, ...this.indicators.values()]
@@ -494,6 +513,7 @@ export class UpdateDecoder {
             snapshot.gas = { ...g, posOld: { ...g.posOld }, posNew: { ...g.posNew }, gasT: this.gasT };
         }
         if (this.killLeader) snapshot.killLeader = { ...this.killLeader };
+        if (this.factionStatus) snapshot.factionStatus = this.factionStatus.map((m) => ({ ...m, pos: { ...m.pos } }));
         return { type: MsgType.Update, snapshot, ack };
     }
 

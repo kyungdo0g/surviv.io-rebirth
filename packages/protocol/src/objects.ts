@@ -18,10 +18,12 @@ import type {
     AnimType,
     BuildingView,
     DecalView,
+    HasteName,
     LootView,
     ObjectKind,
     ObjectView,
     ObstacleView,
+    PerkView,
     PlayerView,
     StructureView,
 } from "@rebirth/sim";
@@ -81,6 +83,12 @@ const GORE_BITS = 8;
 // "revive" (M6a): code 4 / 3 (the original Anim.Revive is 6 and Action.Revive 4; our codes are list indices)
 const ANIM_TYPES: readonly AnimType[] = ["none", "melee", "cook", "throw", "revive"];
 const ACTION_TYPES: readonly ActionType[] = ["none", "reload", "use", "revive"];
+// original HasteType numbering (None 0, Windwalk 1, Takedown 2, Inspire 3), 2 bits like survev (3 in 0.8.82)
+const HASTE_TYPES: readonly HasteName[] = ["none", "windwalk", "takedown", "inspire"];
+/** perks per player on the wire (net.ts MaxPerks 8) */
+export const MAX_NET_PERKS = 8;
+/** index of the first perk field of the player table (role at PERK_FIELD - 1) */
+const PERK_FIELD = 26;
 
 function codeOf<T extends string>(list: readonly T[], value: T | undefined): number {
     const i = list.indexOf(value ?? list[0]);
@@ -100,9 +108,11 @@ const mapScaleOf = (n: number): number =>
     dequantize(n, NetLimits.MapObjectMinScale, NetLimits.MapObjectMaxScale, SCALE_BITS);
 
 /**
- * Player. Groups: 0 movement (pos, dir), 1 status (layer, dead, downed, wearingPan, healEffect (M5b)), 2 active
- * weapon, 3 gear, 4 scale, 5 animation, 6 action, 7 last shot. Seq counters are sent mod 2^16 (the original used
- * 3 bits).
+ * Player. Groups: 0 movement (pos, dir), 1 status (layer, dead, downed, wearingPan, healEffect (M5b), haste type and
+ * seq (M7a)), 2 active weapon, 3 gear (role and perks (M7a)), 4 scale, 5 animation, 6 action, 7 last shot. Seq counters
+ * are sent mod 2^16 (the original used 3 bits). Perks (the original `perks b + array of {type, droppable}`) are a
+ * chain of up to 8 slots: a slot's type is written only when the previous slot holds a perk, its droppable bit only
+ * when it holds one itself, so a perkless player costs one empty 10-bit type.
  */
 export const PlayerCodec: ObjectCodec<PlayerView> = {
     kind: "player",
@@ -118,6 +128,9 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
         f(3, 6), f(SEQ_BITS, 6), f(GT, 6), f(DURATION_BITS, 6),
         f(SEQ_BITS, 7), f(1, 7),
         f(1, 1),
+        f(2, 1), f(SEQ_BITS, 1),
+        f(GT, 3),
+        ...perkFields(),
     ],
     groupCount: 8,
     quantize(v, ctx, out) {
@@ -144,6 +157,15 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
         out[20] = (v.shot?.seq ?? 0) & SEQ_MASK;
         out[21] = b(v.shot?.offHand);
         out[22] = b(v.healEffect);
+        out[23] = codeOf(HASTE_TYPES, v.haste?.type);
+        out[24] = (v.haste?.seq ?? 0) & SEQ_MASK;
+        out[25] = gameTypeId(v.role ?? "");
+        const perks = v.perks ?? [];
+        for (let k = 0; k < MAX_NET_PERKS; k++) {
+            const perk = k < perks.length ? perks[k] : undefined;
+            out[PERK_FIELD + 2 * k] = perk ? gameTypeId(perk.type) : 0;
+            out[PERK_FIELD + 2 * k + 1] = b(perk?.droppable);
+        }
     },
     build(id, v, ctx) {
         return {
@@ -171,9 +193,32 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
             shot: { seq: v[20], offHand: v[21] === 1 },
             wearingPan: v[7] === 1,
             healEffect: v[22] === 1,
+            role: gameTypeOf(v[25]),
+            perks: perksOf(v),
+            haste: { type: fromCode(HASTE_TYPES, v[23], "haste"), seq: v[24] },
         };
     },
 };
+
+/** The perk slot chain of the player table: type gated by the previous slot's type, droppable by its own type. */
+function perkFields(): FieldSpec[] {
+    const out: FieldSpec[] = [];
+    for (let k = 0; k < MAX_NET_PERKS; k++) {
+        const type = PERK_FIELD + 2 * k;
+        out.push(f(GT, 3, k === 0 ? -1 : type - 2), f(1, 3, type));
+    }
+    return out;
+}
+
+function perksOf(v: readonly number[]): PerkView[] {
+    const out: PerkView[] = [];
+    for (let k = 0; k < MAX_NET_PERKS; k++) {
+        const id = v[PERK_FIELD + 2 * k];
+        if (id === 0) break;
+        out.push({ type: gameTypeOf(id), droppable: v[PERK_FIELD + 2 * k + 1] === 1 });
+    }
+    return out;
+}
 
 /**
  * Obstacle. Static: type, pos, ori, layer, isDoor, isButton. Groups: 0 scale, 1 health (healthT, dead), 2 door

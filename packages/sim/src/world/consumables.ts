@@ -4,6 +4,7 @@
 // useBoostItem, the action block and the boost block of update).
 import { GameConfig, getDef, hasDef, WeaponSlot } from "@rebirth/defs";
 import { isBagItem, SCOPE_LEVELS, THROWABLE_LIST } from "../items/inventory.ts";
+import { perkMinBoost } from "../perks/perks.ts";
 import { boostHealAmounts, type SimRules } from "../rules.ts";
 import type { SimContext } from "./context.ts";
 import { teammatesInRange } from "./downed.ts";
@@ -40,7 +41,7 @@ export function boostHealRate(boost: number, rules: Pick<SimRules, "boostModel">
 
 /** Lowest boost the player's perks allow: Leadership keeps it full (survev perkDefs leadership minBoost 100). */
 export function minBoost(player: Player): number {
-    return player.hasPerk("leadership") ? MAX_BOOST : 0;
+    return perkMinBoost(player);
 }
 
 /**

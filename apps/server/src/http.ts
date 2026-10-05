@@ -1,11 +1,12 @@
 // HTTP routes (Hono): health, stats, matchmaking (find_game -> /play URL + single-use token; solo, or a single player
-// queueing for duo / squad, M6a) and, when a built client exists, static files.
+// queueing for duo / squad, M6a; a 50v50 map always queues into squads inside the factions, M7a) and, when a built
+// client exists, static files.
 import { serveStatic } from "@hono/node-server/serve-static";
 import { MapDefs } from "@rebirth/defs";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
-import type { ServerConfig } from "./config.ts";
+import { effectiveTeamMode, type ServerConfig } from "./config.ts";
 import type { GameHost } from "./host.ts";
 import { GAME_MODES } from "./party.ts";
 
@@ -63,7 +64,11 @@ export function createApp(config: ServerConfig, host: GameHost): Hono {
         if (!body.success) return c.json({ error: "invalid_request" }, 400);
         const mapName = body.data.mapName ?? config.defaultMap;
         if (!Object.hasOwn(MapDefs, mapName)) return c.json({ error: "invalid_map" }, 400);
-        const teamMode = body.data.teamMode ?? GAME_MODES[body.data.gameModeIdx ?? 0].teamMode;
+        // 50v50 (mapName "faction") replaced a queue button in the original: whatever its index, it plays squads (M7a)
+        const teamMode = effectiveTeamMode(
+            mapName,
+            body.data.teamMode ?? GAME_MODES[body.data.gameModeIdx ?? 0].teamMode,
+        );
         const room = host.findRoom(mapName, teamMode);
         if (!room) return c.json({ error: "full" }, 503);
         // a solo queuer in a team mode joins an auto-fill group (or a group of its own with autoFill false)

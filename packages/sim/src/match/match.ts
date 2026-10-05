@@ -2,7 +2,9 @@
 // kill credit, the kill leader, game over with the winner and ranks, and each player's GameOver result. Team modes
 // (M6a) count groups: the match starts with two groups, ends when one group is left alive (downed members count), ranks
 // groups, sends PlayerStats to a player who died while its group plays on and GameOver to every member of a group once
-// it is eliminated or wins.
+// it is eliminated or wins. 50v50 (M7a) counts factions (player.teamId): the match starts with two factions ready and
+// ends when one is left; a player who dies while both play on gets PlayerStats, everyone gets the GameOver at the end
+// with both factions' first Commanders in its stats; every role holder's death is announced (RoleAnnouncement).
 // Behaviour follows survev server/src/game/game.ts (start, canJoin, checkGameOver), gameModeManager.ts (alive count,
 // isGameStarted, getWinningTeamId, showStatsMsg, getGameoverPlayers, getPlayersSortedByRank) and objects/player.ts
 // (kill, down, promoteToKillLeader, addGameOverMsg); docs/research/ui/hud.md (kill feed, kill leader, death and win
@@ -39,6 +41,10 @@ export interface MatchHost {
     readonly rules: { joinWindowSeconds: number; killLeaderMinKills: number; minActiveTime: number };
     /** groups (M6a); solo: one per player */
     readonly teams: { readonly teamMode: number; aliveGroups(except?: Player): Group[] };
+    /** 50v50 factions (M7a), null on other maps */
+    readonly faction: { readonly teams: ReadonlyArray<{ readonly id: number; readonly leader: Player | null }> } | null;
+    /** Savannah's The Hunted follows the kill leader (M7a) */
+    readonly roles: { onKillLeader(leader: Player, previous: Player | undefined): void };
     players(): Iterable<Player>;
     getPlayer(id: number): Player | undefined;
     nextEventSeq(): number;
@@ -108,9 +114,18 @@ export class Match {
         return this.host.teams.teamMode;
     }
 
-    /** Groups with a living (possibly downed) member; solo: living players (survev modeManager.aliveCount). */
+    /**
+     * Sides with a living (possibly downed) member, excluding `except` (survev modeManager.aliveCount): solo players,
+     * duo / squad groups or 50v50 factions; `player.teamId` names the side in every mode.
+     */
+    aliveSides(except?: Player): number[] {
+        const sides = new Set<number>();
+        for (const p of this.host.players()) if (p !== except && !p.dead) sides.add(p.teamId);
+        return [...sides].sort((a, b) => a - b);
+    }
+
     aliveGroupCount(except?: Player): number {
-        return this.host.teams.aliveGroups(except).length;
+        return this.aliveSides(except).length;
     }
 
     /**
@@ -123,7 +138,7 @@ export class Match {
         if (!this.options.sandbox) {
             const minTime = this.host.rules.minActiveTime - 1e-9;
             const ready = new Set<number>();
-            for (const p of this.host.players()) if (!p.dead && p.timeAlive >= minTime) ready.add(p.groupId);
+            for (const p of this.host.players()) if (!p.dead && p.timeAlive >= minTime) ready.add(p.teamId);
             if (ready.size < Math.max(1, this.options.minPlayers)) return false;
         }
         this.started = true;
@@ -151,8 +166,14 @@ export class Match {
             downed: false,
             killed: true,
         });
+        // a role holder's death is announced (survev kill: RoleAnnouncement killed for this.role)
+        if (victim.role) {
+            const killerId = sourcePlayer?.id ?? 0;
+            this.announce({ playerId: victim.id, killerId, role: victim.role, assigned: false, killed: true });
+        }
         const victimWasLeader = victim.id === this.killLeaderId;
-        if (victimWasLeader) {
+        // The Hunted is the kill leader on Savannah: its role announcement replaces the kill leader's
+        if (victimWasLeader && victim.role !== "the_hunted") {
             this.logRole({ playerId: victim.id, killerId: sourcePlayer?.id ?? 0, assigned: false, killed: true });
         }
         const counted = credit && credit !== victim && credit.teamId !== victim.teamId;
@@ -197,7 +218,12 @@ export class Match {
         }
         if (best === credit && current !== credit && credit.kills > currentKills) {
             this.killLeaderId = credit.id;
-            this.logRole({ playerId: credit.id, killerId: 0, assigned: true, killed: false });
+            // on Savannah the new kill leader becomes The Hunted (announced as that role) (survev promoteToKillLeader)
+            if (getMapDef(this.host.options.mapName).gameMode.sniperMode) {
+                this.host.roles.onKillLeader(credit, current);
+            } else {
+                this.logRole({ playerId: credit.id, killerId: 0, assigned: true, killed: false });
+            }
         }
     }
 
@@ -208,17 +234,20 @@ export class Match {
         if (!player.dead) this.checkGameOver(player);
     }
 
-    /** Game over: started and at most one player (team modes: group) alive (survev game.ts checkGameOver). */
+    /**
+     * Game over: started and at most one player (team modes: group, 50v50: faction) alive (survev game.ts
+     * checkGameOver).
+     */
     private checkGameOver(removed?: Player): void {
         if (this.over || !this.started || this.options.sandbox) return;
-        const groups = this.host.teams.aliveGroups(removed);
-        if (groups.length > 1) return;
+        const sides = this.aliveSides(removed);
+        if (sides.length > 1) return;
         this.over = true;
         this.overTick = this.host.tick;
-        const winner = groups[0];
-        const living = winner ? winner.players.filter((p) => p !== removed && !p.dead) : [];
-        this.winningTeamId = living[0]?.teamId ?? 0;
-        this.winnerIds = living.map((p) => p.id).sort((a, b) => a - b);
+        this.winningTeamId = sides[0] ?? 0;
+        this.winnerIds = this.living()
+            .filter((p) => p !== removed && p.teamId === this.winningTeamId && this.winningTeamId !== 0)
+            .map((p) => p.id);
     }
 
     /**
@@ -234,6 +263,8 @@ export class Match {
             else this.addGroupResult(p);
         }
         if (this.over) for (const p of this.living()) this.addGroupResult(p);
+        // 50v50: everyone learns the result (survev only forwards it to spectators of the survivors)
+        if (this.over && this.host.faction) for (const p of this.host.players()) this.addGroupResult(p);
         const minTick = this.host.tick - EVENT_RETENTION_TICKS;
         this.kills.prune(minTick);
         this.roles.prune(minTick);
@@ -243,6 +274,8 @@ export class Match {
 
     /** A member other than `p` is alive and connected while other groups remain (survev showStatsMsg). */
     private groupPlaysOn(p: Player): boolean {
+        // 50v50: stats while both factions play on (survev showStatsMsg Faction)
+        if (this.host.faction) return this.aliveGroupCount() > 1;
         const group = p.group;
         if (!group || group.allDeadOrDisconnected) return false;
         return this.aliveGroupCount() > 1;
@@ -257,8 +290,18 @@ export class Match {
         });
     }
 
-    /** GameOver for `player` and, in team modes, every member of its group (survev getGameoverPlayers). */
+    /**
+     * GameOver for `player` and, in team modes, every member of its group (survev getGameoverPlayers); 50v50: the
+     * player alone, its stats followed by the Red and Blue first Commanders once both exist.
+     */
     private addGroupResult(player: Player): void {
+        const faction = this.host.faction;
+        if (faction) {
+            const leaders = faction.teams.map((t) => t.leader);
+            const stats = leaders.every((l) => l) ? [player, ...(leaders as Player[])] : [player];
+            this.addResult(player, stats);
+            return;
+        }
         const members = this.teamMode > 1 && player.group ? player.group.players : [player];
         for (const m of members) this.addResult(m, members);
     }
@@ -308,9 +351,10 @@ export class Match {
         }
         const groups = new Map<number, Player[]>();
         for (const p of this.host.players()) {
-            const list = groups.get(p.groupId);
+            // sides: groups, or 50v50 factions (teamId equals the group id in duo / squad)
+            const list = groups.get(p.teamId);
             if (list) list.push(p);
-            else groups.set(p.groupId, [p]);
+            else groups.set(p.teamId, [p]);
         }
         const ranked = [...groups.values()]
             .map((players) => ({ players, last: Math.max(...players.map(lastDeath)) }))
@@ -327,7 +371,12 @@ export class Match {
     }
 
     private logRole(e: Omit<RoleAnnouncementEvent, "role">): void {
-        this.roles.push(this.host.nextEventSeq(), this.host.tick, { ...e, role: KILL_LEADER_ROLE });
+        this.announce({ ...e, role: KILL_LEADER_ROLE });
+    }
+
+    /** A role event for every viewer (promotions, role holders' deaths, kill leader) (M7a). */
+    announce(e: RoleAnnouncementEvent): void {
+        this.roles.push(this.host.nextEventSeq(), this.host.tick, { ...e });
     }
 }
 

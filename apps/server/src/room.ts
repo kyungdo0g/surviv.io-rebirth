@@ -5,7 +5,8 @@
 // the member's previous frame (broadcast), PlayerStats / GameOver only the member's own result (per player), as in
 // the original (netcode.md "Message framing"). The host closes the room `gameOverGraceMs` after the game ended.
 // Team rooms (M6a) run a duo or squad game: a join may carry a party's group data, and members' emote requests go
-// to the game. With BOT_FILL (M6b) a room fills its game with in-process bots while it is joinable (bots.ts); bots are
+// to the game. 50v50 rooms (M7a) run squads inside the factions, seat FACTION_MAX_PLAYERS and fill with
+// FACTION_BOT_FILL bots; Cobalt class choices (PerkModeRoleSelect) go to the game. With BOT_FILL (M6b) a room fills its game with in-process bots while it is joinable (bots.ts); bots are
 // players of the game, not members: they have no seat, so player counts, emptiness and room stats are about humans.
 import { randomUUID } from "node:crypto";
 import { BitWriter } from "@rebirth/core";
@@ -21,7 +22,7 @@ import {
     TICK_HZ,
 } from "@rebirth/sim";
 import { BotFill } from "./bots.ts";
-import type { ServerConfig } from "./config.ts";
+import { isFactionMap, roomCapacity, type ServerConfig } from "./config.ts";
 import { type Percentiles, roundSummary, SampleWindow } from "./stats.ts";
 
 const TICK_MS = 1000 / TICK_HZ;
@@ -97,6 +98,8 @@ export class GameRoom {
     sharedCache = true;
     /** bot fill (null when BOT_FILL is 0) */
     readonly bots: BotFill | null;
+    /** players this room seats (MAX_PLAYERS, FACTION_MAX_PLAYERS for 50v50; M7a) */
+    readonly capacity: number;
 
     constructor(config: ServerConfig, mapName: string, seed: number, now: number, teamMode: 1 | 2 | 4 = 1) {
         this.config = config;
@@ -107,10 +110,12 @@ export class GameRoom {
         this.mapMsg = encodeMapMsg(this.game.mapData);
         this.createdAt = now;
         this.emptySince = now;
+        this.capacity = roomCapacity(config, mapName);
+        const botTarget = isFactionMap(mapName) ? config.factionBotFill : config.botFill;
         this.bots =
-            config.botFill > 0
+            botTarget > 0
                 ? new BotFill(this.game, {
-                      target: config.botFill,
+                      target: botTarget,
                       difficulty: config.botDifficulty,
                       joinIntervalTicks: Math.round((config.botFillIntervalMs / 1000) * TICK_HZ),
                       seed: seed >>> 0,
@@ -126,7 +131,7 @@ export class GameRoom {
     }
 
     get isFull(): boolean {
-        return this.seats.size >= this.config.maxPlayers || !this.hasIdHeadroom();
+        return this.seats.size >= this.capacity || !this.hasIdHeadroom();
     }
 
     /**
@@ -201,6 +206,11 @@ export class GameRoom {
     /** Spectate request of a member (ignored while its player lives). */
     spectate(playerId: number, action: SpectateActionName): void {
         if (this.seats.has(playerId)) this.game.spectate(playerId, action);
+    }
+
+    /** Cobalt class choice of a member (the original PerkModeRoleSelect; the game validates it, M7a). */
+    selectRole(playerId: number, role: string): void {
+        if (this.seats.has(playerId)) this.game.selectRole(playerId, role);
     }
 
     /** Emote or ping request of a member (the game validates and throttles it, M6a). */

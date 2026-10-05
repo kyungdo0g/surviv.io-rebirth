@@ -4,7 +4,9 @@
 // Behaviour follows survev server/src/game/group.ts, gameModeManager.ts handlePlayerDeath, objects/player.ts
 // getGroupAndTeam / addGroup / activatePlayer and the group spawn position ticker of update, and
 // docs/research/mechanics/downed-revive.md "When a player goes down" and "Kill credit for downed players".
-// TODO(M6b): Faction (50v50) red / blue teams above the groups (team-wide knocks and wipes, team spawn halves).
+// M7a: in 50v50 the groups live inside the Red / Blue factions (match/faction.ts): a group belongs to one faction,
+// player.teamId is the faction, and knocks, wipes and Revivify consider the whole faction (survev handlePlayerDeath
+// uses the Team in faction mode).
 import { type Rng, type Vec2, v2 } from "@rebirth/core";
 import { DamageType, GameConfig } from "@rebirth/defs";
 import { killPlayer } from "../combat/combat.ts";
@@ -13,6 +15,7 @@ import type { AddPlayerOptions, TeamMemberView } from "../view.ts";
 import type { SimContext } from "../world/context.ts";
 import { downPlayer } from "../world/downed.ts";
 import type { Player } from "../world/player.ts";
+import type { FactionSystem } from "./faction.ts";
 import { canPlayerSpawn, randomSpawnPos, type SpawnHost, teammateSpawnPos } from "./spawn.ts";
 
 /** Group and team ids are u8 on the wire; 0 means none. */
@@ -30,6 +33,8 @@ export class Group {
     reservedSlots = 0;
     /** where the next teammate spawns (around it) */
     spawnPosition: Vec2 | null = null;
+    /** faction of the group (50v50: Red 1, Blue 2; 0 outside faction mode) (M7a) */
+    factionTeam = 0;
     spawnPositionTicker = 0;
 
     constructor(id: number, autoFill: boolean, maxPlayers: number) {
@@ -55,18 +60,30 @@ export class Group {
 
     /** No member other than `player` is alive and connected (survev checkAllDeadOrDisconnected). */
     othersDeadOrDisconnected(player: Player): boolean {
-        return !this.players.some((p) => p !== player && !p.dead && !p.disconnected);
+        return othersDeadOrDisconnected(this.players, player);
     }
 
     /** Every living, connected member other than `player` is downed (survev checkAllDowned). */
     othersDowned(player: Player): boolean {
-        return this.players.every((p) => p === player || p.downed || p.dead || p.disconnected);
+        return othersDowned(this.players, player);
     }
 
     /** A living, connected member holds Revivify: nobody is finished off yet (survev checkSelfRevive). */
     hasSelfRevive(): boolean {
-        return this.players.some((p) => !p.dead && !p.disconnected && p.hasPerk("self_revive"));
+        return hasSelfRevive(this.players);
     }
+}
+
+function othersDeadOrDisconnected(players: readonly Player[], player: Player): boolean {
+    return !players.some((p) => p !== player && !p.dead && !p.disconnected);
+}
+
+function othersDowned(players: readonly Player[], player: Player): boolean {
+    return players.every((p) => p === player || p.downed || p.dead || p.disconnected);
+}
+
+function hasSelfRevive(players: readonly Player[]): boolean {
+    return players.some((p) => !p.dead && !p.disconnected && p.hasPerk("self_revive"));
 }
 
 /** What the team system needs from the game. */
@@ -89,6 +106,8 @@ export class TeamSystem {
     private readonly keyToGroup = new Map<string, Group>();
     private readonly status = new Map<number, Status>();
     private statusTicker = 0;
+    /** the factions above the groups (50v50, M7a) */
+    faction: FactionSystem | null = null;
 
     constructor(host: TeamHost, teamMode: number) {
         this.host = host;
@@ -115,10 +134,17 @@ export class TeamSystem {
         const partySize = Math.max(1, Math.min(this.teamMode, Math.floor(opts.partySize ?? 1)));
         const autoFill = opts.autoFill ?? true;
         const key = opts.group;
+        // 50v50: a new party goes to the faction with fewer living players (survev getGroupAndTeam)
+        const faction = this.faction ? this.faction.smallestTeam().id : 0;
         let group = key !== undefined ? this.keyToGroup.get(key) : undefined;
         if (group && group.players.length >= group.maxPlayers) group = undefined;
-        if (!group && autoFill) group = this.groups.find((g) => g.autoFill && g.canJoin(partySize));
-        group ??= this.newGroup(autoFill);
+        if (!group && autoFill) {
+            group = this.groups.find((g) => g.autoFill && g.factionTeam === faction && g.canJoin(partySize));
+        }
+        if (!group) {
+            group = this.newGroup(autoFill);
+            group.factionTeam = faction;
+        }
         if (key === undefined || this.keyToGroup.get(key) !== group) {
             group.reservedSlots += partySize;
             if (key !== undefined) this.keyToGroup.set(key, group);
@@ -141,14 +167,17 @@ export class TeamSystem {
         if (this.teamMode > 1 && group.spawnPosition && group.players.length > 0) {
             return teammateSpawnPos(this.host, rng, group, group.spawnPosition);
         }
-        return randomSpawnPos(this.host, rng, group);
+        // 50v50: the group's first player spawns in its faction's band (faction.ts spawnBand)
+        const band = this.faction && group.factionTeam ? this.faction.spawnBand(group.factionTeam) : undefined;
+        return randomSpawnPos(this.host, rng, group, band, group.factionTeam);
     }
 
     /** Puts a new player into its group (ids, spawn position, status). */
     add(player: Player, group: Group): void {
         player.group = group;
         player.groupId = group.id;
-        player.teamId = group.id;
+        player.teamId = group.factionTeam || group.id;
+        this.faction?.add(player, group.factionTeam);
         group.players.push(player);
         if (this.teamMode > 1 && !group.spawnPosition) group.spawnPosition = v2.copy(player.pos);
         this.refreshStatus(player);
@@ -157,6 +186,7 @@ export class TeamSystem {
     /** A player left the game: an empty group disappears (its id may be reused, like the M4 team ids). */
     remove(player: Player): void {
         this.status.delete(player.id);
+        this.faction?.remove(player);
         const group = player.group;
         if (!group) return;
         const i = group.players.indexOf(player);
@@ -178,16 +208,18 @@ export class TeamSystem {
             killPlayer(ctx, player, params);
             return;
         }
+        // 50v50: the whole faction decides between a knock and a death
+        const mates = this.faction?.team(player.teamId)?.players ?? group.players;
         if (player.downed) {
             killPlayer(ctx, player, params, this.downedKillCredit(ctx, player, params));
             // only possible when a Revivify holder had kept the others from being finished off
-            if (group.othersDowned(player) && !group.hasSelfRevive()) killAllDowned(ctx, group);
+            if (othersDowned(mates, player) && !hasSelfRevive(mates)) killAllDowned(ctx, mates);
             return;
         }
-        const allDowned = group.othersDowned(player);
-        if (!group.hasSelfRevive() && (group.othersDeadOrDisconnected(player) || allDowned)) {
+        const allDowned = othersDowned(mates, player);
+        if (!hasSelfRevive(mates) && (othersDeadOrDisconnected(mates, player) || allDowned)) {
             killPlayer(ctx, player, params);
-            if (allDowned) killAllDowned(ctx, group);
+            if (allDowned) killAllDowned(ctx, mates);
         } else {
             downPlayer(ctx, player, params);
         }
@@ -240,14 +272,16 @@ export class TeamSystem {
                 dead: st.dead,
                 disconnected: p.disconnected,
                 pos: v2.copy(st.pos),
+                role: p.role,
             };
         });
     }
 }
 
 /** Team wipe: every downed member dies of Bleeding, credited to its knocker (survev killAllDowned). */
-export function killAllDowned(ctx: SimContext, group: Group): void {
-    for (const p of [...group.players]) {
+export function killAllDowned(ctx: SimContext, group: Group | readonly Player[]): void {
+    const players = Array.isArray(group) ? group : (group as Group).players;
+    for (const p of [...players]) {
         if (p.dead || !p.downed) continue;
         killPlayer(ctx, p, {
             amount: 0,

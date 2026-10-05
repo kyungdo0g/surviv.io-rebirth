@@ -4,7 +4,7 @@
 // empty for the grace period. Games are per map and team mode (M6a: duo and squad games).
 import { randomInt } from "node:crypto";
 import { MapDefs } from "@rebirth/defs";
-import type { ServerConfig } from "./config.ts";
+import { effectiveTeamMode, roomCapacity, type ServerConfig } from "./config.ts";
 import { GameRoom, type RoomStats } from "./room.ts";
 import { JoinTokens } from "./tokens.ts";
 
@@ -62,21 +62,25 @@ export class GameHost {
      * A game of `mapName` and `teamMode` that can take `seats` more players (a party), created if needed; null when
      * the server is full.
      */
-    findRoom(mapName: string, teamMode: 1 | 2 | 4 = 1, seats = 1): GameRoom | null {
+    findRoom(mapName: string, requestedMode: 1 | 2 | 4 = 1, seats = 1): GameRoom | null {
+        // 50v50 games are squads inside the factions whatever mode was asked for (M7a)
+        const teamMode = effectiveTeamMode(mapName, requestedMode);
+        const capacity = roomCapacity(this.config, mapName);
         let best: GameRoom | null = null;
         for (const room of this.rooms.values()) {
             if (room.mapName !== mapName || room.teamMode !== teamMode || !room.canJoin()) continue;
-            if (room.playerCount + this.tokens.pendingFor(room.id) + seats > this.config.maxPlayers) continue;
+            if (room.playerCount + this.tokens.pendingFor(room.id) + seats > capacity) continue;
             // the oldest joinable game fills first (survev gameProcessManager)
             if (!best || room.createdAt < best.createdAt) best = room;
         }
         if (best) return best;
-        if (this.rooms.size >= this.config.maxGames || seats > this.config.maxPlayers) return null;
+        if (this.rooms.size >= this.config.maxGames || seats > capacity) return null;
         return this.createRoom(mapName, teamMode);
     }
 
-    createRoom(mapName: string, teamMode: 1 | 2 | 4 = 1): GameRoom {
+    createRoom(mapName: string, requestedMode: 1 | 2 | 4 = 1): GameRoom {
         if (!Object.hasOwn(MapDefs, mapName)) throw new Error(`unknown map "${mapName}"`);
+        const teamMode = effectiveTeamMode(mapName, requestedMode);
         const room = new GameRoom(this.config, mapName, randomInt(0, 2 ** 32 - 1), Date.now(), teamMode);
         this.rooms.set(room.id, room);
         if (this.config.log) {

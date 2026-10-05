@@ -119,6 +119,8 @@ export class LootSystem {
     private readonly rngOf: () => Rng;
     /** live loot by id (ids increase, so iteration is in creation order) */
     readonly items = new Map<number, Loot>();
+    /** live loot whose def has a `mapIndicator` (M7a) */
+    readonly indicatorItems = new Set<Loot>();
     /** loot-only broadphase for the push-apart pass */
     private readonly grid: Grid<Loot>;
     private readonly scratch: Entity[] = [];
@@ -188,6 +190,8 @@ export class LootSystem {
         this.items.set(loot.id, loot);
         this.grid.insert(loot, loot.bounds);
         this.world.add(loot);
+        // items with a def mapIndicator (the Woods King helmet) are shown on the minimap while on the ground (M7a)
+        if ("mapIndicator" in getDef(type)) this.indicatorItems.add(loot);
         return loot;
     }
 
@@ -196,6 +200,7 @@ export class LootSystem {
         if (loot.destroyed) return;
         loot.destroyed = true;
         this.items.delete(loot.id);
+        this.indicatorItems.delete(loot);
         this.grid.remove(loot);
         this.world.remove(loot);
         this.wakeAround(loot.bounds, loot.layer);

@@ -9,7 +9,9 @@ import type { ProjectileSystem } from "../combat/projectiles.ts";
 import type { LootSystem } from "../loot/loot.ts";
 import type { Gas } from "../match/gas.ts";
 import type { PlaneSystem } from "../match/planes.ts";
+import type { RoleSystem } from "../roles/roleSystem.ts";
 import type { SimRules } from "../rules.ts";
+import type { RoleAnnouncementEvent } from "../view.ts";
 import type { Obstacle } from "./entities.ts";
 import type { Player } from "./player.ts";
 import type { SmokeSystem } from "./smoke.ts";
@@ -26,6 +28,10 @@ export interface SimContext {
     readonly lootRng: Rng;
     /** projectile fuse variance and splits, shrapnel directions, explosion loot pushes and decals, smoke (M5) */
     readonly fxRng: Rng;
+    /** role kits' weighted choices, promotion picks and perk rolls (M7a) */
+    readonly roleRng: Rng;
+    /** roles: promotions, Lone Survivr, kill leader roles, map indicators (M7a, roles/roleSystem.ts) */
+    readonly roles: RoleSystem;
     readonly bullets: BulletSystem;
     readonly loot: LootSystem;
     /** thrown and launched projectiles (M5) */
@@ -57,4 +63,6 @@ export interface SimContext {
     activateObstacle(obstacle: Obstacle): void;
     /** A recorder was used: viewers in range get a RecorderEvent (M5b). */
     onRecorderUsed(obstacle: Obstacle): void;
+    /** A role event for every player's kill feed (M7a; the original RoleAnnouncement). */
+    announceRole(event: RoleAnnouncementEvent): void;
 }

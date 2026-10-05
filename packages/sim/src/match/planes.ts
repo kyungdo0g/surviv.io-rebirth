@@ -31,8 +31,10 @@ import {
     type StrikeState,
     updateStrike,
 } from "./airstrikes.ts";
-import { EventLog } from "./events.ts";
 import type { Gas } from "./gas.ts";
+import { type MapIndicator, MapIndicatorSystem } from "./indicators.ts";
+
+export type { MapIndicator } from "./indicators.ts";
 
 const AIRDROP = GameConfig.airdrop;
 /** Planes spawn this far from the drop point: 15 s of flight (survev plane.ts AIRDROP_PLANE_SPAWN_DIST). */
@@ -54,8 +56,6 @@ const NUDGE_DIST = 3;
  */
 const DROP_REROLLS = 20;
 const PLANE_IDS = 255;
-const MAX_INDICATORS = 16;
-const INDICATOR_RETENTION_TICKS = 10 * TICK_HZ;
 /** Crush damage of survev's instant kill. */
 const INSTANT_KILL_DAMAGE = 1e10;
 
@@ -66,7 +66,11 @@ export interface PlaneHost {
     readonly world: World;
     readonly gas: Gas;
     readonly tick: number;
-    readonly rules: { airdropCrushDamage: number; airdropCrushInstantKill: boolean };
+    readonly rules: {
+        airdropCrushDamage: number;
+        airdropCrushInstantKill: boolean;
+        roles: { factionAirstrikeWaits: Readonly<Record<number, number>> };
+    };
     /** air strike bombs are projectiles */
     readonly projectiles: BombDropper;
     players(): Iterable<Player>;
@@ -105,21 +109,11 @@ export interface FallingAirdrop {
     landedTicks: number;
 }
 
-export interface MapIndicator {
-    id: number;
-    type: string;
-    pos: Vec2;
-    equipped: boolean;
-    dead: boolean;
-    expiresTick: number;
-}
-
 export class PlaneSystem {
     readonly planes: PlaneState[] = [];
     readonly airdrops: FallingAirdrop[] = [];
-    readonly indicators: MapIndicator[] = [];
-    /** indicators that died, reported once to every viewer */
-    readonly deadIndicators = new EventLog<MapIndicator>();
+    /** minimap indicators: timed pings and tracked roles / loot (M7a, indicators.ts) */
+    readonly mapIndicators: MapIndicatorSystem;
     /** 50v50 scheduled air strike zones */
     readonly zones: AirstrikeZones;
     private readonly scheduled: ScheduledPlane[] = [];
@@ -130,8 +124,6 @@ export class PlaneSystem {
     private readonly planeBounds: Bounds;
     private nextPlaneId = 1;
     private readonly freePlaneIds: number[] = [];
-    private readonly freeIndicatorIds: number[] = [];
-    private readonly retiredIndicators: Array<{ id: number; tick: number }> = [];
 
     constructor(host: PlaneHost, mapName: string, rng: Rng) {
         this.host = host;
@@ -142,7 +134,7 @@ export class PlaneSystem {
             min: { x: -PLANE_BOUNDS_MARGIN, y: -PLANE_BOUNDS_MARGIN },
             max: { x: width + PLANE_BOUNDS_MARGIN, y: height + PLANE_BOUNDS_MARGIN },
         };
-        for (let i = 0; i < MAX_INDICATORS; i++) this.freeIndicatorIds.push(i);
+        this.mapIndicators = new MapIndicatorSystem(host);
         this.zones = new AirstrikeZones(
             {
                 gas: host.gas,
@@ -155,12 +147,32 @@ export class PlaneSystem {
         );
     }
 
-    /** Queues the map's plane timings of a new circle (survev gas.ts advanceGasStage -> schedulePlane). */
+    /** Live indicators (timed and tracked). */
+    get indicators(): readonly MapIndicator[] {
+        return this.mapIndicators.indicators;
+    }
+
+    /**
+     * Queues the map's plane timings of a new circle (survev gas.ts advanceGasStage -> schedulePlane). On faction maps
+     * `rules.roles.factionAirstrikeWaits` replaces air strike waits (conflicts.md faction-airstrike-timing).
+     */
     scheduleCircle(circleIdx: number): void {
-        for (const timing of getMapDef(this.mapName).gameConfig.planes.timings) {
+        const def = getMapDef(this.mapName);
+        const overrides = def.gameMode.factionMode ? this.host.rules.roles.factionAirstrikeWaits : {};
+        for (const timing of def.gameConfig.planes.timings) {
             if (timing.circleIdx !== circleIdx) continue;
-            this.scheduled.push({ ticks: Math.round(timing.wait * TICK_HZ), options: timing.options });
+            const strike = timing.options.type === Plane.Airstrike;
+            const wait = strike ? (overrides[circleIdx] ?? timing.wait) : timing.wait;
+            this.scheduled.push({ ticks: Math.round(wait * TICK_HZ), options: timing.options });
         }
+    }
+
+    /** A scheduled air drop of `crateType` `wait` seconds from now (the 50v50 gold military drop, M7a). */
+    scheduleCrate(crateType: string, wait: number): void {
+        this.scheduled.push({
+            ticks: Math.round(wait * TICK_HZ),
+            options: { type: Plane.Airdrop, airdropType: crateType },
+        });
     }
 
     update(dt: number): void {
@@ -198,7 +210,7 @@ export class PlaneSystem {
             else if (s.options.type === Plane.Airstrike) this.zones.schedule(s.options);
         }
         this.zones.update(dt);
-        this.expireIndicators();
+        this.mapIndicators.update();
     }
 
     /**
@@ -233,7 +245,7 @@ export class PlaneSystem {
     /** A map marker of a ping def (ping_airdrop, ping_airstrike) for the ping's mapLife. */
     addPing(type: string, pos: Vec2): void {
         const ping = GameObjectDefs[type] as { mapLife?: number } | undefined;
-        this.addIndicator(type, pos, ping?.mapLife ?? 10);
+        this.mapIndicators.add(type, pos, ping?.mapLife ?? 10);
     }
 
     /** Every live air strike zone. */
@@ -406,37 +418,6 @@ export class PlaneSystem {
         this.host.wakeLoot(toBounds(crate), 0);
     }
 
-    private addIndicator(type: string, pos: Vec2, lifeSeconds: number): void {
-        const id = this.freeIndicatorIds.shift();
-        if (id === undefined) return;
-        this.indicators.push({
-            id,
-            type,
-            pos: v2.copy(pos),
-            equipped: false,
-            dead: false,
-            expiresTick: this.host.tick + Math.round(lifeSeconds * TICK_HZ),
-        });
-    }
-
-    private expireIndicators(): void {
-        const tick = this.host.tick;
-        for (let i = 0; i < this.indicators.length; i++) {
-            const ind = this.indicators[i];
-            if (tick < ind.expiresTick) continue;
-            this.indicators.splice(i--, 1);
-            ind.dead = true;
-            this.deadIndicators.push(this.host.nextEventSeq(), tick, ind);
-            this.retiredIndicators.push({ id: ind.id, tick });
-        }
-        // an id is reused only after its death report expired, so one snapshot never holds an id twice
-        const minTick = tick - INDICATOR_RETENTION_TICKS;
-        this.deadIndicators.prune(minTick);
-        while (this.retiredIndicators.length > 0 && this.retiredIndicators[0].tick < minTick) {
-            this.freeIndicatorIds.push(this.retiredIndicators.shift()!.id);
-        }
-    }
-
     /** Planes whose body touches `view` while inside the plane bounds (survev client.ts). */
     planeViews(view: Bounds): PlaneView[] {
         const out: PlaneView[] = [];
@@ -473,17 +454,7 @@ export class PlaneSystem {
 
     /** Live indicators plus those that died after event `seq` (dead), sorted by id. */
     indicatorViews(seq: number): MapIndicatorView[] {
-        const out: MapIndicatorView[] = [];
-        const view = (i: MapIndicator): MapIndicatorView => ({
-            id: i.id,
-            type: i.type,
-            pos: v2.copy(i.pos),
-            dead: i.dead,
-            equipped: i.equipped,
-        });
-        for (const i of this.deadIndicators.since(seq)) out.push(view(i));
-        for (const i of this.indicators) out.push(view(i));
-        return out.sort((a, b) => a.id - b.id);
+        return this.mapIndicators.views(seq);
     }
 }
 

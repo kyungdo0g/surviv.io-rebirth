@@ -37,13 +37,41 @@ export { isTerrainWater, type TerrainSurface, terrainSurfaceAt } from "./mapgen/
 export { AIRSTRIKE_SPAWN_TIME, AirstrikeZones, bombPositions, type StrikeState } from "./match/airstrikes.ts";
 export { EmoteSystem, updateEmoteThrottle } from "./match/emotes.ts";
 export { damageSourceOf, EventLog } from "./match/events.ts";
+export { FactionSystem, type FactionTeam, living } from "./match/faction.ts";
 export { type CircleChoice, Gas, gasCircle, gasTimeLeft } from "./match/gas.ts";
+export { type MapIndicator, MapIndicatorSystem, type TrackedIndicator } from "./match/indicators.ts";
 export { KILL_LEADER_ROLE, Match, type MatchOptions, playerStats } from "./match/match.ts";
-export { type FallingAirdrop, type MapIndicator, type PlaneState, PlaneSystem } from "./match/planes.ts";
+export { type FallingAirdrop, type PlaneState, PlaneSystem } from "./match/planes.ts";
 export { canPlayerSpawn, randomSpawnPos, teammateSpawnPos } from "./match/spawn.ts";
 export { type SpectateAction, SpectateSystem } from "./match/spectate.ts";
 export { Group, killAllDowned, TEAMMATE_SPAWN_RADIUS, TeamSystem } from "./match/teams.ts";
 export { UnlockSystem, type UnlockTiming, unlockTimings } from "./match/unlocks.ts";
+export { PERK_EFFECTS } from "./perks/coverage.ts";
+export { onKillCredited, onPerkHolderDeath, playBugle, updatePerks, windwalkTrigger } from "./perks/effects.ts";
+export { ALL_AMMO_BONUS_PERKS, AMMO_BONUS_PERKS, defaultPerkRules, type PerkRules } from "./perks/perkRules.ts";
+export {
+    type AddPerkOptions,
+    addPerk,
+    droppablePerk,
+    giveHaste,
+    type PerkSource,
+    perkMinBoost,
+    perkViews,
+    recalcScale,
+    removePerk,
+} from "./perks/perks.ts";
+export { ammoBonusCount, type ShotPerks, shotPerks } from "./perks/shotPerks.ts";
+export {
+    type ResolvedLoadout,
+    ROLE_LOADOUTS,
+    type RoleLoadout,
+    resolveLoadout,
+    resolveWeapon,
+    roleLoadout,
+} from "./roles/loadouts.ts";
+export { defaultRoleRules, type RoleRules, type RoleSlot } from "./roles/roleRules.ts";
+export { type RoleHost, RoleSystem } from "./roles/roleSystem.ts";
+export { type PromoteOptions, promoteToRole, removeRole, setHelmet } from "./roles/roles.ts";
 export { boostHealAmounts, defaultRules, type SimRules } from "./rules.ts";
 export type * from "./view.ts";
 export { fireGun } from "./weapons/gun.ts";

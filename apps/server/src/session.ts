@@ -188,6 +188,13 @@ export class ClientSession implements RoomMember {
                 }
                 this.room.emote(this.playerId, msg.emote);
                 break;
+            case MsgType.PerkModeRoleSelect:
+                if (this.state !== "joined" || !this.room) {
+                    this.disconnect(DisconnectReason.InvalidPacket);
+                    return;
+                }
+                this.room.selectRole(this.playerId, msg.role);
+                break;
         }
     }
 

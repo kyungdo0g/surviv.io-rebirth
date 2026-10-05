@@ -96,6 +96,9 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 shot: { seq: rng.int(0, 65535), offHand: rng.bool() },
                 wearingPan: rng.bool(),
                 healEffect: rng.bool(0.2),
+                role: rng.bool(0.7) ? "" : randGameType(rng),
+                perks: randPerks(rng),
+                haste: { type: rng.pick(["none", "windwalk", "takedown", "inspire"] as const), seq: rng.int(0, 65535) },
             };
         case "obstacle": {
             const view: ObjectView = {
@@ -166,6 +169,12 @@ export function mutateView(rng: Rng, ctx: NetCtx, view: ObjectView): ObjectView 
     return out as unknown as ObjectView;
 }
 
+/** 0-8 perks (M7a; the wire carries at most 8, with non-empty types). */
+export function randPerks(rng: Rng): Array<{ type: string; droppable: boolean }> {
+    const n = rng.bool(0.5) ? 0 : rng.int(1, 8);
+    return Array.from({ length: n }, () => ({ type: rng.pick(GAME_TYPES.slice(1)), droppable: rng.bool() }));
+}
+
 export function randLocal(rng: Rng): LocalPlayerState {
     const inventory: Record<string, number> = {};
     for (const item of BAG_ITEMS) inventory[item] = rng.bool(0.5) ? 0 : rng.int(1, 511);
@@ -204,6 +213,8 @@ export function randLocal(rng: Rng): LocalPlayerState {
             timeAlive: rng.int(0, 65535),
         },
         spectatorCount: rng.int(0, 255),
+        role: rng.bool(0.7) ? "" : randGameType(rng),
+        perks: randPerks(rng),
     };
 }
 
@@ -237,6 +248,9 @@ export function randBullets(rng: Rng, ctx: NetCtx): BulletEvent[] {
             hitPlayer: rng.bool(),
             shotFx: rng.bool(),
             offHand: rng.bool(),
+            saturated: rng.bool(0.2),
+            thick: rng.bool(0.1),
+            splinter: rng.bool(0.1),
         };
         if (rng.bool(0.4)) b.endDist = rng.range(0, 1024);
         out.push(b);
@@ -531,6 +545,9 @@ export function netTolerances(maxExtent = 1024): TolFn {
         "team.pos.x": maxExtent / 2047 / 2 + 1e-9,
         "team.pos.y": maxExtent / 2047 / 2 + 1e-9,
         "team.health": 100 / 127 / 2 + 1e-9,
+        // faction status (M7a): the same 11-bit positions
+        "factionStatus.pos.x": maxExtent / 2047 / 2 + 1e-9,
+        "factionStatus.pos.y": maxExtent / 2047 / 2 + 1e-9,
         fallT: 1 / 127 / 2 + 1e-9,
         posZ: 5 / 1023 / 2 + 1e-9,
         "projectiles.dir.x": 0.012,

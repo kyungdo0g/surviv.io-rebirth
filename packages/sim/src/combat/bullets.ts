@@ -1,10 +1,12 @@
 // Bullets: swept per-tick flight, obstacle/player/pan collisions, ricochets, falloff; damage is queued and applied
 // after every bullet moved. Bullets with an on-hit explosion (USAS-12 frag rounds, Explosive Rounds) explode where
-// they stop. Behaviour follows survev server/src/game/objects/bullet.ts and docs/research/items/bullets.md
-// "Server simulation".
+// they stop. M7a: perk speed / range multipliers and tracer flags, Windwalk (an enemy bullet passing within 5 u of a
+// holder), High-Value Targets (x1.25 against players holding a perk). Behaviour follows survev
+// server/src/game/objects/bullet.ts and docs/research/items/bullets.md "Server simulation".
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { type BulletDef, DamageType, GameConfig, getDefOfType } from "@rebirth/defs";
 import { intersectSegmentSegment } from "../geom/polygon.ts";
+import { windwalkTrigger } from "../perks/effects.ts";
 import type { BulletEvent } from "../view.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Obstacle } from "../world/entities.ts";
@@ -41,6 +43,13 @@ export interface FireBulletParams {
     mapSourceType?: string;
     /** explosion where the bullet stops, when its def has no `onHit` (Explosive Rounds: "explosion_rounds") */
     onHitFx?: string;
+    /** perk multipliers of speed and range (9mm Overpressure) (M7a) */
+    speedMult?: number;
+    distanceMult?: number;
+    /** tracer flags (M7a): darker, thick, Splinter side bullet */
+    saturated?: boolean;
+    thick?: boolean;
+    splinter?: boolean;
 }
 
 export interface Bullet {
@@ -81,6 +90,11 @@ export interface Bullet {
     readonly damagedIds: Set<number>;
     /** tick of the snapshot-visible report: creation, then again when it hits a player */
     reportTicks: number[];
+    readonly speedMult: number;
+    readonly distanceMult: number;
+    readonly saturated: boolean;
+    readonly thick: boolean;
+    readonly splinter: boolean;
 }
 
 interface Collision {
@@ -154,7 +168,9 @@ export class BulletSystem {
         const distAdj = math.remap(distAdjIdx, 0, DIST_ADJ_STEPS, -1, 1);
         // each ricochet divides the range by reflectDistDecay (1.5)
         const baseDistance = def.distance / GameConfig.bullet.reflectDistDecay ** reflectCount;
-        const distance = math.clamp(baseDistance * variance + distAdj, 0, MAX_DISTANCE);
+        const speedMult = p.speedMult ?? 1;
+        const distanceMult = p.distanceMult ?? 1;
+        const distance = math.clamp(baseDistance * distanceMult * variance + distAdj, 0, MAX_DISTANCE);
         const reflectObjId = p.reflectObjId ?? 0;
         const onHitFx = def.onHit ?? p.onHitFx ?? "";
         const bullet: Bullet = {
@@ -167,7 +183,7 @@ export class BulletSystem {
             pos: v2.copy(pos),
             dir,
             layer: p.layer,
-            speed: def.speed * variance,
+            speed: def.speed * speedMult * variance,
             distance,
             clientDistance: this.clientDistance(pos, dir, distance, p.layer, reflectObjId),
             distanceTraveled: 0,
@@ -188,6 +204,11 @@ export class BulletSystem {
             hitPlayer: false,
             damagedIds: new Set(),
             reportTicks: [this.tick],
+            speedMult,
+            distanceMult,
+            saturated: p.saturated ?? false,
+            thick: p.thick ?? false,
+            splinter: p.splinter ?? false,
         };
         this.active.push(bullet);
         this.reports.push({ tick: this.tick, bullet });
@@ -288,7 +309,10 @@ export class BulletSystem {
                 hit = col.collidable;
             } else if (col.type === "player") {
                 if (!shooterDead) {
-                    const params = this.params(b, damage);
+                    const target = col.obj as Player;
+                    // High-Value Targets: x1.25 against a player holding any perk (perks.md targeting)
+                    const hvt = !!shooter?.hasPerk("targeting") && target.perks.length > 0;
+                    const params = this.params(b, hvt ? damage * this.ctx.rules.perks.targetingDamageMult : damage);
                     params.isExplosion = b.def.shrapnel;
                     this.damages.push({ target: col.obj as Player, params });
                 }
@@ -338,6 +362,10 @@ export class BulletSystem {
     private collidePlayer(b: Bullet, posOld: Vec2, p: Player, out: Collision[]): void {
         if (p.dead || !(sameLayer(p.layer, b.layer) || (p.layer & 2) !== 0)) return;
         if ((p.id === b.shooterId && !b.damageSelf) || p.id === b.reflectObjId) return;
+        // Windwalk: enemy fire passing within the trigger distance of the holder (survev bullet.ts)
+        if (v2.distance(b.pos, p.pos) <= this.ctx.rules.perks.windwalkTriggerDistance) {
+            windwalkTrigger(this.ctx.rules.perks, p, this.ctx.getPlayer(b.shooterId)?.teamId ?? 0);
+        }
         let pan: { point: Vec2; normal: Vec2 } | null = null;
         if (p.hasActivePan()) {
             const oldSeg = panSegment(p, p.posOld, p.dirOld);
@@ -400,6 +428,11 @@ export class BulletSystem {
             damageType: b.damageType,
             mapSourceType: b.mapSourceType,
             onHitFx: b.onHitFx,
+            speedMult: b.speedMult,
+            distanceMult: b.distanceMult,
+            saturated: b.saturated,
+            thick: b.thick,
+            splinter: b.splinter,
         });
     }
 
@@ -418,6 +451,9 @@ export class BulletSystem {
             hitPlayer: b.hitPlayer,
             shotFx: b.shotFx,
             offHand: b.offHand,
+            saturated: b.saturated,
+            thick: b.thick,
+            splinter: b.splinter,
         };
         if (!b.alive) event.endDist = b.distanceTraveled;
         return event;

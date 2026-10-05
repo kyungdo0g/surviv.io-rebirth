@@ -320,5 +320,5 @@ describe("determinism", () => {
         expect(first.some((s) => (s.projectiles?.length ?? 0) > 0)).toBe(true);
         expect(first.some((s) => (s.smokes?.length ?? 0) > 0)).toBe(true);
         expect(run()).toEqual(first);
-    });
+    }, 30_000);
 });

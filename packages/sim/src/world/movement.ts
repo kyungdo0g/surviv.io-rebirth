@@ -47,6 +47,8 @@ export function moveWithCollision(
     const objs = world.query(query, out);
     const stepLen = moving ? (speed / steps) * dt : 0;
     const rad = player.rad;
+    // One With Nature walks through trees (survev player.ts update: obj.isTree && hasTreeClimbing)
+    const throughTrees = player.hasPerk("tree_climbing");
     let x = player.pos.x;
     let y = player.pos.y;
     for (let i = 0; i < steps; i++) {
@@ -54,6 +56,7 @@ export function moveWithCollision(
         y += movement.y * stepLen;
         for (const obj of objs) {
             if (obj.kind !== "obstacle" || !obj.blocking || !sameLayer(obj.layer, player.layer)) continue;
+            if (throughTrees && obj.isTree) continue;
             const res = collider.intersect({ type: 0, pos: { x, y }, rad }, obj.collider);
             if (res) {
                 x += res.dir.x * (res.pen + PUSH_EPS);

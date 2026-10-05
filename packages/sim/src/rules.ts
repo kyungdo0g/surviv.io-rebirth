@@ -2,6 +2,11 @@
 // or where the KB proposes a value that differs from survev. Every Game owns a mutable copy (`game.rules`), so tests
 // and tools can switch a rule without touching the defaults.
 import { GameConfig } from "@rebirth/defs";
+import { defaultPerkRules, type PerkRules } from "./perks/perkRules.ts";
+import { defaultRoleRules, type RoleRules } from "./roles/roleRules.ts";
+
+export type { PerkRules } from "./perks/perkRules.ts";
+export type { RoleRules } from "./roles/roleRules.ts";
 
 export interface SimRules {
     /** chance that a bullet or melee hit is a headshot (survev gameConfig.ts headshotChance 0.15) */
@@ -137,6 +142,10 @@ export interface SimRules {
     medicRevivedAoe: boolean;
     /** seconds between team status refreshes: positions, dead, downed (original PlayerStatus rate, net.ts 0.25 s) */
     teamStatusInterval: number;
+    /** perk knobs (M7a, perks/perkRules.ts) */
+    perks: PerkRules;
+    /** role and 50v50 knobs (M7a, roles/roleRules.ts) */
+    roles: RoleRules;
 }
 
 export function defaultRules(): SimRules {
@@ -180,6 +189,8 @@ export function defaultRules(): SimRules {
         reviverSpeed: "half",
         medicRevivedAoe: true,
         teamStatusInterval: 0.25,
+        perks: defaultPerkRules(),
+        roles: defaultRoleRules(),
     };
 }
 

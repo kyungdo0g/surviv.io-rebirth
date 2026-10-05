@@ -45,11 +45,18 @@ import {
     writePlayerStats,
     writeRoleAnnouncement,
 } from "./messages.ts";
+import { readGameType, writeGameType } from "./quant.ts";
 import { readEmoteRequest, writeEmoteRequest } from "./teams.ts";
 import { UpdateDecoder, type UpdateMsg } from "./update.ts";
 
+/** Client -> server Cobalt class choice (the original PerkModeRoleSelect: role game type, 6 pad bits) (M7a). */
+export interface PerkModeRoleSelectMsg {
+    type: typeof MsgType.PerkModeRoleSelect;
+    role: string;
+}
+
 /** Messages a client sends. */
-export type ClientMsg = JoinMsg | InputMsg | PingMsg | SpectateMsg | EmoteMsg;
+export type ClientMsg = JoinMsg | InputMsg | PingMsg | SpectateMsg | EmoteMsg | PerkModeRoleSelectMsg;
 
 /** Stateless server messages (Update is written by a ClientEncoder, Map by `writeMapMsg`). */
 export type ServerSimpleMsg =
@@ -92,6 +99,9 @@ export function writeClientMsg(w: BitWriter, msg: ClientMsg): void {
             break;
         case MsgType.Emote:
             writeEmoteRequest(w, msg.emote);
+            break;
+        case MsgType.PerkModeRoleSelect:
+            writeGameType(w, msg.role);
             break;
     }
     w.alignToNextByte();
@@ -197,6 +207,8 @@ export function decodeClientFrame(bytes: Uint8Array): ClientMsg[] {
                 return { type: MsgType.Spectate, action: r.readUint8() };
             case MsgType.Emote:
                 return { type: MsgType.Emote, emote: readEmoteRequest(r) };
+            case MsgType.PerkModeRoleSelect:
+                return { type: MsgType.PerkModeRoleSelect, role: readGameType(r) };
             default:
                 throw new ProtocolError(`unexpected client message type ${type}`);
         }
@@ -228,6 +240,8 @@ export function killEventOf(m: KillMsg): KillEvent {
 export class ServerMsgDecoder {
     private updates: UpdateDecoder | null = null;
     private aliveCount = 0;
+    /** 50v50: living players per faction (AliveCounts with two entries, M7a) */
+    private teamAliveCounts: number[] | null = null;
     private kills: KillEvent[] = [];
     private roles: RoleAnnouncementEvent[] = [];
     private gameOver: GameOverEvent | null = null;
@@ -246,6 +260,7 @@ export class ServerMsgDecoder {
             switch (msg.type) {
                 case MsgType.AliveCounts:
                     this.aliveCount = msg.teamAliveCounts.reduce((a, b) => a + b, 0);
+                    this.teamAliveCounts = msg.teamAliveCounts.length > 1 ? [...msg.teamAliveCounts] : null;
                     break;
                 case MsgType.Kill:
                     this.kills.push(killEventOf(msg));
@@ -278,7 +293,11 @@ export class ServerMsgDecoder {
                     break;
             }
         }
-        for (const msg of msgs) if (msg.type === MsgType.Update) msg.snapshot.aliveCount = this.aliveCount;
+        for (const msg of msgs) {
+            if (msg.type !== MsgType.Update) continue;
+            msg.snapshot.aliveCount = this.aliveCount;
+            if (this.teamAliveCounts) msg.snapshot.teamAliveCounts = [...this.teamAliveCounts];
+        }
         if (last) {
             // events of a frame belong to its update (they may follow it, as in the original frame order)
             const snap = last.snapshot;

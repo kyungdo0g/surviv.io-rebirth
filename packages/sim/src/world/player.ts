@@ -9,7 +9,9 @@ import { Inventory, type InventoryOwner, isBagItem, SCOPE_LEVELS, THROWABLE_LIST
 import type { PickupResult } from "../loot/pickup.ts";
 import { updateEmoteThrottle } from "../match/emotes.ts";
 import type { Group } from "../match/teams.ts";
-import type { ActionType, AnimType, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
+import { trackActivity, updatePerks } from "../perks/effects.ts";
+import { type PerkSource, perkViews } from "../perks/perks.ts";
+import type { ActionType, AnimType, HasteName, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
 import { gunDef, TIME_EPS, WeaponManager } from "../weapons/weaponManager.ts";
 import { handleActions } from "./actions.ts";
 import { completeUse, updateBoost, updateFabricate, useItem } from "./consumables.ts";
@@ -54,9 +56,11 @@ export class Player implements InventoryOwner {
     aimLayer = 0;
     /** standing in a building heal region this tick (M5b) */
     healEffect = false;
-    /** class / role id ("" for none) */
-    // TODO(M7): Cobalt classes; TODO(M8): roles (kill leader, faction roles)
+    /** role id ("" for none): faction roles, Lone Survivr, map roles, Cobalt classes (M7a, roles/roles.ts) */
     role = "";
+    /** the worn helmet came with the role (it leaves with the role); the role's outfit cannot be swapped (Commander) */
+    hasRoleHelmet = false;
+    noDropOutfit = false;
     scale = 1;
     health: number = PLAYER.health;
     boost = 0;
@@ -71,8 +75,28 @@ export class Player implements InventoryOwner {
     helmet: string = PLAYER.defaultItems.helmet;
     chest: string = PLAYER.defaultItems.chest;
     scope: string = PLAYER.defaultItems.scope;
-    /** perk ids (M2: only consulted by the damage pipeline and ammo stats) */
+    /** perk ids, in grant order (M7a: add / remove through perks/perks.ts so effects and sources follow) */
     readonly perks: string[] = [];
+    /** where each perk came from (droppable loot perk, role, helmet), parallel to `perks` by type */
+    readonly perkSources: PerkSource[] = [];
+    /** speed burst: Windwalk, Takedown, Inspire (M7a) */
+    readonly haste = { type: "none" as HasteName, ticker: 0, seq: 0 };
+    /** seconds of Last Breath left (bonus damage, size, M7a) */
+    lastBreathTicker = 0;
+    /** Spud Gun hits: extra size, shrinking 2.5 s after the last hit (survev fatModifier / fatTicker, M7a) */
+    fat = { mod: 0, ticker: 0 };
+    /** seconds until the bugle regains a charge (Inspiration), 0 when not recharging */
+    bugleTicker = 0;
+    /** Gabby Ghost and That Sucks timers */
+    chattyTicker = 0;
+    drainTicker = 0;
+    /** AFK filter of promotions: seconds moving / standing still, seconds since the last move (survev) */
+    movingTime = 0;
+    stillTime = 0;
+    timeWithoutMoving = 0;
+    /** the Commander's flare gun was fired (it may then be dropped); seconds until its automatic shot (fork knob) */
+    firedFlare = true;
+    flareTimer = 0;
     /** camera zoom radius in world units */
     zoom: number;
     indoors = false;
@@ -315,14 +339,24 @@ export class Player implements InventoryOwner {
         let speed = PLAYER.moveSpeed;
         if (survevReviver) speed = PLAYER.downedMoveSpeed + 2;
         else if (this.downed) speed = reviving ? PLAYER.downedRezMoveSpeed : PLAYER.downedMoveSpeed;
-        const def = getDef(this.activeWeapon || "fists") as { speed?: { equip?: number; attack?: number } };
-        // the equip bonus is lost while a melee hit is pending
+        const def = getDef(this.activeWeapon || "fists") as {
+            type: string;
+            speed?: { equip?: number; attack?: number };
+        };
+        const perks = rules?.perks;
+        // the equip bonus is lost while a melee hit is pending; Small Arms replaces a gun's equip modifier by +1
         const equip = !this.downed || (rules?.downedEquipBonus ?? false);
-        if (equip && this.weaponManager.meleeAttacks.length === 0) speed += def.speed?.equip ?? 0;
+        let equipSpeed = def.speed?.equip ?? 0;
+        if (def.type === "gun" && this.hasPerk("small_arms")) equipSpeed = perks?.smallArmsGunEquipSpeed ?? 1;
+        if (equip && this.weaponManager.meleeAttacks.length === 0) speed += equipSpeed;
         if (this.shotSlowdownTimer > 0 && def.speed?.attack !== undefined) speed += def.speed.attack;
-        if (world.isOnWater(this.pos, this.layer)) speed -= PLAYER.waterSpeedPenalty;
+        // One With Nature: faster in water instead of slower (perks.md tree_climbing)
+        if (world.isOnWater(this.pos, this.layer)) {
+            speed += this.hasPerk("tree_climbing") ? (perks?.treeClimbingWaterSpeed ?? 2) : -PLAYER.waterSpeedPenalty;
+        }
         if (this.boost >= 50) speed += PLAYER.boostMoveSpeed;
         if (this.animType === "cook") speed -= PLAYER.cookSpeedPenalty;
+        if (this.haste.type !== "none") speed += perks?.hasteSpeedBonus ?? PLAYER.hasteSpeedBonus;
         // Combat Medic: no slowdown while using items, a small bonus instead
         const medic = this.hasPerk("field_medic") && this.action.type === "use";
         const busy = this.action.type === "use" && !medic;
@@ -369,6 +403,9 @@ export class Player implements InventoryOwner {
         // boost heals and decays before the action and movement (survev player.ts update)
         updateBoost(this, ctx.rules, dt);
         updateFabricate(this, ctx.rules, dt);
+        // haste, Last Breath, bugle, Gift of the Woods, That Sucks, Gabby Ghost (M7a); That Sucks may kill
+        updatePerks(ctx, this, dt);
+        if (this.dead) return;
         // revive range, damage buffer, bleeding (may kill), emote throttle (M6a)
         updateDowned(ctx, this, dt);
         if (this.dead) return;
@@ -384,6 +421,7 @@ export class Player implements InventoryOwner {
         if (slide) this.pos = v2.add(this.pos, slide);
         const movement = Player.movementFromInput(input);
         const moving = movement.x !== 0 || movement.y !== 0;
+        trackActivity(this, moving, dt);
         this.speed = moving ? this.computeSpeed(world) : 0;
         this.moveVel = v2.mul(movement, this.speed);
         const objs = moveWithCollision(world, this, movement, this.speed, dt, this.scratch);
@@ -501,6 +539,9 @@ export class Player implements InventoryOwner {
             shot: { seq: this.shotSeq, offHand: this.shotOffhand },
             wearingPan: this.wearingPan,
             healEffect: this.healEffect && !this.dead,
+            role: this.role,
+            perks: perkViews(this),
+            haste: { type: this.haste.type, seq: this.haste.seq },
         };
     }
 
@@ -537,6 +578,8 @@ export class Player implements InventoryOwner {
             killedBy: this.killedBy,
             stats: this.matchStats(),
             spectatorCount: this.spectatorCount,
+            role: this.role,
+            perks: perkViews(this),
         };
     }
 

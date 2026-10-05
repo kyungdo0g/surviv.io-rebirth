@@ -11,6 +11,8 @@ import { pickBotName } from "./names.ts";
 
 export interface MatchConfig {
     mapName?: string;
+    /** 50v50 on the faction map (M7a): mapName "faction", squads inside the Red / Blue factions */
+    faction?: boolean;
     seed?: number;
     /** number of bots (default 80) */
     bots?: number;
@@ -56,14 +58,19 @@ export interface MatchReport {
     tickMs: { p50: number; p99: number; max: number; mean: number };
     stuckEvents: number;
     throws: number;
+    /** 50v50 (M7a): living players per faction at the end, roles handed out and team kills (must be 0) */
+    teamAliveCounts?: number[];
+    roles?: Record<string, number>;
+    teamKills?: number;
 }
 
 export function runMatch(cfg: MatchConfig = {}): MatchReport {
     const clock = cfg.clock ?? (() => 0);
     const seed = cfg.seed ?? 1;
-    const n = cfg.bots ?? 80;
+    const n = cfg.bots ?? (cfg.faction ? 100 : 80);
+    const mapName = cfg.faction ? "faction" : (cfg.mapName ?? "main");
     const game = new Game(
-        { mapName: cfg.mapName ?? "main", seed, teamMode: cfg.teamMode ?? 1 },
+        { mapName, seed, teamMode: cfg.faction ? 4 : (cfg.teamMode ?? 1) },
         cfg.gasStages ? { gasStages: cfg.gasStages } : {},
     );
     const rng = createRng(seed ^ 0x5bd1e995);
@@ -77,8 +84,17 @@ export function runMatch(cfg: MatchConfig = {}): MatchReport {
         bots.push(bot);
     }
     const causes = new Map<number, { cause: DamageSource; killerId: number }>();
+    const roles: Record<string, number> = {};
+    let teamKills = 0;
+    const announce = game.announceRole.bind(game);
+    game.announceRole = (e) => {
+        if (e.assigned) roles[e.role] = (roles[e.role] ?? 0) + 1;
+        announce(e);
+    };
     const onKilled = game.onPlayerKilled.bind(game);
     game.onPlayerKilled = (victim, params, credit) => {
+        const source = params.sourceId ? game.getPlayer(params.sourceId) : undefined;
+        if (source && source !== victim && source.teamId === victim.teamId && !victim.disconnected) teamKills++;
         causes.set(victim.id, {
             cause: damageSourceOf(params.damageType, params.gameSourceType ?? "", params.mapSourceType ?? ""),
             killerId: credit?.id ?? 0,
@@ -155,5 +171,6 @@ export function runMatch(cfg: MatchConfig = {}): MatchReport {
         },
         stuckEvents: bots.reduce((a, b) => a + b.bot.follower.stuckEvents, 0),
         throws: bots.reduce((a, b) => a + b.bot.throws.throws, 0),
+        ...(game.faction ? { teamAliveCounts: game.faction.aliveCounts(), roles, teamKills } : {}),
     };
 }

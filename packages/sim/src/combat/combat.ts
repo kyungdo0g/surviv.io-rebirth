@@ -1,9 +1,11 @@
 // Damage entry points shared by bullets and melee: player damage with death, obstacle damage with destruction.
 // Behaviour follows survev server/src/game/objects/player.ts (damage, kill) and obstacle.ts (damage, kill); lethal
 // damage goes through the team rules (match/teams.ts handlePlayerDeath: knock or death, M6a).
-import { type Vec2, v2 } from "@rebirth/core";
-import { DamageType, GameObjectDefs, hasDef } from "@rebirth/defs";
+import type { Vec2 } from "@rebirth/core";
+import { DamageType, GameObjectDefs, getMapDef, hasDef } from "@rebirth/defs";
 import { dropEverythingOnDeath, dropObstacleLoot, spawnDestroyType } from "../loot/drops.ts";
+import { onKillCredited, onPerkHolderDeath } from "../perks/effects.ts";
+import { clearHaste } from "../perks/perks.ts";
 import { randomWeaponSwap } from "../weapons/potatoSwap.ts";
 import { throwThrowable } from "../weapons/throwable.ts";
 import {
@@ -18,10 +20,6 @@ import { downPlayer } from "../world/downed.ts";
 import type { Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
 import { computeDamage, type DamageParams, rollHeadshot } from "./damage.ts";
-
-/** Martyrdom releases this many martyr_nades with a random velocity up to 5 (survev perkDefs martyrdom). */
-const MARTYRDOM_COUNT = 12;
-const MARTYRDOM_MAX_VEL = 5;
 
 /** Result of the last hit a player took (tests, kill feed later). */
 export interface HitRecord {
@@ -75,26 +73,28 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     if (player.weaponManager.cooking) throwThrowable(ctx, player, true);
     player.cancelAnim();
     player.shootHold = false;
+    clearHaste(player);
     const creditSource = creditId ?? params.sourceId;
     const credit = creditSource ? ctx.getPlayer(creditSource) : undefined;
     if (credit) {
         player.killedBy = credit.id;
-        if (credit !== player && credit.teamId !== player.teamId) credit.kills++;
+        if (credit !== player && credit.teamId !== player.teamId) {
+            credit.kills++;
+            // Takedown: health, adrenaline and a speed burst per kill (M7a)
+            onKillCredited(ctx, credit);
+        }
     }
-    // kill feed, alive count, kill leader, game over (match/match.ts)
+    // Last Breath and Martyrdom (the perk, or the Grenadier / Demo role) (M7a, perks/effects.ts)
+    onPerkHolderDeath(ctx, player);
+    // kill feed, role announcements, alive count, kill leader, game over (match/match.ts)
     ctx.onPlayerKilled(player, params, credit);
-    // TODO(M8): the Grenadier role and the Demo class trigger Martyrdom without the perk
-    if (player.hasPerk("martyrdom")) {
-        const { x, y } = player.pos;
-        ctx.projectiles.addSplit(
-            player.id,
-            "martyr_nade",
-            { x, y },
-            player.layer,
-            v2.create(0, 0),
-            MARTYRDOM_COUNT,
-            MARTYRDOM_MAX_VEL,
-        );
+    // Woods King ping, The Hunted's role, Lone Survivr, Commander succession, comeback drop (roles/roleSystem.ts)
+    ctx.roles.onPlayerKilled(player, credit);
+    // potato mode: a kill swaps the killer's weapon too (survev player.ts kill: lastDamagedBy.randomWeaponSwap)
+    const killer = player.lastDamagedBy ? ctx.getPlayer(player.lastDamagedBy) : undefined;
+    const potato = !!getMapDef(ctx.options.mapName).gameMode.potatoMode;
+    if (potato && killer && killer !== player && params.damageType === DamageType.Player) {
+        randomWeaponSwap(ctx, killer, params);
     }
     dropEverythingOnDeath(ctx, player);
     goreRegionKill(ctx, player);

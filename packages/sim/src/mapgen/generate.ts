@@ -48,6 +48,8 @@ export interface GenerateMapResult {
     shoreArea: number;
     grassArea: number;
     riverAreas: Array<{ water: number; shore: number }>;
+    /** faction maps: 0 the river runs left-right (Red below), 1 top-bottom (Red left) (survev factionModeSplitOri) */
+    factionSplitOri: 0 | 1;
 }
 
 interface MapSpawn {
@@ -411,5 +413,6 @@ export function generateMap(mapName: string, seed: number, teamMode: 1 | 2 | 4 =
         shoreArea,
         grassArea,
         riverAreas,
+        factionSplitOri: gen.factionSplitOri,
     };
 }

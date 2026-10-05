@@ -1,8 +1,11 @@
 // Firing one gun shot: muzzle position clipped against obstacles, spread, pellets with jitter, bullet spawn; potato
 // guns also launch their projectile, flare guns call an air drop, Explosive Rounds make bullets explode on impact.
-// Behaviour follows survev server/src/game/weaponManager.ts fireWeapon and docs/research/items/guns.md.
+// M7a: perk modifiers (perks/shotPerks.ts), Splinter Rounds side bullets, the bugle's Inspiration and the Commander's
+// flare. Behaviour follows survev server/src/game/weaponManager.ts fireWeapon and docs/research/items/guns.md.
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, getDefOfType } from "@rebirth/defs";
+import { playBugle } from "../perks/effects.ts";
+import { shotPerks } from "../perks/shotPerks.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
@@ -84,6 +87,7 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     player.shotSlowdownTimer = def.fireDelay;
     player.cancelAction();
     weapon.ammo--;
+    const perks = shotPerks(player, def, weapon.ammo, wm.ammoStats(def).maxClip, ctx.rules.perks);
 
     // bullets fly on the aim layer: on stairs, facing down or up them shoots into that floor (survev fireWeapon)
     const layer = player.aimLayer;
@@ -97,6 +101,7 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     // first-shot accuracy: no spread when the last shot (or switch) was at least recoilTime ago
     if (wm.recoilTicker >= def.recoilTime) spread = 0;
     wm.recoilTicker = 0;
+    spread *= perks.spreadMult;
 
     const rng = ctx.combatRng;
     const jitter = def.jitter ?? DEFAULT_JITTER;
@@ -122,7 +127,7 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
             if (t < startLen) startLen = t - 0.1;
         }
         const shotPos = v2.add(gunPos, v2.mul(startDir, startLen));
-        ctx.bullets.fire({
+        const params = {
             shooterId: player.id,
             bulletType: def.bulletType,
             sourceType: weapon.type,
@@ -132,7 +137,27 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
             shotFx: i === 0,
             offHand,
             onHitFx,
-        });
+            damageMult: perks.damageMult,
+            speedMult: perks.speedMult,
+            distanceMult: perks.distanceMult,
+            saturated: perks.saturated,
+            thick: perks.thick,
+        };
+        ctx.bullets.fire(params);
+        // Splinter Rounds: two weaker side bullets random(0.2, 0.25) x max(spread, 1) degrees off (perks.md splinter)
+        if (perks.splinter) {
+            const [lo, hi] = ctx.rules.perks.splinterDeviation;
+            for (let j = 0; j < 2; j++) {
+                const dev = rng.range(lo, hi) * Math.max(spread, 1) * (j === 0 ? -1 : 1);
+                ctx.bullets.fire({
+                    ...params,
+                    dir: v2.rotate(shotDir, math.deg2rad(dev)),
+                    shotFx: false,
+                    damageMult: perks.damageMult * ctx.rules.perks.splinterSideDamageMult,
+                    splinter: true,
+                });
+            }
+        }
         // a flare calls an air drop where it is fired (survev BulletBarn.fireBullet addFlare; airdrop-airstrike.md)
         if (bulletDef.addFlare) ctx.planes.addAirdrop(ctx.world.clampToMap(shotPos, 0));
         // potato guns launch their projectile with the (invisible) bullet (survev fireWeapon projType)
@@ -150,7 +175,10 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
             });
         }
     }
-    // TODO(M8): Splinter Rounds side bullets (and their projectiles) need perk pickups
+    // projectile guns are all noSplinter, so Splinter never doubles their projectiles (survev would)
+    if (weapon.type === "bugle" && player.hasPerk("inspiration")) playBugle(ctx, player);
+    // the Commander's flare gun may be dropped once fired (survev fireWeapon hasFiredFlare)
+    if (def.bulletType === "bullet_flare" && player.role === "leader") player.firedFlare = true;
     player.shotSeq++;
     player.shotOffhand = offHand;
     return true;

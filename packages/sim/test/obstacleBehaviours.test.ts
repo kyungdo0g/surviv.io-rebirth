@@ -96,7 +96,7 @@ describe("destroyType and smartLoot", () => {
         const shell = game.world.get(1) as Obstacle;
         const opener = placePlayer(game, v2.add(at, { x: 0, y: -4 }));
         const thief = placePlayer(game, v2.add(at, { x: 0, y: 4 }));
-        // TODO(M7): Cobalt gives every player a class; without one survev spawns nothing
+        // Cobalt gives every player a class (roles/roleSystem.ts); without one survev spawns nothing
         expect(destroyTypeOf(shell, thief)).toBe("class_crate_common_");
         opener.role = "scout";
         interactObstacle(game, shell, opener);

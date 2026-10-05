@@ -111,11 +111,76 @@
 //   throttles them like the original (6 in a row block emotes for 9 s, the counter decays by 1 every 3 s).
 // - New types: TeamMemberView, EmoteEvent, EmoteRequest, AddPlayerOptions (viewTeams.ts); GameApi.addPlayer takes an
 //   optional AddPlayerOptions (party key, auto fill), GameApi.emote(playerId, request).
+//
+// M7a additions (perks, roles, 50v50 Faction mode; backward compatible in the same way: optional in the types, always
+// filled by the simulation (the faction fields only in faction mode) and by the network decoder):
+// - PlayerView: `role` (GameObjectDefs role id or ""; draw the role's helmet/visor, and in faction mode the role's
+//   `mapIcon` for the minimap), `perks` (PerkView list, at most 8; Cast Ironskin draws the black pan, Flak Jacket the
+//   armour outline, Perky Shoot holders' victims burst into feathers), `haste` ({type, seq}: Windwalk / Takedown /
+//   Inspire speed bursts; `seq` increments on every new haste and when it ends; draw the haste particles while
+//   `type` is not "none"). `scale` now follows the perks (Leadership +25 %, Cast Ironskin +40 %, ...; 0.75..2).
+// - LocalPlayerState: `role`, `perks` (the HUD perk slots; `droppable` marks the loot perk, which drops on death and is
+//   swapped by the next loot perk; dropping it from the HUD needs the DropItem message, not implemented yet).
+// - TeamMemberView: `role` (role of the member, "" for none: the original PlayerStatus role).
+// - BulletEvent: `saturated` (darker tracer: ammo perks, Hollow-points, OKAMI Bar, Last Breath, One in the Chamber),
+//   `thick` (thick tracer: One in the Chamber), `splinter` (a Splinter Rounds side bullet: small tracer). The
+//   original bullet special-fx flags trailSaturated / trailThick / splinter + trailSmall.
+// - Snapshot: `teamAliveCounts` (faction mode only: living players of [Red, Blue], the original AliveCounts message;
+//   `aliveCount` stays their sum) and `factionStatus` (faction mode only: every member of the viewer's faction with
+//   position, dead, downed and role, refreshed every `rules.roles.factionStatusInterval` = 0.5 s like the original
+//   faction PlayerStatus; draw them on the minimap, role holders with their role's `mapIcon`). `local.team` stays the
+//   viewer's squad (group) in faction mode.
+// - Faction mode (map "faction", 50v50; GameOptions.teamMode 4, the original 50v50 squad queue): PlayerInfoView.teamId
+//   is the faction (1 Red, 2 Blue: tint helmets with `baseTintRed` / `baseTintBlue`, draw the team arm patches) and
+//   groupId the squad. Teammates are the whole faction (no friendly fire, knocks until the faction has nobody
+//   standing), the match ends when one faction is left, GameOverEvent.teamId / winningTeamId are faction ids and its
+//   playerStats list the viewer, then both factions' first Commanders once both exist.
+// - Roles: RoleAnnouncementEvent now covers every role (faction roles, Lone Survivr, The Hunted, Cobalt classes) with
+//   `assigned` on promotion and `killed` when the holder dies (`killerId` = its killer). Kill Leader announcements are
+//   unchanged. MapIndicatorView types gain the role id "the_hunted" (pulsing marker following The Hunted) and loot ids
+//   with a def `mapIndicator` ("helmet03_forest": the unclaimed Woods King helmet).
+// - Emotes: a Commander's pings reach its whole faction; perks with `emoteOnPickup` emote on pickup; Gabby Ghost emotes
+//   at random; the bugle's Inspiration and Last Breath make the affected teammates emote "emote_bugle_*_red/blue".
+// - Cobalt: a player picks its class with `Game.selectRole(playerId, role)` (the original PerkModeRoleSelect message;
+//   only the map's `perkModeRoles`, once); without a choice a random class comes after 20 s. Until then it cannot emote.
+// - Spud Gun hits enlarge the target for a while (PlayerView.scale).
+// - New types: PerkView, HasteName, FactionMemberView (viewMatch.ts, re-exported here with the M4 match types).
 import type { Vec2 } from "@rebirth/core";
 import type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+import type {
+    AirdropView,
+    FactionMemberView,
+    GameOverEvent,
+    GasView,
+    HasteName,
+    KillEvent,
+    KillLeaderView,
+    MapIndicatorView,
+    PerkView,
+    PlaneView,
+    PlayerStatsView,
+    RoleAnnouncementEvent,
+} from "./viewMatch.ts";
 import type { EmoteEvent, TeamMemberView } from "./viewTeams.ts";
 
 export type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+export type {
+    AirdropView,
+    DamageSource,
+    FactionMemberView,
+    GameOverEvent,
+    GasModeName,
+    GasView,
+    HasteName,
+    KillEvent,
+    KillLeaderView,
+    MapIndicatorView,
+    PerkView,
+    PlaneType,
+    PlaneView,
+    PlayerStatsView,
+    RoleAnnouncementEvent,
+} from "./viewMatch.ts";
 export type { AddPlayerOptions, EmoteEvent, EmoteRequest, TeamMemberView } from "./viewTeams.ts";
 
 export interface RiverData {
@@ -201,6 +266,12 @@ export interface PlayerView extends BaseView {
     wearingPan?: boolean;
     /** standing in a building heal region (heal particles) (M5b) */
     healEffect?: boolean;
+    /** GameObjectDefs role id, "" for none (M7a) */
+    role?: string;
+    /** perks in pickup / grant order, at most 8 (M7a) */
+    perks?: PerkView[];
+    /** current speed burst; `seq` increments when one starts or ends (M7a) */
+    haste?: { type: HasteName; seq: number };
 }
 
 /** "revive": the reviver's 8 s revive animation (M6a) */
@@ -324,6 +395,10 @@ export interface LocalPlayerState {
     spectatorCount?: number;
     /** team modes: every member of the player's group, itself included (M6a; absent in solo) */
     team?: TeamMemberView[];
+    /** role id, "" for none (M7a) */
+    role?: string;
+    /** the HUD perk slots (M7a) */
+    perks?: PerkView[];
 }
 
 /** Match stats of one player, as shown on the death and win screens. Integers (damage rounded, whole seconds). */
@@ -367,6 +442,12 @@ export interface BulletEvent {
     shotFx: boolean;
     /** dual guns: fired from the off hand */
     offHand: boolean;
+    /** darker tracer (ammo perks, Hollow-points, OKAMI Bar, Last Breath, One in the Chamber) (M7a) */
+    saturated?: boolean;
+    /** thick tracer (One in the Chamber) (M7a) */
+    thick?: boolean;
+    /** a Splinter Rounds side bullet (small tracer) (M7a) */
+    splinter?: boolean;
 }
 
 /** One simulation snapshot as seen by one player (the original UpdateMsg, decoded). */
@@ -426,6 +507,10 @@ export interface Snapshot {
     recorders?: RecorderEvent[];
     /** emotes and pings the viewer may see, since its previous snapshot, in order (M6a) */
     emotes?: EmoteEvent[];
+    /** faction mode: living players of [Red, Blue] (the original AliveCounts) (M7a) */
+    teamAliveCounts?: number[];
+    /** faction mode: the viewer's faction for the minimap, in id order (M7a) */
+    factionStatus?: FactionMemberView[];
 }
 
 /** Public info of a player (the original PlayerInfos record, without the heal/boost cosmetics). */
@@ -437,133 +522,6 @@ export interface PlayerInfoView {
     groupId: number;
     /** at most 16 UTF-8 bytes on the wire */
     name: string;
-}
-
-export type GasModeName = "inactive" | "waiting" | "moving";
-
-/**
- * Red zone state (the original gas section plus its progress `gasT`). Before the match starts the gas is
- * "inactive" (the client shows "Waiting for players"). Each circle has a "waiting" stage (the next safe circle
- * `posNew`/`radNew` is shown, the zone does not move) and a "moving" stage (the zone closes linearly from
- * `posOld`/`radOld` to `posNew`/`radNew` over `duration`). The current circle is `gasCircle(gas)`.
- */
-export interface GasView {
-    mode: GasModeName;
-    /** index into GameConfig.gas.stages; stages.length once the last stage has ended (the zone stays closed) */
-    stage: number;
-    /** -1 before the first circle; incremented when each waiting stage starts */
-    circleIdx: number;
-    /** duration of the current stage in seconds */
-    duration: number;
-    /** progress through the current stage, 0..1 (time left = duration * (1 - gasT)) */
-    gasT: number;
-    posOld: Vec2;
-    posNew: Vec2;
-    radOld: number;
-    radNew: number;
-    /** damage dealt every GameConfig.gas.damageTickRate seconds to players outside the circle (ignores armor) */
-    damage: number;
-}
-
-export type PlaneType = "airdrop" | "airstrike";
-
-export interface PlaneView {
-    /** plane id (1..255, not an object id) */
-    id: number;
-    pos: Vec2;
-    /** unit flight direction */
-    dir: Vec2;
-    planeType: PlaneType;
-    /** the plane released its crate (air drop) or bombs (air strike) */
-    actionComplete: boolean;
-}
-
-/** A falling air drop crate (the original Airdrop object). When it lands, the crate obstacle appears. */
-export interface AirdropView {
-    /** object id (unique among objects) */
-    id: number;
-    pos: Vec2;
-    /** fall progress 0..1 over GameConfig.airdrop.fallTime */
-    fallT: number;
-    landed: boolean;
-}
-
-export interface MapIndicatorView {
-    /** indicator id 0..15 (reused after the indicator died) */
-    id: number;
-    /** GameObjectDefs id, e.g. "ping_airdrop" (drawn with its `mapTexture`) */
-    type: string;
-    pos: Vec2;
-    /** the indicator was removed: the client drops it */
-    dead: boolean;
-    equipped: boolean;
-}
-
-/** How a player died, derived from the damage type and the source defs (kill feed wording). */
-export type DamageSource = "gun" | "melee" | "explosion" | "gas" | "bleed" | "airdrop" | "airstrike" | "other";
-
-/** One kill (the original Kill message). */
-export interface KillEvent {
-    /** the player who died (or was downed, M6) */
-    targetId: number;
-    /** player whose hit caused it; 0 for the environment (gas, air drop) and for bleeding */
-    killerId: number;
-    /** player credited with the kill (0 for none; the victim itself for a suicide) */
-    killCreditId: number;
-    /** kill count of the credited player after this kill */
-    killerKills: number;
-    /** defs DamageType (Player 0, Bleeding 1, Gas 2, Airdrop 3, Airstrike 4) */
-    damageType: number;
-    source: DamageSource;
-    /** GameObjectDefs id of the weapon, "" for none */
-    itemSourceType: string;
-    /** MapObjectDefs id of the obstacle that dealt it (exploding barrel), "" for none */
-    mapSourceType: string;
-    /** knocked down, not killed (team modes, M6a) */
-    downed: boolean;
-    killed: boolean;
-}
-
-/** A role event (the original RoleAnnouncement message): "promoted to Kill Leader!" / "killed Kill Leader!". */
-export interface RoleAnnouncementEvent {
-    playerId: number;
-    /** who killed the role holder (0 when not killed) */
-    killerId: number;
-    /** GameObjectDefs role id, e.g. "kill_leader" */
-    role: string;
-    assigned: boolean;
-    killed: boolean;
-}
-
-export interface KillLeaderView {
-    /** 0 for none */
-    id: number;
-    kills: number;
-}
-
-/** End-of-life stats of one player (the original PlayerStats record; integers). */
-export interface PlayerStatsView {
-    playerId: number;
-    /** whole seconds alive */
-    timeAlive: number;
-    kills: number;
-    dead: boolean;
-    damageDealt: number;
-    damageTaken: number;
-}
-
-/** The viewer's match result (the original GameOver message). */
-export interface GameOverEvent {
-    /** the viewer's team (solo: a per-player id) */
-    teamId: number;
-    /** final rank of the viewer's team: 1 for the winner, else living teams + 1 when it was eliminated */
-    teamRank: number;
-    /** the match is over (a winner exists) */
-    gameOver: boolean;
-    /** team id of the winner, 0 while the match goes on */
-    winningTeamId: number;
-    /** stats of the viewer's team members (solo: the viewer) */
-    playerStats: PlayerStatsView[];
 }
 
 /** Terrain polygons derived deterministically from MapData by `buildTerrain(map)` (client and server share it). */

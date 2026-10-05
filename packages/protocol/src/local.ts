@@ -13,6 +13,8 @@
 //   9 kills u8   10 dead bit   11 killedBy u16
 //  12 stats (M4) kills u8, damageDealt u16, damageTaken u16, timeAlive u16 (integers, like the PlayerStats record)
 //  13 spectatorCount u8 (M4; the original active player data carries it too)
+//  14 perks (M7a) count 4 bits, count x {type 10, droppable bit} (the HUD perk slots; at most 8)
+//  15 role (M7a) 10 bits
 import type { BitReader, BitWriter } from "@rebirth/core";
 import { GameConfig } from "@rebirth/defs";
 import type { ActionType, LocalPlayerState } from "@rebirth/sim";
@@ -22,7 +24,8 @@ import { clampUint, dequantize, gameTypeId, gameTypeOf, quantize } from "./quant
 /** Bag items in protocol order (GameConfig.bagSizes key order, like the original). */
 export const BAG_ITEMS: readonly string[] = Object.keys(GameConfig.bagSizes);
 
-const SECTION_COUNT = 14;
+const SECTION_COUNT = 16;
+const MAX_LOCAL_PERKS = 8;
 export const LOCAL_ALL_DIRTY = (1 << SECTION_COUNT) - 1;
 const ACTION_TYPES: readonly ActionType[] = ["none", "reload", "use", "revive"];
 const STAT_BITS = 8;
@@ -73,6 +76,8 @@ export function quantizeLocal(s: LocalPlayerState): LocalQuant {
             clampUint(s.stats?.timeAlive ?? 0, 16),
         ],
         [clampUint(s.spectatorCount ?? 0, 8)],
+        (s.perks ?? []).slice(0, MAX_LOCAL_PERKS).flatMap((p) => [gameTypeId(p.type), p.droppable ? 1 : 0]),
+        [gameTypeId(s.role ?? "")],
     ];
 }
 
@@ -136,6 +141,15 @@ export function writeLocal(w: BitWriter, q: LocalQuant, mask: number): void {
         w.writeBits(st[3], 16);
     }
     if (mask & 8192) w.writeBits(q[13][0], 8);
+    if (mask & 16384) {
+        const perks = q[14];
+        w.writeBits(perks.length / 2, 4);
+        for (let i = 0; i < perks.length; i += 2) {
+            w.writeBits(perks[i], 10);
+            w.writeBits(perks[i + 1], 1);
+        }
+    }
+    if (mask & 32768) w.writeBits(q[15][0], 10);
 }
 
 /** Default local state before the first update (every section is sent in the first update anyway). */
@@ -162,6 +176,8 @@ export function emptyLocalState(): LocalPlayerState {
         killedBy: 0,
         stats: { kills: 0, damageDealt: 0, damageTaken: 0, timeAlive: 0 },
         spectatorCount: 0,
+        role: "",
+        perks: [],
     };
 }
 
@@ -219,6 +235,15 @@ export function readLocal(r: BitReader, s: LocalPlayerState): void {
         s.stats = { kills, damageDealt, damageTaken, timeAlive: r.readBits(16) };
     }
     if (mask & 8192) s.spectatorCount = r.readBits(8);
+    if (mask & 16384) {
+        const perks: Array<{ type: string; droppable: boolean }> = [];
+        for (let n = r.readBits(4); n > 0; n--) {
+            const type = gameTypeOf(r.readBits(10));
+            perks.push({ type, droppable: r.readBits(1) === 1 });
+        }
+        s.perks = perks;
+    }
+    if (mask & 32768) s.role = gameTypeOf(r.readBits(10));
 }
 
 /** Deep copy (decoders hand out copies so callers can never corrupt the decoder state). */
@@ -231,5 +256,6 @@ export function cloneLocal(s: LocalPlayerState): LocalPlayerState {
         cooldowns: s.cooldowns ? { weapons: [...s.cooldowns.weapons], freeSwitch: s.cooldowns.freeSwitch } : undefined,
         stats: s.stats ? { ...s.stats } : undefined,
         team: s.team?.map((m) => ({ ...m, pos: { x: m.pos.x, y: m.pos.y } })),
+        perks: s.perks?.map((p) => ({ ...p })),
     };
 }

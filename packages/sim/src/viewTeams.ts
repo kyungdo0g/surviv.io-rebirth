@@ -21,6 +21,8 @@ export interface TeamMemberView {
     disconnected: boolean;
     /** world position at the last status refresh */
     pos: Vec2;
+    /** role id, "" for none (the original PlayerStatus role; M7a) */
+    role?: string;
 }
 
 /**

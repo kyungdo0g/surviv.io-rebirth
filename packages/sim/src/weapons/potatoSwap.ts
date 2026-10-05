@@ -46,7 +46,7 @@ function swapPool(kind: SwapKind, factionMode: boolean): string[] {
  */
 export function randomWeaponSwap(ctx: SimContext, player: Player, params: DamageParams): void {
     if (player.dead) return;
-    // TODO(M8): the last_man role keeps its weapons
+    // (the fork's "Lone Survivr keeps its weapons", 0.2.31, is not in v0.8.82)
     const oldWeapon = params.gameSourceType;
     if (!oldWeapon || !hasDef(oldWeapon)) return;
     const oldDef = getDef(oldWeapon) as SwapDef;
@@ -83,5 +83,6 @@ export function randomWeaponSwap(ctx: SimContext, player: Player, params: Damage
         player.inv.give(chosen, Math.max(Math.floor(space / 3), 1));
     }
     if (chosenDef.switchDelay !== undefined) wm.weapons[index].cooldown = chosenDef.switchDelay;
-    // TODO(M7): potato mode also swaps the weapon of a kill (survev player.ts kill) and shows the loot emote
+    // the new weapon shows in a loot emote (survev randomWeaponSwap addEmote("emote_loot"))
+    ctx.addEmote(player, "emote_loot", chosen);
 }

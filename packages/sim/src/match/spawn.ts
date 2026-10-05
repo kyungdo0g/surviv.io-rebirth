@@ -51,26 +51,36 @@ export function canPlayerSpawn(host: SpawnHost, pos: Vec2): boolean {
     return true;
 }
 
-/** Whether a living player of another group stands within minSpawnRad of `pos` (survev getRandomSpawnPos). */
-function crowded(host: SpawnHost, pos: Vec2, group: Group | null): boolean {
+/**
+ * Whether a living player of another group (50v50: of the other faction) stands within minSpawnRad of `pos` (survev
+ * getRandomSpawnPos).
+ */
+function crowded(host: SpawnHost, pos: Vec2, group: Group | null, faction = 0): boolean {
     for (const p of host.players()) {
-        if (p.dead || (group && p.group === group)) continue;
+        if (p.dead || (group && p.group === group) || (faction !== 0 && p.teamId === faction)) continue;
         if (v2.distance(p.pos, pos) < GameConfig.player.minSpawnRad) return true;
     }
     return false;
 }
 
-/** A random spawn point on the island away from other groups (the first player of a group, every solo player). */
-export function randomSpawnPos(host: SpawnHost, rng: Rng, group: Group | null): Vec2 {
+/**
+ * A random spawn point on the island away from other groups (the first player of a group, every solo player); 50v50
+ * spawns inside `band`, the faction's side (M7a).
+ */
+export function randomSpawnPos(host: SpawnHost, rng: Rng, group: Group | null, band?: Bounds, faction = 0): Vec2 {
     const { width, height, shoreInset } = host.mapData;
+    const area = band ?? {
+        min: { x: shoreInset, y: shoreInset },
+        max: { x: width - shoreInset, y: height - shoreInset },
+    };
     let fallback: Vec2 | null = null;
     for (let i = 0; i < SPAWN_ATTEMPTS; i++) {
-        const pos = { x: rng.range(shoreInset, width - shoreInset), y: rng.range(shoreInset, height - shoreInset) };
+        const pos = { x: rng.range(area.min.x, area.max.x), y: rng.range(area.min.y, area.max.y) };
         if (!canPlayerSpawn(host, pos)) continue;
         fallback ??= pos;
-        if (!crowded(host, pos, group)) return pos;
+        if (!crowded(host, pos, group, faction)) return pos;
     }
-    return fallback ?? { x: width / 2, y: height / 2 };
+    return fallback ?? { x: (area.min.x + area.max.x) / 2, y: (area.min.y + area.max.y) / 2 };
 }
 
 /**
@@ -87,7 +97,7 @@ export function teammateSpawnPos(host: SpawnHost, rng: Rng, group: Group, center
         const pos = { x: center.x + Math.cos(a) * r, y: center.y + Math.sin(a) * r };
         if (!canPlayerSpawn(host, pos)) continue;
         fallback ??= pos;
-        if (!crowded(host, pos, group)) return pos;
+        if (!crowded(host, pos, group, group.factionTeam)) return pos;
     }
     return fallback ?? v2.copy(center);
 }

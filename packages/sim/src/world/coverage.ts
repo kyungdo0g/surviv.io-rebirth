@@ -49,7 +49,7 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "obstacle.dropCollision": client("air drop shadow; survev's server does not read it"),
     "obstacle.airdropCrate": deferred("M8", "the airdrop_unlocked quest event"),
     "obstacle.destroyType": impl("drops.ts spawnDestroyType"),
-    "obstacle.smartLoot": impl("drops.ts destroyTypeOf / lootOwnerOf (class roles: TODO(M7))"),
+    "obstacle.smartLoot": impl("drops.ts destroyTypeOf / lootOwnerOf (class roles: roles/roles.ts, M7a)"),
     "obstacle.lootSpawn": impl("drops.ts dropObstacleLoot"),
     "obstacle.createSmoke": impl("combat.ts onObstacleDestroyed"),
     "obstacle.swapWeaponOnDestroy": impl("potatoSwap.ts randomWeaponSwap"),

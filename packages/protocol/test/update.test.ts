@@ -4,7 +4,7 @@
 // rows and emotes) go through a ClientEncoder frame and a ServerMsgDecoder; every decoded snapshot must equal the
 // input within quantization tolerance.
 import { BitWriter, createRng, type Rng } from "@rebirth/core";
-import type { MapIndicatorView, ObjectView, Snapshot, TeamMemberView } from "@rebirth/sim";
+import type { FactionMemberView, MapIndicatorView, ObjectView, Snapshot, TeamMemberView } from "@rebirth/sim";
 import { TICK_HZ } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import {
@@ -41,7 +41,7 @@ import {
     randZones,
     snapshotTolerances,
 } from "./gen.ts";
-import { mutateTeam, randEmotes, randTeam } from "./genTeams.ts";
+import { mutateFaction, mutateTeam, randEmotes, randFaction, randTeam } from "./genTeams.ts";
 
 interface Seq {
     nextId: { v: number };
@@ -50,6 +50,8 @@ interface Seq {
     /** team HUD rows of the sequence (null: solo) and the names the decoder learnt from PlayerInfos */
     team: TeamMemberView[] | null;
     names: Map<number, string>;
+    /** faction minimap rows of a 50v50 sequence (M7a; null otherwise) */
+    faction: FactionMemberView[] | null;
 }
 
 function newSeq(rng: Rng): Seq {
@@ -59,6 +61,7 @@ function newSeq(rng: Rng): Seq {
         indicators: new Map(),
         team: null,
         names: new Map(),
+        faction: null,
     };
 }
 
@@ -99,6 +102,15 @@ function matchFields(
     };
     if (rng.bool(0.1)) fields.gameOver = randGameOver(rng);
     if (rng.bool(0.1)) fields.playerStats = randStats(rng);
+    if (seq.faction) {
+        // 50v50 (M7a): two alive counts (aliveCount is their sum) and the faction rows
+        const red = prev?.teamAliveCounts && rng.bool(0.7) ? prev.teamAliveCounts[0] : rng.int(0, 50);
+        const blue = prev?.teamAliveCounts && rng.bool(0.7) ? prev.teamAliveCounts[1] : rng.int(0, 50);
+        fields.teamAliveCounts = [red, blue];
+        fields.aliveCount = red + blue;
+        seq.faction = prev ? mutateFaction(rng, ctx, seq.faction) : seq.faction;
+        fields.factionStatus = seq.faction;
+    }
     return fields;
 }
 
@@ -137,6 +149,14 @@ function firstSnapshot(rng: Rng, ctx: { width: number; height: number }, seq: Se
     const objects: ObjectView[] = [randView(rng, ctx, localPlayerId, "player")];
     for (let n = rng.int(0, 20); n > 0; n--) objects.push(randView(rng, ctx, seq.nextId.v++));
     const local = randLocal(rng);
+    if (rng.bool(0.3)) {
+        const ids = [localPlayerId, ...Array.from({ length: rng.int(0, 59) }, () => rng.int(1, 65535))];
+        seq.faction = randFaction(
+            rng,
+            ctx,
+            [...new Set(ids)].sort((a, b) => a - b),
+        );
+    }
     const fields = matchFields(rng, ctx, seq, null, localPlayerId);
     if (rng.bool(0.5)) {
         // a team mode sequence: the members are announced in this first snapshot, like the server does
@@ -308,9 +328,13 @@ describe("Update message", () => {
             projectiles: [],
             smokes: [],
             airstrikeZones: [],
+            recorders: [],
+            emotes: [],
         };
         delete base.gameOver;
         delete base.playerStats;
+        delete base.teamAliveCounts;
+        delete base.factionStatus;
         const flagsOf = (bytes: Uint8Array) =>
             bytes[bytes.indexOf(MsgType.Update) + 5] | (bytes[bytes.indexOf(MsgType.Update) + 6] << 8);
         const first = encoder.encodeFrame(base, 0);
@@ -390,6 +414,8 @@ describe("Update message", () => {
             projectiles: [],
             smokes: [],
             airstrikeZones: [],
+            recorders: [],
+            emotes: [],
         };
         decoder.decode(encoder.encode(base, 0));
         const effects = {

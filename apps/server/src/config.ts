@@ -2,7 +2,7 @@
 // values (docs/research/engine/netcode.md "Limits and rate limits").
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { MapDefs } from "@rebirth/defs";
+import { getMapDef, MapDefs } from "@rebirth/defs";
 import { z } from "zod";
 import type { BotDifficultySetting } from "./bots.ts";
 
@@ -11,6 +11,8 @@ export interface ServerConfig {
     host: string;
     /** players per game (survev maxPlayers 80) */
     maxPlayers: number;
+    /** players per 50v50 game (the faction map's maxPlayers, 100; M7a) */
+    factionMaxPlayers: number;
     /** games this server runs at most */
     maxGames: number;
     /** map of games created when find_game names none */
@@ -56,6 +58,11 @@ export interface ServerConfig {
      * off. Humans joining a full game take the seat of a bot that has not fought yet (bots.ts).
      */
     botFill: number;
+    /**
+     * Bot fill target of 50v50 games (M7a); defaults to BOT_FILL scaled from MAX_PLAYERS to FACTION_MAX_PLAYERS
+     * (BOT_FILL 80 of 80 fills a faction game to 100), 0 when BOT_FILL is 0.
+     */
+    factionBotFill: number;
     /** difficulty of fill bots: easy, normal, hard or mixed (a third each) */
     botDifficulty: BotDifficultySetting;
     /** milliseconds between two bot joins (bots trickle in like players; 0: all at once) */
@@ -70,6 +77,8 @@ const EnvSchema = z.object({
     PORT: z.coerce.number().int().min(0).max(65535).default(8001),
     HOST: z.string().min(1).default("127.0.0.1"),
     MAX_PLAYERS: z.coerce.number().int().min(1).max(255).default(80),
+    FACTION_MAX_PLAYERS: z.coerce.number().int().min(2).max(255).default(100),
+    FACTION_BOT_FILL: z.coerce.number().int().min(0).max(255).optional(),
     MAX_GAMES: z.coerce.number().int().min(1).max(256).default(16),
     MAP_NAME: z
         .string()
@@ -119,6 +128,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         port: e.PORT,
         host: e.HOST,
         maxPlayers: e.MAX_PLAYERS,
+        factionMaxPlayers: e.FACTION_MAX_PLAYERS,
         maxGames: e.MAX_GAMES,
         defaultMap: e.MAP_NAME,
         maxConnectionsPerIp: e.MAX_CONNECTIONS_PER_IP,
@@ -140,6 +150,9 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         partyJoinTimeoutMs: e.PARTY_JOIN_TIMEOUT_MS,
         partyIdleMs: e.PARTY_IDLE_MS,
         botFill: e.BOT_FILL,
+        factionBotFill:
+            e.FACTION_BOT_FILL ??
+            Math.min(e.FACTION_MAX_PLAYERS, Math.round((e.BOT_FILL * e.FACTION_MAX_PLAYERS) / e.MAX_PLAYERS)),
         botDifficulty: e.BOT_DIFFICULTY,
         botFillIntervalMs: e.BOT_FILL_INTERVAL_MS,
     };
@@ -148,4 +161,22 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
 /** Defaults (no environment) with overrides, for tests and scripts. */
 export function makeConfig(overrides: Partial<ServerConfig> = {}): ServerConfig {
     return { ...loadConfig({}), ...overrides };
+}
+
+/** Whether `mapName` is a 50v50 Faction map (M7a). */
+export function isFactionMap(mapName: string): boolean {
+    return Object.hasOwn(MapDefs, mapName) && !!getMapDef(mapName).gameMode.factionMode;
+}
+
+/**
+ * Team mode a game of `mapName` runs: 50v50 always plays in squads inside the factions (the original 50v50 squad queue;
+ * survev's config runs faction with TeamMode.Squad), any requested mode joins it (M7a).
+ */
+export function effectiveTeamMode(mapName: string, teamMode: 1 | 2 | 4): 1 | 2 | 4 {
+    return isFactionMap(mapName) ? 4 : teamMode;
+}
+
+/** Player capacity of a game of `mapName` (M7a: FACTION_MAX_PLAYERS for 50v50). */
+export function roomCapacity(config: ServerConfig, mapName: string): number {
+    return isFactionMap(mapName) ? config.factionMaxPlayers : config.maxPlayers;
 }

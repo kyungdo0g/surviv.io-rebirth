@@ -34,7 +34,7 @@ export function interactableObstacles(ctx: SimContext, player: Player): Obstacle
     for (const obj of ctx.world.query(box, player.scratch)) {
         if (obj.kind !== "obstacle" || obj.dead || obj.interactionRad <= 0) continue;
         if (!sameLayer(obj.layer, player.layer)) continue;
-        // TODO(M7): vat buttons (isVat) test the distance to their centre instead
+        // (survev's isVat buttons test the distance to their centre; no v0.8.82 obstacle has isVat)
         const res = collider.intersect(
             collider.createCircle(player.pos, obj.interactionRad + player.rad),
             obj.collider,
@@ -51,7 +51,7 @@ export function interactableObstacles(ctx: SimContext, player: Player): Obstacle
 export function interactObstacle(ctx: SimContext, obstacle: Obstacle, player: Player | null, auto = false): void {
     if (obstacle.dead) return;
     if (player && !auto && obstacle.interactCooldown > 0) return;
-    // TODO(M8): buttons with roleToPromote refuse players who already hold that role
+    // (buttons with roleToPromote, the fork's Augmenting Vat, do not exist in the v0.8.82 defs)
     if (obstacle.door) interactDoor(ctx, obstacle, player, auto);
     const button = obstacle.button;
     const def = obstacle.def.button;
@@ -114,7 +114,6 @@ export function useButton(ctx: SimContext, obstacle: Obstacle, _player: Player |
         obstacle.killTicker = def.useDelay;
         ctx.activateObstacle(obstacle);
     }
-    // TODO(M8): buttons with roleToPromote promote `player`
 }
 
 /** Advances one obstacle's timers; returns false once it needs no more updates. */

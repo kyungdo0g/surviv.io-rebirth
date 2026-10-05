@@ -43,6 +43,8 @@ export function downPlayer(ctx: SimContext, player: Player, params: DamageParams
     const source = params.sourceId ? ctx.getPlayer(params.sourceId) : undefined;
     player.downedBy = source ? source.id : 0;
     ctx.onPlayerDowned(player, params, source);
+    // 50v50: a knock may leave a faction with its last standing players (Lone Survivr, M7a)
+    ctx.roles.onPlayerDowned(player);
 }
 
 /** Bleed damage of one tick for a player downed `downedCount` times on `mapName` (downed-revive.md "Bleeding"). */
@@ -68,7 +70,7 @@ export function updateDowned(ctx: SimContext, player: Player, dt: number): void 
         if (player.downedDamageTicker <= TIME_EPS) player.downedDamageTicker = 0;
     }
     if (!player.downed) return;
-    // TODO(M8): That Sucks (trick_drain) drains 1 HP every 3 s, standing or downed
+    // That Sucks (trick_drain) runs on its own timer in perks/effects.ts, standing or downed
     player.bleedTicker -= dt;
     if (player.action.type !== "none" || player.bleedTicker > TIME_EPS) return;
     player.bleedTicker = PLAYER.bleedTickRate;

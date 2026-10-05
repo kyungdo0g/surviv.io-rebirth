@@ -34,7 +34,7 @@ export const MsgType = {
     /** reserved, not implemented */
     UpdatePass: 19,
     AliveCounts: 20,
-    /** reserved, not implemented */
+    /** client -> server: Cobalt class choice (M7a; original layout: role game type) */
     PerkModeRoleSelect: 21,
     /** rebirth: client clock probe, echoed by Pong (round-trip time) */
     Ping: 22,
@@ -95,8 +95,8 @@ export const UpdateFlag = {
 
 /**
  * Extended Update section flags (u16 after the ack byte when UpdateFlag.Extended is set). Sections follow the
- * DeletePlayerIds section in bit order (M5a: bits 0-3, M5b: bit 4, M6a: bits 5-7). Bits 8-15 are reserved for the
- * sections still to come; a decoder rejects them until they are defined.
+ * DeletePlayerIds section in bit order (M5a: bits 0-3, M5b: bit 4, M6a: bits 5-7, M7a: bit 8). Bits 9-15 are reserved
+ * for the sections still to come; a decoder rejects them until they are defined.
  */
 export const UpdateExtFlag = {
     /** explosions since the previous update (original Explosions) */
@@ -115,8 +115,10 @@ export const UpdateExtFlag = {
     GroupStatus: 1 << 6,
     /** emotes and pings since the previous update (original Emotes, M6a) */
     Emotes: 1 << 7,
+    /** 50v50: the viewer's faction on the minimap, when it changed (original faction PlayerStatus, M7a) */
+    FactionStatus: 1 << 8,
     /** not defined yet */
-    Reserved: 0xff00,
+    Reserved: 0xfe00,
 } as const;
 
 /** Reasons carried by the Disconnect message (and the WebSocket close frame). */

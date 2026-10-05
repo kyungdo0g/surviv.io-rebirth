@@ -1,13 +1,16 @@
-// Picking up loot: which item is in reach and what taking it does to the inventory, slots and gear.
+// Picking up loot: which item is in reach and what taking it does to the inventory, slots and gear; perks (M7a: one
+// droppable loot perk, swapped on a second pickup; Trick or Treat rolls its perk) and gear granting a perk or a role.
 // Behaviour follows survev server/src/game/objects/player.ts (getClosestLoot, getFreeGunSlot, pickupLoot).
 import { v2 } from "@rebirth/core";
 import { GameConfig, getDef, hasDef, WeaponSlot } from "@rebirth/defs";
 import { gearLevel, gearQuality, isBagItem } from "../items/inventory.ts";
+import { addPerk, removePerk } from "../perks/perks.ts";
+import { setHelmet } from "../roles/roles.ts";
 import { gunDef } from "../weapons/weaponManager.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
-import { dropGun, dropMelee, playerDropLoot } from "./drops.ts";
+import { dropGun, dropMelee, playerDropLoot, rollLootTier } from "./drops.ts";
 import type { Loot } from "./loot.ts";
 
 /** survev net.PickupMsgType, plus "busy" for refusals that send no message. */
@@ -122,7 +125,9 @@ export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupR
                 return null;
             }
             const oldDef = gunDef(wm.weapons[idx].type);
-            if (oldDef?.noDrop) {
+            // the Commander's flare gun cannot be swapped out before it was fired (survev canDropFlare)
+            const lockedFlare = oldDef?.bulletType === "bullet_flare" && player.role === "leader" && !player.firedFlare;
+            if (oldDef?.noDrop || lockedFlare) {
                 player.pickupTicker = 0;
                 return null;
             }
@@ -171,14 +176,24 @@ export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupR
             } else {
                 // swap: the old piece drops (nothing drops for level 0 gear)
                 lootToAdd = current;
-                player[def.type] = loot.type;
-                // TODO(M8): role and perk helmets grant their role/perk
+                if (def.type === "helmet") {
+                    // a helmet's perk and role come and go with it (desert Lieutenant Helmet, Woods King helmet)
+                    player.hasRoleHelmet = false;
+                    setHelmet(ctx, player, loot.type);
+                } else {
+                    player[def.type] = loot.type;
+                }
             }
             if (gearLevel(lootToAdd) === 0) lootToAdd = "";
             break;
         }
         case "outfit":
             amountLeft = 1;
+            // the Commander keeps its outfit (survev noDropOutfit; conflicts.md role-commander-outfit-block)
+            if (player.noDropOutfit) {
+                result = "betterItemEquipped";
+                break;
+            }
             if (player.outfit === loot.type) {
                 result = "alreadyEquipped";
                 break;
@@ -186,8 +201,14 @@ export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupR
             lootToAdd = player.outfit;
             player.outfit = loot.type;
             break;
+        case "perk": {
+            const taken = pickupPerk(ctx, player, loot.type);
+            result = taken.result;
+            amountLeft = taken.dropped ? 1 : 0;
+            lootToAdd = taken.dropped;
+            break;
+        }
         default:
-            // TODO(M8): perks
             player.pickupTicker = 0;
             return null;
     }
@@ -205,4 +226,28 @@ export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupR
     ctx.loot.remove(loot);
     player.lastPickup = { type: loot.type, result };
     return result;
+}
+
+/**
+ * Takes a perk (survev pickupLoot "perk"): Trick or Treat? rolls tier_halloween_mystery_perks and gives that perk
+ * (not droppable; halloween_mystery drops in its place on death). A held perk is refused; a held loot perk is swapped
+ * (it drops); without one, a player already holding `rules.perks.lootPerkCap` perks is refused. Perks with
+ * `emoteOnPickup` emote (conflicts.md perk-perky-shoot-emote). Returns the result and the perk to put back down.
+ */
+function pickupPerk(ctx: SimContext, player: Player, type: string): { result: PickupResult; dropped: string } {
+    const mystery = type === "halloween_mystery";
+    const perk = mystery ? rollLootTier(ctx, "tier_halloween_mystery_perks") || type : type;
+    if (player.hasPerk(perk)) return { result: "alreadyEquipped", dropped: type };
+    const slot = player.perkSources.find((s) => s.droppable || s.replaceOnDeath === "halloween_mystery");
+    if (!slot && player.perks.length >= ctx.rules.perks.lootPerkCap) return { result: "full", dropped: type };
+    let dropped = "";
+    if (slot) {
+        // a rolled trick-or-treat perk is simply replaced; a loot perk drops
+        dropped = slot.replaceOnDeath ? "" : slot.type;
+        removePerk(player, slot.type);
+    }
+    addPerk(player, perk, { droppable: !mystery, replaceOnDeath: mystery ? "halloween_mystery" : "" });
+    const def = hasDef(perk) ? (getDef(perk) as { emoteOnPickup?: string }) : undefined;
+    if (def?.emoteOnPickup) ctx.addEmote(player, def.emoteOnPickup);
+    return { result: "success", dropped };
 }

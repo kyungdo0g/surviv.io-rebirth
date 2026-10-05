@@ -199,6 +199,11 @@ export class GameConnection {
         this.send({ type: MsgType.Emote, emote });
     }
 
+    /** Sends a Cobalt class choice (M7a; the original PerkModeRoleSelect, ignored outside perk modes). */
+    sendRoleSelect(role: string): void {
+        this.send({ type: MsgType.PerkModeRoleSelect, role });
+    }
+
     /** Sends a Ping; `rttMs` updates when the Pong arrives. */
     ping(): void {
         this.send({ type: MsgType.Ping, nonce: Math.floor(performance.now()) >>> 0 });

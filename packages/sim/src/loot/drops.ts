@@ -77,7 +77,7 @@ const SMART_LOOT_OWNER_RANGE = 8;
 export function destroyTypeOf(obstacle: Obstacle, opener: Player | undefined): string {
     const def = obstacle.def;
     if (!def.destroyType) return "";
-    // TODO(M7): Cobalt classes give players a role; without one no class crate exists (as in survev)
+    // Cobalt class pods follow the opener's class (M7a roles); without one no class crate exists (as in survev)
     if (def.smartLoot && opener) return `${def.destroyType}_${opener.role}`;
     return def.destroyType;
 }
@@ -128,7 +128,8 @@ function lootOwnerOf(ctx: SimContext, obstacle: Obstacle, source: Player | undef
 /** Drops an obstacle's `loot` list where it stood, pushed along the killing hit (survev obstacle.ts kill). */
 export function dropObstacleLoot(ctx: SimContext, obstacle: Obstacle, dir?: Vec2, source?: Player): void {
     const def = obstacle.def;
-    if (def.loot.length === 0) return;
+    const scavenger = !!source && Object.keys(ctx.rules.perks.scavengerTiers).some((p) => source.hasPerk(p));
+    if (def.loot.length === 0 && !scavenger) return;
     let lootPos = v2.copy(obstacle.pos);
     let pushSpeed = OBSTACLE_PUSH_SPEED;
     if (def.lootSpawn) {
@@ -137,6 +138,14 @@ export function dropObstacleLoot(ctx: SimContext, obstacle: Obstacle, dir?: Vec2
     }
     const ownerId = lootOwnerOf(ctx, obstacle, source);
     const items: RolledItem[] = rollLootList(lootTables(ctx), def.loot, ctx.lootRng, warnUnknownTier);
+    // Scavenger / Master Scavenger: one extra roll of tier_world / tier_scavenger_adv (perks.md scavenger)
+    if (source) {
+        for (const [perk, tier] of Object.entries(ctx.rules.perks.scavengerTiers)) {
+            if (!source.hasPerk(perk)) continue;
+            const extra = rollTier(lootTables(ctx), tier, ctx.lootRng, warnUnknownTier);
+            if (extra) items.push({ type: extra.name, count: extra.count, preload: !!extra.preload });
+        }
+    }
     let rad = 0;
     if (items.length > 1) {
         rad = OBSTACLE_MULTI_RAD;
@@ -242,10 +251,19 @@ export function dropEverythingOnDeath(ctx: SimContext, player: Player): void {
     if (!outfit.noDropOnDeath && !outfit.noDrop && player.outfit !== player.loadoutOutfit) {
         ctx.loot.addLoot(player.outfit, player.pos, player.layer, 1, scatter());
     }
-    // TODO(M8): droppable perks drop as well
+    // droppable perks drop too; a rolled trick-or-treat perk drops back as Trick or Treat? (survev kill)
+    for (const src of player.perkSources) {
+        const item = src.replaceOnDeath || (src.droppable ? src.type : "");
+        if (item) ctx.loot.addLoot(item, player.pos, player.layer, 1, scatter());
+    }
     player.inv.clear();
     player.helmet = "";
     player.chest = "";
     player.backpack = "backpack00";
     wm.showNextThrowable();
+}
+
+/** One roll of a loot tier of the game's map: the item id, or "" for nothing (Trick or Treat?'s perk roll, M7a). */
+export function rollLootTier(ctx: SimContext, tier: string): string {
+    return rollTier(lootTables(ctx), tier, ctx.roleRng, warnUnknownTier)?.name ?? "";
 }

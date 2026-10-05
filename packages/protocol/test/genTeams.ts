@@ -1,6 +1,6 @@
 // Random generators for the M6a sections (team HUD rows, emotes and pings) used by the round-trip property tests.
 import type { Rng } from "@rebirth/core";
-import type { EmoteEvent, TeamMemberView } from "@rebirth/sim";
+import type { EmoteEvent, FactionMemberView, TeamMemberView } from "@rebirth/sim";
 import type { NetCtx } from "../src/index.ts";
 import { randGameType, randPos, randString } from "./gen.ts";
 
@@ -21,7 +21,33 @@ export function randTeam(rng: Rng, ctx: NetCtx, ids: readonly number[], names: M
             dead,
             disconnected: rng.bool(0.1),
             pos: randPos(rng, ctx),
+            role: rng.bool(0.7) ? "" : randGameType(rng),
         };
+    });
+}
+
+/** A faction of 1-60 members for the 50v50 minimap (M7a). */
+export function randFaction(rng: Rng, ctx: NetCtx, ids: readonly number[]): FactionMemberView[] {
+    return ids.map((playerId) => {
+        const dead = rng.bool(0.2);
+        return {
+            playerId,
+            pos: randPos(rng, ctx),
+            dead,
+            downed: !dead && rng.bool(0.2),
+            role: rng.bool(0.8) ? "" : randGameType(rng),
+        };
+    });
+}
+
+/** Some faction members moved, died or changed role. */
+export function mutateFaction(rng: Rng, ctx: NetCtx, rows: readonly FactionMemberView[]): FactionMemberView[] {
+    return rows.map((m) => {
+        if (rng.bool(0.6)) return m;
+        const next = { ...m, pos: rng.bool(0.7) ? randPos(rng, ctx) : { ...m.pos } };
+        if (rng.bool(0.1)) next.dead = !next.dead;
+        if (rng.bool(0.1)) next.role = rng.bool(0.5) ? "" : randGameType(rng);
+        return next;
     });
 }
 

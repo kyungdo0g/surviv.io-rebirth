@@ -138,6 +138,8 @@ export class WorldModel {
     team: TeamMemberView[] = [];
     readonly teammates = new Set<number>();
     readonly groupOf = new Map<number, number>();
+    /** team (side) of every player from PlayerInfos: solo per player, duo / squad the group, 50v50 the faction */
+    readonly teamOf = new Map<number, number>();
     projectiles: ProjectileView[] = [];
     smokes: SmokeView[] = [];
     bullets: BulletEvent[] = [];
@@ -166,6 +168,10 @@ export class WorldModel {
 
     isTeammate(id: number): boolean {
         if (id === this.selfId || this.teammates.has(id)) return true;
+        // 50v50: the whole faction is friendly (PlayerInfos teamId is the faction; no friendly fire, M7a)
+        const t = this.teamOf.get(id);
+        const myTeam = this.teamOf.get(this.selfId);
+        if (t !== undefined && myTeam !== undefined && t === myTeam && this.team.length > 0) return true;
         const g = this.groupOf.get(id);
         const mine = this.myGroup;
         return g !== undefined && mine !== undefined && g === mine && this.team.length > 0;
@@ -176,7 +182,10 @@ export class WorldModel {
         this.time = snap.time;
         this.tick = snap.tick;
         if (this.selfId === 0) this.selfId = snap.localPlayerId;
-        for (const info of snap.playerInfos ?? []) this.groupOf.set(info.playerId, info.groupId);
+        for (const info of snap.playerInfos ?? []) {
+            this.groupOf.set(info.playerId, info.groupId);
+            this.teamOf.set(info.playerId, info.teamId);
+        }
         for (const id of snap.deletedPlayerIds ?? []) this.contacts.delete(id);
         if (snap.gameOver) this.gameOver = true;
         if (snap.aliveCount !== undefined) this.aliveCount = snap.aliveCount;

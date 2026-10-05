@@ -9,11 +9,16 @@
 //   Emotes:       u8 count x {playerId u16, type game type, itemType game type, isPing bit [+ pos mapPos], align}
 //                 (original record)
 //   Emote (client -> server): pos vec 0..1024 16+16 bits, type game type, isPing bit (original layout)
+//   FactionStatus (M7a, 50v50): u8 count x {playerId u16, pos 11+11 bits, dead bit, downed bit, hasRole bit [+ role game
+//                 type]}, align: the original faction PlayerStatus records of the viewer's faction (the role rides in
+//                 PlayerStatus records too since M7a)
 import type { BitReader, BitWriter, Vec2 } from "@rebirth/core";
-import type { EmoteEvent, EmoteRequest, TeamMemberView } from "@rebirth/sim";
+import type { EmoteEvent, EmoteRequest, FactionMemberView, TeamMemberView } from "@rebirth/sim";
 import {
     clampUint,
     dequantize,
+    gameTypeId,
+    gameTypeOf,
     type NetCtx,
     quantize,
     readGameType,
@@ -31,14 +36,18 @@ export const TEAM_HEALTH_BITS = 7;
 const EMOTE_POS_MAX = 1024;
 const EMOTE_POS_BITS = 16;
 
-/** PlayerStatus wire values per member: playerId, x, y, dead, downed. */
-export function quantizePlayerStatus(team: readonly TeamMemberView[], ctx: NetCtx): number[][] {
+/** PlayerStatus wire values per member: playerId, x, y, dead, downed, role. */
+export function quantizePlayerStatus(
+    team: ReadonlyArray<Pick<TeamMemberView, "playerId" | "pos" | "dead" | "downed" | "role">>,
+    ctx: NetCtx,
+): number[][] {
     return team.map((m) => [
         clampUint(m.playerId, 16),
         quantize(m.pos.x, 0, ctx.width, TEAM_POS_BITS),
         quantize(m.pos.y, 0, ctx.height, TEAM_POS_BITS),
         m.dead ? 1 : 0,
         m.downed ? 1 : 0,
+        gameTypeId(m.role ?? ""),
     ]);
 }
 
@@ -61,8 +70,9 @@ export function writePlayerStatus(w: BitWriter, records: readonly number[][]): v
         w.writeBoolean(true);
         w.writeBoolean(q[3] === 1);
         w.writeBoolean(q[4] === 1);
-        // TODO(M8): roles (faction leaders, kill leader icons) ride in this record
-        w.writeBoolean(false);
+        // the role (faction role icons on the minimap; M7a)
+        w.writeBoolean(q[5] !== 0);
+        if (q[5] !== 0) w.writeBits(q[5], 10);
     }
     w.alignToNextByte();
 }
@@ -74,6 +84,8 @@ export interface PlayerStatusRecord {
     pos: Vec2;
     dead: boolean;
     downed: boolean;
+    /** role id, "" for none (M7a) */
+    role: string;
 }
 
 export function readPlayerStatus(r: BitReader, ctx: NetCtx): PlayerStatusRecord[] {
@@ -86,6 +98,7 @@ export function readPlayerStatus(r: BitReader, ctx: NetCtx): PlayerStatusRecord[
             pos: { x: 0, y: 0 },
             dead: false,
             downed: false,
+            role: "",
         };
         if (rec.hasData) {
             const x = dequantize(r.readBits(TEAM_POS_BITS), 0, ctx.width, TEAM_POS_BITS);
@@ -94,7 +107,7 @@ export function readPlayerStatus(r: BitReader, ctx: NetCtx): PlayerStatusRecord[
             r.readBoolean(); // visible (always for the own group)
             rec.dead = r.readBoolean();
             rec.downed = r.readBoolean();
-            if (r.readBoolean()) readGameType(r); // role (not modelled yet)
+            if (r.readBoolean()) rec.role = gameTypeOf(r.readBits(10));
         }
         out.push(rec);
     }
@@ -191,6 +204,26 @@ export function teamFromStatus(
             dead: s.dead,
             disconnected: g?.disconnected ?? false,
             pos: { x: s.pos.x, y: s.pos.y },
+            role: s.role,
         };
     });
+}
+
+/** FactionStatus wire values (the PlayerStatus record layout): playerId, x, y, dead, downed, role. */
+export function quantizeFactionStatus(rows: readonly FactionMemberView[], ctx: NetCtx): number[][] {
+    return quantizePlayerStatus(rows, ctx);
+}
+
+export function writeFactionStatus(w: BitWriter, records: readonly number[][]): void {
+    writePlayerStatus(w, records);
+}
+
+export function readFactionStatus(r: BitReader, ctx: NetCtx): FactionMemberView[] {
+    return readPlayerStatus(r, ctx).map((s) => ({
+        playerId: s.playerId,
+        pos: s.pos,
+        dead: s.dead,
+        downed: s.downed,
+        role: s.role,
+    }));
 }

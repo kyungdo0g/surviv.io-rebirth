@@ -2,16 +2,16 @@
 // Tick order follows survev server/src/game/game.ts: start check, gas, players (gas damage, input actions, boost,
 // movement, weapons), loot, bullets (then their queued damage), projectiles, explosions, smoke, obstacle timers,
 // building puzzles and scheduled unlocks (M5b), planes, air strikes and air drops, building occupancy, spectators,
-// group spawn positions and team status (M6a), then the end-of-tick match results.
+// group spawn positions and team status (M6a), faction status and role schedules / indicators (M7a), then the end-of-tick
+// match results.
 import { type Bounds, type Rng, type Vec2, v2 } from "@rebirth/core";
-import { DamageType, type GasStage } from "@rebirth/defs";
+import { DamageType, type GasStage, getMapDef } from "@rebirth/defs";
 import { type GameApi, type GameOptions, type SpectateActionName, TICK_HZ } from "./api.ts";
 import { BulletSystem } from "./combat/bullets.ts";
 import { applyObstacleDamage, applyPlayerDamage } from "./combat/combat.ts";
 import type { DamageParams } from "./combat/damage.ts";
 import { ExplosionSystem } from "./combat/explosions.ts";
 import { ProjectileSystem } from "./combat/projectiles.ts";
-import { segmentIntersectsAabb } from "./geom/polygon.ts";
 import { emptyInput, type PlayerInput } from "./input.ts";
 import { spawnMapLoot } from "./loot/drops.ts";
 import { LootSystem } from "./loot/loot.ts";
@@ -19,22 +19,24 @@ import { type GenerateMapResult, generateMap } from "./mapgen/generate.ts";
 import { subRng } from "./mapgen/random.ts";
 import { EmoteSystem } from "./match/emotes.ts";
 import { EventLog } from "./match/events.ts";
+import { FactionSystem } from "./match/faction.ts";
 import { Gas } from "./match/gas.ts";
 import { Match } from "./match/match.ts";
 import { PlaneSystem } from "./match/planes.ts";
+import { bulletEventsIn, RecorderLog } from "./match/reports.ts";
 import { canPlayerSpawn } from "./match/spawn.ts";
 import { SpectateSystem } from "./match/spectate.ts";
 import { TeamSystem } from "./match/teams.ts";
 import { UnlockSystem } from "./match/unlocks.ts";
+import { RoleSystem } from "./roles/roleSystem.ts";
 import { defaultRules, type SimRules } from "./rules.ts";
 import type {
     AddPlayerOptions,
-    BulletEvent,
     EmoteRequest,
     MapData,
     ObjectView,
     PlayerInfoView,
-    RecorderEvent,
+    RoleAnnouncementEvent,
     Snapshot,
 } from "./view.ts";
 import type { SimContext } from "./world/context.ts";
@@ -108,6 +110,8 @@ export class Game implements GameApi, SimContext {
     lootRng: Rng;
     /** projectiles, explosions and smoke (M5); replaceable by tests */
     fxRng: Rng;
+    /** role kits, promotion picks and perk rolls (M7a) */
+    roleRng: Rng;
     readonly bullets: BulletSystem;
     readonly loot: LootSystem;
     /** thrown grenades, potato gun shots, air strike bombs (M5) */
@@ -127,13 +131,17 @@ export class Game implements GameApi, SimContext {
     readonly teams: TeamSystem;
     /** emotes and pings (M6a) */
     readonly emotes: EmoteSystem;
+    /** 50v50: the Red / Blue factions above the groups, null on other maps (M7a) */
+    readonly faction: FactionSystem | null;
+    /** roles: 50v50 promotions, Lone Survivr, The Hunted, Woods King, Cobalt classes, indicators (M7a) */
+    readonly roles: RoleSystem;
     /** scheduled door unlocks of MapDef gameConfig.unlocks (M5b) */
     readonly unlocks: UnlockSystem;
     /** buildings with a puzzle, updated every tick (M5b) */
     readonly puzzleBuildings: Building[];
     private readonly playerMap = new Map<number, Player>();
     /** recorders used, reported once to viewers in range (event sequence numbers, like kills) (M5b) */
-    private readonly recorderReports: Array<{ seq: number; tick: number; event: RecorderEvent }> = [];
+    private readonly recorderReports = new RecorderLog();
     /** ids each player saw in its previous snapshot */
     private readonly visible = new Map<number, Set<number>>();
     /** tick of each player's previous snapshot (bullet reports after it are new to that player) */
@@ -154,6 +162,9 @@ export class Game implements GameApi, SimContext {
 
     constructor(options: GameOptions, init: GameInit = {}) {
         this.options = { ...options };
+        const mode = getMapDef(options.mapName).gameMode;
+        // 50v50 always plays in squads inside the factions (the original 50v50 squad queue, survev config)
+        if (mode.factionMode) this.options.teamMode = 4;
         this.generation = init.generation ?? generateMap(options.mapName, options.seed, options.teamMode ?? 1);
         this.mapData = this.generation.mapData;
         this.world = new World(this.generation);
@@ -161,6 +172,7 @@ export class Game implements GameApi, SimContext {
         this.combatRng = subRng(options.seed, `combat:${options.mapName}`);
         this.lootRng = subRng(options.seed, `loot:${options.mapName}`);
         this.fxRng = subRng(options.seed, `fx:${options.mapName}`);
+        this.roleRng = subRng(options.seed, `roles:${options.mapName}`);
         this.bullets = new BulletSystem(this);
         this.loot = new LootSystem(this.world, () => this.lootRng);
         this.projectiles = new ProjectileSystem(this);
@@ -173,9 +185,17 @@ export class Game implements GameApi, SimContext {
         this.gas.onCircle = (circleIdx) => {
             this.planes.scheduleCircle(circleIdx);
             this.unlocks.onCircle(circleIdx);
+            this.roles.onCircle(circleIdx);
+            this.faction?.onCircle(circleIdx);
         };
         this.puzzleBuildings = this.world.buildings.filter((b) => b.puzzle !== undefined);
-        this.teams = new TeamSystem(this, options.teamMode ?? 1);
+        this.teams = new TeamSystem(this, this.options.teamMode ?? 1);
+        this.faction = mode.factionMode
+            ? new FactionSystem(this, mode.factions ?? 2, this.generation.factionSplitOri)
+            : null;
+        this.teams.faction = this.faction;
+        this.roles = new RoleSystem(this);
+        this.roles.faction = this.faction;
         this.emotes = new EmoteSystem(this);
         // doors next to stairs work from both floors (survev obstacle.ts constructor checkLayer)
         for (const obj of this.world.objects.values()) {
@@ -270,6 +290,7 @@ export class Game implements GameApi, SimContext {
         this.newViewers.delete(id);
         this.world.remove(player);
         this.spectators.remove(id);
+        this.roles.onPlayerRemoved(player);
         // a revive in progress ends with the player
         player.cancelAction();
         this.teams.remove(player);
@@ -357,12 +378,24 @@ export class Game implements GameApi, SimContext {
         this.activeObstacles.add(obstacle);
     }
 
+    announceRole(event: RoleAnnouncementEvent): void {
+        this.match.announce(event);
+    }
+
+    /** Cobalt class choice of a player (the original PerkModeRoleSelect message; M7a). Returns whether it was taken. */
+    selectRole(playerId: number, role: string): boolean {
+        const player = this.playerMap.get(playerId);
+        return !!player && !player.disconnected && this.roles.selectClass(player, role);
+    }
+
     onRecorderUsed(obstacle: Obstacle): void {
         const sound = obstacle.def.button?.sound.on ?? "";
-        this.recorderReports.push({
-            seq: this.nextEventSeq(),
-            tick: this.tickCount,
-            event: { id: obstacle.id, type: obstacle.type, sound, pos: v2.copy(obstacle.pos), layer: obstacle.layer },
+        this.recorderReports.push(this.nextEventSeq(), this.tickCount, {
+            id: obstacle.id,
+            type: obstacle.type,
+            sound,
+            pos: v2.copy(obstacle.pos),
+            layer: obstacle.layer,
         });
     }
 
@@ -430,6 +463,8 @@ export class Game implements GameApi, SimContext {
         this.occupied = occupied;
         this.spectators.update(dt);
         this.teams.update(dt);
+        this.faction?.update(dt);
+        this.roles.update(dt);
         this.tickCount++;
         this.match.endTick();
         this.joinLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
@@ -437,14 +472,7 @@ export class Game implements GameApi, SimContext {
         this.emotes.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.bullets.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
         this.explosions.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
-        let stale = 0;
-        while (
-            stale < this.recorderReports.length &&
-            this.recorderReports[stale].tick < this.tickCount - BULLET_REPORT_TICKS
-        ) {
-            stale++;
-        }
-        if (stale > 0) this.recorderReports.splice(0, stale);
+        this.recorderReports.prune(this.tickCount - BULLET_REPORT_TICKS);
     }
 
     /**
@@ -456,19 +484,6 @@ export class Game implements GameApi, SimContext {
         return !floorsVisible(viewer.layer, other.layer);
     }
 
-    /** Recorders used after event sequence number `sinceSeq` inside `view`, in order. */
-    private recorderEvents(sinceSeq: number, view: Bounds): RecorderEvent[] {
-        const out: RecorderEvent[] = [];
-        for (const { seq, event } of this.recorderReports) {
-            const p = event.pos;
-            if (seq <= sinceSeq || p.x < view.min.x || p.x > view.max.x || p.y < view.min.y || p.y > view.max.y) {
-                continue;
-            }
-            out.push({ ...event, pos: v2.copy(p) });
-        }
-        return out;
-    }
-
     /**
      * Whether `other` is left out of `viewer`'s snapshot because it hides in smoke (rules.smokeHidesPlayers): its
      * centre is inside a cloud and the viewer is farther than rules.smokeRevealDistance.
@@ -477,18 +492,6 @@ export class Game implements GameApi, SimContext {
         if (!this.rules.smokeHidesPlayers || other === viewer || other.dead) return false;
         if (v2.distance(viewer.pos, other.pos) <= this.rules.smokeRevealDistance) return false;
         return this.smokes.contains(other.pos, other.layer);
-    }
-
-    /** Bullets reported after `sinceTick` whose drawn path crosses `view` (latest state, one entry per bullet). */
-    private bulletEvents(sinceTick: number, view: Bounds): BulletEvent[] {
-        const byId = new Map<number, BulletEvent>();
-        for (const { tick, bullet } of this.bullets.reports) {
-            if (tick <= sinceTick || byId.has(bullet.id)) continue;
-            const end = v2.add(bullet.startPos, v2.mul(bullet.dir, bullet.clientDistance));
-            if (!segmentIntersectsAabb(bullet.startPos, end, view.min, view.max)) continue;
-            byId.set(bullet.id, BulletSystem.toEvent(bullet));
-        }
-        return [...byId.values()].sort((a, b) => a.id - b.id);
     }
 
     getSnapshot(playerId: number): Snapshot {
@@ -520,7 +523,7 @@ export class Game implements GameApi, SimContext {
         deletedIds.sort((a, b) => a - b);
         this.visible.set(playerId, next);
         const sinceTick = this.lastSnapshotTick.get(playerId) ?? this.tickCount;
-        const bullets = this.bulletEvents(sinceTick, view);
+        const bullets = bulletEventsIn(this.bullets.reports, sinceTick, view);
         this.lastSnapshotTick.set(playerId, this.tickCount);
         const seq = this.lastEventSeq.get(playerId) ?? this.eventSeq;
         this.lastEventSeq.set(playerId, this.eventSeq);
@@ -552,9 +555,13 @@ export class Game implements GameApi, SimContext {
             projectiles: this.projectiles.views(view),
             smokes: this.smokes.views(view),
             airstrikeZones: this.planes.zoneViews(),
-            recorders: this.recorderEvents(seq, view),
+            recorders: this.recorderReports.eventsIn(seq, view),
             emotes: this.emotes.eventsFor(player, next, seq),
         };
+        if (this.faction) {
+            snapshot.teamAliveCounts = this.faction.aliveCounts();
+            snapshot.factionStatus = this.faction.statusView(player);
+        }
         const gameOver = this.match.resultSince(owner.id, seq);
         if (gameOver) snapshot.gameOver = gameOver;
         const stats = this.match.statsSince(owner.id, seq);

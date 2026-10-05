@@ -3,10 +3,12 @@
 // team-only emotes the emoter's group or team among them, player pings the emoter's group wherever it is.
 // Behaviour follows survev server/src/game/objects/player.ts emoteFromMsg / emoteFromSlot and the emote cooldown
 // block of update, client.ts getUpdateMsg shouldSendEmote; docs/research/ui/hud.md "Pings and emote wheel".
+// M7a: a Commander's pings reach its whole faction (survev client.ts: leader pings to the team; fandom Commander);
+// Cobalt players cannot emote before choosing a class; Gabby Ghost emotes come from perks/effects.ts.
 // TODO(M8): loadouts: the death emote 0.3 s after dying and the win emote 1 s after the game over (slots 4 and 5,
-// empty by default), and That's Chatty (trick_chatty) random emotes.
+// empty by default).
 import { math, type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, hasDef } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, getMapDef, hasDef } from "@rebirth/defs";
 import type { EmoteEvent, EmoteRequest } from "../view.ts";
 import type { Player } from "../world/player.ts";
 import { EventLog } from "./events.ts";
@@ -46,11 +48,15 @@ interface Entry {
     groupId: number;
     teamId: number;
     teamOnly: boolean;
+    /** a Commander's ping: the whole faction receives it */
+    teamPing: boolean;
 }
 
 /** What the emote system needs from the game. */
 export interface EmoteHost {
     readonly tick: number;
+    /** Cobalt (perkMode): no emotes before a class is chosen */
+    readonly options: { mapName: string };
     readonly mapData: { width: number; height: number };
     nextEventSeq(): number;
     getPlayer(id: number): Player | undefined;
@@ -71,7 +77,8 @@ export class EmoteSystem {
      */
     request(player: Player, req: EmoteRequest): boolean {
         if (player.dead || player.emoteHardTicker > 0) return false;
-        // TODO(M7): Cobalt players cannot emote before choosing a class
+        // Cobalt players cannot emote before choosing a class (survev emoteFromMsg: perkModeTwinsBunker && !role)
+        if (!player.role && getMapDef(this.host.options.mapName).gameMode.perkMode) return false;
         const def = emoteDef(req.type);
         if (!def) return false;
         if (req.isPing) {
@@ -111,6 +118,7 @@ export class EmoteSystem {
             groupId: player.groupId,
             teamId: player.teamId,
             teamOnly,
+            teamPing: event.isPing && player.role === "leader",
         });
     }
 
@@ -125,7 +133,7 @@ export class EmoteSystem {
             const ev = e.event;
             const sameGroup = e.groupId === viewer.groupId;
             if (ev.isPing) {
-                if (!sameGroup) continue;
+                if (!sameGroup && !(e.teamPing && e.teamId === viewer.teamId)) continue;
             } else {
                 if (!visible.has(ev.playerId)) continue;
                 if (e.teamOnly && !sameGroup && e.teamId !== viewer.teamId) continue;

@@ -5,7 +5,8 @@
 //
 // Record: id (bit 1 + 4 bits = previous id + 1..16, else bit 0 + 24-bit id), shooterId u16, bulletType 10,
 // sourceType 10, pos mapPos, dir 10+10, layer 2, maxDist float 0..1024 16 bits, reflectCount 2, hitPlayer bit,
-// hasEnd bit [+ endDist float 0..1024 16 bits], shotFx bit, offHand bit.
+// hasEnd bit [+ endDist float 0..1024 16 bits], shotFx bit, offHand bit, then (M7a) the original special-fx flags
+// trailSaturated, trailThick and splinter (trailSmall is implied by splinter) as 3 bits.
 import type { BitReader, BitWriter } from "@rebirth/core";
 import type { BulletEvent } from "@rebirth/sim";
 import { NetLimits } from "./constants.ts";
@@ -64,6 +65,9 @@ export function writeBullets(w: BitWriter, ctx: NetCtx, bullets: readonly Bullet
         if (bl.endDist !== undefined) writeDist(w, bl.endDist);
         w.writeBoolean(bl.shotFx);
         w.writeBoolean(bl.offHand);
+        w.writeBoolean(!!bl.saturated);
+        w.writeBoolean(!!bl.thick);
+        w.writeBoolean(!!bl.splinter);
     }
 }
 
@@ -96,6 +100,9 @@ export function readBullets(r: BitReader, ctx: NetCtx): BulletEvent[] {
             hitPlayer,
             shotFx: r.readBoolean(),
             offHand: r.readBoolean(),
+            saturated: r.readBoolean(),
+            thick: r.readBoolean(),
+            splinter: r.readBoolean(),
         };
         if (endDist !== undefined) event.endDist = endDist;
         out.push(event);
