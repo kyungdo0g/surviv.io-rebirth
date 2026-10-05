@@ -9,11 +9,14 @@ import { lootImageUrl } from "../assets/hudImages.ts";
 import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { hudItemName, isSov, itemName, t } from "../l10n/index.ts";
 import "./hud.css";
+import "./tooltip.css";
 import { healthBarColor } from "./hudColors.ts";
 
 export interface HudCallbacks {
     /** queue a one-shot input action (defs `Input` value) */
     action(action: number): void;
+    /** use a bag item with the next input (item clicks; the original InputMsg.useItem) */
+    useItem?(item: string): void;
 }
 
 export interface HudFrame {
@@ -29,6 +32,13 @@ export interface HudFrame {
 }
 
 const MEDICAL = ["bandage", "healthkit", "soda", "painkiller"] as const;
+/** tooltip lines of the medical items (index.html: boosts add the adrenaline line) */
+const MEDICAL_TOOLTIP: Record<string, string[]> = {
+    bandage: ["game-bandage-tooltip"],
+    healthkit: ["game-healthkit-tooltip"],
+    soda: ["game-soda-tooltip", "game-adrenaline-tooltip"],
+    painkiller: ["game-painkiller-tooltip", "game-adrenaline-tooltip"],
+};
 const MEDICAL_INPUT: Record<string, number> = {
     bandage: Input.UseBandage,
     healthkit: Input.UseHealthKit,
@@ -144,6 +154,9 @@ export class Hud {
         for (const node of this.root.querySelectorAll<HTMLElement>("[data-l10n]")) {
             node.textContent = t(node.dataset.l10n ?? "");
         }
+        for (const node of this.root.querySelectorAll<HTMLElement>("[data-item-name]")) {
+            node.textContent = itemName(node.dataset.itemName ?? "");
+        }
         this.p.clear();
     }
 
@@ -173,13 +186,24 @@ export class Hud {
             const img = el("img", { cls: "ui-loot-image" });
             img.src = lootImageUrl(item);
             img.draggable = false;
+            const description = el("div", { cls: "tooltip-description" });
+            MEDICAL_TOOLTIP[item].forEach((key, i) => {
+                if (i > 0) description.append(document.createElement("br"));
+                const line = el("span");
+                line.dataset.l10n = key;
+                description.append(line);
+            });
+            const title = el("div", { cls: "tooltip-title" });
+            title.dataset.itemName = item;
+            const tooltip = el("div", { cls: "tooltip-text" }, title, description);
             const div = el(
                 "div",
                 {
                     id: `ui-loot-${item}`,
-                    cls: "ui-loot ui-outline-hover",
-                    click: () => this.cb.action(MEDICAL_INPUT[item]),
+                    cls: "ui-loot ui-outline-hover tooltip",
+                    click: () => this.useMedical(item),
                 },
+                tooltip,
                 count,
                 img,
             );
@@ -273,6 +297,16 @@ export class Hud {
             container.append(div);
         }
         return el("div", { id: "ui-bottom-right" }, container);
+    }
+
+    /**
+     * A medical item click sends InputMsg.useItem like the original, together with the item's Use action: the network
+     * input throttle (packages/protocol) neither treats useItem as a change nor merges it, so the action makes sure
+     * the message goes out; the simulation ignores the second request while the first use runs.
+     */
+    private useMedical(item: string): void {
+        this.cb.useItem?.(item);
+        this.cb.action(MEDICAL_INPUT[item]);
     }
 
     /** Scope buttons only step through owned scopes, so send as many next/prev scope inputs as needed. */

@@ -61,8 +61,10 @@ export class BuildingFx {
     private errSeq = 0;
     /** residue sprite of a collapsed roof */
     residue: Sprite | null = null;
-    /** roof collapses played in view (tests) */
+    /** roof collapses, puzzle failures and completions played in view (tests) */
     collapses = 0;
+    puzzleFails = 0;
+    puzzleSolves = 0;
 
     constructor(deps: ViewDeps, def: BuildingDef, view: BuildingView) {
         this.deps = deps;
@@ -128,8 +130,15 @@ export class BuildingFx {
         if (puzzle && view.puzzle) {
             if (view.puzzle.errSeq !== this.errSeq && !isNew) {
                 const at = this.nearestPiece() ?? { pos: this.pos, layer: this.layer };
-                audio?.playSound(puzzle.sound.fail, { channel: "sfx", pos: at.pos, layer: at.layer, filter: "muffled" });
+                this.puzzleFails++;
+                audio?.playSound(puzzle.sound.fail, {
+                    channel: "sfx",
+                    pos: at.pos,
+                    layer: at.layer,
+                    filter: "muffled",
+                });
             }
+            if (view.puzzle.solved && !this.puzzleSolved && !isNew) this.puzzleSolves++;
             if (view.puzzle.solved && !this.puzzleSolved && !isNew && puzzle.sound.complete !== "none") {
                 audio?.playSound(puzzle.sound.complete, {
                     channel: "sfx",
@@ -216,6 +225,11 @@ export class BuildingFx {
             if (!sameAudioLayer(this.layer, f.localLayer) || volume < 0.003) volume = 0;
             audio.setVolume(s.handle, s.channel, volume);
         }
+    }
+
+    /** Mutes the sound emitters while the building is culled (they are only updated in view). */
+    silence(): void {
+        for (const s of this.sounds) this.deps.audio?.setVolume(s.handle, s.channel, 0);
     }
 
     destroy(): void {

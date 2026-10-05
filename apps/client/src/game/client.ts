@@ -1,6 +1,8 @@
 // The in-game client: feeds transport snapshots into the object views, follows the active player (the local
 // player, or the spectated one) with the camera, samples input every frame, and drives the effects (tracers,
 // particles, sounds), the red zone, planes and air drops, the DOM HUD and match UI, the minimap and the debug HUD.
+// M5: explosions, projectiles, smoke, recorders, ambience and interior music (worldFx.ts), air strike zones, door
+// prompts and errors, camera shake and the underground view.
 import type { Vec2 } from "@rebirth/core";
 import { getMapDef, Input, MapObjectDefs } from "@rebirth/defs";
 import {
@@ -27,6 +29,7 @@ import { DebugHudBind, MuteBind } from "../input/keybinds.ts";
 import { createTerrainGraphics } from "../map/terrain.ts";
 import { SnapshotInterpolator } from "../net/interp.ts";
 import type { Transport } from "../net/transport.ts";
+import { FadingSprites } from "../objects/fading.ts";
 import { AirSystem } from "../objects/planes.ts";
 import { ObjectWorld } from "../objects/world.ts";
 import { Camera } from "../render/camera.ts";
@@ -37,6 +40,7 @@ import { Minimap, uiScale } from "../ui/minimap.ts";
 import { PingIndicator } from "../ui/pingIndicator.ts";
 import { InteractionTracker, type Prompt } from "./interaction.ts";
 import { MatchUi } from "./match.ts";
+import { surfaceAt, WorldFx } from "./worldFx.ts";
 
 /** extra world units around the screen kept un-culled */
 const CULL_MARGIN = 4;
@@ -69,10 +73,11 @@ export class GameClient {
     readonly bullets: BulletSystem;
     readonly effects: GameEffects;
     readonly gasOverlay = new GasShape(WORLD_GAS_COLOR);
-    readonly interactions = new InteractionTracker();
+    readonly interactions: InteractionTracker;
     readonly pingIndicator: PingIndicator;
     world: ObjectWorld | null = null;
     air: AirSystem | null = null;
+    worldFx: WorldFx | null = null;
     minimap: Minimap | null = null;
     map: MapData | null = null;
     terrain: TerrainShape | null = null;
@@ -105,6 +110,7 @@ export class GameClient {
         this.textures = textures;
         this.audio = opts.audio ?? new AudioEngine();
         this.ownsAudio = !opts.audio;
+        this.interactions = new InteractionTracker(this.audio);
         this.renderer = new Renderer(app, this.camera);
         this.renderer.gas.addChild(this.gasOverlay.display);
         this.hud = new DebugHud(!!opts.showDebugHud);
@@ -116,7 +122,10 @@ export class GameClient {
         this.bullets = new BulletSystem(this.renderer, textures, this.audio, this.particles);
         this.effects = new GameEffects(this.audio, this.particles, this.bullets);
         const parent = opts.hudParent ?? document.body;
-        this.ui = new Hud(parent, { action: (action) => this.input.queueAction(action) });
+        this.ui = new Hud(parent, {
+            action: (action) => this.input.queueAction(action),
+            useItem: (item) => this.input.queueUseItem(item),
+        });
         const playAgain = opts.onPlayAgain ?? (() => {});
         this.match = new MatchUi({
             hudRoot: this.ui.root,
@@ -141,6 +150,8 @@ export class GameClient {
             this.air?.clear();
             this.interp.clear();
             this.effects.clear();
+            this.worldFx?.clear();
+            this.minimap?.airstrikeZones.clear();
             this.localId = playerId;
             this.activeId = playerId;
             this.local = null;
@@ -160,10 +171,35 @@ export class GameClient {
         this.renderer.terrain.addChild(createTerrainGraphics(map, terrain));
         this.renderer.setUnderground(mapDef.biome.colors.underground, map.width, map.height);
         this.app.renderer.background.color = mapDef.biome.colors.background;
+        const terrainQuery = this.terrainQuery;
+        const fading = new FadingSprites(this.renderer);
+        this.worldFx?.destroy();
         this.world = new ObjectWorld(
-            { renderer: this.renderer, textures: this.textures, mapDef, fx: this.effects },
+            {
+                renderer: this.renderer,
+                textures: this.textures,
+                mapDef,
+                fx: this.effects,
+                particles: this.particles,
+                audio: this.audio,
+                viewerPos: () => this.visualPos,
+                fading,
+                surfaceAt: (pos, layer) => surfaceAt(terrainQuery, pos, layer),
+            },
             this.interp,
         );
+        this.worldFx = new WorldFx({
+            renderer: this.renderer,
+            textures: this.textures,
+            audio: this.audio,
+            particles: this.particles,
+            camera: this.camera,
+            world: this.world,
+            mapDef,
+            terrain: terrainQuery,
+            terrainShape: terrain,
+            fading,
+        });
         this.effects.setWorld(this.world, playerId);
         this.bullets.setMap(mapDef);
         this.particles.valueAdjust = mapDef.biome.valueAdjust;
@@ -203,6 +239,8 @@ export class GameClient {
         this.effects.beginSnapshot(s);
         this.world.applySnapshot(s);
         this.effects.endSnapshot(s);
+        this.worldFx?.apply(s);
+        this.minimap?.airstrikeZones.apply(s.airstrikeZones ?? []);
         this.interp.push(s, performance.now() / 1000);
         this.air?.apply(s.planes ?? [], s.airdrops ?? []);
         if (this.minimap && s.mapIndicators?.length) {
@@ -287,6 +325,11 @@ export class GameClient {
             viewerIndoors: world.localIndoors(),
         });
         this.effects.update(dt, this.camera.pos, this.local.layer);
+        const me = world.get(this.activeId) as PlayerView | undefined;
+        if (!spectating) this.interactions.updateDoors(dt, world, me, this.visualPos);
+        this.worldFx?.update({ dt, viewerPos: this.visualPos, viewerLayer: this.local.layer });
+        this.minimap?.airstrikeZones.update(uiDt, this.renderer, this.local.layer);
+        this.camera.applyShake();
         const masks = world.takeStairMasks();
         if (masks) this.renderer.setStairMasks(masks);
         this.renderer.update(dt);
@@ -297,7 +340,6 @@ export class GameClient {
             gas: this.match.gas,
             alpha: this.interp.alpha(now),
         });
-        const me = world.get(this.activeId) as PlayerView | undefined;
         this.interaction = spectating ? null : this.interactions.find(world, this.local, me, this.localPos);
         const objectAction = this.interactions.update(uiDt, world);
         const frame: HudFrame = { dt, local: this.local, interaction: this.interaction, objectAction };
@@ -336,6 +378,8 @@ export class GameClient {
         this.world?.clear();
         this.air?.clear();
         this.effects.clear();
+        this.worldFx?.destroy();
+        this.worldFx = null;
         this.minimap?.destroy();
         this.minimap = null;
         this.ui.destroy();

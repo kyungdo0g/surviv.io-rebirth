@@ -3,10 +3,15 @@
 // Drop": the button's interactionText + the object's name, the deepest overlap within interactionRad + player
 // radius), then loot under the player, which wins when both apply. Rebirth also runs the pie timer for the opening
 // of a crate the local player used (its `button.useDelay`), which the original leaves to the crate animation.
+// M5: usable doors (not automatic ones) prompt "[F] Open Door" / "[F] Close Door" (survev obstacle.ts getInteraction);
+// touching a closed door that is locked, or a one-way door from the wrong side, plays its error sound (survev
+// player.ts isNearDoorError, at most every 0.5 s), and so does pressing F at a locked door (rebirth: feedback for a
+// refused interaction).
 import { collider, math, type Vec2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
 import type { LocalPlayerState, ObstacleView, PlayerView } from "@rebirth/sim";
 import { sameLayer } from "@rebirth/sim";
+import type { AudioEngine } from "../audio/audio.ts";
 import { itemName, t, tryT } from "../l10n/index.ts";
 import type { ObjectWorld } from "../objects/world.ts";
 
@@ -14,12 +19,18 @@ import type { ObjectWorld } from "../objects/world.ts";
 export const INTERACT_KEY = "F";
 /** a use counts as ours when the button flips this soon after our Interact press (s) */
 const USE_MATCH_WINDOW = 1;
+/** the door error sound repeats at most this often (s) */
+const DOOR_ERROR_COOLDOWN = 0.5;
+/** a door counts as touched within the player radius plus this (survev player.ts) */
+const DOOR_TOUCH_PAD = 0.25;
+const FALLBACK_DOOR_ERROR = "door_error_01";
 
 export interface Prompt {
     key: string;
     text: string;
-    /** obstacle id when the prompt is for a button */
+    /** obstacle id when the prompt is for a button or a door */
     obstacleId?: number;
+    door?: boolean;
 }
 
 interface PendingUse {
@@ -36,7 +47,16 @@ function buttonText(def: ObstacleDef, type: string): string {
 }
 
 export class InteractionTracker {
+    private readonly audio: AudioEngine | null;
     private pending: PendingUse | null = null;
+    private nearDoorError = false;
+    private doorErrorTicker = 0;
+    /** door error sounds played (tests) */
+    doorErrors = 0;
+
+    constructor(audio: AudioEngine | null = null) {
+        this.audio = audio;
+    }
     /** client-side opening timer of the crate the local player used */
     private opening: { obstacleId: number; label: string; time: number; duration: number } | null = null;
 
@@ -46,17 +66,27 @@ export class InteractionTracker {
         let prompt: Prompt | null = null;
         let bestPen = 0;
         world.forEachView("obstacle", (o) => {
-            if (o.dead || !o.button?.canUse || !sameLayer(o.layer, me.layer)) return;
+            if (o.dead || !sameLayer(o.layer, me.layer)) return;
             const def = MapObjectDefs[o.type] as ObstacleDef | undefined;
-            if (!def?.button) return;
+            if (!def) return;
+            let rad: number;
+            let text: string;
+            let door = false;
+            if (def.button && o.button?.canUse) {
+                rad = def.button.interactionRad;
+                text = buttonText(def, o.type);
+            } else if (def.door && o.door?.canUse && !def.door.autoOpen) {
+                rad = def.door.interactionRad;
+                text = t(o.door.open ? "game-close-door" : "game-open-door");
+                door = true;
+            } else {
+                return;
+            }
             const col = collider.transform(def.collision, o.pos, math.oriToRad(o.ori), o.scale);
-            const res = collider.intersect(
-                collider.createCircle(pos, def.button.interactionRad + GameConfig.player.radius),
-                col,
-            );
+            const res = collider.intersect(collider.createCircle(pos, rad + GameConfig.player.radius), col);
             if (!res || res.pen < bestPen) return;
             bestPen = res.pen;
-            prompt = { key: INTERACT_KEY, text: buttonText(def, o.type), obstacleId: o.id };
+            prompt = { key: INTERACT_KEY, text, obstacleId: o.id, door };
         });
         const loot = this.findLoot(world, local, me, pos);
         return loot ?? prompt;
@@ -93,6 +123,50 @@ export class InteractionTracker {
         if (prompt?.obstacleId === undefined) return;
         const view = world.get(prompt.obstacleId) as ObstacleView | undefined;
         if (view?.button) this.pending = { obstacleId: prompt.obstacleId, seq: view.button.seq, age: 0 };
+        if (view?.door?.locked && !view.door.open) this.playDoorError(view);
+    }
+
+    private playDoorError(view: ObstacleView): void {
+        if (this.doorErrorTicker > 0) return;
+        this.doorErrorTicker = DOOR_ERROR_COOLDOWN;
+        const def = MapObjectDefs[view.type] as ObstacleDef | undefined;
+        const sound = def?.door?.sound.error || FALLBACK_DOOR_ERROR;
+        this.audio?.playSound(sound, { channel: "sfx", pos: view.pos, fallOff: 1, layer: view.layer });
+        this.doorErrors++;
+    }
+
+    /**
+     * Touching a closed locked door, or a one-way door from its closed side, plays its error sound once per touch
+     * (survev player.ts doorErrorObstacle: within the player radius + 0.25 of the door, on the player's layer).
+     */
+    updateDoors(dt: number, world: ObjectWorld, me: PlayerView | undefined, pos: Vec2): void {
+        this.doorErrorTicker -= dt;
+        if (!me || me.dead) return;
+        let touched: ObstacleView | null = null;
+        world.forEachView("obstacle", (o) => {
+            if (touched || o.dead || !o.door || o.door.open || o.layer !== me.layer) return;
+            const def = MapObjectDefs[o.type] as ObstacleDef | undefined;
+            if (!def?.door) return;
+            const rot = math.oriToRad(o.ori);
+            const col = collider.transform(def.collision, o.pos, rot, o.scale);
+            const res = collider.intersect(
+                collider.createCircle(pos, GameConfig.player.radius * (me.scale || 1) + DOOR_TOUCH_PAD),
+                col,
+            );
+            if (!res) return;
+            const toDoor = { x: o.pos.x - pos.x, y: o.pos.y - pos.y };
+            const doorDir = { x: Math.cos(rot), y: Math.sin(rot) };
+            const wrongSide = !!def.door.openOneWay && toDoor.x * doorDir.x + toDoor.y * doorDir.y < 0;
+            if (o.door.locked || wrongSide) touched = o;
+        });
+        const near = touched !== null;
+        if (near && !this.nearDoorError && this.doorErrorTicker <= 0 && touched) {
+            const view = touched as ObstacleView;
+            const def = MapObjectDefs[view.type] as ObstacleDef | undefined;
+            // only doors that have an error sound complain on touch (the original plays the def's sound as is)
+            if (def?.door?.sound.error) this.playDoorError(view);
+        }
+        this.nearDoorError = near;
     }
 
     /** Advances the opening timer; returns it for the pie, or null. */

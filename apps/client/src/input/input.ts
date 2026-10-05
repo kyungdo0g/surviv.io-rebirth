@@ -23,6 +23,8 @@ export class InputManager {
     private seq = 0;
     /** one-shot actions queued by the HUD (slot and scope clicks), sent with the next input */
     private readonly queued: number[] = [];
+    /** bag item to use with the next input (HUD item clicks; the original InputMsg.useItem) */
+    private useItem = "";
     private readonly listeners: Array<[EventTarget, string, EventListener]> = [];
 
     constructor(target: Window = window) {
@@ -56,6 +58,11 @@ export class InputManager {
         this.queued.push(action);
     }
 
+    /** Uses a bag item (heal, boost, scope, throwable) with the next sampled input. */
+    queueUseItem(item: string): void {
+        this.useItem = item;
+    }
+
     private press(code: BindCode): void {
         this.down.add(code);
         this.pressed.add(code);
@@ -77,6 +84,8 @@ export class InputManager {
         const dy = mouseWorld.y - playerPos.y;
         const len = Math.hypot(dx, dy);
         const actions: number[] = this.queued.splice(0);
+        const useItem = this.useItem;
+        this.useItem = "";
         for (const bind of ActionBinds) {
             if (bind.codes.some((c) => this.pressed.has(c))) actions.push(bind.action);
         }
@@ -91,6 +100,7 @@ export class InputManager {
             shootStart: FireBind.some((c) => this.pressed.has(c)),
             shootHold: this.isDown(FireBind),
             actions,
+            ...(useItem ? { useItem } : {}),
         };
     }
 

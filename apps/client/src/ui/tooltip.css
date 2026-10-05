@@ -1,0 +1,46 @@
+/*
+ * Hover tooltips of the medical items (survev client/css/game.css ".tooltip"; index.html #ui-loot-bandage...): a
+ * black 75 % box to the left of the item with the item name in yellow and how to use it.
+ */
+#ui-game .tooltip .tooltip-text {
+    visibility: hidden;
+    width: 240px;
+    background-color: black;
+    color: #ffffff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    right: 110%;
+    opacity: 0.75;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#ui-game .tooltip .tooltip-text::after {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent transparent black;
+}
+
+#ui-game .tooltip-title {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 4px;
+    color: yellow;
+}
+
+#ui-game .tooltip-description {
+    font-size: 16px;
+    padding: 4px;
+}
+
+#ui-game .tooltip:hover .tooltip-text {
+    visibility: visible;
+}

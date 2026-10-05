@@ -3,7 +3,7 @@
 // Behaviour follows survev client/src/objects/player.ts (update: switch sounds; playActionStartEffect;
 // animPlaySound; animMeleeCollision), shot.ts (casings, cycle/pull sounds) and the PickupMsg handler. M4: button
 // use and obstacle destruction effects (survev obstacle.ts: use particle + on/off sound, 5-10 explode particles
-// + explode sound).
+// + explode sound). M5: the pin and lever of a thrown grenade (survev animThrowableParticles).
 import { collider, math, type Vec2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, type GunDef, MapObjectDefs, type MeleeDef, type ObstacleDef } from "@rebirth/defs";
 import type { LocalPlayerState, ObstacleView, PlayerView, Snapshot } from "@rebirth/sim";

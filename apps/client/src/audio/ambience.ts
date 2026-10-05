@@ -146,7 +146,7 @@ export class Ambience {
                 t.handle = null;
                 t.handleSound = "";
             }
-            if (!t.handle && t.sound && t.weight > 0) {
+            if (!t.handle && t.sound && t.weight > 0 && !this.audio.isMuted) {
                 if (this.audio.isLoaded(t.sound, t.channel)) {
                     t.handle = this.audio.playSound(t.sound, {
                         channel: t.channel,

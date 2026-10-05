@@ -3,7 +3,8 @@
 // map.display, using map.color and map.scale), shown at 80% alpha inside a masked 256 px square that scrolls so
 // the local player stays centered, with the player dot and the camera's view rectangle on top. M4: the red zone,
 // the next safe zone and the line to it, and the map indicators (air drop pings) are drawn over the map texture
-// inside the same mask (mapMarkers.ts).
+// inside the same mask (mapMarkers.ts). M5: the 50v50 air strike zones (airstrikeZones.ts) between the gas and the
+// indicators, like the original's container order.
 import { collider, math, type Vec2 } from "@rebirth/core";
 import {
     type BuildingDef,
@@ -20,6 +21,7 @@ import type { GasTracker } from "../fx/gas.ts";
 import { drawTerrain } from "../map/terrain.ts";
 import { buildingLocalBounds } from "../objects/building.ts";
 import type { Camera } from "../render/camera.ts";
+import { AirstrikeZones } from "./airstrikeZones.ts";
 import { MapIndicators, MinimapGas, type PingFields } from "./mapMarkers.ts";
 
 const MARGIN = 16;
@@ -77,6 +79,7 @@ export class Minimap {
     private readonly mapSprite: Sprite;
     readonly gas = new MinimapGas();
     readonly indicators: MapIndicators;
+    readonly airstrikeZones = new AirstrikeZones();
     private readonly mask = new Graphics();
     private readonly border = new Graphics();
     private readonly viewRect = new Graphics();
@@ -102,7 +105,12 @@ export class Minimap {
         this.playerInner.tint = GameConfig.groupColors[0];
         this.indicators = new MapIndicators(textures);
         // survev ui.ts container order: map, gas, safe zone, map sprites (pings), player dots, border
-        this.clip.addChild(this.mapSprite, this.gas.container, this.indicators.container);
+        this.clip.addChild(
+            this.mapSprite,
+            this.gas.container,
+            this.airstrikeZones.mapContainer,
+            this.indicators.container,
+        );
         this.container.addChild(this.clip, this.viewRect, this.playerOuter, this.playerInner, this.border, this.mask);
         this.clip.mask = this.mask;
     }
@@ -230,6 +238,7 @@ export class Minimap {
 
         const proj = { toMap: px, pxPerUnit: mapSize / this.map.width, uiScale: scale, rect: this.rect };
         if (frame?.gas) this.gas.update(proj, frame.gas, playerPos, frame.alpha);
+        this.airstrikeZones.updateMap(proj);
         this.indicators.update(frame?.dt ?? 0, proj);
 
         this.playerOuter.position.set(center.x, center.y);
@@ -240,6 +249,7 @@ export class Minimap {
 
     destroy(): void {
         this.indicators.clear();
+        this.airstrikeZones.destroy();
         this.container.destroy({ children: true });
         this.texture.destroy(true);
     }

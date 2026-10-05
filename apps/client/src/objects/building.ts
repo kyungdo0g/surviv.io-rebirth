@@ -2,6 +2,8 @@
 // The ceiling fades out while the local player stands inside one of its zoom regions and fades back in after
 // `ceiling.vision.linger` seconds at `vision.fadeRate` (survev client/src/objects/building.ts; the original
 // reveals through a vision ray-scan, approximated here by the zoomIn region test).
+// M5: a collapsed roof (`ceilingDead`) stays revealed and leaves its residue sprite on the floor; the collapse,
+// puzzle sounds, occupied emitters and sound emitters are in buildingFx.ts.
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import type { BuildingDef, FloorImage } from "@rebirth/defs";
 import { MapObjectDefs } from "@rebirth/defs";
@@ -10,6 +12,7 @@ import type { Sprite } from "pixi.js";
 import type { ViewBounds } from "../render/camera.ts";
 import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
+import { BuildingFx } from "./buildingFx.ts";
 import { adjustValue, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
 
 /** zOrd base of ceilings: 750 - building zIdx (survev building.ts) */
@@ -65,6 +68,9 @@ export class BuildingRender implements ObjectRender<BuildingView> {
     private visionTicker = 0;
     /** 1 = ceiling fully drawn, 0 = hidden */
     ceilingAlpha = 1;
+    private fx: BuildingFx | null = null;
+    /** collapsed-roof residue on the floor */
+    private residue: Sprite | null = null;
 
     constructor(deps: ViewDeps, id: number) {
         this.deps = deps;
@@ -73,7 +79,11 @@ export class BuildingRender implements ObjectRender<BuildingView> {
 
     setData(view: BuildingView, isNew: boolean): void {
         this.data = view;
-        if (!isNew) return;
+        if (!isNew) {
+            this.fx?.setData(view, false);
+            this.updateResidue();
+            return;
+        }
         this.def = MapObjectDefs[view.type] as BuildingDef;
         this.rot = math.oriToRad(view.ori);
         // building views carry no scale; buildings spawn at scale 1 (MapObjectSpawn.scale is 1 for them)
@@ -105,6 +115,48 @@ export class BuildingRender implements ObjectRender<BuildingView> {
         const local = buildingLocalBounds(this.def);
         this.localBounds =
             local && collider.transform(collider.createAabb(local.min, local.max), v2.create(0), this.rot, this.scale);
+        this.fx = new BuildingFx(this.deps, this.def, view);
+        this.fx.setData(view, true);
+        // a roof that was already gone when the building entered the view is not revealed gradually
+        if (view.ceilingDead) this.ceilingAlpha = 0;
+        this.updateResidue();
+    }
+
+    /** The collapsed roof's residue on the first floor image (survev building.ts: a child of imgs[0]). */
+    private updateResidue(): void {
+        const residue = this.def.ceiling.destroy?.residue;
+        if (this.residue || !this.data.ceilingDead || !residue || residue === "none") return;
+        const floor = this.imgs.find((img) => !img.isCeiling);
+        if (!floor) return;
+        const sprite = this.deps.renderer.pool.acquire();
+        this.deps.textures.apply(sprite, residue, floor.def.scale);
+        this.residue = sprite;
+    }
+
+    /** roof collapses and puzzle sounds played in view (tests) */
+    get fxCounts(): { collapses: number; puzzleFails: number; puzzleSolves: number } {
+        const fx = this.fx;
+        return {
+            collapses: fx?.collapses ?? 0,
+            puzzleFails: fx?.puzzleFails ?? 0,
+            puzzleSolves: fx?.puzzleSolves ?? 0,
+        };
+    }
+
+    /** Whether `pos` is inside one of the roof's zoom regions (survev isInsideCeiling). */
+    insideCeiling(pos: Vec2): boolean {
+        return this.zoomIn.some((b) => pos.x >= b.min.x && pos.x <= b.max.x && pos.y >= b.min.y && pos.y <= b.max.y);
+    }
+
+    /** Distance from `pos` to the ceiling regions, capped at `maxDist`; 0 inside (survev getDistanceToBuilding). */
+    distanceToCeiling(pos: Vec2, maxDist: number): number {
+        let dist = maxDist;
+        for (const b of this.zoomIn) {
+            const dx = Math.max(b.min.x - pos.x, 0, pos.x - b.max.x);
+            const dy = Math.max(b.min.y - pos.y, 0, pos.y - b.max.y);
+            dist = Math.min(dist, Math.hypot(dx, dy));
+        }
+        return dist;
     }
 
     /** true while the local player stands inside a ceiling zoom region on a layer that sees this building */
@@ -125,8 +177,14 @@ export class BuildingRender implements ObjectRender<BuildingView> {
         const rate = ctx.dt * (revealed ? REVEAL_RATE : vision.fadeRate);
         const step = (target - this.ceilingAlpha) * Math.min(1, rate);
         this.ceilingAlpha = Math.abs(step) < 0.01 ? target : this.ceilingAlpha + step;
+        // on stairs looking into the other floor the roof opens at once (survev building.ts m_update)
+        if (this.canSeeInside(ctx) && ctx.localLayer & 2 && (this.data.layer & 1) !== (ctx.localLayer & 1)) {
+            this.ceilingAlpha = 0;
+        }
 
         const renderer = this.deps.renderer;
+        let ceilingLayer = this.data.layer;
+        let ceilingZOrd = CEILING_Z_ORD;
         for (const img of this.imgs) {
             const local = toLocal(v2.add(pos, img.offset));
             const s = this.scale * img.def.scale;
@@ -139,7 +197,28 @@ export class BuildingRender implements ObjectRender<BuildingView> {
             // ceilings go over players standing on stairs (survev building.ts)
             if (img.isCeiling && (layer === ctx.localLayer || (ctx.localLayer & 2 && layer === 1))) layer |= 2;
             renderer.add(img.sprite, layer, img.zOrd, img.zIdx);
+            if (img.isCeiling) {
+                ceilingLayer = layer;
+                ceilingZOrd = img.zOrd;
+            }
         }
+        const floor = this.imgs.find((img) => !img.isCeiling);
+        if (this.residue && floor) {
+            this.residue.position.copyFrom(floor.sprite.position);
+            this.residue.scale.copyFrom(floor.sprite.scale);
+            this.residue.rotation = floor.sprite.rotation;
+            this.residue.visible = floor.sprite.visible;
+            renderer.add(this.residue, this.data.layer, floor.zOrd, floor.zIdx + 50);
+        }
+        this.fx?.update({
+            dt: ctx.dt,
+            cameraPos: ctx.localPos,
+            localPos: ctx.localPos,
+            localLayer: ctx.localLayer,
+            ceilingAlpha: this.ceilingAlpha,
+            ceilingLayer,
+            ceilingZOrd,
+        });
     }
 
     bounds(pos: Vec2): ViewBounds {
@@ -165,10 +244,16 @@ export class BuildingRender implements ObjectRender<BuildingView> {
 
     setVisible(visible: boolean): void {
         for (const img of this.imgs) img.sprite.visible = visible;
+        if (this.residue) this.residue.visible = visible;
+        if (!visible) this.fx?.silence();
     }
 
     destroy(): void {
         for (const img of this.imgs) this.deps.renderer.pool.release(img.sprite);
         this.imgs.length = 0;
+        if (this.residue) this.deps.renderer.pool.release(this.residue);
+        this.residue = null;
+        this.fx?.destroy();
+        this.fx = null;
     }
 }

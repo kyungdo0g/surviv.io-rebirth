@@ -1,7 +1,8 @@
 // Keeps one render view per object id in sync with the snapshots, culls views outside the camera and updates
 // the visible ones every frame with interpolated positions.
-import type { Vec2 } from "@rebirth/core";
-import type { ObjectKind, ObjectView, PlayerView, Snapshot } from "@rebirth/sim";
+import { math, type Vec2 } from "@rebirth/core";
+import { MapObjectDefs, type StructureDef } from "@rebirth/defs";
+import type { ObjectKind, ObjectView, PlayerView, Snapshot, StructureView } from "@rebirth/sim";
 import type { SnapshotInterpolator } from "../net/interp.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import { BuildingRender } from "./building.ts";
@@ -31,6 +32,8 @@ export class ObjectWorld {
     private structuresDirty = false;
     /** snapshots applied so far */
     private applied = 0;
+    /** structure id -> layer index -> building view id (structureLayer cache) */
+    private readonly layerCache = new Map<string, number>();
 
     constructor(deps: ViewDeps, interp: SnapshotInterpolator) {
         this.deps = deps;
@@ -121,6 +124,74 @@ export class ObjectWorld {
         return entry && this.interp.pos(id, now, entry.data.pos);
     }
 
+    /** The building of a structure's layer `index` (0 ground, 1 underground), when in view. */
+    structureLayer(structure: StructureView, index: number): BuildingRender | null {
+        const def = MapObjectDefs[structure.type] as StructureDef | undefined;
+        const layerDef = def?.layers[index];
+        if (!layerDef) return null;
+        // generator.ts genStructure: layer buildings sit at addAdjust(pos, layer.pos, ori) on layer `index`
+        const key = `${structure.id}:${index}`;
+        const cached = this.layerCache.get(key);
+        const hit = cached !== undefined ? this.entries.get(cached)?.render : undefined;
+        if (hit instanceof BuildingRender) return hit;
+        const pos = math.addAdjust(structure.pos, layerDef.pos, structure.ori);
+        for (const [id, { render, data }] of this.entries) {
+            if (!(render instanceof BuildingRender) || data.type !== layerDef.type || data.layer !== index) continue;
+            if (Math.abs(data.pos.x - pos.x) < 0.5 && Math.abs(data.pos.y - pos.y) < 0.5) {
+                this.layerCache.set(key, id);
+                return render;
+            }
+        }
+        return null;
+    }
+
+    /** Whether `pos` is under a roof of a building on `layer` (survev map.insideBuildingCeiling). */
+    insideCeiling(pos: Vec2, layer = 0): boolean {
+        for (const { render, data } of this.entries.values()) {
+            if (render instanceof BuildingRender && data.layer === layer && render.insideCeiling(pos)) return true;
+        }
+        return false;
+    }
+
+    /** Whether a circle at `pos` touches a structure's stair mask (survev map.insideStructureMask). */
+    insideStructureMask(pos: Vec2, rad = 0): boolean {
+        return this.insideStructureBoxes(pos, rad, "masks");
+    }
+
+    /** Whether a circle at `pos` touches a structure's stairs (survev map.insideStructureStairs). */
+    insideStructureStairs(pos: Vec2, rad = 0): boolean {
+        return this.insideStructureBoxes(pos, rad, "stairs");
+    }
+
+    private insideStructureBoxes(pos: Vec2, rad: number, which: "masks" | "stairs"): boolean {
+        for (const { render } of this.entries.values()) {
+            if (!(render instanceof StructureRender)) continue;
+            for (const m of render[which]) {
+                const dx = Math.max(m.min.x - pos.x, 0, pos.x - m.max.x);
+                const dy = Math.max(m.min.y - pos.y, 0, pos.y - m.max.y);
+                if (dx * dx + dy * dy <= rad * rad) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether a player on layer 1 at `pos` is underground (survev player.ts isUnderground): inside a structure's
+     * second layer that is not marked `underground: false`; true anywhere else on layer 1.
+     */
+    isUnderground(pos: Vec2, layer: number): boolean {
+        if (layer !== 1) return false;
+        for (const { data } of this.entries.values()) {
+            if (data.kind !== "structure") continue;
+            const def = MapObjectDefs[data.type] as StructureDef | undefined;
+            const layerDef = def?.layers[1];
+            if (!layerDef) continue;
+            const b = this.structureLayer(data, 1);
+            if (b?.insideCeiling(pos)) return layerDef.underground ?? true;
+        }
+        return true;
+    }
+
     /** Whether the local player stands under a building's roof (survev map.insideBuildingCeiling). */
     localIndoors(): boolean {
         for (const { render } of this.entries.values()) {
@@ -149,6 +220,7 @@ export class ObjectWorld {
 
     clear(): void {
         for (const id of [...this.entries.keys()]) this.remove(id);
+        this.layerCache.clear();
         this.applied = 0;
     }
 }

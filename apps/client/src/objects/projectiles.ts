@@ -25,11 +25,13 @@ const ONTOP_Z_ORD = 1000;
 /** strobe light pulse: easeInExpo scale 0..12 at 1.25 cycles per second (survev strobe variables) */
 const STROBE_SCALE_MAX = 12;
 const STROBE_SPEED = 1.25;
-/** shadow: diameter (world units) and alpha on the ground and at the top of the arc; drift per unit of height */
-const SHADOW_DIAMETER = [0.95, 0.6] as const;
-const SHADOW_ALPHA = [0.4, 0.16] as const;
-const SHADOW_DRIFT = 0.35;
+/** shadow: size relative to the sprite on the ground and at the top of the arc, alpha, drift per unit of height */
+const SHADOW_SIZE = [1.3, 0.95] as const;
+const SHADOW_ALPHA = [0.5, 0.28] as const;
+const SHADOW_DRIFT = 0.6;
 const SHADOW_TEX_SIZE = 64;
+/** logical size of most projectile images (sprite-sizes.json: 128 px; bombs and smoke 160) */
+const DEFAULT_IMG_SIZE = 128;
 
 const GROUND_SOUNDS: Readonly<Record<string, string>> = { grass: "frag_grass", sand: "frag_sand", water: "frag_water" };
 
@@ -72,6 +74,9 @@ export interface ProjectileDeps {
     surfaceAt(pos: Vec2, layer: number): string;
     /** whether `pos` is under a building roof */
     insideCeiling(pos: Vec2): boolean;
+    /** whether a circle touches a structure's stairs / stair mask */
+    insideStairs(pos: Vec2, rad: number): boolean;
+    insideStairMask(pos: Vec2, rad: number): boolean;
     rippleColor: number;
 }
 
@@ -114,8 +119,9 @@ export class ProjectileSystem {
     /** projectiles and shadows drawn last frame (tests) */
     visibleCount = 0;
     shadowCount = 0;
-    /** largest posZ seen since boot (tests) */
+    /** largest posZ seen since boot, and the highest projectile now (tests) */
     maxPosZ = 0;
+    topZ = 0;
 
     constructor(deps: ProjectileDeps) {
         this.deps = deps;
@@ -230,10 +236,16 @@ export class ProjectileSystem {
         const surface = this.deps.surfaceAt(p.pos, p.layer);
         if (p.posZ <= 0.01) {
             if (!p.inWater && surface === "water") {
-                this.deps.particles.add("waterRipple", p.layer, p.pos, { x: 0, y: 0 }, {
-                    rot: 0,
-                    color: this.deps.rippleColor,
-                });
+                this.deps.particles.add(
+                    "waterRipple",
+                    p.layer,
+                    p.pos,
+                    { x: 0, y: 0 },
+                    {
+                        rot: 0,
+                        color: this.deps.rippleColor,
+                    },
+                );
             }
             p.inWater = surface === "water";
         }
@@ -255,7 +267,9 @@ export class ProjectileSystem {
         const renderer = this.deps.renderer;
         let visible = 0;
         let shadows = 0;
+        let topZ = 0;
         for (const p of this.projs.values()) {
+            topZ = Math.max(topZ, p.posZ);
             const def = p.def;
             p.rotVel *= 1 / (1 + dt * p.rotDrag * (p.inWater ? 3 : 1));
             p.rot += p.rotVel * dt;
@@ -284,6 +298,17 @@ export class ProjectileSystem {
 
             let layer = p.layer;
             let zOrd = p.posZ < 0.25 ? GROUND_Z_ORD : AIR_Z_ORD;
+            // airborne over stairs on the viewer's floor: above the stairs (survev ProjectileBarn.m_update)
+            const stairRad = def.rad * 0.5 * 3;
+            if (
+                p.posZ >= 0.25 &&
+                (p.layer & 1) === (activeLayer & 1) &&
+                this.deps.insideStairs(pos, stairRad) &&
+                (!(activeLayer & 2) || !this.deps.insideStairMask(pos, stairRad))
+            ) {
+                layer |= 2;
+                zOrd += 100;
+            }
             if (p.alwaysOnTop && activeLayer === 0) {
                 zOrd = ONTOP_Z_ORD;
                 layer |= 2;
@@ -298,9 +323,10 @@ export class ProjectileSystem {
             const h = Math.min(1, Math.max(0, p.posZ / MAX_HEIGHT));
             const drift = p.posZ * SHADOW_DRIFT;
             const shadowLocal = toLocal({ x: pos.x + drift, y: pos.y - drift });
-            const diameter = SHADOW_DIAMETER[0] + (SHADOW_DIAMETER[1] - SHADOW_DIAMETER[0]) * h;
+            const imgPx = (p.sprite.texture.width > 1 ? p.sprite.texture.width : DEFAULT_IMG_SIZE) * def.worldImg.scale;
+            const size = SHADOW_SIZE[0] + (SHADOW_SIZE[1] - SHADOW_SIZE[0]) * h;
             p.shadow.position.set(shadowLocal.x, shadowLocal.y);
-            p.shadow.scale.set((diameter * 16) / SHADOW_TEX_SIZE);
+            p.shadow.scale.set((imgPx * size) / SHADOW_TEX_SIZE);
             p.shadow.alpha = (SHADOW_ALPHA[0] + (SHADOW_ALPHA[1] - SHADOW_ALPHA[0]) * h) * (p.inWater ? 0.3 : 1);
             p.shadow.visible = !p.hidden && !p.alwaysOnTop;
             renderer.add(p.shadow, p.layer, SHADOW_Z_ORD, p.id);
@@ -309,6 +335,7 @@ export class ProjectileSystem {
         }
         this.visibleCount = visible;
         this.shadowCount = shadows;
+        this.topZ = topZ;
     }
 
     private free(p: Proj): void {

@@ -31,7 +31,11 @@ export interface LoopbackExtras {
     init?: GameInit;
     /** extra players standing still in front of the local player */
     dummies?: number;
-    /** gun id put in the primary slot with a full magazine and a full reserve */
+    /**
+     * Comma-separated items for the local player: guns go to the primary (then secondary) slot with a full magazine and
+     * reserve, bag items (throwables, heals, boosts, scopes) are filled to capacity; the first gun or throwable listed
+     * is equipped (M5: `give=frag`, `give=smoke,4xscope`, `give=bandage`).
+     */
     give?: string;
 }
 
@@ -100,19 +104,31 @@ export class LoopbackTransport implements Transport {
     }
 
     private setupLocal(): void {
-        const give = this.extras.give;
-        const def = give ? GameObjectDefs[give] : undefined;
-        if (!give) return;
-        if (def?.type !== "gun") {
-            console.warn(`sandbox: give=${give} is not a gun`);
-            return;
-        }
+        const items = (this.extras.give ?? "").split(",").filter(Boolean);
         const player = this.game.getPlayer(this.playerId);
-        if (!player) return;
+        if (!items.length || !player) return;
         const wm = player.weaponManager;
-        wm.setWeapon(WeaponSlot.Primary, give, def.maxClip);
-        if (BAG_ITEMS.includes(def.ammo)) player.inv.give(def.ammo, player.inv.capacity(def.ammo));
-        wm.setCurWeapIndex(WeaponSlot.Primary);
+        let equip = -1;
+        let gunSlot: number = WeaponSlot.Primary;
+        for (const item of items) {
+            const def = GameObjectDefs[item];
+            if (def?.type === "gun") {
+                wm.setWeapon(gunSlot, item, def.maxClip);
+                if (BAG_ITEMS.includes(def.ammo)) player.inv.give(def.ammo, player.inv.capacity(def.ammo));
+                if (equip < 0) equip = gunSlot;
+                gunSlot = WeaponSlot.Secondary;
+            } else if (def && BAG_ITEMS.includes(item)) {
+                player.inv.give(item, player.inv.capacity(item));
+                if (def.type === "throwable" && equip < 0) {
+                    // the slot shows the first throwable added; select the one asked for
+                    wm.setWeapon(WeaponSlot.Throwable, item, 0);
+                    equip = WeaponSlot.Throwable;
+                }
+            } else {
+                console.warn(`sandbox: give=${item} is not a gun or a bag item`);
+            }
+        }
+        if (equip >= 0) wm.setCurWeapIndex(equip);
     }
 
     /** Whether the straight path from `a` to `b` stays on clear, dry grass (canPlayerSpawn every 0.5 units). */

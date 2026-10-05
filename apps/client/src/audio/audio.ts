@@ -279,7 +279,8 @@ export class AudioEngine {
         panner.pan.value = pan;
         source.connect(gain).connect(panner).connect(this.output(opts));
         // positional world sounds ring in the bunker reverb while the listener is underground
-        if (this.buses && opts.pos && opts.filter !== "none" && opts.channel !== "ambient") panner.connect(this.buses.reverb);
+        if (this.buses && opts.pos && opts.filter !== "none" && opts.channel !== "ambient")
+            panner.connect(this.buses.reverb);
         const name = handle.name;
         this.playing.set(name, (this.playing.get(name) ?? 0) + 1);
         this.active++;

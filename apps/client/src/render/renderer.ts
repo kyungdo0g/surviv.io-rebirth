@@ -55,6 +55,8 @@ export class Renderer {
 
     /** layer the local player is on (0 ground, 1 underground, 2/3 stairs) */
     activeLayer = 0;
+    /** the player on layer 1 is inside an underground structure layer: the ground is covered (survev renderer.ts) */
+    underground = true;
     private layerAlpha = 0;
     private groundAlpha = 0;
     private zIdxCounter = 0;
@@ -156,7 +158,8 @@ export class Renderer {
         this.world.position.set(cam.screenWidth * 0.5 - cam.pos.x * z, cam.screenHeight * 0.5 + cam.pos.y * z);
 
         this.layerAlpha = stepTowards(this.layerAlpha, this.activeLayer > 0 ? 1 : 0, dt * LAYER_FADE_RATE);
-        this.groundAlpha = stepTowards(this.groundAlpha, this.activeLayer === 1 ? 1 : 0, dt * LAYER_FADE_RATE);
+        const groundTarget = this.activeLayer === 1 && this.underground ? 1 : 0;
+        this.groundAlpha = stepTowards(this.groundAlpha, groundTarget, dt * LAYER_FADE_RATE);
         this.layers[1].alpha = this.layerAlpha;
         this.layers[1].visible = this.layerAlpha > 0;
         this.layers[0].visible = this.groundAlpha < 1;
@@ -164,6 +167,11 @@ export class Renderer {
         this.undergroundFill.alpha = this.groundAlpha;
         this.undergroundFill.visible = this.groundAlpha > 0;
         this.updateLayerMask();
+    }
+
+    /** underground layer and ground cover fade (tests) */
+    get layerFade(): { layer: number; ground: number } {
+        return { layer: this.layerAlpha, ground: this.groundAlpha };
     }
 
     /** number of visible, textured sprites in the world (for tests and the debug HUD) */

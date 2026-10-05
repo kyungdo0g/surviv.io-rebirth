@@ -158,10 +158,12 @@ export class ParticleSystem {
         const sprite = this.renderer.pool.acquire();
         const image = def.image[Math.floor(Math.random() * def.image.length)];
         const scale = opts.scale ?? 1;
+        const life = pick(def.life);
         const start = pick(def.scaleStart) * scale;
         const end = def.scaleExp !== undefined ? start : pick(def.scaleEnd) * scale;
-        // rasterize for the largest size the particle reaches
-        this.textures.apply(sprite, image, Math.max(start, end, 0.25));
+        // rasterize for the largest size the particle reaches (growing ripples: at the end of their life)
+        const grown = def.scaleExp !== undefined ? start + Math.max(0, def.scaleExp) * life : end;
+        this.textures.apply(sprite, image, Math.max(start, grown, 0.25));
         const color = opts.color ?? (typeof def.color === "function" ? def.color() : def.color);
         sprite.tint = def.ignoreValueAdjust ? color : adjustValue(color, this.valueAdjust);
         sprite.visible = false;
@@ -175,7 +177,7 @@ export class ParticleSystem {
             rotVel: pick(def.rotVel) * (Math.random() < 0.5 ? -1 : 1),
             rotDrag: pick(def.drag) / 2,
             drag: opts.drag ?? pick(def.drag),
-            life: pick(def.life),
+            life,
             ticker: 0,
             delay: opts.delay ?? 0,
             scale: start,

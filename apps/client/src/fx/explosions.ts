@@ -179,11 +179,17 @@ export class ExplosionSystem {
                 const ang = Math.random() * Math.PI * 2;
                 const d = Math.random() * maxRad;
                 const pos = { x: ex.pos.x + Math.cos(ang) * d, y: ex.pos.y + Math.sin(ang) * d };
-                particles.add("waterRipple", ex.layer, pos, { x: 0, y: 0 }, {
-                    rot: 0,
-                    delay: i * 0.06,
-                    color: this.deps.rippleColor,
-                });
+                particles.add(
+                    "waterRipple",
+                    ex.layer,
+                    pos,
+                    { x: 0, y: 0 },
+                    {
+                        rot: 0,
+                        delay: i * 0.06,
+                        color: this.deps.rippleColor,
+                    },
+                );
             }
         }
     }

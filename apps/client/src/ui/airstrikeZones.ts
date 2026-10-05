@@ -111,11 +111,7 @@ export class AirstrikeZones {
             const rad = z.rad * proj.pxPerUnit;
             if (Math.abs(rad - z.drawnMapRad) > 0.0001) {
                 z.drawnMapRad = rad;
-                z.map
-                    .clear()
-                    .circle(0, 0, rad)
-                    .fill({ color: COLOR, alpha: 0.2 })
-                    .stroke({ width: 1.5, color: COLOR });
+                z.map.clear().circle(0, 0, rad).fill({ color: COLOR, alpha: 0.2 }).stroke({ width: 1.5, color: COLOR });
             }
             z.map.position.set(p.x, p.y);
             z.map.alpha = this.alpha(z);

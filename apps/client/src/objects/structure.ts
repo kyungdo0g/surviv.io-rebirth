@@ -11,6 +11,8 @@ export class StructureRender implements ObjectRender<StructureView> {
     readonly id: number;
     /** world-space masks hiding stairs from the ground layer */
     masks: ViewBounds[] = [];
+    /** world-space stair boxes (projectiles over stairs draw on the stairs layer) */
+    stairs: ViewBounds[] = [];
     private data!: StructureView;
 
     constructor(id: number) {
@@ -22,6 +24,7 @@ export class StructureRender implements ObjectRender<StructureView> {
         if (!isNew) return;
         const def = MapObjectDefs[view.type] as StructureDef;
         this.masks = def.mask.map((m) => collider.transform(m, view.pos, math.oriToRad(view.ori), 1));
+        this.stairs = def.stairs.map((st) => collider.transform(st.collision, view.pos, math.oriToRad(view.ori), 1));
     }
 
     update(_ctx: FrameContext, _pos: Vec2): void {}
@@ -36,6 +39,7 @@ export class StructureRender implements ObjectRender<StructureView> {
 
     destroy(): void {
         this.masks = [];
+        this.stairs = [];
     }
 
     get layer(): number {

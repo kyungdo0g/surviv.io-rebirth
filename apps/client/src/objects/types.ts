@@ -8,6 +8,7 @@ import type { ParticleSystem } from "../fx/particles.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import type { Renderer } from "../render/renderer.ts";
 import type { AnimEffect } from "./anims.ts";
+import type { FadingSprites } from "./fading.ts";
 
 /** Hooks the player view calls for sounds and particles (implemented by fx/effects.ts). */
 export interface PlayerFx {
@@ -39,6 +40,10 @@ export interface ViewDeps {
     audio?: AudioEngine;
     /** where the camera's player is drawn (puzzle sounds play at the piece nearest to it) */
     viewerPos?: () => Vec2;
+    /** sprites fading out after their object was removed (decals with a lifetime) */
+    fading?: FadingSprites;
+    /** ground surface at a position ("water" for decals drawn faint in water) */
+    surfaceAt?: (pos: Vec2, layer: number) => string;
 }
 
 /** Per-frame state handed to every view. */

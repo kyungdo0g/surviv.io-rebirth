@@ -5,6 +5,9 @@
 import type { Vec2 } from "@rebirth/core";
 
 export const PIXELS_PER_UNIT = 16;
+/** explosion shake: full strength within 10 units of the camera, none beyond 40 (survev camera.ts m_addShake) */
+const SHAKE_NEAR = 10;
+const SHAKE_FAR = 40;
 /** zoom lerp rates (1/s) when zooming in / out (survev game.ts) */
 const ZOOM_RATE_IN = 2;
 const ZOOM_RATE_OUT = 1.4;
@@ -30,6 +33,31 @@ export class Camera {
     targetZoom = 1.5;
     screenWidth = 1;
     screenHeight = 1;
+    /** the "Screen shake" setting */
+    shakeEnabled = true;
+    private shakeInt = 0;
+    /** offset applied by the last `applyShake` (tests) */
+    lastShake = 0;
+
+    /** An explosion at `pos` shakes the camera this frame (survev camera.ts m_addShake). */
+    addShake(pos: Vec2, intensity: number): void {
+        const dist = Math.hypot(this.pos.x - pos.x, this.pos.y - pos.y);
+        const t = Math.min(1, Math.max(0, (dist - SHAKE_FAR) / (SHAKE_NEAR - SHAKE_FAR)));
+        this.shakeInt = Math.max(this.shakeInt, t * intensity);
+    }
+
+    /** Moves the camera by this frame's shake in a random direction, then resets it (survev m_applyShake). */
+    applyShake(): void {
+        this.lastShake = this.shakeEnabled ? this.shakeInt : 0;
+        if (this.lastShake > 0) {
+            const ang = Math.random() * Math.PI * 2;
+            this.pos = {
+                x: this.pos.x + Math.cos(ang) * this.lastShake,
+                y: this.pos.y + Math.sin(ang) * this.lastShake,
+            };
+        }
+        this.shakeInt = 0;
+    }
 
     resize(width: number, height: number): void {
         this.screenWidth = Math.max(1, width);

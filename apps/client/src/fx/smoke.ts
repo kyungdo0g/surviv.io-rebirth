@@ -41,8 +41,8 @@ interface Cloud {
 export interface SmokeDeps {
     renderer: Renderer;
     textures: TextureStore;
-    /** whether `pos` lies inside a structure's stair mask */
-    insideStructureMask(pos: Vec2): boolean;
+    /** whether a circle at `pos` touches a structure's stair mask */
+    insideStructureMask(pos: Vec2, rad: number): boolean;
 }
 
 function sameLayer(a: number, b: number): boolean {
@@ -140,7 +140,7 @@ export class SmokeSystem {
         const onStairs = (activeLayer & 2) !== 0;
         if (
             (sameLayer(c.layer, activeLayer) || onStairs) &&
-            (c.layer === 1 || !onStairs || !this.deps.insideStructureMask(c.pos))
+            (c.layer === 1 || !onStairs || !this.deps.insideStructureMask(c.pos, 1))
         ) {
             layer |= 2;
         }

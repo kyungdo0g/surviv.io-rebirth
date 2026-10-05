@@ -10,6 +10,8 @@ import { debugGlobals } from "../globals.ts";
 import { LoopbackTransport } from "../net/loopback.ts";
 import type { Transport } from "../net/transport.ts";
 import { describeDisconnect, WsTransport } from "../net/ws.ts";
+import type { BuildingRender } from "../objects/building.ts";
+import type { ObstacleRender } from "../objects/obstacle.ts";
 import type { PlayerRender } from "../objects/player.ts";
 import { GameClient } from "./client.ts";
 import { gasStagesFor } from "./gasStages.ts";
@@ -25,7 +27,7 @@ export interface SandboxOptions {
     dummies?: number;
     /** keep the map's loot (default true) */
     loot?: boolean;
-    /** gun id given to the local player in slot 1 with full ammo */
+    /** comma-separated items for the local player: guns with full ammo, bag items filled (net/loopback.ts) */
     give?: string;
     /**
      * Loopback match rules: true (default) for the sandbox (starts at once, never ends, always joinable); false for
@@ -158,6 +160,7 @@ function exposeGlobals(
         },
     };
     globals.playerAnim = (id: number) => (client.world?.renderOf(id) as PlayerRender | undefined)?.animName ?? null;
+    exposeM5(client);
     globals.interaction = () => client.interaction;
     globals.audio = {
         get unlocked() {
@@ -258,4 +261,72 @@ function exposeGlobals(
             return client.pingIndicator.active;
         },
     };
+}
+
+/** M5 test hooks: explosions, projectiles, smoke, air strike zones, doors, roofs, layers and ambience. */
+function exposeM5(client: GameClient): void {
+    const globals = debugGlobals();
+    globals.fx = {
+        get explosions() {
+            return client.worldFx?.explosions.spawned ?? 0;
+        },
+        get explosionBursts() {
+            return client.worldFx?.explosions.bursts ?? 0;
+        },
+        get projectiles() {
+            const p = client.worldFx?.projectiles;
+            return p
+                ? { count: p.count, visible: p.visibleCount, shadows: p.shadowCount, maxPosZ: p.maxPosZ, topZ: p.topZ }
+                : null;
+        },
+        get smokes() {
+            const s = client.worldFx?.smokes;
+            return s ? { count: s.count, visible: s.visibleCount } : null;
+        },
+        /** particles of a type spawned since boot */
+        particles: (type: string) => client.particles.spawnedByType.get(type) ?? 0,
+        get emitters() {
+            return client.particles.emitterCount;
+        },
+        get shake() {
+            return client.camera.lastShake;
+        },
+        get cameraZoom() {
+            return client.camera.zoom;
+        },
+        get airstrikeZones() {
+            return client.minimap?.airstrikeZones.list ?? [];
+        },
+        get recorders() {
+            return client.worldFx?.recorders ?? 0;
+        },
+        get ambience() {
+            return client.worldFx?.ambience.volumes ?? {};
+        },
+        get reverb() {
+            return client.audio.reverbVolume;
+        },
+        get muffled() {
+            return client.audio.muffledCount;
+        },
+        get doorErrors() {
+            return client.interactions.doorErrors;
+        },
+        get layerFade() {
+            return client.renderer.layerFade;
+        },
+        get underground() {
+            return client.renderer.underground;
+        },
+    };
+    const renderOf = (id: number) => client.world?.renderOf(id);
+    globals.doorState = (id: number) => {
+        const door = (renderOf(id) as ObstacleRender | undefined)?.door;
+        return door ? { rot: door.rot, pos: { x: door.pos.x, y: door.pos.y }, moving: door.moving } : null;
+    };
+    globals.buildingState = (id: number) => {
+        const b = renderOf(id) as BuildingRender | undefined;
+        return b && "ceilingAlpha" in b ? { ceilingAlpha: b.ceilingAlpha, ...b.fxCounts } : null;
+    };
+    globals.throwableSprites = (id: number) => (renderOf(id) as PlayerRender | undefined)?.throwableSprites ?? null;
 }

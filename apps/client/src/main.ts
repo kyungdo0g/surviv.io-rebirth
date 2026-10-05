@@ -1,7 +1,8 @@
 // Routes: /?gallery=<filter>&page=<n> sprite gallery; /?fixture=1 renderer fixture; anything else (including
 // /?sandbox=1&map=<name>&seed=<n>) the loopback sandbox on the main map. Debug: &debug=1 shows the HUD (F3
 // toggles it), &zoom=<radius> overrides the camera zoom radius. Sandbox: &dummies=<n> standing dummies in front of
-// the player, &loot=0 removes the map loot, &give=<gunId> a gun with full ammo in slot 1. &lang=ko Korean HUD.
+// the player, &loot=0 removes the map loot, &give=<id,...> guns with full ammo and bag items (throwables, heals,
+// boosts, scopes) filled to capacity, the first gun or throwable equipped. &lang=ko Korean HUD.
 // Match (M4): the loopback runs a sandbox match (starts at once, never ends) unless &sandbox=0 (a real match: two
 // players alive for 10 s start it, the last one alive wins); &gas=fast uses a shortened red-zone stage table.
 // Network: &net=1 joins a game on the server through the dev proxy, or &server=<http origin> a specific server;
