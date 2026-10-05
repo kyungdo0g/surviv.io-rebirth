@@ -1,6 +1,6 @@
 // Imports the original surviv.io art and audio from the survev reference clone into the client,
 // and writes a sprite manifest mapping the defs' "<name>.img" sprite ids to files.
-// Usage: node tools/assets/import.ts [--check-only]
+// Usage: NODE_USE_ENV_PROXY=1 node tools/assets/import.ts [--check-only]
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, extname, join, relative } from "node:path";
 
@@ -63,10 +63,37 @@ for (const name of ["gameObjects.json", "mapObjects.json", "maps.json"]) {
     const p = join(DEFS, name);
     if (existsSync(p)) collectSpriteRefs(JSON.parse(readFileSync(p, "utf8")), refs);
 }
-const missing = [...refs].filter((r) => !manifest[r] && r !== "none.img" && r !== ".img").sort();
+let missing = [...refs].filter((r) => !manifest[r] && r !== "none.img" && r !== ".img").sort();
+
+// Fill gaps from the fandom image dump (original-game PNG renders uploaded to the wiki).
+const FANDOM_IMAGES = "research-cache/fandom/images.json";
+const gapFill: { sprite: string; file: string; url: string }[] = [];
+if (missing.length && existsSync(FANDOM_IMAGES)) {
+    const images: { name: string; url: string }[] = JSON.parse(readFileSync(FANDOM_IMAGES, "utf8"));
+    const byName = new Map(images.map((i) => [i.name.toLowerCase().replace(/_/g, "-"), i]));
+    for (const sprite of missing) {
+        const stem = sprite.replace(/\.img$/, "").toLowerCase();
+        const hit = byName.get(`${stem}.img.png`) ?? byName.get(`${stem}.png`);
+        if (!hit) continue;
+        const file = `img/fandom/${sprite.replace(/\.img$/, "")}.png`;
+        if (!checkOnly) {
+            const res = await fetch(hit.url.replace(/\/revision\/latest.*$/, "/revision/latest?format=original"));
+            if (!res.ok) continue;
+            mkdirSync(join(DEST, "img/fandom"), { recursive: true });
+            writeFileSync(join(DEST, file), Buffer.from(await res.arrayBuffer()));
+        }
+        manifest[sprite] = file;
+        gapFill.push({ sprite, file, url: hit.url });
+    }
+    writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 1)}\n`);
+    writeFileSync("assets/fandom-gapfill.json", `${JSON.stringify(gapFill, null, 1)}\n`);
+    missing = missing.filter((m) => !manifest[m]);
+}
 
 const audio = files.filter((f) => f.startsWith("audio/")).length;
 console.log(`assets: ${files.length - audio} images, ${audio} audio files -> ${DEST}`);
 console.log(`manifest: ${Object.keys(manifest).length} sprites (${duplicates.length} name clashes resolved to svg)`);
-console.log(`defs reference ${refs.size} sprites, ${missing.length} without a file`);
+console.log(
+    `defs reference ${refs.size} sprites, ${gapFill.length} filled from fandom, ${missing.length} without a file`,
+);
 if (missing.length) console.log(`missing: ${missing.join(", ")}`);
