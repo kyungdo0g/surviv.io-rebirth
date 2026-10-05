@@ -102,7 +102,12 @@ describe.skipIf(!hasFixture("revive"))("oracle: revive.json", () => {
         const knock2 = knock(game, victim);
         const dead = stepUntil(game, () => victim.dead, 200 * SECOND);
         m.equal("secondKnock.downedCount", victim.downedCount, fx.secondKnock.downedCount);
-        m.near("secondKnock.secondsToDeath", dead === undefined ? null : span(knock2, dead), fx.secondKnock.secondsToDeath, TICK);
+        m.near(
+            "secondKnock.secondsToDeath",
+            dead === undefined ? null : span(knock2, dead),
+            fx.secondKnock.secondsToDeath,
+            TICK,
+        );
         const dmg = [...new Set(ev2.filter((e) => e.damageType === DamageType.Bleeding).map((e) => e.applied))];
         m.equal("secondKnock.bleedDamage", dmg, fx.secondKnock.bleedDamage);
         expect(m.list).toEqual([]);
@@ -135,7 +140,12 @@ describe.skipIf(!hasFixture("revive"))("oracle: revive.json", () => {
         const want = fx.cancelled;
         // survev's reviver speed (downedMoveSpeed + 2 + fists equip = 7 u/s) reproduces the fixture exactly
         const sv = cancelRun("survev");
-        m.near("cancelledAfterSeconds", sv.cancel === undefined ? null : span(sv.start, sv.cancel), want.cancelledAfterSeconds, TICK);
+        m.near(
+            "cancelledAfterSeconds",
+            sv.cancel === undefined ? null : span(sv.start, sv.cancel),
+            want.cancelledAfterSeconds,
+            TICK,
+        );
         m.near("distanceAtCancel", sv.distance, want.distanceAtCancel, 0.01);
         m.equal("stillDowned", sv.victim.downed, want.stillDowned);
         m.equal("bleedHitsAfterCancel", sv.bleedsAfter, want.bleedHitsAfterCancel);

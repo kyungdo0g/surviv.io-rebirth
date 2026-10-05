@@ -67,6 +67,16 @@ describe("join tokens", () => {
         tokens.sweep();
         expect(tokens.size).toBe(0);
     });
+
+    it("carry a party's group data to the join (M6a)", () => {
+        const tokens = new JoinTokens(10_000, () => 0);
+        const group = { group: "party:ABCD:1", autoFill: false, partySize: 2 };
+        const a = tokens.issue("g1", group);
+        const b = tokens.issue("g1", group);
+        expect(tokens.consumeTicket(a)).toEqual({ gameId: "g1", group });
+        expect(tokens.consumeTicket(b)?.group).toEqual(group);
+        expect(tokens.consumeTicket(tokens.issue("g2"))).toEqual({ gameId: "g2" });
+    });
 });
 
 describe("game host", () => {

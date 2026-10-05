@@ -4,6 +4,7 @@
 // Behaviour follows survev server/src/game/group.ts, gameModeManager.ts handlePlayerDeath, objects/player.ts
 // getGroupAndTeam / addGroup / activatePlayer and the group spawn position ticker of update, and
 // docs/research/mechanics/downed-revive.md "When a player goes down" and "Kill credit for downed players".
+// TODO(M6b): Faction (50v50) red / blue teams above the groups (team-wide knocks and wipes, team spawn halves).
 import { type Rng, type Vec2, v2 } from "@rebirth/core";
 import { DamageType, GameConfig } from "@rebirth/defs";
 import { killPlayer } from "../combat/combat.ts";

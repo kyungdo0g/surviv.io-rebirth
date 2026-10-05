@@ -38,7 +38,7 @@ export interface ServerConfig {
     log: boolean;
     /** testing aid: players joining a game with others spawn next to its first player */
     debugSpawnTogether: boolean;
-    /** living players (alive for 10 s) a game needs to start (original: 2) */
+    /** living players (alive for 10 s; team modes: groups with such a player) a game needs to start (original: 2) */
     minPlayers: number;
     /** a game is closed (its clients disconnected) this long after a winner was decided (survev: 1.8 s) */
     gameOverGraceMs: number;

@@ -108,7 +108,13 @@ describe("team status", () => {
         const { game, a, mate, near } = setup();
         const team = game.getSnapshot(a.id).local.team!;
         expect(team.map((m) => m.playerId)).toEqual([a.id, mate.id]);
-        expect(team[1]).toMatchObject({ name: mate.name, health: 100, downed: false, dead: false, disconnected: false });
+        expect(team[1]).toMatchObject({
+            name: mate.name,
+            health: 100,
+            downed: false,
+            dead: false,
+            disconnected: false,
+        });
         // the enemy in view is not in the team
         expect(game.getSnapshot(near.id).local.team?.map((m) => m.playerId)).toEqual([near.id]);
         // positions follow every 25 ticks; health and disconnects at once

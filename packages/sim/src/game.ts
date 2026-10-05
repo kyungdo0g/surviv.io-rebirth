@@ -84,7 +84,8 @@ export interface GameInit {
     sandbox?: boolean;
     /**
      * Living players needed to start the match, each alive for `rules.minActiveTime` (10 s); default 2 like the
-     * original (M4). Until then the gas stays "inactive" (the client shows "Waiting for players").
+     * original (M4); team modes count groups with such a player (M6a). Until then the gas stays "inactive" (the client
+     * shows "Waiting for players").
      */
     minPlayers?: number;
     /** gas stage table (default GameConfig.gas.stages; tools and tests use shorter ones) */

@@ -2,7 +2,7 @@
 // group-based start, game over, ranks, PlayerStats / GameOver delivery and spectating teammates. Solo behaviour is
 // covered by the M4 match tests, which still pass unchanged.
 import { v2 } from "@rebirth/core";
-import { DamageType, GameConfig, getDefOfType, WeaponSlot } from "@rebirth/defs";
+import { DamageType, GameConfig, Input, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { Game, type Player, type Snapshot, TEAMMATE_SPAWN_RADIUS } from "../src/index.ts";
 import { giveGun, openSpot, send, steps } from "./combatHelpers.ts";
@@ -64,7 +64,9 @@ describe("grouping", () => {
         const groups: Player[][] = [];
         for (let g = 0; g < 4; g++) {
             const key = `G${g}`;
-            groups.push([0, 1, 2, 3].map((i) => game.getPlayer(game.addPlayer(`${key}${i}`, { group: key, partySize: 4 }))!));
+            groups.push(
+                [0, 1, 2, 3].map((i) => game.getPlayer(game.addPlayer(`${key}${i}`, { group: key, partySize: 4 }))!),
+            );
         }
         for (const members of groups) {
             const lead = members[0];
@@ -275,7 +277,12 @@ describe("downed players and weapons", () => {
         expect(b.downed).toBe(true);
         expect(b.curWeapIdx).toBe(WeaponSlot.Melee);
         const shots = b.shotSeq;
-        send(game, b, { shootStart: true, shootHold: true, actions: [5, 11], useItem: "bandage" });
+        send(game, b, {
+            shootStart: true,
+            shootHold: true,
+            actions: [Input.Reload, Input.EquipPrimary, Input.Loot],
+            useItem: "bandage",
+        });
         steps(game, 50);
         expect(b.shotSeq).toBe(shots);
         expect(b.curWeapIdx).toBe(WeaponSlot.Melee);
@@ -283,7 +290,6 @@ describe("downed players and weapons", () => {
         expect(b.inv.get("bandage")).toBe(5);
         expect(b.zoom).toBe(GameConfig.scopeZoomRadius.desktop["1xscope"]);
         expect(b.boost).toBe(0);
-        void a;
-        void getDefOfType;
+        expect(a.downed).toBe(false);
     });
 });

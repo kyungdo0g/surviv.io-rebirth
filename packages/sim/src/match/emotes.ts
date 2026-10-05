@@ -3,6 +3,8 @@
 // team-only emotes the emoter's group or team among them, player pings the emoter's group wherever it is.
 // Behaviour follows survev server/src/game/objects/player.ts emoteFromMsg / emoteFromSlot and the emote cooldown
 // block of update, client.ts getUpdateMsg shouldSendEmote; docs/research/ui/hud.md "Pings and emote wheel".
+// TODO(M8): loadouts: the death emote 0.3 s after dying and the win emote 1 s after the game over (slots 4 and 5,
+// empty by default), and That's Chatty (trick_chatty) random emotes.
 import { math, type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, hasDef } from "@rebirth/defs";
 import type { EmoteEvent, EmoteRequest } from "../view.ts";

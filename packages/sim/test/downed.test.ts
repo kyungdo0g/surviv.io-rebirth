@@ -228,7 +228,7 @@ describe("the knock itself", () => {
 });
 
 describe("revives", () => {
-    it("Input.Revive revives the closest downed teammate in range through walls; Cancel from either side stops it", () => {
+    it("Input.Revive revives a downed teammate within reviveRange only; a cancel from either side stops it", () => {
         const { game, enemy, team } = squad(3);
         const [b, c, d] = team;
         hit(game, b, 999, enemy);
@@ -286,8 +286,7 @@ describe("revives", () => {
         // a bandage heals the medic and every standing teammate within 8 u, and shows the item to others
         medic.health = 50;
         medic.inv.set("bandage", 2);
-        const snapBefore = game.getSnapshot(d.id);
-        void snapBefore;
+        game.getSnapshot(d.id);
         send(game, medic, { useItem: "bandage" });
         game.step();
         send(game, medic, {});
@@ -316,7 +315,6 @@ describe("revives", () => {
             steps(game, 800);
             expect(medic.downed).toBe(false);
             expect(b.downed).toBe(!rule);
-            // the downed medic cannot cancel a revive... it may: the reviver has no Mass Medicate
         }
     });
 });

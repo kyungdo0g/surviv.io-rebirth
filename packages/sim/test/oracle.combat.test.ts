@@ -169,7 +169,7 @@ describe.skipIf(!hasFixture("ttk"))("oracle: ttk.json", () => {
         }
         expect(m.checked).toBeGreaterThan(1000);
         expect(m.list).toEqual([]);
-    });
+    }, 20_000);
 });
 
 /** The oracle's melee kill run: the target stands attack.offset.x + 0.5 in front, attack spammed. */

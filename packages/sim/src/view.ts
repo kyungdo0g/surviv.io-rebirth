@@ -98,11 +98,13 @@
 //   camera is forced to 1x. KillEvent `downed` true / `killed` false reports a knock (killerId = killCreditId = the
 //   knocker); finishing a downed player credits the knocker for bleed-outs, environment kills and kills by its
 //   team (KillEvent killerId 0 for bleed-outs: "finally bled out" / "finally killed").
-// - Revive: Input.Interact (or Input.Revive) next to a downed teammate starts an 8 s revive: the reviver's
-//   PlayerView.anim is "revive" and both players' action type is "revive"; LocalPlayerState.action.targetId is the
-//   revived player for the reviver and 0 for the downed side. Moving more than 5 units apart, damage-free cancels
-//   (Input.Cancel, shooting, switching weapons) of either side, or the target dying cancel it. Revivify (self_revive)
-//   lets a downed holder revive itself the same way.
+// - Revive: Input.Interact (or Input.Revive) within 5 units of a downed teammate starts an 8 s revive (the client's
+//   "Revive Teammate" prompt: own action "none", teammate downed and not already in a "revive" action, same layer):
+//   the reviver's PlayerView.anim is "revive" and both players' action type is "revive";
+//   LocalPlayerState.action.targetId is the revived player for the reviver (its own id for a Revivify self revive)
+//   and 0 for the downed side. It ends when the two are more than 5 units apart, when either side cancels its action
+//   (Input.Cancel, shooting, switching weapons, being knocked) or when the target dies; damage alone does not. The
+//   revived player stands up with 24 HP. Revivify (self_revive) lets a downed holder revive itself the same way.
 // - LocalPlayerState: `team` (TeamMemberView list, team modes only; never in solo), `action.targetId`.
 // - Snapshot: `emotes` (EmoteEvent list since the viewer's previous snapshot: emotes of players in view, team-only
 //   emotes and pings of the viewer's group). Clients send EmoteRequests (Game.emote / the Emote message); the server
