@@ -6,7 +6,11 @@
 // through `preload`) and are cached; a sound whose file is still loading plays only if it arrives promptly (or
 // whenever it arrives, for `late` sounds such as loops). Looping and moving sources (planes, falling crates) keep
 // their gain and pan nodes so `updateSound` can follow the source (survev audioManager.updateSound).
+// M5: sounds from the other floor go through the "muffled" EQ, the club music through the "club" EQ, and positional
+// sounds feed the cathedral reverb while the listener is underground (filters.ts); looping ambience tracks start
+// silent and are driven by `setVolume`.
 import type { Vec2 } from "@rebirth/core";
+import { AudioBuses } from "./filters.ts";
 import { Channels, soundDef, soundGroup } from "./soundDefs.ts";
 
 const ASSET_ROOT = "/assets/";
@@ -42,6 +46,14 @@ export interface PlayOptions {
     ignoreMinAllowable?: boolean;
     /** start whenever the file finishes loading instead of dropping a sound that arrives late */
     late?: boolean;
+    /**
+     * EQ: "muffled" (the default for sounds with a `layer`) applies on another floor only, unless `forceFilter`;
+     * "club" always; "none" disables muffling and reverb
+     */
+    filter?: string;
+    forceFilter?: boolean;
+    /** start at volume 0 (looping tracks whose volume is set later with `setVolume`) */
+    startSilent?: boolean;
 }
 
 export interface SoundHandle {
@@ -60,6 +72,7 @@ function sameAudioLayer(a: number, b: number): boolean {
 export class AudioEngine {
     private ctx: AudioContext | null = null;
     private master: GainNode | null = null;
+    private buses: AudioBuses | null = null;
     private readonly buffers = new Map<string, AudioBuffer>();
     private readonly loading = new Map<string, Promise<AudioBuffer | null>>();
     private readonly failed = new Set<string>();
@@ -70,6 +83,10 @@ export class AudioEngine {
     /** listener position (the camera) and layer */
     cameraPos: Vec2 = { x: 0, y: 0 };
     activeLayer = 0;
+    /** the listener is inside an underground structure layer (reverb) */
+    underground = false;
+    /** sounds started through the muffled EQ since boot (tests, debug) */
+    muffledCount = 0;
     /** sounds started / requested since boot (tests, debug) */
     started = 0;
     requested = 0;
@@ -109,6 +126,7 @@ export class AudioEngine {
                 this.master = this.ctx.createGain();
                 this.master.gain.value = this.muted ? 0 : MASTER_VOLUME;
                 this.master.connect(this.ctx.destination);
+                this.buses = new AudioBuses(this.ctx, this.master, ASSET_ROOT);
             } catch {
                 this.ctx = null;
                 return;
@@ -154,6 +172,31 @@ export class AudioEngine {
         }
     }
 
+    /** Whether the file of `name` (as played on `channel`) is decoded and ready. */
+    isLoaded(name: string, channel: string): boolean {
+        const def = soundDef(name, channel);
+        return !!def && this.buffers.has(def.path);
+    }
+
+    /** Updates the reverb send for the listener layer (call every frame). */
+    updateListener(): void {
+        this.buses?.setUnderground(this.underground, this.activeLayer);
+    }
+
+    /** current reverb volume (tests) */
+    get reverbVolume(): number {
+        return this.buses?.reverbVolume ?? 0;
+    }
+
+    /** Sets the volume of a playing sound: `volume` x channel volume x sound volume x base (ambience tracks). */
+    setVolume(handle: SoundHandle | null | undefined, channelName: string, volume: number): void {
+        if (!handle?.gain || handle.stopped) return;
+        const channel = Channels[channelName];
+        const def = soundDef(handle.name, channelName);
+        if (!channel || !def) return;
+        handle.gain.gain.value = Math.max(0, volume) * channel.volume * def.volume * BASE_VOLUME;
+    }
+
     /** Plays a random sound of a group on the group's channel. */
     playGroup(group: string, opts: PlayOptions = {}): SoundHandle | null {
         const g = soundGroup(group);
@@ -171,8 +214,10 @@ export class AudioEngine {
         this.requested++;
         if (this.muted || !this.ctx) return null;
 
-        const { volume, pan } = this.mix(channelName, def.volume, opts);
-        if (volume <= MIN_VOLUME && !opts.ignoreMinAllowable) return null;
+        const mixed = this.mix(channelName, def.volume, opts);
+        const pan = mixed.pan;
+        const volume = opts.startSilent ? 0 : mixed.volume;
+        if (volume <= MIN_VOLUME && !opts.ignoreMinAllowable && !opts.startSilent) return null;
         if ((this.playing.get(name) ?? 0) >= (def.maxInstances ?? MAX_INSTANCES) || this.active >= MAX_INSTANCES) {
             return null;
         }
@@ -232,7 +277,9 @@ export class AudioEngine {
         gain.gain.value = volume;
         const panner = ctx.createStereoPanner();
         panner.pan.value = pan;
-        source.connect(gain).connect(panner).connect(this.master);
+        source.connect(gain).connect(panner).connect(this.output(opts));
+        // positional world sounds ring in the bunker reverb while the listener is underground
+        if (this.buses && opts.pos && opts.filter !== "none" && opts.channel !== "ambient") panner.connect(this.buses.reverb);
         const name = handle.name;
         this.playing.set(name, (this.playing.get(name) ?? 0) + 1);
         this.active++;
@@ -248,6 +295,20 @@ export class AudioEngine {
         handle.gain = gain;
         handle.panner = panner;
         this.started++;
+    }
+
+    /** Where a sound goes: the club or muffled EQ, or straight to the master. */
+    private output(opts: PlayOptions): AudioNode {
+        const master = this.master as GainNode;
+        const buses = this.buses;
+        if (!buses || opts.filter === "none") return master;
+        if (opts.filter === "club") return buses.club;
+        const diffLayer = opts.layer !== undefined && !sameAudioLayer(opts.layer, this.activeLayer);
+        if ((opts.filter === "muffled" && opts.forceFilter) || diffLayer) {
+            this.muffledCount++;
+            return buses.muffled;
+        }
+        return master;
     }
 
     stop(handle: SoundHandle | null | undefined): void {

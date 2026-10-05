@@ -1,7 +1,8 @@
 // Obstacle sprite: definition image scaled by the obstacle's current scale, rotated by its orientation, tinted,
 // and swapped for the residue image once dead; a used button shows its `useImg` (an opened air drop crate). A
 // button use and a destruction seen in view trigger their particles and sounds through the fx hooks. Ordering and
-// effects follow survev client/src/objects/obstacle.ts.
+// effects follow survev client/src/objects/obstacle.ts. M5: doors animate towards their new position/orientation and
+// play their sounds (door.ts); the casing stays at the closed door.
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
 import type { ObstacleView } from "@rebirth/sim";
@@ -9,6 +10,7 @@ import type { Sprite } from "pixi.js";
 import type { ViewBounds } from "../render/camera.ts";
 import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
+import { DoorAnim } from "./door.ts";
 import { adjustValue, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
 
 /** zOrd of dead obstacles (residues lie on the ground) */
@@ -28,8 +30,10 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
     private imgAlpha = 1;
     private zOrd = 0;
     private zIdx = 0;
-    /** door casings stay where the closed door was (survev obstacle.ts door.closedPos) */
-    private casingPos: Vec2 = { x: 0, y: 0 };
+    /** casing offset from the closed door (survev obstacle.ts casingSprite.posOffset) */
+    private casingOffset: Vec2 = { x: 0, y: 0 };
+    /** panel animation of a door */
+    door: DoorAnim | null = null;
     private buttonSeq = -1;
     private wasDead = false;
 
@@ -45,16 +49,17 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
             this.def = MapObjectDefs[view.type] as ObstacleDef;
             // survev: "random" rotation keyed on the id so it stays stable when the obstacle re-enters the view
             this.imgRot = this.def.img.randomRotation ? math.deg2rad(view.id % 360) : 0;
+            if (this.def.door) this.door = new DoorAnim(this.def.door, view);
             const casingImg = this.def.door?.casingImg;
             if (casingImg && !this.casing) {
                 this.casing = this.deps.renderer.pool.acquire();
                 this.deps.textures.apply(this.casing, casingImg.sprite, casingImg.scale);
                 this.casing.tint = casingImg.tint;
                 this.casing.alpha = casingImg.alpha;
-                const offset = v2.rotate(casingImg.pos, math.oriToRad(view.ori) + Math.PI * 0.5);
-                this.casingPos = v2.add(view.pos, offset);
+                this.casingOffset = v2.rotate(casingImg.pos, math.oriToRad(view.ori) + Math.PI * 0.5);
             }
         }
+        this.door?.setData(view, this.deps.audio, isNew);
         const img = this.def.img;
         let current = (view.dead ? img.residue : img.sprite) ?? "";
         const buttonDef = this.def.button;
@@ -96,8 +101,10 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
     update(ctx: FrameContext, pos: Vec2): void {
         const view = this.data;
         const img = this.def.img;
-        const rot = math.oriToRad(view.ori);
-        const local = toLocal(pos);
+        const door = this.door;
+        if (door) door.update(ctx.dt);
+        const rot = door ? door.rot : math.oriToRad(view.ori);
+        const local = toLocal(door ? door.pos : pos);
         const s = view.scale * (img.scale ?? 1);
         this.sprite.position.set(local.x, local.y);
         this.sprite.scale.set(img.mirrorX ? -s : s, img.mirrorY ? -s : s);
@@ -115,7 +122,7 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
 
         const casingImg = this.def.door?.casingImg;
         if (this.casing && casingImg) {
-            const casingPos = toLocal(this.casingPos);
+            const casingPos = toLocal(v2.add(door?.closedPos ?? view.pos, this.casingOffset));
             this.casing.position.set(casingPos.x, casingPos.y);
             this.casing.scale.set(view.scale * casingImg.scale);
             this.casing.rotation = -rot;

@@ -70,7 +70,9 @@ export const IDLE_POSES: Readonly<Record<string, BonePoses>> = {
 export type AnimEffect =
     | { time: number; kind: "sound"; sound: string }
     | { time: number; kind: "melee"; playerHit?: string }
-    | { time: number; kind: "throwableState"; state: "cook" | "throwing" };
+    | { time: number; kind: "throwableState"; state: "cook" | "throwing" }
+    /** the pin and lever of a grenade fly off (survev animThrowableParticles) */
+    | { time: number; kind: "throwParticles" };
 
 interface Keyframe {
     time: number;
@@ -267,6 +269,7 @@ function buildAnimations(): Record<string, AnimDef> {
             effects: [
                 { time: 0, kind: "sound", sound: "throwing" },
                 { time: 0, kind: "throwableState", state: "throwing" },
+                { time: 0, kind: "throwParticles" },
             ],
         },
         crawl_forward: crawlFrames(

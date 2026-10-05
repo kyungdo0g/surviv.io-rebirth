@@ -246,7 +246,24 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
             this.audio.playSound(sound, { channel: "sfx", pos, fallOff: 3, layer: player.layer });
         } else if (effect.kind === "melee" && def?.type === "melee") {
             this.meleeHit(player, pos, dir, def, effect.playerHit);
+        } else if (effect.kind === "throwParticles" && def?.type === "throwable" && def.useThrowParticles) {
+            this.throwParticles(player, pos, dir);
         }
+    }
+
+    /** The pin and the lever of a thrown grenade fly off to the sides (survev player.ts animThrowableParticles). */
+    private throwParticles(player: PlayerView, pos: Vec2, dir: Vec2): void {
+        const ang = Math.atan2(dir.y, dir.x);
+        const pinOff = rotate({ x: 0.75, y: 0.75 }, ang);
+        const pinVel = rotate({ x: dir.x * 4.5, y: dir.y * 4.5 }, Math.PI * 0.5);
+        this.particles.add("fragPin", player.layer, { x: pos.x + pinOff.x, y: pos.y + pinOff.y }, pinVel, {
+            zOrd: PLAYER_FX_Z_ORD,
+        });
+        const leverOff = rotate({ x: 0.75, y: -0.75 }, ang);
+        const leverVel = rotate({ x: dir.x * 3.5, y: dir.y * 3.5 }, -Math.PI * 0.25);
+        this.particles.add("fragLever", player.layer, { x: pos.x + leverOff.x, y: pos.y + leverOff.y }, leverVel, {
+            zOrd: PLAYER_FX_Z_ORD,
+        });
     }
 
     /** Client-side melee impact: blood and hit sound on players, chips and punch sound on obstacles. */

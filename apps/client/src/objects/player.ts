@@ -2,7 +2,8 @@
 // the outfit and gear definitions and rotated to face `dir`. The hands are bones posed by the weapon's idle pose
 // and the keyframed attack animations (anims.ts), guns kick back on every shot, and dual guns sit in both hands.
 // Sprite scales, offsets and layering follow survev client/src/objects/player.ts (updateVisuals, updateRotation,
-// addRecoil), in pixel units.
+// addRecoil), in pixel units. M5: a held throwable shows its `handImg` for the current throwable state (equip, then
+// cook once the pin is pulled, nothing while throwing), and heal/boost effect particles run while an item is used.
 import type { Vec2 } from "@rebirth/core";
 import {
     type BackpackDef,
@@ -19,6 +20,7 @@ import { Container, type Sprite } from "pixi.js";
 import type { ViewBounds } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
 import { AnimPlayer, BONE_COUNT, Bone, IDENTITY_POSE, IDLE_POSES, type Pose } from "./anims.ts";
+import { PlayerEmitters } from "./playerEmitters.ts";
 import { GunSprites } from "./playerGun.ts";
 import { boxAround, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
 
@@ -29,6 +31,7 @@ const PLAYER_Z_ORD = 18;
 const RECOIL_PIXELS = 1.125;
 
 type WeaponDef = GunDef | MeleeDef | ThrowableDef;
+type ThrowableState = "equip" | "cook" | "throwing";
 
 function weaponDef(id: string): WeaponDef | undefined {
     const def = id ? GameObjectDefs[id] : undefined;
@@ -88,6 +91,11 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private readonly footLSprite: Sprite;
     private readonly footRSprite: Sprite;
     private readonly meleeSprite: Sprite;
+    /** throwable held in each hand (survev objectLSprite / objectRSprite) */
+    private readonly objectLSprite: Sprite;
+    private readonly objectRSprite: Sprite;
+    private throwableState: ThrowableState = "equip";
+    private readonly emitters: PlayerEmitters | null;
     private readonly gunL: GunSprites;
     private readonly gunR: GunSprites;
     private data!: PlayerView;
@@ -121,12 +129,15 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.footLSprite = sprite();
         this.footRSprite = sprite();
         this.meleeSprite = sprite();
+        this.objectLSprite = sprite();
+        this.objectRSprite = sprite();
         this.gunL = new GunSprites(deps.renderer.pool);
         this.gunR = new GunSprites(deps.renderer.pool);
+        this.emitters = deps.particles ? new PlayerEmitters(deps.particles) : null;
         this.footL.addChild(this.footLSprite);
         this.footR.addChild(this.footRSprite);
-        this.handL.addChild(this.gunL.container, this.handLSprite);
-        this.handR.addChild(this.gunR.container, this.meleeSprite, this.handRSprite);
+        this.handL.addChild(this.gunL.container, this.handLSprite, this.objectLSprite);
+        this.handR.addChild(this.gunR.container, this.meleeSprite, this.handRSprite, this.objectRSprite);
         this.body.addChild(
             this.footL,
             this.footR,
@@ -144,6 +155,15 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     /** name of the running animation ("none" when idle; tests) */
     get animName(): string {
         return this.anim.name;
+    }
+
+    /** sprites drawn in the hands for the held throwable (tests) */
+    get throwableSprites(): { state: string; left: boolean; right: boolean } {
+        return {
+            state: this.throwableState,
+            left: this.objectLSprite.visible,
+            right: this.objectRSprite.visible,
+        };
     }
 
     setData(view: PlayerView, isNew: boolean): void {
@@ -288,8 +308,14 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.gunL.visible = false;
         this.gunR.visible = false;
         this.meleeSprite.visible = false;
+        this.objectLSprite.visible = false;
+        this.objectRSprite.visible = false;
         this.placeLeftHand(false);
         if (downed || !weapon) return;
+        if (weapon.type === "throwable") {
+            this.updateThrowableSprites();
+            return;
+        }
         if (weapon.type === "gun") {
             this.gunR.setType(weapon, bodyScale, tex);
             this.gunR.visible = true;
@@ -316,6 +342,31 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         }
     }
 
+    /** Hand images of the held throwable for the current state (survev updateVisuals setThrowableSprite). */
+    private updateThrowableSprites(): void {
+        const weapon = this.weapon;
+        const imgs = weapon?.type === "throwable" ? weapon.handImg?.[this.throwableState] : undefined;
+        const set = (sprite: Sprite, img: { sprite: string; pos?: Vec2; scale?: number } | undefined) => {
+            const visible = !!img?.sprite && img.sprite !== "none" && !this.data.downed;
+            sprite.visible = visible;
+            if (!visible || !img) return;
+            const scale = img.scale ?? 1;
+            this.deps.textures.apply(sprite, img.sprite, scale);
+            sprite.position.set(img.pos?.x ?? 0, img.pos?.y ?? 0);
+            sprite.scale.set(scale);
+            sprite.rotation = Math.PI * 0.5;
+            sprite.tint = 0xffffff;
+        };
+        set(this.objectLSprite, imgs?.left);
+        set(this.objectRSprite, imgs?.right);
+    }
+
+    private setThrowableState(state: ThrowableState): void {
+        if (state === this.throwableState) return;
+        this.throwableState = state;
+        if (this.weapon?.type === "throwable") this.updateThrowableSprites();
+    }
+
     /** Puts the left hand directly below (default) or above the right hand. */
     private placeLeftHand(above: boolean): void {
         this.body.removeChild(this.handL);
@@ -336,7 +387,15 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         const dt = ctx.dt;
         this.recoilL = Math.max(0, this.recoilL - this.recoilL * dt * 5 - dt);
         this.recoilR = Math.max(0, this.recoilR - this.recoilR * dt * 5 - dt);
-        this.anim.update(dt, this.bones, (effect) => this.deps.fx?.animEffect(view, pos, facing, effect));
+        this.anim.update(dt, this.bones, (effect) => {
+            if (effect.kind === "throwableState") this.setThrowableState(effect.state);
+            else this.deps.fx?.animEffect(view, pos, facing, effect);
+        });
+        // cooking and throwing only make sense with a throwable out (survev player.ts update)
+        if ((this.anim.name === "cook" || this.anim.name === "throw") && this.weapon?.type !== "throwable") {
+            this.anim.stop(this.bones);
+        }
+        if (!this.anim.active) this.setThrowableState("equip");
         this.anim.blend(IDLE_POSES[this.idlePose] ?? IDLE_POSES.fists, this.bones);
         this.placeBones();
 
@@ -351,6 +410,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             (view.id === ctx.localId ? 65536 : 0) +
             (view.scale > 1 ? 131072 : 0);
         this.deps.renderer.add(this.container, layer, zOrd, zIdx);
+        this.emitters?.update(view, pos, layer, zOrd + 1);
     }
 
     /** Poses the limbs and the melee weapon from the blended bones (survev updateRotation). */
@@ -385,6 +445,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     }
 
     destroy(): void {
+        this.emitters?.stop();
         this.container.removeFromParent();
         for (const s of this.sprites) this.deps.renderer.pool.release(s);
         this.gunL.release(this.deps.renderer.pool);

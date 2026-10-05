@@ -11,13 +11,25 @@ export interface ParticleDef {
     drag: Range;
     rotVel: Range;
     scaleStart: Range;
+    /** ignored when `scaleExp` is set */
     scaleEnd: Range;
-    /** alpha goes from alphaStart to 0 over this part of the life (0..1) */
+    /** part of the life (0..1) over which the scale goes from start to end; default the whole life */
+    scaleLerp?: readonly [number, number];
+    /** grow by this much per second instead of lerping (water ripples) */
+    scaleExp?: number;
+    /** alpha goes from alphaStart to alphaEnd (default 0) over this part of the life (0..1) */
     alphaLerp: readonly [number, number];
     alphaStart?: number;
+    alphaEnd?: number;
+    /** change the alpha by this much per second instead of lerping */
+    alphaExp?: number;
+    /** fade in from start to end over `lerp` of the life */
+    alphaIn?: { start: number; end: number; lerp: readonly [number, number] };
     /** a tint, or a function picking one per particle */
     color: number | (() => number);
     zOrd?: number;
+    /** keep the colour on darkened (Halloween) maps */
+    ignoreValueAdjust?: boolean;
 }
 
 export function pick(r: Range): number {

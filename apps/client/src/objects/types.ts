@@ -3,6 +3,8 @@ import type { Vec2 } from "@rebirth/core";
 import type { MapDef } from "@rebirth/defs";
 import type { ObjectView, ObstacleView, PlayerView } from "@rebirth/sim";
 import type { TextureStore } from "../assets/textures.ts";
+import type { AudioEngine } from "../audio/audio.ts";
+import type { ParticleSystem } from "../fx/particles.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import type { Renderer } from "../render/renderer.ts";
 import type { AnimEffect } from "./anims.ts";
@@ -31,6 +33,12 @@ export interface ViewDeps {
     textures: TextureStore;
     mapDef: MapDef;
     fx?: PlayerFx & Partial<ObstacleFx>;
+    /** particles and emitters (M5: heal effects, chimney smoke, roof collapses) */
+    particles?: ParticleSystem;
+    /** sounds of map objects (M5: doors, puzzles, roof collapses, sound emitters) */
+    audio?: AudioEngine;
+    /** where the camera's player is drawn (puzzle sounds play at the piece nearest to it) */
+    viewerPos?: () => Vec2;
 }
 
 /** Per-frame state handed to every view. */
