@@ -4,6 +4,10 @@
 // the player, &loot=0 removes the map loot, &give=<gunId> a gun with full ammo in slot 1. &lang=ko Korean HUD.
 // Network: &net=1 joins a game on the server through the dev proxy, or &server=<http origin> a specific server;
 // &name=<player name>.
+import "@fontsource/roboto-condensed/400.css";
+import "@fontsource/roboto-condensed/700.css";
+import "@fontsource/noto-sans-kr/400.css";
+import "@fontsource/noto-sans-kr/700.css";
 import { Application } from "pixi.js";
 import { mountGallery } from "./dev/gallery.ts";
 import { bootSandbox } from "./game/sandbox.ts";

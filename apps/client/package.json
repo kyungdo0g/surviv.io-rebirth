@@ -8,6 +8,8 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@fontsource/noto-sans-kr": "^5.3.0",
+        "@fontsource/roboto-condensed": "^5.3.0",
         "@rebirth/core": "workspace:*",
         "@rebirth/defs": "workspace:*",
         "@rebirth/protocol": "workspace:*",
