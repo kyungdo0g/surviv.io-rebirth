@@ -91,11 +91,13 @@ for (const file of walk(ROOT)) {
             prefixes.add(prefix);
             if ((prefix === "fandom" || prefix === "wikigg") && titles[prefix]) {
                 const t = rest.split("#")[0].replace(/_/g, " ").toLowerCase();
-                if (!titles[prefix]!.has(t)) (strict ? errors : warnings).push(`${at}: ${prefix} page not in dump: "${rest}"`);
+                if (!titles[prefix]!.has(t))
+                    (strict ? errors : warnings).push(`${at}: ${prefix} page not in dump: "${rest}"`);
             }
             if (prefix === "survev" && survevRoot) {
                 const path = rest.replace(/:\d+(-\d+)?$/, "");
-                if (!existsSync(join(survevRoot, path))) (strict ? errors : warnings).push(`${at}: survev path missing: ${path}`);
+                if (!existsSync(join(survevRoot, path)))
+                    (strict ? errors : warnings).push(`${at}: survev path missing: ${path}`);
             }
         }
         if (conf === "H" && [...prefixes].every((p) => SNIPPET_ONLY.has(p))) {

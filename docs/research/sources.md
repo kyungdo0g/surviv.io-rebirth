@@ -11,7 +11,7 @@
 | `wp-en` | https://en.wikipedia.org/wiki/Surviv.io | `api.php` | 2026-10-05 | M |
 | `wp-ko` | https://ko.wikipedia.org | `api.php` (rate-limited, 429) | — | M |
 | `namu` | https://namu.wiki (Surviv.io and sub-pages) | WebSearch result snippets only; direct access blocked by a Cloudflare challenge | 2026-10-05 | M, never H alone |
-| `kong` | Kongregate relaunch, https://www.kongregate.com/en/games/monumental/surviv (v0.8.82) | manual observation | — | H |
+| `kong` | 2026 relaunch of the original game at https://surviv.io (also on Kongregate). Its changelog (`/changelog.html`) is v0.8.82 (Dec 30 2019) followed only by 0.9.0 (Mar 26 2026) – 0.9.3 (Sep 19 2026) fixes. `kong/relaunch-client-defs` = game object and map object definitions extracted from its client bundle (`app.e5465b46.js`) by `tools/research/extract-live-defs.ts`; `kong/relaunch-changelog` = its changelog | HTTPS fetch of the public client bundle | 2026-10-05 | H |
 | `web` | any other URL | WebSearch / WebFetch | — | M, never H alone |
 | `derived` | arithmetic or inference from other cited facts | — | — | inherits |
 

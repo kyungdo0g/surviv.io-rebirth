@@ -62,7 +62,7 @@ async function fetchContents(base: string, titles: string[]): Promise<Json[]> {
     return pages;
 }
 
-const safeName = (t: string) => t.replace(/[\/\\:*?"<>|\s]+/g, "_").slice(0, 150);
+const safeName = (t: string) => t.replace(/[/\\:*?"<>|\s]+/g, "_").slice(0, 150);
 
 async function main() {
     const [name, base, ...rest] = process.argv.slice(2);
@@ -81,7 +81,11 @@ async function main() {
         const nsList = ["0", "14"]; // articles + categories
         titles = [];
         for (const ns of nsList) {
-            const pages = await listAll(base, "allpages", { apnamespace: ns, aplimit: "max", apfilterredir: "nonredirects" });
+            const pages = await listAll(base, "allpages", {
+                apnamespace: ns,
+                aplimit: "max",
+                apfilterredir: "nonredirects",
+            });
             titles.push(...pages.map((p) => p.title));
         }
         redirects = await listAll(base, "allpages", { apnamespace: "0", aplimit: "max", apfilterredir: "redirects" });
@@ -104,7 +108,13 @@ async function main() {
                 fetchedAt: new Date().toISOString(),
                 site: site.query?.general?.sitename,
                 statistics: site.query?.statistics,
-                pages: pages.map((p) => ({ title: p.title, file: `pages/${safeName(p.title)}.json`, revid: p.revid, bytes: p.wikitext.length, categories: p.categories })),
+                pages: pages.map((p) => ({
+                    title: p.title,
+                    file: `pages/${safeName(p.title)}.json`,
+                    revid: p.revid,
+                    bytes: p.wikitext.length,
+                    categories: p.categories,
+                })),
                 redirects: redirects.map((r) => r.title),
                 imageCount: images.length,
             },
