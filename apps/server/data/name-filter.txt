@@ -1,0 +1,52 @@
+# Banned words in player names (rebirth M8, apps/server/src/moderation/nameFilter.ts). A name matching any entry is
+# shown as "Player". Point NAME_FILTER_FILE at your own copy to change the list; NAME_FILTER=0 turns the filter off.
+#
+# Format: one entry per line, "#" starts a comment. Entries are normalized like names (case, accents, look-alike
+# letters, spaces/digits/punctuation ignored, leetspeak, repeated letters, Hangul typed jamo by jamo) and match
+# anywhere in the name. "=" in front: the entry must be the whole name (short words that hide inside innocent names,
+# e.g. "spic" in "spicy"). An entry of bare Korean consonants (ㅅㅂ) matches those consonants typed on their own.
+#
+# Deliberately short: only unambiguous slurs and the most common profanity in English and Korean. Extend it per
+# community; keep entries that can appear inside ordinary words behind "=".
+
+# English: slurs
+nigger
+nigga
+faggot
+=fag
+=fags
+retard
+tranny
+=kike
+=chink
+=spic
+=coon
+# English: profanity, hate
+cunt
+whore
+rapist
+hitler
+nazi
+
+# Korean: 욕설 (profanity)
+씨발
+시발
+씨빨
+씨팔
+ㅅㅂ
+ㅆㅂ
+병신
+븅신
+ㅂㅅ
+=좆
+좆같
+좆까
+개새끼
+개새기
+니애미
+느금마
+엠창
+# Korean: 혐오 표현 (hate speech)
+한남충
+김치녀
+=틀딱

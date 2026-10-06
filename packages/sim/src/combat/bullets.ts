@@ -132,7 +132,7 @@ export function panSegment(player: Player, pos: Vec2, dir: Vec2): { p0: Vec2; p1
 }
 
 /** What the bullet system reads from the game; random streams and rules are read on use, so they can be swapped. */
-export type BulletContext = Pick<SimContext, "world" | "rules" | "combatRng" | "getPlayer"> & {
+export type BulletContext = Pick<SimContext, "world" | "rules" | "combatRng" | "getPlayer" | "observer"> & {
     /** queues an on-hit explosion (optional for bare bullet tests) */
     readonly explosions?: Pick<SimContext["explosions"], "add">;
 };
@@ -315,6 +315,7 @@ export class BulletSystem {
                     const params = this.params(b, hvt ? damage * this.ctx.rules.perks.targetingDamageMult : damage);
                     params.isExplosion = b.def.shrapnel;
                     this.damages.push({ target: col.obj as Player, params });
+                    this.ctx.observer?.onBulletHitPlayer?.(b, target);
                 }
                 b.hitPlayer = true;
                 hit = col.collidable;

@@ -1,0 +1,37 @@
+# surviv.io rebirth: one game server serving the client (docs/deploy.md). `docker compose up -d --build`, then open
+# http://localhost:8001/. Put a TLS reverse proxy in front for a public server (docs/deploy.md "Reverse proxy").
+services:
+    rebirth:
+        build:
+            context: .
+            args:
+                # 1: fetch and bundle the original art at build time (pnpm survev:fetch && pnpm assets)
+                WITH_ORIGINAL_ASSETS: "${WITH_ORIGINAL_ASSETS:-0}"
+        image: surviv-rebirth:latest
+        restart: unless-stopped
+        ports:
+            - "${PORT:-8001}:8001"
+        environment:
+            HOST: 0.0.0.0
+            PORT: 8001
+            # public origin players reach (https://play.example.com behind a proxy); empty: taken from the Host header
+            PUBLIC_URL: "${PUBLIC_URL:-}"
+            # 1 behind a reverse proxy that sets X-Forwarded-For (client IPs for limits and bans)
+            TRUST_PROXY: "${TRUST_PROXY:-0}"
+            MAP_NAME: "${MAP_NAME:-main}"
+            MAX_PLAYERS: "${MAX_PLAYERS:-80}"
+            MAX_GAMES: "${MAX_GAMES:-16}"
+            MIN_PLAYERS: "${MIN_PLAYERS:-2}"
+            BOT_FILL: "${BOT_FILL:-0}"
+            BOT_DIFFICULTY: "${BOT_DIFFICULTY:-normal}"
+            # admin API (/api/admin/*): set a long random secret to enable it
+            ADMIN_TOKEN: "${ADMIN_TOKEN:-}"
+            ANTICHEAT: "${ANTICHEAT:-1}"
+            SUSPECTS_FILE: data/suspects.jsonl
+            REPORTS_FILE: data/reports.jsonl
+            BAN_FILE: data/bans.json
+        volumes:
+            - rebirth-data:/app/data
+
+volumes:
+    rebirth-data:

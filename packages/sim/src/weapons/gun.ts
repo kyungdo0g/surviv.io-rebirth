@@ -4,6 +4,7 @@
 // flare. Behaviour follows survev server/src/game/weaponManager.ts fireWeapon and docs/research/items/guns.md.
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, getDefOfType } from "@rebirth/defs";
+import type { Bullet } from "../combat/bullets.ts";
 import { playBugle } from "../perks/effects.ts";
 import { shotPerks } from "../perks/shotPerks.ts";
 import type { SimContext } from "../world/context.ts";
@@ -109,6 +110,8 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     // Explosive Rounds: bullets explode on impact (they peter out at max range) (perks.md explosive)
     const onHitFx = player.hasPerk("explosive") ? "explosion_rounds" : undefined;
     const projDef = def.projType ? getDefOfType("throwable", def.projType) : undefined;
+    // bullets of this shot, collected only for a host's observer (anti-cheat telemetry, M8)
+    const fired: Bullet[] | null = ctx.observer?.onShotFired ? [] : null;
     for (let i = 0; i < def.bulletCount; i++) {
         const deviation = firstShotAccuracy ? 0 : rng.range(-0.5, 0.5) * spread;
         const shotDir = v2.rotate(dir, math.deg2rad(deviation));
@@ -143,19 +146,21 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
             saturated: perks.saturated,
             thick: perks.thick,
         };
-        ctx.bullets.fire(params);
+        const bullet = ctx.bullets.fire(params);
+        fired?.push(bullet);
         // Splinter Rounds: two weaker side bullets random(0.2, 0.25) x max(spread, 1) degrees off (perks.md splinter)
         if (perks.splinter) {
             const [lo, hi] = ctx.rules.perks.splinterDeviation;
             for (let j = 0; j < 2; j++) {
                 const dev = rng.range(lo, hi) * Math.max(spread, 1) * (j === 0 ? -1 : 1);
-                ctx.bullets.fire({
+                const side = ctx.bullets.fire({
                     ...params,
                     dir: v2.rotate(shotDir, math.deg2rad(dev)),
                     shotFx: false,
                     damageMult: perks.damageMult * ctx.rules.perks.splinterSideDamageMult,
                     splinter: true,
                 });
+                fired?.push(side);
             }
         }
         // a flare calls an air drop where it is fired (survev BulletBarn.fireBullet addFlare; airdrop-airstrike.md)
@@ -181,5 +186,6 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     if (def.bulletType === "bullet_flare" && player.role === "leader") player.firedFlare = true;
     player.shotSeq++;
     player.shotOffhand = offHand;
+    if (fired) ctx.observer?.onShotFired?.(player, weapon.type, fired);
     return true;
 }

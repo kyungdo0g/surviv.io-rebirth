@@ -54,6 +54,7 @@ export function applyPlayerDamage(ctx: SimContext, target: Player, params: Damag
         sourceId: params.sourceId ?? 0,
         gameSourceType: params.gameSourceType ?? "",
     };
+    ctx.observer?.onPlayerDamaged?.(target, params, damage, headshot);
     if (target.health > 0) return;
     // Revivify downs its holder even in solo; otherwise the team rules decide between a knock and a death
     if (!target.downed && target.hasPerk("self_revive")) downPlayer(ctx, target, params);
@@ -89,6 +90,7 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     onPerkHolderDeath(ctx, player);
     // kill feed, role announcements, alive count, kill leader, game over (match/match.ts)
     ctx.onPlayerKilled(player, params, credit);
+    ctx.observer?.onPlayerKilled?.(player, params, credit);
     // Woods King ping, The Hunted's role, Lone Survivr, Commander succession, comeback drop (roles/roleSystem.ts)
     ctx.roles.onPlayerKilled(player, credit);
     // potato mode: a kill swaps the killer's weapon too (survev player.ts kill: lastDamagedBy.randomWeaponSwap)

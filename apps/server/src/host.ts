@@ -4,6 +4,7 @@
 // empty for the grace period. Games are per map and team mode (M6a: duo and squad games).
 import { randomInt } from "node:crypto";
 import { MapDefs } from "@rebirth/defs";
+import type { SuspectFlag } from "./anticheat/match.ts";
 import { effectiveTeamMode, roomCapacity, type ServerConfig } from "./config.ts";
 import { GameRoom, type RoomStats } from "./room.ts";
 import { JoinTokens } from "./tokens.ts";
@@ -31,6 +32,8 @@ export class GameHost {
     private readonly startedAt = Date.now();
     /** called when a room is removed (sessions of that room are closed by the server) */
     onRoomClosed: ((room: GameRoom) => void) | null = null;
+    /** anti-cheat flags of every room (M8; the server records them in its suspect log) */
+    onFlag: ((flag: SuspectFlag) => void) | null = null;
 
     constructor(config: ServerConfig) {
         this.config = config;
@@ -82,6 +85,7 @@ export class GameHost {
         if (!Object.hasOwn(MapDefs, mapName)) throw new Error(`unknown map "${mapName}"`);
         const teamMode = effectiveTeamMode(mapName, requestedMode);
         const room = new GameRoom(this.config, mapName, randomInt(0, 2 ** 32 - 1), Date.now(), teamMode);
+        room.onFlag = (flag) => this.onFlag?.(flag);
         this.rooms.set(room.id, room);
         if (this.config.log) {
             console.log(`game ${room.id} created (${mapName}, team mode ${teamMode}, seed ${room.game.options.seed})`);
@@ -91,6 +95,8 @@ export class GameHost {
 
     closeRoom(room: GameRoom): void {
         if (!this.rooms.delete(room.id)) return;
+        // a last score of every player before the telemetry goes (M8)
+        room.evaluateTelemetry();
         this.onRoomClosed?.(room);
         if (this.config.log) console.log(`game ${room.id} removed after ${room.game.tick} ticks`);
     }

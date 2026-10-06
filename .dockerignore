@@ -1,0 +1,30 @@
+# Docker build context (Dockerfile, docs/deploy.md). Dependencies are installed inside the image; the original art is
+# never copied from the host (build with --build-arg WITH_ORIGINAL_ASSETS=1 to fetch it inside the build instead).
+.git
+**/node_modules
+**/dist
+.vite
+coverage
+*.log
+
+# reference clones, scraped dumps and original art/audio (not redistributed)
+.survev
+research-cache
+apps/client/public/assets
+
+# test output and screenshots
+test-results
+playwright-report
+tests/e2e/__screens__
+
+# runtime data of a local server (reports, bans, flags)
+data
+
+# not needed to build or run
+docs/research
+.claude
+.vscode
+.idea
+Dockerfile
+docker-compose.yml
+.dockerignore

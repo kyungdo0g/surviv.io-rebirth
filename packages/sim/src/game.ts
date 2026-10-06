@@ -22,6 +22,7 @@ import { EventLog } from "./match/events.ts";
 import { FactionSystem } from "./match/faction.ts";
 import { Gas } from "./match/gas.ts";
 import { Match } from "./match/match.ts";
+import type { CombatObserver } from "./match/observer.ts";
 import { PlaneSystem } from "./match/planes.ts";
 import { bulletEventsIn, RecorderLog } from "./match/reports.ts";
 import { canPlayerSpawn } from "./match/spawn.ts";
@@ -142,6 +143,8 @@ export class Game implements GameApi, SimContext {
     readonly unlocks: UnlockSystem;
     /** buildings with a puzzle, updated every tick (M5b) */
     readonly puzzleBuildings: Building[];
+    /** read-only combat notifications for the host (server anti-cheat telemetry, M8); never alters the game */
+    observer: CombatObserver | null = null;
     private readonly playerMap = new Map<number, Player>();
     /** recorders used, reported once to viewers in range (event sequence numbers, like kills) (M5b) */
     private readonly recorderReports = new RecorderLog();

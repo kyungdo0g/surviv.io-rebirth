@@ -8,6 +8,9 @@
 // to the game. 50v50 rooms (M7a) run squads inside the factions, seat FACTION_MAX_PLAYERS and fill with
 // FACTION_BOT_FILL bots; Cobalt class choices (PerkModeRoleSelect) go to the game. With BOT_FILL (M6b) a room fills its game with in-process bots while it is joinable (bots.ts); bots are
 // players of the game, not members: they have no seat, so player counts, emptiness and room stats are about humans.
+// M8: with the anti-cheat on, the room's MatchTelemetry observes the game's combat and its members' inputs (humans only;
+// bots are never tracked), is scored once per simulated second and hands flags to `onFlag`; every human that joined is
+// remembered (name, address) so reports can name players after they left.
 import { randomUUID } from "node:crypto";
 import { BitWriter } from "@rebirth/core";
 import { GameConfig } from "@rebirth/defs";
@@ -21,8 +24,10 @@ import {
     type SpectateActionName,
     TICK_HZ,
 } from "@rebirth/sim";
+import { MatchTelemetry, type SuspectFlag } from "./anticheat/match.ts";
 import { BotFill } from "./bots.ts";
 import { isFactionMap, roomCapacity, type ServerConfig } from "./config.ts";
+import type { MatchContext, PlayerRecord } from "./moderation/matches.ts";
 import { type Percentiles, roundSummary, SampleWindow } from "./stats.ts";
 
 const TICK_MS = 1000 / TICK_HZ;
@@ -36,6 +41,8 @@ export interface RoomMember {
     readonly ack: number;
     /** bytes queued on the socket (congested sockets skip updates) */
     readonly bufferedAmount: number;
+    /** client address (M8: telemetry, reports) */
+    readonly ip?: string;
     sendFrame(bytes: Uint8Array): void;
 }
 
@@ -100,6 +107,12 @@ export class GameRoom {
     readonly bots: BotFill | null;
     /** players this room seats (MAX_PLAYERS, FACTION_MAX_PLAYERS for 50v50; M7a) */
     readonly capacity: number;
+    /** anti-cheat telemetry (M8; null with ANTICHEAT=0) */
+    readonly telemetry: MatchTelemetry | null;
+    /** receives anti-cheat flags (the host forwards them to the server's suspect log) */
+    onFlag: ((flag: SuspectFlag) => void) | null = null;
+    /** every human that joined, by player id (kept after they leave, for reports) */
+    private readonly humans = new Map<number, { name: string; ip: string }>();
 
     constructor(config: ServerConfig, mapName: string, seed: number, now: number, teamMode: 1 | 2 | 4 = 1) {
         this.config = config;
@@ -124,6 +137,15 @@ export class GameRoom {
                       },
                   })
                 : null;
+        this.telemetry = config.antiCheat
+            ? new MatchTelemetry(this.game, {
+                  gameId: this.id,
+                  mapName,
+                  teamMode: this.game.options.teamMode ?? teamMode,
+                  thresholds: config.antiCheat,
+              })
+            : null;
+        this.game.observer = this.telemetry;
     }
 
     get playerCount(): number {
@@ -161,6 +183,8 @@ export class GameRoom {
         if (this.config.debugSpawnTogether) this.spawnNearFirstPlayer(playerId);
         const cache = this.sharedCache ? this.cache : new ObjectCache(this.cache.ctx);
         this.seats.set(playerId, { member, encoder: new ClientEncoder(cache), name });
+        this.humans.set(playerId, { name, ip: member.ip ?? "" });
+        this.telemetry?.track(playerId, name, member.ip ?? "");
         this.emptySince = null;
         const w = new BitWriter(this.mapMsg.length + 64);
         writeServerMsg(w, {
@@ -197,10 +221,57 @@ export class GameRoom {
         if (!this.seats.delete(playerId)) return;
         this.game.disconnectPlayer(playerId);
         if (this.seats.size === 0) this.emptySince = now;
+        if (this.telemetry) {
+            this.telemetry.leave(playerId);
+            this.emitFlags(this.telemetry.evaluate(playerId));
+        }
     }
 
     setInput(playerId: number, input: PlayerInput): void {
-        if (this.seats.has(playerId)) this.game.setInput(playerId, input);
+        if (!this.seats.has(playerId)) return;
+        this.game.setInput(playerId, input);
+        this.telemetry?.onInput(playerId, input);
+    }
+
+    /** Scores every tracked player now and forwards new flags (the host calls it when the room closes). */
+    evaluateTelemetry(): void {
+        if (this.telemetry) this.emitFlags(this.telemetry.evaluate());
+    }
+
+    private emitFlags(flags: SuspectFlag[]): void {
+        for (const f of flags) this.onFlag?.(f);
+    }
+
+    /** A player of this game as reports record it (humans that left included); null for an unknown id. */
+    playerRecord(playerId: number): PlayerRecord | null {
+        const human = this.humans.get(playerId);
+        const player = this.game.getPlayer(playerId);
+        if (!human && !player) return null;
+        return {
+            playerId,
+            name: human?.name ?? player?.name ?? "",
+            ip: human ? human.ip : null,
+            // every player that never had a seat is a fill bot
+            bot: !human,
+            telemetry: this.telemetry?.snapshot(playerId) ?? null,
+        };
+    }
+
+    /** Every human that joined and every player still in the game. */
+    playerRecords(): PlayerRecord[] {
+        const ids = new Set<number>(this.humans.keys());
+        for (const p of this.game.players()) ids.add(p.id);
+        return [...ids].flatMap((id) => this.playerRecord(id) ?? []);
+    }
+
+    /** This room as the match of a report. */
+    matchContext(): MatchContext {
+        return {
+            gameId: this.id,
+            mapName: this.mapName,
+            teamMode: this.teamMode,
+            player: (id) => this.playerRecord(id),
+        };
     }
 
     /** Spectate request of a member (ignored while its player lives). */
@@ -254,6 +325,8 @@ export class GameRoom {
             this.netsync();
             this.netsyncTimes.add(performance.now() - t1);
         }
+        // anti-cheat scores once per simulated second (M8)
+        if (this.telemetry && this.game.tick % TICK_HZ === 0) this.emitFlags(this.telemetry.evaluate());
     }
 
     private netsync(): void {

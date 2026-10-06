@@ -1,10 +1,13 @@
 // Server configuration from environment variables, validated with zod. Limits default to survev's production
 // values (docs/research/engine/netcode.md "Limits and rate limits").
 import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getMapDef, MapDefs } from "@rebirth/defs";
 import { z } from "zod";
+import { type AntiCheatThresholds, loadThresholds } from "./anticheat/thresholds.ts";
 import type { BotDifficultySetting } from "./bots.ts";
+import { DEFAULT_NAME_FILTER_FILE } from "./moderation/nameFilter.ts";
 import { defaultModes, type ModeEntry, parseModes } from "./modes.ts";
 
 export interface ServerConfig {
@@ -73,6 +76,22 @@ export interface ServerConfig {
     botDifficulty: BotDifficultySetting;
     /** milliseconds between two bot joins (bots trickle in like players; 0: all at once) */
     botFillIntervalMs: number;
+    /** bearer token of the /api/admin/* routes (M8); null disables them */
+    adminToken: string | null;
+    /** anti-cheat thresholds (M8, anticheat/thresholds.ts); null with ANTICHEAT=0 (no telemetry) */
+    antiCheat: AntiCheatThresholds | null;
+    /** JSONL file every anti-cheat flag is appended to (M8), or null for the in-memory list and log only */
+    suspectsFile: string | null;
+    /** JSONL file player reports are appended to (M8) */
+    reportsFile: string;
+    /** reports a player may file per match (M8) */
+    reportMaxPerMatch: number;
+    /** how long after its game closed a join token still authenticates reports (M8) */
+    reportWindowMs: number;
+    /** banned-words list of the name filter (M8), or null with NAME_FILTER=0 */
+    nameFilterFile: string | null;
+    /** IP / name bans (M8, moderation/bans.ts) */
+    banFile: string;
 }
 
 const DEFAULT_CLIENT_DIST = fileURLToPath(new URL("../../client/dist", import.meta.url));
@@ -120,11 +139,30 @@ const EnvSchema = z.object({
     BOT_FILL: z.coerce.number().int().min(0).max(255).default(0),
     BOT_DIFFICULTY: z.enum(["easy", "normal", "hard", "mixed"]).default("normal"),
     BOT_FILL_INTERVAL_MS: z.coerce.number().int().min(0).default(250),
+    ADMIN_TOKEN: z.string().min(16, { message: "at least 16 characters" }).optional(),
+    ANTICHEAT: bool.default(true),
+    ANTICHEAT_FLAG_SCORE: z.coerce.number().min(1).max(100).optional(),
+    ANTICHEAT_CONFIG: z.string().min(1).optional(),
+    SUSPECTS_FILE: z.string().min(1).optional(),
+    REPORTS_FILE: z.string().min(1).default("data/reports.jsonl"),
+    REPORT_MAX_PER_MATCH: z.coerce.number().int().min(1).max(100).default(3),
+    REPORT_WINDOW_MS: z.coerce
+        .number()
+        .int()
+        .min(0)
+        .default(15 * 60 * 1000),
+    NAME_FILTER: bool.default(true),
+    NAME_FILTER_FILE: z.string().min(1).optional(),
+    BAN_FILE: z.string().min(1).default("data/bans.json"),
 });
 
-/** Validated configuration; throws an Error listing every invalid variable. */
+/**
+ * Validated configuration; throws an Error listing every invalid variable. Empty values count as unset (docker compose
+ * passes `VAR: ""` for an unset `${VAR:-}`).
+ */
 export function loadConfig(env: Record<string, string | undefined> = process.env): ServerConfig {
-    const parsed = EnvSchema.safeParse(env);
+    const set = Object.fromEntries(Object.entries(env).filter(([, v]) => v !== undefined && v !== ""));
+    const parsed = EnvSchema.safeParse(set);
     if (!parsed.success) {
         const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
         throw new Error(`invalid server configuration: ${issues}`);
@@ -163,6 +201,15 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
             Math.min(e.FACTION_MAX_PLAYERS, Math.round((e.BOT_FILL * e.FACTION_MAX_PLAYERS) / e.MAX_PLAYERS)),
         botDifficulty: e.BOT_DIFFICULTY,
         botFillIntervalMs: e.BOT_FILL_INTERVAL_MS,
+        adminToken: e.ADMIN_TOKEN ?? null,
+        antiCheat: e.ANTICHEAT ? loadThresholds(e.ANTICHEAT_CONFIG, e.ANTICHEAT_FLAG_SCORE) : null,
+        suspectsFile: e.SUSPECTS_FILE ? resolve(e.SUSPECTS_FILE) : null,
+        // relative paths are relative to the working directory
+        reportsFile: resolve(e.REPORTS_FILE),
+        reportMaxPerMatch: e.REPORT_MAX_PER_MATCH,
+        reportWindowMs: e.REPORT_WINDOW_MS,
+        nameFilterFile: e.NAME_FILTER ? resolve(e.NAME_FILTER_FILE ?? DEFAULT_NAME_FILTER_FILE) : null,
+        banFile: resolve(e.BAN_FILE),
     };
 }
 

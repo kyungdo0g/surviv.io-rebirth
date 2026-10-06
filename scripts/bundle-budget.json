@@ -1,0 +1,5 @@
+{
+    "$comment": "Main client JS bundle budget (the entry chunk apps/client/dist/index.html loads), in bytes. Measured 2026-10-06: 2443176 raw / 368798 gzip (level 9); budget is about 20% above. See docs/deploy.md 'Bundle budget'.",
+    "mainJsBytes": 2930000,
+    "mainJsGzipBytes": 445000
+}

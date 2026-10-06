@@ -1,6 +1,7 @@
 // Game server: Hono HTTP routes, the /play WebSocket and the party lobby WebSocket (/team_v2, alias /team; M6a) (ws,
 // noServer mode) on one Node HTTP server, plus the GameHost loop. `startServer` resolves once listening (port 0 picks
-// a free port, as tests do).
+// a free port, as tests do). M8: the moderation services (name filter, bans, reports, anti-cheat flag log) are created
+// here; a closing room is archived for late reports, a new ban disconnects the sessions it matches.
 import type { IncomingMessage, Server } from "node:http";
 import type { Duplex } from "node:stream";
 import { createAdaptorServer } from "@hono/node-server";
@@ -9,6 +10,7 @@ import { WebSocketServer } from "ws";
 import type { ServerConfig } from "./config.ts";
 import { GameHost } from "./host.ts";
 import { createApp, playUrl } from "./http.ts";
+import { createModeration, type Moderation, sweepModeration } from "./moderation/index.ts";
 import { PartyLobby } from "./party.ts";
 import { PARTY_MAX_MSG_BYTES, PartySocket } from "./partySocket.ts";
 import { ClientSession } from "./session.ts";
@@ -19,6 +21,8 @@ const HEARTBEAT_MS = 15_000;
 const PARTY_PATHS = new Set(["/team_v2", "/team"]);
 /** Idle party members are looked for this often (survev teamMenu: every second). */
 const PARTY_SWEEP_MS = 1000;
+/** Expired report tokens and archived matches are dropped this often (M8). */
+const MODERATION_SWEEP_MS = 60_000;
 
 export interface RunningServer {
     readonly config: ServerConfig;
@@ -33,6 +37,8 @@ export interface RunningServer {
     readonly lobby: PartyLobby;
     /** open party lobby sockets */
     readonly partySockets: ReadonlySet<PartySocket>;
+    /** name filter, bans, reports, anti-cheat flags (M8) */
+    readonly moderation: Moderation;
     close(): Promise<void>;
 }
 
@@ -64,20 +70,44 @@ function holdIpSlot(counts: Map<string, number>, ip: string, max: number, socket
 
 export function startServer(config: ServerConfig): Promise<RunningServer> {
     const host = new GameHost(config);
-    const app = createApp(config, host);
+    const moderation = createModeration(config);
+    const sessions = new Set<ClientSession>();
+    const app = createApp(config, host, moderation, {
+        onBan: () => {
+            let kicked = 0;
+            for (const s of [...sessions]) {
+                if (s.closed || !moderation.bans.check(s.ip, s.name || undefined)) continue;
+                s.disconnect(DisconnectReason.Banned);
+                kicked++;
+            }
+            return kicked;
+        },
+    });
     const wss = new WebSocketServer({ noServer: true, maxPayload: NetLimits.MaxClientMsgBytes });
     const partyWss = new WebSocketServer({ noServer: true, maxPayload: PARTY_MAX_MSG_BYTES * 4 });
-    const sessions = new Set<ClientSession>();
     const partySockets = new Set<PartySocket>();
     const perIp = new Map<string, number>();
     const partyPerIp = new Map<string, number>();
-    const lobby = new PartyLobby({ host, mapName: config.defaultMap });
+    const lobby = new PartyLobby({
+        host,
+        mapName: config.defaultMap,
+        filterName: (name) => moderation.names.filter(name),
+    });
 
     const release = (s: ClientSession) => {
         sessions.delete(s);
     };
 
+    host.onFlag = (flag) => moderation.suspects.record(flag);
     host.onRoomClosed = (room) => {
+        // players and final telemetry stay available to reports for REPORT_WINDOW_MS (M8)
+        moderation.matches.add({
+            gameId: room.id,
+            mapName: room.mapName,
+            teamMode: room.teamMode,
+            players: room.playerRecords(),
+        });
+        moderation.sessions.onGameClosed(room.id);
         for (const s of sessions) if (s.room === room) s.disconnect(DisconnectReason.GameClosed);
         lobby.onGameClosed(room.id);
     };
@@ -124,6 +154,7 @@ export function startServer(config: ServerConfig): Promise<RunningServer> {
                 const session = new ClientSession(ws, ip, url.searchParams.get("token"), {
                     host,
                     config,
+                    moderation,
                     onClosed: release,
                 });
                 // the constructor may already have closed it (invalid token)
@@ -135,6 +166,7 @@ export function startServer(config: ServerConfig): Promise<RunningServer> {
             for (const s of sessions) s.heartbeat();
         }, HEARTBEAT_MS);
         const partySweep = setInterval(() => lobby.sweep(config.partyIdleMs), PARTY_SWEEP_MS);
+        const moderationSweep = setInterval(() => sweepModeration(moderation), MODERATION_SWEEP_MS);
 
         server.listen(config.port, config.host, () => {
             server.off("error", reject);
@@ -151,9 +183,11 @@ export function startServer(config: ServerConfig): Promise<RunningServer> {
                 connectionsPerIp: perIp,
                 lobby,
                 partySockets,
+                moderation,
                 close: async () => {
                     clearInterval(heartbeat);
                     clearInterval(partySweep);
+                    clearInterval(moderationSweep);
                     for (const s of [...sessions]) s.disconnect(DisconnectReason.ServerShutdown);
                     for (const p of [...partySockets]) p.close();
                     host.stop();

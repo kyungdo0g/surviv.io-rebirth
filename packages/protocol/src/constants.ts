@@ -131,6 +131,8 @@ export const DisconnectReason = {
     JoinTimeout: "join_timeout",
     GameClosed: "game_closed",
     ServerShutdown: "server_shutdown",
+    /** rebirth M8: the client's address or name is banned (BAN_FILE); find_game answers 403 {error: "banned"} */
+    Banned: "banned",
     /** client side: the socket closed without a reason */
     ConnectionLost: "connection_lost",
     /** client side: find_game failed */

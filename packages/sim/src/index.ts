@@ -41,6 +41,7 @@ export { FactionSystem, type FactionTeam, living } from "./match/faction.ts";
 export { type CircleChoice, Gas, gasCircle, gasTimeLeft } from "./match/gas.ts";
 export { type MapIndicator, MapIndicatorSystem, type TrackedIndicator } from "./match/indicators.ts";
 export { KILL_LEADER_ROLE, Match, type MatchOptions, playerStats } from "./match/match.ts";
+export type { CombatObserver } from "./match/observer.ts";
 export { type FallingAirdrop, type PlaneState, PlaneSystem } from "./match/planes.ts";
 export { canPlayerSpawn, randomSpawnPos, teammateSpawnPos } from "./match/spawn.ts";
 export { type SpectateAction, SpectateSystem } from "./match/spectate.ts";

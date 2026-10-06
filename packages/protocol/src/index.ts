@@ -12,6 +12,7 @@ export * from "./map.ts";
 export * from "./messages.ts";
 export * from "./objects.ts";
 export * from "./quant.ts";
+export * from "./report.ts";
 export * from "./teams.ts";
 export * from "./throttle.ts";
 export * from "./update.ts";

@@ -71,6 +71,11 @@ export class GameConnection {
     map: MapData | null = null;
     /** set once the connection ended */
     disconnectReason: string | null = null;
+    /**
+     * Join token of the game connection (the `token` query parameter of the /play URL): it authenticates player
+     * reports for this game (report.ts submitReport), also after the socket closed (M8)
+     */
+    joinToken: string | null = null;
     /** last measured round trip (ms), -1 before the first Pong */
     rttMs = -1;
     bytesDown = 0;
@@ -123,7 +128,8 @@ export class GameConnection {
                 autoFill: this.options.autoFill,
             });
         } catch (err) {
-            this.end(DisconnectReason.FindGameFailed);
+            const banned = err instanceof Error && err.message === "find_game failed: banned";
+            this.end(banned ? DisconnectReason.Banned : DisconnectReason.FindGameFailed);
             throw err;
         }
         return this.connectTo(res.url);
@@ -141,6 +147,11 @@ export class GameConnection {
         }
         ws.binaryType = "arraybuffer";
         this.ws = ws;
+        try {
+            this.joinToken = new URL(url).searchParams.get("token");
+        } catch {
+            this.joinToken = null;
+        }
         const timeoutMs = this.options.timeoutMs ?? 10_000;
         const result = new Promise<JoinResult>((resolve, reject) => {
             const timer = setTimeout(() => {

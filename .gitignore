@@ -11,6 +11,9 @@ research-cache/
 # reference clone of survev (regenerable via tools/port-survev/fetch.sh)
 .survev/
 
+# runtime data of a local server: reports, bans, anti-cheat flags (REPORTS_FILE, BAN_FILE, SUSPECTS_FILE)
+/data/
+
 # playwright
 test-results/
 playwright-report/

@@ -8,6 +8,7 @@ import type { ExplosionSystem } from "../combat/explosions.ts";
 import type { ProjectileSystem } from "../combat/projectiles.ts";
 import type { LootSystem } from "../loot/loot.ts";
 import type { Gas } from "../match/gas.ts";
+import type { CombatObserver } from "../match/observer.ts";
 import type { PlaneSystem } from "../match/planes.ts";
 import type { RoleSystem } from "../roles/roleSystem.ts";
 import type { SimRules } from "../rules.ts";
@@ -46,6 +47,8 @@ export interface SimContext {
     readonly gas: Gas;
     /** simulation time in seconds */
     readonly time: number;
+    /** read-only combat notifications for the host (anti-cheat telemetry, M8); null or absent for none */
+    readonly observer?: CombatObserver | null;
     getPlayer(id: number): Player | undefined;
     /** Full player damage pipeline: headshot roll, reductions, health, death and drops. */
     damagePlayer(target: Player, params: DamageParams): void;

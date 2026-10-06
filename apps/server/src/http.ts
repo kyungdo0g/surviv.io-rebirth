@@ -1,6 +1,7 @@
 // HTTP routes (Hono): health, stats, matchmaking (find_game -> /play URL + single-use token; solo, or a single player
-// queueing for duo / squad, M6a; a 50v50 map always queues into squads inside the factions, M7a) and, when a built
-// client exists, static files.
+// queueing for duo / squad, M6a; a 50v50 map always queues into squads inside the factions, M7a), the moderation
+// routes (M8: reports, admin; moderation/routes.ts; find_game refuses banned addresses with 403 banned) and, when a
+// built client exists, static files.
 import { serveStatic } from "@hono/node-server/serve-static";
 import { MapDefs } from "@rebirth/defs";
 import { Hono } from "hono";
@@ -8,6 +9,9 @@ import { cors } from "hono/cors";
 import { z } from "zod";
 import type { ServerConfig } from "./config.ts";
 import type { GameHost } from "./host.ts";
+import type { Ban } from "./moderation/bans.ts";
+import type { Moderation } from "./moderation/index.ts";
+import { mountModerationRoutes, requestIp } from "./moderation/routes.ts";
 import { resolveFindGame } from "./modes.ts";
 
 const FindGameBody = z.object({
@@ -34,7 +38,12 @@ export function playUrl(config: ServerConfig, reqUrl: string, headers: Headers):
     return `${proto === "https" ? "wss" : "ws"}://${host}/play`;
 }
 
-export function createApp(config: ServerConfig, host: GameHost): Hono {
+export function createApp(
+    config: ServerConfig,
+    host: GameHost,
+    moderation: Moderation,
+    opts: { onBan?: (ban: Ban) => number } = {},
+): Hono {
     const app = new Hono();
     app.use("/api/*", cors());
 
@@ -65,6 +74,7 @@ export function createApp(config: ServerConfig, host: GameHost): Hono {
     );
 
     app.post("/api/find_game", async (c) => {
+        if (moderation.bans.matchIp(requestIp(c, config.trustProxy))) return c.json({ error: "banned" }, 403);
         let raw: unknown = {};
         const text = await c.req.text();
         if (text.trim()) {
@@ -90,6 +100,8 @@ export function createApp(config: ServerConfig, host: GameHost): Hono {
         const url = `${playUrl(config, c.req.url, c.req.raw.headers)}?token=${encodeURIComponent(token)}`;
         return c.json({ url, token });
     });
+
+    mountModerationRoutes(app, { config, host, moderation, onBan: opts.onBan });
 
     if (config.clientDist) {
         const root = config.clientDist;

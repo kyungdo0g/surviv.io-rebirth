@@ -170,6 +170,8 @@ export interface PartyDeps {
     host: GameHost;
     mapName: string;
     now?: () => number;
+    /** the name filter (M8): offensive party names become "Player" */
+    filterName?: (name: string) => string;
 }
 
 /** Party rooms by code and the lobby protocol (transport independent; partySocket.ts feeds it). */
@@ -181,6 +183,12 @@ export class PartyLobby {
     constructor(deps: PartyDeps) {
         this.deps = deps;
         this.now = deps.now ?? Date.now;
+    }
+
+    /** A member's visible name: cleaned (partyName), then the name filter (M8). */
+    private memberName(raw: string): string {
+        const name = partyName(raw);
+        return this.deps.filterName ? this.deps.filterName(name) : name;
     }
 
     /** A new code unused by any room (crypto random, survev's alphabet). */
@@ -200,7 +208,7 @@ export class PartyLobby {
                 const room = new PartyRoom(this.newCode());
                 this.applyProps(room, msg.data.roomData);
                 this.rooms.set(room.code, room);
-                member.name = partyName(msg.data.playerData.name);
+                member.name = this.memberName(msg.data.playerData.name);
                 this.addMember(room, member);
             } else if (msg.type === "join") {
                 const code = msg.data.roomUrl.replace(/^#/, "");
@@ -210,7 +218,7 @@ export class PartyLobby {
                 } else if (room.members.length >= room.maxPlayers) {
                     this.fail(member, "join_full");
                 } else {
-                    member.name = partyName(msg.data.playerData.name);
+                    member.name = this.memberName(msg.data.playerData.name);
                     this.addMember(room, member);
                 }
             } else {
@@ -223,7 +231,7 @@ export class PartyLobby {
         const isLeader = room.leader === member;
         switch (msg.type) {
             case "changeName":
-                member.name = partyName(msg.data.name);
+                member.name = this.memberName(msg.data.name);
                 this.sendState(room);
                 break;
             case "keepAlive":

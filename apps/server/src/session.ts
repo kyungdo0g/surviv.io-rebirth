@@ -1,5 +1,7 @@
 // One game WebSocket: token check, Join (protocol hash first), Input validation, Ping/Pong, Spectate, Emote (M6a),
 // per-socket message rate limit, and Disconnect + close for every failure (survev client.ts / gameProcess.ts).
+// M8: Join checks the bans (address and name; DisconnectReason.Banned), passes the name through the name filter and
+// registers the join token as the player's credential for reports.
 import { BitWriter } from "@rebirth/core";
 import { PROTOCOL_HASH } from "@rebirth/defs";
 import {
@@ -18,6 +20,7 @@ import type { RawData, WebSocket } from "ws";
 import type { ServerConfig } from "./config.ts";
 import type { GameHost } from "./host.ts";
 import { sanitizeInput } from "./input.ts";
+import type { Moderation } from "./moderation/index.ts";
 import type { GameRoom, RoomMember } from "./room.ts";
 import type { JoinTicket } from "./tokens.ts";
 
@@ -35,6 +38,8 @@ export class ClientSession implements RoomMember {
     state: SessionState = "connecting";
     ack = 0;
     playerId = 0;
+    /** the name the player chose (before the name filter; bans match it), "" before Join */
+    name = "";
     room: GameRoom | null = null;
     bytesDown = 0;
     bytesUp = 0;
@@ -44,6 +49,9 @@ export class ClientSession implements RoomMember {
     private readonly host: GameHost;
     private readonly config: ServerConfig;
     private readonly onClosed: (s: ClientSession) => void;
+    private readonly moderation: Moderation;
+    /** the join token this socket presented (the player's report credential, M8) */
+    private readonly token: string | null;
     private ticket: JoinTicket | null;
     private joinTimer: ReturnType<typeof setTimeout> | null = null;
     private windowStart = 0;
@@ -54,13 +62,15 @@ export class ClientSession implements RoomMember {
         ws: WebSocket,
         ip: string,
         token: string | null,
-        deps: { host: GameHost; config: ServerConfig; onClosed: (s: ClientSession) => void },
+        deps: { host: GameHost; config: ServerConfig; moderation: Moderation; onClosed: (s: ClientSession) => void },
     ) {
         this.ws = ws;
         this.ip = ip;
         this.host = deps.host;
         this.config = deps.config;
+        this.moderation = deps.moderation;
         this.onClosed = deps.onClosed;
+        this.token = token;
         this.ticket = token ? this.host.tokens.consumeTicket(token) : null;
         ws.on("message", (data, isBinary) => this.onMessage(data, isBinary));
         ws.on("close", () => this.cleanup());
@@ -210,6 +220,13 @@ export class ClientSession implements RoomMember {
             this.disconnect(DisconnectReason.InvalidPacket);
             return;
         }
+        const chosen = sanitizeName(name);
+        const ban = this.moderation.bans.check(this.ip, chosen);
+        if (ban) {
+            if (this.config.log) console.log(`refused banned ${ban.type} ${ban.value} (${this.ip}, "${chosen}")`);
+            this.disconnect(DisconnectReason.Banned);
+            return;
+        }
         const room = this.host.getRoom(this.ticket.gameId);
         if (!room) {
             this.disconnect(DisconnectReason.GameClosed);
@@ -225,10 +242,14 @@ export class ClientSession implements RoomMember {
         }
         if (this.joinTimer) clearTimeout(this.joinTimer);
         this.joinTimer = null;
-        const { playerId, frame } = room.join(this, sanitizeName(name), this.ticket.group);
+        this.name = chosen;
+        const shown = this.moderation.names.filter(chosen);
+        const { playerId, frame } = room.join(this, shown, this.ticket.group);
         this.room = room;
         this.playerId = playerId;
         this.state = "joined";
+        if (this.token)
+            this.moderation.sessions.register(this.token, { gameId: room.id, playerId, name: shown, ip: this.ip });
         this.sendFrame(frame);
         if (this.config.log) console.log(`player ${playerId} joined game ${room.id} from ${this.ip}`);
     }
