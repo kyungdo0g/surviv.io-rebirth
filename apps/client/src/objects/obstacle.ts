@@ -154,6 +154,11 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
         }
     }
 
+    /** the obstacle (door panel) sprite and a door's slot casing, as drawn (tests) */
+    get drawn(): { sprite: Sprite; casing: Sprite | null } {
+        return { sprite: this.sprite, casing: this.casing };
+    }
+
     bounds(pos: Vec2): ViewBounds {
         const box = collider.toAabb(
             collider.transform(this.def.collision, pos, math.oriToRad(this.data.ori), this.data.scale),

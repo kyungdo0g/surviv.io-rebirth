@@ -42,6 +42,7 @@ interface BuildingImg {
     /** world-space offset from the building position (already rotated) */
     offset: Vec2;
     rotOffset: number;
+    /** scale factors to the image's logical size where the sprite manifest's is wrong */
     zOrd: number;
     zIdx: number;
 }
@@ -149,6 +150,11 @@ export class BuildingRender implements ObjectRender<BuildingView> {
         this.residue = sprite;
     }
 
+    /** floor and ceiling sprites as drawn (tests) */
+    get drawnImgs(): Array<{ sprite: Sprite; isCeiling: boolean }> {
+        return this.imgs.map((img) => ({ sprite: img.sprite, isCeiling: img.isCeiling }));
+    }
+
     /** roof collapses and puzzle sounds played in view (tests) */
     get fxCounts(): { collapses: number; puzzleFails: number; puzzleSolves: number } {
         const fx = this.fx;
@@ -254,8 +260,8 @@ export class BuildingRender implements ObjectRender<BuildingView> {
         let rad = 0;
         for (const img of this.imgs) {
             const tex = img.sprite.texture;
-            const r =
-                v2.length(img.offset) + (Math.max(tex.width, tex.height) * 0.75 * img.def.scale) / PIXELS_PER_UNIT;
+            const size = Math.max(tex.width, tex.height);
+            const r = v2.length(img.offset) + (size * 0.75 * img.def.scale) / PIXELS_PER_UNIT;
             rad = Math.max(rad, r);
         }
         const lb = this.localBounds;

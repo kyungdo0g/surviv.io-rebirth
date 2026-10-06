@@ -1,6 +1,6 @@
 // Dev page that renders the sprites in the manifest one screen at a time: /?gallery=<name filter>&page=<n>
 import { type Application, Assets, Container, Graphics, Sprite, Text, type Texture } from "pixi.js";
-import manifest from "../generated/sprite-manifest.json";
+import { SPRITES, spritePath } from "../assets/spriteManifest.ts";
 
 const CELL = 112;
 const PAD = 8;
@@ -8,8 +8,8 @@ const PAD = 8;
 export async function mountGallery(app: Application, filter: string, page = 0) {
     const cols = Math.max(1, Math.floor(app.screen.width / CELL));
     const perPage = cols * Math.max(1, Math.floor(app.screen.height / CELL));
-    const matching = Object.keys(manifest as Record<string, string>)
-        .filter((n) => n.includes(filter))
+    const matching = Object.keys(SPRITES)
+        .filter((n) => n.includes(filter) && spritePath(n))
         .sort();
     const names = matching.slice(page * perPage, (page + 1) * perPage);
     const state = {
@@ -27,7 +27,7 @@ export async function mountGallery(app: Application, filter: string, page = 0) {
 
     const textures = await Promise.all(
         names.map(async (name) => {
-            const src = `/assets/${(manifest as Record<string, string>)[name]}`;
+            const src = `/assets/${spritePath(name)}`;
             try {
                 const tex: Texture = await Assets.load({ src, data: { resolution: 2 } });
                 state.loaded++;
