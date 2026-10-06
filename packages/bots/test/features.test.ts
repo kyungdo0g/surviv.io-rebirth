@@ -12,6 +12,7 @@ import {
     brainFeatures,
     brainLabel,
     DEFAULT_BRAIN,
+    SMART_EXCLUDED,
     withFeatures,
 } from "../src/brain/features.ts";
 import { BotController } from "../src/controller.ts";
@@ -19,17 +20,19 @@ import { DIFFICULTIES, DIFFICULTY_PRESETS } from "../src/difficulty.ts";
 import { flatGame, openSpot, placePlayer, runUntil } from "./helpers.ts";
 
 describe("brain features", () => {
-    it("presets: baseline has every flag off, smart every flag on", () => {
+    it("presets: baseline has every flag off, smart every flag but the excluded ones on", () => {
         for (const f of BRAIN_FEATURES) {
             expect(BRAIN_PRESETS.baseline[f]).toBe(false);
-            expect(BRAIN_PRESETS.smart[f]).toBe(true);
+            expect(BRAIN_PRESETS.smart[f]).toBe(!SMART_EXCLUDED.includes(f));
         }
+        expect(SMART_EXCLUDED.every((f) => BRAIN_FEATURES.includes(f))).toBe(true);
         expect(brainFeatures(undefined)).toBe(BRAIN_PRESETS[DEFAULT_BRAIN]);
         expect(brainLabel(brainFeatures("smart"))).toBe("smart");
         const ablation = withFeatures(BRAIN_PRESETS.baseline, ["cover", "assess"]);
         expect(brainLabel(ablation)).toBe("custom");
         expect(BRAIN_FEATURES.filter((f) => ablation[f])).toEqual(["assess", "cover"]);
-        expect(brainLabel(withFeatures(BRAIN_PRESETS.baseline, BRAIN_FEATURES))).toBe("smart");
+        const smartList = BRAIN_FEATURES.filter((f) => !SMART_EXCLUDED.includes(f));
+        expect(brainLabel(withFeatures(BRAIN_PRESETS.baseline, smartList))).toBe("smart");
     });
 
     it("extension behaviours are offered only while their flag is on", () => {

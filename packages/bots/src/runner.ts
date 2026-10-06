@@ -1,7 +1,7 @@
 // Headless in-process matches: a Game filled with bots, stepped at maximum speed until game over (or a tick budget),
 // with a report of the outcome (winner, kills, causes of death, survival times, per-bot combat stats and finish order,
-// bot exceptions, tick timings). Used by scripts/match.ts, scripts/tournament.ts and the match tests. Every bot can get
-// its own difficulty (preset or custom parameters) and brain (`assign`), for A/B runs. The wall clock is injected
+// idle episodes (idle.ts), bot exceptions, tick timings). Used by scripts/match.ts, scripts/tournament.ts and the match
+// tests. Every bot can get its own difficulty (preset or custom parameters) and brain (`assign`), for A/B runs. The wall clock is injected
 // (scripts pass their timer) so this module stays free of non-deterministic calls.
 import { createRng } from "@rebirth/core";
 import { GameConfig, type GasStage, getMapDef } from "@rebirth/defs";
@@ -9,6 +9,7 @@ import { type CombatObserver, type DamageSource, damageSourceOf, Game } from "@r
 import { BRAIN_PRESETS, type BrainFeatures, type BrainName, DEFAULT_BRAIN } from "./brain/features.ts";
 import { BotController } from "./controller.ts";
 import { DIFFICULTIES, type Difficulty, type DifficultyParams } from "./difficulty.ts";
+import { IdleDetector, type IdleEvent } from "./idle.ts";
 import { pickBotName } from "./names.ts";
 import { finishOrder, MatchStats } from "./stats.ts";
 import { TimingHistogram, type TimingHistogramJSON, type TimingSummary } from "./timing.ts";
@@ -17,6 +18,9 @@ import { TimingHistogram, type TimingHistogramJSON, type TimingSummary } from ".
 export function scaledGas(div: number): GasStage[] {
     return GameConfig.gas.stages.map((st, i) => (i === 0 ? st : { ...st, duration: Math.max(1, st.duration / div) }));
 }
+
+/** The idle detector looks at the bots every this many ticks. */
+const IDLE_SAMPLE_TICKS = 10;
 
 /** Per-bot overrides of a match (MatchConfig.assign). */
 export interface BotAssignment {
@@ -82,6 +86,9 @@ export interface BotRecord {
     teamPlacement: number;
     /** path follower stuck events */
     stuckEvents: number;
+    /** idle episodes (alive, not standing still on purpose, moved < 1 unit in 5 s: idle.ts) and seconds spent idle */
+    idleEvents: number;
+    idleSeconds: number;
 }
 
 export interface MatchReport {
@@ -105,6 +112,8 @@ export interface MatchReport {
     /** the same as mergeable histograms (tournaments merge them across matches) */
     botTickHist: Partial<Record<BrainName, TimingHistogramJSON>>;
     stuckEvents: number;
+    /** idle episodes of every bot (idle.ts), in the order they began */
+    idle: IdleEvent[];
     throws: number;
     /** 50v50 (M7a): living players per faction at the end and team kills (must be 0) */
     teamAliveCounts?: number[];
@@ -169,6 +178,8 @@ export function runMatch(cfg: MatchConfig = {}): MatchReport {
     const maxTicks = cfg.maxTicks ?? 60000;
     const botHist = new Map<BrainName, TimingHistogram>();
     const timed = cfg.clock !== undefined;
+    const idle = new IdleDetector();
+    const playerOf = (id: number) => game.getPlayer(id);
     const t0 = clock();
     while (game.tick < maxTicks && !game.over) {
         const s = clock();
@@ -196,6 +207,7 @@ export function runMatch(cfg: MatchConfig = {}): MatchReport {
             break;
         }
         tickTimes.push(clock() - s);
+        if (game.tick % IDLE_SAMPLE_TICKS === 0) idle.sample(game.time, bots, playerOf);
         cfg.onTick?.(game, bots);
     }
     const wallMs = clock() - t0;
@@ -234,6 +246,8 @@ export function runMatch(cfg: MatchConfig = {}): MatchReport {
             placement: f?.placement ?? 0,
             teamPlacement: f?.teamPlacement ?? 0,
             stuckEvents: b.bot.follower.stuckEvents,
+            idleEvents: idle.eventsOf(b.playerId).length,
+            idleSeconds: idle.idleSecondsOf(b.playerId),
         };
     });
     const killsDistribution: Record<number, number> = {};
@@ -266,6 +280,7 @@ export function runMatch(cfg: MatchConfig = {}): MatchReport {
         botTickMs: Object.fromEntries([...botHist].map(([k, h]) => [k, h.summary()])),
         botTickHist: Object.fromEntries([...botHist].map(([k, h]) => [k, h.toJSON()])),
         stuckEvents: bots.reduce((a, b) => a + b.bot.follower.stuckEvents, 0),
+        idle: idle.events,
         throws: bots.reduce((a, b) => a + b.bot.throws.throws, 0),
         roles,
         ...(game.faction ? { teamAliveCounts: game.faction.aliveCounts(), teamKills } : {}),

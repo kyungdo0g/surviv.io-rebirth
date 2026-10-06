@@ -1,12 +1,22 @@
-// Disengage (BrainFeatures.disengage): break off a fight the bot is losing instead of trading shots to the end. It
-// starts when the assessment says the enemy has the edge (A < -0.3) in a fight that is on, or when the trade monitor
-// sees the bot losing (over the last 3 s it took more than 1.5x the damage it dealt, and it is under 60 health). It
-// retreats from cover to cover away from the threat (cover spots shielding from the threat's bearing, each farther from
-// it than the bot), shooting back while exposed and throwing smoke when it has to cross open ground; it leans towards
-// the safe zone. A 2 s hysteresis keeps it from flip-flopping, an episode lasts at most 10 s (then 6 s of fighting)
-// so the bot never turns passive.
+// Disengage (BrainFeatures.disengage, solo): break off a fight the bot is losing instead of trading shots to the end.
+// It starts when the assessment says the enemy has the edge (A < -0.3) in a fight that is on, or when the trade monitor
+// sees the bot losing (over the last 3 s it took more than 1.5x the damage it dealt, and it is under 60 health), but
+// only when the retreat itself is cheap: a cover spot that breaks the line of fire a few steps away (SHORT_HOP), or a
+// threat far enough (FAR) that its shots rarely land. Tournament diagnostics (smart vs baseline, 48 mirrored matches):
+// the first version also ran 16-unit hops across open ground under fire; bots caught that way lost ~87% of those
+// exchanges and the behaviour cost ~0.05 head-to-head kill share with hard bots (accurate shooters punish a retreat)
+// while it paid with normal ones. The cheap-retreat rule keeps the normal gain (0.532 vs 0.537 kill share, 0.509
+// without the behaviour) and stops the hard loss (0.514 vs 0.474). In team modes the behaviour is off: the team
+// trades together, and a bot breaking off alone left its teammates 3 against 4 (squads: 0.574 kill share without
+// it, 0.532 with the cheap-retreat rule, 0.507 with the first version). It retreats from cover to cover away from the
+// threat (cover spots shielding from the threat's bearing, each farther from it than the bot; short hops while the
+// threat is close, and a reached spot that still shields is held, reloading and healing there), shooting back while
+// exposed and throwing smoke when it has to cross open ground; it leans towards the safe zone. Hit in the open on the
+// way while the threat is close, it turns and fights. A 2 s hysteresis keeps it from flip-flopping, an episode lasts
+// at most 6 s (then 6 s of fighting) so the bot never turns passive.
 import { type Vec2, v2 } from "@rebirth/core";
 import { GameObjectDefs, hasDef } from "@rebirth/defs";
+import { isMeleeWeapon } from "../knowledge/weapons.ts";
 import { NO_INTEL } from "../perception/intel.ts";
 import { ADVANTAGE_BAND, faces } from "./assess.ts";
 import { addCombatLayer, findCoverFrom } from "./combat.ts";
@@ -14,10 +24,20 @@ import { type BrainCtx, emptyIntent, type Intent, nearFailedGoal, reachable } fr
 
 const TRADE_WINDOW = 3;
 const HYSTERESIS = 2;
-const MAX_EPISODE = 10;
+const MAX_EPISODE = 6;
 const COOLDOWN = 6;
 /** How far a retreat hop may go. */
 const HOP = 16;
+/** A retreat starts only to cover this close... */
+const SHORT_HOP = 6;
+/** ...or away from a threat at least this far (its hit chance is low there). */
+const FAR = 30;
+/** Closer than this the fight is a brawl: running only gives the enemy free shots. */
+const BRAWL = 10;
+/** Hit in the open this long ago, with the threat closer than FAR and the cover farther than this: fight back. */
+const CAUGHT_HURT = 0.3;
+const CAUGHT_COVER = 3;
+
 /** Seconds an enemy out of sight still counts as the threat. */
 const THREAT_MEMORY = 2.5;
 /** Next circle radius under which there is no room left to disengage. */
@@ -130,8 +150,9 @@ function endEpisode(ctx: BrainCtx): void {
 export function disengageScore(ctx: BrainCtx): number {
     const { now } = ctx;
     const sm = ctx.mem.smart;
-    // unarmed: running is the flee behaviour's job
-    if (!ctx.armed || now < sm.disengageCooldown || ctx.model.inGasNow()) return 0;
+    // unarmed: running is the flee behaviour's job; in team modes the team trades together (squad tournaments: a bot
+    // breaking off alone left its teammates fighting 3 against 4 and cost ~0.04-0.07 head-to-head kill share)
+    if (!ctx.armed || ctx.teamMode || now < sm.disengageCooldown || ctx.model.inGasNow()) return 0;
     // the last circles leave nowhere to retreat to: fight it out
     const gas = ctx.model.gas;
     if (gas && gas.mode !== "inactive" && gas.radNew < LAST_CIRCLES) return 0;
@@ -142,12 +163,16 @@ export function disengageScore(ctx: BrainCtx): number {
     const a = ctx.assessment;
     const outgunned = !!a && a.advantage < -ADVANTAGE_BAND && a.theirHealth > 25 && engaged(ctx);
     if (outgunned || losingTrade(ctx)) {
-        if (now > sm.disengageUntil) sm.disengageStart = now;
+        if (now > sm.disengageUntil) {
+            // a new episode only when the retreat is cheap
+            if (!retreatWorthIt(ctx)) return 0;
+            sm.disengageStart = now;
+        }
         sm.disengageUntil = now + HYSTERESIS;
     }
     if (now >= sm.disengageUntil) return 0;
-    if (now - sm.disengageStart > MAX_EPISODE) {
-        // never turn passive: fight it out for a while
+    if (now - sm.disengageStart > MAX_EPISODE || caughtInTheOpen(ctx)) {
+        // never turn passive (and do not turn the back on an enemy that catches the bot in the open): fight it out
         sm.disengageCooldown = now + COOLDOWN;
         endEpisode(ctx);
         return 0;
@@ -155,11 +180,52 @@ export function disengageScore(ctx: BrainCtx): number {
     return 0.86;
 }
 
+/** Distance to the nearest standing armed enemy seen lately (Infinity for none). */
+function nearestArmed(ctx: BrainCtx): number {
+    let best = Number.POSITIVE_INFINITY;
+    for (const e of ctx.enemies) {
+        if (e.downed || ctx.now - e.lastSeen > THREAT_MEMORY) continue;
+        if (isMeleeWeapon(e.activeWeapon) && ctx.now - e.lastArmedAt > 15) continue;
+        best = Math.min(best, v2.distance(e.pos, ctx.self.pos));
+    }
+    return best;
+}
+
+/**
+ * Whether breaking off is cheaper than fighting on: no brawl, and cover a few steps away that breaks the line of fire
+ * (or a threat far enough that its shots rarely land).
+ */
+function retreatWorthIt(ctx: BrainCtx): boolean {
+    const threat = threatPos(ctx);
+    if (!threat) return false;
+    if (nearestArmed(ctx) < BRAWL) return false;
+    const me = ctx.self.pos;
+    if (v2.distance(me, threat) >= FAR) {
+        ctx.mem.smart.disengageSpot = null;
+        return true;
+    }
+    const spot = retreatCover(ctx, threat, v2.normalizeSafe(v2.sub(me, threat)), SHORT_HOP);
+    if (!spot) return false;
+    ctx.mem.smart.disengageSpot = spot;
+    return true;
+}
+
+/** Hit just now in the open, the threat close and the next cover still steps away: running only gives free shots. */
+function caughtInTheOpen(ctx: BrainCtx): boolean {
+    const { model, now } = ctx;
+    if (now - model.lastHurt > CAUGHT_HURT) return false;
+    const threat = threatPos(ctx);
+    if (!threat || v2.distance(threat, ctx.self.pos) >= FAR || !model.lineOfFire(ctx.self.pos, threat)) return false;
+    const spot = ctx.mem.smart.disengageSpot;
+    return !spot || v2.distance(spot, ctx.self.pos) > CAUGHT_COVER;
+}
+
 /** The next cover spot of the retreat: shields from `threat`, farther from it than the bot, along `away`. */
-function retreatCover(ctx: BrainCtx, threat: Vec2, away: Vec2): Vec2 | null {
+function retreatCover(ctx: BrainCtx, threat: Vec2, away: Vec2, hop = HOP): Vec2 | null {
     const me = ctx.self.pos;
     const myDist = v2.distance(me, threat);
-    return findCoverFrom(ctx.model, me, threat, HOP, (spot) => {
+    return findCoverFrom(ctx.model, me, threat, hop + 4, (spot) => {
+        if (v2.distance(spot, me) > hop) return false;
         if (v2.distance(spot, threat) < myDist + 2) return false;
         const dir = v2.normalizeSafe(v2.sub(spot, me));
         return v2.dot(dir, away) > -0.2 && reachable(ctx, spot, 1) && !nearFailedGoal(ctx, spot);
@@ -180,11 +246,19 @@ export function planDisengage(ctx: BrainCtx): Intent {
         away = v2.normalizeSafe(v2.add(away, v2.mul(toZone, model.insideSafeZone(me, 10) ? 0.3 : 1)));
     }
     let spot = sm.disengageSpot;
-    const arrived = !!spot && v2.distance(me, spot) < 1.5;
-    if (!spot || model.lineOfFire(threat, spot) || (arrived && v2.distance(me, threat) < 30)) {
-        // a new hop: the spot became exposed, or the bot reached it and the threat is still close
-        spot = retreatCover(ctx, threat, away);
+    const far = v2.distance(me, threat) >= FAR;
+    if (!spot || model.lineOfFire(threat, spot) || nearFailedGoal(ctx, spot)) {
+        // a new hop when the spot became exposed: a short one while the threat is close (crossing open ground under
+        // fire is what loses retreats); reached and still shielded, the bot holds it (reloading and healing there)
+        spot = retreatCover(ctx, threat, away, far ? HOP : SHORT_HOP);
         sm.disengageSpot = spot;
+        if (!spot && !far) {
+            // nowhere close to go: fight it out
+            sm.disengageCooldown = now + COOLDOWN;
+            endEpisode(ctx);
+            addCombatLayer(ctx, intent);
+            return intent;
+        }
     }
     if (spot && v2.distance(me, spot) > 0.8) {
         intent.goal = v2.copy(spot);

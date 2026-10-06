@@ -6,7 +6,9 @@
 // a short magazine adds a reload (or a weapon swap), cover within 5 units dampens what the bot takes, teammates next to
 // the target speed up the kill. Both sides are assumed to aim like the bot (its difficulty): what differs is health,
 // armour, weapons, numbers and position. A > 0.3: push; in between: fight at the range where its guns do better
-// (rangePreference); A < -0.3: disengage, or peek from cover.
+// (rangePreference); A < -0.3: disengage, or peek from cover; A < -1: do not open fire on a target that is not shooting
+// at the bot (holdFire). Tournament diagnostics (hard bots) found the assessment predictive: when the smart bot hit
+// first it won 27% of the exchanges at A < -1, 56% at -1..-0.3, 73% around 0 and 84-91% above 0.3.
 import { type Vec2, v2 } from "@rebirth/core";
 import { fightSlot, hasAmmo } from "../knowledge/arsenal.ts";
 import {
@@ -289,6 +291,28 @@ export function assess(ctx: BrainCtx, t: Contact): Assessment {
         coverNear,
         theirHealth,
     };
+}
+
+/** Below this advantage a trade is clearly lost: the smart brain does not open it (holdFire). */
+export const LOST_BAND = 1;
+
+/** Whether `t` is shooting at the bot: its bullets passed close lately, or it fires while facing the bot. */
+export function engagingMe(ctx: BrainCtx, t: Contact): boolean {
+    const uf = ctx.model.underFire;
+    if (uf && uf.shooterId === t.id && ctx.now - uf.time < 2) return true;
+    return ctx.now - t.lastShotAt < 2 && faces(t, ctx.self.pos, 20);
+}
+
+/**
+ * assess: hold fire on a target the bot clearly loses to (A < -1) while that target is not shooting at it, beyond
+ * brawl range: opening fire only starts the lost trade. Tournament diagnostics (hard bots, 48 matches): the smart bot
+ * opened 44 exchanges at A < -1 and won 9 of the 33 that ended in a kill; at -1..-0.3 it still won 56%.
+ */
+export function holdFire(ctx: BrainCtx, t: Contact, d: number): boolean {
+    if (!ctx.features.assess || t.downed || d < 12) return false;
+    const a = ctx.assessment;
+    if (!a || a.targetId !== t.id || a.advantage > -LOST_BAND) return false;
+    return !engagingMe(ctx, t);
 }
 
 /** The advantage against ctx.target (0 when nothing is assessed). */

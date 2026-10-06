@@ -11,6 +11,7 @@ import type { SeenLoot } from "../perception/world.ts";
 import { heatPenalty } from "./alert.ts";
 import { addCombatLayer } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent, nearFailedGoal, reachable } from "./context.ts";
+import { scopeLootValue } from "./gear.ts";
 import { steadyGoal } from "./steady.ts";
 import { onTheWay } from "./survival.ts";
 
@@ -46,7 +47,10 @@ export function bestLoot(ctx: BrainCtx): LootChoice | null {
         if (d > MAX_LOOT_DIST || !model.insideCurrentCircle(l.pos, 2) || nearFailedGoal(ctx, l.pos)) continue;
         if (!onTheWay(model, l.pos)) continue;
         if (ctx.features.steady && !steadyGoal(ctx, l.pos)) continue;
-        const value = lootValue(self, l.type);
+        // scope: a better scope is worth a detour (the bot's view, brain/gear.ts)
+        const value = ctx.features.scope
+            ? Math.max(lootValue(self, l.type), scopeLootValue(self, l.type))
+            : lootValue(self, l.type);
         if (value < 6) continue;
         const canReach = below
             ? below.canPathTo(model.nav, self.pos, self.layer, l.pos, l.layer & 1)
@@ -141,6 +145,7 @@ export function buildingSpots(map: MapData): BuildingSpot[] {
 function pickExploreGoal(ctx: BrainCtx): Vec2 {
     const { model, self, mem, rng } = ctx;
     let best: Vec2 | null = null;
+    let bestId = 0;
     let bestCost = Number.POSITIVE_INFINITY;
     for (const b of buildingSpots(model.map)) {
         if (mem.visited.has(b.id)) continue;
@@ -155,13 +160,21 @@ function pickExploreGoal(ctx: BrainCtx): Vec2 {
         if (cost < bestCost) {
             bestCost = cost;
             best = b.pos;
+            bestId = b.id;
         }
     }
     if (best) {
         const cell = model.nav.nearestWalkable(best, 6, ctx.myComp);
-        if (cell >= 0) return model.nav.center(cell);
-        mem.failedGoal = v2.copy(best);
-        mem.failedUntil = ctx.now + 30;
+        if (cell >= 0) {
+            const spot = model.nav.center(cell);
+            if (v2.distance(spot, self.pos) >= 4) return spot;
+            // the walkable spot nearest an interior the bot cannot get into is where it already stands: picking it
+            // again and again kept bots standing at a wall for minutes; that building is done
+            mem.visited.add(bestId);
+        } else {
+            mem.failedGoal = v2.copy(best);
+            mem.failedUntil = ctx.now + 30;
+        }
     }
     // nothing left to search nearby: wander inside the safe zone
     for (let i = 0; i < 12; i++) {

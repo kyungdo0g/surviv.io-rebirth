@@ -3,7 +3,8 @@
 // shooters heard close together on the threat board), the bot does not
 // join at once: it moves to cover at its gun's ideal range of the nearer one and waits, crosshair on the fight, for
 // the kill feed or for one of them to drop low (intel estimate), then turns on the survivor (or the weakened one)
-// with the regular fight. The wait is capped at 20 s; being shot at ends it at once.
+// with the regular fight. The wait is capped at 20 s; being shot at ends it at once. In team modes a follower watches
+// only fights within 30 units of its leader (team.ts onLeash).
 import { type Vec2, v2 } from "@rebirth/core";
 import { distToSegment } from "../geom.ts";
 import { fightSlot, hasAmmo } from "../knowledge/arsenal.ts";
@@ -12,6 +13,7 @@ import { faces } from "./assess.ts";
 import { findCoverFrom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent, reachable, usableSpot } from "./context.ts";
 import { zonePressure } from "./survival.ts";
+import { onLeash } from "./team.ts";
 
 const WAIT_CAP = 20;
 const COOLDOWN = 15;
@@ -143,7 +145,8 @@ export function thirdpartyScore(ctx: BrainCtx): number {
     // the scan walks pairs of enemies and this snapshot's bullets: a few times a second is plenty
     sm.tpScanAt = now;
     const trade = findTrade(ctx);
-    if (!trade) return 0;
+    // team modes: a follower does not go after someone else's fight alone
+    if (!trade || !onLeash(ctx, trade[0].pos)) return 0;
     sm.tpA = trade[0].id;
     sm.tpB = trade[1].id;
     sm.tpStart = now;

@@ -118,6 +118,7 @@ export function addObstacle(w: TestWorld, off: Vec2, type = "crate_01"): void {
         view: { kind: "obstacle" as const, id, type, pos, layer: 0, ori: 0, scale: 1, healthT: 1, dead: false },
         def,
         col: obstacleCollider(def, pos, 0, 1),
+        solid: true,
         blocksBullets: true,
         blocksMove: true,
     };

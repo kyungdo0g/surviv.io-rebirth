@@ -33,8 +33,9 @@ describe("cover", () => {
         const b = peekSpot(ctx, spot, e.pos)!;
         for (const p of [a, b]) {
             expect(w.model.lineOfFire(p, e.pos)).toBe(true);
-            expect(v2.distance(p, spot)).toBeGreaterThanOrEqual(1.4);
-            expect(v2.distance(p, spot)).toBeLessThanOrEqual(2.6);
+            // 1.5-2.5 units sideways, snapped to the centre of its navigation cell (up to 0.71 off)
+            expect(v2.distance(p, spot)).toBeGreaterThanOrEqual(1.4 - 0.71);
+            expect(v2.distance(p, spot)).toBeLessThanOrEqual(2.6 + 0.71);
         }
     });
 
@@ -218,6 +219,7 @@ function addDoor(w: ReturnType<typeof testWorld>, pos: Vec2): void {
         },
         def,
         col: obstacleCollider(def, pos, 0, 1),
+        solid: true,
         blocksBullets: true,
         blocksMove: true,
     });

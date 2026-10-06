@@ -144,7 +144,9 @@ export function zoneTarget(model: WorldModel, jitter: number): Vec2 {
     const center = gas.posNew;
     const rad = gas.radNew;
     const dist = v2.distance(me, center);
-    const depth = rad * (0.45 + 0.2 * jitter);
+    // deep enough that arriving near it (arriveDist 3) puts the bot inside the margin zoneScore lets go at: in small
+    // circles a deeper target left bots standing on it with the zone score still up
+    const depth = Math.max(0, Math.min(rad * (0.45 + 0.2 * jitter), rad - Math.min(14, rad * 0.4) - 4));
     if (dist <= depth || rad < 1) return v2.copy(center);
     const p = v2.add(center, v2.mul(v2.normalizeSafe(v2.sub(me, center)), depth));
     const cell = model.nav.nearestWalkable(p, 10, model.nav.component(model.nav.nearestWalkable(me, 3)));

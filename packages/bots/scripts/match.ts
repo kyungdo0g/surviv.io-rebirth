@@ -2,10 +2,10 @@
 //   node packages/bots/scripts/match.ts [--bots 80] [--mode solo|duo|squad|faction] [--map main] [--seed 1]
 //        [--difficulty mixed|easy|normal|hard] [--gas normal|fast] [--max-ticks 60000] [--json]
 // Prints the match duration (game seconds and wall time), the winner, the kills distribution, causes of death,
-// average survival time, bot exceptions (must be 0), tick time percentiles (bots + simulation) and the roles handed out
-// (Cobalt classes, The Hunted, Woods King, faction roles). `--mode faction` (M7a) runs 50v50 on the faction map (100
-// bots unless --bots is given) and also prints the factions' living counts and team kills (must be 0); a faction map
-// (`--map faction_potato`, M7b) always plays 50v50.
+// average survival time, bot exceptions (must be 0), tick time percentiles (bots + simulation), idle episodes (idle.ts)
+// and the roles handed out (Cobalt classes, The Hunted, Woods King, faction roles). `--mode faction` (M7a) runs 50v50
+// on the faction map (100 bots unless --bots is given) and also prints the factions' living counts and team kills
+// (must be 0); a faction map (`--map faction_potato`, M7b) always plays 50v50.
 import { parseArgs } from "node:util";
 import { GameConfig, MapDefs } from "@rebirth/defs";
 import { type Difficulty, isDifficulty } from "../src/difficulty.ts";
@@ -95,6 +95,15 @@ console.log(
     `tick ms (bots + sim): p50 ${r2(report.tickMs.p50)}, p99 ${r2(report.tickMs.p99)}, max ${r2(report.tickMs.max)}, mean ${r2(report.tickMs.mean)}`,
 );
 console.log(`stuck events: ${report.stuckEvents}, grenades thrown: ${report.throws}`);
+const idleSeconds = report.idle.reduce((a, e) => a + e.duration, 0);
+const idleBy = new Map<string, number>();
+for (const e of report.idle) idleBy.set(e.behaviour, (idleBy.get(e.behaviour) ?? 0) + 1);
+console.log(
+    `idle episodes (moved < 1 unit in 5 s, not on purpose): ${report.idle.length}, ${r2(idleSeconds)} bot-s, ` +
+        `${report.idle.filter((e) => e.duration >= 15).length} of 15 s or more; by behaviour: ${
+            [...idleBy.entries()].map(([b, n]) => `${b} ${n}`).join(", ") || "none"
+        }`,
+);
 const roles = Object.entries(report.roles)
     .map(([r, n]) => `${r} ${n}`)
     .join(", ");

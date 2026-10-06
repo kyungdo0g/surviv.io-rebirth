@@ -1,9 +1,13 @@
 // Team play (duo / squad): reviving downed teammates (Input.Revive within reach, then holding still for the 8 s
-// revive), sticking with the group (followers stay near the lowest-id living teammate), and crawling to safety while
-// downed. Teammate positions come from the team status rows of the bot's own snapshots.
+// revive) once no enemy covers them (reviveThreat; the smart brain smokes the threat line first), sticking with the
+// group (followers stay near the lowest-id living teammate), and crawling to safety while downed. Teammate positions
+// come from the team status rows of the bot's own snapshots.
 import { type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, Input } from "@rebirth/defs";
 import type { TeamMemberView } from "@rebirth/sim";
+import { distToSegment } from "../geom.ts";
+import { isMeleeWeapon } from "../knowledge/weapons.ts";
+import type { Contact } from "../perception/world.ts";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 
 const REVIVE_RANGE = GameConfig.player.reviveRange;
@@ -37,13 +41,65 @@ export function downedMate(ctx: BrainCtx): (TeamMemberView & { at: Vec2 }) | und
     return best;
 }
 
+/** An armed enemy seen this recently (visible or just out of sight) still covers the downed teammate. */
+const THREAT_MEMORY = 2;
+/** ...when it stood this close to the teammate with a line of fire on it. */
+const THREAT_REACH = 45;
+/** Hit this recently: whoever shoots the bot will shoot it kneeling over a teammate too. */
+const HURT_RECENT = 1.5;
+/** Smoke grenades are thrown this far at most (trigger.ts: about 22 units at full strength). */
+const SMOKE_THROW = 20;
+
+/** Whether a smoke cloud lies across the segment from `a` to `b` (it hides whoever kneels behind it). */
+function smokeBetween(ctx: BrainCtx, a: Vec2, b: Vec2): boolean {
+    for (const s of ctx.model.smokes) if (distToSegment(s.pos, a, b) < s.rad * 0.8) return true;
+    return false;
+}
+
+/**
+ * What makes reviving the teammate at `at` suicide now: "hurt" when the bot was just hit, else the armed enemy seen in
+ * the last 2 s with a line of fire on the teammate (from where it was seen) within 45 units and no smoke between; null
+ * when it is safe enough. A revive is 8 s of standing still over the teammate: in front of a shooter both die (a
+ * spectator saw a bot running from a fight turn back to revive in the enemy's sights). The old rule only looked for
+ * enemies within 18 units of the reviver.
+ */
+export function reviveThreat(ctx: BrainCtx, at: Vec2): Contact | "hurt" | null {
+    const { model, now } = ctx;
+    if (now - model.lastHurt < HURT_RECENT) return "hurt";
+    for (const e of ctx.enemies) {
+        if (e.downed || now - e.lastSeen > THREAT_MEMORY) continue;
+        if (isMeleeWeapon(e.activeWeapon) && now - e.lastArmedAt > 15) continue;
+        if (v2.distance(e.pos, at) > THREAT_REACH) continue;
+        if (model.lineOfFire(e.pos, at) && !smokeBetween(ctx, e.pos, at)) return e;
+    }
+    return null;
+}
+
+/** Where a smoke grenade hides the teammate at `at` from `threat`: on the line between, 5 units off the teammate. */
+function smokeSpot(at: Vec2, threat: Vec2): Vec2 {
+    return v2.add(at, v2.mul(v2.normalizeSafe(v2.sub(threat, at)), 5));
+}
+
+/** guard: a smoke can be thrown now to hide the teammate from `threat` (in throwing range of its spot). */
+function canSmoke(ctx: BrainCtx, at: Vec2, threat: Contact): boolean {
+    if (!ctx.features.guard || (ctx.self.inventory.smoke ?? 0) <= 0 || ctx.now - ctx.mem.lastSmoke <= 10) return false;
+    return v2.distance(ctx.self.pos, smokeSpot(at, threat.pos)) < SMOKE_THROW;
+}
+
 export function reviveScore(ctx: BrainCtx): number {
     if (!ctx.teamMode) return 0;
-    if (ctx.self.action.type === "revive") return 0.95;
     const m = downedMate(ctx);
+    if (ctx.self.action.type === "revive") {
+        // kneeling already: finish it, unless the bot is being shot (then fight or run, and come back)
+        return ctx.now - ctx.model.lastHurt < 0.5 ? 0.3 : 0.95;
+    }
     if (!m) return 0;
     const d = v2.distance(m.at, ctx.self.pos);
     if (d > 60) return 0;
+    // in an enemy's sights: smoke it first (guard), else deal with the enemy (fight, flee, cover) and come back
+    const threat = reviveThreat(ctx, m.at);
+    if (threat === "hurt") return 0.2;
+    if (threat) return canSmoke(ctx, m.at, threat) ? 0.6 : 0.2;
     const close = ctx.visibleEnemies.some((e) => !e.downed && v2.distance(e.pos, ctx.self.pos) < 18);
     return close ? 0.45 : 0.88;
 }
@@ -60,18 +116,17 @@ export function planRevive(ctx: BrainCtx): Intent {
     }
     const m = downedMate(ctx);
     if (!m) return intent;
+    // guard: an enemy covers the teammate: blind its line with smoke from here first
+    const covering = reviveThreat(ctx, m.at);
+    if (covering && covering !== "hurt" && canSmoke(ctx, m.at, covering)) {
+        mem.lastSmoke = now;
+        intent.throwPlan = { item: "smoke", pos: smokeSpot(m.at, covering.pos), cook: 0.15 };
+        intent.aim = v2.copy(covering.pos);
+        return intent;
+    }
     const d = v2.distance(m.at, self.pos);
     if (d < REVIVE_RANGE - 1.6) {
         intent.stop = true;
-        // guard: blind the threat line with smoke before reviving under pressure
-        if (ctx.features.guard && threat && v2.distance(threat.pos, m.at) < 40 && (self.inventory.smoke ?? 0) > 0) {
-            if (now - mem.lastSmoke > 10) {
-                mem.lastSmoke = now;
-                const toThreat = v2.normalizeSafe(v2.sub(threat.pos, m.at));
-                intent.throwPlan = { item: "smoke", pos: v2.add(m.at, v2.mul(toThreat, 5)), cook: 0.15 };
-                return intent;
-            }
-        }
         if (now - mem.lastReviveRequest > 0.6) {
             mem.lastReviveRequest = now;
             intent.actions.push(Input.Revive);
@@ -84,13 +139,27 @@ export function planRevive(ctx: BrainCtx): Intent {
 }
 
 /** The group leader: the lowest-id standing member (the bot itself included). */
-function leaderOf(ctx: BrainCtx): (TeamMemberView & { at: Vec2 }) | undefined {
+export function leaderOf(ctx: BrainCtx): (TeamMemberView & { at: Vec2 }) | undefined {
     let leader: (TeamMemberView & { at: Vec2 }) | undefined;
     for (const m of mates(ctx)) {
         if (m.downed) continue;
         if (!leader || m.playerId < leader.playerId) leader = m;
     }
     return leader && leader.playerId < ctx.self.id ? leader : undefined;
+}
+
+/** A follower's own errands (air drops, watching a fight, an endgame spot, a ping) stay this close to its leader. */
+const LEASH = 30;
+
+/**
+ * Team modes (smart behaviours): whether a follower may go to `p` on its own errand: within LEASH of its leader, so the
+ * team stays in mutual support distance (a teammate alone at an air drop or on its own endgame spot loses the 1 v 2).
+ * Always true for the leader, in solo, and without a standing leader.
+ */
+export function onLeash(ctx: BrainCtx, p: Vec2): boolean {
+    if (!ctx.teamMode) return true;
+    const leader = leaderOf(ctx);
+    return !leader || v2.distance(leader.at, p) <= LEASH;
 }
 
 export function regroupScore(ctx: BrainCtx): number {

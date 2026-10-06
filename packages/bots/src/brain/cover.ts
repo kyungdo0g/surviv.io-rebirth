@@ -69,8 +69,10 @@ export function peekSpot(ctx: BrainCtx, spot: Vec2, target: Vec2): Vec2 | null {
     for (const s of [sm.peekSide, -sm.peekSide]) {
         // 1.5-2.5 units clear most obstacles; wide ones need a little more
         for (const off of [first, 2, 2.5, 1.5, 3, 3.5]) {
-            const p = v2.add(spot, v2.mul(side, s * off));
-            if (!model.nav.walkableAt(p) || model.nav.isWaterAt(p)) continue;
+            const raw = v2.add(spot, v2.mul(side, s * off));
+            if (!model.nav.walkableAt(raw) || model.nav.isWaterAt(raw)) continue;
+            // a spot a player can stand on: its cell's centre (see findCoverFrom)
+            const p = model.nav.center(model.nav.nearestWalkable(raw, 1));
             if (!model.lineOfFire(p, target) || !model.nav.lineWalkable(spot, p)) continue;
             sm.peekSide = -s;
             return p;
@@ -251,8 +253,10 @@ function searchFlank(ctx: BrainCtx, t: Contact): Vec2 | null {
     for (const step of [0.35, 0.7, 1.05, 1.4]) {
         for (const s of [side, -side]) {
             const a = base + s * step;
-            const p = { x: t.pos.x + Math.cos(a) * r, y: t.pos.y + Math.sin(a) * r };
-            if (!model.nav.walkableAt(p) || model.nav.isWaterAt(p) || !model.lineOfFire(p, t.pos)) continue;
+            const raw = { x: t.pos.x + Math.cos(a) * r, y: t.pos.y + Math.sin(a) * r };
+            if (!model.nav.walkableAt(raw) || model.nav.isWaterAt(raw)) continue;
+            const p = model.nav.center(model.nav.nearestWalkable(raw, 1));
+            if (!model.lineOfFire(p, t.pos)) continue;
             if (!reachable(ctx, p, 1) || nearFailedGoal(ctx, p)) continue;
             return p;
         }

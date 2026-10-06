@@ -27,7 +27,7 @@ export interface BotOptions {
     difficulty?: Difficulty | DifficultyParams;
     /** seed of the bot's own random stream (aim error, tactics, exploration) */
     seed: number;
-    /** brain preset name or custom feature flags (default DEFAULT_BRAIN, "baseline" for now) */
+    /** brain preset name or custom feature flags (default DEFAULT_BRAIN, "smart") */
     brain?: BrainName | BrainFeatures;
     /** navigation grid override (default: the shared grid of the map) */
     nav?: NavGrid;

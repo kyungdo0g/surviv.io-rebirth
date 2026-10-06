@@ -4,11 +4,13 @@
 import { type Vec2, v2 } from "@rebirth/core";
 import type { BulletEvent, TeamMemberView } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
+import { airdropScore } from "../src/brain/airdrop.ts";
 import { emptyIntent } from "../src/brain/context.ts";
 import { guardScore, planGuard } from "../src/brain/guard.ts";
-import { planRevive } from "../src/brain/team.ts";
+import { fleeScore } from "../src/brain/survival.ts";
+import { onLeash, planRevive, reviveScore } from "../src/brain/team.ts";
 import { applyTeamplay, assistScore, focusMult, PING_DANGER, planAssist } from "../src/brain/teamplay.ts";
-import { addEnemy, brainOf, FixedBoard, NOW, type TestWorld, testWorld } from "./brain-world.ts";
+import { addEnemy, brainOf, FixedBoard, faceTo, NOW, type TestWorld, testWorld } from "./brain-world.ts";
 
 function member(id: number, pos: Vec2, over: Partial<TeamMemberView> = {}): TeamMemberView {
     return { playerId: id, name: `m${id}`, health: 100, downed: false, dead: false, disconnected: false, pos, ...over };
@@ -142,12 +144,60 @@ describe("guard", () => {
         const w = duo({ x: 2, y: 0 }, { downed: true });
         w.model.self.inventory.smoke = 1;
         const threat = addEnemy(w, 2, { x: 25, y: 0 });
+        expect(reviveScore(brainOf(w, ["guard"]).context(NOW))).toBe(0.6);
         const smoke = planRevive(brainOf(w, ["guard"]).context(NOW));
         expect(smoke.throwPlan?.item).toBe("smoke");
         expect(v2.distance(smoke.throwPlan!.pos, threat.pos)).toBeLessThan(v2.distance(w.spot, threat.pos));
-        // the baseline revives straight away
-        const plain = planRevive(brainOf(w, []).context(NOW));
-        expect(plain.throwPlan).toBeNull();
-        expect(plain.actions.length).toBe(1);
+        // the baseline has no smoke plan: it does not go for the revive at all while the enemy covers the teammate
+        expect(reviveScore(brainOf(w, []).context(NOW))).toBeLessThanOrEqual(0.2);
+    });
+
+    it("no revive with an enemy aiming at the downed teammate in the open, until it is safe", () => {
+        const w = duo({ x: 4, y: 0 }, { downed: true });
+        const enemy = addEnemy(w, 2, { x: 30, y: 6 });
+        faceTo(enemy, v2.add(w.spot, { x: 4, y: 0 }));
+        for (const f of [[], ["guard"]] as const) {
+            // in the enemy's sights (no smoke to throw): fight or run first
+            expect(reviveScore(brainOf(w, [...f]).context(NOW))).toBeLessThanOrEqual(0.2);
+        }
+        // a fleeing bot stays on its way: fleeing (unarmed, armed enemy close) beats the revive
+        w.model.self.weapons[0] = { type: "", ammo: 0 };
+        const unarmed = brainOf(w, []).context(NOW);
+        expect(fleeScore(unarmed)).toBeGreaterThan(reviveScore(unarmed));
+        w.model.self.weapons[0] = { type: "mp5", ammo: 30 };
+        // a smoke cloud on the line hides the teammate: revive
+        w.model.smokes = [{ id: 1, pos: v2.add(w.spot, { x: 14, y: 2 }), rad: 6, layer: 0, interior: false }];
+        expect(reviveScore(brainOf(w, []).context(NOW))).toBeGreaterThan(0.8);
+        w.model.smokes = [];
+        // the enemy gone for a few seconds: revive
+        enemy.visible = false;
+        enemy.lastSeen = NOW - 3;
+        expect(reviveScore(brainOf(w, []).context(NOW))).toBeGreaterThan(0.8);
+        // just hit: not now
+        w.model.lastHurt = NOW - 0.5;
+        expect(reviveScore(brainOf(w, []).context(NOW))).toBeLessThanOrEqual(0.2);
+    });
+
+    it("a follower's own errands stay within 30 units of its leader; the leader and solo bots go anywhere", () => {
+        // the bot (id 1) follows teammate 0 (the lowest id leads)
+        const w = testWorld();
+        w.model.team = [
+            { playerId: 0, name: "lead", health: 100, downed: false, dead: false, disconnected: false, pos: w.spot },
+            { playerId: 1, name: "me", health: 100, downed: false, dead: false, disconnected: false, pos: w.spot },
+        ];
+        const ctx = brainOf(w, ["airdrop"]).context(NOW);
+        expect(onLeash(ctx, v2.add(w.spot, { x: 20, y: 0 }))).toBe(true);
+        expect(onLeash(ctx, v2.add(w.spot, { x: 60, y: 0 }))).toBe(false);
+        // an air drop 60 units off is left to the leader
+        const board = new FixedBoard();
+        board.drops = [{ pos: v2.add(w.spot, { x: 60, y: 0 }), seenAt: NOW - 1, landed: true, crateId: 0 }];
+        w.model.threats = board;
+        expect(airdropScore(brainOf(w, ["airdrop"]).context(NOW))).toBe(0);
+        // the leader goes
+        w.model.team[0].playerId = 5;
+        expect(airdropScore(brainOf(w, ["airdrop"]).context(NOW))).toBeGreaterThan(0.3);
+        // solo
+        w.model.team = [];
+        expect(onLeash(brainOf(w, []).context(NOW), v2.add(w.spot, { x: 200, y: 0 }))).toBe(true);
     });
 });

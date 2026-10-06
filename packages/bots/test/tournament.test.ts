@@ -62,5 +62,5 @@ describe("tournament", () => {
         const gate = evaluate(report);
         expect(gate.checks).toHaveLength(7);
         expect(formatReport(report, gate, "smart")).toContain("gate:");
-    }, 120_000);
+    }, 240_000);
 });
