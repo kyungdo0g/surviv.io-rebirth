@@ -256,7 +256,7 @@ test.describe("M2 weapons, loot and HUD", () => {
         expect(errors).toEqual([]);
     });
 
-    test("number keys and the mouse wheel switch weapons, M mutes", async ({ page }) => {
+    test("number keys and the mouse wheel switch weapons, N mutes", async ({ page }) => {
         const errors = collectErrors(page);
         await boot(page, "/?sandbox=1&map=main&seed=1&give=ak47&loot=0");
         await page.keyboard.press("3");
@@ -273,7 +273,8 @@ test.describe("M2 weapons, loot and HUD", () => {
         await page.waitForFunction(() => (window as any).__rebirth.local.curWeapIdx === 0, null, { timeout: 10_000 });
         expect(await page.evaluate(() => (window as any).__rebirth.local.weapons[0].ammo)).toBe(30);
         expect(await page.evaluate(() => (window as any).__rebirth.audio.muted)).toBe(false);
-        await page.keyboard.press("m");
+        // M7: M is the original's Toggle Map bind (the big map); the rebirth mute key moved to N
+        await page.keyboard.press("n");
         await page.waitForFunction(() => (window as any).__rebirth.audio.muted === true, null, { timeout: 5_000 });
         expect(errors).toEqual([]);
     });

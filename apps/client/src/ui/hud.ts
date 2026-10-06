@@ -3,20 +3,27 @@
 // boost and health bars, gear levels and the four weapon slots. The battle-royale parts (alive counter, kill
 // leader, kill feed, red-zone timer, spectating) are in matchHud.ts and the death / win screen in gameOver.ts.
 // `update` diffs against what is on screen and only touches changed properties.
+// M7: right click drops a weapon, bag item, scope, helmet, vest or the droppable perk (hudDrop.ts, DropItem); the perk
+// slots, faction arm patches and role badge are in hudModes.ts; item maxima use the map's bag sizes (Woods: 6/12/15/18
+// frags and smokes, sim mapBagSizes).
 import { GameConfig, GameObjectDefs, type GunDef, Input } from "@rebirth/defs";
-import type { LocalPlayerState } from "@rebirth/sim";
+import { type LocalPlayerState, mapBagSizes } from "@rebirth/sim";
 import { lootImageUrl } from "../assets/hudImages.ts";
-import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { hudItemName, isSov, itemName, t } from "../l10n/index.ts";
 import "./hud.css";
 import "./tooltip.css";
 import { healthBarColor } from "./hudColors.ts";
+import { el, Patcher } from "./hudDom.ts";
+import { bindDrop, type DropRequest } from "./hudDrop.ts";
+import { ModeHud } from "./hudModes.ts";
 
 export interface HudCallbacks {
     /** queue a one-shot input action (defs `Input` value) */
     action(action: number): void;
     /** use a bag item with the next input (item clicks; the original InputMsg.useItem) */
     useItem?(item: string): void;
+    /** right click on a HUD item: the DropItem message (M7) */
+    drop?(item: string, weapIdx: number): void;
 }
 
 export interface HudFrame {
@@ -33,6 +40,10 @@ export interface HudFrame {
     downed?: boolean;
     /** name of the teammate being revived, shown in the revive pie label ("" on the downed side) (M6) */
     actionTarget?: string;
+    /** the followed player's id (perk slot pulses) (M7) */
+    activeId?: number;
+    /** the followed player's faction on faction maps (1 Red, 2 Blue), else 0 (M7) */
+    faction?: number;
 }
 
 const MEDICAL = ["bandage", "healthkit", "soda", "painkiller"] as const;
@@ -64,39 +75,6 @@ const SCOPES = ["1xscope", "2xscope", "4xscope", "8xscope", "15xscope"] as const
 const SLOT_INPUTS = [Input.EquipPrimary, Input.EquipSecondary, Input.EquipMelee, Input.EquipThrowable];
 const GEAR = ["helmet", "chest", "backpack"] as const;
 
-function el<K extends keyof HTMLElementTagNameMap>(
-    tag: K,
-    attrs: { id?: string; cls?: string; click?: () => void } = {},
-    ...children: Array<HTMLElement | SVGElement | string>
-): HTMLElementTagNameMap[K] {
-    const e = document.createElement(tag);
-    if (attrs.id) e.id = attrs.id;
-    if (attrs.cls) e.className = attrs.cls;
-    if (attrs.click) {
-        e.setAttribute(HUD_INTERACTIVE_ATTR, "");
-        e.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            attrs.click?.();
-        });
-        e.addEventListener("mousedown", (ev) => ev.stopPropagation());
-    }
-    for (const c of children) e.append(c);
-    return e;
-}
-
-/** Writes a DOM property only when it changed (the original UiManager2 diff/patch render). */
-class Patcher {
-    private readonly last = new Map<string, string | number | boolean>();
-    set(key: string, value: string | number | boolean, write: () => void): void {
-        if (this.last.get(key) === value) return;
-        this.last.set(key, value);
-        write();
-    }
-    clear(): void {
-        this.last.clear();
-    }
-}
-
 interface SlotDom {
     div: HTMLDivElement;
     name: HTMLDivElement;
@@ -106,8 +84,12 @@ interface SlotDom {
 
 export class Hud {
     readonly root: HTMLDivElement;
+    /** perk slots, faction patches, role badge (M7) */
+    readonly modes: ModeHud;
     private readonly cb: HudCallbacks;
     private readonly p = new Patcher();
+    /** bag capacities of the map (GameConfig.bagSizes with the map's rows, M7) */
+    private bagSizes: Readonly<Record<string, readonly number[]>> = GameConfig.bagSizes;
     private readonly scopes = new Map<string, HTMLDivElement>();
     private readonly items = new Map<string, { div: HTMLDivElement; count: HTMLDivElement }>();
     private readonly slots: SlotDom[] = [];
@@ -149,8 +131,25 @@ export class Hud {
             this.buildGear(),
             this.buildWeapons(),
         );
+        const healthCounter = this.root.querySelector<HTMLElement>("#ui-health-counter") ?? this.root;
+        this.modes = new ModeHud(this.root, healthCounter, (r) => this.drop(r));
         parent.append(this.root);
         this.applyStrings();
+    }
+
+    /** The map's bag capacities for the item maxima (M7: Woods maps carry more frags and smokes). */
+    setMap(mapName: string): void {
+        this.bagSizes = mapBagSizes(mapName);
+        this.p.clear();
+    }
+
+    private drop(r: DropRequest): void {
+        this.cb.drop?.(r.item, r.weapIdx);
+    }
+
+    /** A bag item dropped by a right click: the item while the player has some (M7). */
+    private itemDrop(item: string): DropRequest | null {
+        return (this.lastLocal?.inventory[item] ?? 0) > 0 ? { item, weapIdx: 0 } : null;
     }
 
     /** Re-reads the static strings (after a language change). */
@@ -177,6 +176,12 @@ export class Hud {
                 },
                 el("div", { cls: "ui-zoom-level" }, level, el("span", { cls: "ui-zoom-append" }, "x")),
             );
+            if (scope !== "1xscope")
+                bindDrop(
+                    div,
+                    () => this.itemDrop(scope),
+                    (r) => this.drop(r),
+                );
             this.scopes.set(scope, div);
             wrap.append(div);
         }
@@ -211,6 +216,11 @@ export class Hud {
                 count,
                 img,
             );
+            bindDrop(
+                div,
+                () => this.itemDrop(item),
+                (r) => this.drop(r),
+            );
             this.items.set(item, { div, count });
             medical.append(div);
         }
@@ -223,6 +233,11 @@ export class Hud {
             const overlay = el("div", { cls: "ui-loot-overlay" });
             overlay.style.background = color;
             const div = el("div", { id: `ui-loot-${item}`, cls: "ui-ammo" }, count, img, overlay);
+            bindDrop(
+                div,
+                () => this.itemDrop(item),
+                (r) => this.drop(r),
+            );
             this.items.set(item, { div, count });
             ammo.append(div);
         }
@@ -275,6 +290,14 @@ export class Hud {
             image.draggable = false;
             const level = el("div", { cls: "ui-armor-level" });
             const div = el("div", { id: `ui-armor-${slot}`, cls: "ui-armor-counter ui-hidden" }, image, level);
+            // the backpack cannot be dropped (survev ui2.ts: no drop action for the backpack)
+            if (slot !== "backpack") {
+                bindDrop(
+                    div,
+                    () => ({ item: this.lastLocal?.[slot] ?? "", weapIdx: 0 }),
+                    (r) => this.drop(r),
+                );
+            }
             this.gear.set(slot, { div, image, level });
             wrap.append(div);
         }
@@ -297,10 +320,21 @@ export class Hud {
                 ammo,
             );
             div.dataset.slot = String(i);
+            bindDrop(
+                div,
+                () => this.weaponDrop(i),
+                (r) => this.drop(r),
+            );
             this.slots.push({ div, name, image, ammo });
             container.append(div);
         }
         return el("div", { id: "ui-bottom-right" }, container);
+    }
+
+    /** The weapon of slot `i` (survev game.ts: DropItemMsg item + weapIdx); fists drop nothing. */
+    private weaponDrop(i: number): DropRequest | null {
+        const type = this.lastLocal?.weapons[i]?.type ?? "";
+        return type && type !== "fists" ? { item: type, weapIdx: i } : null;
     }
 
     /**
@@ -338,6 +372,7 @@ export class Hud {
         this.updateGear(local);
         this.updateAction(local, frame.dt, frame.objectAction ?? null, frame.actionTarget ?? "");
         this.updateInteraction(local.dead ? null : frame.interaction);
+        this.modes.update({ dt: frame.dt, local, activeId: frame.activeId ?? -1, faction: frame.faction ?? 0 });
     }
 
     private updateBars(local: LocalPlayerState, downed: boolean): void {
@@ -411,7 +446,7 @@ export class Hud {
         const bagLevel = (GameObjectDefs[local.backpack ?? ""] as { level?: number } | undefined)?.level ?? 0;
         for (const [item, dom] of this.items) {
             const count = local.inventory[item] ?? 0;
-            const sizes = GameConfig.bagSizes[item];
+            const sizes = this.bagSizes[item];
             const max = sizes ? sizes[Math.min(bagLevel, sizes.length - 1)] : Number.POSITIVE_INFINITY;
             const special = !!(GameObjectDefs[item] as { special?: boolean } | undefined)?.special;
             this.p.set(`item-${item}`, `${count}|${max}`, () => {

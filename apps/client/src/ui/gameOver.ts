@@ -8,6 +8,8 @@
 // eliminated.", the overview "Duo Rank #N" / "Squad Rank #N" and "Team Kills N", one card per member 250 px apart (dead
 // members marked); a player who dies while its team plays on gets the short "You died." screen with its kills and the
 // Play New Game / Spectate buttons.
+// M7 (survev ui.ts getTitleVictoryText / getOverviewElems): faction maps show "Red Team N" and "Blue Team N" (the alive
+// counts) instead of the rank, Turkey maps win with "Winner winner turkey dinner!".
 import type { GameOverEvent, PlayerStatsView } from "@rebirth/sim";
 import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { t } from "../l10n/index.ts";
@@ -40,6 +42,10 @@ export interface GameOverInfo {
     stats: PlayerStatsView | null;
     /** players still alive: "Spectate" is offered while any remain */
     aliveCount: number;
+    /** faction maps: the alive counts [Red, Blue] shown in the header (M7) */
+    factionAlive?: readonly number[] | null;
+    /** Turkey map (gameMode.turkeyMode): the turkey victory title (M7) */
+    turkeyMode?: boolean;
 }
 
 interface Timed {
@@ -100,7 +106,7 @@ export class GameOverScreen {
         this.screenShown = "";
         const teamMode = info.teamMode ?? 1;
         const lossTitle = teamMode > 1 ? t("game-team-eliminated") : `${t("game-You")} ${t("game-you-died")}.`;
-        const title = won ? t("game-chicken") : lossTitle;
+        const title = won ? t(info.turkeyMode ? "game-turkey" : "game-chicken") : lossTitle;
         const overview = el("div", "", "ui-stats-header-overview");
         const stat = (label: string, value: string) => {
             const d = el("div", "");
@@ -111,8 +117,15 @@ export class GameOverScreen {
             return d;
         };
         const rankKey = teamMode >= 4 ? "game-squad-rank" : teamMode > 1 ? "game-duo-rank" : "game-solo-rank";
-        overview.append(stat(t(rankKey), `#${ev.teamRank}`));
-        if (teamMode > 1) {
+        const faction = info.factionAlive;
+        if (faction && faction.length >= 2) {
+            const red = stat(t("game-red-team"), String(faction[0]));
+            red.className = "ui-stats-header-red-team";
+            const blue = stat(t("game-blue-team"), String(faction[1]));
+            blue.className = "ui-stats-header-blue-team ui-stats-header-team-kills";
+            overview.append(red, blue);
+        } else overview.append(stat(t(rankKey), `#${ev.teamRank}`));
+        if (teamMode > 1 && !faction) {
             const teamKills = ev.playerStats.reduce((sum, p) => sum + p.kills, 0);
             const kills = stat(t("game-team-kills"), String(teamKills));
             kills.className = "ui-stats-header-team-kills";

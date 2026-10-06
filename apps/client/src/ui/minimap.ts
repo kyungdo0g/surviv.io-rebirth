@@ -7,6 +7,10 @@
 // indicators, like the original's container order. M6: teammate dots (minimapTeam.ts) over the indicators, the
 // followed player's own dot in its group colour (downed / dead icons), team pings (MapIndicators.addPlayerPing), and
 // `screenToWorld` for pings placed on the minimap.
+// M7: faction members outside the group (minimapFaction.ts) under the group's dots, role map icons for the followed
+// player and its group, and the big map (M / G, survev ui.ts displayMapLarge + redraw): the same layers drawn over a
+// square as large as the smaller screen side, centred, at full alpha, every marker at its map position, without the
+// view rectangle and the line to the safe zone.
 import { collider, math, type Vec2 } from "@rebirth/core";
 import {
     type BuildingDef,
@@ -25,7 +29,8 @@ import { buildingLocalBounds } from "../objects/building.ts";
 import type { Camera } from "../render/camera.ts";
 import { AirstrikeZones } from "./airstrikeZones.ts";
 import { MapIndicators, MinimapGas, type PingFields } from "./mapMarkers.ts";
-import { MinimapTeam, type MinimapTeamFrame, memberDot } from "./minimapTeam.ts";
+import { MinimapFaction, type MinimapFactionFrame } from "./minimapFaction.ts";
+import { MinimapTeam, type MinimapTeamFrame, memberDot, memberTint } from "./minimapTeam.ts";
 
 const MARGIN = 16;
 const SIZE = 256;
@@ -75,6 +80,8 @@ export interface MinimapFrame {
     alpha: number;
     /** the followed player's group (team modes, M6) */
     team?: MinimapTeamFrame | null;
+    /** the followed player's faction outside its group (faction maps, M7) */
+    faction?: MinimapFactionFrame | null;
 }
 
 export class Minimap {
@@ -86,6 +93,9 @@ export class Minimap {
     readonly indicators: MapIndicators;
     readonly airstrikeZones = new AirstrikeZones();
     readonly team: MinimapTeam;
+    readonly faction: MinimapFaction;
+    /** the big map is open (M7) */
+    big = false;
     private readonly mask = new Graphics();
     private readonly border = new Graphics();
     private readonly viewRect = new Graphics();
@@ -117,11 +127,13 @@ export class Minimap {
         this.playerInner.tint = GameConfig.groupColors[0];
         this.indicators = new MapIndicators(textures);
         this.team = new MinimapTeam(textures);
+        this.faction = new MinimapFaction(textures);
         // survev ui.ts container order: map, gas, safe zone, map sprites (pings, player dots), border
         this.clip.addChild(
             this.mapSprite,
             this.gas.container,
             this.airstrikeZones.mapContainer,
+            this.faction.container,
             this.team.container,
             this.indicators.container,
         );
@@ -134,15 +146,25 @@ export class Minimap {
         return this.team.count;
     }
 
-    /** The followed player's centre dot: group colour slot `idx`, the downed icon or a skull (M6). */
-    setLocalDot(idx: number, state: { dead: boolean; downed: boolean }): void {
+    /**
+     * The followed player's centre dot: group colour slot `idx`, the downed icon or a skull (M6); a role map icon
+     * without the ring, in the team colour on faction maps (`faction` 1 Red, 2 Blue) (M7).
+     */
+    setLocalDot(idx: number, state: { dead: boolean; downed: boolean; role?: string }, faction = 0): void {
         const look = memberDot(state);
-        const key = `${idx}|${look.sprite}`;
+        const key = `${idx}|${look.sprite}|${faction}`;
         if (key === this.localDotKey) return;
         this.localDotKey = key;
         this.textures.apply(this.playerInner, look.sprite, look.scale);
-        this.playerInner.tint = GameConfig.groupColors[idx] ?? GameConfig.groupColors[0];
+        this.playerInner.tint = memberTint(idx, look.icon, faction);
+        this.playerOuter.visible = !look.icon;
         this.localDotScale = look.scale;
+    }
+
+    /** Opens or closes the big map (M7). */
+    setBig(big: boolean): void {
+        this.big = big;
+        this.mapSprite.alpha = big ? 1 : MAP_ALPHA;
     }
 
     /** World position under a screen point inside the minimap, or null outside it (pings on the map, M6). */
@@ -237,24 +259,37 @@ export class Minimap {
         return texture;
     }
 
-    /** Lays the minimap out for the screen and scrolls it to `playerPos`. */
+    /** Lays the minimap (or the big map) out for the screen and scrolls it to `playerPos`. */
     update(camera: Camera, playerPos: Vec2, frame?: MinimapFrame): void {
         const scale = uiScale(camera.screenWidth, camera.screenHeight);
-        const size = SIZE * scale;
-        const left = MARGIN;
-        const top = camera.screenHeight - size - MARGIN;
-        const center = { x: left + size / 2, y: top + size / 2 };
+        let size: number;
+        let left: number;
+        let top: number;
+        let mapSize: number;
+        let originX: number;
+        let originY: number;
+        if (this.big) {
+            // survev ui.ts redraw: the whole map in a square of the smaller screen side, centred
+            size = Math.min(camera.screenWidth, camera.screenHeight);
+            left = (camera.screenWidth - size) / 2;
+            top = (camera.screenHeight - size) / 2;
+            mapSize = size;
+            originX = left;
+            originY = top;
+        } else {
+            size = SIZE * scale;
+            left = MARGIN;
+            top = camera.screenHeight - size - MARGIN;
+            mapSize = MAP_DISPLAY_SIZE * scale;
+            const cx = left + size / 2;
+            const cy = top + size / 2;
+            originX = cx - (playerPos.x / this.map.width) * mapSize;
+            originY = cy - mapSize + (playerPos.y / this.map.height) * mapSize;
+        }
         this.rect = { x: left, y: top, width: size, height: size };
-
-        const mapSize = MAP_DISPLAY_SIZE * scale;
         this.mapSprite.width = mapSize;
         this.mapSprite.height = mapSize;
-        this.mapSprite.position.set(
-            center.x + mapSize / 2 - (playerPos.x / this.map.width) * mapSize,
-            center.y - mapSize / 2 + (playerPos.y / this.map.height) * mapSize,
-        );
-        const originX = this.mapSprite.x - mapSize / 2;
-        const originY = this.mapSprite.y - mapSize / 2;
+        this.mapSprite.position.set(originX + mapSize / 2, originY + mapSize / 2);
         this.mapOrigin = { x: originX, y: originY, size: mapSize };
         const px = (p: Vec2) => ({
             x: originX + (p.x / this.map.width) * mapSize,
@@ -262,37 +297,44 @@ export class Minimap {
         });
 
         this.mask.clear().rect(left, top, size, size).fill(0xffffff);
-        this.border
-            .clear()
-            .rect(left + BORDER / 2, top + BORDER / 2, size - BORDER, size - BORDER)
-            .stroke({ width: BORDER, color: 0x000000 });
+        this.border.clear();
+        if (!this.big) {
+            this.border
+                .rect(left + BORDER / 2, top + BORDER / 2, size - BORDER, size - BORDER)
+                .stroke({ width: BORDER, color: 0x000000 });
+        }
 
-        const view = camera.viewBounds();
-        const a = px(view.min);
-        const b = px(view.max);
-        const x0 = Math.max(left, Math.min(a.x, b.x));
-        const y0 = Math.max(top, Math.min(a.y, b.y));
-        const x1 = Math.min(left + size, Math.max(a.x, b.x));
-        const y1 = Math.min(top + size, Math.max(a.y, b.y));
         this.viewRect.clear();
-        if (x1 > x0 && y1 > y0)
-            this.viewRect.rect(x0, y0, x1 - x0, y1 - y0).stroke({ width: 1, color: 0xffffff, alpha: 0.6 });
+        if (!this.big) {
+            const view = camera.viewBounds();
+            const a = px(view.min);
+            const b = px(view.max);
+            const x0 = Math.max(left, Math.min(a.x, b.x));
+            const y0 = Math.max(top, Math.min(a.y, b.y));
+            const x1 = Math.min(left + size, Math.max(a.x, b.x));
+            const y1 = Math.min(top + size, Math.max(a.y, b.y));
+            if (x1 > x0 && y1 > y0)
+                this.viewRect.rect(x0, y0, x1 - x0, y1 - y0).stroke({ width: 1, color: 0xffffff, alpha: 0.6 });
+        }
 
         const proj = { toMap: px, pxPerUnit: mapSize / this.map.width, uiScale: scale, rect: this.rect };
-        if (frame?.gas) this.gas.update(proj, frame.gas, playerPos, frame.alpha);
+        if (frame?.gas) this.gas.update(proj, frame.gas, playerPos, frame.alpha, !this.big);
         this.airstrikeZones.updateMap(proj);
         this.indicators.update(frame?.dt ?? 0, proj);
+        this.faction.update(frame?.dt ?? 0, proj, frame?.faction ?? null);
         this.team.update(frame?.dt ?? 0, proj, frame?.team ?? null);
 
-        this.playerOuter.position.set(center.x, center.y);
+        const me = px(playerPos);
+        this.playerOuter.position.set(me.x, me.y);
         this.playerOuter.scale.set(0.3 * scale);
-        this.playerInner.position.set(center.x, center.y);
+        this.playerInner.position.set(me.x, me.y);
         this.playerInner.scale.set(this.localDotScale * scale);
     }
 
     destroy(): void {
         this.indicators.clear();
         this.team.clear();
+        this.faction.clear();
         this.airstrikeZones.destroy();
         this.container.destroy({ children: true });
         this.texture.destroy(true);

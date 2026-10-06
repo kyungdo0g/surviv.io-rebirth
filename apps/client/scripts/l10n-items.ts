@@ -1,5 +1,6 @@
 // Extracts the original English item names ("game-<id>") and short HUD names ("game-hud-<id>") of every item that
-// can be looted or held from the original v0.8.82 client bundle into src/generated/l10n-en-items.json.
+// can be looted or held from the original v0.8.82 client bundle into src/generated/l10n-en-items.json. M7: perk and
+// role names ("game-<id>") join the names, and perk descriptions ("game-<id>-desc", "</br>" line breaks) go to `desc`.
 // Usage (repo root): node apps/client/scripts/l10n-items.ts [research-cache/live/app.<hash>.js]
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -18,6 +19,8 @@ const ITEM_TYPES = new Set([
     "chest",
     "backpack",
     "scope",
+    "perk",
+    "role",
 ]);
 
 const bundle = process.argv[2] ?? join(LIVE, readdirSync(LIVE).find((f) => /^app\..*\.js$/.test(f))!);
@@ -32,12 +35,18 @@ for (const m of src.matchAll(/"(game-[A-Za-z0-9_-]+)":"((?:[^"\\]|\\.)*)"/g)) {
 
 const names: Record<string, string> = {};
 const hud: Record<string, string> = {};
+const desc: Record<string, string> = {};
 for (const [id, def] of Object.entries(defs)) {
     if (!ITEM_TYPES.has(def.type)) continue;
     const name = strings.get(`game-${id}`);
     if (name) names[id] = name;
     const short = strings.get(`game-hud-${id}`);
     if (short) hud[id] = short;
+    const text = def.type === "perk" ? strings.get(`game-${id}-desc`) : undefined;
+    if (text) desc[id] = text;
 }
-writeFileSync(OUT, `${JSON.stringify({ names, hud }, null, 1)}\n`);
-console.log(`${Object.keys(names).length} item names, ${Object.keys(hud).length} HUD names -> ${OUT}`);
+writeFileSync(OUT, `${JSON.stringify({ names, hud, desc }, null, 1)}\n`);
+console.log(
+    `${Object.keys(names).length} names, ${Object.keys(hud).length} HUD names, ${Object.keys(desc).length} perk ` +
+        `descriptions -> ${OUT}`,
+);

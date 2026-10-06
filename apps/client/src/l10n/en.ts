@@ -1,6 +1,6 @@
 // English HUD strings, keyed like the original string table (l10n/en "game-*" keys; values from the original
 // v0.8.82 client bundle). Item names come from the bundle too (src/generated/l10n-en-items.json,
-// scripts/l10n-items.ts).
+// scripts/l10n-items.ts), with perk and role names and perk descriptions (M7).
 import items from "../generated/l10n-en-items.json";
 
 export const en: Readonly<Record<string, string>> = {
@@ -85,3 +85,5 @@ export const en: Readonly<Record<string, string>> = {
 export const enItems: Readonly<Record<string, string>> = items.names;
 /** "game-hud-<id>" short names shown in the weapon slots (dual guns, melee skins, throwables) */
 export const enHudItems: Readonly<Record<string, string>> = items.hud;
+/** "game-<perk>-desc" perk descriptions (M7) */
+export const enPerkDesc: Readonly<Record<string, string>> = items.desc;

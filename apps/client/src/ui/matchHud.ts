@@ -8,6 +8,9 @@
 // - bottom centre: the active player's kill message for 7 s (#ui-kills);
 // - above the minimap: the red-zone timer (#ui-map-info, gas / pulsing danger icon) and the spectator counter;
 // - top left while spectating: next / previous player, match stats and leave buttons (#ui-spectate-options).
+// M7: faction maps show the red and blue alive counts (#ui-leaderboard-alive-faction, the original AliveCounts with two
+// counts) instead of the single counter; on Savannah (sniperMode) the empty kill leader box reads "Searching for the
+// Hunted" (survev ui.ts updateKillLeader).
 import type { MatchStats } from "@rebirth/sim";
 import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { t } from "../l10n/index.ts";
@@ -83,6 +86,11 @@ export class MatchHud {
     readonly killFeed = new KillFeed();
     private readonly alive = div("", "ui-players-alive js-ui-players-alive", "0");
     private readonly aliveBox = div("ui-leaderboard-alive");
+    private readonly aliveFaction = div("ui-leaderboard-alive-faction");
+    private readonly aliveRed = div("", "ui-players-alive-red js-ui-players-alive-red", "0");
+    private readonly aliveBlue = div("", "ui-players-alive-blue js-ui-players-alive-blue", "0");
+    /** "game-waiting-for-hunted" on sniperMode maps, else "game-waiting-for-new-leader" */
+    private waitingLeaderKey = "game-waiting-for-new-leader";
     private readonly kills = div("", "ui-player-kills js-ui-player-kills", "0");
     private readonly leaderName = div("ui-kill-leader-name");
     private readonly leaderCount = div("ui-kill-leader-count", "", "0");
@@ -112,8 +120,9 @@ export class MatchHud {
     constructor(root: HTMLElement, cb: MatchHudCallbacks, opts: { killLeaderEnabled: boolean }) {
         // top right: alive counter and the (big map only) kill counter
         this.aliveBox.append(this.alive);
+        this.aliveFaction.append(this.aliveRed, this.aliveBlue);
         const leaderboard = div("ui-leaderboard");
-        leaderboard.append(this.aliveBox, div("", "ui-leaderboard-header", t("game-alive")));
+        leaderboard.append(this.aliveBox, this.aliveFaction, div("", "ui-leaderboard-header", t("game-alive")));
         const killCounter = div("ui-kill-counter");
         killCounter.append(this.kills);
         const killCounterWrapper = div("ui-kill-counter-wrapper", "js-ui-map-show");
@@ -197,7 +206,23 @@ export class MatchHud {
         this.set("alive", count, () => {
             this.alive.textContent = String(count);
             this.aliveBox.style.display = "block";
+            this.aliveFaction.style.display = "none";
         });
+    }
+
+    /** Faction alive counts [Red, Blue] in place of the single counter (survev ui.ts updatePlayersAliveRed/Blue). */
+    setAliveFaction(red: number, blue: number): void {
+        this.set("alive", `${red}:${blue}`, () => {
+            this.aliveRed.textContent = String(red);
+            this.aliveBlue.textContent = String(blue);
+            this.aliveBox.style.display = "none";
+            this.aliveFaction.style.display = "block";
+        });
+    }
+
+    /** Sniper mode maps (Savannah) wait for The Hunted instead of a kill leader. */
+    setSniperMode(on: boolean): void {
+        this.waitingLeaderKey = on ? "game-waiting-for-hunted" : "game-waiting-for-new-leader";
     }
 
     setLocalKills(count: number): void {
@@ -208,7 +233,7 @@ export class MatchHud {
 
     /** Kill leader name and kills, or "Waiting for new leader" (survev ui.ts updateKillLeader). */
     setKillLeader(name: string | null, kills: number): void {
-        const text = name ?? t("game-waiting-for-new-leader");
+        const text = name ?? t(this.waitingLeaderKey);
         this.set("leader", `${text}|${kills}`, () => {
             this.leaderName.textContent = text;
             this.leaderCount.textContent = String(name ? kills : 0);

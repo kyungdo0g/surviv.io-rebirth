@@ -4,9 +4,13 @@
 // 35 px apart. Texts are assembled from the string table exactly like the original (no per-language grammar), the
 // weapon is the localized item name, colours: the active player's team died #d1777c, its team got the kill
 // #00bfff, else #efeeee; role events use the role's kill feed colour (kill leader #ff8400).
-import { DamageType, GameObjectDefs, MapObjectDefs, type RoleDef } from "@rebirth/defs";
+// M7: every kill line is #efeeee on faction maps; role lines without a def colour take the holder's team colour (red
+// #cc0000, blue #007eff) and name the faction Commander "Red Commander" / "Blue Commander" (survev ui2.ts
+// getRoleKillFeedColor / getRoleTranslation). Promotion lines put the role before "promoted to" in SOV languages
+// (Korean "<name> 지휘관 으(로) 승진했습니다!"), like the pie timer labels.
+import { DamageType, GameConfig, GameObjectDefs, MapObjectDefs, type RoleDef } from "@rebirth/defs";
 import type { KillEvent, RoleAnnouncementEvent } from "@rebirth/sim";
-import { itemName, t, tryT } from "../l10n/index.ts";
+import { isSov, itemName, roleName, t, tryT } from "../l10n/index.ts";
 
 /** survev ui2.ts maxKillFeedLines */
 export const KILL_FEED_LINES = 6;
@@ -87,20 +91,37 @@ export function killFeedText(e: KillEvent, names: PlayerNames): string {
 }
 
 /** Kill feed colour of a kill seen by a player of team `activeTeamId` (survev getKillFeedColor). */
-export function killFeedColor(e: KillEvent, activeTeamId: number, names: PlayerNames): string {
+export function killFeedColor(e: KillEvent, activeTeamId: number, names: PlayerNames, factionMode = false): string {
+    if (factionMode) return "#efeeee";
     if (activeTeamId && activeTeamId === names.teamId(e.targetId)) return "#d1777c";
     if (activeTeamId && activeTeamId === names.teamId(e.killCreditId)) return "#00bfff";
     return "#efeeee";
+}
+
+/** CSS colour of a team (survev PlayerBarn.getTeamColor: GameConfig.teamColors, white outside them). */
+export function teamColorCss(teamId: number): string {
+    const c = GameConfig.teamColors[teamId - 1] ?? 0xffffff;
+    return `#${c.toString(16).padStart(6, "0")}`;
+}
+
+/** "You've been promoted to <role>!" in capitals (survev getRoleAnnouncementText; SOV puts the role first). */
+export function roleAnnouncement(role: string, teamId: number): string {
+    const title = roleName(role, teamId);
+    const promoted = t("game-youve-been-promoted-to");
+    return (isSov() ? `${title} ${promoted}!` : `${promoted} ${title}!`).toUpperCase();
 }
 
 /** Kill feed line and colour of a role event, or null when the role does not post one (survev game.ts). */
 export function roleFeed(e: RoleAnnouncementEvent, names: PlayerNames): { text: string; color: string } | null {
     const def = GameObjectDefs[e.role] as RoleDef | undefined;
     if (!def) return null;
-    const role = t(`game-${e.role}`);
-    const color = def.killFeed?.color ?? "#efeeee";
+    const teamId = names.teamId(e.playerId);
+    const role = roleName(e.role, teamId);
+    const color = def.killFeed?.color ?? teamColorCss(teamId);
     if (e.assigned && def.killFeed?.assign) {
-        return { text: `${truncateName(names.name(e.playerId))} ${t("game-promoted-to")} ${role}!`, color };
+        const name = truncateName(names.name(e.playerId));
+        const promoted = t("game-promoted-to");
+        return { text: isSov() ? `${name} ${role} ${promoted}!` : `${name} ${promoted} ${role}!`, color };
     }
     if (e.killed && def.killFeed?.dead) {
         const killer = e.killerId && e.killerId !== e.playerId ? truncateName(names.name(e.killerId)) : "";

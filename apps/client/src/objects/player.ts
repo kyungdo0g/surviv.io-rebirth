@@ -7,6 +7,9 @@
 // M6: downed players crawl (crawl_forward / crawl_backward every 3 units moved, the survev server's rule played on the
 // client), keep their hands under the body and bleed (a blood splat and a hit sound every second while no revive
 // runs, survev player.ts "Take bleeding damage"); a reviver plays the revive animation with its weapon hidden.
+// M7: class visors, faction patches and helmet tints, Flak Jacket / Cast Ironskin sprites, the frozen overlay and the
+// haste particles (playerMode.ts), the Mass Medicate aura (playerAura.ts); the body scale follows PlayerView.scale (perks,
+// Spud Gun hits).
 import type { Vec2 } from "@rebirth/core";
 import {
     type BackpackDef,
@@ -24,8 +27,10 @@ import { Container, type Sprite } from "pixi.js";
 import type { ViewBounds } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
 import { AnimPlayer, BONE_COUNT, Bone, IDENTITY_POSE, IDLE_POSES, type Pose } from "./anims.ts";
+import { MedicAura } from "./playerAura.ts";
 import { PlayerEmitters } from "./playerEmitters.ts";
 import { GunSprites } from "./playerGun.ts";
+import { factionOf, helmetTint, PlayerModeSprites } from "./playerMode.ts";
 import { boxAround, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
 
 /** backpack offsets behind the body per bag level 1..3 (survev player.ts) */
@@ -103,6 +108,10 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private readonly objectRSprite: Sprite;
     private throwableState: ThrowableState = "equip";
     private readonly emitters: PlayerEmitters | null;
+    /** event-mode sprites and effects (M7) */
+    readonly mode: PlayerModeSprites;
+    /** Mass Medicate circle under the player (M7) */
+    readonly aura: MedicAura;
     private readonly gunL: GunSprites;
     private readonly gunR: GunSprites;
     private data!: PlayerView;
@@ -150,6 +159,9 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.gunL = new GunSprites(deps.renderer.pool);
         this.gunR = new GunSprites(deps.renderer.pool);
         this.emitters = deps.particles ? new PlayerEmitters(deps.particles) : null;
+        this.mode = new PlayerModeSprites(deps, sprite);
+        this.aura = new MedicAura(deps.textures, sprite());
+        const mode = this.mode;
         this.footL.addChild(this.footLSprite);
         this.footR.addChild(this.footRSprite);
         this.handL.addChild(this.gunL.container, this.handLSprite, this.objectLSprite);
@@ -160,9 +172,14 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             this.backpackSprite,
             this.bodySprite,
             this.chestSprite,
+            mode.flak,
+            mode.steelskin,
             this.hipSprite,
+            mode.patch,
+            mode.frozen,
             this.handL,
             this.handR,
+            mode.visor,
             this.helmetSprite,
         );
         this.container.addChild(this.body);
@@ -193,6 +210,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             view.downed,
             view.scale,
             !!view.wearingPan,
+            this.mode.visualsKey(view),
         ].join();
         if (key !== this.visualsKey) {
             this.visualsKey = key;
@@ -310,8 +328,9 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             tex.apply(this.helmetSprite, helmet.skinImg.baseSprite, scale * bodyScale);
             this.helmetSprite.position.set((view.downed ? 1 : -1) * 3.33, 0);
             this.helmetSprite.scale.set(scale);
-            this.helmetSprite.tint = helmet.skinImg.baseTint;
+            this.helmetSprite.tint = helmetTint(helmet, factionOf(this.deps, view.id));
         }
+        this.mode.updateVisuals(view, ghillie, bodyScale);
 
         const bag = view.backpack ? (GameObjectDefs[view.backpack] as BackpackDef | undefined) : undefined;
         const bagLevel = bag?.level ?? 0;
@@ -350,7 +369,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.handsDowned = downed;
         this.body.removeChild(this.handL);
         this.body.removeChild(this.handR);
-        const idx = downed ? this.body.getChildIndex(this.footL) : this.body.getChildIndex(this.hipSprite) + 1;
+        const idx = downed ? this.body.getChildIndex(this.footL) : this.body.getChildIndex(this.mode.frozen) + 1;
         this.body.addChildAt(this.handR, idx);
         this.body.addChildAt(this.handL, idx);
     }
@@ -470,6 +489,8 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             (view.scale > 1 ? 131072 : 0);
         this.deps.renderer.add(this.container, layer, zOrd, zIdx);
         this.emitters?.update(view, pos, layer, zOrd + 1);
+        this.mode.update(view, pos, layer, zOrd, dt);
+        this.aura.update(view, local, this.deps.renderer, layer, zOrd, zIdx, ctx.localLayer, dt);
     }
 
     /**
@@ -525,12 +546,15 @@ export class PlayerRender implements ObjectRender<PlayerView> {
 
     setVisible(visible: boolean): void {
         this.container.visible = visible && !this.data.dead;
+        if (!visible) this.aura.container.visible = false;
     }
 
     destroy(): void {
         this.emitters?.stop();
+        this.mode.stop();
         this.container.removeFromParent();
         for (const s of this.sprites) this.deps.renderer.pool.release(s);
+        this.aura.destroy();
         this.gunL.release(this.deps.renderer.pool);
         this.gunR.release(this.deps.renderer.pool);
         this.container.destroy({ children: true });

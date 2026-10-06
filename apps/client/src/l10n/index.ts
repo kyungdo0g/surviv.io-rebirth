@@ -1,17 +1,25 @@
 // Tiny string table lookup for the HUD and the menus (menu.ts, M6): `?lang=ko` switches to Korean, anything else is
 // English. Missing Korean strings fall back to English, missing English strings to the key (like the original
-// Localization.translate).
+// Localization.translate). M7: perk and role names are item names ("game-<id>"), perk descriptions have their own table
+// (perkDesc) and role titles go through roleName (the faction Commander is "Red Commander" / "Blue Commander").
 import { GameObjectDefs } from "@rebirth/defs";
-import { en, enHudItems, enItems } from "./en.ts";
+import { en, enHudItems, enItems, enPerkDesc } from "./en.ts";
 import { ko, koHudItems, koItems } from "./ko.ts";
 import { enMenu, koMenu } from "./menu.ts";
+import { enModes, koModes, koPerkDesc, koPerkNames, koRoleNames } from "./modes.ts";
 
 export type Lang = "en" | "ko";
 
-const EN_UI: Readonly<Record<string, string>> = { ...en, ...enMenu };
+const EN_UI: Readonly<Record<string, string>> = { ...en, ...enMenu, ...enModes };
+const KO_ITEMS: Readonly<Record<string, string>> = { ...koItems, ...koPerkNames, ...koRoleNames };
 const TABLES = {
-    en: { ui: EN_UI, items: enItems, hud: enHudItems },
-    ko: { ui: { ...ko, ...koMenu } as Readonly<Record<string, string>>, items: koItems, hud: koHudItems },
+    en: { ui: EN_UI, items: enItems, hud: enHudItems, desc: enPerkDesc },
+    ko: {
+        ui: { ...ko, ...koMenu, ...koModes } as Readonly<Record<string, string>>,
+        items: KO_ITEMS,
+        hud: koHudItems,
+        desc: koPerkDesc,
+    },
 } as const;
 
 let lang: Lang = "en";
@@ -50,6 +58,26 @@ export function itemName(id: string): string {
 export function hudItemName(id: string): string {
     if (!id) return "";
     return TABLES[lang].hud[id] ?? itemName(id);
+}
+
+/** Lines of a perk's description (the original "game-<id>-desc", "</br>" separated), [] when there is none. */
+export function perkDesc(id: string): string[] {
+    const text = TABLES[lang].desc[id] ?? enPerkDesc[id] ?? "";
+    return text ? text.split(/<\/?br\s*\/?>/i).map((line) => line.trim()) : [];
+}
+
+/** Faction team ids (GameConfig.FactionTeam) */
+const RED_TEAM = 1;
+
+/**
+ * Title of a role (survev ui2.ts getRoleTranslation): the role's item name, except the faction Commander, which is the
+ * "Red Commander" / "Blue Commander" of the holder's team when `teamId` is a faction (1 Red, 2 Blue).
+ */
+export function roleName(role: string, teamId = 0): string {
+    if (role === "leader" && (teamId === 1 || teamId === 2)) {
+        return t(teamId === RED_TEAM ? "game-red-leader" : "game-blue-leader");
+    }
+    return itemName(role);
 }
 
 /** Subject-object-verb languages put the verb last in assembled phrases ("<item> 사용 중"). */

@@ -44,6 +44,8 @@ export interface ViewDeps {
     fading?: FadingSprites;
     /** ground surface at a position ("water" for decals drawn faint in water) */
     surfaceAt?: (pos: Vec2, layer: number) => string;
+    /** team of a player (PlayerInfoView.teamId; faction maps: 1 Red, 2 Blue), 0 when unknown (M7) */
+    teamOf?: (playerId: number) => number;
 }
 
 /** Per-frame state handed to every view. */

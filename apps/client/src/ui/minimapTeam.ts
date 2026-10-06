@@ -3,7 +3,9 @@
 // orange) inside a white ring, the downed icon while knocked out and an outlined skull (1.5x) once dead. Positions
 // come from the team status (refreshed every 0.25 s) and glide to each new one; a member drawn in the world uses its
 // drawn position. The followed player's own centre dot takes its group colour and state too (Minimap.setLocalDot).
-import { GameConfig } from "@rebirth/defs";
+// M7: a member holding a role with a map icon (Commander star, Medic cross) shows that icon 1.25x without the ring, and
+// its dead icon once dead; on faction maps role icons take the team colour (survev updatePlayerMapSprites).
+import { GameConfig, GameObjectDefs, type RoleDef } from "@rebirth/defs";
 import type { TeamMemberView } from "@rebirth/sim";
 import { Container, Sprite } from "pixi.js";
 import type { TextureStore } from "../assets/textures.ts";
@@ -17,15 +19,37 @@ const GLIDE_RATE = 8;
 export interface MinimapTeamFrame {
     members: readonly TeamMemberView[];
     activeId: number;
+    /** the group's faction on faction maps (1 Red, 2 Blue), else 0 (M7) */
+    faction?: number;
     /** drawn world position of a member in view, else null */
     visualPos(id: number): { x: number; y: number } | null;
 }
 
-/** Inner dot sprite of a member (survev updatePlayerMapSprites). */
-export function memberDot(m: { dead: boolean; downed: boolean }): { sprite: string; scale: number } {
-    if (m.dead) return { sprite: "skull-outlined.img", scale: DOT_SCALE * 1.5 };
-    if (m.downed) return { sprite: "player-group-downed.img", scale: DOT_SCALE };
-    return { sprite: "player-map-inner.img", scale: DOT_SCALE };
+/** The role's minimap icons (RoleDef.mapIcon), if it has any. */
+export function roleMapIcon(role: string | undefined): { alive: string; dead: string } | undefined {
+    return role ? (GameObjectDefs[role] as RoleDef | undefined)?.mapIcon : undefined;
+}
+
+/**
+ * Inner dot sprite of a member of the followed player's group (survev updatePlayerMapSprites, same group): `icon` is
+ * true for a role map icon (drawn without the ring, in the team colour on faction maps).
+ */
+export function memberDot(m: { dead: boolean; downed: boolean; role?: string }): {
+    sprite: string;
+    scale: number;
+    icon: boolean;
+} {
+    const mapIcon = roleMapIcon(m.role);
+    if (m.dead) return { sprite: mapIcon?.dead ?? "skull-outlined.img", scale: DOT_SCALE * 1.5, icon: !!mapIcon };
+    if (m.downed) return { sprite: "player-group-downed.img", scale: DOT_SCALE, icon: false };
+    if (mapIcon) return { sprite: mapIcon.alive, scale: DOT_SCALE * 1.25, icon: true };
+    return { sprite: "player-map-inner.img", scale: DOT_SCALE, icon: false };
+}
+
+/** Tint of a group member's dot: its group colour, the team colour for a faction role icon. */
+export function memberTint(idx: number, icon: boolean, faction: number): number {
+    if (icon && faction) return GameConfig.teamColors[faction - 1] ?? 0xffffff;
+    return GameConfig.groupColors[idx] ?? 0xffffff;
 }
 
 interface Dot {
@@ -67,8 +91,8 @@ export class MinimapTeam {
             const dot = this.dots[i];
             const m = members[i];
             const show = !!frame && !!m && m.playerId !== frame.activeId;
-            dot.ring.visible = show;
             dot.inner.visible = show;
+            dot.ring.visible = show;
             if (!show || !m || !frame) {
                 dot.pos = null;
                 continue;
@@ -86,7 +110,8 @@ export class MinimapTeam {
                 dot.sprite = look.sprite;
                 this.textures.apply(dot.inner, look.sprite, look.scale);
             }
-            dot.inner.tint = GameConfig.groupColors[i] ?? 0xffffff;
+            dot.inner.tint = memberTint(i, look.icon, frame.faction ?? 0);
+            dot.ring.visible = !look.icon;
             const p = proj.toMap(dot.pos);
             dot.inner.position.set(p.x, p.y);
             dot.inner.scale.set(look.scale * proj.uiScale);

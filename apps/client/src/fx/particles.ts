@@ -10,14 +10,16 @@ import type { TextureStore } from "../assets/textures.ts";
 import { adjustValue } from "../objects/types.ts";
 import { type Renderer, toLocal } from "../render/renderer.ts";
 import { PARTICLE_DEFS, type ParticleDef, pick, type Range } from "./particleDefs.ts";
-import { EMITTER_DEFS, type EmitterDef, PARTICLE_DEFS_M5 } from "./particleDefsM5.ts";
+import { EMITTER_DEFS as EMITTER_DEFS_M5, type EmitterDef, PARTICLE_DEFS_M5 } from "./particleDefsM5.ts";
+import { EMITTER_DEFS_M7, PARTICLE_DEFS_M7 } from "./particleDefsM7.ts";
 
 /** default zOrd of particles (survev addParticle) */
 const DEFAULT_Z_ORD = 20;
 /** hard cap so a long firefight cannot grow the pool without bound */
 const MAX_PARTICLES = 768;
 
-const DEFS: Readonly<Record<string, ParticleDef>> = { ...PARTICLE_DEFS, ...PARTICLE_DEFS_M5 };
+const DEFS: Readonly<Record<string, ParticleDef>> = { ...PARTICLE_DEFS, ...PARTICLE_DEFS_M5, ...PARTICLE_DEFS_M7 };
+const EMITTER_DEFS: Readonly<Record<string, EmitterDef>> = { ...EMITTER_DEFS_M5, ...EMITTER_DEFS_M7 };
 
 interface Particle {
     sprite: Sprite;

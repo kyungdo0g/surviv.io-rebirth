@@ -5,6 +5,7 @@
 // `gasStages` for a shortened red zone).
 // M6: a team game (GameOptions.teamMode 2 / 4) puts the local player and `teammates` idle teammates in one group (a
 // party key with no auto fill), next to each other; the dummies are enemies, one group each. Emotes go to Game.emote.
+// M7: Cobalt class choices go to Game.selectRole and HUD drops to Game.dropItem.
 import { v2 } from "@rebirth/core";
 import { GameObjectDefs, WeaponSlot } from "@rebirth/defs";
 import {
@@ -104,6 +105,14 @@ export class LoopbackTransport implements Transport {
 
     emote(req: EmoteRequest): void {
         if (!this.closed) this.game.emote(this.playerId, req);
+    }
+
+    selectRole(role: string): void {
+        if (!this.closed) this.game.selectRole(this.playerId, role);
+    }
+
+    dropItem(item: string, weapIdx: number): void {
+        if (!this.closed) this.game.dropItem(this.playerId, item, weapIdx);
     }
 
     get teamMode(): number {

@@ -6,6 +6,7 @@
 // client saw its GameOver result that is the normal end of the game, not an error (`endedNormally`).
 // M6: find_game carries the team mode and auto fill; a party game connects straight to the /play URL (with its join
 // token) the lobby's joinGame message gave (`joinUrl`); emotes and pings go out as Emote messages.
+// M7: Cobalt class choices go out as PerkModeRoleSelect and HUD drops as DropItem messages.
 import {
     DisconnectReason,
     GameConnection,
@@ -144,6 +145,16 @@ export class WsTransport implements Transport {
     emote(req: EmoteRequest): void {
         if (this.closed || !this.joined) return;
         this.connection.sendEmote(req);
+    }
+
+    selectRole(role: string): void {
+        if (this.closed || !this.joined) return;
+        this.connection.sendRoleSelect(role);
+    }
+
+    dropItem(item: string, weapIdx: number): void {
+        if (this.closed || !this.joined) return;
+        this.connection.sendDropItem(item, weapIdx);
     }
 
     close(): void {

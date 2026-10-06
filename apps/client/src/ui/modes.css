@@ -1,0 +1,206 @@
+/*
+ * Event-mode HUD (M7; hudModes.ts, matchHud.ts faction counter, the big map), sized like the original desktop HUD
+ * (survev client/css/game.css #ui-bottom-center-left, .tooltip-perk, #ui-leaderboard-alive-faction, .ui-health-flair,
+ * #big-map; docs/research/ui/hud.md).
+ */
+
+/* bottom centre left: perk slots, mirrored like the gear slots (perk 0 next to the health bar) */
+#ui-bottom-center-left {
+    position: absolute;
+    bottom: 12px;
+    right: 71%;
+}
+
+#ui-perk-0 {
+    left: 4px;
+}
+
+#ui-perk-1 {
+    right: 0;
+}
+
+#ui-perk-2 {
+    right: 60px;
+}
+
+#ui-game .ui-perk-no-drop {
+    border: 2px solid transparent;
+    box-sizing: content-box;
+}
+
+.ui-perk-pulse {
+    animation-name: ui-perk-pulse;
+    animation-duration: 1.5s;
+    animation-iteration-count: 2;
+}
+
+@keyframes ui-perk-pulse {
+    from {
+        background-color: rgba(0, 0, 0, 0.4);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0);
+    }
+    50% {
+        background-color: rgba(255, 210, 0, 0.75);
+        box-shadow: 0 0 30px #ffd200;
+    }
+    to {
+        background-color: rgba(0, 0, 0, 0.4);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0);
+    }
+}
+
+/* perk tooltip: a black box above the slot with the name in yellow and the description */
+#ui-game .tooltip-perk .tooltip-text {
+    visibility: hidden;
+    width: 180px;
+    background-color: black;
+    color: #ffffff;
+    text-align: center;
+    padding: 5px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    opacity: 0.75;
+    bottom: 115%;
+    transform: translateX(-50%);
+}
+
+#ui-game .tooltip-perk .tooltip-text::after {
+    content: " ";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+}
+
+#ui-game .tooltip-perk .tooltip-desc {
+    font-size: 16px;
+    padding: 4px;
+}
+
+#ui-game .tooltip-perk:hover {
+    z-index: 2;
+}
+
+#ui-game .tooltip-perk:hover .tooltip-text {
+    visibility: visible;
+}
+
+:lang(ko) #ui-game .tooltip-perk .tooltip-text {
+    word-break: keep-all;
+}
+
+/* rebirth addition: role badge above the perk slots */
+#ui-role-badge {
+    position: absolute;
+    bottom: 72px;
+    right: -56px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 10px 0 6px;
+    background: rgba(0, 0, 0, 0.4);
+    border-left: 4px solid #ffffff;
+    border-radius: 5px;
+    white-space: nowrap;
+}
+
+.ui-role-badge-icon {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.ui-role-badge-name {
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 1px 1px #000000;
+}
+
+@media (max-height: 768px), (max-width: 1300px) {
+    #ui-bottom-center-left {
+        right: 73%;
+        transform: scale(0.7);
+        transform-origin: bottom center;
+    }
+}
+
+/* faction arm patches beside the health bar */
+#ui-health-counter {
+    position: relative;
+}
+
+.ui-health-flair {
+    position: absolute;
+    display: none;
+    width: 64px;
+    height: 64px;
+    top: -10px;
+    background-size: 64px;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 2;
+}
+
+#ui-health-flair-left {
+    left: -32px;
+    transform: rotate(270deg);
+}
+
+#ui-health-flair-right {
+    right: -32px;
+    transform: rotate(90deg);
+}
+
+/* faction alive counts (red over blue) in place of the single alive counter */
+#ui-leaderboard-alive-faction {
+    display: none;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    height: 74px;
+    line-height: 38px;
+    margin-bottom: 8px;
+    padding: 4px;
+    width: 78px;
+    margin-left: auto;
+}
+
+.ui-players-alive-red {
+    color: #ff0000;
+    display: block;
+    font-size: 36px;
+}
+
+.ui-players-alive-blue {
+    color: #00d2ff;
+    display: block;
+    font-size: 36px;
+}
+
+/* the big map (M): the HUD parts the original marks js-ui-map-hidden go away, the kill counter (js-ui-map-show) shows */
+#ui-game.ui-bigmap #ui-right-center,
+#ui-game.ui-bigmap #ui-top-center-scopes,
+#ui-game.ui-bigmap #ui-top-center,
+#ui-game.ui-bigmap #ui-lower-center,
+#ui-game.ui-bigmap #ui-equipped-ammo-wrapper,
+#ui-game.ui-bigmap #ui-bottom-center-0,
+#ui-game.ui-bigmap #ui-bottom-center-left,
+#ui-game.ui-bigmap #ui-bottom-center-right,
+#ui-game.ui-bigmap #ui-bottom-right,
+#ui-game.ui-bigmap #ui-kill-leader-container,
+#ui-game.ui-bigmap #ui-killfeed-wrapper,
+#ui-game.ui-bigmap #ui-map-info,
+#ui-game.ui-bigmap #ui-spec-counter,
+#ui-game.ui-bigmap #ui-team-indicators {
+    /* biome-ignore lint/complexity/noImportantStyles: these parts set their own inline display (kill leader box, spectator counter) */
+    display: none !important;
+}
+
+#ui-game.ui-bigmap .js-ui-map-show {
+    display: block;
+}

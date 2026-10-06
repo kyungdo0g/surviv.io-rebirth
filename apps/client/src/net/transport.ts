@@ -10,6 +10,13 @@ export interface Transport {
     spectate(action: SpectateActionName): void;
     /** Emote or team ping of the local player (the original Emote message; the server throttles them) (M6). */
     emote(req: EmoteRequest): void;
+    /** Cobalt class choice of the local player (the original PerkModeRoleSelect message) (M7). */
+    selectRole(role: string): void;
+    /**
+     * Drops an item from the HUD (the original DropItem message): worn armour, the gun of slot `weapIdx`, the melee
+     * weapon, the droppable perk or part of a bag stack (M7).
+     */
+    dropItem(item: string, weapIdx: number): void;
     /** 1 solo, 2 duo, 4 squad, once known (the original Joined teamMode) (M6) */
     readonly teamMode?: number;
     /** the local player's emote loadout, once known (the original Joined emotes; wheel slots 0-3) (M6) */

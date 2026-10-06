@@ -17,6 +17,7 @@ import type { BuildingRender } from "../objects/building.ts";
 import type { ObstacleRender } from "../objects/obstacle.ts";
 import type { PlayerRender } from "../objects/player.ts";
 import { GameClient } from "./client.ts";
+import { exposeM7 } from "./debugM7.ts";
 import { gasStagesFor } from "./gasStages.ts";
 
 export interface SandboxOptions {
@@ -214,6 +215,7 @@ function exposeGlobals(
     globals.playerAnim = (id: number) => (client.world?.renderOf(id) as PlayerRender | undefined)?.animName ?? null;
     exposeM5(client);
     exposeM6(client);
+    exposeM7(client);
     globals.interaction = () => client.interaction;
     globals.audio = {
         get unlocked() {

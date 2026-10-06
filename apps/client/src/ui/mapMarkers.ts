@@ -75,7 +75,8 @@ export class MinimapGas {
         return { zone: this.shape.display.visible, ring: this.ring.visible, line: this.line.visible };
     }
 
-    update(proj: MapProjection, gas: GasTracker, playerPos: Vec2, alpha: number): void {
+    /** `showLine` is false on the big map (survev ui.ts: the line to the safe zone is minimap only). */
+    update(proj: MapProjection, gas: GasTracker, playerPos: Vec2, alpha: number, showLine = true): void {
         const active = gas.active;
         const circle = gas.circle(alpha);
         const safe = gas.safeZone();
@@ -105,7 +106,7 @@ export class MinimapGas {
                 .stroke({ width: 2, color: 0x00ff00, alpha: inside ? 0.5 : 1 });
         }
         this.ring.visible = true;
-        this.line.visible = true;
+        this.line.visible = showLine;
     }
 
     destroy(): void {

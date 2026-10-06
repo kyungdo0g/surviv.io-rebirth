@@ -2,6 +2,8 @@
 // the minimap, the emote / ping wheels and what the snapshots' emotes and pings show (bubbles over players, world pings
 // with edge arrows, minimap markers). Teams come from LocalPlayerState.team (duo / squad only); colours are group
 // colour slots by join order. Solo players still emote and ping (their pings reach only themselves, like the original).
+// M7: ping colours and sounds and the role icons of the minimap dots come from the mode hooks (a faction Commander's
+// pings are green with the leader sound; teammates' role map icons in the team colour on faction maps).
 import type { Vec2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, type GunDef } from "@rebirth/defs";
 import type { EmoteEvent, LocalPlayerState, PlayerView, Snapshot, TeamMemberView } from "@rebirth/sim";
@@ -28,6 +30,12 @@ export interface TeamPlayDeps {
     transport: Transport;
     minimap(): Minimap | null;
     map(): { width: number; height: number } | null;
+    /** minimap tint of a player's ping (M7: group colour, team colour, a Commander's green) */
+    pingTint?(playerId: number, groupIdx: number): number;
+    /** sound of a player's ping (M7: the leader sound for Commanders) */
+    pingSound?(playerId: number, def: { sound?: string; soundLeader?: string }): string | undefined;
+    /** faction of a player on faction maps (1 Red, 2 Blue), else 0 (M7) */
+    factionOf?(playerId: number): number;
 }
 
 export interface TeamPlayFrame {
@@ -94,22 +102,25 @@ export class TeamPlay {
             if (e.isPing) this.onPing(e);
             else this.emotes.addEmote(e);
         }
-        this.updateLocalDot();
+        this.updateLocalDot(s.local);
     }
 
     private onPing(e: EmoteEvent): void {
         if (!e.pos) return;
         const idx = this.groupIndex(e.playerId);
-        this.emotes.addPing(e, idx, e.playerId === this.localId);
-        const tint = GameConfig.groupColors[idx] ?? 0xffffff;
+        const def = GameObjectDefs[e.type] as { sound?: string; soundLeader?: string } | undefined;
+        const sound = def ? this.deps.pingSound?.(e.playerId, def) : undefined;
+        this.emotes.addPing(e, idx, e.playerId === this.localId, sound);
+        const tint = this.deps.pingTint?.(e.playerId, idx) ?? GameConfig.groupColors[idx] ?? 0xffffff;
         this.deps.minimap()?.indicators.addPlayerPing(e.playerId, e.type, e.pos, tint);
     }
 
-    /** The followed player's own minimap dot: its group colour and downed / dead state. */
-    private updateLocalDot(): void {
+    /** The followed player's own minimap dot: its group colour, downed / dead state and role icon (M7). */
+    private updateLocalDot(local: LocalPlayerState): void {
         const idx = Math.max(0, this.groupIndex(this.activeId));
         const me = this.team?.find((m) => m.playerId === this.activeId);
-        this.deps.minimap()?.setLocalDot(idx, { dead: !!me?.dead, downed: !!me?.downed });
+        const state = { dead: !!me?.dead || !!local.dead, downed: !!me?.downed, role: local.role ?? me?.role ?? "" };
+        this.deps.minimap()?.setLocalDot(idx, state, this.deps.factionOf?.(this.activeId) ?? 0);
     }
 
     /** The ping wheel's world position: the map position under a minimap point, else the world under the cursor. */
@@ -147,6 +158,7 @@ export class TeamPlay {
             activeId: frame.activeId,
             camera: cam,
             visualPos: (id) => this.playerPos(id, now)?.pos ?? null,
+            factionMode: (this.deps.factionOf?.(frame.activeId) ?? 0) > 0,
         });
         const names = [];
         for (const m of this.team ?? []) {
@@ -170,12 +182,14 @@ export class TeamPlay {
     minimapFrame(now: number): {
         members: readonly TeamMemberView[];
         activeId: number;
+        faction: number;
         visualPos(id: number): Vec2 | null;
     } | null {
         if (!this.team) return null;
         return {
             members: this.team,
             activeId: this.activeId,
+            faction: this.deps.factionOf?.(this.activeId) ?? 0,
             visualPos: (id) => this.playerPos(id, now)?.pos ?? null,
         };
     }

@@ -4,6 +4,9 @@
 // simulation (`hitPlayer`). Drawing follows survev client/src/objects/bullet.ts (trail sprite
 // player-bullet-trail-02, x-scale 0.8, y-scale tracerWidth, length min(tracerLength * 15, travelled / 2), container
 // pivot 14.5 so the head sits on the bullet, ×6/s shrink after impact, reflected bullets at half alpha).
+// M7 (survev bullet.ts addBullet): Splinter Rounds side bullets (`splinter`, the original trailSmall) draw at half the
+// tracer width, One in the Chamber shots (`thick`) at twice the width, and saturated bullets (ammo perks, Hollow-points,
+// OKAMI Bar, Last Breath, One in the Chamber) in the tracer colour's `chambered` tint, else its `saturated` one.
 import { type Collider, collider, math, type Vec2 } from "@rebirth/core";
 import {
     type BulletDef,
@@ -76,6 +79,14 @@ interface CachedCollider {
     max: Vec2;
 }
 
+/** Tracer width of a bullet: halved for Splinter Rounds side bullets, doubled for thick ones (survev addBullet). */
+export function tracerWidth(base: number, e: Pick<BulletEvent, "splinter" | "thick">): number {
+    let width = base;
+    if (e.splinter) width *= 0.5;
+    if (e.thick) width *= 2;
+    return width;
+}
+
 function sameLayer(a: number, b: number): boolean {
     return (a & 1) === (b & 1) || ((a & 2) !== 0 && (b & 2) !== 0);
 }
@@ -95,6 +106,8 @@ export class BulletSystem {
     visibleCount = 0;
     /** tracers spawned since boot (tests) */
     spawned = 0;
+    /** saturated / thick / splinter tracers spawned since boot (tests, M7) */
+    readonly variants = { saturated: 0, thick: 0, splinter: 0 };
 
     constructor(renderer: Renderer, textures: TextureStore, audio: AudioEngine, particles: ParticleSystem) {
         this.renderer = renderer;
@@ -178,14 +191,18 @@ export class BulletSystem {
         t.whizHeard = false;
         t.chipped = new Set();
         t.playerFx = false;
-        t.sprite.scale.set(0.8, def.tracerWidth);
-        t.sprite.tint = colors.regular ?? 0xffffff;
+        t.sprite.scale.set(0.8, tracerWidth(def.tracerWidth, e));
+        t.sprite.tint =
+            (e.saturated ? (colors.chambered ?? colors.saturated) : undefined) ?? colors.regular ?? 0xffffff;
         t.sprite.alpha = e.reflectCount > 0 ? 0.5 : 1;
         t.sprite.visible = true;
         t.container.rotation = -Math.atan2(e.dir.y, e.dir.x);
         t.container.visible = true;
         this.tracers.push(t);
         this.spawned++;
+        if (e.saturated) this.variants.saturated++;
+        if (e.thick) this.variants.thick++;
+        if (e.splinter) this.variants.splinter++;
     }
 
     private obstacleCollider(view: ObstacleView, def: ObstacleDef): CachedCollider {

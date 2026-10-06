@@ -5,8 +5,10 @@
 // prompts and errors, camera shake and the underground view.
 // M6: team play (teamPlay.ts: team HUD, names, minimap team dots, emote / ping wheels, emotes and pings), revive and
 // cancel prompts, the revive pie timer and the downed health bar.
+// M7 (modes.ts): perk slots and HUD drops, roles and their announcements, faction counters, colours and minimap
+// members, the Cobalt class menu, the big map (M / G), haste and frozen player effects, tracer variants; mute moved to N.
 import type { Vec2 } from "@rebirth/core";
-import { getMapDef, Input, MapObjectDefs } from "@rebirth/defs";
+import { GameObjectDefs, getMapDef, Input, MapObjectDefs, type RoleDef } from "@rebirth/defs";
 import {
     buildTerrain,
     createTerrain,
@@ -42,6 +44,7 @@ import { Minimap, uiScale } from "../ui/minimap.ts";
 import { PingIndicator } from "../ui/pingIndicator.ts";
 import { InteractionTracker, type Prompt } from "./interaction.ts";
 import { MatchUi } from "./match.ts";
+import { ModeUi } from "./modes.ts";
 import { TeamPlay } from "./teamPlay.ts";
 import { surfaceAt, WorldFx } from "./worldFx.ts";
 
@@ -79,6 +82,7 @@ export class GameClient {
     readonly interactions: InteractionTracker;
     readonly pingIndicator: PingIndicator;
     readonly teamPlay: TeamPlay;
+    readonly modes: ModeUi;
     world: ObjectWorld | null = null;
     air: AirSystem | null = null;
     worldFx: WorldFx | null = null;
@@ -129,6 +133,10 @@ export class GameClient {
         this.ui = new Hud(parent, {
             action: (action) => this.input.queueAction(action),
             useItem: (item) => this.input.queueUseItem(item),
+            drop: (item, weapIdx) => {
+                this.transport.dropItem(item, weapIdx);
+                this.modes.dropped(item);
+            },
         });
         const playAgain = opts.onPlayAgain ?? (() => {});
         this.match = new MatchUi({
@@ -139,6 +147,15 @@ export class GameClient {
             spectate: (action) => this.transport.spectate(action),
             playAgain,
             teamMode: () => this.teamPlay.teamMode,
+            onLocalRole: () => this.modes.onLocalRole(),
+        });
+        this.modes = new ModeUi({
+            parent,
+            hudRoot: this.ui.root,
+            audio: this.audio,
+            transport,
+            minimap: () => this.minimap,
+            teamOf: (id) => this.match.teamId(id),
         });
         this.teamPlay = new TeamPlay({
             renderer: this.renderer,
@@ -149,6 +166,9 @@ export class GameClient {
             transport,
             minimap: () => this.minimap,
             map: () => this.map,
+            pingTint: (id, idx) => this.modes.pingTint(id, idx),
+            pingSound: (id, def) => this.modes.pingSound(id, def),
+            factionOf: (id) => this.modes.factionOf(id),
         });
         transport.onJoin((map, playerId) => this.join(map, playerId));
         transport.onSnapshot((s) => this.onSnapshot(s));
@@ -160,6 +180,7 @@ export class GameClient {
         this.match.reset(playerId);
         this.interactions.clear();
         this.teamPlay.clear();
+        this.modes.reset();
         if (this.map === map && this.world) {
             // same game, new local player (sandbox respawn): drop every view, the next snapshot rebuilds them
             this.world.clear();
@@ -179,6 +200,9 @@ export class GameClient {
         this.localId = playerId;
         this.activeId = playerId;
         const mapDef = getMapDef(map.mapName);
+        this.ui.setMap(map.mapName);
+        this.match.setMap(map.mapName);
+        this.modes.setMap(map.mapName);
         // the same deterministic polygons the simulation uses for surfaces
         this.terrainQuery = createTerrain(map);
         const terrain = buildTerrain(map);
@@ -201,6 +225,7 @@ export class GameClient {
                 viewerPos: () => this.visualPos,
                 fading,
                 surfaceAt: (pos, layer) => surfaceAt(terrainQuery, pos, layer),
+                teamOf: (id) => this.match.teamId(id),
             },
             this.interp,
         );
@@ -249,6 +274,10 @@ export class GameClient {
         this.audio.preload(["leader_assigned_01", "leader_dead_01", "ping_airdrop_01"], "ui");
         // emotes and team pings (M6)
         this.audio.preload(["emote_01", "ping_danger_01", "ping_coming_01", "ping_help_01"], "ui");
+        // role announcements, HUD drops and haste bursts (M7)
+        const roles = Object.values(GameObjectDefs).filter((d): d is RoleDef => d.type === "role");
+        this.audio.preload(["loot_drop_01", ...roles.flatMap((r) => [r.sound.assign, r.sound.dead])], "ui");
+        this.audio.preload(["ability_stim_01"], "sfx");
     }
 
     private onSnapshot(s: Snapshot): void {
@@ -279,6 +308,7 @@ export class GameClient {
             this.localPos.y = me.pos.y;
         }
         this.match.applySnapshot(s, this.localPos);
+        this.modes.applySnapshot(s, this.localId, this.match.spectating);
     }
 
     /** The snapshots now follow another player (spectating): re-aim the camera and the "local" effects. */
@@ -315,6 +345,7 @@ export class GameClient {
             next: this.input.wasPressed("ArrowRight"),
             prev: this.input.wasPressed("ArrowLeft"),
         });
+        this.modes.update(uiDt, this.input, screen.width, screen.height);
         if (!world || !this.local) {
             this.teamPlay.updateWheel(uiDt, this.input, null, false);
             this.renderer.update(dt);
@@ -370,8 +401,14 @@ export class GameClient {
             gas: this.match.gas,
             alpha: this.interp.alpha(now),
             team: this.teamPlay.minimapFrame(now),
+            faction: this.modes.minimapFrame(
+                this.activeId,
+                (this.teamPlay.team ?? []).map((m) => m.playerId),
+                (id) => this.teamPlay.playerPos(id, now)?.pos ?? null,
+            ),
         });
-        this.interaction = spectating ? null : this.interactions.find(world, this.local, me, this.localPos);
+        const canInteract = !spectating && !this.modes.awaitingClass(this.local);
+        this.interaction = canInteract ? this.interactions.find(world, this.local, me, this.localPos) : null;
         const objectAction = this.interactions.update(uiDt, world);
         const targetId = this.local.action?.type === "revive" ? (this.local.action.targetId ?? 0) : 0;
         const frame: HudFrame = {
@@ -381,6 +418,8 @@ export class GameClient {
             objectAction,
             downed: !!me?.downed,
             actionTarget: targetId && !me?.downed ? this.match.name(targetId) : "",
+            activeId: this.activeId,
+            faction: this.modes.factionOf(this.activeId),
         };
         this.ui.update(frame);
         this.hud.update(dt, () => ({
@@ -422,6 +461,7 @@ export class GameClient {
         this.minimap?.destroy();
         this.minimap = null;
         this.teamPlay.destroy();
+        this.modes.destroy();
         this.ui.destroy();
         this.match.dispose();
         this.renderer.destroy();

@@ -211,12 +211,13 @@ export class EmoteFx {
 
     /**
      * A team ping (survev addPing): the world icon and edge arrow in slot `groupIdx` (the pinger's index in the
-     * viewer's group; -1 shows nothing but the sound), `own` hides the edge arrow.
+     * viewer's group; -1 shows nothing but the sound), `own` hides the edge arrow; `sound` overrides the ping's sound
+     * (M7: a Commander's leader ping sound).
      */
-    addPing(e: EmoteEvent, groupIdx: number, own: boolean): void {
+    addPing(e: EmoteEvent, groupIdx: number, own: boolean, sound?: string): void {
         const def = GameObjectDefs[e.type] as PingDefLike | undefined;
         if (!def || !e.pos) return;
-        this.audio.playSound(def.sound, { channel: "ui" });
+        this.audio.playSound(sound ?? def.sound, { channel: "ui" });
         const slot = this.slots[groupIdx];
         if (!slot) return;
         slot.pos = { x: e.pos.x, y: e.pos.y };

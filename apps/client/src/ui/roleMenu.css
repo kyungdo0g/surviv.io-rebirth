@@ -1,0 +1,225 @@
+/*
+ * Cobalt class menu (roleMenu.ts), laid out like the original (survev client/css/game.css #ui-role-menu-wrapper ...
+ * #ui-role-footer-enter): a 1200 px panel centred over a 75 % black layer, scaled down on small screens.
+ */
+#ui-role-menu-wrapper {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    color: #ffffff;
+    font-family: "Roboto Condensed", "Noto Sans KR", Arial, sans-serif;
+    pointer-events: all;
+    user-select: none;
+    -webkit-user-select: none;
+    z-index: 11;
+}
+
+#ui-role-menu {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1200px;
+    box-sizing: border-box;
+    background-color: rgba(118, 146, 176, 0.75);
+    border: 8px solid #191919;
+    border-radius: 5px;
+    cursor: default;
+    transform: translateX(-50%) translateY(-50%) scale(1);
+}
+
+#ui-role-header {
+    background: rgba(0, 0, 0, 0.6);
+    height: 200px;
+    overflow: hidden;
+    text-align: center;
+}
+
+#ui-role-header .ui-role-option {
+    display: inline-block;
+    width: 160px;
+    height: 160px;
+    margin: 20px 10px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 132px;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+#ui-role-header .ui-role-option-selected {
+    background-size: 164px;
+    opacity: 1;
+}
+
+#ui-role-body {
+    height: 450px;
+    overflow: hidden;
+}
+
+.ui-role-body-left {
+    display: inline-block;
+    margin-top: 48px;
+    vertical-align: top;
+    width: 40%;
+}
+
+.ui-role-body-name {
+    font-size: 80px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+    text-shadow: 3px 3px black;
+    white-space: nowrap;
+}
+
+:lang(ko) .ui-role-body-name {
+    font-size: 64px;
+}
+
+.ui-role-body-image {
+    width: 240px;
+    height: 240px;
+    margin: auto;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 240px;
+}
+
+.ui-role-body-right {
+    display: inline-block;
+    margin-top: 40px;
+    vertical-align: top;
+    width: 55%;
+}
+
+.ui-role-body-perk {
+    display: flex;
+    align-items: center;
+    margin: 16px 0;
+}
+
+.ui-role-body-perk-image-wrapper {
+    flex: none;
+    width: 96px;
+    height: 96px;
+    border-radius: 48px;
+    background-image: url(/assets/img/loot/loot-circle-outer-03.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 96px;
+}
+
+.ui-role-body-perk-image-icon {
+    position: relative;
+    left: 50%;
+    top: 50%;
+    width: 64px;
+    height: 64px;
+    transform: translate(-50%, -50%);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 64px;
+}
+
+.ui-role-body-perk-text {
+    margin-left: 24px;
+    text-shadow: 3px 3px black;
+}
+
+.ui-role-body-perk-name {
+    font-size: 56px;
+    font-weight: bold;
+    line-height: 60px;
+}
+
+:lang(ko) .ui-role-body-perk-name {
+    font-size: 44px;
+}
+
+.ui-role-body-perk-desc {
+    font-size: 22px;
+    line-height: 26px;
+    text-shadow: 2px 2px black;
+}
+
+.ui-role-loadout {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.ui-role-loadout-item {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+}
+
+.ui-role-loadout-item img {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+.ui-role-loadout-outfit {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid rgba(0, 0, 0, 0.6);
+}
+
+.ui-role-loadout-count {
+    position: absolute;
+    right: 3px;
+    bottom: 1px;
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 1px 1px black;
+}
+
+#ui-role-footer {
+    background: rgba(0, 0, 0, 0.6);
+    height: 120px;
+}
+
+#ui-role-footer-desc {
+    display: inline-block;
+    width: 60%;
+    margin-top: 24px;
+    font-size: 64px;
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 3px 3px black;
+    vertical-align: top;
+}
+
+:lang(ko) #ui-role-footer-desc {
+    font-size: 52px;
+}
+
+#ui-role-footer-enter {
+    display: inline-block;
+    width: 36%;
+    height: 72px;
+    margin-top: 22px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #00ff00;
+    cursor: pointer;
+    font-size: 40px;
+    font-weight: bold;
+    line-height: 72px;
+    text-align: center;
+    text-shadow: 3px 3px black;
+    border-radius: 5px;
+}
+
+#ui-role-footer-enter:hover {
+    background: rgba(0, 0, 0, 0.9);
+}

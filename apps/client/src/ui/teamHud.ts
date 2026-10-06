@@ -59,6 +59,8 @@ export interface TeamHudFrame {
     camera: Camera;
     /** interpolated position of a member drawn this frame, else null (the status position is used) */
     visualPos(id: number): { x: number; y: number } | null;
+    /** faction maps show no edge indicators (survev ui.ts: `!factionMode`) (M7) */
+    factionMode?: boolean;
 }
 
 export class TeamHud {
@@ -163,7 +165,7 @@ export class TeamHud {
     /** Edge indicator of an off-screen living teammate (survev ui.ts: rot = atan2(dir.y, -dir.x) - PI / 2). */
     private updateIndicator(ind: Indicator, m: TeamMemberView | undefined, frame: TeamHudFrame): void {
         let show = false;
-        if (m && m.playerId !== frame.activeId && !m.dead) {
+        if (m && m.playerId !== frame.activeId && !m.dead && !frame.factionMode) {
             const cam = frame.camera;
             const pos = frame.visualPos(m.playerId) ?? m.pos;
             const view = cam.viewBounds();

@@ -168,6 +168,14 @@ export class FixtureTransport implements Transport {
         // the fixture has no simulation
     }
 
+    selectRole(_role: string): void {
+        // the fixture has no simulation
+    }
+
+    dropItem(_item: string, _weapIdx: number): void {
+        // the fixture has no simulation
+    }
+
     onJoin(cb: Parameters<Transport["onJoin"]>[0]): void {
         this.events.onJoin(cb);
     }

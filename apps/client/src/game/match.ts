@@ -9,7 +9,11 @@
 // client joined with.
 // M6 teams: knock-outs show "<killer> knocked YOU out" to the downed player, the stats screen uses the team texts and
 // one card per member, and a death while the team plays on (Snapshot.playerStats) shows the short "You died." screen.
-import { GameObjectDefs, type RoleDef } from "@rebirth/defs";
+// M7 (survev game.ts RoleAnnouncement / AliveCounts): faction maps show red / blue alive counts and white kill lines;
+// every role is announced ("You've been promoted to Red Commander!" for the holder when the def announces it), with
+// the role's assign / dead sound (Halloween kill leader voice lines; on perkMode maps a class's spawn sound only for its
+// holder) and its kill feed line; the local player's role (`onLocalRole`) closes the Cobalt class menu.
+import { GameObjectDefs, getMapDef, type RoleDef } from "@rebirth/defs";
 import type {
     KillEvent,
     MatchStats,
@@ -20,9 +24,16 @@ import type {
 } from "@rebirth/sim";
 import type { AudioEngine, SoundHandle } from "../audio/audio.ts";
 import { GasTracker } from "../fx/gas.ts";
-import { t } from "../l10n/index.ts";
 import { GameOverScreen } from "../ui/gameOver.ts";
-import { downedMessage, killFeedColor, killFeedText, killMessage, type PlayerNames, roleFeed } from "../ui/killFeed.ts";
+import {
+    downedMessage,
+    killFeedColor,
+    killFeedText,
+    killMessage,
+    type PlayerNames,
+    roleAnnouncement,
+    roleFeed,
+} from "../ui/killFeed.ts";
 import { gasAnnouncement, MatchHud } from "../ui/matchHud.ts";
 
 /** victory music of the original client (menu_music_01), started 1.3 s after the GameOver result */
@@ -43,6 +54,16 @@ export interface MatchUiOptions {
     playAgain(): void;
     /** 1 solo, 2 duo, 4 squad (M6; the stats screen texts) */
     teamMode?(): number;
+    /** a role announcement for the local player arrived (M7: closes the Cobalt class menu) */
+    onLocalRole?(role: string): void;
+}
+
+/** Event flags of the map that change the match UI (MapDef gameMode, M7). */
+interface ModeFlags {
+    factionMode: boolean;
+    perkMode: boolean;
+    spookyKillSounds: boolean;
+    turkeyMode: boolean;
 }
 
 export class MatchUi implements PlayerNames {
@@ -64,6 +85,9 @@ export class MatchUi implements PlayerNames {
     private lastActive = -1;
     private statsKey = "";
     private victoryMusic: SoundHandle | null = null;
+    private mode: ModeFlags = { factionMode: false, perkMode: false, spookyKillSounds: false, turkeyMode: false };
+    /** faction alive counts [Red, Blue] (faction maps, M7) */
+    teamAliveCounts: number[] | null = null;
 
     constructor(opts: MatchUiOptions) {
         this.opts = opts;
@@ -79,6 +103,22 @@ export class MatchUi implements PlayerNames {
             playAgain: () => opts.playAgain(),
             spectate: () => opts.spectate("begin"),
         });
+    }
+
+    /** The map's event flags (M7): faction counters and colours, class sounds, Halloween voice lines. */
+    setMap(mapName: string): void {
+        const mode = getMapDef(mapName).gameMode;
+        this.mode = {
+            factionMode: !!mode.factionMode,
+            perkMode: !!mode.perkMode,
+            spookyKillSounds: !!mode.spookyKillSounds,
+            turkeyMode: !!mode.turkeyMode,
+        };
+        this.hud.setSniperMode(!!mode.sniperMode);
+    }
+
+    get factionMode(): boolean {
+        return this.mode.factionMode;
     }
 
     name(id: number): string {
@@ -132,8 +172,11 @@ export class MatchUi implements PlayerNames {
         }
         for (const kill of s.kills ?? []) this.onKill(kill);
         for (const role of s.roleAnnouncements ?? []) this.onRole(role);
-        if (s.aliveCount !== undefined) {
-            this.aliveCount = s.aliveCount;
+        if (s.aliveCount !== undefined) this.aliveCount = s.aliveCount;
+        if (s.teamAliveCounts && s.teamAliveCounts.length >= 2) {
+            this.teamAliveCounts = s.teamAliveCounts.slice(0, 2);
+            this.hud.setAliveFaction(s.teamAliveCounts[0], s.teamAliveCounts[1]);
+        } else if (s.aliveCount !== undefined) {
             this.hud.setAlive(s.aliveCount);
         }
         if (s.killLeader) {
@@ -168,7 +211,7 @@ export class MatchUi implements PlayerNames {
 
     private onKill(e: KillEvent): void {
         const activeTeam = this.teamId(this.activeId);
-        this.hud.killFeed.add(killFeedText(e, this), killFeedColor(e, activeTeam, this));
+        this.hud.killFeed.add(killFeedText(e, this), killFeedColor(e, activeTeam, this, this.mode.factionMode));
         if (e.killCreditId === this.activeId) {
             const msg = killMessage(e, this, this.spectating);
             this.hud.showKillMessage(msg.text, msg.count);
@@ -181,15 +224,27 @@ export class MatchUi implements PlayerNames {
     private onRole(e: RoleAnnouncementEvent): void {
         const def = GameObjectDefs[e.role] as RoleDef | undefined;
         if (!def) return;
+        const audio = this.opts.audio;
+        const local = e.playerId === this.localId;
         const feed = roleFeed(e, this);
-        if (feed) this.hud.killFeed.add(feed.text, feed.color);
         if (e.assigned) {
-            this.opts.audio.playSound(def.sound?.assign, { channel: "ui" });
-            if (def.announce && e.playerId === this.localId) {
-                this.hud.announce(`${t("game-youve-been-promoted-to")} ${t(`game-${e.role}`)}!`.toUpperCase());
+            if (def.sound?.assign) {
+                if (e.role === "kill_leader" && this.mode.spookyKillSounds) {
+                    audio.playGroup("kill_leader_assigned", { channel: "ui" });
+                } else if (e.role === "kill_leader" || !this.mode.perkMode || local) {
+                    // perkMode: a class's spawn sound only for the player who chose it (survev game.ts)
+                    audio.playSound(def.sound.assign, { channel: "ui" });
+                }
             }
+            if (local) this.opts.onLocalRole?.(e.role);
+            if (feed) this.hud.killFeed.add(feed.text, feed.color);
+            if (def.announce && local) this.hud.announce(roleAnnouncement(e.role, this.teamId(e.playerId)));
         } else if (e.killed) {
-            this.opts.audio.playSound(def.sound?.dead, { channel: "ui" });
+            if (feed) this.hud.killFeed.add(feed.text, feed.color);
+            if (def.sound?.dead) {
+                if (this.mode.spookyKillSounds) audio.playGroup("kill_leader_dead", { channel: "ui" });
+                else audio.playSound(def.sound.dead, { channel: "ui" });
+            }
         }
     }
 
@@ -206,6 +261,8 @@ export class MatchUi implements PlayerNames {
             aliveCount: s.aliveCount ?? this.aliveCount,
             teamMode: this.opts.teamMode?.() ?? 1,
             nameOf: (id) => this.name(id),
+            factionAlive: this.mode.factionMode ? (s.teamAliveCounts ?? this.teamAliveCounts) : null,
+            turkeyMode: this.mode.turkeyMode,
         });
         const won = ev.winningTeamId !== 0 && ev.winningTeamId === ev.teamId;
         this.hideKillIn = (won ? 1.75 : 2.5) - KILL_MESSAGE_HIDE_LEAD;

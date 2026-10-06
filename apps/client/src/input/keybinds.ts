@@ -47,7 +47,13 @@ export const TeamPingBind: BindCode = "KeyC";
 /** client-only toggles */
 export const DebugHudBind: BindCode = "F3";
 /**
- * Sound on/off. M is the original's Toggle Map bind (client-only, never sent to the server); until the full-screen
- * map exists it toggles the sound, which the original only offered in the menus.
+ * Toggle Map (the original Input.ToggleMap, client only): M, and G while G is unbound, which it always is here (survev
+ * game.ts; hud.md CONFLICT minimap-toggle-keys). Escape closes the big map (the original's Esc handling) (M7).
  */
-export const MuteBind: BindCode = "KeyM";
+export const MapBinds: readonly BindCode[] = ["KeyM", "KeyG"];
+export const CloseMapBind: BindCode = "Escape";
+/**
+ * Sound on/off: N (rebirth binding). The original had no mute key, only the Sound toggle of its menus; until M7 the
+ * client used M, which is the original's Toggle Map bind and now opens the big map.
+ */
+export const MuteBind: BindCode = "KeyN";
