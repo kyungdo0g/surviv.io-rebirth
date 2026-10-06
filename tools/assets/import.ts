@@ -34,7 +34,7 @@ const checkOnly = process.argv.includes("--check-only");
 if (!existsSync(SRC)) throw new Error(`${SRC} missing: run sh tools/port-survev/fetch.sh first`);
 
 const files = [...walk(join(SRC, "img")), ...walk(join(SRC, "audio"))]
-    .map((p) => relative(SRC, p))
+    .map((p) => relative(SRC, p).replaceAll("\\", "/")) // posix separators (Windows)
     .filter((p) => !EXCLUDE.test(p));
 
 if (!checkOnly) {
