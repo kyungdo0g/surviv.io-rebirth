@@ -175,27 +175,34 @@ test.describe("M9 world feel", () => {
         const errors = collectErrors(page);
         await boot(page, "/?sandbox=1&map=main&seed=1&loot=0");
         // points along the widest river (players cannot spawn in water, so try them until one is open water)
-        const candidates: Array<{ x: number; y: number }> = await page.evaluate(() => {
+        // each candidate carries the river's direction there, so the wade below follows the river instead of
+        // leaving it (a straight walk north crossed a narrow stretch in a few units)
+        const candidates: Array<{ x: number; y: number; dx: number; dy: number }> = await page.evaluate(() => {
             const g = (window as any).__rebirth.game;
             const river = [...g.mapData.rivers].sort((a: any, b: any) => b.width - a.width)[0];
             if (!river) return [];
             const pts = river.points;
-            return Array.from({ length: 8 }, (_, k) => pts[Math.floor(((k + 0.5) / 8) * pts.length)]);
+            return Array.from({ length: 8 }, (_, k) => {
+                const i = Math.min(pts.length - 2, Math.floor(((k + 0.5) / 8) * pts.length));
+                const a = pts[Math.max(0, i - 2)];
+                const b = pts[Math.min(pts.length - 1, i + 2)];
+                return { x: pts[i].x, y: pts[i].y, dx: b.x - a.x, dy: b.y - a.y };
+            });
         });
         expect(candidates.length).toBeGreaterThan(0);
-        let inWater = false;
+        let inWater: (typeof candidates)[number] | null = null;
         for (const p of candidates) {
             await page.evaluate((p) => {
                 const r = (window as any).__rebirth;
-                r.game.teleportPlayer(r.player.id, p);
+                r.game.teleportPlayer(r.player.id, { x: p.x, y: p.y });
             }, p);
             await page.waitForTimeout(500);
             if ((await steps(page))?.surface === "water") {
-                inWater = true;
+                inWater = p;
                 break;
             }
         }
-        expect(inWater).toBe(true);
+        expect(inWater).not.toBeNull();
         // standing in the river the body sinks into the water ring (0.6 at the shore, deeper inside)
         await expect.poll(async () => (await steps(page))?.depth ?? 0, { timeout: 15_000 }).toBeGreaterThan(0.3);
         await page.screenshot({
@@ -204,14 +211,18 @@ test.describe("M9 world feel", () => {
         });
         const ripplesBefore = await particles(page, "waterRipple");
         const splashesBefore = (await steps(page))?.waterSteps ?? 0;
-        await page.keyboard.down("w");
+        // the 8-way keys closest to the river's direction there (world +y is up)
+        const ang = Math.atan2(inWater!.dy, inWater!.dx);
+        const oct = ((Math.round(ang / (Math.PI / 4)) % 8) + 8) % 8;
+        const keys = [["d"], ["d", "w"], ["w"], ["a", "w"], ["a"], ["a", "s"], ["s"], ["d", "s"]][oct];
+        for (const k of keys) await page.keyboard.down(k);
         try {
             // a splash and a ripple every 5 units waded
             await expect
-                .poll(async () => (await steps(page))?.waterSteps ?? 0, { timeout: 30_000 })
+                .poll(async () => (await steps(page))?.waterSteps ?? 0, { timeout: 45_000 })
                 .toBeGreaterThanOrEqual(splashesBefore + 2);
         } finally {
-            await page.keyboard.up("w");
+            for (const k of keys) await page.keyboard.up(k);
         }
         await page.waitForTimeout(200);
         await page.screenshot({ path: `${SCREENS}/wading.png` });
