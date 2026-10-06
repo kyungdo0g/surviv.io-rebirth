@@ -40,6 +40,8 @@ export interface BrainFeatures {
     threats: boolean;
     /** navigate basements and bunkers (underground layers) */
     basements: boolean;
+    /** commit to a chosen course: no running back and forth between two goals (flee / zone / loot dithering) */
+    steady: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -59,6 +61,7 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "airdrop",
     "threats",
     "basements",
+    "steady",
 ];
 
 export type BrainName = "baseline" | "smart";

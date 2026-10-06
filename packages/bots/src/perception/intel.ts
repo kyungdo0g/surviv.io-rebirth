@@ -4,7 +4,8 @@
 // assessment, opportunism and third-partying features); WorldModel.observe feeds every snapshot to `ingest`.
 //
 // NO_INTEL is the inert provider every WorldModel starts with: every enemy looks fresh (full health, idle), so bots
-// without the features keep deciding exactly as before.
+// without the features keep deciding exactly as before. The real provider is perception/enemyIntel.ts
+// (EnemyIntelTracker), installed by perception/install.ts.
 import type { Snapshot } from "@rebirth/sim";
 import type { WorldModel } from "./world.ts";
 

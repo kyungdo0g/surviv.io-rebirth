@@ -1,16 +1,19 @@
-// Fighting: target selection, the engagement (slot choice by distance, keeping the weapon's preferred range,
-// strafing, cover while reloading, standing still for long shots), the "combat layer" that lets other behaviours shoot
-// back while moving, grenade opportunities and target leading. The bot only uses contacts from its own snapshots.
+// Fighting basics: target selection, target leading, the shooting check (reaction, range, line of fire), free
+// directions and cover spots, and the "combat layer" that lets other behaviours shoot back while moving. The
+// engagement itself is brain/tactics.ts, grenades brain/grenades.ts. The bot only uses contacts from its own
+// snapshots.
 import { type Vec2, v2 } from "@rebirth/core";
 import { WeaponSlot } from "@rebirth/defs";
 import { colliderCenter, colliderRadius } from "../geom.ts";
 import { currentGun, fightSlot, hasAmmo } from "../knowledge/arsenal.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
-import type { Contact, WorldModel } from "../perception/world.ts";
-import { type BrainCtx, emptyIntent, type Intent, type ThrowPlan } from "./context.ts";
+import type { Contact, SeenObstacle, WorldModel } from "../perception/world.ts";
+import type { BrainCtx, Intent } from "./context.ts";
+import { opportunityMult } from "./opportunity.ts";
+import { focusMult } from "./teamplay.ts";
 
-const MELEE_REACH = 2.4;
-const FRAG_TYPES = ["frag", "mirv"];
+export const MELEE_REACH = 2.4;
+export const FRAG_TYPES = ["frag", "mirv"];
 
 /** Picks the enemy to fight: visible ones first, the closest and the ones shooting at the bot weigh most. */
 export function selectTarget(ctx: BrainCtx): Contact | null {
@@ -29,6 +32,9 @@ export function selectTarget(ctx: BrainCtx): Contact | null {
         // a downed enemy is no threat while others stand; finish it when nothing else is around
         if (c.downed) s *= 0.35;
         if (c.id === mem.targetId) s *= 1.3;
+        // smart brain: punish busy or weakened enemies, shoot the one the team is shooting
+        if (ctx.features.opportunism) s *= opportunityMult(ctx, c);
+        if (ctx.features.teamplay) s *= focusMult(ctx, c);
         if (s > bestScore) {
             bestScore = s;
             best = c;
@@ -83,123 +89,81 @@ export function freeDir(model: WorldModel, pos: Vec2, dir: Vec2): Vec2 | null {
 
 /** A spot behind an obstacle that shields the bot from `threat`, within `maxDist`, or null. */
 export function findCover(model: WorldModel, threat: Vec2, maxDist = 12): Vec2 | null {
-    const me = model.self.pos;
-    let best: Vec2 | null = null;
-    let bestCost = Number.POSITIVE_INFINITY;
+    return findCoverFrom(model, model.self.pos, threat, maxDist);
+}
+
+/** Centre and rough radius of an obstacle's collider (cached per seen obstacle: the model reuses unchanged ones). */
+export interface ObstacleGeom {
+    c: Vec2;
+    r: number;
+}
+
+const geomCache = new WeakMap<SeenObstacle, ObstacleGeom>();
+
+export function obstacleGeom(o: SeenObstacle): ObstacleGeom {
+    let g = geomCache.get(o);
+    if (!g) {
+        g = { c: colliderCenter(o.col), r: colliderRadius(o.col) };
+        geomCache.set(o, g);
+    }
+    return g;
+}
+
+interface CoverCandidate {
+    c: Vec2;
+    r: number;
+    box: boolean;
+}
+
+const coverLists = new WeakMap<WorldModel, { src: SeenObstacle[]; len: number; cands: CoverCandidate[] }>();
+
+/**
+ * Obstacles in view that can serve as cover (bullet-stopping, no doors, radius 0.9..7), in the model's order, with
+ * their centre and radius: built once per snapshot (the model replaces its obstacle list with every snapshot).
+ */
+function coverCandidates(model: WorldModel): CoverCandidate[] {
+    const e = coverLists.get(model);
+    if (e && e.src === model.obstacles && e.len === model.obstacles.length) return e.cands;
+    const cands: CoverCandidate[] = [];
     for (const o of model.obstacles) {
         if (!o.blocksBullets || o.def.door) continue;
-        const r = colliderRadius(o.col);
+        const { c, r } = obstacleGeom(o);
         if (r < 0.9 || r > 7) continue;
-        const c = colliderCenter(o.col);
-        const d = v2.distance(me, c);
-        if (d > maxDist) continue;
+        cands.push({ c, r, box: o.col.type === 1 });
+    }
+    coverLists.set(model, { src: model.obstacles, len: model.obstacles.length, cands });
+    return cands;
+}
+
+/**
+ * A spot behind an obstacle that shields from `threat`, within `maxDist` of `from`, or null. `accept` filters the
+ * candidate spots (default: all).
+ */
+export function findCoverFrom(
+    model: WorldModel,
+    from: Vec2,
+    threat: Vec2,
+    maxDist: number,
+    accept?: (spot: Vec2) => boolean,
+): Vec2 | null {
+    let best: Vec2 | null = null;
+    let bestCost = Number.POSITIVE_INFINITY;
+    for (const { c, r, box } of coverCandidates(model)) {
+        if (v2.distance(from, c) > maxDist) continue;
         const away = v2.normalizeSafe(v2.sub(c, threat));
-        const spot = v2.add(c, v2.mul(away, r * (o.col.type === 1 ? 0.75 : 1) + 1.5));
+        const spot = v2.add(c, v2.mul(away, r * (box ? 0.75 : 1) + 1.5));
         if (!model.nav.walkableAt(spot)) continue;
         if (model.lineOfFire(threat, spot)) continue;
+        if (accept && !accept(spot)) continue;
         // prefer close spots that do not make the bot walk towards the threat
-        const towards = Math.max(0, v2.distance(threat, me) - v2.distance(threat, spot));
-        const cost = v2.distance(me, spot) + towards * 1.5;
+        const towards = Math.max(0, v2.distance(threat, from) - v2.distance(threat, spot));
+        const cost = v2.distance(from, spot) + towards * 1.5;
         if (cost < bestCost) {
             bestCost = cost;
             best = spot;
         }
     }
     return best;
-}
-
-/** The engagement against ctx.target. */
-export function planFight(ctx: BrainCtx): Intent {
-    const intent = emptyIntent("fight");
-    const t = ctx.target;
-    if (!t) return intent;
-    const { self, model, mem, rng, now, params } = ctx;
-    const me = self.pos;
-    const d = ctx.targetDist;
-    intent.targetId = t.id;
-    mem.targetId = t.id;
-    const slot = fightSlot(self, ctx.guns, d);
-    intent.slot = slot;
-    const gun = ctx.guns.find((g) => g.slot === slot);
-    const aimPoint = leadPoint(ctx, t);
-    intent.aim = aimPoint;
-    const toT = v2.normalizeSafe(v2.sub(t.pos, me));
-
-    if (!gun) {
-        // fists or melee: charge, swing in reach
-        intent.goal = v2.copy(t.pos);
-        intent.arriveDist = 1.2;
-        intent.fire = d < MELEE_REACH + 0.3 && t.visible;
-        return intent;
-    }
-    if (!t.visible) {
-        // last seen spot: approach carefully, ready to shoot
-        intent.goal = v2.copy(t.pos);
-        intent.arriveDist = 4;
-        return intent;
-    }
-    // tactics for this engagement (re-rolled for every new target and every few seconds)
-    if (mem.engagedTarget !== t.id || now > mem.tacticsUntil) {
-        mem.tacticsUntil = now + rng.range(4, 8);
-        mem.strafing = rng.bool(params.strafeChance);
-        mem.useCover = rng.bool(params.coverChance);
-        mem.standStill = rng.bool(params.standStillChance);
-    }
-    intent.fire = canShoot(ctx, t, d);
-    const info = gun.info;
-    const reloading = self.action.type === "reload";
-    const empty = gun.mag <= 0;
-    if ((empty || reloading) && mem.useCover) {
-        const cover = findCover(model, t.pos);
-        if (cover) {
-            intent.goal = cover;
-            intent.arriveDist = 0.6;
-            return intent;
-        }
-    }
-    if (!empty && !reloading && !model.lineOfFire(me, t.pos)) {
-        // something stands between: with a grenade, keep a safe throwing distance and let it decide (the explosion
-        // reaches 12 units); without, go around the cover (the path leads past it) until the shot is clear
-        const frags = FRAG_TYPES.some((it) => (self.inventory[it] ?? 0) > 0);
-        if (frags && d < 11) {
-            intent.moveDir = freeDir(model, me, v2.neg(toT));
-            return intent;
-        }
-        if (!frags || d > 26) {
-            intent.goal = v2.copy(t.pos);
-            intent.arriveDist = Math.max(6, info.idealMin);
-            return intent;
-        }
-    }
-    if (now >= mem.strafeUntil) {
-        mem.strafeSign = rng.bool() ? 1 : -1;
-        mem.strafeUntil = now + rng.range(0.35, 1.2);
-    }
-    const perp = v2.mul(v2.perp(toT), mem.strafeSign);
-    let radial = 0;
-    if (d > info.idealMax) radial = 1;
-    else if (d < info.idealMin) radial = -1;
-    const longShot = d > 20 && info.def.moveSpread >= 2 && info.cls !== "shotgun";
-    if (longShot && mem.standStill && intent.fire && !empty) {
-        intent.stop = true;
-        return intent;
-    }
-    if (radial > 0 && d > info.maxEngage * params.rangeMult) {
-        // out of reach: close in along the path
-        intent.goal = v2.copy(t.pos);
-        intent.arriveDist = info.idealMax * 0.8;
-        return intent;
-    }
-    let move = v2.mul(toT, radial);
-    if (mem.strafing) move = v2.add(move, v2.mul(perp, radial === 0 ? 1 : 0.7));
-    if (v2.lengthSqr(move) < 1e-6) {
-        intent.stop = mem.standStill;
-        return intent;
-    }
-    const dir = freeDir(model, me, v2.normalize(move));
-    if (dir) intent.moveDir = dir;
-    else mem.strafeSign = -mem.strafeSign;
-    return intent;
 }
 
 /**
@@ -216,34 +180,6 @@ export function addCombatLayer(ctx: BrainCtx, intent: Intent): void {
     intent.targetId = t.id;
     intent.aim = leadPoint(ctx, t);
     intent.fire = canShoot(ctx, t, d);
-}
-
-/** A grenade worth throwing now: at an enemy hiding behind cover or a group of enemies, within throwing range. */
-export function grenadeOpportunity(ctx: BrainCtx, thinkDt: number): ThrowPlan | null {
-    const { self, now, mem, params, rng } = ctx;
-    if (now - mem.lastThrow < 6 || self.action.type !== "none") return null;
-    const item = FRAG_TYPES.find((it) => (self.inventory[it] ?? 0) > 0);
-    if (!item) return null;
-    const t = ctx.target;
-    if (!t) return null;
-    const d = ctx.targetDist;
-    // the frag's blast reaches 12 units (explosion_frag rad.max): never closer than 10
-    if (d < 10 || d > 27) return null;
-    const hiding = !t.visible && now - t.lastSeen < 2.5;
-    const behindCover = t.visible && !ctx.model.lineOfFire(self.pos, t.pos);
-    let cluster = 0;
-    for (const e of ctx.enemies) if (e !== t && e.visible && v2.distance(e.pos, t.pos) < 6) cluster++;
-    if (!hiding && !behindCover && cluster === 0 && !t.downed) return null;
-    // a group, or an enemy camping behind its cover, is the best moment for a grenade
-    const camping = v2.length(t.vel) < 2 && (hiding || behindCover);
-    const boost = (cluster > 0 ? 2 : 1) * (camping ? 2 : 1);
-    if (!rng.bool(Math.min(1, params.grenadeRate * thinkDt * boost))) return null;
-    mem.lastThrow = now;
-    mem.lastThrowPos = v2.copy(t.pos);
-    // lead a moving target a little (at most 3 units: velocity estimates are noisy)
-    let lead = v2.mul(t.vel, 0.6);
-    if (v2.length(lead) > 3) lead = v2.mul(v2.normalize(lead), 3);
-    return { item, pos: v2.add(t.pos, lead), cook: rng.range(1.2, 2.2) };
 }
 
 /** Whether the bot holds a usable gun in its hands (loaded or with reserve). */

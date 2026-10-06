@@ -2,7 +2,6 @@
 // it: BotController drives a player of an in-process Game, NetworkBot plays over the network through HeadlessClient.
 
 export { Bot, type BotOptions } from "./bot.ts";
-export { AimController, gaussian } from "./brain/aim.ts";
 export { Brain } from "./brain/brain.ts";
 export {
     type BehaviourName,
@@ -29,7 +28,7 @@ export {
     isBrainName,
     withFeatures,
 } from "./brain/features.ts";
-export { ThrowController, TriggerController, throwMouseLen } from "./brain/trigger.ts";
+export { type AimSense, ThrowController, TriggerController, throwMouseLen } from "./brain/trigger.ts";
 export { BotController, type SpawnBotOptions } from "./controller.ts";
 export {
     DIFFICULTIES,
@@ -45,11 +44,19 @@ export {
 export { type HeldGun, heldGunsWithAmmo } from "./knowledge/arsenal.ts";
 export { lootValue } from "./knowledge/loot.ts";
 export { type GunInfo, gunInfo, suitability, type WeaponClass } from "./knowledge/weapons.ts";
+export { type Flick, planFlick } from "./motor/flick.ts";
+export { HumanMotor, type MotorGoal, type MotorInput } from "./motor/human.ts";
+export { AimController } from "./motor/legacy.ts";
+export { gaussian } from "./motor/noise.ts";
 export { BOT_NAMES_EN, BOT_NAMES_KO, pickBotName } from "./names.ts";
 export { findPath, type PathResult, smoothPath } from "./nav/astar.ts";
-export { PathFollower, type SteerResult } from "./nav/follower.ts";
+export { CellGrid } from "./nav/cellGrid.ts";
+export { PathFollower, type PlanGrid, type SteerResult } from "./nav/follower.ts";
 export { NavGrid, NavTerrain } from "./nav/grid.ts";
+export { type StairPortal, UndergroundGrid, UndergroundNav } from "./nav/underground.ts";
 export { NetworkBot, type NetworkBotOptions } from "./networkBot.ts";
+export { EnemyIntelTracker } from "./perception/enemyIntel.ts";
+export { installPerception } from "./perception/install.ts";
 export {
     type EnemyAction,
     type EnemyIntel,
@@ -60,13 +67,16 @@ export {
 export {
     type AirdropIntel,
     type DangerZone,
+    type KillLeaderIntel,
     NO_THREATS,
     NullThreatBoard,
     type ReportedThreat,
     type ThreatBoard,
+    type ThreatEvent,
     type ThreatKind,
     type UnseenShooter,
 } from "./perception/threats.ts";
+export { ThreatTracker } from "./perception/threatTracker.ts";
 export { type Contact, type SeenLoot, type SelfState, WorldModel } from "./perception/world.ts";
 export {
     type BotAssignment,

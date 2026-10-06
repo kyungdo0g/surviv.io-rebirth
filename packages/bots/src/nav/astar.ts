@@ -1,8 +1,8 @@
-// A* over a NavGrid: 8-connected without corner cutting, octile heuristic (slightly weighted for speed), terrain and
+// A* over a CellGrid (the ground NavGrid or an underground grid): 8-connected without corner cutting, octile heuristic (slightly weighted for speed), terrain and
 // door costs, a node budget (returns the partial path to the node closest to the goal when it runs out), then string
 // pulling over grid line of sight. Scratch arrays are shared per grid (searches never run concurrently).
 import { type Vec2, v2 } from "@rebirth/core";
-import type { NavGrid } from "./grid.ts";
+import type { CellGrid } from "./cellGrid.ts";
 
 export interface PathResult {
     /** waypoints after smoothing, the goal last (the start is not included) */
@@ -20,6 +20,8 @@ export interface PathOptions {
     weight?: number;
     /** skip line-of-sight smoothing */
     raw?: boolean;
+    /** walkable cell to start from (default: the start's own cell when tight, else the nearest walkable cell) */
+    startCell?: number;
 }
 
 const SQRT2 = Math.SQRT2;
@@ -92,9 +94,9 @@ class Scratch {
     }
 }
 
-const scratches = new WeakMap<NavGrid, Scratch>();
+const scratches = new WeakMap<CellGrid, Scratch>();
 
-function scratchFor(grid: NavGrid): Scratch {
+function scratchFor(grid: CellGrid): Scratch {
     let s = scratches.get(grid);
     if (!s) {
         s = new Scratch(grid.w * grid.h);
@@ -119,10 +121,13 @@ function octile(ax: number, ay: number, bx: number, by: number): number {
 /**
  * Path from `start` to `goal`, or null when no walkable cell near the start, or no cell near the goal in the start's
  * connected component, exists (an enclosed vault, an outhouse too narrow to enter): the goal snaps to the closest cell
- * the bot can actually reach, so hopeless searches never burn the node budget.
+ * the bot can actually reach, so hopeless searches never burn the node budget. Tight cells (CellGrid.tight) are
+ * passable at a higher cost.
  */
-export function findPath(grid: NavGrid, start: Vec2, goal: Vec2, opts: PathOptions = {}): PathResult | null {
-    const s = grid.nearestWalkable(start, 4);
+export function findPath(grid: CellGrid, start: Vec2, goal: Vec2, opts: PathOptions = {}): PathResult | null {
+    // a bot squeezing through a tight cell starts there (the nearest free cell may lie behind the wall it touches)
+    const own = grid.cellOf(start);
+    const s = opts.startCell ?? (grid.covers(start) && grid.tight[own] !== 0 ? own : grid.nearestWalkable(start, 4));
     if (s < 0) return null;
     const t = grid.nearestWalkable(goal, 6, grid.component(s));
     if (t < 0) return null;
@@ -163,13 +168,14 @@ export function findPath(grid: NavGrid, start: Vec2, goal: Vec2, opts: PathOptio
             const ny = cy + DY[k];
             if (nx < 0 || ny < 0 || nx >= w || ny >= grid.h) continue;
             const ni = ny * w + nx;
-            if (grid.blocked[ni] !== 0 || sc.closed[ni] === gen) continue;
+            if ((grid.blocked[ni] !== 0 && grid.tight[ni] === 0) || sc.closed[ni] === gen) continue;
             let step = 1;
             if (k >= 4) {
                 // no corner cutting: both orthogonal neighbours must be free
-                if (grid.blocked[cy * w + nx] !== 0 || grid.blocked[ny * w + cx] !== 0) continue;
+                if (!grid.passable(cy * w + nx) || !grid.passable(ny * w + cx)) continue;
                 step = SQRT2;
             }
+            if ((grid.oneWay[ni] !== 0 || grid.oneWay[cur] !== 0) && !grid.oneWayAllows(cur, ni)) continue;
             const g = gCur + step * grid.cost(ni);
             if (sc.seen[ni] === gen && g >= sc.g[ni]) continue;
             sc.seen[ni] = gen;
@@ -196,7 +202,7 @@ export function findPath(grid: NavGrid, start: Vec2, goal: Vec2, opts: PathOptio
  * String pulling: from each anchor, jump to the farthest following point still in line of sight. The start itself
  * is the first anchor and is not returned.
  */
-export function smoothPath(grid: NavGrid, start: Vec2, points: readonly Vec2[]): Vec2[] {
+export function smoothPath(grid: CellGrid, start: Vec2, points: readonly Vec2[]): Vec2[] {
     const out: Vec2[] = [];
     if (points.length === 0) return out;
     let anchor = start;

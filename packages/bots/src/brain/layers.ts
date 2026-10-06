@@ -1,6 +1,7 @@
 // Layers: v1 bots live on the ground floor (the navigation grid blocks structure stairs). A bot that still ends up on
 // stairs (layers 2/3, e.g. pushed by a knock-back) or underground (layer 1) walks back up the nearest stairs: towards
-// the stair, then against its down direction until it is on layer 0 again.
+// the stair, then against its down direction until it is on layer 0 again. With BrainFeatures.basements the path
+// follower's underground navigation (nav/underground.ts) takes bots in and out of basements instead.
 import { type Vec2, v2 } from "@rebirth/core";
 import { getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
 import type { MapData } from "@rebirth/sim";
@@ -45,6 +46,8 @@ function stairsOf(map: MapData): StairInfo[] {
 export function planLayerEscape(ctx: BrainCtx): Intent | null {
     const { self, model } = ctx;
     if (self.layer === 0) return null;
+    // basements: underground navigation leads the bot in and out of basements and bunkers (the path follower)
+    if (ctx.features.basements && model.underground?.handles(self.pos, self.layer)) return null;
     let best: StairInfo | null = null;
     let bestD = Number.POSITIVE_INFINITY;
     for (const s of stairsOf(model.map)) {

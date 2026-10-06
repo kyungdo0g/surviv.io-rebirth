@@ -21,6 +21,12 @@ export interface GunInfo {
     maxEngage: number;
     /** sustained damage per second over magazine + reload */
     dps: number;
+    /** damage of one bullet (pellet), before armour */
+    damage: number;
+    /** seconds per shot over a burst (fire delay, burst delays averaged) */
+    cycle: number;
+    /** damage multiplier of a headshot */
+    headshotMult: number;
     /** comparison score for loot decisions (0 for guns bots never want) */
     score: number;
 }
@@ -90,6 +96,9 @@ export function gunInfo(id: string): GunInfo | undefined {
         idealMax,
         maxEngage,
         dps: sustained,
+        damage,
+        cycle: Math.max(cycle, 0.01),
+        headshotMult: def.headshotMult ?? 1,
         score,
     };
     cache.set(id, info);

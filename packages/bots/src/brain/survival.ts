@@ -9,6 +9,8 @@ import type { WorldModel } from "../perception/world.ts";
 import { addCombatLayer, findCover, freeDir } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 
+/** The last circles close to (nearly) nothing (GameConfig gas stages: radius 0.0225 of the map, then 0). */
+const FINAL_RAD = 3;
 /** Effective rotation speed through terrain and obstacles (u/s; the player runs at 12). */
 const TRAVEL_SPEED = 8.5;
 
@@ -35,6 +37,14 @@ export function healScore(ctx: BrainCtx): number {
     if (self.action.type === "use") return 0.9;
     const item = healItem(ctx);
     if (!item) return 0;
+    // endgame (smart brain): once the zone is gone (the last circle closes to nothing) whoever lasts longer in the gas
+    // wins: every heal and boost buys time, so use them on the way to the centre instead of only walking
+    const gasNow = model.gas;
+    if (ctx.features.endgame && gasNow && gasNow.radNew < FINAL_RAD && model.inGasNow()) {
+        // ...but not with the last enemy shooting it from close by: that fight decides the match
+        const fightOn = ctx.visibleEnemies.some((e) => !e.downed && v2.distance(e.pos, self.pos) < 40);
+        if (!fightOn) return 0.98;
+    }
     const isHeal = item === "healthkit" || item === "bandage";
     let s = isHeal ? 0.35 + 0.6 * Math.max(0, (params.healBelow + 10 - self.health) / 100) : 0.2;
     if (isHeal && self.health < params.healBelow) s = Math.max(s, 0.55);
@@ -43,6 +53,11 @@ export function healScore(ctx: BrainCtx): number {
     if (now - model.lastHurt < 1.5) s *= 0.6;
     const gas = model.gas;
     if (model.inGasNow() && gas && gas.damage >= 3) s *= 0.3;
+    // disengage (smart brain): right after a fight, patch up before looting the spoils (third parties are coming)
+    const sinceHurt = now - model.lastHurt;
+    if (ctx.features.disengage && isHeal && self.health < 70 && sinceHurt >= 1.5 && sinceHurt < 20) {
+        if (!ctx.visibleEnemies.some((e) => !e.downed) && !model.inGasNow()) s = Math.max(s, 0.78);
+    }
     return Math.min(0.92, s);
 }
 
@@ -136,6 +151,32 @@ export function zoneTarget(model: WorldModel, jitter: number): Vec2 {
     return cell >= 0 ? model.nav.center(cell) : p;
 }
 
+/**
+ * threats (smart brain): the zone target with the least threat heat among the straight one and two approaches 45
+ * degrees to either side (around the circle centre), so the rotation avoids a fight the bot heard on its way.
+ */
+export function coolZoneTarget(model: WorldModel, jitter: number): Vec2 {
+    const straight = zoneTarget(model, jitter);
+    const gas = model.gas;
+    if (!gas || model.threats.heat(straight, 20) <= 0) return straight;
+    let best = straight;
+    let bestHeat = model.threats.heat(straight, 20);
+    // only spots the bot can walk to (its own navigation component)
+    const comp = model.nav.component(model.nav.nearestWalkable(model.self.pos, 3));
+    for (const a of [0.8, -0.8]) {
+        const p = v2.add(gas.posNew, v2.rotate(v2.sub(straight, gas.posNew), a));
+        const cell = model.nav.nearestWalkable(p, 8, comp);
+        if (cell < 0) continue;
+        const c = model.nav.center(cell);
+        const h = model.threats.heat(c, 20);
+        if (h < bestHeat - 0.5) {
+            bestHeat = h;
+            best = c;
+        }
+    }
+    return best;
+}
+
 /** Utility of moving into the safe zone now (0..1). */
 export function zoneScore(ctx: BrainCtx): number {
     const { model, self } = ctx;
@@ -161,7 +202,8 @@ export function zoneScore(ctx: BrainCtx): number {
 
 export function planZone(ctx: BrainCtx): Intent {
     const intent = emptyIntent("zone");
-    intent.goal = zoneTarget(ctx.model, (ctx.self.id % 7) / 7);
+    const jitter = (ctx.self.id % 7) / 7;
+    intent.goal = ctx.features.threats ? coolZoneTarget(ctx.model, jitter) : zoneTarget(ctx.model, jitter);
     intent.arriveDist = 3;
     addCombatLayer(ctx, intent);
     return intent;
@@ -180,6 +222,13 @@ function threatsOf(ctx: BrainCtx, range: number): BrainCtx["enemies"] {
 }
 
 export function fleeScore(ctx: BrainCtx): number {
+    const s = baseFleeScore(ctx);
+    // disengage (smart brain): running never beats getting out of the gas (the zone scores 0.93+ there)
+    if (ctx.features.disengage && s > 0.6 && ctx.model.inGasNow()) return 0.6;
+    return s;
+}
+
+function baseFleeScore(ctx: BrainCtx): number {
     const { self } = ctx;
     const threats = threatsOf(ctx, 35);
     if (threats.length === 0) return 0;
@@ -204,7 +253,10 @@ export function planFlee(ctx: BrainCtx): Intent {
     // run towards the safe zone rather than into the gas
     if (model.gas && model.gas.mode !== "inactive") {
         const toZone = v2.normalizeSafe(v2.sub(model.gas.posNew, self.pos));
-        away = v2.add(v2.normalizeSafe(away), v2.mul(toZone, model.insideSafeZone(self.pos, 10) ? 0.2 : 0.8));
+        let w = model.insideSafeZone(self.pos, 10) ? 0.2 : 0.8;
+        // disengage (smart brain): once the zone presses, the safe zone comes first
+        if (ctx.features.disengage && (zonePressure(model) > 0.3 || !model.insideSafeZone(self.pos, 3))) w = 1.6;
+        away = v2.add(v2.normalizeSafe(away), v2.mul(toZone, w));
     }
     const dir = v2.normalizeSafe(away);
     const goal = v2.add(self.pos, v2.mul(dir, 25));

@@ -89,12 +89,17 @@ describe("brain features", () => {
         expect(m.intel.of(12345)).toEqual({ estHealth: 100, action: null, justFought: false });
     });
 
-    it("every difficulty carries motor parameters, legacy model for now, finer for harder presets", () => {
+    it("every difficulty carries motor parameters, the human model, finer for harder presets", () => {
         const [easy, normal, hard] = DIFFICULTIES.map((d) => DIFFICULTY_PRESETS[d].motor);
-        for (const m of [easy, normal, hard]) expect(m.model).toBe("legacy");
-        expect(normal).toMatchObject({ fittsA: 0.05, fittsB: 0.09, pursuitKp: 7, confirmDelay: 0.07 });
+        for (const m of [easy, normal, hard]) expect(m.model).toBe("human");
+        // calibrated against the legacy aim with scripts/aimbench.ts (test/fixtures/aim-baseline.json)
+        expect(normal).toMatchObject({ fittsA: 0.05, fittsB: 0.05, pursuitKp: 7, confirmDelay: 0.07 });
         expect(easy.endpointSigma).toBeGreaterThan(normal.endpointSigma);
         expect(normal.endpointSigma).toBeGreaterThan(hard.endpointSigma);
+        expect(easy.fittsB).toBeGreaterThan(normal.fittsB);
+        expect(normal.fittsB).toBeGreaterThan(hard.fittsB);
+        expect(easy.pursuitLag).toBeGreaterThan(normal.pursuitLag);
+        expect(normal.pursuitLag).toBeGreaterThan(hard.pursuitLag);
         expect(easy.pursuitPred).toBeLessThan(hard.pursuitPred);
     });
 });

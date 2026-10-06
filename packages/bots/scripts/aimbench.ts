@@ -4,15 +4,16 @@
 //        [--motor legacy|human] [--record] [--baseline packages/bots/test/fixtures/aim-baseline.json] [--json out.json]
 // Prints, per difficulty, time to first shot and first hit after the target becomes visible, the bullet hit rate and the
 // time to kill, then compares with the recorded baseline (the legacy aim): the human motor model must stay within
-// +-20% of its first-shot time and +-15% of its hit rate. `--record` rewrites the baseline fixture. Cells whose
-// distance lies outside the scope's view (35 units with 1x) never see the target and are reported as such.
+// +-20% of its first-shot time and +-15% of its hit rate. Without --motor the presets' model runs. `--record` rewrites
+// the baseline fixture with the legacy motor (unless --motor says otherwise). Cells whose distance lies outside the
+// scope's view (35 units with 1x) never see the target and are reported as such.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { availableParallelism } from "node:os";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { isMainThread, parentPort, Worker, workerData } from "node:worker_threads";
-import { DIFFICULTIES, type Difficulty, isDifficulty, type MotorModel } from "../src/difficulty.ts";
+import { DIFFICULTIES, DIFFICULTY_PRESETS, type Difficulty, isDifficulty, type MotorModel } from "../src/difficulty.ts";
 import {
     type AimBaseline,
     allCells,
@@ -60,8 +61,10 @@ async function main(): Promise<void> {
                   if (!isDifficulty(d)) throw new Error(`unknown difficulty ${d}`);
                   return d;
               });
-    const motor = values.motor as MotorModel | undefined;
+    // the baseline fixture is the legacy aim: --record defaults to it
+    const motor = (values.motor ?? (values.record ? "legacy" : undefined)) as MotorModel | undefined;
     if (motor && motor !== "legacy" && motor !== "human") throw new Error("--motor must be legacy or human");
+    const presetModel = DIFFICULTY_PRESETS[difficulties[0]].motor.model;
     const trialsPerCell = Number(values.trials);
     const seed = Number(values.seed);
     const cells = allCells(difficulties);
@@ -73,7 +76,7 @@ async function main(): Promise<void> {
     const workers = Math.max(1, Math.min(Number(values.workers), availableParallelism(), jobs.length));
     console.log(
         `aim bench: ${cells.length} cells x ${trialsPerCell} trials (${jobs.length} trials in view), ` +
-            `motor ${motor ?? "preset"}, ${workers} workers`,
+            `motor ${motor ?? `${presetModel} (preset)`}, ${workers} workers`,
     );
     const t0 = performance.now();
     const results: TrialResult[] = new Array(jobs.length);
@@ -109,7 +112,7 @@ async function main(): Promise<void> {
     const out: AimBaseline = {
         version: 1,
         command: `node packages/bots/scripts/aimbench.ts --record --trials ${trialsPerCell} --seed ${seed}`,
-        motor: motor ?? "legacy",
+        motor: motor ?? presetModel,
         seed,
         trialsPerCell,
         trialSeconds: TRIAL_SECONDS,

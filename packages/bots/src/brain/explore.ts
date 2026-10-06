@@ -8,8 +8,10 @@ import { colliderBounds, transformCollider } from "../geom.ts";
 import { lootValue, slotToReplace } from "../knowledge/loot.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
 import type { SeenLoot } from "../perception/world.ts";
+import { heatPenalty } from "./alert.ts";
 import { addCombatLayer } from "./combat.ts";
-import { type BrainCtx, emptyIntent, type Intent, reachable } from "./context.ts";
+import { type BrainCtx, emptyIntent, type Intent, nearFailedGoal, reachable } from "./context.ts";
+import { steadyGoal } from "./steady.ts";
 import { onTheWay } from "./survival.ts";
 
 const LOOT_RADIUS = GameConfig.lootRadius as Readonly<Record<string, number>>;
@@ -26,18 +28,15 @@ function lootRad(type: string): number {
     return LOOT_RADIUS[GameObjectDefs[type].type] ?? 1;
 }
 
-function nearFailedGoal(ctx: BrainCtx, p: Vec2): boolean {
-    const f = ctx.mem.failedGoal;
-    return !!f && ctx.now < ctx.mem.failedUntil && v2.distance(f, p) < 2;
-}
-
 /** The item most worth walking to, or null. */
 export function bestLoot(ctx: BrainCtx): LootChoice | null {
     const { model, self, mem, now } = ctx;
     let best: LootChoice | null = null;
     let bestScore = 0;
+    // basements: loot on underground floors too, reachable through the stairs (nav/underground.ts)
+    const below = ctx.features.basements ? model.underground : null;
     for (const l of model.loot.values()) {
-        if ((l.layer & 1) !== 0) continue;
+        if ((l.layer & 1) !== 0 && !below) continue;
         const until = mem.lootBlacklist.get(l.id);
         if (until !== undefined) {
             if (until > now) continue;
@@ -46,14 +45,20 @@ export function bestLoot(ctx: BrainCtx): LootChoice | null {
         const d = v2.distance(self.pos, l.pos);
         if (d > MAX_LOOT_DIST || !model.insideCurrentCircle(l.pos, 2) || nearFailedGoal(ctx, l.pos)) continue;
         if (!onTheWay(model, l.pos)) continue;
+        if (ctx.features.steady && !steadyGoal(ctx, l.pos)) continue;
         const value = lootValue(self, l.type);
         if (value < 6) continue;
-        if (!reachable(ctx, l.pos, 1.4)) {
+        const canReach = below
+            ? below.canPathTo(model.nav, self.pos, self.layer, l.pos, l.layer & 1)
+            : reachable(ctx, l.pos, 1.4);
+        if (!canReach) {
             mem.lootBlacklist.set(l.id, now + 20);
             continue;
         }
         let s = value / (1 + d / 14);
         if (l.id === mem.lootTarget) s *= 1.3;
+        // threats: loot in a hot area is worth less
+        if (ctx.features.threats) s *= heatPenalty(ctx, l.pos);
         if (s > bestScore) {
             bestScore = s;
             best = { loot: l, value, dist: d };
@@ -78,7 +83,13 @@ export function planLoot(ctx: BrainCtx, choice: LootChoice): Intent {
     intent.goal = v2.copy(l.pos);
     intent.arriveDist = 0.6;
     const pickR = 1 + lootRad(l.type) - 0.3;
-    if (choice.dist < pickR) {
+    // basements: the item's floor guides the path follower, and it is in reach only on the same floor
+    let sameFloor = true;
+    if (ctx.features.basements) {
+        intent.goalLayer = l.layer & 1;
+        sameFloor = (self.layer & 1) === (l.layer & 1);
+    }
+    if (choice.dist < pickR && sameFloor) {
         // in reach: Loot takes the closest item, no need to stand on it (items often rest against obstacles)
         intent.stop = true;
         const isGun = !!gunInfo(l.type);
@@ -139,7 +150,8 @@ function pickExploreGoal(ctx: BrainCtx): Vec2 {
             continue;
         }
         if (d > 240 || !model.insideSafeZone(b.pos, 5) || nearFailedGoal(ctx, b.pos)) continue;
-        const cost = d + rng.range(0, 40);
+        let cost = d + rng.range(0, 40);
+        if (ctx.features.threats) cost += (1 / heatPenalty(ctx, b.pos) - 1) * 40;
         if (cost < bestCost) {
             bestCost = cost;
             best = b.pos;

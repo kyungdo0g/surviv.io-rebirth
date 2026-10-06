@@ -1,10 +1,12 @@
 // Shared brain types: the Intent a decision produces (where to go, what to aim at, whether to fire, which slot to
 // hold, one-shot actions), the per-bot memory behaviours keep between decisions, and the context they read.
-import type { Rng, Vec2 } from "@rebirth/core";
+import { type Rng, type Vec2, v2 } from "@rebirth/core";
 import type { DifficultyParams } from "../difficulty.ts";
 import type { HeldGun } from "../knowledge/arsenal.ts";
 import type { Contact, SelfState, WorldModel } from "../perception/world.ts";
+import type { Assessment } from "./assess.ts";
 import type { BrainFeatures } from "./features.ts";
+import { SmartMemory } from "./smartMemory.ts";
 
 export type BehaviourName =
     | "idle"
@@ -23,7 +25,9 @@ export type BehaviourName =
     | "disengage"
     | "thirdparty"
     | "guard"
-    | "airdrop";
+    | "airdrop"
+    | "hold"
+    | "assist";
 
 export interface ThrowPlan {
     /** throwable to use (frag, mirv, smoke) */
@@ -38,6 +42,11 @@ export interface Intent {
     behaviour: BehaviourName;
     /** walk here (pathfinding); null: no destination */
     goal: Vec2 | null;
+    /**
+     * Floor of `goal`: 0 ground, 1 underground (basements and bunkers, BrainFeatures.basements); undefined keeps ground
+     * navigation. Bot hands it to PathFollower.steer.
+     */
+    goalLayer?: number;
     arriveDist: number;
     /** walk in this direction directly (overrides `goal`), e.g. strafing or backing off */
     moveDir: Vec2 | null;
@@ -138,6 +147,8 @@ export class BrainMemory {
     current: BehaviourName = "idle";
     /** when the current behaviour was chosen */
     currentSince = 0;
+    /** state of the BrainFeatures behaviours; written only by the code paths of enabled features */
+    readonly smart = new SmartMemory();
 }
 
 export interface BrainCtx {
@@ -163,10 +174,31 @@ export interface BrainCtx {
     teamMode: boolean;
     /** navigation component the bot stands in (0 when unknown): targets outside it cannot be reached */
     myComp: number;
+    /** fight assessment against `target` (brain/assess.ts); null while no feature that reads it is on, or no target */
+    assessment: Assessment | null;
 }
 
 /** Whether a walkable cell within `slack` of `p` lies in the bot's navigation component. */
 export function reachable(ctx: BrainCtx, p: Vec2, slack = 1.5): boolean {
+    // basements: underground (or on stairs) the ground grid's components mean nothing; ask the floor-aware navigation
+    const below = ctx.features.basements ? ctx.model.underground : null;
+    if (below && ctx.self.layer !== 0) return below.canPathTo(ctx.model.nav, ctx.self.pos, ctx.self.layer, p, 0);
     if (ctx.myComp === 0) return true;
     return ctx.model.nav.nearestWalkable(p, slack, ctx.myComp) >= 0;
+}
+
+/** Whether `p` lies at a goal the path follower recently failed to reach (avoided for a while). */
+export function nearFailedGoal(ctx: BrainCtx, p: Vec2): boolean {
+    const f = ctx.mem.failedGoal;
+    return !!f && ctx.now < ctx.mem.failedUntil && v2.distance(f, p) < 2;
+}
+
+/**
+ * A walkable spot the bot can get to near `p` (its navigation component, not a goal that just failed), or null: the
+ * smart behaviours' goals go through it so the path follower is not sent at points inside obstacles or across water.
+ */
+export function usableSpot(ctx: BrainCtx, p: Vec2, slack = 2): Vec2 | null {
+    if (nearFailedGoal(ctx, p)) return null;
+    const cell = ctx.model.nav.nearestWalkable(p, slack, ctx.myComp);
+    return cell >= 0 ? ctx.model.nav.center(cell) : null;
 }

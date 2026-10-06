@@ -7,6 +7,7 @@ import { colliderCenter, colliderRadius, distanceToCollider } from "../geom.ts";
 import type { SeenObstacle } from "../perception/world.ts";
 import { addCombatLayer } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent, reachable } from "./context.ts";
+import { steadyGoal } from "./steady.ts";
 import { onTheWay } from "./survival.ts";
 
 /** Containers farther than this are not worth a detour. */
@@ -40,6 +41,11 @@ function openable(o: SeenObstacle): boolean {
     return !o.view.dead && !!o.def.airdropCrate && !!o.view.button?.canUse;
 }
 
+/** Whether a seen obstacle can still be broken open or opened (bestBreakable's filter). */
+export function breakableNow(o: SeenObstacle): boolean {
+    return (breakable(o) || openable(o)) && (o.view.layer & 1) === 0;
+}
+
 export interface BreakChoice {
     obstacle: SeenObstacle;
     value: number;
@@ -57,6 +63,7 @@ export function bestBreakable(ctx: BrainCtx): BreakChoice | null {
         const d = distanceToCollider(self.pos, o.col);
         if (d > MAX_DIST || !model.insideCurrentCircle(colliderCenter(o.col), 2)) continue;
         if (!onTheWay(model, colliderCenter(o.col))) continue;
+        if (ctx.features.steady && !steadyGoal(ctx, colliderCenter(o.col))) continue;
         const value = containerValue(o);
         if (o.view.id !== mem.breakTarget && !reachable(ctx, colliderCenter(o.col), colliderRadius(o.col) + 1.8)) {
             mem.lootBlacklist.set(o.view.id, now + 30);

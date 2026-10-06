@@ -5,8 +5,10 @@
 import { airdropScore, planAirdrop } from "./airdrop.ts";
 import type { BehaviourName, BrainCtx, Intent } from "./context.ts";
 import { disengageScore, planDisengage } from "./disengage.ts";
+import { holdScore, planHold } from "./endgame.ts";
 import type { BrainFeature } from "./features.ts";
 import { guardScore, planGuard } from "./guard.ts";
+import { assistScore, planAssist } from "./teamplay.ts";
 import { planThirdparty, thirdpartyScore } from "./thirdparty.ts";
 
 export interface ExtensionBehaviour {
@@ -23,4 +25,6 @@ export const EXTENSION_BEHAVIOURS: readonly ExtensionBehaviour[] = [
     { name: "thirdparty", feature: "thirdparty", score: thirdpartyScore, plan: planThirdparty },
     { name: "guard", feature: "guard", score: guardScore, plan: planGuard },
     { name: "airdrop", feature: "airdrop", score: airdropScore, plan: planAirdrop },
+    { name: "hold", feature: "endgame", score: holdScore, plan: planHold },
+    { name: "assist", feature: "teamplay", score: assistScore, plan: planAssist },
 ];

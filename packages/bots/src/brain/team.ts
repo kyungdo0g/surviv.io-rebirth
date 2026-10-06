@@ -12,7 +12,7 @@ const REGROUP_DIST = 26;
 const REGROUP_DONE = 10;
 
 /** Living teammates (not the bot itself), with the freshest position known. */
-function mates(ctx: BrainCtx): Array<TeamMemberView & { at: Vec2 }> {
+export function mates(ctx: BrainCtx): Array<TeamMemberView & { at: Vec2 }> {
     const out: Array<TeamMemberView & { at: Vec2 }> = [];
     for (const m of ctx.model.team) {
         if (m.playerId === ctx.self.id || m.dead || m.disconnected) continue;
@@ -23,7 +23,7 @@ function mates(ctx: BrainCtx): Array<TeamMemberView & { at: Vec2 }> {
 }
 
 /** The nearest downed teammate. */
-function downedMate(ctx: BrainCtx): (TeamMemberView & { at: Vec2 }) | undefined {
+export function downedMate(ctx: BrainCtx): (TeamMemberView & { at: Vec2 }) | undefined {
     let best: (TeamMemberView & { at: Vec2 }) | undefined;
     let bestD = Number.POSITIVE_INFINITY;
     for (const m of mates(ctx)) {
@@ -63,6 +63,15 @@ export function planRevive(ctx: BrainCtx): Intent {
     const d = v2.distance(m.at, self.pos);
     if (d < REVIVE_RANGE - 1.6) {
         intent.stop = true;
+        // guard: blind the threat line with smoke before reviving under pressure
+        if (ctx.features.guard && threat && v2.distance(threat.pos, m.at) < 40 && (self.inventory.smoke ?? 0) > 0) {
+            if (now - mem.lastSmoke > 10) {
+                mem.lastSmoke = now;
+                const toThreat = v2.normalizeSafe(v2.sub(threat.pos, m.at));
+                intent.throwPlan = { item: "smoke", pos: v2.add(m.at, v2.mul(toThreat, 5)), cook: 0.15 };
+                return intent;
+            }
+        }
         if (now - mem.lastReviveRequest > 0.6) {
             mem.lastReviveRequest = now;
             intent.actions.push(Input.Revive);

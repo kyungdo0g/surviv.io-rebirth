@@ -22,6 +22,7 @@ import {
 import { distToSegment, obstacleCollider, obstacleDef, pointInBounds } from "../geom.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
 import { NavGrid } from "../nav/grid.ts";
+import type { UndergroundNav } from "../nav/underground.ts";
 import { type EnemyIntelProvider, NO_INTEL } from "./intel.ts";
 import { roofRegions } from "./roofs.ts";
 import { NO_THREATS, type ThreatBoard } from "./threats.ts";
@@ -160,6 +161,11 @@ export class WorldModel {
     threats: ThreatBoard = NO_THREATS;
     /** per-enemy intel (perception/intel.ts); inert unless a real provider is installed */
     intel: EnemyIntelProvider = NO_INTEL;
+    /**
+     * Underground navigation (nav/underground.ts): basements and bunkers, null unless installed (BrainFeatures.basements).
+     * With it the path follower plans into and out of underground floors (PathFollower.steer's `goalLayer`).
+     */
+    underground: UndergroundNav | null = null;
     private obstacleCache = new Map<number, SeenObstacle>();
     private readonly roofCache = new Map<number, Bounds[]>();
 
@@ -382,6 +388,7 @@ export class WorldModel {
 
     private seeObstacle(o: ObstacleView): SeenObstacle | undefined {
         this.nav.observeObstacle(o);
+        this.underground?.observeObstacle(o);
         const cached = this.obstacleCache.get(o.id);
         if (
             cached &&

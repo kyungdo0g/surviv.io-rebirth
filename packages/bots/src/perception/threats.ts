@@ -4,7 +4,11 @@
 // snapshot to `ingest`; behaviours read it through `ctx.model.threats` while `ctx.features.threats` is on.
 //
 // NO_THREATS is the inert board every WorldModel starts with (nothing known, heat 0): installing a real board is the
-// only way to change what the brain sees, so bots without the feature keep deciding exactly as before.
+// only way to change what the brain sees, so bots without the feature keep deciding exactly as before. The real board
+// is perception/threatTracker.ts (ThreatTracker), installed by perception/install.ts.
+//
+// Wave 2 additions (all optional, so other implementations of the interface stay valid): ReportedThreat.confidence,
+// ThreatBoard.killLeader() and ThreatBoard.events(), the ThreatEvent and KillLeaderIntel types.
 import type { Vec2 } from "@rebirth/core";
 import type { Snapshot } from "@rebirth/sim";
 import type { WorldModel } from "./world.ts";
@@ -26,19 +30,45 @@ export interface UnseenShooter {
     weapon: string;
 }
 
-/** A position someone else flagged: a teammate's ping, a kill in the feed with a known place. */
+/**
+ * A ghost contact: a position someone else flagged (a teammate's ping, a kill in the feed with a known place) or where
+ * an off-screen shooter was heard ("gunfire": `reporterId` is the shooter, `type` its weapon). Kept for ~6 s.
+ */
 export interface ReportedThreat {
     kind: ThreatKind;
     pos: Vec2;
     /** game time it was reported */
     time: number;
-    /** player who reported it (the pinging teammate, the killer), 0 for none */
+    /** player who reported it (the pinging teammate, the killer, the heard shooter), 0 for none */
     reporterId: number;
-    /** emote / ping id or kill source, e.g. "ping_danger" */
+    /** emote / ping id, kill source or weapon, e.g. "ping_danger" */
     type: string;
+    /** (added in wave 2, optional) 1 when reported, fading linearly to 0 over ~6 s (absent: 1) */
+    confidence?: number;
 }
 
-/** An area to keep out of until `until`: grenades about to blow, air strike zones, recent explosions. */
+/** (added in wave 2) One entry of the board's event ring buffer (64 entries, newest last in `events()`). */
+export interface ThreatEvent {
+    kind: ThreatKind;
+    pos: Vec2;
+    /** game time of the event (merged gunfire: of its latest shot) */
+    time: number;
+    /** heat weight (gunfire grows with merged shots) */
+    weight: number;
+    /** player behind it (shooter, killer, pinging teammate), 0 for none */
+    sourceId: number;
+}
+
+/** (added in wave 2) The current kill leader as the HUD shows it (no position). */
+export interface KillLeaderIntel {
+    id: number;
+    kills: number;
+}
+
+/**
+ * An area to keep out of until `until`: live grenades in view (their explosion radius), air strike zones and strobe /
+ * zone strike markers, falling air drop crates (radius 6 around the landing point until it lands).
+ */
 export interface DangerZone {
     kind: ThreatKind;
     pos: Vec2;
@@ -66,10 +96,14 @@ export interface ThreatBoard {
     reported(): readonly ReportedThreat[];
     /** areas to avoid right now */
     dangerZones(): readonly DangerZone[];
-    /** air drops known */
+    /** air drops known (falling or landed; dropped once the bot saw the crate opened) */
     airdrops(): readonly AirdropIntel[];
     /** called by WorldModel.observe with every snapshot, after the model itself was updated */
     ingest(snap: Snapshot, model: WorldModel): void;
+    /** (added in wave 2, optional) the kill leader, null for none or unknown */
+    killLeader?(): Readonly<KillLeaderIntel> | null;
+    /** (added in wave 2, optional) the event ring buffer, oldest first */
+    events?(): readonly ThreatEvent[];
 }
 
 const NONE: readonly never[] = Object.freeze([]);

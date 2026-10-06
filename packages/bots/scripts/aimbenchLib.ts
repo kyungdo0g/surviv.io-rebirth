@@ -131,7 +131,10 @@ export function benchParams(difficulty: Difficulty, motor?: MotorModel): Difficu
     return motor && motor !== p.motor.model ? { ...p, motor: { ...p.motor, model: motor } } : p;
 }
 
-export function runTrial(cell: BenchCell, seed: number, motor?: MotorModel): TrialResult {
+/** Called every tick of a trial after the target appeared (diagnostics): the shooter's controller, the game, the target. */
+export type TrialProbe = (bot: BotController, game: Game, target: Player) => void;
+
+export function runTrial(cell: BenchCell, seed: number, motor?: MotorModel, probe?: TrialProbe): TrialResult {
     const out: TrialResult = { seen: false, firstShot: null, firstHit: null, ttk: null, bullets: 0, hits: 0 };
     if (!cellVisible(cell.distance, cell.scope)) return out;
     const game = flatGame(seed);
@@ -198,6 +201,7 @@ export function runTrial(cell: BenchCell, seed: number, motor?: MotorModel): Tri
         // the first sighting (the model forgets the contact once it sees it dead)
         if (seenAt === null) seenAt = bot.bot.model.contacts.get(target.id)?.firstSeen ?? null;
         game.step();
+        probe?.(bot, game, target);
         if (target.dead) killedAt = game.time;
     }
     if (seenAt === null) return out;
