@@ -22,8 +22,8 @@ pnpm dev                           # client dev server on http://127.0.0.1:5173 
 
 Then open:
 
-- <http://127.0.0.1:5173/?menu=1> — the start page: name, Play Solo / Duo / Squad, Create Team / Join Team (party
-  lobby; share the `/#CODE` link). `?net=1` without a name opens it too.
+- <http://127.0.0.1:5173/> — the start page: name, region, Play Solo / Duo / Squad, Create Team / Join Team (party
+  lobby; share the `/#CODE` link), settings (language, volumes, screen shake, anonymous names) and keybinds.
 - <http://127.0.0.1:5173/?net=1&name=alice> — straight into a solo game on the server (`&mode=2` or `&mode=4` for duo /
   squad, `&server=http://host:8001` for another server).
 
@@ -35,15 +35,25 @@ Without `pnpm assets` everything works with placeholder graphics and no sound.
 
 ### Sandbox (no server)
 
-The client runs a loopback simulation when no `net` / `menu` parameter is given:
+The client runs a loopback simulation when any sandbox parameter (`sandbox`, `map`, `seed`, `give`, `dummies`, `loot`,
+`team`, `teammates`, `gas`, `zoom`, `debug`) is given:
 
-- <http://127.0.0.1:5173/> — sandbox on the main map (the match starts at once and never ends)
+- <http://127.0.0.1:5173/?sandbox=1> — sandbox on the main map (the match starts at once and never ends)
 - `?map=desert&seed=7` — another map or seed (`main`, `desert`, `woods`, `woods_snow`, `halloween`, `faction`,
   `potato`, `savannah`, `cobalt`, ...)
 - `&dummies=4&give=mosin,frag,bandage` — standing dummies and items; `&loot=0` no map loot
 - `&sandbox=0&gas=fast` — a real match with a fast red zone; `&team=4&teammates=3` — squad play with idle teammates
 - `&debug=1` — debug HUD (F3), `&zoom=60` camera radius, `&lang=ko` Korean HUD
+- `&touch=1` — touch controls on a desktop browser (they turn on by themselves on phones and tablets; `&touch=0` off)
 - `?gallery=` — sprite gallery, `?fixture=1` — renderer fixture
+
+### Controls
+
+The original defaults: WASD move, mouse aim and fire, R reload, F interact, 1-4 weapons, Q last weapon, E stow, 7-0
+heals and boosts, T swap guns, M (or G) map, hold right mouse for emotes, C team ping, L full screen, Esc the in-game
+menu (settings, keybinds, quit). Every action can be rebound, and binds are shared as the original's bind codes. On
+touch devices the left half of the screen is the move stick and the right half the aim stick (pull past the edge to
+fire); tap a weapon slot, the ammo counter or an item to use it, hold an item to drop it.
 
 ### Modes and maps
 
@@ -60,9 +70,9 @@ HOST=0.0.0.0 PORT=8001 ADMIN_TOKEN=$(openssl rand -hex 24) BOT_FILL=40 pnpm star
 docker compose up -d --build        # or the Docker image (without the original art unless WITH_ORIGINAL_ASSETS=1)
 ```
 
-A served client opens the sandbox at `/`; players use `/?menu=1`. Put a TLS reverse proxy in front for a public
-server (WebSockets on `/play` and `/team_v2`), set `TRUST_PROXY=1`, and see [`docs/deploy.md`](docs/deploy.md) for
-the region notes (Seoul hosting for Korean players), player reports, bans, the name filter, the anti-cheat telemetry
+A served client opens the start page at `/`. Put a TLS reverse proxy in front for a public server (WebSockets on
+`/play` and `/team_v2`), set `TRUST_PROXY=1`, and see [`docs/deploy.md`](docs/deploy.md) for regions (`REGION`,
+`REGION_SERVERS`; Seoul hosting for Korean players), player reports, bans, the name filter, the anti-cheat telemetry
 and the admin API (`/api/admin/*`).
 
 Checks: `pnpm verify` (typecheck, lint, unit tests, knowledge base), `pnpm e2e` (Playwright), `pnpm check:bundle`
