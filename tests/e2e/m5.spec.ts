@@ -46,10 +46,7 @@ test.describe("M5 throwables, explosions, smoke and heals", () => {
         expect(await page.evaluate(() => (window as any).__rebirth.fx.particles("fragPin"))).toBeGreaterThan(0);
         await page.screenshot({ path: `${SCREENS}/grenade-mid-air.png` });
 
-        // step back out of the blast while the fuse burns; the explosion stays in view
-        const me = await localPos(page);
-        expect(await moveLocalAway(page, target, 15, me)).not.toBeNull();
-        // record the camera shake every frame
+        // record the camera shake every frame from now on (under load the walk away can outlast the fuse)
         await page.evaluate(() => {
             const r = (window as any).__rebirth;
             r.maxShake = 0;
@@ -60,6 +57,9 @@ test.describe("M5 throwables, explosions, smoke and heals", () => {
             };
             tick();
         });
+        // step back out of the blast while the fuse burns; the explosion stays in view
+        const me = await localPos(page);
+        expect(await moveLocalAway(page, target, 15, me)).not.toBeNull();
         await page.waitForFunction(() => (window as any).__rebirth.fx.explosions > 0, null, { timeout: 8_000 });
         await page.screenshot({ path: `${SCREENS}/explosion.png` });
         expect(await page.evaluate(() => (window as any).__rebirth.fx.particles("explosionBurst"))).toBeGreaterThan(0);

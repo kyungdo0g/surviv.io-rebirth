@@ -284,6 +284,13 @@ test.describe("M9 sliding lab doors", () => {
         const ceiling = async () => (await drawOrder(page, door.lab))?.find((p) => p.part === "ceiling");
         await expect.poll(async () => (await ceiling())?.alpha ?? 0, { timeout: MOVE_TIMEOUT }).toBe(1);
         await expect.poll(async () => (await ceiling())?.size.w ?? 0, { timeout: MOVE_TIMEOUT }).toBeGreaterThan(40);
+        // a render fresh from the pool already has its texture and alpha before its first update places it: wait for
+        // the roof to sit at the lab (the building is far from the map origin)
+        await expect
+            .poll(async () => Math.abs((await ceiling())?.pos.x ?? 0) + Math.abs((await ceiling())?.pos.y ?? 0), {
+                timeout: MOVE_TIMEOUT,
+            })
+            .toBeGreaterThan(10);
         const roof = (await ceiling())!;
         // survev's 816x720 image (atlasDefs.ts scaledSprites 0.5 of the 1632x1440 file) at scale 1: 51 x 45 u
         expect(roof.size.w).toBeCloseTo(51, 3);
