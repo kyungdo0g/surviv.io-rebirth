@@ -22,3 +22,6 @@ playwright-report/
 apps/client/public/assets/
 # e2e screenshots contain original art too
 tests/e2e/__screens__/
+
+# agent worktrees (Claude Code workflows)
+.claude/worktrees/
