@@ -27,6 +27,11 @@ export class GameHost {
     readonly config: ServerConfig;
     readonly tokens: JoinTokens;
     readonly rooms = new Map<string, GameRoom>();
+    /**
+     * Sockets that used a token for a room and have not sent Join (or closed) yet: like an outstanding token, they keep
+     * an empty room open, else a room whose grace ran out could close between the token being used and the Join.
+     */
+    private readonly connecting = new Map<string, number>();
     private loopTimer: ReturnType<typeof setInterval> | null = null;
     private lastSweep = 0;
     private readonly startedAt = Date.now();
@@ -122,11 +127,24 @@ export class GameHost {
         }
     }
 
+    /** A socket used a token for `gameId` and will send Join: the room stays open until `releaseConnecting`. */
+    holdConnecting(gameId: string): void {
+        this.connecting.set(gameId, (this.connecting.get(gameId) ?? 0) + 1);
+    }
+
+    /** The socket holding `gameId` joined or closed. */
+    releaseConnecting(gameId: string): void {
+        const n = (this.connecting.get(gameId) ?? 0) - 1;
+        if (n > 0) this.connecting.set(gameId, n);
+        else this.connecting.delete(gameId);
+    }
+
     /** Expires tokens and removes games empty for longer than the grace period. */
     sweep(wall = Date.now()): void {
         this.tokens.sweep();
         for (const room of [...this.rooms.values()]) {
             if (room.emptySince === null || this.tokens.pendingFor(room.id) > 0) continue;
+            if (this.connecting.has(room.id)) continue;
             if (wall - room.emptySince >= this.config.emptyGameGraceMs) this.closeRoom(room);
         }
     }

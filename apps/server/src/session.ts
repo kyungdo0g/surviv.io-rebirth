@@ -54,6 +54,8 @@ export class ClientSession implements RoomMember {
     /** the join token this socket presented (the player's report credential, M8) */
     private readonly token: string | null;
     private ticket: JoinTicket | null;
+    /** this socket keeps its token's room open until Join (GameHost.holdConnecting) */
+    private holding = false;
     private joinTimer: ReturnType<typeof setTimeout> | null = null;
     private windowStart = 0;
     private windowCount = 0;
@@ -73,6 +75,10 @@ export class ClientSession implements RoomMember {
         this.onClosed = deps.onClosed;
         this.token = token;
         this.ticket = token ? this.host.tokens.consumeTicket(token) : null;
+        if (this.ticket) {
+            this.host.holdConnecting(this.ticket.gameId);
+            this.holding = true;
+        }
         ws.on("message", (data, isBinary) => this.onMessage(data, isBinary));
         ws.on("close", () => this.cleanup());
         ws.on("error", () => this.cleanup());
@@ -221,6 +227,7 @@ export class ClientSession implements RoomMember {
             this.disconnect(DisconnectReason.InvalidPacket);
             return;
         }
+        this.releaseHold();
         const chosen = sanitizeName(name);
         const ban = this.moderation.bans.check(this.ip, chosen);
         if (ban) {
@@ -255,8 +262,15 @@ export class ClientSession implements RoomMember {
         if (this.config.log) console.log(`player ${playerId} joined game ${room.id} from ${this.ip}`);
     }
 
+    /** Drops this socket's hold on its token's room (once: at Join or when the socket closes before it). */
+    private releaseHold(): void {
+        if (this.holding && this.ticket) this.host.releaseConnecting(this.ticket.gameId);
+        this.holding = false;
+    }
+
     private cleanup(): void {
         if (this.state === "closed") return;
+        this.releaseHold();
         const wasJoined = this.state === "joined";
         this.state = "closed";
         if (this.joinTimer) clearTimeout(this.joinTimer);

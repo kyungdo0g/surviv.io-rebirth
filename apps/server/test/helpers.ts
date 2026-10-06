@@ -42,9 +42,21 @@ export async function findGame(base: string, body: object = {}): Promise<{ url: 
 }
 
 /** The room hosting `playerId`. */
-export function roomOf(server: RunningServer, playerId: number): GameRoom {
-    for (const room of server.host.rooms.values()) if (room.game.getPlayer(playerId)) return room;
-    throw new Error(`player ${playerId} is in no room`);
+/**
+ * The room of a joined player. Player ids are per game, so two rooms can hold the same id: the player's session
+ * decides (narrowed by `name` when given), and an id that is still ambiguous throws instead of guessing.
+ */
+export function roomOf(server: RunningServer, playerId: number, name?: string): GameRoom {
+    const bySession = new Set<GameRoom>();
+    for (const s of server.sessions) {
+        if (s.playerId === playerId && s.room && (name === undefined || s.name === name)) bySession.add(s.room);
+    }
+    if (bySession.size === 1) return [...bySession][0];
+    const rooms = [...server.host.rooms.values()].filter(
+        (room) => room.game.getPlayer(playerId) && (name === undefined || room.game.getPlayer(playerId)?.name === name),
+    );
+    if (rooms.length === 1) return rooms[0];
+    throw new Error(`player ${playerId} is in ${rooms.length === 0 ? "no room" : `${rooms.length} rooms`}`);
 }
 
 export function sleep(ms: number): Promise<void> {

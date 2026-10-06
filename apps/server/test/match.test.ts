@@ -154,17 +154,17 @@ describe("join window", () => {
     it("find_game does not route players into games past the join window or over", async () => {
         const first = await join("first");
         await join("second");
-        const room = roomOf(server, first.id);
+        const room = roomOf(server, first.id, "first");
         room.game.rules.minActiveTime = 0;
         await first.client.waitForSnapshot((s) => s.gas?.mode === "waiting");
         // still within the window: joins the same game
         const third = await join("third");
-        expect(roomOf(server, third.id)).toBe(room);
+        expect(roomOf(server, third.id, "third")).toBe(room);
         // the window closes: the next player gets a new game
         room.game.rules.joinWindowSeconds = 0;
         expect(room.canJoin()).toBe(false);
         const late = await join("late");
-        const lateRoom = roomOf(server, late.id);
+        const lateRoom = roomOf(server, late.id, "late");
         expect(lateRoom).not.toBe(room);
         expect(late.client.joined?.started).toBe(false);
         expect(server.host.findRoom("main")).toBe(lateRoom);

@@ -102,6 +102,18 @@ describe("game host", () => {
         expect(host.rooms.size).toBe(0);
     });
 
+    it("keeps an empty game open while a socket that used its token has not joined yet", () => {
+        const host = new GameHost(makeConfig({ log: false, emptyGameGraceMs: 100 }));
+        const room = host.createRoom("main");
+        room.emptySince = Date.now() - 60_000;
+        host.holdConnecting(room.id);
+        host.sweep();
+        expect(host.rooms.has(room.id)).toBe(true);
+        host.releaseConnecting(room.id);
+        host.sweep();
+        expect(host.rooms.has(room.id)).toBe(false);
+    });
+
     it("drops a game whose loop throws and keeps running the others", () => {
         const host = new GameHost(makeConfig({ log: false }));
         const bad = host.createRoom("main");
