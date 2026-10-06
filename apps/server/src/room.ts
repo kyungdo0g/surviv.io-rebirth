@@ -173,18 +173,18 @@ export class GameRoom {
     }
 
     /**
-     * Adds a player for `member` (in team modes into the group `group` picks: party key, auto fill); returns its id and
-     * the first frame (Joined + Map).
+     * Adds a player for `member` (in team modes into the group `opts` picks: party key, auto fill; M8: `isMobile` for
+     * touch clients); returns its id and the first frame (Joined + Map).
      */
-    join(member: RoomMember, name: string, group?: AddPlayerOptions): { playerId: number; frame: Uint8Array } {
+    join(member: RoomMember, name: string, opts?: AddPlayerOptions): { playerId: number; frame: Uint8Array } {
         // a human takes the seat of a fill bot when the game is at its target or full
         this.bots?.makeRoom();
-        const playerId = this.game.addPlayer(name, group);
+        const playerId = this.game.addPlayer(name, opts);
         if (this.config.debugSpawnTogether) this.spawnNearFirstPlayer(playerId);
         const cache = this.sharedCache ? this.cache : new ObjectCache(this.cache.ctx);
         this.seats.set(playerId, { member, encoder: new ClientEncoder(cache), name });
         this.humans.set(playerId, { name, ip: member.ip ?? "" });
-        this.telemetry?.track(playerId, name, member.ip ?? "");
+        this.telemetry?.track(playerId, name, member.ip ?? "", opts?.isMobile ?? false);
         this.emptySince = null;
         const w = new BitWriter(this.mapMsg.length + 64);
         writeServerMsg(w, {

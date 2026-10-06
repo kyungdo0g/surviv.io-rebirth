@@ -163,7 +163,13 @@ export function dropObstacleLoot(ctx: SimContext, obstacle: Obstacle, dir?: Vec2
     }
 }
 
-/** A player throws an item behind itself (survev player.ts dropLoot: speed 7.5..11 against the facing). */
+/** Mobile auto loot pauses this long after the player dropped something (survev player.ts dropLoot). */
+export const MOBILE_DROP_PAUSE = 3;
+
+/**
+ * A player throws an item behind itself (survev player.ts dropLoot: speed 7.5..11 against the facing); a mobile
+ * player's auto loot pauses for MOBILE_DROP_PAUSE (M8, world/autoLoot.ts).
+ */
 export function playerDropLoot(
     ctx: SimContext,
     player: Player,
@@ -171,6 +177,7 @@ export function playerDropLoot(
     count = 1,
     useCountForAmmo = false,
 ): void {
+    player.mobileDropTicker = MOBILE_DROP_PAUSE;
     ctx.loot.addLoot(type, player.pos, player.layer, count, {
         useCountForAmmo,
         pushSpeed: ctx.lootRng.range(7.5, 11),

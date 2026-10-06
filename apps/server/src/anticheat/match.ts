@@ -66,8 +66,9 @@ export class MatchTelemetry implements CombatObserver {
     }
 
     /** Starts tracking a human player (its stats stay after it leaves, for reports). */
-    track(playerId: number, name: string, ip: string): PlayerTelemetry {
+    track(playerId: number, name: string, ip: string, isMobile = false): PlayerTelemetry {
         const t = new PlayerTelemetry(playerId, name, ip, this.options.thresholds);
+        t.isMobile = isMobile;
         this.players.set(playerId, t);
         return t;
     }

@@ -7,9 +7,10 @@ import mapObjectsJson from "./generated/mapObjects.json" with { type: "json" };
  * Bump whenever the wire format in @rebirth/protocol changes, so clients built against an older format are rejected
  * at join (it feeds PROTOCOL_HASH). 1: M3 · 2: M4 match sections, M5a effects/extended flags, M5b doors/puzzles/recorders
  * · 3: M6a team/group status, emotes, revive actions · 4: M7a perks, roles and haste of players, faction status and
- * alive counts, bullet tracer flags, PerkModeRoleSelect · 5: M7b frozen players (snowball / potato hits), DropItem.
+ * alive counts, bullet tracer flags, PerkModeRoleSelect · 5: M7b frozen players (snowball / potato hits), DropItem
+ * · 6: M8 touch movement stick in Input (touchMoveActive bit, touchMoveDir 8+8, touchMoveLen u8).
  */
-export const PROTOCOL_SCHEMA_VERSION = 5;
+export const PROTOCOL_SCHEMA_VERSION = 6;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

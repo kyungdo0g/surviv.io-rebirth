@@ -1,7 +1,8 @@
 // One game WebSocket: token check, Join (protocol hash first), Input validation, Ping/Pong, Spectate, Emote (M6a),
 // per-socket message rate limit, and Disconnect + close for every failure (survev client.ts / gameProcess.ts).
-// M8: Join checks the bans (address and name; DisconnectReason.Banned), passes the name through the name filter and
-// registers the join token as the player's credential for reports.
+// M8: Join checks the bans (address and name; DisconnectReason.Banned), passes the name through the name filter,
+// registers the join token as the player's credential for reports, and hands the Join's isMobile flag to the game (touch
+// clients: mobile zoom, loot reach, auto loot).
 import { BitWriter } from "@rebirth/core";
 import { PROTOCOL_HASH } from "@rebirth/defs";
 import {
@@ -166,7 +167,7 @@ export class ClientSession implements RoomMember {
     private handle(msg: ClientMsg): void {
         switch (msg.type) {
             case MsgType.Join:
-                this.join(msg.name);
+                this.join(msg.name, msg.isMobile);
                 break;
             case MsgType.Input: {
                 if (this.state !== "joined" || !this.room) {
@@ -215,7 +216,7 @@ export class ClientSession implements RoomMember {
         }
     }
 
-    private join(name: string): void {
+    private join(name: string, isMobile: boolean): void {
         if (this.state !== "connecting" || this.ticket === null) {
             this.disconnect(DisconnectReason.InvalidPacket);
             return;
@@ -244,7 +245,7 @@ export class ClientSession implements RoomMember {
         this.joinTimer = null;
         this.name = chosen;
         const shown = this.moderation.names.filter(chosen);
-        const { playerId, frame } = room.join(this, shown, this.ticket.group);
+        const { playerId, frame } = room.join(this, shown, { ...this.ticket.group, isMobile: isMobile === true });
         this.room = room;
         this.playerId = playerId;
         this.state = "joined";

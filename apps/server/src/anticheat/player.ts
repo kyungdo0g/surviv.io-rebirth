@@ -115,6 +115,11 @@ export class PlayerTelemetry {
     ip: string;
     /** the player's socket closed (its stats stay for reports) */
     left = false;
+    /**
+     * Touch client (M8): its aim stick jumps straight to a new direction on every touch, so aim snaps are normal and
+     * the snap component is not scored.
+     */
+    isMobile = false;
     private readonly th: AntiCheatThresholds;
     private readonly classes = new Map<GunClass | "other", WeaponClassStats>();
     private readonly aim = new AimHistory();
@@ -237,7 +242,7 @@ export class PlayerTelemetry {
             }
         }
         if (best) add("accuracy", best.value, w.accuracy, best.detail);
-        if (this.openingHits >= th.snap.minHits && this.openingHits > 0) {
+        if (!this.isMobile && this.openingHits >= th.snap.minHits && this.openingHits > 0) {
             const ratio = this.snapHits / this.openingHits;
             add(
                 "snap",

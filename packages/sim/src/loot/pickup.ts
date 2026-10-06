@@ -31,10 +31,12 @@ const RETURN_SPEED_MIN = 4;
 const RETURN_SPEED_MAX = 4.5;
 /** Loot search radius around the player (survev: rad + 5). */
 const SEARCH_EXTRA = 5;
+/** Touch players reach loot from 1.4x its radius (survev player.ts getClosestLoot; ui/controls.md). */
+const TOUCH_LOOT_RAD_MULT = GameConfig.player.touchLootRadMult;
 
 /**
  * Nearest loot on the player's layer whose pickup circle the player's centre is inside (centre distance < player
- * rad + loot rad).
+ * rad + loot rad, the loot rad x touchLootRadMult for mobile players).
  */
 export function closestLoot(ctx: SimContext, player: Player): Loot | undefined {
     const r = player.rad + SEARCH_EXTRA;
@@ -45,7 +47,7 @@ export function closestLoot(ctx: SimContext, player: Player): Loot | undefined {
         if (obj.kind !== "loot" || obj.destroyed || !sameLayer(obj.layer, player.layer)) continue;
         // owned loot (smartLoot crates) is only for its owner for a while (survev getClosestLoot)
         if (obj.ownerId !== 0 && obj.ownerId !== player.id) continue;
-        const rad = player.rad + obj.rad;
+        const rad = player.rad + obj.rad * (player.isMobile ? TOUCH_LOOT_RAD_MULT : 1);
         const distSq = v2.distanceSqr(player.pos, obj.pos);
         if (distSq < rad * rad && distSq < bestDist) {
             bestDist = distSq;

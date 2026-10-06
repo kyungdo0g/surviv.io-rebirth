@@ -1,9 +1,11 @@
-// HTTP routes (Hono): health, stats, matchmaking (find_game -> /play URL + single-use token; solo, or a single player
-// queueing for duo / squad, M6a; a 50v50 map always queues into squads inside the factions, M7a), the moderation
-// routes (M8: reports, admin; moderation/routes.ts; find_game refuses banned addresses with 403 banned) and, when a
-// built client exists, static files.
+// HTTP routes (Hono): health, stats, site info (play buttons; M8: this server's region population and every region's
+// server, regions.ts), matchmaking (find_game -> /play URL + single-use token; solo, or a single player queueing for
+// duo / squad, M6a; a 50v50 map always queues into squads inside the factions, M7a), the moderation routes (M8:
+// reports, admin; moderation/routes.ts; find_game refuses banned addresses with 403 banned) and, when a built client
+// exists, static files.
 import { serveStatic } from "@hono/node-server/serve-static";
 import { MapDefs } from "@rebirth/defs";
+import type { SiteInfoRes } from "@rebirth/protocol";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { z } from "zod";
@@ -13,6 +15,7 @@ import type { Ban } from "./moderation/bans.ts";
 import type { Moderation } from "./moderation/index.ts";
 import { mountModerationRoutes, requestIp } from "./moderation/routes.ts";
 import { resolveFindGame } from "./modes.ts";
+import { regionL10n, siteRegions } from "./regions.ts";
 
 const FindGameBody = z.object({
     mapName: z.string().max(32).optional(),
@@ -59,19 +62,21 @@ export function createApp(
         return c.json(stats);
     });
 
-    // the play buttons and region populations (survev SiteInfoRes; M7b)
-    app.get("/api/site_info", (c) =>
-        c.json({
+    // the play buttons (M7b), this region's population and every region's server (M8) (survev SiteInfoRes)
+    app.get("/api/site_info", (c) => {
+        const info: SiteInfoRes = {
             modes: config.modes,
-            pops: { local: { playerCount: host.playerCount, l10n: "en" } },
+            pops: { [config.region]: { playerCount: host.playerCount, l10n: regionL10n(config.region) } },
+            regions: siteRegions(config.region, config.regionServers),
             youtube: { name: "", link: "" },
             twitch: [],
             country: "US",
             gitRevision: "rebirth",
             captchaEnabled: false,
             clientTheme: config.modes[0].mapName,
-        }),
-    );
+        };
+        return c.json(info);
+    });
 
     app.post("/api/find_game", async (c) => {
         if (moderation.bans.matchIp(requestIp(c, config.trustProxy))) return c.json({ error: "banned" }, 403);

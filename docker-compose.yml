@@ -24,6 +24,9 @@ services:
             MIN_PLAYERS: "${MIN_PLAYERS:-2}"
             BOT_FILL: "${BOT_FILL:-0}"
             BOT_DIFFICULTY: "${BOT_DIFFICULTY:-normal}"
+            # this server's region id and the other regions' servers (kr=https://kr.example.com,eu=...; docs/deploy.md)
+            REGION: "${REGION:-local}"
+            REGION_SERVERS: "${REGION_SERVERS:-}"
             # admin API (/api/admin/*): set a long random secret to enable it
             ADMIN_TOKEN: "${ADMIN_TOKEN:-}"
             ANTICHEAT: "${ANTICHEAT:-1}"

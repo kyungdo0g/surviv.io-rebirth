@@ -7,17 +7,21 @@ import {
     type ClientMsg,
     DisconnectReason,
     decodeClientFrame,
+    dequantizeUnitVec,
     encodeClientMsg,
     encodeMapMsg,
     encodeServerMsg,
+    INPUT_TOUCH_DIR_BITS,
     MsgType,
     type PlayerStatsData,
     ProtocolError,
     peekJoinProtocol,
+    quantizeUnit,
     ServerMsgDecoder,
     type ServerSimpleMsg,
     SpectateAction,
     spectateActionName,
+    touchMoveLenWire,
 } from "../src/index.ts";
 import { assertClose, exact } from "./close.ts";
 import { netTolerances, randGameType, randInput, randMap, randMapType, randString } from "./gen.ts";
@@ -157,6 +161,63 @@ describe("client messages", () => {
         expect(decoded.input.seq).toBe(300 & 0xff);
         expect(decoded.input.toMouseLen).toBe(64);
         expect(decoded.input.actions).toEqual(input.actions.slice(0, 15));
+    });
+
+    it("carries the touch stick only while active (M8: bit + 8+8 unit vec + u8, survev inputMsg.ts:39-43)", () => {
+        const base = { ...randInput(createRng(11)), actions: [], useItem: undefined };
+        delete base.touchMoveActive;
+        delete base.touchMoveDir;
+        delete base.touchMoveLen;
+        const plain = encodeClientMsg({ type: MsgType.Input, input: base });
+        // an inactive stick costs one bit; stray direction / length fields are not sent
+        const inactive = { ...base, touchMoveActive: false, touchMoveDir: { x: 0, y: 1 }, touchMoveLen: 9 };
+        const inactiveBytes = encodeClientMsg({ type: MsgType.Input, input: inactive });
+        expect(inactiveBytes).toEqual(plain);
+        const decodedInactive = clientRoundTrip({ type: MsgType.Input, input: inactive });
+        if (decodedInactive.type !== MsgType.Input) throw new Error("not an input");
+        expect(decodedInactive.input.touchMoveActive).toBeUndefined();
+        expect(decodedInactive.input.touchMoveDir).toBeUndefined();
+        expect(decodedInactive.input.touchMoveLen).toBeUndefined();
+        // active: 24 more bits; the pull is rounded and clamped
+        const active = { ...base, touchMoveActive: true, touchMoveDir: { x: 0.6, y: -0.8 }, touchMoveLen: 300.4 };
+        const activeBytes = encodeClientMsg({ type: MsgType.Input, input: active });
+        // seq 8 + 6 flags + touch bit + toMouseDir 20 + toMouseLen 8 + 4 (no actions) + 1 (no item) = 48 bits
+        expect(plain.length).toBe(1 + 6);
+        expect(activeBytes.length).toBe(1 + 9);
+        const decoded = clientRoundTrip({ type: MsgType.Input, input: active });
+        if (decoded.type !== MsgType.Input) throw new Error("not an input");
+        expect(decoded.input.touchMoveActive).toBe(true);
+        expect(decoded.input.touchMoveLen).toBe(255);
+        expect(decoded.input.touchMoveDir?.x).toBeCloseTo(0.6, 2);
+        expect(decoded.input.touchMoveDir?.y).toBeCloseTo(-0.8, 2);
+        const half = clientRoundTrip({ type: MsgType.Input, input: { ...active, touchMoveLen: 127.6 } });
+        if (half.type !== MsgType.Input) throw new Error("not an input");
+        expect(half.input.touchMoveLen).toBe(128);
+        // a missing pull is sent as 255 (the original InputMsg default), NaN as 0
+        const missing = clientRoundTrip({ type: MsgType.Input, input: { ...active, touchMoveLen: undefined } });
+        if (missing.type !== MsgType.Input) throw new Error("not an input");
+        expect(missing.input.touchMoveLen).toBe(255);
+        const nan = clientRoundTrip({ type: MsgType.Input, input: { ...active, touchMoveLen: Number.NaN } });
+        if (nan.type !== MsgType.Input) throw new Error("not an input");
+        expect(nan.input.touchMoveLen).toBe(0);
+    });
+
+    it("decodes the touch stick to exactly its quantized wire values", () => {
+        forCases(12, (rng) => {
+            const input = randInput(rng);
+            const decoded = clientRoundTrip({ type: MsgType.Input, input });
+            if (decoded.type !== MsgType.Input) throw new Error("not an input");
+            if (!input.touchMoveActive || !input.touchMoveDir) {
+                expect(decoded.input.touchMoveActive).toBeUndefined();
+                return;
+            }
+            const bits = INPUT_TOUCH_DIR_BITS;
+            const dir = input.touchMoveDir;
+            expect(decoded.input.touchMoveDir).toEqual(
+                dequantizeUnitVec(quantizeUnit(dir.x, bits), quantizeUnit(dir.y, bits), bits),
+            );
+            expect(decoded.input.touchMoveLen).toBe(touchMoveLenWire(input.touchMoveLen));
+        });
     });
 
     it("rejects malformed and unexpected frames", () => {

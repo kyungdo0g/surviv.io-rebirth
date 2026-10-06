@@ -105,17 +105,28 @@ export interface PongMsg {
 }
 
 /**
- * Client -> server input (original layout minus the touch fields): seq u8, 4 move flags, shootStart, shootHold,
- * toMouseDir unit vec 10+10, toMouseLen 0..64 in 8 bits, actions (4-bit count of u8), then (M5) a useItem bit and,
- * when set, the item as a game type (the original always sends the game type, "" for none).
+ * Client -> server input (original layout minus the `portrait` bit): seq u8, 4 move flags, shootStart, shootHold,
+ * (M8) a touchMoveActive bit and, when set, touchMoveDir unit vec 8+8 and touchMoveLen u8 (survev
+ * shared/net/inputMsg.ts:39-43), toMouseDir unit vec 10+10, toMouseLen 0..64 in 8 bits, actions (4-bit count of u8),
+ * then (M5) a useItem bit and, when set, the item as a game type (the original always sends the game type, "" for
+ * none).
  */
 export interface InputMsg {
     type: typeof MsgType.Input;
     input: PlayerInput;
 }
 
-const MOUSE_DIR_BITS = 10;
-const MOUSE_LEN_BITS = 8;
+export const INPUT_MOUSE_DIR_BITS = 10;
+export const INPUT_MOUSE_LEN_BITS = 8;
+/** touch movement stick direction bits per component (survev inputMsg.ts writeUnitVec(touchMoveDir, 8)) */
+export const INPUT_TOUCH_DIR_BITS = 8;
+/** pull sent when an active touch stick has no `touchMoveLen` (survev InputMsg default 255) */
+const TOUCH_LEN_DEFAULT = 255;
+
+/** Wire value of a touch stick pull: rounded, clamped to 0..255 (NaN is 0). */
+export function touchMoveLenWire(len: number | undefined): number {
+    return clampUint(Math.round(len ?? TOUCH_LEN_DEFAULT), 8);
+}
 
 export function writeInput(w: BitWriter, input: PlayerInput): void {
     w.writeUint8(input.seq & 0xff);
@@ -125,8 +136,14 @@ export function writeInput(w: BitWriter, input: PlayerInput): void {
     w.writeBoolean(input.moveDown);
     w.writeBoolean(input.shootStart);
     w.writeBoolean(input.shootHold);
-    writeUnitVec(w, input.toMouseDir, MOUSE_DIR_BITS);
-    w.writeBits(quantize(input.toMouseLen, 0, NetLimits.MouseMaxDist, MOUSE_LEN_BITS), MOUSE_LEN_BITS);
+    const touch = input.touchMoveActive === true;
+    w.writeBoolean(touch);
+    if (touch) {
+        writeUnitVec(w, input.touchMoveDir ?? { x: 1, y: 0 }, INPUT_TOUCH_DIR_BITS);
+        w.writeUint8(touchMoveLenWire(input.touchMoveLen));
+    }
+    writeUnitVec(w, input.toMouseDir, INPUT_MOUSE_DIR_BITS);
+    w.writeBits(quantize(input.toMouseLen, 0, NetLimits.MouseMaxDist, INPUT_MOUSE_LEN_BITS), INPUT_MOUSE_LEN_BITS);
     const n = Math.min(input.actions.length, NetLimits.MaxInputActions);
     w.writeBits(n, 4);
     for (let i = 0; i < n; i++) w.writeUint8(clampUint(input.actions[i], 8));
@@ -135,7 +152,10 @@ export function writeInput(w: BitWriter, input: PlayerInput): void {
     if (useItem !== "") writeGameType(w, useItem);
 }
 
-/** Decoded input; `toMouseDir` is renormalized but values are otherwise raw (servers still validate). */
+/**
+ * Decoded input; `toMouseDir` and `touchMoveDir` are renormalized but values are otherwise raw (servers still
+ * validate). The touch fields are present only while the touch stick is active.
+ */
 export function readInput(r: BitReader): PlayerInput {
     const seq = r.readUint8();
     const moveLeft = r.readBoolean();
@@ -144,8 +164,11 @@ export function readInput(r: BitReader): PlayerInput {
     const moveDown = r.readBoolean();
     const shootStart = r.readBoolean();
     const shootHold = r.readBoolean();
-    const toMouseDir = readUnitVec(r, MOUSE_DIR_BITS);
-    const toMouseLen = dequantize(r.readBits(MOUSE_LEN_BITS), 0, NetLimits.MouseMaxDist, MOUSE_LEN_BITS);
+    const touchMoveActive = r.readBoolean();
+    const touchMoveDir = touchMoveActive ? readUnitVec(r, INPUT_TOUCH_DIR_BITS) : null;
+    const touchMoveLen = touchMoveActive ? r.readUint8() : 0;
+    const toMouseDir = readUnitVec(r, INPUT_MOUSE_DIR_BITS);
+    const toMouseLen = dequantize(r.readBits(INPUT_MOUSE_LEN_BITS), 0, NetLimits.MouseMaxDist, INPUT_MOUSE_LEN_BITS);
     const actions: number[] = [];
     for (let n = r.readBits(4); n > 0; n--) actions.push(r.readUint8());
     const input: PlayerInput = {
@@ -160,6 +183,11 @@ export function readInput(r: BitReader): PlayerInput {
         shootHold,
         actions,
     };
+    if (touchMoveDir) {
+        input.touchMoveActive = true;
+        input.touchMoveDir = touchMoveDir;
+        input.touchMoveLen = touchMoveLen;
+    }
     if (r.readBoolean()) input.useItem = readGameType(r);
     return input;
 }

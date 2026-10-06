@@ -1,5 +1,6 @@
 // Validation of decoded client inputs before they reach the simulation: unit vectors normalized, lengths clamped,
-// unknown or non-discrete actions dropped, the action list capped.
+// unknown or non-discrete actions dropped, the action list capped; the touch stick (M8) kept only while active with a
+// usable direction, its pull an integer 0..255.
 import { Input } from "@rebirth/defs";
 import { NetLimits } from "@rebirth/protocol";
 import type { PlayerInput } from "@rebirth/sim";
@@ -19,6 +20,8 @@ const ACCEPTED_ACTIONS = new Set<number>(
 
 /** Most actions accepted per message (the original client sends at most 7; survev inputMsg.ts). */
 export const MAX_ACTIONS_PER_INPUT = 7;
+/** Largest touch stick pull (u8 on the wire; survev inputMsg.ts:42) and the pull of a stick that names none. */
+const TOUCH_LEN_MAX = 255;
 
 export function sanitizeInput(input: PlayerInput, prevDir: { x: number; y: number }): PlayerInput {
     const { x, y } = input.toMouseDir;
@@ -44,5 +47,17 @@ export function sanitizeInput(input: PlayerInput, prevDir: { x: number; y: numbe
     };
     // the item to use (M5): any non-empty string; the simulation ignores ids that are not bag items
     if (typeof input.useItem === "string" && input.useItem !== "") out.useItem = input.useItem;
+    // the touch stick (M8): a direction that cannot be normalized (zero, NaN, infinite) drops the stick, and with it
+    // the player falls back to the move keys; a NaN pull is 0 (no stick movement either)
+    if (input.touchMoveActive === true && input.touchMoveDir) {
+        const t = input.touchMoveDir;
+        const tLen = Math.hypot(t.x, t.y);
+        if (Number.isFinite(tLen) && tLen > 1e-6) {
+            const pull = input.touchMoveLen === undefined ? TOUCH_LEN_MAX : Math.round(input.touchMoveLen);
+            out.touchMoveActive = true;
+            out.touchMoveDir = { x: t.x / tLen, y: t.y / tLen };
+            out.touchMoveLen = Number.isNaN(pull) ? 0 : Math.min(Math.max(pull, 0), TOUCH_LEN_MAX);
+        }
+    }
     return out;
 }

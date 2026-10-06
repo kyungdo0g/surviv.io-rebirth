@@ -89,6 +89,17 @@ directory (`/app` in the image).
 | `EMPTY_GAME_GRACE_MS` | `30000` | a game without human players is removed after this long |
 | `DEBUG_SPAWN_TOGETHER` | `0` | testing aid: joiners spawn next to the game's first player |
 
+### Regions (M8)
+
+Each region is its own server. `/api/site_info` reports this server's player count under `REGION` (`pops`) and every
+region's server origin (`regions`: `""` for the answering server), and the client calls the chosen region's
+`/api/find_game`.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `REGION` | `local` | this server's region id (`a-z`, `0-9`, `-`, `_`; the original ids are `na`, `sa`, `eu`, `as`, `kr`) |
+| `REGION_SERVERS` | — | the other regions' servers, `id=origin,...` (e.g. `kr=https://kr.example.com,eu=https://eu.example.com`); origins are `http(s)://host[:port]` without a path; an entry for `REGION` itself is ignored, so every server can share one list. The browser calls these origins cross-site: they must be reachable over `https://` from an `https://` page |
+
 ### Bots
 
 | Variable | Default | Meaning |

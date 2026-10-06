@@ -14,6 +14,7 @@ import type { PerkSource } from "../perks/perks.ts";
 import type { AnimType, HasteName, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
 import { gunDef, TIME_EPS, WeaponManager } from "../weapons/weaponManager.ts";
 import { handleActions } from "./actions.ts";
+import { updateAutoLoot } from "./autoLoot.ts";
 import { completeUse, updateBoost, updateFabricate, useItem } from "./consumables.ts";
 import type { SimContext } from "./context.ts";
 import { applyKnockback, completeRevive, updateDowned } from "./downed.ts";
@@ -27,7 +28,6 @@ import type { Entity, World } from "./world.ts";
 export { circleTouchesBounds, movementSteps, moveWithCollision } from "./movement.ts";
 
 const PLAYER = GameConfig.player;
-const ZOOM_RADIUS = GameConfig.scopeZoomRadius.desktop;
 /** One-shot input actions kept between two ticks at most. */
 const MAX_PENDING_ACTIONS = 32;
 /** Movement multiplier while a shot slowdown or an item use runs (survev recalculateSpeed). */
@@ -45,6 +45,15 @@ export class Player implements InventoryOwner {
     readonly type = "player";
     readonly id: number;
     readonly name: string;
+    /**
+     * Touch client (M8; the original JoinMsg.isMobile): the mobile scope zoom table, a 1.4x loot pickup radius and
+     * server-side auto loot / door opening (survev player.ts constructor, getClosestLoot, update; autoLoot.ts)
+     */
+    readonly isMobile: boolean;
+    /** camera radius per scope: GameConfig.scopeZoomRadius.mobile or .desktop (survev player.ts scopeZoomRadius) */
+    readonly zoomRadius: Readonly<Record<string, number>>;
+    /** auto loot waits while this runs: 3 s after the player dropped something (survev mobileDropTicker) */
+    mobileDropTicker = 0;
     pos: Vec2;
     /** position before this tick's movement (move spread, pan sweep) */
     posOld: Vec2;
@@ -187,14 +196,16 @@ export class Player implements InventoryOwner {
     /** broadphase scratch buffer shared by this player's systems (never used re-entrantly) */
     readonly scratch: Entity[] = [];
 
-    constructor(id: number, name: string, pos: Vec2) {
+    constructor(id: number, name: string, pos: Vec2, isMobile = false) {
         this.id = id;
         this.name = name;
+        this.isMobile = isMobile;
+        this.zoomRadius = GameConfig.scopeZoomRadius[isMobile ? "mobile" : "desktop"];
         this.pos = v2.copy(pos);
         this.posOld = v2.copy(pos);
         this.inv = new Inventory(this, PLAYER.defaultItems.inventory);
         this.weaponManager = new WeaponManager(this, PLAYER.defaultItems.weapons);
-        this.zoom = ZOOM_RADIUS[this.scope] ?? ZOOM_RADIUS["1xscope"];
+        this.zoom = this.zoomRadius[this.scope] ?? this.zoomRadius["1xscope"];
         this.bounds = this.computeBounds();
     }
 
@@ -240,6 +251,7 @@ export class Player implements InventoryOwner {
     /** Stores the latest input; one-shot parts (shootStart, actions) are kept until a tick consumes them. */
     receiveInput(input: PlayerInput): void {
         this.input = { ...input, toMouseDir: v2.copy(input.toMouseDir), actions: [...input.actions] };
+        if (input.touchMoveDir) this.input.touchMoveDir = v2.copy(input.touchMoveDir);
         if (input.shootStart) this.shootStartPending = true;
         if (input.useItem) this.pendingUseItem = input.useItem;
         // bounded: a client flooding inputs between ticks cannot grow the queue without limit
@@ -371,8 +383,14 @@ export class Player implements InventoryOwner {
         return math.clamp(speed, 1, 10000);
     }
 
-    /** Unit movement vector from the held keys; +y is up, diagonals are normalized. */
+    /**
+     * Unit movement vector: the touch stick's direction while it is active with a non-zero pull (its pull does not
+     * scale the speed; survev player.ts update and handleInput normalizeSafe), else the held keys; +y is up, diagonals
+     * are normalized.
+     */
     static movementFromInput(input: PlayerInput): Vec2 {
+        const stick = input.touchMoveDir;
+        if (input.touchMoveActive && input.touchMoveLen && stick) return v2.normalizeSafe(stick);
         const m = { x: 0, y: 0 };
         if (input.moveUp) m.y += 1;
         if (input.moveDown) m.y -= 1;
@@ -441,6 +459,9 @@ export class Player implements InventoryOwner {
         this.pos = world.clampToMap(this.pos, this.rad);
         this.bounds = this.computeBounds();
         world.updateBounds(this);
+        // mobile players loot and open doors by walking over them (M8; after the movement broadphase is used: the loot
+        // and door searches reuse its scratch buffer)
+        updateAutoLoot(ctx, this, dt);
 
         // a downed player's weapons do nothing, cooldowns included (survev weaponManager.update)
         if (!this.downed) this.weaponManager.update(ctx, dt);
@@ -486,8 +507,8 @@ export class Player implements InventoryOwner {
 
     /** Scope zoom, overridden by building zoom regions while indoors and by smoke (survev player.ts). */
     private updateZoom(objs: readonly Entity[]): void {
-        const lowestZoom = ZOOM_RADIUS["1xscope"];
-        let finalZoom = Math.max(lowestZoom, ZOOM_RADIUS[this.scope] ?? lowestZoom);
+        const lowestZoom = this.zoomRadius["1xscope"];
+        let finalZoom = Math.max(lowestZoom, this.zoomRadius[this.scope] ?? lowestZoom);
         let regionZoom = lowestZoom;
         let outsideAllRegions = true;
         this.indoors = false;

@@ -141,6 +141,16 @@ describe("synthetic streams", () => {
         }
     });
 
+    it("does not score aim snaps of a touch client (its aim stick jumps on every touch)", () => {
+        const t = telemetry();
+        t.isMobile = true;
+        aimbotMatch(t, 1);
+        const snap = t.snapshot();
+        expect(snap.aim.snapRatio).toBe(1);
+        expect(snap.components.map((c) => c.code)).not.toContain("snap");
+        expect(snap.components.map((c) => c.code)).toContain("accuracy");
+    });
+
     it("does not flag a human-like player", () => {
         for (const seed of [1, 2, 3, 4, 5]) {
             const t = telemetry();

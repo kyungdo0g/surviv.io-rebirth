@@ -2,8 +2,10 @@
 // input changed, delayed to the next slot when the previous send was too recent, and repeated every `keepaliveMs`
 // when nothing changes (the original client sends on change or after 1 s; netcode.md "Rates and timing").
 // One-shot parts (shootStart, actions, useItem) of inputs coalesced into one message are merged, never dropped.
+import type { Vec2 } from "@rebirth/core";
 import type { PlayerInput } from "@rebirth/sim";
 import { NetLimits } from "./constants.ts";
+import { INPUT_MOUSE_DIR_BITS, INPUT_MOUSE_LEN_BITS, INPUT_TOUCH_DIR_BITS, touchMoveLenWire } from "./messages.ts";
 import { quantize, quantizeUnit } from "./quant.ts";
 
 export interface InputThrottleOptions {
@@ -29,11 +31,24 @@ export function inputChanged(prev: PlayerInput | null, next: PlayerInput): boole
     ) {
         return true;
     }
-    const lenQ = (v: number) => quantize(v, 0, NetLimits.MouseMaxDist, 8);
+    // the touch stick (M8): its active bit, and while active its 8-bit direction and pull
+    const touch = next.touchMoveActive === true;
+    if ((prev.touchMoveActive === true) !== touch) return true;
+    if (touch) {
+        if (touchMoveLenWire(prev.touchMoveLen) !== touchMoveLenWire(next.touchMoveLen)) return true;
+        if (unitChanged(prev.touchMoveDir, next.touchMoveDir, INPUT_TOUCH_DIR_BITS)) return true;
+    }
+    const lenQ = (v: number) => quantize(v, 0, NetLimits.MouseMaxDist, INPUT_MOUSE_LEN_BITS);
     if (lenQ(prev.toMouseLen) !== lenQ(next.toMouseLen)) return true;
+    return unitChanged(prev.toMouseDir, next.toMouseDir, INPUT_MOUSE_DIR_BITS);
+}
+
+/** Whether two unit vectors differ on the wire (`bits` per component; absent is the writer's +x default). */
+function unitChanged(a: Vec2 | undefined, b: Vec2 | undefined, bits: number): boolean {
+    const pa = a ?? { x: 1, y: 0 };
+    const pb = b ?? { x: 1, y: 0 };
     return (
-        quantizeUnit(prev.toMouseDir.x, 10) !== quantizeUnit(next.toMouseDir.x, 10) ||
-        quantizeUnit(prev.toMouseDir.y, 10) !== quantizeUnit(next.toMouseDir.y, 10)
+        quantizeUnit(pa.x, bits) !== quantizeUnit(pb.x, bits) || quantizeUnit(pa.y, bits) !== quantizeUnit(pb.y, bits)
     );
 }
 
@@ -63,6 +78,7 @@ export class InputThrottle {
     /** Offers the latest input; it is sent now, later (merged with newer inputs) or not at all if unchanged. */
     push(input: PlayerInput): void {
         const merged: PlayerInput = { ...input, toMouseDir: { ...input.toMouseDir }, actions: [...input.actions] };
+        if (input.touchMoveDir) merged.touchMoveDir = { ...input.touchMoveDir };
         if (this.pending) {
             merged.shootStart ||= this.pending.shootStart;
             merged.actions = [...this.pending.actions, ...input.actions].slice(0, NetLimits.MaxInputActions);

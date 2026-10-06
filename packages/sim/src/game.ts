@@ -277,7 +277,7 @@ export class Game implements GameApi, SimContext {
         const group = this.teams.assign(opts);
         // Cobalt: players choosing a class wait at the Twins bunker (M7b, modes/classSelect.ts)
         const room = waitingRoom(this);
-        const player = new Player(id, name, room ? room.pos : this.teams.spawnPos(group, this.rng));
+        const player = new Player(id, name, room ? room.pos : this.teams.spawnPos(group, this.rng), opts.isMobile);
         if (room) {
             player.layer = room.layer;
             player.aimLayer = room.layer;

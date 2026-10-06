@@ -463,6 +463,12 @@ export function randInput(rng: Rng): PlayerInput {
         actions: Array.from({ length: rng.int(0, 15) }, () => rng.int(0, 255)),
     };
     if (rng.bool(0.3)) input.useItem = rng.pick(GAME_TYPES.filter((t) => t !== ""));
+    // the touch stick (M8): its fields are on the wire only while it is active
+    if (rng.bool(0.3)) {
+        input.touchMoveActive = true;
+        input.touchMoveDir = randUnit(rng);
+        input.touchMoveLen = rng.int(0, 255);
+    }
     return input;
 }
 
@@ -530,6 +536,8 @@ export function netTolerances(maxExtent = 1024): TolFn {
         "dir.y": 0.006,
         "toMouseDir.x": 0.0015,
         "toMouseDir.y": 0.0015,
+        "touchMoveDir.x": 0.006,
+        "touchMoveDir.y": 0.006,
         "bullets.dir.x": 0.0015,
         "bullets.dir.y": 0.0015,
         toMouseLen: 64 / 255 / 2 + 1e-9,

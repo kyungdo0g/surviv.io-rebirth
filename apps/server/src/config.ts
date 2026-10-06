@@ -9,6 +9,7 @@ import { type AntiCheatThresholds, loadThresholds } from "./anticheat/thresholds
 import type { BotDifficultySetting } from "./bots.ts";
 import { DEFAULT_NAME_FILTER_FILE } from "./moderation/nameFilter.ts";
 import { defaultModes, type ModeEntry, parseModes } from "./modes.ts";
+import { parseRegionServers, REGION_ID } from "./regions.ts";
 
 export interface ServerConfig {
     port: number;
@@ -92,6 +93,10 @@ export interface ServerConfig {
     nameFilterFile: string | null;
     /** IP / name bans (M8, moderation/bans.ts) */
     banFile: string;
+    /** this server's region id, its /api/site_info `pops` key (M8, regions.ts) */
+    region: string;
+    /** other regions' servers: region id -> origin, listed by /api/site_info `regions` (M8) */
+    regionServers: Record<string, string>;
 }
 
 const DEFAULT_CLIENT_DIST = fileURLToPath(new URL("../../client/dist", import.meta.url));
@@ -154,6 +159,19 @@ const EnvSchema = z.object({
     NAME_FILTER: bool.default(true),
     NAME_FILTER_FILE: z.string().min(1).optional(),
     BAN_FILE: z.string().min(1).default("data/bans.json"),
+    REGION: z.string().regex(REGION_ID, { message: "a-z, 0-9, - and _ (at most 32)" }).default("local"),
+    REGION_SERVERS: z
+        .string()
+        .max(2000)
+        .transform((text, ctx) => {
+            try {
+                return parseRegionServers(text);
+            } catch (err) {
+                ctx.addIssue({ code: "custom", message: (err as Error).message });
+                return z.NEVER;
+            }
+        })
+        .optional(),
 });
 
 /**
@@ -210,6 +228,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         reportWindowMs: e.REPORT_WINDOW_MS,
         nameFilterFile: e.NAME_FILTER ? resolve(e.NAME_FILTER_FILE ?? DEFAULT_NAME_FILTER_FILE) : null,
         banFile: resolve(e.BAN_FILE),
+        region: e.REGION,
+        regionServers: e.REGION_SERVERS ?? {},
     };
 }
 
