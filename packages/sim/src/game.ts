@@ -94,6 +94,8 @@ export interface GameInit {
      * shows "Waiting for players").
      */
     minPlayers?: number;
+    /** raises the map mode's player cap (never lowers it); the server passes its MAX_PLAYERS */
+    maxPlayers?: number;
     /** gas stage table (default GameConfig.gas.stages; tools and tests use shorter ones) */
     gasStages?: readonly GasStage[];
 }
@@ -215,6 +217,7 @@ export class Game implements GameApi, SimContext {
         this.match = new Match(this, {
             sandbox: init.sandbox ?? false,
             minPlayers: init.minPlayers ?? DEFAULT_MIN_PLAYERS,
+            maxPlayers: init.maxPlayers,
         });
         this.spectators = new SpectateSystem(this);
         if (init.spawnLoot ?? true) spawnMapLoot(this, this.generation.lootSpawns);

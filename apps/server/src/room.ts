@@ -118,7 +118,10 @@ export class GameRoom {
         this.config = config;
         this.mapName = mapName;
         this.teamMode = teamMode;
-        this.game = new Game({ mapName, seed: seed >>> 0, teamMode }, { minPlayers: config.minPlayers });
+        this.game = new Game(
+            { mapName, seed: seed >>> 0, teamMode },
+            { minPlayers: config.minPlayers, maxPlayers: roomCapacity(config, mapName) },
+        );
         this.cache = new ObjectCache({ width: this.game.mapData.width, height: this.game.mapData.height });
         this.mapMsg = encodeMapMsg(this.game.mapData);
         this.createdAt = now;

@@ -31,6 +31,8 @@ export interface MatchOptions {
     sandbox: boolean;
     /** players alive for at least `rules.minActiveTime` needed to start (original: 2, survev isGameStarted) */
     minPlayers: number;
+    /** raises the map mode's player cap (never lowers it); servers pass MAX_PLAYERS */
+    maxPlayers?: number;
 }
 
 /** What the match needs from the game. */
@@ -68,7 +70,7 @@ export class Match {
     readonly statsResults = new EventLog<{ playerId: number; stats: PlayerStatsView }>();
     private readonly host: MatchHost;
     private readonly killLeaderEnabled: boolean;
-    private readonly maxPlayers: number;
+    readonly maxPlayers: number;
     private nextKilledIndex = 0;
     private readonly resultSent = new Set<number>();
     private readonly statsSent = new Set<number>();
@@ -79,7 +81,7 @@ export class Match {
         this.options = options;
         const mode = getMapDef(host.options.mapName).gameMode;
         this.killLeaderEnabled = mode.killLeaderEnabled;
-        this.maxPlayers = mode.maxPlayers;
+        this.maxPlayers = Math.max(mode.maxPlayers, options.maxPlayers ?? 0);
     }
 
     /** Living players in join (id) order. */

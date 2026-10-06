@@ -6,7 +6,6 @@
 // only human seats, so a game whose humans all left closes as usual, and the match ends by the normal rules.
 import { BotController, DIFFICULTIES, type Difficulty, pickBotName } from "@rebirth/bots";
 import { createRng, type Rng } from "@rebirth/core";
-import { getMapDef } from "@rebirth/defs";
 import type { Game } from "@rebirth/sim";
 
 export type BotDifficultySetting = Difficulty | "mixed";
@@ -32,7 +31,6 @@ export class BotFill {
     private readonly botIds = new Set<number>();
     private readonly names = new Set<string>();
     private readonly rng: Rng;
-    private readonly modeMaxPlayers: number;
     private nextJoinTick = 0;
     private added = 0;
     /** bot exceptions caught (the bot stops being controlled) */
@@ -42,7 +40,6 @@ export class BotFill {
         this.game = game;
         this.options = options;
         this.rng = createRng(options.seed ^ 0x2c1b3c6d);
-        this.modeMaxPlayers = getMapDef(game.options.mapName).gameMode.maxPlayers;
         for (const p of game.players()) this.names.add(p.name);
     }
 
@@ -91,14 +88,14 @@ export class BotFill {
         for (const id of this.botIds) if (!this.game.getPlayer(id)) this.botIds.delete(id);
         const game = this.game;
         if (this.options.target <= 0 || game.tick < this.nextJoinTick || !game.canJoin()) return;
-        if (this.playersInGame() >= Math.min(this.options.target, this.modeMaxPlayers)) return;
+        if (this.playersInGame() >= Math.min(this.options.target, this.game.match.maxPlayers)) return;
         this.addBot();
         this.nextJoinTick = game.tick + this.options.joinIntervalTicks;
         // a zero interval fills the game to its target at once instead of one bot per tick
         while (
             this.options.joinIntervalTicks <= 0 &&
             game.canJoin() &&
-            this.playersInGame() < Math.min(this.options.target, this.modeMaxPlayers)
+            this.playersInGame() < Math.min(this.options.target, this.game.match.maxPlayers)
         )
             this.addBot();
     }
@@ -145,7 +142,7 @@ export class BotFill {
     makeRoom(): boolean {
         const game = this.game;
         const atTarget = this.options.target > 0 && this.playersInGame() >= this.options.target;
-        const atLimit = game.aliveCount >= this.modeMaxPlayers;
+        const atLimit = game.aliveCount >= this.game.match.maxPlayers;
         if (!atTarget && !atLimit) return false;
         const id = this.replaceable();
         if (id === undefined) return false;
