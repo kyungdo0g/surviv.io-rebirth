@@ -6,16 +6,25 @@
 // M7: right click drops a weapon, bag item, scope, helmet, vest or the droppable perk (hudDrop.ts, DropItem); the perk
 // slots, faction arm patches and role badge are in hudModes.ts; item maxima use the map's bag sizes (Woods: 6/12/15/18
 // frags and smokes, sim mapBagSizes).
+// M8: the small (phone) layout (uiLayout.ts, hudSm.css) reorders the ammo column for portrait screens (survev touch.ts
+// setMobileStyling); touch devices get the reload button beside the clip (#ui-reload-button-container, survev ui2.ts
+// render touch); item images pop to 1.33x when their count goes up, except on mobile (survev ui2.ts
+// updateAnimationWidth); Hide UI hides the whole HUD (`setHidden`). The pie timer moved to pieTimer.ts.
 import { GameConfig, GameObjectDefs, type GunDef, Input } from "@rebirth/defs";
 import { type LocalPlayerState, mapBagSizes } from "@rebirth/sim";
 import { lootImageUrl } from "../assets/hudImages.ts";
-import { hudItemName, isSov, itemName, t } from "../l10n/index.ts";
+import { hudItemName, itemName, t } from "../l10n/index.ts";
 import "./hud.css";
+import "./hudSm.css";
+import "./hudSmBottom.css";
+import "./hudSmPortrait.css";
 import "./tooltip.css";
 import { healthBarColor } from "./hudColors.ts";
 import { el, Patcher } from "./hudDom.ts";
 import { bindDrop, type DropRequest } from "./hudDrop.ts";
 import { ModeHud } from "./hudModes.ts";
+import { PieTimer } from "./pieTimer.ts";
+import { AMMO_ORDER_LANDSCAPE, ammoOrder, itemPopScale, type LayoutState, layoutState } from "./uiLayout.ts";
 
 export interface HudCallbacks {
     /** queue a one-shot input action (defs `Input` value) */
@@ -60,20 +69,30 @@ const MEDICAL_INPUT: Record<string, number> = {
     soda: Input.UseSoda,
     painkiller: Input.UsePainkiller,
 };
-/** ammo column order and overlay colours of the original index.html */
-const AMMO: ReadonlyArray<readonly [string, string]> = [
-    ["50AE", "rgba(30, 30, 30, 0.75)"],
-    ["9mm", "rgba(255, 153, 0, 0.75)"],
-    ["308sub", "rgba(49, 56, 0, 0.75)"],
-    ["12gauge", "rgba(255, 0, 0, 0.75)"],
-    ["flare", "rgba(255, 85, 0, 0.75)"],
-    ["762mm", "rgba(0, 102, 255, 0.75)"],
-    ["45acp", "rgba(121, 0, 255, 0.75)"],
-    ["556mm", "rgba(3, 123, 0, 0.75)"],
-];
+/** ammo overlay colours of the original index.html (column order: uiLayout.ts ammoOrder) */
+const AMMO_COLORS: Readonly<Record<string, string>> = {
+    "50AE": "rgba(30, 30, 30, 0.75)",
+    "9mm": "rgba(255, 153, 0, 0.75)",
+    "308sub": "rgba(49, 56, 0, 0.75)",
+    "12gauge": "rgba(255, 0, 0, 0.75)",
+    flare: "rgba(255, 85, 0, 0.75)",
+    "762mm": "rgba(0, 102, 255, 0.75)",
+    "45acp": "rgba(121, 0, 255, 0.75)",
+    "556mm": "rgba(3, 123, 0, 0.75)",
+};
 const SCOPES = ["1xscope", "2xscope", "4xscope", "8xscope", "15xscope"] as const;
 const SLOT_INPUTS = [Input.EquipPrimary, Input.EquipSecondary, Input.EquipMelee, Input.EquipThrowable];
 const GEAR = ["helmet", "chest", "backpack"] as const;
+
+interface ItemDom {
+    div: HTMLDivElement;
+    count: HTMLDivElement;
+    /** the image and the ammo colour overlay pop when the count goes up */
+    pop: HTMLElement[];
+    lastCount: number;
+    /** seconds since the count last went up */
+    ticker: number;
+}
 
 interface SlotDom {
     div: HTMLDivElement;
@@ -91,7 +110,8 @@ export class Hud {
     /** bag capacities of the map (GameConfig.bagSizes with the map's rows, M7) */
     private bagSizes: Readonly<Record<string, readonly number[]>> = GameConfig.bagSizes;
     private readonly scopes = new Map<string, HTMLDivElement>();
-    private readonly items = new Map<string, { div: HTMLDivElement; count: HTMLDivElement }>();
+    private readonly items = new Map<string, ItemDom>();
+    private readonly ammoColumn = el("div", { id: "ui-ammo-interactive" });
     private readonly slots: SlotDom[] = [];
     private readonly gear = new Map<
         (typeof GEAR)[number],
@@ -102,17 +122,23 @@ export class Hud {
     private readonly interactionText = el("div", { id: "ui-interaction-description" });
     private readonly clip = el("div", { id: "ui-current-clip" }, "0");
     private readonly reserve = el("div", { id: "ui-remaining-ammo" }, "0");
+    /** touch only (hudSm.css / touch.css show it); tapping it reloads (touchHud.ts) */
+    private readonly reloadButton = el(
+        "div",
+        { id: "ui-reload-button-container" },
+        el("div", { id: "ui-reload-button" }),
+    );
     private readonly boost = el("div", { id: "ui-boost-counter" });
     private readonly boostBars: HTMLDivElement[] = [];
     private readonly health = el("div", { id: "ui-health-actual", cls: "ui-bar-inner" });
     private readonly healthDepleted = el("div", { id: "ui-health-depleted", cls: "ui-bar-inner" });
-    private readonly pie = el("div", { id: "ui-pie-timer" });
-    private readonly pieArc = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    private readonly pieCount = el("div", { cls: "ui-pie-count" });
-    private readonly pieLabel = el("div", { cls: "ui-pie-label" });
-    /** local copy of the running action, advanced between snapshots */
-    private action = { key: "", time: 0, duration: 0 };
+    private readonly pie = new PieTimer();
     private lastLocal: LocalPlayerState | null = null;
+    private layout: LayoutState = layoutState(1280, 720, 1, false);
+    /** Hide UI hid the HUD (M8) */
+    private hidden = false;
+    /** frames drawn with a player (the first ones never pop item counts, survev frameCount < 2) */
+    private frames = 0;
 
     constructor(parent: HTMLElement, cb: HudCallbacks) {
         this.cb = cb;
@@ -121,11 +147,11 @@ export class Hud {
             this.buildScopes(),
             this.buildRightCenter(),
             el("div", { id: "ui-lower-center" }, this.buildInteraction()),
-            this.buildPie(),
+            this.pie.root,
             el(
                 "div",
                 { id: "ui-equipped-ammo-wrapper" },
-                el("div", { id: "ui-bullet-counter" }, this.clip, this.reserve),
+                el("div", { id: "ui-bullet-counter" }, this.clip, this.reserve, this.reloadButton),
             ),
             this.buildBars(),
             this.buildGear(),
@@ -161,6 +187,25 @@ export class Hud {
             node.textContent = itemName(node.dataset.itemName ?? "");
         }
         this.p.clear();
+        this.pie.clear();
+    }
+
+    /**
+     * The HUD layout (M8): the ammo column order (portrait phones list the common calibres first); no perk pulse and no
+     * item pop on mobile.
+     */
+    setLayout(layout: LayoutState): void {
+        this.layout = layout;
+        this.modes.mobile = layout.mobile;
+        for (const type of ammoOrder(layout)) {
+            const item = this.items.get(type);
+            if (item) this.ammoColumn.append(item.div);
+        }
+    }
+
+    /** Hide UI: hides the whole HUD until shown again (survev ui.ts cycleHud). */
+    setHidden(hidden: boolean): void {
+        this.hidden = hidden;
     }
 
     private buildScopes(): HTMLDivElement {
@@ -221,11 +266,12 @@ export class Hud {
                 () => this.itemDrop(item),
                 (r) => this.drop(r),
             );
-            this.items.set(item, { div, count });
+            this.items.set(item, { div, count, pop: [img], lastCount: 0, ticker: 1 });
             medical.append(div);
         }
-        const ammo = el("div", { id: "ui-ammo-interactive" });
-        for (const [item, color] of AMMO) {
+        const ammo = this.ammoColumn;
+        for (const item of AMMO_ORDER_LANDSCAPE) {
+            const color = AMMO_COLORS[item];
             const count = el("div", { cls: "ui-loot-count" }, "0");
             const img = el("img", { cls: "ui-loot-image" });
             img.src = lootImageUrl(item);
@@ -238,7 +284,7 @@ export class Hud {
                 () => this.itemDrop(item),
                 (r) => this.drop(r),
             );
-            this.items.set(item, { div, count });
+            this.items.set(item, { div, count, pop: [img, overlay], lastCount: 0, ticker: 1 });
             ammo.append(div);
         }
         return el("div", { id: "ui-right-center" }, medical, ammo);
@@ -248,25 +294,6 @@ export class Hud {
         this.interaction.append(this.interactionKey, el("div", { id: "ui-interaction-outer" }, this.interactionText));
         this.interaction.style.display = "none";
         return this.interaction;
-    }
-
-    private buildPie(): HTMLDivElement {
-        const ns = "http://www.w3.org/2000/svg";
-        const svg = document.createElementNS(ns, "svg");
-        svg.setAttribute("viewBox", "0 0 72 72");
-        const bg = document.createElementNS(ns, "circle");
-        for (const [k, v] of Object.entries({ cx: "36", cy: "36", r: "36", fill: "rgba(0, 0, 0, 0.27)" })) {
-            bg.setAttribute(k, v);
-        }
-        const arc = this.pieArc;
-        const attrs = { cx: "36", cy: "36", r: "35", fill: "none", stroke: "#ffffff", "stroke-width": "6" };
-        for (const [k, v] of Object.entries(attrs)) arc.setAttribute(k, v);
-        arc.setAttribute("transform", "rotate(-90 36 36)");
-        arc.setAttribute("stroke-dasharray", String(2 * Math.PI * 35));
-        svg.append(bg, arc);
-        this.pie.append(svg, this.pieCount, this.pieLabel);
-        this.pie.style.display = "none";
-        return this.pie;
     }
 
     private buildBars(): HTMLDivElement {
@@ -362,15 +389,20 @@ export class Hud {
     update(frame: HudFrame): void {
         const local = frame.local;
         this.lastLocal = local;
-        this.p.set("root", !!local, () => {
-            this.root.style.display = local ? "" : "none";
+        const shown = !!local && !this.hidden;
+        this.p.set("root", shown, () => {
+            this.root.style.display = shown ? "" : "none";
         });
-        if (!local) return;
+        if (!local) {
+            this.frames = 0;
+            return;
+        }
+        this.frames++;
         this.updateBars(local, !!frame.downed);
         this.updateWeapons(local);
-        this.updateItems(local);
+        this.updateItems(local, frame.dt);
         this.updateGear(local);
-        this.updateAction(local, frame.dt, frame.objectAction ?? null, frame.actionTarget ?? "");
+        this.pie.update(local, frame.dt, frame.objectAction ?? null, frame.actionTarget ?? "", this.layout);
         this.updateInteraction(local.dead ? null : frame.interaction);
         this.modes.update({ dt: frame.dt, local, activeId: frame.activeId ?? -1, faction: frame.faction ?? 0 });
     }
@@ -407,7 +439,8 @@ export class Hud {
             const def = type ? GameObjectDefs[type] : undefined;
             this.p.set(`slot${i}`, type, () => {
                 slot.name.textContent = def ? hudItemName(type) : "";
-                slot.image.style.display = def ? "block" : "none";
+                // `hidden`, not an inline display: the small layout hides slot images altogether (hudSm.css)
+                slot.image.hidden = !def;
                 const img = (def as { lootImg?: { rot?: number; mirror?: boolean } } | undefined)?.lootImg;
                 if (img) {
                     slot.image.src = lootImageUrl(type);
@@ -421,7 +454,7 @@ export class Hud {
             const count = def?.type === "throwable" ? (local.inventory[type] ?? 0) : 0;
             this.p.set(`slotAmmo${i}`, count, () => {
                 slot.ammo.textContent = String(count);
-                slot.ammo.style.display = count > 0 ? "block" : "none";
+                slot.ammo.hidden = count <= 0;
             });
         }
         // clip and reserve of the equipped weapon (survev ui2.ts: hidden for melee, reserve only when > 0)
@@ -439,13 +472,24 @@ export class Hud {
         this.p.set("reserve", reserve, () => {
             this.reserve.textContent = reserve === Number.POSITIVE_INFINITY ? "∞" : String(reserve);
             this.reserve.style.opacity = reserve > 0 ? "1" : "0";
+            // survev ui2.ts render: the reload button shows with the reserve
+            this.reloadButton.style.opacity = reserve > 0 ? "1" : "0";
         });
     }
 
-    private updateItems(local: LocalPlayerState): void {
+    private updateItems(local: LocalPlayerState, dt: number): void {
         const bagLevel = (GameObjectDefs[local.backpack ?? ""] as { level?: number } | undefined)?.level ?? 0;
         for (const [item, dom] of this.items) {
             const count = local.inventory[item] ?? 0;
+            // the image pops when the count goes up (survev ui2.ts: not in the first frames, not on mobile)
+            if (count > dom.lastCount) dom.ticker = 0;
+            if (this.frames < 2) dom.ticker = 1;
+            dom.lastCount = count;
+            dom.ticker += dt;
+            const pop = itemPopScale(dom.ticker, this.layout.mobile);
+            this.p.set(`pop-${item}`, pop.toFixed(3), () => {
+                for (const node of dom.pop) node.style.transform = pop === 1 ? "" : `scale(${pop.toFixed(3)})`;
+            });
             const sizes = this.bagSizes[item];
             const max = sizes ? sizes[Math.min(bagLevel, sizes.length - 1)] : Number.POSITIVE_INFINITY;
             const special = !!(GameObjectDefs[item] as { special?: boolean } | undefined)?.special;
@@ -480,65 +524,6 @@ export class Hud {
                 dom.div.title = itemName(item);
             });
         }
-    }
-
-    /** Reload / item-use pie timer: label, arc and countdown (survev pieTimer.ts, ui.ts updateActionTimer). */
-    private updateAction(
-        local: LocalPlayerState,
-        dt: number,
-        objectAction: { label: string; time: number; duration: number } | null,
-        actionTarget: string,
-    ): void {
-        const a = local.action;
-        const playerAction = !local.dead && !!a && a.type !== "none" && a.duration > 0;
-        const objectRunning = !playerAction && !local.dead && !!objectAction && objectAction.duration > 0;
-        const running = playerAction || objectRunning;
-        if (objectRunning && objectAction) {
-            this.action = {
-                key: `object|${objectAction.label}`,
-                time: objectAction.time,
-                duration: objectAction.duration,
-            };
-        } else {
-            const key = playerAction ? `${a.type}|${a.item}|${a.duration}` : "";
-            if (key !== this.action.key || (playerAction && Math.abs(a.time - this.action.time) > 0.25)) {
-                this.action = { key, time: playerAction ? a.time : 0, duration: playerAction ? a.duration : 0 };
-            } else if (playerAction) {
-                this.action.time = Math.min(this.action.time + dt, this.action.duration);
-            }
-        }
-        this.p.set("pie", running, () => {
-            this.pie.style.display = running ? "block" : "none";
-        });
-        if (!running) return;
-        // a third of the way down, scaled by the HUD scale factor (survev pieTimer.ts update, ui.ts resize)
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        const clamp = (v: number) => Math.min(1, Math.max(0.75, v));
-        const top = Math.round((h / 3) * Math.min(1, clamp(w / 1280) * clamp(h / 1024)));
-        this.p.set("pieTop", top, () => {
-            this.pie.style.top = `${top}px`;
-        });
-        let label = "";
-        if (objectRunning && objectAction) label = objectAction.label;
-        else if (a?.type === "reload") label = t("game-reloading");
-        else if (a?.type === "revive") {
-            // survev ui.ts updateActionTimer: "Reviving <name>", the name left out on the downed side
-            const verb = t("game-reviving");
-            label = actionTarget ? (isSov() ? `${actionTarget} ${verb}` : `${verb} ${actionTarget}`) : verb;
-        } else if (a)
-            label = isSov() ? `${itemName(a.item)} ${t("game-using")}` : `${t("game-using")} ${itemName(a.item)}`;
-        this.p.set("pieLabel", label, () => {
-            this.pieLabel.textContent = label;
-        });
-        const frac = Math.min(1, this.action.time / this.action.duration);
-        const circumference = 2 * Math.PI * 35;
-        const offset = (circumference * (1 - frac)).toFixed(1);
-        this.p.set("pieArc", offset, () => this.pieArc.setAttribute("stroke-dashoffset", offset));
-        const remaining = Math.max(0, this.action.duration - this.action.time).toFixed(1);
-        this.p.set("pieCount", remaining, () => {
-            this.pieCount.textContent = remaining;
-        });
     }
 
     private updateInteraction(interaction: HudFrame["interaction"]): void {

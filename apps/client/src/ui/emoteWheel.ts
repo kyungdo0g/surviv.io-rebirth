@@ -9,6 +9,10 @@
 //   there, else the world under the cursor (survev uiManager.getWorldPosFromMapPos / camera.screenToPoint);
 // - the client throttle mirrors the server's: each emote or ping adds one, six in a row grey the wheels for 9 s, the
 //   counter decays by one every 3 s; the wheel closes by itself after 10 s; the aim freezes while it is open.
+// M8 touch (survev emote.ts touch listeners, ui2.ts #ui-emote-button; hud.md "Pings and emote wheel"): the emote button
+// ("surviv icon") opens the emote wheel at the screen centre (`openTouchEmote`) and a tap on the open big map opens the
+// ping wheel there (`openTouchPing`), whose map pings mark the tapped map point; tapping a wedge sends it at once, a
+// tap anywhere else closes the wheel. Sending an emote from the ping wheel closes the big map (survev triggerPing).
 import type { Vec2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, Input } from "@rebirth/defs";
 import type { EmoteRequest } from "@rebirth/sim";
@@ -85,6 +89,10 @@ export interface EmoteWheelDeps {
     send(req: EmoteRequest): void;
     /** world position a ping marks for a screen position (minimap or world view) */
     pingWorldPos(screen: Vec2): Vec2;
+    /** touch devices: wedges take taps (M8) */
+    touch?: boolean;
+    /** an emote went out from the ping wheel: the big map closes (survev triggerPing, M8) */
+    closeBigMap?(): void;
 }
 
 export interface EmoteWheelFrame {
@@ -116,6 +124,11 @@ export class EmoteWheel {
     private hardTicker = 0;
     private greyed = false;
     private teamMode = 1;
+    /** touch: where the open wheel was tapped (survev emoteTouchedPos), null before a tap */
+    private touchPos: Vec2 | null = null;
+    /** touch: the big map point a ping marks (survev bigmapPingPos) */
+    private pingScreenPos: Vec2 | null = null;
+    private readonly cleanups: Array<() => void> = [];
     /** requests sent (tests) */
     readonly sent: EmoteRequest[] = [];
 
@@ -156,6 +169,43 @@ export class EmoteWheel {
         this.emoteWedges = this.wedgesOf(this.emoteWheel, emoteSpecs);
         this.pingWedges = this.wedgesOf(this.pingWheel, pingSpecs);
         deps.root.append(this.emoteWheel, this.pingWheel);
+        if (deps.touch) this.bindTouch();
+    }
+
+    /** Touch listeners (survev emote.ts): wedge taps select, any other tap while a wheel is open closes it. */
+    private bindTouch(): void {
+        const onWedge = (e: TouchEvent) => {
+            e.stopPropagation();
+            const t = e.changedTouches[0];
+            if (t) this.touchPos = { x: t.clientX, y: t.clientY };
+        };
+        for (const wheel of [this.emoteWheel, this.pingWheel]) {
+            wheel.classList.add("ui-emote-touch");
+            for (const node of wheel.querySelectorAll<HTMLElement>(".ui-emote")) {
+                node.addEventListener("touchstart", onWedge, { passive: true });
+                this.cleanups.push(() => node.removeEventListener("touchstart", onWedge));
+            }
+        }
+        const onDocument = () => {
+            if (this.open) this.reset();
+        };
+        document.addEventListener("touchstart", onDocument, { passive: true });
+        this.cleanups.push(() => document.removeEventListener("touchstart", onDocument));
+    }
+
+    /** Touch: the emote button opens the emote wheel at `center` (the screen centre). */
+    openTouchEmote(center: Vec2): void {
+        if (this.pingMouseTriggered || this.emoteMouseTriggered) return;
+        this.screenPos = { x: center.x, y: center.y };
+        this.emoteMouseTriggered = true;
+    }
+
+    /** Touch: a tap on the open big map at `mapPoint` opens the ping wheel at `center` (the screen centre). */
+    openTouchPing(center: Vec2, mapPoint: Vec2): void {
+        this.reset();
+        this.screenPos = { x: center.x, y: center.y };
+        this.pingScreenPos = { x: mapPoint.x, y: mapPoint.y };
+        this.pingMouseTriggered = true;
     }
 
     private buildWheel(id: string, prefix: string, specs: WedgeSpec[]): HTMLDivElement {
@@ -274,7 +324,16 @@ export class EmoteWheel {
             this.reset();
             return;
         }
-        this.select(mouse, frame.ammo);
+        if (!this.deps.touch) {
+            this.select(mouse, frame.ammo);
+            return;
+        }
+        // touch: the tapped wedge is sent at once (survev m_update: mousePos = emoteTouchedPos)
+        if (!this.touchPos) return;
+        this.select(this.touchPos, frame.ammo);
+        if (!this.selected) return;
+        if (this.pingMouseTriggered) this.triggerPing();
+        else this.triggerEmote();
     }
 
     private updateThrottle(dt: number): void {
@@ -343,9 +402,11 @@ export class EmoteWheel {
         if (s && !this.greyed) {
             const def = GameObjectDefs[s.ping] as { pingMap?: boolean } | undefined;
             if (s.ping && def?.pingMap) {
-                this.send({ type: s.ping, isPing: true, pos: this.deps.pingWorldPos(this.screenPos) });
+                const at = this.pingScreenPos ?? this.screenPos;
+                this.send({ type: s.ping, isPing: true, pos: this.deps.pingWorldPos(at) });
             } else if (s.emote) {
                 this.send({ type: s.emote, isPing: false });
+                this.deps.closeBigMap?.();
             }
         }
         this.reset();
@@ -375,12 +436,15 @@ export class EmoteWheel {
         this.displayed = null;
         this.selected = null;
         this.timeout = 0;
+        this.touchPos = null;
+        this.pingScreenPos = null;
         this.emoteWheel.style.display = "none";
         this.pingWheel.style.display = "none";
         for (const w of [...this.emoteWedges, ...this.pingWedges]) w.parent.classList.remove("ui-emote-selected");
     }
 
     destroy(): void {
+        for (const fn of this.cleanups.splice(0)) fn();
         this.emoteWheel.remove();
         this.pingWheel.remove();
     }

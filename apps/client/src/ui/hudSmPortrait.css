@@ -1,0 +1,148 @@
+/*
+ * Small HUD layout, portrait overrides (M8; hudSm.css has the landscape defaults): survev client/css/game.css
+ * "@media (max-width: 850px) and (orientation: portrait)". The bars move to the top beside the minimap, the medical and
+ * ammo columns and the clip to the right edge, the weapon slots into a row along the bottom; the scopes are hidden.
+ * Rebirth deviation: the perks sit 8 px further left so they never touch the first weapon slot (the original overlaps
+ * them by 4 px).
+ */
+
+#ui-game.ui-layout-sm.ui-portrait #ui-top-left {
+    top: 40px;
+}
+
+#ui-game.ui-layout-sm.ui-portrait .ui-team-member {
+    height: 18px;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-top-center-scopes {
+    display: none;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-top-center {
+    top: 134px;
+    transform: translateX(-50%) scale(0.85);
+    transform-origin: top;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-upper-center {
+    top: 180px;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-bottom-center-1 {
+    bottom: 28%;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-lower-center {
+    bottom: 38%;
+    left: 38%;
+}
+
+/* portrait: the bars at the top beside the minimap, the boost under the health bar */
+#ui-game.ui-layout-sm.ui-portrait #ui-bottom-center-0 {
+    top: 7px;
+    bottom: auto;
+    left: 116px;
+    display: flex;
+    flex-direction: column-reverse;
+    transform: scale(0.85);
+    transform-origin: top left;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-boost-counter {
+    margin: 3px 0 0 2px;
+}
+
+/* portrait: medical and ammo columns on the right, the clip under them (survev top 6 px, ammo 96 px, clip 44 %) */
+#ui-game.ui-layout-sm.ui-portrait #ui-right-center {
+    top: 6px;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-medical-interactive {
+    display: block;
+    left: auto;
+    right: 8px;
+    transform: none;
+}
+
+#ui-game.ui-layout-sm.ui-portrait .ui-loot {
+    display: block;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-ammo-interactive {
+    top: 100px;
+}
+
+#ui-game.ui-layout-sm.ui-portrait .ui-ammo {
+    display: block;
+    margin: 0 3px 2px auto;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-emote-button {
+    top: calc(62% + 6px);
+    bottom: auto;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-equipped-ammo-wrapper {
+    left: auto;
+    right: 6px;
+    top: 44%;
+    bottom: auto;
+    transform: none;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-bullet-counter {
+    width: 60px;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-remaining-ammo {
+    left: auto;
+    right: 0;
+    top: 36px;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-reload-button-container {
+    left: 36px;
+    top: 56px;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-reload-button {
+    left: auto;
+    right: 0;
+}
+
+/* portrait: weapon slots in a row along the bottom at 0.8, gear bottom left, perks left of the slots */
+#ui-game.ui-layout-sm.ui-portrait #ui-bottom-right {
+    top: auto;
+    bottom: 6px;
+    transform: scale(0.8);
+    transform-origin: bottom right;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-weapon-container {
+    width: 312px;
+    height: 32px;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-weapon-id-1 {
+    right: 240px;
+    bottom: 0;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-weapon-id-2 {
+    right: 160px;
+    bottom: 0;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-weapon-id-3 {
+    right: 80px;
+    bottom: 0;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-bottom-center-right {
+    left: 30px;
+    bottom: 9px;
+}
+
+#ui-game.ui-layout-sm.ui-portrait #ui-bottom-center-left {
+    right: calc(70% + 8px);
+}

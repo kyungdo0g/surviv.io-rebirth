@@ -1,0 +1,326 @@
+/*
+ * Small HUD layout (M8; the original UiLayout.Sm, uiLayout.ts): phones, tablets and screens whose longer side is at
+ * most 850 px. Positions and sizes follow the original's mobile rules (survev client/css/game.css "@media (max-width:
+ * 850px)" blocks, plus the classes ui/touch.ts setMobileStyling adds: ui-map-wrapper-mobile, ui-right-center-mobile);
+ * this file (top half) and hudSmBottom.css (bottom half) have the landscape defaults, hudSmPortrait.css the
+ * "(orientation: portrait)" overrides. The geometry was checked against the original stylesheet rendered at 844 x 390
+ * and 390 x 844. The 108 px minimap (192 x 0.5626) is drawn by Pixi in the top-left corner (minimap.ts); the cog, the
+ * red-zone timer, the alive count and the spectator counter are the original's map container scaled by the 0.5626 HUD
+ * factor.
+ */
+
+/* the small layout's alive count (matchHud.ts #ui-alive-info) does not show on the large layout */
+#ui-alive-info {
+    display: none;
+}
+
+/* top left: the minimap's corner cog (touch.ts / #ui-menu-display), timer, alive count, spectators */
+#ui-game.ui-layout-sm #ui-menu-display {
+    left: 7px;
+    top: 7px;
+    width: 27px;
+    height: 27px;
+    border-radius: 3px;
+    opacity: 0.8;
+    background-image: url(/assets/img/gui/cog.svg);
+    background-size: 27px;
+}
+
+#ui-game.ui-layout-sm #ui-map-info,
+#ui-game.ui-layout-sm #ui-alive-info,
+#ui-game.ui-layout-sm #ui-spec-counter {
+    top: 115px;
+    bottom: auto;
+    transform: scale(0.5626);
+    transform-origin: top left;
+}
+
+#ui-game.ui-layout-sm #ui-map-info {
+    left: 5px;
+    width: 92px;
+}
+
+#ui-game.ui-layout-sm #ui-alive-info {
+    display: block;
+    position: absolute;
+    left: 60px;
+    width: 92px;
+    height: 36px;
+    font-size: 16px;
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+}
+
+#ui-alive-info .ui-map-icon {
+    display: inline-block;
+    padding: 6px;
+    width: 18px;
+    height: 24px;
+    background-image: url(/assets/img/gui/player-gui.svg);
+    background-size: 24px;
+    background-repeat: no-repeat;
+    background-position: 6px 6px;
+}
+
+#ui-map-counter-default,
+#ui-map-counter-faction {
+    position: relative;
+    display: inline-block;
+    font-size: 24px;
+    text-align: center;
+    bottom: 10px;
+    left: 9px;
+}
+
+#ui-map-counter-faction {
+    display: none;
+    left: 2px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#ui-map-counter-faction .ui-map-counter-red {
+    color: #ff0000;
+}
+
+#ui-map-counter-faction .ui-map-counter-blue {
+    color: #00d2ff;
+}
+
+#ui-game.ui-layout-sm #ui-spec-counter {
+    top: 93px;
+    left: 40px;
+}
+
+/* top right parts of the large layout are hidden (survev: #ui-leaderboard-wrapper, hide-on-mobile kill leader) */
+#ui-game.ui-layout-sm #ui-leaderboard-wrapper,
+#ui-game.ui-layout-sm #ui-kill-leader-wrapper {
+    display: none;
+}
+
+/* kill feed under the minimap: 8 px text, lines 15 px apart (killFeed.ts), the wrapper at 0.85 */
+#ui-game.ui-layout-sm #ui-killfeed-wrapper {
+    top: 24px;
+    left: 6px;
+    right: auto;
+    transform: scale(0.85);
+    transform-origin: top left;
+}
+
+#ui-game.ui-layout-sm #ui-killfeed {
+    position: absolute;
+    top: 135px;
+    left: 0;
+    margin: 0;
+    height: auto;
+}
+
+#ui-game.ui-layout-sm #ui-killfeed-contents .killfeed-div {
+    left: 0;
+    right: auto;
+    padding: 3px;
+    height: 8px;
+    line-height: 8px;
+}
+
+#ui-game.ui-layout-sm .killfeed-div .killfeed-text {
+    font-size: 8px;
+    line-height: 8px;
+}
+
+/* team rows right of the minimap (survev #ui-team: left 128 px; portrait top 40 px) */
+#ui-game.ui-layout-sm #ui-top-left {
+    top: 6px;
+    left: 128px;
+    transform: none;
+}
+
+#ui-game.ui-layout-sm .ui-team-member {
+    width: 110px;
+    height: 20px;
+    padding: 4px;
+    margin-bottom: 4px;
+}
+
+#ui-game.ui-layout-sm .ui-team-member-name {
+    font-size: 10px;
+    line-height: 12px;
+    max-width: 100px;
+}
+
+#ui-game.ui-layout-sm .ui-team-member-color {
+    top: 4px;
+    right: 4px;
+    width: 9px;
+    height: 9px;
+    border-radius: 9px;
+}
+
+#ui-game.ui-layout-sm .ui-team-member-status {
+    top: 2px;
+    right: -24px;
+    width: 20px;
+    height: 20px;
+    background-size: 20px;
+}
+
+#ui-game.ui-layout-sm .ui-team-member-health {
+    margin-top: 2px;
+    height: 5px;
+}
+
+#ui-game.ui-layout-sm .ui-team-member-health .ui-bar-inner {
+    width: 110px;
+    height: 5px;
+}
+
+/* spectate buttons bottom left (survev #ui-spectate-options-wrapper: bottom 6 px, top initial !important) */
+#ui-game.ui-layout-sm #ui-spectate-options-wrapper {
+    /* biome-ignore lint/complexity/noImportantStyles: teamHud.ts writes an inline top under the team rows */
+    top: auto !important;
+    bottom: 6px;
+    left: 6px;
+}
+
+#ui-game.ui-layout-sm #ui-spectate-buttons {
+    width: 124px;
+    padding: 8px 8px 4px;
+}
+
+#ui-game.ui-layout-sm #ui-spectate-options .menu-option {
+    height: 28px;
+    line-height: 26px;
+    margin-bottom: 2px;
+    font-size: 12px;
+}
+
+#ui-game.ui-layout-sm #btn-spectate-prev-player,
+#ui-game.ui-layout-sm #btn-spectate-view-stats {
+    margin-bottom: 12px;
+}
+
+#ui-game.ui-layout-sm #ui-spectate-stats {
+    position: absolute;
+    top: 0;
+    left: 146px;
+    width: 160px;
+}
+
+#ui-game.ui-layout-sm #ui-spectate-stats-header {
+    font-size: 14px;
+    padding: 4px;
+}
+
+#ui-game.ui-layout-sm #ui-spectate-stats td {
+    padding: 0 4px 4px 8px;
+    font-size: 12px;
+}
+
+/* scopes: a column under the timer (survev #ui-top-center-scopes-wrapper left 6 top 132), not in portrait */
+#ui-game.ui-layout-sm #ui-top-center-scopes {
+    top: 138px;
+    left: 6px;
+    flex-direction: column;
+    align-items: flex-start;
+    transform: scale(0.85);
+    transform-origin: top left;
+}
+
+#ui-game.ui-layout-sm .ui-zoom {
+    width: 42px;
+    height: 42px;
+    border-radius: 32px;
+    opacity: 0.3;
+}
+
+#ui-game.ui-layout-sm .ui-zoom-active {
+    opacity: 1;
+    margin: 0;
+    transform: scale(1);
+}
+
+#ui-game.ui-layout-sm .ui-zoom-inactive {
+    margin: 0 -8px;
+    transform: scale(0.6);
+}
+
+#ui-game.ui-layout-sm .ui-zoom-level {
+    margin-top: 13px;
+    font-size: 24px;
+    line-height: 16px;
+}
+
+/* medical row and ammo grid at the top right (survev .ui-right-center-mobile spans the screen 10 px down) */
+#ui-game.ui-layout-sm #ui-right-center {
+    top: 10px;
+    left: 0;
+    right: auto;
+    width: 100%;
+    height: 100%;
+    transform: none;
+}
+
+#ui-game.ui-layout-sm #ui-medical-interactive {
+    position: absolute;
+    display: inline-flex;
+    top: 0;
+    left: 68%;
+    margin: 0;
+    transform: translateX(-50%);
+}
+
+#ui-game.ui-layout-sm .ui-loot {
+    display: inline-block;
+    width: 44px;
+    height: 18px;
+    margin: 0 0 2px 6px;
+}
+
+#ui-game.ui-layout-sm .ui-loot .ui-loot-count {
+    font-size: 16px;
+    left: 4px;
+    top: -1px;
+    width: 16px;
+    text-align: center;
+}
+
+#ui-game.ui-layout-sm .ui-loot .ui-loot-image {
+    width: 18px;
+    height: 18px;
+    right: 2px;
+    top: 0;
+}
+
+#ui-game.ui-layout-sm #ui-ammo-interactive {
+    position: absolute;
+    top: 0;
+    right: 4px;
+    width: 90px;
+}
+
+#ui-game.ui-layout-sm .ui-ammo {
+    display: inline-block;
+    width: 38px;
+    height: 14px;
+    margin: 0 3px 2px 0;
+    border: 2px solid transparent;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+#ui-game.ui-layout-sm .ui-ammo .ui-loot-count {
+    font-size: 12px;
+    top: 0;
+    left: 3px;
+    width: 16px;
+    line-height: 14px;
+    text-align: center;
+}
+
+#ui-game.ui-layout-sm .ui-ammo .ui-loot-image,
+#ui-game.ui-layout-sm .ui-ammo .ui-loot-overlay {
+    width: 11px;
+    height: 11px;
+    right: 2px;
+    top: 2px;
+}

@@ -38,7 +38,7 @@ import {
     roleAnnouncement,
     roleFeed,
 } from "../ui/killFeed.ts";
-import { gasAnnouncement, MatchHud } from "../ui/matchHud.ts";
+import { gasAnnouncement, type MapInfoLayout, MatchHud } from "../ui/matchHud.ts";
 
 /** victory music of the original client (menu_music_01), started 1.3 s after the GameOver result */
 const VICTORY_MUSIC = "menu_music";
@@ -324,9 +324,9 @@ export class MatchUi implements PlayerNames {
     }
 
     /** Per frame: timers, animations and the spectate keys (Left / Right arrows, survev game.ts). */
-    update(dt: number, uiScale: number, keys: { next: boolean; prev: boolean }): void {
+    update(dt: number, map: MapInfoLayout, keys: { next: boolean; prev: boolean }): void {
         this.hud.setGas(this.gas.mode, this.gas.timeLeft());
-        this.hud.update(dt, uiScale);
+        this.hud.update(dt, map);
         this.gameOver.update(dt);
         if (this.hideKillIn >= 0) {
             this.hideKillIn -= dt;

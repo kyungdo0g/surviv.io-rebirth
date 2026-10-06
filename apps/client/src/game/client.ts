@@ -7,6 +7,8 @@
 // cancel prompts, the revive pie timer and the downed health bar.
 // M7 (modes.ts): perk slots and HUD drops, roles and their announcements, faction counters, colours and minimap
 // members, the Cobalt class menu, the big map (M / G), haste and frozen player effects, tracer variants; mute moved to N.
+// M8: the HUD layout (uiLayout.ts: the small phone layout, re-evaluated on resize / rotation) and the HUD toggles of
+// clientControls.ts (Toggle Minimap, Hide UI) applied to the HUD, the minimap and the match HUD every frame.
 import type { Vec2 } from "@rebirth/core";
 import { GameObjectDefs, getMapDef, Input, MapObjectDefs, type RoleDef } from "@rebirth/defs";
 import {
@@ -41,9 +43,10 @@ import { Camera } from "../render/camera.ts";
 import { Renderer } from "../render/renderer.ts";
 import { DebugHud } from "../ui/debugHud.ts";
 import { Hud, type HudFrame } from "../ui/hud.ts";
-import { Minimap, uiScale } from "../ui/minimap.ts";
+import { Minimap } from "../ui/minimap.ts";
 import { PingIndicator } from "../ui/pingIndicator.ts";
 import type { ReportFlowDeps } from "../ui/report.ts";
+import { HudLayout, hudScale, UiLayout } from "../ui/uiLayout.ts";
 import { ClientControls } from "./clientControls.ts";
 import { InteractionTracker, type Prompt } from "./interaction.ts";
 import { MatchUi } from "./match.ts";
@@ -93,6 +96,8 @@ export class GameClient {
     readonly teamPlay: TeamPlay;
     readonly modes: ModeUi;
     readonly controls: ClientControls;
+    /** small / large HUD layout (M8) */
+    readonly layout: HudLayout;
     world: ObjectWorld | null = null;
     air: AirSystem | null = null;
     worldFx: WorldFx | null = null;
@@ -150,6 +155,8 @@ export class GameClient {
                 this.modes.dropped(item);
             },
         });
+        const touch = !!opts.touch;
+        this.layout = new HudLayout(this.ui.root, touch);
         const playAgain = opts.onPlayAgain ?? (() => {});
         this.match = new MatchUi({
             hudRoot: this.ui.root,
@@ -182,6 +189,8 @@ export class GameClient {
             pingTint: (id, idx) => this.modes.pingTint(id, idx),
             pingSound: (id, def) => this.modes.pingSound(id, def),
             factionOf: (id) => this.modes.factionOf(id),
+            touch,
+            closeBigMap: () => this.modes.setBigMap(false),
         });
         this.controls = new ClientControls({
             app,
@@ -191,12 +200,18 @@ export class GameClient {
             input: this.input,
             hudRoot: this.ui.root,
             parent,
-            touch: !!opts.touch,
+            touch,
             modes: this.modes,
             match: this.match,
+            emoteWheel: this.teamPlay.wheel,
+            layout: this.layout,
             minimap: () => this.minimap,
             quit: opts.onQuit ?? playAgain,
             report: opts.report ?? null,
+        });
+        this.layout.onChange((state) => {
+            this.ui.setLayout(state);
+            this.match.hud.setLayout(state.layout === UiLayout.Sm, state.mobile);
         });
         transport.onJoin((map, playerId) => this.join(map, playerId));
         transport.onSnapshot((s) => this.onSnapshot(s));
@@ -281,7 +296,7 @@ export class GameClient {
             isWater: (p) => (this.terrainQuery ? isTerrainWater(this.terrainQuery, p) : false),
         });
         this.minimap?.destroy();
-        this.minimap = new Minimap(this.app, this.textures, map, terrain);
+        this.minimap = new Minimap(this.app, this.textures, map, terrain, this.layout.state.mobile);
         this.renderer.overlay.addChildAt(this.minimap.container, 0);
         this.camera.pos = { x: map.width / 2, y: map.height / 2 };
 
@@ -368,12 +383,19 @@ export class GameClient {
         const world = this.world;
         const screen = this.app.screen;
         this.camera.resize(screen.width, screen.height);
-        const scale = uiScale(screen.width, screen.height);
-        this.match.update(uiDt, scale, {
-            next: this.input.wasPressed("ArrowRight"),
-            prev: this.input.wasPressed("ArrowLeft"),
-        });
+        const small = this.layout.small;
+        const scale = hudScale(this.layout.state);
+        const controls = this.controls;
+        this.match.update(
+            uiDt,
+            { scale, small, minimapHidden: controls.minimapHidden || controls.hudHidden },
+            {
+                next: this.input.wasPressed("ArrowRight"),
+                prev: this.input.wasPressed("ArrowLeft"),
+            },
+        );
         this.modes.update(uiDt, this.input, screen.width, screen.height);
+        this.ui.setHidden(controls.hudHidden);
         if (!world || !this.local) {
             this.controls.touchSample(dt, null, true);
             this.teamPlay.updateWheel(uiDt, this.input, null, false);
@@ -408,6 +430,7 @@ export class GameClient {
             localId: this.localId,
             activeId: this.activeId,
             spectating,
+            small,
         });
         this.air?.update({
             dt: uiDt,
@@ -427,6 +450,10 @@ export class GameClient {
         this.renderGas(now);
         this.pingIndicator.update(uiDt, this.camera);
         this.controls.update({ dt, world, local: this.local, pos: this.visualPos, spectating });
+        if (this.minimap) {
+            this.minimap.small = small;
+            this.minimap.setHidden(controls.minimapHidden || controls.hudHidden);
+        }
         this.minimap?.update(this.camera, this.visualPos, {
             dt: uiDt,
             gas: this.match.gas,
@@ -439,6 +466,7 @@ export class GameClient {
             ),
         });
         const canInteract = !spectating && !this.modes.awaitingClass(this.local);
+        this.interactions.small = small;
         this.interaction = canInteract ? this.interactions.find(world, this.local, me, this.localPos) : null;
         const objectAction = this.interactions.update(uiDt, world);
         const targetId = this.local.action?.type === "revive" ? (this.local.action.targetId ?? 0) : 0;
@@ -493,6 +521,7 @@ export class GameClient {
         this.minimap = null;
         this.teamPlay.destroy();
         this.controls.destroy();
+        this.layout.destroy();
         this.modes.destroy();
         this.ui.destroy();
         this.match.dispose();

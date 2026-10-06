@@ -1,5 +1,6 @@
-// M8 test hooks on window.__rebirth (read by tests/e2e/m8.spec.ts): the last sampled input and the touch sticks, the
-// in-game menu, settings and binds, the camera's screen shake setting and reports.
+// M8 test hooks on window.__rebirth (read by tests/e2e/m8.spec.ts, m8-layout.spec.ts): the last sampled input and the
+// touch sticks, the in-game menu, settings and binds, the camera's screen shake setting, reports, the HUD layout and
+// the HUD toggles (Toggle Minimap, Hide UI).
 import { config } from "../config.ts";
 import { debugGlobals } from "../globals.ts";
 import { binds } from "../input/keybinds.ts";
@@ -54,6 +55,26 @@ export function exposeM8(client: GameClient): void {
         },
         get killerId() {
             return client.match.killerId;
+        },
+    };
+    globals.layout = {
+        /** "sm" or "lg" */
+        get name() {
+            return client.layout.state.layout;
+        },
+        get landscape() {
+            return client.layout.state.landscape;
+        },
+        get mobile() {
+            return client.layout.state.mobile;
+        },
+    };
+    globals.hudToggles = {
+        get minimapHidden() {
+            return controls.minimapHidden;
+        },
+        get hudHidden() {
+            return controls.hudHidden;
         },
     };
     globals.cameraShake = {

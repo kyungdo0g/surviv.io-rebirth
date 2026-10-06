@@ -4,7 +4,8 @@
 // 100, white down to 75, pink below, a pulsing red bar at 25 and under, red while downed) and a status icon (pulsing
 // "down", skull when dead, a cross when disconnected; the name fades to 30 % when dead or disconnected). Off-screen
 // living teammates get an indicator at the screen edge, 32 px in, turned towards them. The spectate buttons move below
-// the rows (rows x 48 + 12 px).
+// the rows (rows x 48 + 12 px). M8 small layout (hudSm.css): 110 px rows right of the minimap, indicators 16 px in at
+// half size (survev ui.ts layoutSm).
 import { GameConfig } from "@rebirth/defs";
 import type { TeamMemberView } from "@rebirth/sim";
 import type { Camera } from "../render/camera.ts";
@@ -12,8 +13,8 @@ import "./team.css";
 
 /** survev ui.ts teamMemberHeight */
 const ROW_HEIGHT = 48;
-const BAR_WIDTH = 200;
 const EDGE_OFFSET = 32;
+const EDGE_OFFSET_SM = 16;
 
 /** CSS colour of group colour slot `idx` (GameConfig.groupColors). */
 export function groupColorCss(idx: number): string {
@@ -61,6 +62,8 @@ export interface TeamHudFrame {
     visualPos(id: number): { x: number; y: number } | null;
     /** faction maps show no edge indicators (survev ui.ts: `!factionMode`) (M7) */
     factionMode?: boolean;
+    /** the small layout: indicators 16 px in at half size (survev ui.ts m_update layoutSm, M8) */
+    small?: boolean;
 }
 
 export class TeamHud {
@@ -148,8 +151,8 @@ export class TeamHud {
         row.key = key;
         row.div.dataset.playerId = String(m.playerId);
         row.name.textContent = m.name;
-        const width = m.dead ? 0 : Math.max(health * 0.01 * BAR_WIDTH, 1);
-        row.bar.style.width = `${width}px`;
+        // a share of the bar's CSS width (200 px, 110 px on the small layout; survev reads it from the CSS), >= 1 px
+        row.bar.style.width = m.dead ? "0px" : `max(${health}%, 1px)`;
         const color = teamHealthColor(health, m.downed);
         row.bar.classList.toggle("ui-bar-danger", color === null);
         row.bar.style.backgroundColor = color ?? "";
@@ -187,12 +190,14 @@ export class TeamHud {
                     Math.abs(dir.y) > 1e-6 ? hy / Math.abs(dir.y) : Number.POSITIVE_INFINITY,
                 );
                 const edge = cam.worldToScreen({ x: cam.pos.x + dir.x * t, y: cam.pos.y + dir.y * t });
-                const x = Math.min(Math.max(edge.x, EDGE_OFFSET), cam.screenWidth - EDGE_OFFSET);
-                const y = Math.min(Math.max(edge.y, EDGE_OFFSET), cam.screenHeight - EDGE_OFFSET);
+                const off = frame.small ? EDGE_OFFSET_SM : EDGE_OFFSET;
+                const x = Math.min(Math.max(edge.x, off), cam.screenWidth - off);
+                const y = Math.min(Math.max(edge.y, off), cam.screenHeight - off);
                 const rot = Math.atan2(dir.y, -dir.x) - Math.PI * 0.5;
                 ind.div.style.left = `${x.toFixed(1)}px`;
                 ind.div.style.top = `${y.toFixed(1)}px`;
-                ind.div.style.transform = `translate(-50%, -50%) rotate(${rot.toFixed(3)}rad)`;
+                const half = frame.small ? " scale(0.5)" : "";
+                ind.div.style.transform = `translate(-50%, -50%) rotate(${rot.toFixed(3)}rad)${half}`;
                 show = true;
             }
         }

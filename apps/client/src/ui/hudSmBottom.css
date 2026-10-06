@@ -1,0 +1,314 @@
+/*
+ * Small HUD layout, bottom half (M8; hudSm.css has the header notes and the top half, hudSmPortrait.css the portrait
+ * overrides): the emote button, weapon slots, clip and reserve, boost and health bars, gear and perks, centre texts and
+ * the pie timer, landscape defaults.
+ */
+
+/* the emote button ("surviv icon", touch only) at the bottom right (survev #ui-emote-button: right 4, bottom 18) */
+#ui-game.ui-layout-sm #ui-emote-button {
+    top: auto;
+    right: 4px;
+    bottom: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    background-size: 20px;
+}
+
+/* weapon slots: a 68 x 28 column on the right, names only (survev #ui-bottom-right: top 225 px, slots 35 px apart) */
+#ui-game.ui-layout-sm #ui-bottom-right {
+    top: 124px;
+    right: 6px;
+    bottom: auto;
+    transform: none;
+}
+
+#ui-game.ui-layout-sm #ui-weapon-container {
+    width: 72px;
+    height: 137px;
+}
+
+#ui-game.ui-layout-sm .ui-weapon-switch,
+#ui-game.ui-layout-sm .ui-weapon-switch.ui-weapon-equipped {
+    width: 68px;
+    height: 28px;
+    transition: none;
+}
+
+#ui-game.ui-layout-sm #ui-weapon-id-1 {
+    bottom: 105px;
+}
+
+#ui-game.ui-layout-sm #ui-weapon-id-2 {
+    bottom: 70px;
+}
+
+#ui-game.ui-layout-sm #ui-weapon-id-3 {
+    bottom: 35px;
+}
+
+#ui-game.ui-layout-sm .ui-weapon-name {
+    top: 14px;
+    right: 4px;
+    width: 48px;
+    font-size: 10px;
+    text-align: right;
+    transform: translateY(-50%);
+}
+
+#ui-game.ui-layout-sm .ui-weapon-image,
+#ui-game.ui-layout-sm .ui-weapon-number,
+#ui-game.ui-layout-sm .ui-weapon-ammo {
+    display: none;
+}
+
+/* clip, reserve and reload button above the health bar (survev #ui-equipped-ammo-wrapper: bottom 78 px) */
+#ui-game.ui-layout-sm #ui-equipped-ammo-wrapper {
+    bottom: 46px;
+    transform: translateX(-50%);
+}
+
+#ui-game.ui-layout-sm #ui-bullet-counter {
+    width: 175px;
+    height: 32px;
+    margin: 0;
+    text-shadow: 1px 1px #000000;
+}
+
+#ui-game.ui-layout-sm #ui-current-clip {
+    width: 60px;
+    height: 32px;
+    font-size: 28px;
+    line-height: 30px;
+}
+
+#ui-game.ui-layout-sm #ui-remaining-ammo {
+    left: 122px;
+    top: 10px;
+    width: 44px;
+    height: 22px;
+    font-size: 16px;
+    line-height: 22px;
+}
+
+#ui-game.ui-layout-sm #ui-reload-button-container {
+    left: 162px;
+    top: 3px;
+}
+
+#ui-game.ui-layout-sm #ui-reload-button {
+    width: 22px;
+    height: 22px;
+    background-size: 14px;
+}
+
+/* boost and health bars at the bottom centre, half size (survev #ui-bottom-center-0: bottom 6 px, 200 px bar) */
+#ui-game.ui-layout-sm #ui-bottom-center-0 {
+    bottom: 6px;
+    transform: translateX(-50%);
+}
+
+#ui-game.ui-layout-sm #ui-boost-counter {
+    width: 206px;
+    margin-bottom: 4px;
+}
+
+#ui-game.ui-layout-sm .ui-boost-base,
+#ui-game.ui-layout-sm .ui-boost-base .ui-bar-inner {
+    height: 6px;
+    margin-bottom: 0;
+}
+
+#ui-game.ui-layout-sm #ui-boost-counter-0,
+#ui-game.ui-layout-sm #ui-boost-counter-1 {
+    width: 50px;
+}
+
+#ui-game.ui-layout-sm #ui-boost-counter-2 {
+    width: 75px;
+}
+
+#ui-game.ui-layout-sm #ui-boost-counter-3 {
+    width: 25px;
+}
+
+#ui-game.ui-layout-sm #ui-health-counter {
+    width: 200px;
+    height: 18px;
+    padding: 4px;
+}
+
+#ui-game.ui-layout-sm #ui-health-container,
+#ui-game.ui-layout-sm #ui-health-container .ui-bar-inner {
+    width: 200px;
+    height: 18px;
+}
+
+#ui-game.ui-layout-sm .ui-health-flair {
+    width: 36px;
+    height: 36px;
+    top: -9px;
+    background-size: 36px;
+}
+
+#ui-game.ui-layout-sm #ui-health-flair-left {
+    left: -17px;
+}
+
+#ui-game.ui-layout-sm #ui-health-flair-right {
+    right: -17px;
+}
+
+/* gear right of the bars, perks left of them: 20 x 24 boxes without level text at 0.85 (survev left / right 70 %) */
+#ui-game.ui-layout-sm #ui-bottom-center-right,
+#ui-game.ui-layout-sm #ui-bottom-center-left {
+    bottom: 6px;
+    opacity: 0.75;
+    transform: scale(0.85);
+}
+
+#ui-game.ui-layout-sm #ui-bottom-center-right {
+    left: 70%;
+    right: auto;
+    transform-origin: bottom left;
+}
+
+#ui-game.ui-layout-sm #ui-bottom-center-left {
+    right: 70%;
+    left: auto;
+    transform-origin: bottom right;
+}
+
+#ui-game.ui-layout-sm .ui-armor-counter {
+    width: 20px;
+    height: 24px;
+}
+
+#ui-game.ui-layout-sm .ui-armor-image {
+    width: 18px;
+    height: 18px;
+}
+
+#ui-game.ui-layout-sm .ui-armor-level {
+    display: none;
+}
+
+#ui-game.ui-layout-sm #ui-armor-helmet {
+    left: -24px;
+    right: auto;
+}
+
+#ui-game.ui-layout-sm #ui-armor-chest {
+    left: 1px;
+}
+
+#ui-game.ui-layout-sm #ui-armor-backpack {
+    left: 26px;
+}
+
+#ui-game.ui-layout-sm #ui-perk-0 {
+    left: 5px;
+    right: auto;
+}
+
+#ui-game.ui-layout-sm #ui-perk-1 {
+    left: -20px;
+    right: auto;
+}
+
+#ui-game.ui-layout-sm #ui-perk-2 {
+    left: -45px;
+    right: auto;
+}
+
+#ui-game.ui-layout-sm #ui-role-badge {
+    bottom: 30px;
+    right: -60px;
+    height: 22px;
+    gap: 4px;
+    padding: 0 6px 0 4px;
+    border-left-width: 3px;
+}
+
+#ui-game.ui-layout-sm .ui-role-badge-icon {
+    width: 16px;
+    height: 16px;
+}
+
+#ui-game.ui-layout-sm .ui-role-badge-name {
+    font-size: 11px;
+}
+
+/* centre texts, smaller (survev: top centre 15 %, announcements 84 px, kill message 23 %, prompt 44 % / 60 %) */
+#ui-game.ui-layout-sm #ui-top-center {
+    top: 15%;
+}
+
+#ui-game.ui-layout-sm #ui-top-center .top-center-text {
+    padding: 4px;
+}
+
+#ui-game.ui-layout-sm #ui-waiting-text,
+#ui-game.ui-layout-sm .top-center-text .spectate-text {
+    font-size: 16px;
+    text-shadow: 1px 1px 0 #000000;
+}
+
+#ui-game.ui-layout-sm #ui-upper-center {
+    top: 84px;
+}
+
+#ui-game.ui-layout-sm #ui-announcement {
+    font-size: 16px;
+    text-shadow: 1px 1px 0 #000000;
+}
+
+#ui-game.ui-layout-sm #ui-bottom-center-1 {
+    bottom: 23%;
+    transform: translateX(-50%);
+}
+
+#ui-game.ui-layout-sm #ui-kills {
+    padding: 6px;
+}
+
+#ui-game.ui-layout-sm #ui-kill-text {
+    font-size: 10px;
+}
+
+#ui-game.ui-layout-sm #ui-kill-count {
+    font-size: 18px;
+    margin-bottom: -3px;
+}
+
+#ui-game.ui-layout-sm #ui-lower-center {
+    bottom: 44%;
+    left: 60%;
+    transform: none;
+}
+
+#ui-game.ui-layout-sm #ui-interaction-press {
+    width: 44px;
+    height: 44px;
+    margin-left: -20px;
+    font-size: 34px;
+    line-height: 44px;
+    background-size: 36px;
+}
+
+#ui-game.ui-layout-sm #ui-interaction-outer {
+    height: 28px;
+    margin-left: 6px;
+    padding: 0 6px;
+}
+
+#ui-game.ui-layout-sm #ui-interaction-description {
+    margin-top: 5px;
+    font-size: 16px;
+    line-height: 18px;
+}
+
+/* the action pie timer at half size (survev pieTimer.ts resize; its position is set by pieTimer.ts) */
+#ui-game.ui-layout-sm #ui-pie-timer {
+    transform: scale(0.5);
+}

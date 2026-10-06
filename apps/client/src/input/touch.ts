@@ -8,7 +8,8 @@
 // touchMoveActive); the aim direction and toMouseLen = pull / range x throwableMaxMouseDist (18); shooting while the aim
 // stick is beyond range / 1.075 (shootStart every frame: semi-automatic guns auto-fire); a throwable that started
 // cooking stays held until the finger lifts, which throws it. With only the move stick held the aim turns to the
-// walking direction 0.5 s after the aim stick was last touched. A tap on the minimap (or the open big map) toggles it.
+// walking direction 0.5 s after the aim stick was last touched. A tap on the minimap or the open big map is reported
+// with its position (M8: the minimap opens the big map, the big map opens the ping wheel there; clientControls.ts).
 import type { Vec2 } from "@rebirth/core";
 import { GameConfig } from "@rebirth/defs";
 import { Container, Graphics, Sprite } from "pixi.js";
@@ -56,8 +57,8 @@ export interface TouchControlsDeps {
     target: HTMLElement;
     /** screen rect of the minimap, or of the big map while it is open */
     mapRect(): { x: number; y: number; width: number; height: number } | null;
-    /** the minimap or the big map was tapped */
-    mapTapped(): void;
+    /** the minimap or the big map was tapped at `pos` (screen px) */
+    mapTapped(pos: Vec2): void;
 }
 
 export interface TouchFrame {
@@ -142,7 +143,7 @@ export class TouchControls {
             if (type === "end") {
                 tracked.dead = true;
                 const moved = Math.hypot(pos.x - tracked.posDown.x, pos.y - tracked.posDown.y);
-                if (tracked.map && moved < TAP_SLOP) this.deps.mapTapped();
+                if (tracked.map && moved < TAP_SLOP) this.deps.mapTapped({ x: pos.x, y: pos.y });
             }
         }
     }

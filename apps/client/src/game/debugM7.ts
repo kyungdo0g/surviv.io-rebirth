@@ -17,6 +17,10 @@ export function exposeM7(client: GameClient): void {
         get active() {
             return modes.roleMenu.active;
         },
+        /** open and on screen (the in-game menu hides it, M8) */
+        get shown() {
+            return modes.roleMenu.shown;
+        },
         get displayed() {
             return modes.roleMenu.displayed;
         },

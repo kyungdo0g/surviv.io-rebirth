@@ -117,6 +117,7 @@
 ## Minimap and full map
 
 - Minimap: 256 px square with 16 px margin and 4 px black border on desktop; 192 px, 4 px margin, 1 px border on the small layout [src:survev/client/src/ui/ui.ts:1055-1074] [H]
+- On the small layout the minimap size is multiplied by `screenScaleFactor` 0.5626, so the 192 px minimap is drawn about 108 px wide [src:survev/client/src/ui/ui.ts:1218] [src:survev/client/src/ui/ui.ts:2144-2145] [H]
 - The map texture is drawn at `1600 / 1.2 ≈ 1333` px (× screen scale) and alpha 0.8, centred on the player, so the minimap shows a window of the map rather than the whole map ("semi-transparent and reveals slightly more of the map" since 0.3.0) [src:survev/client/src/ui/ui.ts:2216-2222] [src:survev/client/src/ui/ui.ts:747-754] [src:changelog/0.3.0] [H]
 - Full map (M or G if unbound, click the minimap on desktop, tap on touch): sized to the smaller screen dimension, centred, alpha 1; Esc or the close button exits [src:survev/client/src/ui/ui.ts:2191-2208] [src:survev/client/src/game.ts:451-457] [src:fandom/Minimap] [H]
 - V cycles the minimap between visible and hidden (visibility mode 0/1); Hide UI (unbound) toggles the whole HUD [src:survev/client/src/ui/ui.ts:1900-1924] [src:survev/client/src/game.ts:458-468] [H]

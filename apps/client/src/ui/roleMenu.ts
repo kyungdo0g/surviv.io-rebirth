@@ -7,6 +7,8 @@
 // (GameConfig.player.perkModeRoleSelectDuration) the highlighted class is confirmed like the original. The menu border
 // takes the class colour, `ambient_lab_01` plays while it is open and the last choice is remembered (the original
 // `perkModeRole` config). Rebirth additions: each perk's description under its name and the class's starting items.
+// M8: the in-game (Esc) menu hides the picker while it is open; the countdown keeps running (survev ui.ts toggleEscMenu
+// hideRoleMenu / displayRoleMenu; menus.md "In-game (Esc) menu").
 import { GameConfig, GameObjectDefs, getMapDef, type OutfitDef, type RoleDef } from "@rebirth/defs";
 import { roleLoadout } from "@rebirth/sim";
 import { lootImageUrl } from "../assets/hudImages.ts";
@@ -72,6 +74,8 @@ export class RoleMenu {
     private mapName = "";
     /** the menu is open (survev roleMenuActive) */
     active = false;
+    /** the in-game menu covers it: open but not shown (M8) */
+    private suppressed = false;
     /** the class shown in the body (survev roleDisplayed) */
     displayed = "";
     /** the class confirmed with ENTER GAME or the timeout, "" before */
@@ -121,7 +125,7 @@ export class RoleMenu {
         this.enterText = "";
         this.confirmed = "";
         this.active = true;
-        this.root.style.display = "block";
+        this.root.style.display = this.suppressed ? "none" : "block";
         this.opts.audio.preload([AMBIENT], "ambient");
     }
 
@@ -132,6 +136,17 @@ export class RoleMenu {
         this.root.style.display = "none";
         this.opts.audio.stop(this.ambient);
         this.ambient = null;
+    }
+
+    /** The in-game menu opened (true) or closed: the picker hides meanwhile, still counting down. */
+    setSuppressed(suppressed: boolean): void {
+        this.suppressed = suppressed;
+        if (this.active) this.root.style.display = suppressed ? "none" : "block";
+    }
+
+    /** the picker is open and on screen (tests) */
+    get shown(): boolean {
+        return this.active && !this.suppressed;
     }
 
     /** Highlights `role` and shows its name, image and perks (survev setRoleMenuInfo). */

@@ -2,7 +2,8 @@
 // render, ui.ts faction flair; docs/research/ui/hud.md "Inventory, gear and perks", "Health bar"):
 // - perk slots `#ui-perk-0..2` left of the health bar, mirrored like the gear slots on the right: the perk's loot image,
 //   a hover tooltip with its name and description, a green hover outline on the droppable (loot) perk and none on perks
-//   a role, helmet or mode grants (`ui-perk-no-drop`); a new perk pulses for 4 s; right click drops the droppable one.
+//   a role, helmet or mode grants (`ui-perk-no-drop`); a new perk pulses for 4 s (not on mobile, M8); right click drops
+//   the droppable one.
 //   Three slots, the original 0.8.82 count (survev's fourth slot is a fork addition: CONFLICT perk-slot-count). The
 //   perks are the followed player's, so a spectator sees the spectated player's perks;
 // - the faction arm patches (`#ui-health-flair-left/right`, player-patch-red|blue) beside the health bar on faction maps;
@@ -68,6 +69,8 @@ export class ModeHud {
     private lastLocal: LocalPlayerState | null = null;
     private prevTypes: Set<string> | null = null;
     private prevActive = -1;
+    /** phones and tablets: new perks do not pulse (M8) */
+    mobile = false;
 
     constructor(root: HTMLElement, healthCounter: HTMLElement, drop: (r: DropRequest) => void) {
         for (let i = 0; i < PERK_SLOTS; i++) {
@@ -133,7 +136,8 @@ export class ModeHud {
                 slot.div.classList.toggle("ui-perk-no-drop", !droppable);
                 slot.div.dataset.droppable = String(droppable);
             });
-            const pulse = slot.ticker < PERK_PULSE_TIME;
+            // desktop only (survev ui2.ts: !device.mobile)
+            const pulse = !this.mobile && slot.ticker < PERK_PULSE_TIME;
             this.p.set(`perkPulse${i}`, pulse, () => slot.div.classList.toggle("ui-perk-pulse", pulse));
         }
         this.prevTypes = types;

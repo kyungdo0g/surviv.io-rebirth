@@ -11,6 +11,9 @@
 // player and its group, and the big map (M / G, survev ui.ts displayMapLarge + redraw): the same layers drawn over a
 // square as large as the smaller screen side, centred, at full alpha, every marker at its map position, without the
 // view rectangle and the line to the safe zone.
+// M8: the small layout (uiLayout.ts) puts a 192 px minimap (x the 0.5626 HUD scale) with a 4 px margin and a 1 px
+// border in the top-left corner and draws its dots at 0.15 / 0.25 (survev ui.ts getMinimapSize / Margin / BorderWidth,
+// redraw, updatePlayerMapSprites); Toggle Minimap (V) and Hide UI hide it (`setHidden`; the big map still opens).
 import { collider, math, type Vec2 } from "@rebirth/core";
 import {
     type BuildingDef,
@@ -31,10 +34,15 @@ import { AirstrikeZones } from "./airstrikeZones.ts";
 import { MapIndicators, MinimapGas, type PingFields } from "./mapMarkers.ts";
 import { MinimapFaction, type MinimapFactionFrame } from "./minimapFaction.ts";
 import { MinimapTeam, type MinimapTeamFrame, memberDot, memberTint } from "./minimapTeam.ts";
+import { SM_HUD_SCALE, uiScale } from "./uiLayout.ts";
 
-const MARGIN = 16;
-const SIZE = 256;
-const BORDER = 4;
+/** size, margin and border of the minimap at HUD scale 1: desktop and small layout (survev ui.ts getMinimap*) */
+const LG = { size: 256, margin: 16, border: 4 };
+const SM = { size: 192, margin: 4, border: 1 };
+/** the small layout draws player dots at 0.15 instead of 0.2 and the group ring at 0.25 instead of 0.3 */
+const SM_DOT_MULT = 0.15 / 0.2;
+const SM_RING_SCALE = 0.25;
+const RING_SCALE = 0.3;
 /** on-screen width of the whole map in px at UI scale 1 (survev ui.ts redraw: screenScaleFactor * 1600 / 1.2) */
 const MAP_DISPLAY_SIZE = 1600 / 1.2;
 const MAP_ALPHA = 0.8;
@@ -68,11 +76,6 @@ function zIdxOf(def: MapObjectDef): number {
     return def.type === "obstacle" ? (def.img.zIdx ?? 0) : 0;
 }
 
-/** UI scale of the original HUD for this screen size (survev ui.ts resize) */
-export function uiScale(width: number, height: number): number {
-    return Math.min(1, math.clamp(width / 1280, 0.75, 1) * math.clamp(height / 1024, 0.75, 1));
-}
-
 export interface MinimapFrame {
     dt: number;
     gas: GasTracker | null;
@@ -96,6 +99,10 @@ export class Minimap {
     readonly faction: MinimapFaction;
     /** the big map is open (M7) */
     big = false;
+    /** the small (phone) layout: top left, 192 px x 0.5626 (M8) */
+    small = false;
+    /** Toggle Minimap / Hide UI hid the minimap (the big map still shows) (M8) */
+    hidden = false;
     private readonly mask = new Graphics();
     private readonly border = new Graphics();
     private readonly viewRect = new Graphics();
@@ -111,10 +118,10 @@ export class Minimap {
     /** screen position of the map's top-left corner and its on-screen size, as last drawn */
     private mapOrigin = { x: 0, y: 0, size: 1 };
 
-    constructor(app: Application, textures: TextureStore, map: MapData, terrain: TerrainShape) {
+    constructor(app: Application, textures: TextureStore, map: MapData, terrain: TerrainShape, mobile = false) {
         this.map = map;
         this.textures = textures;
-        this.texture = Minimap.renderMapTexture(app, map, terrain);
+        this.texture = Minimap.renderMapTexture(app, map, terrain, mobile);
         this.mapSprite = new Sprite(this.texture);
         this.mapSprite.anchor.set(0.5);
         this.mapSprite.alpha = MAP_ALPHA;
@@ -165,11 +172,24 @@ export class Minimap {
     setBig(big: boolean): void {
         this.big = big;
         this.mapSprite.alpha = big ? 1 : MAP_ALPHA;
+        this.container.visible = !this.hidden || big;
+    }
+
+    /** Hides the minimap (Toggle Minimap, Hide UI); the big map still shows (survev ui.ts hideMiniMap). */
+    setHidden(hidden: boolean): void {
+        this.hidden = hidden;
+        this.container.visible = !hidden || this.big;
+    }
+
+    /** Screen rectangle that takes taps and pings: the big map, or the minimap while it shows. */
+    get tapRect(): { x: number; y: number; width: number; height: number } | null {
+        return this.hidden && !this.big ? null : this.rect;
     }
 
     /** World position under a screen point inside the minimap, or null outside it (pings on the map, M6). */
     screenToWorld(p: Vec2): Vec2 | null {
-        const r = this.rect;
+        const r = this.tapRect;
+        if (!r) return null;
         if (r.width <= 0 || p.x < r.x || p.y < r.y || p.x > r.x + r.width || p.y > r.y + r.height) return null;
         const o = this.mapOrigin;
         return {
@@ -183,7 +203,8 @@ export class Minimap {
         return this.indicators.apply(list);
     }
 
-    static renderMapTexture(app: Application, map: MapData, terrain: TerrainShape): RenderTexture {
+    /** The map texture; place names are 22 px bold Arial, 20 px on mobile (survev map.ts renderMap). */
+    static renderMapTexture(app: Application, map: MapData, terrain: TerrainShape, mobile = false): RenderTexture {
         const size = Math.min(
             2048,
             Math.max(512, Math.ceil(MAP_DISPLAY_SIZE * Math.min(window.devicePixelRatio || 1, 2))),
@@ -237,7 +258,7 @@ export class Minimap {
                 text: place.name,
                 style: {
                     fontFamily: "Arial",
-                    fontSize: 22,
+                    fontSize: mobile ? 20 : 22,
                     fontWeight: "bold",
                     fill: 0xffffff,
                     stroke: { color: 0x000000, width: 1 },
@@ -261,7 +282,8 @@ export class Minimap {
 
     /** Lays the minimap (or the big map) out for the screen and scrolls it to `playerPos`. */
     update(camera: Camera, playerPos: Vec2, frame?: MinimapFrame): void {
-        const scale = uiScale(camera.screenWidth, camera.screenHeight);
+        const scale = this.small ? SM_HUD_SCALE : uiScale(camera.screenWidth, camera.screenHeight);
+        const dims = this.small ? SM : LG;
         let size: number;
         let left: number;
         let top: number;
@@ -277,9 +299,9 @@ export class Minimap {
             originX = left;
             originY = top;
         } else {
-            size = SIZE * scale;
-            left = MARGIN;
-            top = camera.screenHeight - size - MARGIN;
+            size = dims.size * scale;
+            left = dims.margin;
+            top = this.small ? dims.margin : camera.screenHeight - size - dims.margin;
             mapSize = MAP_DISPLAY_SIZE * scale;
             const cx = left + size / 2;
             const cy = top + size / 2;
@@ -299,9 +321,8 @@ export class Minimap {
         this.mask.clear().rect(left, top, size, size).fill(0xffffff);
         this.border.clear();
         if (!this.big) {
-            this.border
-                .rect(left + BORDER / 2, top + BORDER / 2, size - BORDER, size - BORDER)
-                .stroke({ width: BORDER, color: 0x000000 });
+            const b = dims.border;
+            this.border.rect(left + b / 2, top + b / 2, size - b, size - b).stroke({ width: b, color: 0x000000 });
         }
 
         this.viewRect.clear();
@@ -317,7 +338,16 @@ export class Minimap {
                 this.viewRect.rect(x0, y0, x1 - x0, y1 - y0).stroke({ width: 1, color: 0xffffff, alpha: 0.6 });
         }
 
-        const proj = { toMap: px, pxPerUnit: mapSize / this.map.width, uiScale: scale, rect: this.rect };
+        // map sprites: the desktop HUD scale, or the small layout's 0.15 / 0.25 dot scales
+        const spriteScale = this.small ? SM_DOT_MULT : scale;
+        const ringScale = this.small ? SM_RING_SCALE : RING_SCALE * scale;
+        const proj = {
+            toMap: px,
+            pxPerUnit: mapSize / this.map.width,
+            uiScale: spriteScale,
+            ringScale,
+            rect: this.rect,
+        };
         if (frame?.gas) this.gas.update(proj, frame.gas, playerPos, frame.alpha, !this.big);
         this.airstrikeZones.updateMap(proj);
         this.indicators.update(frame?.dt ?? 0, proj);
@@ -326,9 +356,9 @@ export class Minimap {
 
         const me = px(playerPos);
         this.playerOuter.position.set(me.x, me.y);
-        this.playerOuter.scale.set(0.3 * scale);
+        this.playerOuter.scale.set(ringScale);
         this.playerInner.position.set(me.x, me.y);
-        this.playerInner.scale.set(this.localDotScale * scale);
+        this.playerInner.scale.set(this.localDotScale * spriteScale);
     }
 
     destroy(): void {

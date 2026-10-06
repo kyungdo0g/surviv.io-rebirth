@@ -36,6 +36,10 @@ export interface TeamPlayDeps {
     pingSound?(playerId: number, def: { sound?: string; soundLeader?: string }): string | undefined;
     /** faction of a player on faction maps (1 Red, 2 Blue), else 0 (M7) */
     factionOf?(playerId: number): number;
+    /** touch devices: the wheels open from the emote button and big map taps (M8) */
+    touch?: boolean;
+    /** closes the big map (an emote sent from the ping wheel, M8) */
+    closeBigMap?(): void;
 }
 
 export interface TeamPlayFrame {
@@ -46,6 +50,8 @@ export interface TeamPlayFrame {
     localId: number;
     activeId: number;
     spectating: boolean;
+    /** the small layout: half-size edge indicators 16 px in (M8) */
+    small?: boolean;
 }
 
 export class TeamPlay {
@@ -72,6 +78,8 @@ export class TeamPlay {
             root: deps.hudRoot,
             send: (req) => deps.transport.emote(req),
             pingWorldPos: (screen) => this.pingWorldPos(screen),
+            touch: deps.touch,
+            closeBigMap: () => deps.closeBigMap?.(),
         });
     }
 
@@ -159,6 +167,7 @@ export class TeamPlay {
             camera: cam,
             visualPos: (id) => this.playerPos(id, now)?.pos ?? null,
             factionMode: (this.deps.factionOf?.(frame.activeId) ?? 0) > 0,
+            small: frame.small,
         });
         const names = [];
         for (const m of this.team ?? []) {

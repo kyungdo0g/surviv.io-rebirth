@@ -1,7 +1,8 @@
 /*
- * Touch HUD (M8): the menu button beside the minimap and the big map's close button (survev index.html
- * #ui-menu-display, #big-map-close; css/game.css), the tappable ammo counter and interaction prompt, and a smaller HUD
- * on phone-sized screens (the original's mobile layout shrinks the bottom HUD the same way).
+ * Touch HUD (M8): the cog over the minimap, the big map's close button and the emote button (survev index.html
+ * #ui-menu-display, #big-map-close, #ui-emote-button; css/game.css), the reload button beside the clip
+ * (#ui-reload-button-container), the tappable interaction prompt with the tap icon, and wedges that take taps. Touch
+ * always plays the small layout, which places these (hudSm.css).
  */
 #ui-game .ui-touch-button {
     position: absolute;
@@ -20,13 +21,60 @@
 }
 
 #ui-menu-display {
-    background-image: url(/assets/img/gui/hamburger.svg);
+    background-image: url(/assets/img/gui/cog.svg);
 }
 
-#big-map-close {
-    top: 12px;
-    right: 12px;
+/* survev #big-map-close: 64 px, 6 px from the top right corner (12 px down in portrait) */
+#ui-game #big-map-close {
+    top: 6px;
+    right: 6px;
+    width: 64px;
+    height: 64px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.5);
     background-image: url(/assets/img/gui/close.svg);
+    background-size: 48px;
+}
+
+#ui-game.ui-portrait #big-map-close {
+    top: 12px;
+}
+
+/* the "surviv icon" emote button (survev #ui-emote-button; hudSm.css places it) */
+#ui-game #ui-emote-button {
+    right: 108px;
+    top: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 21px;
+    background-image: url(/assets/img/gui/emote.svg);
+    background-size: 28px;
+}
+
+/* reload button beside the clip, touch only (survev #ui-reload-button-container / #ui-reload-button) */
+#ui-reload-button-container {
+    display: none;
+    position: absolute;
+    left: 212px;
+    top: 16px;
+    width: 36px;
+    height: 36px;
+}
+
+#ui-game.ui-touch #ui-reload-button-container {
+    display: block;
+}
+
+#ui-reload-button {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 32px;
+    height: 32px;
+    border-radius: 100%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.4) url(/assets/img/gui/bullets.svg) no-repeat center;
+    background-size: 20px;
 }
 
 #ui-game.ui-touch #ui-interaction-press {
@@ -37,27 +85,31 @@
     color: transparent;
 }
 
-#ui-game.ui-touch .ui-outline-hover:hover {
+#ui-game.ui-layout-sm.ui-touch #ui-interaction-press {
+    background-size: 36px;
+}
+
+/* no sticky hover outlines on touch */
+#ui-game.ui-touch .ui-outline-hover:hover,
+#ui-game.ui-touch .ui-weapon-switch:hover {
     border-color: rgba(0, 255, 0, 0);
 }
 
-@media (max-height: 500px) {
-    #ui-game.ui-touch #ui-bottom-right {
-        transform: scale(0.55);
-    }
+/* touch wheels: every wedge layer takes taps, full opacity, larger images (survev emote.ts, game.css mobile wheel) */
+#ui-game .ui-emote-touch .ui-emote {
+    pointer-events: auto;
+}
 
-    #ui-game.ui-touch #ui-right-center {
-        transform-origin: right center;
-        transform: translateY(-50%) scale(0.7);
-    }
+#ui-game .ui-emote-touch .ui-emote-parent {
+    opacity: 1;
+}
 
-    #ui-game.ui-touch #ui-bottom-center-0,
-    #ui-game.ui-touch #ui-equipped-ammo-wrapper {
-        transform: translateX(-50%) scale(0.6);
-        transform-origin: bottom center;
-    }
+#ui-game .ui-emote-touch .ui-emote-bg-circle,
+#ui-game .ui-emote-touch .ui-emote-bg-quarter,
+#ui-game .ui-emote-touch .ui-emote-bg-eighth {
+    opacity: 0.65;
+}
 
-    #ui-game.ui-touch #ui-equipped-ammo-wrapper {
-        bottom: 30px;
-    }
+#ui-game .ui-emote-touch .ui-emote-parent.ui-emote-disabled {
+    opacity: 0.2;
 }

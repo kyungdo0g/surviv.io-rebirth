@@ -4,7 +4,8 @@
 // the Master / SFX / Music sliders, and Quit Game; "Return to Game" closes the menu (desktop only). Keybinds: the
 // rebinding screen with Restore Defaults and the share code (keybindsUi.ts). Escape toggles it (after closing the big
 // map, client.ts); on touch the menu button opens it and a tap outside closes it. Presses on the menu never reach the
-// game (data-hud-click), like the original's menuHovered.
+// game (data-hud-click), like the original's menuHovered. M8: opening it hides the perk-mode class picker until it is
+// closed (`toggled`, survev ui.ts toggleEscMenu).
 import { config } from "../config.ts";
 import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { t } from "../l10n/index.ts";
@@ -17,6 +18,8 @@ import { toggleMute } from "../audio/shared.ts";
 export interface GameMenuCallbacks {
     /** Quit Game: leave the game */
     quit(): void;
+    /** the menu opened (true) or closed */
+    toggled?(open: boolean): void;
 }
 
 type Tab = "settings" | "keybinds";
@@ -30,12 +33,14 @@ export class GameMenu {
     private readonly touch: boolean;
     private tab: Tab = "settings";
     private open = false;
+    private readonly cb: GameMenuCallbacks;
     private readonly onPointerDown = (ev: PointerEvent) => {
         if (this.open && !this.panel.contains(ev.target as Node)) this.close();
     };
 
     constructor(parent: HTMLElement, cb: GameMenuCallbacks, touch: boolean) {
         this.touch = touch;
+        this.cb = cb;
         this.keybinds = new KeybindsUi({ shareOpen: false });
         const settings = this.buildSettings(cb);
         const keybindsTab = h("div", { id: "ui-game-tab-keybinds", cls: "ui-game-tab" }, this.keybinds.root);
@@ -179,12 +184,15 @@ export class GameMenu {
         applyL10n(this.root);
         this.selectTab(this.tab);
         this.root.hidden = false;
+        this.cb.toggled?.(true);
     }
 
     close(): void {
+        const wasOpen = this.open;
         this.open = false;
         this.keybinds.cancelCapture();
         this.root.hidden = true;
+        if (wasOpen) this.cb.toggled?.(false);
     }
 
     destroy(): void {

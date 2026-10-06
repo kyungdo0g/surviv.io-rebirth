@@ -11,6 +11,11 @@
 // M7: faction maps show the red and blue alive counts (#ui-leaderboard-alive-faction, the original AliveCounts with two
 // counts) instead of the single counter; on Savannah (sniperMode) the empty kill leader box reads "Searching for the
 // Hunted" (survev ui.ts updateKillLeader).
+// M8 small layout (hudSm.css; survev index.html #ui-settings-container-mobile, css/game.css .ui-map-wrapper-mobile):
+// the leaderboard and the kill leader box are hidden, the alive count moves beside the red-zone timer under the minimap
+// (#ui-alive-info) and the kill feed under them. Toggle Minimap (V) on the large layout drops the timer and the
+// spectator counter to the bottom-left corner (survev ui.ts hideMiniMap: map info bottom auto, counter bottom 6 left
+// 98).
 import type { MatchStats } from "@rebirth/sim";
 import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { t } from "../l10n/index.ts";
@@ -34,6 +39,16 @@ const ANNOUNCE_OUT = 0.8;
 export interface MatchHudCallbacks {
     spectate(action: "next" | "prev"): void;
     leave(): void;
+}
+
+/** Where the red-zone timer and the spectator counter go this frame. */
+export interface MapInfoLayout {
+    /** HUD scale factor (survev screenScaleFactor) */
+    scale: number;
+    /** the small layout: hudSm.css places them under the minimap */
+    small: boolean;
+    /** Toggle Minimap hid the minimap */
+    minimapHidden: boolean;
 }
 
 function div(id: string, cls = "", text = ""): HTMLDivElement {
@@ -89,6 +104,13 @@ export class MatchHud {
     private readonly aliveFaction = div("ui-leaderboard-alive-faction");
     private readonly aliveRed = div("", "ui-players-alive-red js-ui-players-alive-red", "0");
     private readonly aliveBlue = div("", "ui-players-alive-blue js-ui-players-alive-blue", "0");
+    /** small layout: the alive count beside the red-zone timer (survev #ui-alive-info) */
+    private readonly aliveInfo = div("ui-alive-info");
+    private readonly aliveMap = div("ui-map-counter-default", "", "0");
+    private readonly aliveMapFaction = div("ui-map-counter-faction");
+    private readonly aliveMapRed = document.createElement("span");
+    private readonly aliveMapBlue = document.createElement("span");
+    private readonly killLeaderEnabled: boolean;
     /** "game-waiting-for-hunted" on sniperMode maps, else "game-waiting-for-new-leader" */
     private waitingLeaderKey = "game-waiting-for-new-leader";
     private readonly kills = div("", "ui-player-kills js-ui-player-kills", "0");
@@ -135,8 +157,12 @@ export class MatchHud {
         const leaderContainer = div("ui-kill-leader-container");
         leaderContainer.append(this.leaderWrapper);
         leaderContainer.style.display = opts.killLeaderEnabled ? "block" : "none";
-        // the kill feed sits below the kill leader box when the mode has one (survev ui.ts onMapLoad)
-        this.killFeed.root.style.top = opts.killLeaderEnabled ? "60px" : "12px";
+        this.killLeaderEnabled = opts.killLeaderEnabled;
+        this.setLayout(false, false);
+        this.aliveMapRed.className = "ui-map-counter-red";
+        this.aliveMapBlue.className = "ui-map-counter-blue";
+        this.aliveMapFaction.append(this.aliveMapRed, ":", this.aliveMapBlue);
+        this.aliveInfo.append(div("ui-alive-icon", "ui-map-icon alive-icon"), this.aliveMap, this.aliveMapFaction);
 
         // "Waiting for players..." keeps the original's trailing dots outside the translated span
         const waitingSpan = document.createElement("span");
@@ -188,6 +214,7 @@ export class MatchHud {
             upperCenter,
             bottomCenter,
             this.mapInfo,
+            this.aliveInfo,
             this.specCounter,
             spectateWrapper,
         );
@@ -202,11 +229,24 @@ export class MatchHud {
         write();
     }
 
+    /**
+     * Small layout: 15 px kill feed lines under the minimap (hudSm.css), else under the kill leader box when the mode
+     * has one (survev ui.ts onMapLoad); mobile: no kill feed fade.
+     */
+    setLayout(small: boolean, mobile: boolean): void {
+        this.killFeed.setLayout(small, mobile);
+        this.killFeed.root.style.top = small ? "" : this.killLeaderEnabled ? "60px" : "12px";
+        this.last.delete("mapScale");
+    }
+
     setAlive(count: number): void {
         this.set("alive", count, () => {
             this.alive.textContent = String(count);
+            this.aliveMap.textContent = String(count);
             this.aliveBox.style.display = "block";
             this.aliveFaction.style.display = "none";
+            this.aliveMap.style.display = "inline-block";
+            this.aliveMapFaction.style.display = "none";
         });
     }
 
@@ -215,8 +255,12 @@ export class MatchHud {
         this.set("alive", `${red}:${blue}`, () => {
             this.aliveRed.textContent = String(red);
             this.aliveBlue.textContent = String(blue);
+            this.aliveMapRed.textContent = String(red);
+            this.aliveMapBlue.textContent = String(blue);
             this.aliveBox.style.display = "none";
             this.aliveFaction.style.display = "block";
+            this.aliveMap.style.display = "none";
+            this.aliveMapFaction.style.display = "inline-block";
         });
     }
 
@@ -327,7 +371,7 @@ export class MatchHud {
         if (GAS_DAMAGE_FLASH) this.flashLevel = FLASH_PEAK;
     }
 
-    update(dt: number, uiScale: number): void {
+    update(dt: number, map: MapInfoLayout): void {
         this.killFeed.update(dt);
         this.killTicker += dt;
         const killOpacity = this.killTicker >= KILL_MESSAGE_TIME ? 0 : 1 - smooth(this.killTicker, 6.8, 7);
@@ -349,16 +393,24 @@ export class MatchHud {
             this.flash.style.opacity = this.flashLevel.toFixed(3);
             this.flash.style.display = this.flashLevel > 0 ? "block" : "none";
         });
-        // the map info sits above the minimap and scales with it (survev #ui-map-container: bottom 52, info 218)
-        this.set("mapScale", uiScale, () => {
-            const transform = `scale(${uiScale})`;
-            this.mapInfo.style.bottom = `${12 + 270 * uiScale}px`;
-            this.mapInfo.style.left = `${12 + 82 * uiScale}px`;
-            this.mapInfo.style.transform = transform;
-            this.specCounter.style.bottom = `${12 + 270 * uiScale}px`;
-            this.specCounter.style.left = `${12 + 6 * uiScale}px`;
-            this.specCounter.style.transform = transform;
-        });
+        this.set("mapScale", `${map.small}|${map.scale}|${map.minimapHidden}`, () => this.placeMapInfo(map));
+    }
+
+    /**
+     * The map info sits above the minimap and scales with it (survev #ui-map-container: bottom 52, info 218, counter
+     * 218); with the minimap hidden the info hangs from the container (bottom auto) and the counter goes to bottom 6
+     * left 98. The small layout leaves both to hudSm.css.
+     */
+    private placeMapInfo(map: MapInfoLayout): void {
+        const s = map.scale;
+        const px = (v: number) => (map.small ? "" : `${v}px`);
+        const transform = map.small ? "" : `scale(${s})`;
+        this.mapInfo.style.bottom = px(12 + (map.minimapHidden ? 52 - 36 : 270) * s);
+        this.mapInfo.style.left = px(12 + 82 * s);
+        this.mapInfo.style.transform = transform;
+        this.specCounter.style.bottom = px(12 + (map.minimapHidden ? 52 + 6 : 270) * s);
+        this.specCounter.style.left = px(12 + (map.minimapHidden ? 98 : 6) * s);
+        this.specCounter.style.transform = transform;
     }
 
     /** Text shown by the announcement right now ("" when hidden) (tests). */

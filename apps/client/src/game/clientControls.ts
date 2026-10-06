@@ -2,6 +2,11 @@
 // report flow of network games and the settings that act on a running game (screen shake; volumes and mute go through
 // the shared audio engine, audio/shared.ts). Keys: Escape closes the big map first, else toggles the menu (survev
 // game.ts / ui.ts toggleEscMenu); the Full Screen bind (L) toggles full screen; N mutes while unbound (rebirth).
+// M8 HUD toggles (survev game.ts, ui.ts cycleVisibilityMode / cycleHud; hud.md "Minimap and full map"): Toggle Minimap
+// (V) hides / shows the minimap while the big map is closed; Hide UI (unbound) hides the whole HUD and the minimap, and
+// Escape brings a hidden HUD back. The in-game menu hides the perk-mode class picker while it is open. Touch: the
+// emote button opens the emote wheel at the screen centre, a tap on the minimap opens the big map and a tap on the open
+// big map opens the ping wheel for that point (survev emote.ts bigmapCollision touchend).
 import type { Vec2 } from "@rebirth/core";
 import { Input, WeaponSlot } from "@rebirth/defs";
 import type { LocalPlayerState } from "@rebirth/sim";
@@ -16,11 +21,13 @@ import { TouchControls } from "../input/touch.ts";
 import type { ObjectWorld } from "../objects/world.ts";
 import type { Camera } from "../render/camera.ts";
 import type { Renderer } from "../render/renderer.ts";
+import type { EmoteWheel } from "../ui/emoteWheel.ts";
 import { GameMenu } from "../ui/gameMenu.ts";
 import type { Minimap } from "../ui/minimap.ts";
 import { ReportFlow, type ReportFlowDeps } from "../ui/report.ts";
 import { toggleFullscreen } from "../ui/settingsControls.ts";
 import { TouchHud } from "../ui/touchHud.ts";
+import type { HudLayout } from "../ui/uiLayout.ts";
 import type { MatchUi } from "./match.ts";
 import type { ModeUi } from "./modes.ts";
 
@@ -37,6 +44,9 @@ export interface ClientControlsDeps {
     touch: boolean;
     modes: ModeUi;
     match: MatchUi;
+    /** the emote / ping wheels (touch opens them from the emote button and the big map) */
+    emoteWheel: EmoteWheel;
+    layout: HudLayout;
     minimap(): Minimap | null;
     /** Quit Game */
     quit(): void;
@@ -63,16 +73,27 @@ export class ClientControls {
     private readonly unsubscribe: () => void;
     /** the last touch input (tests) */
     lastTouch: TouchSample | null = null;
+    /** Toggle Minimap (V) hid the minimap (survev ui.ts visibilityMode 1) */
+    minimapHidden = false;
+    /** Hide UI hid the HUD (survev ui.ts hudVisible false) */
+    hudHidden = false;
 
     constructor(deps: ClientControlsDeps) {
         this.deps = deps;
-        this.menu = new GameMenu(deps.parent, { quit: () => deps.quit() }, deps.touch);
+        this.menu = new GameMenu(
+            deps.parent,
+            {
+                quit: () => deps.quit(),
+                toggled: (open) => deps.modes.roleMenu.setSuppressed(open),
+            },
+            deps.touch,
+        );
         if (deps.touch) {
             const touch = new TouchControls({
                 textures: deps.textures,
                 target: deps.app.canvas,
-                mapRect: () => deps.minimap()?.rect ?? null,
-                mapTapped: () => deps.modes.setBigMap(!deps.modes.bigMap),
+                mapRect: () => deps.minimap()?.tapRect ?? null,
+                mapTapped: (pos) => this.mapTapped(pos),
             });
             deps.renderer.overlay.addChild(touch.container);
             this.touch = touch;
@@ -81,6 +102,7 @@ export class ClientControls {
                 action: (a) => deps.input.queueAction(a),
                 openMenu: () => this.menu.show(),
                 closeBigMap: () => deps.modes.setBigMap(false),
+                openEmoteWheel: () => deps.emoteWheel.openTouchEmote(this.screenCenter()),
             });
         }
         const submit = deps.report;
@@ -102,15 +124,39 @@ export class ClientControls {
         });
     }
 
-    /** Client-only keys of this frame: the menu / big map (Escape), full screen and mute. */
+    private screenCenter(): Vec2 {
+        const screen = this.deps.app.screen;
+        return { x: screen.width / 2, y: screen.height / 2 };
+    }
+
+    /** Touch: the minimap opens the big map; a tap on the big map opens the ping wheel for that point. */
+    private mapTapped(pos: Vec2): void {
+        if (this.deps.modes.bigMap) this.deps.emoteWheel.openTouchPing(this.screenCenter(), pos);
+        else this.deps.modes.setBigMap(true);
+    }
+
+    /**
+     * Client-only keys of this frame: the menu / big map (Escape), Toggle Minimap, Hide UI, full screen and mute
+     * (survev game.ts: Escape toggles the menu and also restores a hidden HUD).
+     */
     handleKeys(input: InputManager): void {
-        if (input.wasPressed(MENU_KEY)) {
+        const escPressed = input.wasPressed(MENU_KEY);
+        if (escPressed) {
             if (this.report?.dialogOpen) this.report.closeDialog();
             else if (this.deps.modes.bigMap) this.deps.modes.setBigMap(false);
             else this.menu.toggle();
         }
+        if (input.wasBindPressed(Input.CycleUIMode) && !this.deps.modes.bigMap)
+            this.minimapHidden = !this.minimapHidden;
+        if (input.wasBindPressed(Input.HideUI) || (escPressed && this.hudHidden)) this.setHudHidden(!this.hudHidden);
         if (input.wasBindPressed(Input.Fullscreen)) toggleFullscreen();
         if (input.wasFreeKeyPressed(MuteBind)) toggleMute();
+    }
+
+    /** Hide UI (survev ui.ts cycleHud): showing the HUD again shows the minimap too (displayMiniMap). */
+    setHudHidden(hidden: boolean): void {
+        this.hudHidden = hidden;
+        if (!hidden) this.minimapHidden = false;
     }
 
     /** The touch sticks of this frame, or null on desktop and for spectators. */
@@ -129,7 +175,7 @@ export class ClientControls {
 
     update(frame: ControlsFrame): void {
         this.report?.update();
-        this.touchHud?.update(this.deps.minimap()?.rect ?? null, this.deps.modes.bigMap);
+        this.touchHud?.update(this.deps.minimap()?.rect ?? null, this.deps.modes.bigMap, this.deps.layout.small);
         if (this.aimLine && this.touch) {
             const local = frame.local;
             const visible =

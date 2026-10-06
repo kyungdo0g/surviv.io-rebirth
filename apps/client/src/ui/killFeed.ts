@@ -8,13 +8,15 @@
 // #cc0000, blue #007eff) and name the faction Commander "Red Commander" / "Blue Commander" (survev ui2.ts
 // getRoleKillFeedColor / getRoleTranslation). Promotion lines put the role before "promoted to" in SOV languages
 // (Korean "<name> 지휘관 으(로) 승진했습니다!"), like the pie timer labels.
+// M8: the small layout spaces the lines 15 px apart and mobile shows them without the fade (survev ui2.ts;
+// uiLayout.ts).
 import { DamageType, GameConfig, GameObjectDefs, MapObjectDefs, type RoleDef } from "@rebirth/defs";
 import type { KillEvent, RoleAnnouncementEvent } from "@rebirth/sim";
 import { isSov, itemName, roleName, t, tryT } from "../l10n/index.ts";
+import { killFeedOpacity, killFeedSpacing } from "./uiLayout.ts";
 
 /** survev ui2.ts maxKillFeedLines */
 export const KILL_FEED_LINES = 6;
-const LINE_SPACING = 35;
 /** killfeed names are cut to 180 px of bold 16px Arial (survev player.ts nameTruncated) */
 const NAME_FONT = "bold 16px arial";
 const NAME_MAX_PX = 180;
@@ -181,15 +183,12 @@ interface Line {
     last: { top: string; opacity: string; text: string; color: string };
 }
 
-function smoothstep(v: number, a: number, b: number): number {
-    const x = Math.min(1, Math.max(0, (v - a) / (b - a)));
-    return x * x * (3 - 2 * x);
-}
-
 /** The six kill feed lines (DOM), animated like survev ui2.ts. */
 export class KillFeed {
     readonly root: HTMLDivElement;
     private readonly lines: Line[] = [];
+    private spacing = killFeedSpacing(false);
+    private mobile = false;
 
     constructor() {
         const contents = document.createElement("div");
@@ -218,6 +217,12 @@ export class KillFeed {
         this.root.append(feed);
     }
 
+    /** Small layout: 15 px line spacing; mobile: no fade (M8). */
+    setLayout(small: boolean, mobile: boolean): void {
+        this.spacing = killFeedSpacing(small);
+        this.mobile = mobile;
+    }
+
     /** Reuses the oldest line for a new message at the top (survev addKillFeedMessage). */
     add(text: string, color: string): void {
         if (!text) return;
@@ -235,8 +240,8 @@ export class KillFeed {
         for (const line of this.lines) {
             line.ticker += dt;
             const tk = line.ticker;
-            const opacity = (smoothstep(tk, 0, 0.25) * (1 - smoothstep(tk, 6, 6.5))).toFixed(3);
-            const top = `${Math.floor(offset * LINE_SPACING)}px`;
+            const opacity = killFeedOpacity(tk, this.mobile).toFixed(3);
+            const top = `${Math.floor(offset * this.spacing)}px`;
             offset += Math.min(tk / 0.25, 1);
             if (opacity !== line.last.opacity) line.div.style.opacity = opacity;
             if (top !== line.last.top) line.div.style.top = top;

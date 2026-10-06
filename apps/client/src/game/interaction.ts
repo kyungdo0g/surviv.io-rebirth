@@ -68,6 +68,8 @@ export class InteractionTracker {
     private doorErrorTicker = 0;
     /** door error sounds played (tests) */
     doorErrors = 0;
+    /** the small layout offers guns even with both gun slots full and a non-gun out (survev ui2.ts, M8) */
+    small = false;
 
     constructor(audio: AudioEngine | null = null) {
         this.audio = audio;
@@ -147,7 +149,7 @@ export class InteractionTracker {
 
     /**
      * Loot the player stands on (survev lootBarn.getClosestLoot: centre within the item's GameConfig.lootRadius),
-     * skipping a gun while both gun slots are full and a non-gun is out (survev ui2.ts).
+     * skipping a gun while both gun slots are full and a non-gun is out, except on the small layout (survev ui2.ts).
      */
     private findLoot(world: ObjectWorld, local: LocalPlayerState, me: PlayerView, pos: Vec2): Prompt | null {
         const hasBothGuns = !!local.weapons[0]?.type && !!local.weapons[1]?.type;
@@ -161,7 +163,7 @@ export class InteractionTracker {
             const rad = GameConfig.lootRadius[def.type] ?? 1;
             const d2 = (loot.pos.x - pos.x) ** 2 + (loot.pos.y - pos.y) ** 2;
             if (d2 >= rad * rad || d2 >= bestDist) return;
-            if (def.type === "gun" && hasBothGuns && !holdingGun) return;
+            if (def.type === "gun" && hasBothGuns && !holdingGun && !this.small) return;
             bestDist = d2;
             best = { type: loot.type, count: loot.count };
         });

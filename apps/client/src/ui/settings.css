@@ -30,13 +30,49 @@
     pointer-events: auto;
 }
 
-/* small (phone) screens: the original's 190 px menu at the top (survev game.css max-width 850px) */
+/*
+ * small (phone) screens: the original's compact menu at the top, 30 px buttons, the whole menu at 0.85 so it fits a
+ * 390 px tall landscape phone (survev game.css max-width 850px: #ui-game-menu, .btn-game-menu, #ui-center scale 0.85)
+ */
 @media (max-height: 500px), (max-width: 850px) {
     #ui-game-menu {
-        margin-top: 8px;
-        max-height: calc(100vh - 16px);
+        margin-top: 4px;
+        max-height: calc((100vh - 8px) / 0.85);
         width: 240px;
         padding: 4px 10px;
+        transform: scale(0.85);
+        transform-origin: top center;
+    }
+
+    #ui-game-menu .btn-game-menu {
+        height: 30px;
+        line-height: 30px;
+        font-size: 14px;
+        margin: 2px auto 4px;
+    }
+
+    #ui-game-menu #btn-game-fullscreen {
+        background-size: 22px;
+    }
+
+    #ui-game-menu #btn-game-aim-line {
+        background-size: 18px;
+        background-position: 6px center;
+        margin-bottom: 8px;
+    }
+
+    #ui-game-menu #btn-game-sound {
+        background-size: 26px;
+        margin-bottom: 8px;
+    }
+
+    #ui-game-menu #btn-game-quit {
+        margin-top: 20px;
+        background-size: 30px;
+    }
+
+    #ui-game-menu .ui-slider-container p {
+        font-size: 12px;
     }
 }
 

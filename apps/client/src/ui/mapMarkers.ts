@@ -18,8 +18,10 @@ export interface MapProjection {
     toMap(p: Vec2): Vec2;
     /** minimap pixels per world unit */
     pxPerUnit: number;
-    /** HUD scale factor (survev screenScaleFactor) */
+    /** scale of the map sprites: the HUD scale factor (survev screenScaleFactor), 0.75 on the small layout (M8) */
     uiScale: number;
+    /** scale of the white ring around group dots (0.3 x the HUD scale; 0.25 on the small layout) (M8) */
+    ringScale?: number;
     /** the minimap square on screen (what the red zone has to cover) */
     rect: CoverRect;
 }

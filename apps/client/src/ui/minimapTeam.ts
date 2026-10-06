@@ -116,7 +116,7 @@ export class MinimapTeam {
             dot.inner.position.set(p.x, p.y);
             dot.inner.scale.set(look.scale * proj.uiScale);
             dot.ring.position.set(p.x, p.y);
-            dot.ring.scale.set(RING_SCALE * proj.uiScale);
+            dot.ring.scale.set(proj.ringScale ?? RING_SCALE * proj.uiScale);
         }
     }
 
