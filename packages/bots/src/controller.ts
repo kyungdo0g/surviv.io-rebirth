@@ -53,6 +53,8 @@ export class BotController {
         if (!this.observed || game.tick % SNAPSHOT_EVERY_TICKS === this.phase) {
             this.bot.observe(game.getSnapshot(this.playerId));
             this.observed = true;
+            // Cobalt: the class menu choice (M7b)
+            if (this.bot.classChoice) game.selectRole(this.playerId, this.bot.classChoice);
             if (player.dead) {
                 this.finished = true;
                 return;

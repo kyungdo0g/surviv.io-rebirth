@@ -5,13 +5,13 @@ import { type Bounds, math, type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, getDef, WeaponSlot } from "@rebirth/defs";
 import type { HitRecord } from "../combat/combat.ts";
 import { emptyInput, type PlayerInput } from "../input.ts";
-import { Inventory, type InventoryOwner, isBagItem, SCOPE_LEVELS, THROWABLE_LIST } from "../items/inventory.ts";
+import { Inventory, type InventoryOwner, SCOPE_LEVELS, THROWABLE_LIST } from "../items/inventory.ts";
 import type { PickupResult } from "../loot/pickup.ts";
 import { updateEmoteThrottle } from "../match/emotes.ts";
 import type { Group } from "../match/teams.ts";
 import { trackActivity, updatePerks } from "../perks/effects.ts";
-import { type PerkSource, perkViews } from "../perks/perks.ts";
-import type { ActionType, AnimType, HasteName, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
+import type { PerkSource } from "../perks/perks.ts";
+import type { AnimType, HasteName, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
 import { gunDef, TIME_EPS, WeaponManager } from "../weapons/weaponManager.ts";
 import { handleActions } from "./actions.ts";
 import { completeUse, updateBoost, updateFabricate, useItem } from "./consumables.ts";
@@ -19,6 +19,7 @@ import type { SimContext } from "./context.ts";
 import { applyKnockback, completeRevive, updateDowned } from "./downed.ts";
 import type { Building } from "./entities.ts";
 import { circleTouchesBounds, moveWithCollision } from "./movement.ts";
+import { playerLocalState, playerMatchStats, playerView } from "./playerView.ts";
 import { VISION_RECOVERY_TIME } from "./smoke.ts";
 import { updateSurroundings } from "./surroundings.ts";
 import type { Entity, World } from "./world.ts";
@@ -85,6 +86,10 @@ export class Player implements InventoryOwner {
     lastBreathTicker = 0;
     /** Spud Gun hits: extra size, shrinking 2.5 s after the last hit (survev fatModifier / fatTicker, M7a) */
     fat = { mod: 0, ticker: 0 };
+    /** snowball / potato hit: slowed for `ticker` s, frozen pose turned by `ori` (M7b, modes/frozen.ts) */
+    frozen = { ticker: 0, ori: 0 };
+    /** Cobalt: no class chosen yet; the player waits (in the Twins bunker) and cannot act or be hurt (M7b) */
+    awaitingClass = false;
     /** seconds until the bugle regains a charge (Inspiration), 0 when not recharging */
     bugleTicker = 0;
     /** Gabby Ghost and That Sucks timers */
@@ -357,6 +362,7 @@ export class Player implements InventoryOwner {
         if (this.boost >= 50) speed += PLAYER.boostMoveSpeed;
         if (this.animType === "cook") speed -= PLAYER.cookSpeedPenalty;
         if (this.haste.type !== "none") speed += perks?.hasteSpeedBonus ?? PLAYER.hasteSpeedBonus;
+        if (this.frozen.ticker > 0) speed -= PLAYER.frozenSpeedPenalty;
         // Combat Medic: no slowdown while using items, a small bonus instead
         const medic = this.hasPerk("field_medic") && this.action.type === "use";
         const busy = this.action.type === "use" && !medic;
@@ -380,7 +386,8 @@ export class Player implements InventoryOwner {
     }
 
     update(ctx: SimContext, dt: number): void {
-        if (this.dead) {
+        // Cobalt players choosing a class do nothing (survev update / handleInput: perkMode && !role)
+        if (this.dead || this.awaitingClass) {
             this.pendingActions.length = 0;
             this.shootStartPending = false;
             this.pendingUseItem = "";
@@ -410,6 +417,8 @@ export class Player implements InventoryOwner {
         updateDowned(ctx, this, dt);
         if (this.dead) return;
         updateEmoteThrottle(this, dt);
+        // snowball / potato slowdown (survev update "Projectile slowdown logic")
+        if (this.frozen.ticker > 0) this.frozen.ticker = Math.max(0, this.frozen.ticker - dt);
         this.updateAction(ctx, dt);
         if (this.animType !== "none") {
             this.animTicker -= dt;
@@ -509,87 +518,16 @@ export class Player implements InventoryOwner {
         if (outsideAllRegions) this.insideZoomRegion = false;
     }
 
-    private viewActionType(): ActionType {
-        return this.action.type === "reloadAlt" ? "reload" : this.action.type;
-    }
-
     toView(): PlayerView {
-        return {
-            id: this.id,
-            kind: "player",
-            type: this.type,
-            pos: v2.copy(this.pos),
-            layer: this.layer,
-            dir: v2.copy(this.dir),
-            dead: this.dead,
-            downed: this.downed,
-            activeWeapon: this.activeWeapon,
-            outfit: this.outfit,
-            helmet: this.helmet,
-            chest: this.chest,
-            backpack: this.backpack,
-            scale: this.scale,
-            anim: { type: this.animType, seq: this.animSeq },
-            action: {
-                type: this.viewActionType(),
-                seq: this.action.seq,
-                item: this.action.item,
-                duration: this.action.duration,
-            },
-            shot: { seq: this.shotSeq, offHand: this.shotOffhand },
-            wearingPan: this.wearingPan,
-            healEffect: this.healEffect && !this.dead,
-            role: this.role,
-            perks: perkViews(this),
-            haste: { type: this.haste.type, seq: this.haste.seq },
-        };
+        return playerView(this);
     }
 
     localState(): LocalPlayerState {
-        const wm = this.weaponManager;
-        const inventory: Record<string, number> = {};
-        for (const [item, count] of Object.entries(this.inv.items)) if (isBagItem(item)) inventory[item] = count;
-        return {
-            health: this.health,
-            boost: this.boost,
-            zoom: this.zoom,
-            layer: this.layer,
-            weapons: wm.weapons.map((w) => ({ type: w.type, ammo: w.ammo })),
-            curWeapIdx: wm.curWeapIdx,
-            inventory,
-            scope: this.scope,
-            outfit: this.outfit,
-            helmet: this.helmet,
-            chest: this.chest,
-            backpack: this.backpack,
-            action: {
-                type: this.viewActionType(),
-                item: this.action.item,
-                time: this.action.time,
-                duration: this.action.duration,
-                targetId: this.action.targetId,
-            },
-            cooldowns: {
-                weapons: wm.weapons.map((w) => Math.max(0, w.cooldown)),
-                freeSwitch: Math.max(0, wm.freeSwitchTimer),
-            },
-            kills: this.kills,
-            dead: this.dead,
-            killedBy: this.killedBy,
-            stats: this.matchStats(),
-            spectatorCount: this.spectatorCount,
-            role: this.role,
-            perks: perkViews(this),
-        };
+        return playerLocalState(this);
     }
 
     /** Match stats as the client shows them: damage rounded, whole seconds (the original PlayerStats record). */
     matchStats(): MatchStats {
-        return {
-            kills: this.kills,
-            damageDealt: Math.round(this.damageDealt),
-            damageTaken: Math.round(this.damageTaken),
-            timeAlive: Math.floor(this.timeAlive + 1e-9),
-        };
+        return playerMatchStats(this);
     }
 }

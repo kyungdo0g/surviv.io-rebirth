@@ -171,8 +171,9 @@ test.describe("M5 throwables, explosions, smoke and heals", () => {
         await page.locator("#ui-loot-soda").click();
         await expect.poll(() => page.evaluate(() => (window as any).__rebirth.local.action?.item)).toBe("soda");
         await expect(page.locator("#ui-pie-timer .ui-pie-label")).toHaveText("Using Soda");
+        // a 3 s use in simulation time: allow for a simulation slowed down by the parallel specs
         await expect
-            .poll(() => page.evaluate(() => (window as any).__rebirth.local.boost), { timeout: 6_000 })
+            .poll(() => page.evaluate(() => (window as any).__rebirth.local.boost), { timeout: 15_000 })
             .toBeGreaterThan(0);
         expect(await page.evaluate(() => (window as any).__rebirth.fx.particles("boost_basic"))).toBeGreaterThan(0);
         await expect(page.locator("#ui-boost-counter")).toHaveCSS("opacity", "1");

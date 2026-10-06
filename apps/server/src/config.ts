@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { getMapDef, MapDefs } from "@rebirth/defs";
 import { z } from "zod";
 import type { BotDifficultySetting } from "./bots.ts";
+import { defaultModes, type ModeEntry, parseModes } from "./modes.ts";
 
 export interface ServerConfig {
     port: number;
@@ -17,6 +18,11 @@ export interface ServerConfig {
     maxGames: number;
     /** map of games created when find_game names none */
     defaultMap: string;
+    /**
+     * The three play buttons (mode index 0-2) listed by /api/site_info: MODES ("map:teamMode,..."), default Solo, Duo
+     * and Squad of MAP_NAME (M7b, modes.ts)
+     */
+    modes: ModeEntry[];
     /** simultaneous game sockets per IP (survev: 5) */
     maxConnectionsPerIp: number;
     /** messages per second per socket before it is closed with rate_limited (survev: 500) */
@@ -84,6 +90,7 @@ const EnvSchema = z.object({
         .string()
         .refine((m) => Object.hasOwn(MapDefs, m), { message: "unknown map" })
         .default("main"),
+    MODES: z.string().max(200).optional(),
     MAX_CONNECTIONS_PER_IP: z.coerce.number().int().min(1).default(5),
     MAX_MSGS_PER_SECOND: z.coerce.number().int().min(1).default(500),
     JOIN_TOKEN_TTL_MS: z.coerce.number().int().min(1).default(10_000),
@@ -131,6 +138,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         factionMaxPlayers: e.FACTION_MAX_PLAYERS,
         maxGames: e.MAX_GAMES,
         defaultMap: e.MAP_NAME,
+        modes: e.MODES ? parseModes(e.MODES) : defaultModes(e.MAP_NAME),
         maxConnectionsPerIp: e.MAX_CONNECTIONS_PER_IP,
         maxMsgsPerSecond: e.MAX_MSGS_PER_SECOND,
         joinTokenTtlMs: e.JOIN_TOKEN_TTL_MS,
@@ -158,9 +166,11 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     };
 }
 
-/** Defaults (no environment) with overrides, for tests and scripts. */
+/** Defaults (no environment) with overrides, for tests and scripts (the buttons follow an overridden defaultMap). */
 export function makeConfig(overrides: Partial<ServerConfig> = {}): ServerConfig {
-    return { ...loadConfig({}), ...overrides };
+    const base = loadConfig({});
+    const modes = overrides.modes ?? (overrides.defaultMap ? defaultModes(overrides.defaultMap) : base.modes);
+    return { ...base, ...overrides, modes };
 }
 
 /** Whether `mapName` is a 50v50 Faction map (M7a). */

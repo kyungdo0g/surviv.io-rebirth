@@ -89,6 +89,8 @@ const HASTE_TYPES: readonly HasteName[] = ["none", "windwalk", "takedown", "insp
 export const MAX_NET_PERKS = 8;
 /** index of the first perk field of the player table (role at PERK_FIELD - 1) */
 const PERK_FIELD = 26;
+/** frozen flag and pose (M7b), after the perk chain */
+const FROZEN_FIELD = PERK_FIELD + 2 * MAX_NET_PERKS;
 
 function codeOf<T extends string>(list: readonly T[], value: T | undefined): number {
     const i = list.indexOf(value ?? list[0]);
@@ -109,7 +111,7 @@ const mapScaleOf = (n: number): number =>
 
 /**
  * Player. Groups: 0 movement (pos, dir), 1 status (layer, dead, downed, wearingPan, healEffect (M5b), haste type and
- * seq (M7a)), 2 active weapon, 3 gear (role and perks (M7a)), 4 scale, 5 animation, 6 action, 7 last shot. Seq counters
+ * seq (M7a), frozen + frozenOri (M7b; the original `frozen b, frozenOri 2 bits`)), 2 active weapon, 3 gear (role and perks (M7a)), 4 scale, 5 animation, 6 action, 7 last shot. Seq counters
  * are sent mod 2^16 (the original used 3 bits). Perks (the original `perks b + array of {type, droppable}`) are a
  * chain of up to 8 slots: a slot's type is written only when the previous slot holds a perk, its droppable bit only
  * when it holds one itself, so a perkless player costs one empty 10-bit type.
@@ -131,6 +133,7 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
         f(2, 1), f(SEQ_BITS, 1),
         f(GT, 3),
         ...perkFields(),
+        f(1, 1), f(2, 1, FROZEN_FIELD),
     ],
     groupCount: 8,
     quantize(v, ctx, out) {
@@ -166,6 +169,8 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
             out[PERK_FIELD + 2 * k] = perk ? gameTypeId(perk.type) : 0;
             out[PERK_FIELD + 2 * k + 1] = b(perk?.droppable);
         }
+        out[FROZEN_FIELD] = b(v.frozen);
+        out[FROZEN_FIELD + 1] = v.frozen ? (v.frozenOri ?? 0) & 3 : 0;
     },
     build(id, v, ctx) {
         return {
@@ -196,6 +201,8 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
             role: gameTypeOf(v[25]),
             perks: perksOf(v),
             haste: { type: fromCode(HASTE_TYPES, v[23], "haste"), seq: v[24] },
+            frozen: v[FROZEN_FIELD] === 1,
+            frozenOri: v[FROZEN_FIELD + 1],
         };
     },
 };

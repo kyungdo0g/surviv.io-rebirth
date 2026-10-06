@@ -55,8 +55,15 @@ export interface PerkModeRoleSelectMsg {
     role: string;
 }
 
+/** Client -> server drop of an item (the original DropItem: item game type, weapIdx u8) (M7b). */
+export interface DropItemMsg {
+    type: typeof MsgType.DropItem;
+    item: string;
+    weapIdx: number;
+}
+
 /** Messages a client sends. */
-export type ClientMsg = JoinMsg | InputMsg | PingMsg | SpectateMsg | EmoteMsg | PerkModeRoleSelectMsg;
+export type ClientMsg = JoinMsg | InputMsg | PingMsg | SpectateMsg | EmoteMsg | PerkModeRoleSelectMsg | DropItemMsg;
 
 /** Stateless server messages (Update is written by a ClientEncoder, Map by `writeMapMsg`). */
 export type ServerSimpleMsg =
@@ -102,6 +109,10 @@ export function writeClientMsg(w: BitWriter, msg: ClientMsg): void {
             break;
         case MsgType.PerkModeRoleSelect:
             writeGameType(w, msg.role);
+            break;
+        case MsgType.DropItem:
+            writeGameType(w, msg.item);
+            w.writeUint8(msg.weapIdx & 0xff);
             break;
     }
     w.alignToNextByte();
@@ -209,6 +220,8 @@ export function decodeClientFrame(bytes: Uint8Array): ClientMsg[] {
                 return { type: MsgType.Emote, emote: readEmoteRequest(r) };
             case MsgType.PerkModeRoleSelect:
                 return { type: MsgType.PerkModeRoleSelect, role: readGameType(r) };
+            case MsgType.DropItem:
+                return { type: MsgType.DropItem, item: readGameType(r), weapIdx: r.readUint8() };
             default:
                 throw new ProtocolError(`unexpected client message type ${type}`);
         }

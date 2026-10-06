@@ -99,6 +99,7 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 role: rng.bool(0.7) ? "" : randGameType(rng),
                 perks: randPerks(rng),
                 haste: { type: rng.pick(["none", "windwalk", "takedown", "inspire"] as const), seq: rng.int(0, 65535) },
+                ...randFrozen(rng),
             };
         case "obstacle": {
             const view: ObjectView = {
@@ -166,7 +167,15 @@ export function mutateView(rng: Rng, ctx: NetCtx, view: ObjectView): ObjectView 
     }
     if (view.kind === "obstacle" && rng.bool(0.5)) out.door = (view as { door?: unknown }).door;
     if (view.kind === "obstacle" && rng.bool(0.5)) out.button = (view as { button?: unknown }).button;
+    // the frozen pose is 0 while not frozen (as the simulation sends it)
+    if (view.kind === "player" && !out.frozen) out.frozenOri = 0;
     return out as unknown as ObjectView;
+}
+
+/** Snowball / potato frozen state (M7b): frozenOri is 0 while not frozen. */
+function randFrozen(rng: Rng): { frozen: boolean; frozenOri: number } {
+    const frozen = rng.next() < 0.3;
+    return { frozen, frozenOri: frozen ? rng.int(0, 3) : 0 };
 }
 
 /** 0-8 perks (M7a; the wire carries at most 8, with non-empty types). */

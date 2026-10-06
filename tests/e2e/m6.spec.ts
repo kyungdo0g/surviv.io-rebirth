@@ -3,11 +3,13 @@ import { collectErrors } from "./m4-helpers.ts";
 import { bootTeam, ids, killFeed, knock, placeNear, pressInteract, SCREENS, simPlayer } from "./m6-helpers.ts";
 
 // M6 client on the loopback team sandbox: team HUD, downed visuals and bleeding, reviving (both sides), the revive
-// prompt, emotes and pings (wheel, bubbles, minimap marker). The party lobby over the network is in m6-party.spec.ts.
+// prompt, emotes and pings (wheel, bubbles, minimap marker). The party lobby over the network is in multiplayer.spec.ts
+// and the start page / lobby strings in m6-menu.spec.ts. Waits on simulation durations (bleed ticks, the 8 s revive)
+// get generous timeouts: under the load of the parallel specs the loopback simulation runs slower than the wall clock.
 
 test.describe("team sandbox", () => {
     test("squad: team HUD, knocked down, bleeding, revived by a teammate", async ({ page }) => {
-        test.setTimeout(120_000);
+        test.setTimeout(180_000);
         const errors = collectErrors(page);
         await bootTeam(page, "/?team=4&teammates=1&dummies=1&loot=0", 2);
         const { local, teammates, dummies } = await ids(page);
@@ -49,13 +51,13 @@ test.describe("team sandbox", () => {
         expect(await page.evaluate(() => (window as any).__rebirth.local.weapons[2].type)).toBe("fists");
         // bleeding: a splat every second, the bleeding health drops
         await expect
-            .poll(() => page.evaluate((id) => (window as any).__rebirth.playerBleeds(id), local), { timeout: 10_000 })
+            .poll(() => page.evaluate((id) => (window as any).__rebirth.playerBleeds(id), local), { timeout: 30_000 })
             .toBeGreaterThanOrEqual(2);
         expect((await simPlayer(page, local)).health).toBeLessThan(100);
         // crawling: the downed player moves slowly and plays the crawl animation
         await page.keyboard.down("s");
         await expect
-            .poll(() => page.evaluate((id) => (window as any).__rebirth.playerAnim(id), local), { timeout: 5000 })
+            .poll(() => page.evaluate((id) => (window as any).__rebirth.playerAnim(id), local), { timeout: 15_000 })
             .toMatch(/^crawl_/);
         await page.keyboard.up("s");
         await page.screenshot({ path: `${SCREENS}/downed.png` });
@@ -73,7 +75,7 @@ test.describe("team sandbox", () => {
 
         // back up with 24 HP
         await page.waitForFunction((id) => (window as any).__rebirth.playerView(id)?.downed === false, local, {
-            timeout: 15_000,
+            timeout: 45_000,
         });
         const after = await simPlayer(page, local);
         expect(after.downed).toBe(false);
@@ -84,7 +86,7 @@ test.describe("team sandbox", () => {
     });
 
     test("revive prompt next to a downed teammate, F revives it", async ({ page }) => {
-        test.setTimeout(120_000);
+        test.setTimeout(150_000);
         const errors = collectErrors(page);
         await bootTeam(page, "/?team=4&teammates=1&loot=0", 2);
         const { local, teammates } = await ids(page);
@@ -101,7 +103,7 @@ test.describe("team sandbox", () => {
 
         await page.keyboard.down("f");
         await page.waitForFunction(() => (window as any).__rebirth.local.action?.type === "revive", null, {
-            timeout: 5000,
+            timeout: 15_000,
         });
         await page.keyboard.up("f");
         expect(await page.evaluate(() => (window as any).__rebirth.local.action.targetId)).toBe(mate);
@@ -114,7 +116,7 @@ test.describe("team sandbox", () => {
         await page.screenshot({ path: `${SCREENS}/reviving.png` });
 
         await page.waitForFunction((id) => (window as any).__rebirth.playerView(id)?.downed === false, mate, {
-            timeout: 15_000,
+            timeout: 45_000,
         });
         expect((await simPlayer(page, mate)).health).toBe(24);
         await expect(page.locator("#ui-team .ui-team-member").nth(1)).toHaveAttribute("data-state", "alive");
@@ -201,17 +203,26 @@ test.describe("team sandbox", () => {
     test("finished off while the team plays on: the short death screen, then spectating the teammate", async ({
         page,
     }) => {
-        test.setTimeout(90_000);
+        test.setTimeout(150_000);
         const errors = collectErrors(page);
         await bootTeam(page, "/?team=2&teammates=1&dummies=1&loot=0", 2);
         const { local, teammates } = await ids(page);
         await knock(page, local, { gas: true });
         await page.waitForFunction((id) => (window as any).__rebirth.playerView(id)?.downed === true, local);
-        await knock(page, local, { gas: true });
+        // finish it off (a hit within the 0.1 s after the knock is absorbed by the damage buffer: hit until dead)
+        await expect
+            .poll(
+                async () => {
+                    await knock(page, local, { gas: true });
+                    return (await simPlayer(page, local)).dead;
+                },
+                { timeout: 30_000 },
+            )
+            .toBe(true);
         await page.waitForFunction(() => (window as any).__rebirth.local?.dead === true);
         await expect.poll(() => killFeed(page)).toContain("player died outside the safe zone");
         await page.waitForFunction(() => (window as any).__rebirth.match.gameOver.settled === true, null, {
-            timeout: 30_000,
+            timeout: 60_000,
         });
         await expect(page.locator(".ui-stats-header-title")).toHaveText("You died.");
         await expect(page.locator(".ui-stats-header-overview")).toHaveText("Kills 0");
@@ -219,8 +230,40 @@ test.describe("team sandbox", () => {
         await page.screenshot({ path: `${SCREENS}/team-death.png` });
         await page.locator(".ui-stats-spectate").click();
         await page.waitForFunction((id) => (window as any).__rebirth.match.activeId === id, teammates[0], {
-            timeout: 10_000,
+            timeout: 20_000,
         });
+        expect(errors).toEqual([]);
+    });
+
+    test("Revivify: a downed holder revives itself", async ({ page }) => {
+        test.setTimeout(120_000);
+        const errors = collectErrors(page);
+        await bootTeam(page, "/?team=2&teammates=1&dummies=1&loot=0", 2);
+        const { local } = await ids(page);
+        // the perk, as the sim's addPerk stores it (pickups are not part of this test)
+        await page.evaluate((id) => {
+            const p = (window as any).__rebirth.game.getPlayer(id);
+            p.perks.push("self_revive");
+            p.perkSources.push({
+                type: "self_revive",
+                droppable: false,
+                fromRole: false,
+                fromGear: false,
+                replaceOnDeath: "",
+            });
+        }, local);
+        await knock(page, local, { gas: true });
+        await page.waitForFunction((id) => (window as any).__rebirth.playerView(id)?.downed === true, local);
+        await expect(page.locator("#ui-interaction-description")).toHaveText("Revive Self");
+        await page.keyboard.press("f");
+        await page.waitForFunction(() => (window as any).__rebirth.local.action?.type === "revive");
+        expect(await page.evaluate(() => (window as any).__rebirth.local.action.targetId)).toBe(local);
+        await expect(page.locator("#ui-pie-timer .ui-pie-label")).toHaveText("Reviving");
+        await expect(page.locator("#ui-interaction-description")).toHaveText("Cancel");
+        await page.waitForFunction((id) => (window as any).__rebirth.playerView(id)?.downed === false, local, {
+            timeout: 45_000,
+        });
+        expect((await simPlayer(page, local)).health).toBe(24);
         expect(errors).toEqual([]);
     });
 

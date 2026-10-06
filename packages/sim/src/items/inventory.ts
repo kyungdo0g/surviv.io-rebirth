@@ -57,6 +57,8 @@ export interface InventoryOwner {
 export class Inventory {
     /** counts for every bag item */
     readonly items: Record<string, number> = {};
+    /** capacity per backpack level; maps may override rows (Woods frag / smoke, modes/bagSizes.ts) */
+    sizes: Readonly<Record<string, readonly number[]>> = GameConfig.bagSizes;
     private readonly owner: InventoryOwner;
 
     constructor(owner: InventoryOwner, initial: Readonly<Record<string, number>> = {}) {
@@ -73,7 +75,7 @@ export class Inventory {
     }
 
     capacity(item: string): number {
-        const sizes = GameConfig.bagSizes[item];
+        const sizes = this.sizes[item];
         if (!sizes) return 0;
         return sizes[Math.min(gearLevel(this.owner.backpack), sizes.length - 1)];
     }

@@ -9,8 +9,8 @@
 // refused interaction).
 // M6: a downed teammate within reviveRange on the player's layer, not already being revived, prompts "[F] Revive
 // Teammate" while the player stands with no action running; it wins over loot and objects. During an item use or a
-// revive the prompt is "[X] Cancel" (survev ui2.ts m_update "Reviving", InteractionType.Revive / Cancel). Revive Self
-// needs the Revivify perk, which the snapshot does not carry (TODO: LocalPlayerState perks).
+// revive the prompt is "[X] Cancel" (survev ui2.ts m_update "Reviving", InteractionType.Revive / Cancel). With the
+// Revivify perk (LocalPlayerState.perks, M7a) a downed player gets "[F] Revive Self" and may cancel its own revive.
 import { collider, math, type Vec2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
 import type { LocalPlayerState, ObstacleView, PlayerView } from "@rebirth/sim";
@@ -72,10 +72,14 @@ export class InteractionTracker {
     find(world: ObjectWorld, local: LocalPlayerState | null, me: PlayerView | undefined, pos: Vec2): Prompt | null {
         if (!local || !me || local.dead) return null;
         const action = local.action?.type ?? "none";
-        if (action === "use" || (action === "revive" && !me.downed)) return { key: CANCEL_KEY, text: t("game-cancel") };
-        if (me.downed) return null;
-        const revive = action === "none" ? this.findRevive(world, local, me) : null;
+        const selfRevive = (local.perks ?? []).some((p) => p.type === "self_revive");
+        if (action === "use" || (action === "revive" && (!me.downed || selfRevive))) {
+            return { key: CANCEL_KEY, text: t("game-cancel") };
+        }
+        const revive =
+            action === "none" && (!me.downed || selfRevive) ? this.findRevive(world, local, me, selfRevive) : null;
         if (revive) return revive;
+        if (me.downed) return null;
         let prompt: Prompt | null = null;
         let bestPen = 0;
         world.forEachView("obstacle", (o) => {
@@ -105,15 +109,30 @@ export class InteractionTracker {
         return loot ?? prompt;
     }
 
-    /** A downed teammate the player can revive (survev ui2.ts m_update "Reviving"; distances from the snapshot). */
-    private findRevive(world: ObjectWorld, local: LocalPlayerState, me: PlayerView): Prompt | null {
-        for (const m of local.team ?? []) {
-            if (m.playerId === me.id) continue;
-            const view = world.get(m.playerId) as PlayerView | undefined;
+    /**
+     * A downed teammate the player can revive, or itself with Revivify (survev ui2.ts m_update "Reviving": "Revive Self"
+     * when the target is the player or the player is downed; distances from the snapshot).
+     */
+    private findRevive(
+        world: ObjectWorld,
+        local: LocalPlayerState,
+        me: PlayerView,
+        selfRevive: boolean,
+    ): Prompt | null {
+        const ids = (local.team ?? []).map((m) => m.playerId);
+        if (selfRevive && !ids.includes(me.id)) ids.push(me.id);
+        for (const id of ids) {
+            if (id === me.id && !selfRevive) continue;
+            const view = (id === me.id ? me : world.get(id)) as PlayerView | undefined;
             if (view?.kind !== "player" || !view.downed || view.dead || view.action?.type === "revive") continue;
             const d = Math.hypot(view.pos.x - me.pos.x, view.pos.y - me.pos.y);
             if (d < GameConfig.player.reviveRange && sameLayer(view.layer, me.layer)) {
-                return { key: INTERACT_KEY, text: t("game-revive-teammate"), reviveId: view.id };
+                const self = selfRevive && (view.id === me.id || me.downed);
+                return {
+                    key: INTERACT_KEY,
+                    text: t(self ? "game-revive-self" : "game-revive-teammate"),
+                    reviveId: view.id,
+                };
             }
         }
         return null;

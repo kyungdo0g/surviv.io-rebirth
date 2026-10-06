@@ -19,7 +19,7 @@ export const MsgType = {
     Pickup: 9,
     Map: 10,
     Spectate: 11,
-    /** reserved, not implemented */
+    /** client -> server: drop an item (M7b; original layout: item game type, weapIdx u8) */
     DropItem: 12,
     /** client -> server emote or ping request (M6a) */
     Emote: 13,

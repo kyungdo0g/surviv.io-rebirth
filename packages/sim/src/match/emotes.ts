@@ -8,7 +8,8 @@
 // TODO(M8): loadouts: the death emote 0.3 s after dying and the win emote 1 s after the game over (slots 4 and 5,
 // empty by default).
 import { math, type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, getMapDef, hasDef } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, hasDef } from "@rebirth/defs";
+import { simMapDef } from "../modes/mapFixes.ts";
 import type { EmoteEvent, EmoteRequest } from "../view.ts";
 import type { Player } from "../world/player.ts";
 import { EventLog } from "./events.ts";
@@ -55,8 +56,9 @@ interface Entry {
 /** What the emote system needs from the game. */
 export interface EmoteHost {
     readonly tick: number;
-    /** Cobalt (perkMode): no emotes before a class is chosen */
+    /** Cobalt (perkMode): no emotes before a class is chosen; potato maps swap wheel emotes (M7b) */
     readonly options: { mapName: string };
+    readonly rules: { modes: { potatoEmotes: boolean } };
     readonly mapData: { width: number; height: number };
     nextEventSeq(): number;
     getPlayer(id: number): Player | undefined;
@@ -77,8 +79,10 @@ export class EmoteSystem {
      */
     request(player: Player, req: EmoteRequest): boolean {
         if (player.dead || player.emoteHardTicker > 0) return false;
-        // Cobalt players cannot emote before choosing a class (survev emoteFromMsg: perkModeTwinsBunker && !role)
-        if (!player.role && getMapDef(this.host.options.mapName).gameMode.perkMode) return false;
+        // Cobalt players cannot emote before choosing a class (survev emoteFromMsg: perkMode && !role)
+        if (player.awaitingClass || (!player.role && simMapDef(this.host.options.mapName).gameMode.perkMode)) {
+            return false;
+        }
         const def = emoteDef(req.type);
         if (!def) return false;
         if (req.isPing) {
@@ -95,7 +99,7 @@ export class EmoteSystem {
             } else {
                 const slot = player.emoteLoadout.indexOf(req.type);
                 if (slot < 0 || slot >= WHEEL_SLOTS) return false;
-                this.add(player, player.emoteLoadout[slot]);
+                this.add(player, this.slotEmote(player, player.emoteLoadout[slot]));
             }
         }
         player.emoteCounter++;
@@ -103,6 +107,17 @@ export class EmoteSystem {
             player.emoteHardTicker = PLAYER.emoteHardCooldown * COOLDOWN_SCALE;
         }
         return true;
+    }
+
+    /**
+     * The emote a wheel (or death / win) slot shows: on potato maps always the potato (survev emoteFromSlot; potato.md
+     * "Core rule"), on Potato vs Tomato the Red faction's tomato when that emote exists (fork map; v0.8.82 has none).
+     */
+    slotEmote(player: Player, type: string): string {
+        const mode = simMapDef(this.host.options.mapName).gameMode;
+        if (!mode.potatoMode || !this.host.rules.modes.potatoEmotes) return type;
+        if (mode.factionMode && player.teamId === 1 && hasDef("emote_tomato")) return "emote_tomato";
+        return hasDef("emote_potato") ? "emote_potato" : type;
     }
 
     /** An emote over `player` (survev addEmote; the medic's "emote_loot" carries the item). Not throttled. */

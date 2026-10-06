@@ -195,6 +195,13 @@ export class ClientSession implements RoomMember {
                 }
                 this.room.selectRole(this.playerId, msg.role);
                 break;
+            case MsgType.DropItem:
+                if (this.state !== "joined" || !this.room) {
+                    this.disconnect(DisconnectReason.InvalidPacket);
+                    return;
+                }
+                this.room.dropItem(this.playerId, msg.item, msg.weapIdx);
+                break;
         }
     }
 

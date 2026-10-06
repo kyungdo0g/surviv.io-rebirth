@@ -46,6 +46,19 @@ export { canPlayerSpawn, randomSpawnPos, teammateSpawnPos } from "./match/spawn.
 export { type SpectateAction, SpectateSystem } from "./match/spectate.ts";
 export { Group, killAllDowned, TEAMMATE_SPAWN_RADIUS, TeamSystem } from "./match/teams.ts";
 export { UnlockSystem, type UnlockTiming, unlockTimings } from "./match/unlocks.ts";
+export { mapBagSizes } from "./modes/bagSizes.ts";
+export {
+    type ClassSelectHost,
+    onClassChosen,
+    startsWithoutClass,
+    TWINS_WAITING_ROOM,
+    waitingRoom,
+} from "./modes/classSelect.ts";
+export { applyThrowableHit, frozenOri } from "./modes/frozen.ts";
+export { type GunClass, gunClass, gunsOfClass } from "./modes/gunClasses.ts";
+export { LOOT_BANS, MAP_FIXES, type MapDefFix, simMapDef } from "./modes/mapFixes.ts";
+export { defaultModeRules, type ModeRules, type ThrowableHitRule } from "./modes/modeRules.ts";
+export { SAVANNAH_LOOT, SAVANNAH_MAPGEN } from "./modes/savannahDef.ts";
 export { PERK_EFFECTS } from "./perks/coverage.ts";
 export { onKillCredited, onPerkHolderDeath, playBugle, updatePerks, windwalkTrigger } from "./perks/effects.ts";
 export { ALL_AMMO_BONUS_PERKS, AMMO_BONUS_PERKS, defaultPerkRules, type PerkRules } from "./perks/perkRules.ts";
@@ -120,6 +133,7 @@ export {
     teammatesInRange,
     updateDowned,
 } from "./world/downed.ts";
+export { dropItem, dropRandomLoot, randomDropCandidates } from "./world/dropItem.ts";
 export {
     Building,
     Decal,

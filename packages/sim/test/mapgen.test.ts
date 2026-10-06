@@ -200,3 +200,31 @@ describe("generateMap other maps", () => {
         expect(pavilions[0].pos).toEqual(lake.center);
     });
 });
+
+describe("generateMap rules (M7b)", () => {
+    it("skips the crossing bunker quietly when no river is wider than 8 (survev genBridge)", () => {
+        let checked = 0;
+        for (let seed = 1; seed <= 12 && checked < 2; seed++) {
+            const g = generateMap("main", seed, 1);
+            if (g.terrain.rivers.some((r) => !r.looped && r.waterWidth > 8)) continue;
+            checked++;
+            expect(g.skipped).toContain("bunker_structure_05: no river wider than 8");
+            expect(g.warnings.some((w) => w.includes("bunker_structure_05"))).toBe(false);
+            expect(g.objects.some((o) => o.type === "bunker_structure_05")).toBe(false);
+        }
+        expect(checked).toBeGreaterThan(0);
+    });
+
+    it("regenerates a map whose landmark buildings did not fit (docks, bunkers, towns)", () => {
+        let regenerated = 0;
+        for (let seed = 1; seed <= 40; seed++) {
+            const g = generateMap("main", seed, 1);
+            if (!g.warnings.some((w) => w.includes("regenerating"))) continue;
+            regenerated++;
+            for (const t of ["warehouse_complex_01", "bunker_structure_02", "bunker_structure_03", "club_complex_01"]) {
+                expect([seed, t, g.objects.some((o) => o.type === t && o.parentId === 0)]).toEqual([seed, t, true]);
+            }
+        }
+        expect(regenerated).toBeGreaterThan(0);
+    }, 60_000);
+});

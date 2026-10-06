@@ -195,7 +195,8 @@ export function genBridge(gen: MapGenerator, type: string, river?: River, warnOn
     if (type === "bunker_structure_05") {
         rivers = rivers.filter((r) => r.waterWidth > 8);
         if (!rivers.length) {
-            if (warnOnFailure) gen.warnings.push(`failed to spawn ${type}: no river wider than 8`);
+            // survev genBridge returns quietly: the crossing bunker needs a river wider than 8 (bunkers.md)
+            gen.skipped.push(`${type}: no river wider than 8`);
             return false;
         }
     }
@@ -328,9 +329,7 @@ export function genFromMapDef(gen: MapGenerator, type: string, count: number, pl
         } else if (terrain?.grass) genOnGrass(gen, type, places);
         else if (terrain?.beach) genOnBeach(gen, type);
         else if (terrain?.riverShore) genOnRiverShore(gen, type);
-        else {
-            gen.warnOnce(`${type} has no supported placement terrain; placed on grass`);
-            genOnGrass(gen, type, places);
-        }
+        // objects without terrain flags (halloween woodpiles) go on grass (survev genFromMapDef's default)
+        else genOnGrass(gen, type, places);
     }
 }

@@ -3,9 +3,10 @@
 // carries a perk or a role (the desert Lieutenant Helmet's Firepower, the K-pot-ato's Rare Potato, the Woods King's
 // Shishigami no Kabuto). Behaviour follows survev server/src/game/objects/player.ts promoteToRole / removeRole and the
 // helmet branch of pickupLoot, docs/research/items/roles.md "What promotion does".
-import { GameObjectDefs, getDef, getDefOfType, getMapDef, hasDef, WeaponSlot } from "@rebirth/defs";
+import { GameObjectDefs, getDef, getDefOfType, hasDef, WeaponSlot } from "@rebirth/defs";
 import { isBagItem } from "../items/inventory.ts";
 import { dropGun, playerDropLoot } from "../loot/drops.ts";
+import { simMapDef } from "../modes/mapFixes.ts";
 import { addPerk, giveHaste, removePerk, removePerksWhere } from "../perks/perks.ts";
 import { gunDef } from "../weapons/weaponManager.ts";
 import type { SimContext } from "../world/context.ts";
@@ -72,7 +73,7 @@ export function promoteToRole(ctx: SimContext, player: Player, role: string, opt
         }
     }
     for (const perk of newPerks) addPerk(player, perk, { fromRole: true });
-    const kit = roleLoadout(role, getMapDef(ctx.options.mapName));
+    const kit = roleLoadout(role, simMapDef(ctx.options.mapName));
     if (kit) applyLoadout(ctx, player, resolveLoadout(kit, player.teamId, ctx.roleRng), opts);
 }
 

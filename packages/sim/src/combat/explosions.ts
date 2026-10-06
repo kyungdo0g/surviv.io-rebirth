@@ -9,6 +9,7 @@
 import { type Bounds, type Collider, collider, math, type Vec2, v2 } from "@rebirth/core";
 import { type ExplosionDef, getDefOfType, getMapObjectDef, hasDef, hasMapObjectDef } from "@rebirth/defs";
 import type { Loot } from "../loot/loot.ts";
+import { applyThrowableHit } from "../modes/frozen.ts";
 import { windwalkTrigger } from "../perks/effects.ts";
 import { incrementFat } from "../perks/perks.ts";
 import type { ExplosionEvent } from "../view.ts";
@@ -63,10 +64,8 @@ export interface ExplosionReport {
 
 type Target = Player | Obstacle | Loot;
 
-export type ExplosionHost = Pick<
-    SimContext,
-    "world" | "rules" | "fxRng" | "bullets" | "smokes" | "damagePlayer" | "damageObstacle" | "getPlayer"
->;
+/** The whole context: snowball / potato hits make players drop items (M7b, modes/frozen.ts). */
+export type ExplosionHost = SimContext;
 
 function colliderOf(obj: Target): Collider {
     if (obj.kind === "obstacle") return obj.collider;
@@ -233,6 +232,11 @@ export class ExplosionSystem {
         // teamDamage false is informational, explosions.md "Friendly fire and credit")
         // Spud Gun shots enlarge the target, teammates too (survev explosion.ts incrementFat; throwables.md)
         if (obj.kind === "player" && e.type === "explosion_potato_smgshot") incrementFat(obj);
+        // snowball / potato hits slow enemies and make them drop an item before the damage (M7b, modes/frozen.ts)
+        if (obj.kind === "player") {
+            const source = e.source.sourceId ? this.host.getPlayer(e.source.sourceId) : undefined;
+            applyThrowableHit(this.host, obj, e.type, dir, source);
+        }
         const params = {
             amount: obj.kind === "obstacle" ? damage * e.def.obstacleDamage : damage,
             damageType: e.source.damageType,

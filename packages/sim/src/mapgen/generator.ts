@@ -73,6 +73,8 @@ export class MapGenerator {
     factionSplitOri: 0 | 1 = 0;
     readonly rng: Rng;
     readonly warnings: string[] = [];
+    /** spawns a placement rule left out (GenerateMapResult.skipped) */
+    readonly skipped: string[] = [];
     readonly objects: GeneratedObject[] = [];
     readonly lootSpawns: LootSpawn[] = [];
     readonly groundPatches: GroundPatchData[] = [];

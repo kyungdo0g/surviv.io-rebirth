@@ -2,9 +2,11 @@
 // or where the KB proposes a value that differs from survev. Every Game owns a mutable copy (`game.rules`), so tests
 // and tools can switch a rule without touching the defaults.
 import { GameConfig } from "@rebirth/defs";
+import { defaultModeRules, type ModeRules } from "./modes/modeRules.ts";
 import { defaultPerkRules, type PerkRules } from "./perks/perkRules.ts";
 import { defaultRoleRules, type RoleRules } from "./roles/roleRules.ts";
 
+export type { ModeRules, ThrowableHitRule } from "./modes/modeRules.ts";
 export type { PerkRules } from "./perks/perkRules.ts";
 export type { RoleRules } from "./roles/roleRules.ts";
 
@@ -146,6 +148,8 @@ export interface SimRules {
     perks: PerkRules;
     /** role and 50v50 knobs (M7a, roles/roleRules.ts) */
     roles: RoleRules;
+    /** event-mode knobs: snowball / potato hits, potato emotes, the Cobalt waiting room (M7b, modes/modeRules.ts) */
+    modes: ModeRules;
 }
 
 export function defaultRules(): SimRules {
@@ -191,6 +195,7 @@ export function defaultRules(): SimRules {
         teamStatusInterval: 0.25,
         perks: defaultPerkRules(),
         roles: defaultRoleRules(),
+        modes: defaultModeRules(),
     };
 }
 

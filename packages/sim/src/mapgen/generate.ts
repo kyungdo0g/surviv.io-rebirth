@@ -1,9 +1,10 @@
 // generateMap: map size, places, rivers, terrain and every static map object, deterministic per (map, seed, mode).
 // Order follows survev server/src/game/map.ts init() and generateObjects().
 import { type Collider, math, type Vec2, v2 } from "@rebirth/core";
-import { getMapDef, getMapObjectDef, hasMapObjectDef, type MapDef } from "@rebirth/defs";
+import { getMapObjectDef, hasMapObjectDef, type MapDef } from "@rebirth/defs";
 import { polygonArea } from "../geom/polygon.ts";
 import { overlaps, transformOri } from "../geom/transform.ts";
+import { simMapDef } from "../modes/mapFixes.ts";
 import type { MapData } from "../view.ts";
 import { getBoundingAabb } from "./bounds.ts";
 import { type GeneratedObject, type LootSpawn, MapGenerator } from "./generator.ts";
@@ -42,6 +43,11 @@ export interface GenerateMapResult {
     objects: GeneratedObject[];
     lootSpawns: LootSpawn[];
     warnings: string[];
+    /**
+     * Spawns left out by a placement rule rather than a failure (M7b), e.g. the crossing bunker on a map whose rivers
+     * are all 8 wide or narrower (survev map.ts genBridge returns quietly)
+     */
+    skipped: string[];
     spawnStats: SpawnStat[];
     scale: "small" | "large";
     /** shore polygon area minus riverbank areas: the base of density spawn counts */
@@ -367,16 +373,51 @@ function runGeneration(mapName: string, def: MapDef, seed: number, teamMode: 1 |
 }
 
 /**
+ * Buildings and structures of the fixed, random and location spawns that did not fit (a failed location spawn counts
+ * when its retry failed too), river-dependent ones excepted (bridge shacks, the crossing bunker). Rebirth rule (M7b):
+ * the map is then regenerated, so the landmarks of each mode (docks, bunkers, towns, complexes) always exist; KB
+ * desert.md "the map is regenerated until they fit" for its important spawns. survev only logs the failure.
+ */
+function missingLandmarks(stats: readonly SpawnStat[]): string[] {
+    const want = new Map<string, number>();
+    const got = new Map<string, number>();
+    for (const s of stats) {
+        if (s.source !== "fixed" && s.source !== "random" && s.source !== "location") continue;
+        if (!hasMapObjectDef(s.type)) continue;
+        const def = getMapObjectDef(s.type);
+        if ((def.type !== "building" && def.type !== "structure") || def.terrain?.bridge || def.terrain?.nearbyRiver) {
+            continue;
+        }
+        // a location spawn and its retry request the same object once
+        const requested = s.source === "location" ? 1 : s.requested;
+        want.set(
+            s.type,
+            s.source === "location" ? Math.max(want.get(s.type) ?? 0, requested) : (want.get(s.type) ?? 0) + requested,
+        );
+        got.set(s.type, (got.get(s.type) ?? 0) + s.spawned);
+    }
+    return [...want].filter(([type, n]) => (got.get(type) ?? 0) < n).map(([type]) => type);
+}
+
+/**
  * Generates the full static map for a MapDefs key. `teamMode` selects the map scale (squads get the large map).
  * Deterministic: the same arguments always produce the same MapData.
  */
 export function generateMap(mapName: string, seed: number, teamMode: 1 | 2 | 4 = 1): GenerateMapResult {
-    const def = getMapDef(mapName);
+    const def = simMapDef(mapName);
     let result: ReturnType<typeof runGeneration> = null;
     const extraWarnings: string[] = [];
     for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS && !result; attempt++) {
         result = runGeneration(mapName, def, seed, teamMode, attempt);
-        if (!result) extraWarnings.push(`faction bridges did not fit (attempt ${attempt + 1}); regenerating rivers`);
+        if (!result) {
+            extraWarnings.push(`faction bridges did not fit (attempt ${attempt + 1}); regenerating rivers`);
+            continue;
+        }
+        const missing = missingLandmarks(result.runner.stats);
+        if (missing.length > 0 && attempt < MAX_GENERATION_ATTEMPTS - 1) {
+            extraWarnings.push(`${missing.join(", ")} did not fit (attempt ${attempt + 1}); regenerating`);
+            result = null;
+        }
     }
     if (!result) {
         throw new Error(`generateMap(${mapName}, ${seed}): faction bridges failed ${MAX_GENERATION_ATTEMPTS} times`);
@@ -408,6 +449,7 @@ export function generateMap(mapName: string, seed: number, teamMode: 1 | 2 | 4 =
         objects: gen.objects,
         lootSpawns: gen.lootSpawns,
         warnings: [...extraWarnings, ...gen.warnings],
+        skipped: [...gen.skipped],
         spawnStats: runner.stats,
         scale: gen.scale,
         shoreArea,

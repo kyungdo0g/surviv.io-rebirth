@@ -5,7 +5,6 @@ import { math, type Vec2, v2 } from "@rebirth/core";
 import {
     GameObjectDefs,
     getDef,
-    getMapDef,
     getMapObjectDef,
     hasMapObjectDef,
     type LootTableEntry,
@@ -14,6 +13,7 @@ import {
 import { gearLevel, isBagItem } from "../items/inventory.ts";
 import type { LootSpawn } from "../mapgen/generator.ts";
 import { randomPointInCircle } from "../mapgen/random.ts";
+import { simMapDef } from "../modes/mapFixes.ts";
 import type { SimContext } from "../world/context.ts";
 import { createMapEntity, type Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
@@ -37,7 +37,7 @@ export function unknownLootTiers(): string[] {
 }
 
 function lootTables(ctx: SimContext): Readonly<Record<string, readonly LootTableEntry[]>> {
-    return getMapDef(ctx.world.mapData.mapName).lootTable;
+    return simMapDef(ctx.world.mapData.mapName).lootTable;
 }
 
 /** Rolls every map loot spawner once (survev map.ts genAuto loot_spawner: one roll per tier entry, no push). */

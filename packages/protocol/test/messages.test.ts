@@ -114,6 +114,19 @@ describe("client messages", () => {
         });
     });
 
+    it("DropItem round-trips (M7b: original layout, item game type + weapIdx u8)", () => {
+        forCases(5, (rng) => {
+            const msg: ClientMsg = {
+                type: MsgType.DropItem,
+                item: rng.pick(["762mm", "chest02", "windwalk", randGameType(rng)]),
+                weapIdx: rng.int(0, 3),
+            };
+            // type byte, 10-bit game type and 8-bit index padded to a byte
+            expect(encodeClientMsg(msg).length).toBe(1 + 3);
+            assertClose(clientRoundTrip(msg), msg, exact);
+        });
+    });
+
     it("several messages share one frame", () => {
         forCases(4, (rng) => {
             const msgs: ClientMsg[] = Array.from({ length: rng.int(1, 5) }, () =>

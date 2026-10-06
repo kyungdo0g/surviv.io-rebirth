@@ -46,6 +46,8 @@ export class NetworkBot {
         const bot = this.bot;
         if (!bot || !this.client.connected) return;
         bot.observe(snap);
+        // Cobalt: the class menu choice (M7b; the original PerkModeRoleSelect message)
+        if (bot.classChoice) this.client.sendRoleSelect(bot.classChoice);
         const dt = this.lastTime < 0 ? 0.03 : Math.max(0, snap.time - this.lastTime);
         this.lastTime = snap.time;
         this.client.sendInput(bot.act(dt));

@@ -204,6 +204,11 @@ export class GameConnection {
         this.send({ type: MsgType.PerkModeRoleSelect, role });
     }
 
+    /** Drops an item: armour, a gun of slot `weapIdx`, the melee, the loot perk or bag items (M7b; DropItem). */
+    sendDropItem(item: string, weapIdx = 0): void {
+        this.send({ type: MsgType.DropItem, item, weapIdx });
+    }
+
     /** Sends a Ping; `rttMs` updates when the Pong arrives. */
     ping(): void {
         this.send({ type: MsgType.Ping, nonce: Math.floor(performance.now()) >>> 0 });

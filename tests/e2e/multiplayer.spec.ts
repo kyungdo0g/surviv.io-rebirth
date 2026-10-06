@@ -38,15 +38,16 @@ test("two network clients share a game, see each other and see each other move",
     await expect.poll(() => sees(alice, bobId), { timeout: 20_000 }).toBe(true);
     await expect.poll(() => sees(bob, aliceId), { timeout: 20_000 }).toBe(true);
 
-    // Bob walks right; Alice's copy of Bob moves right
+    // Bob walks right; Alice's copy of Bob moves right (d stays held until it shows: a page starved of frames under
+    // the load of the parallel specs samples the key rarely)
     const before = await posOf(alice, bobId);
     await bob.bringToFront();
     await bob.keyboard.down("d");
     await bob.waitForTimeout(1500);
-    await bob.keyboard.up("d");
     await expect
         .poll(async () => ((await posOf(alice, bobId))?.x ?? 0) - (before?.x ?? 0), { timeout: 10_000 })
         .toBeGreaterThan(2);
+    await bob.keyboard.up("d");
 
     await alice.screenshot({ path: "tests/e2e/__screens__/M3/alice-sees-bob.png" });
     await bob.screenshot({ path: "tests/e2e/__screens__/M3/bob-sees-alice.png" });

@@ -213,6 +213,11 @@ export class GameRoom {
         if (this.seats.has(playerId)) this.game.selectRole(playerId, role);
     }
 
+    /** Drop request of a member (the original DropItem; the game validates it, M7b). */
+    dropItem(playerId: number, item: string, weapIdx: number): void {
+        if (this.seats.has(playerId)) this.game.dropItem(playerId, item, weapIdx);
+    }
+
     /** Emote or ping request of a member (the game validates and throttles it, M6a). */
     emote(playerId: number, request: EmoteRequest): void {
         if (this.seats.has(playerId)) this.game.emote(playerId, request);

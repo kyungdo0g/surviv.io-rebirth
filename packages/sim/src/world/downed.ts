@@ -3,8 +3,9 @@
 // Behaviour follows docs/research/mechanics/downed-revive.md (survev objects/player.ts down, update "Action logic" and
 // "Take bleeding damage", shouldAcceptInput, getPlayerToRevive, revive, applyActionFunc, getAOEPlayers).
 import { type Vec2, v2 } from "@rebirth/core";
-import { DamageType, GameConfig, getMapDef, Input, WeaponSlot } from "@rebirth/defs";
+import { DamageType, GameConfig, Input, WeaponSlot } from "@rebirth/defs";
 import type { DamageParams } from "../combat/damage.ts";
+import { simMapDef } from "../modes/mapFixes.ts";
 import { throwThrowable } from "../weapons/throwable.ts";
 import type { SimContext } from "./context.ts";
 import type { Player } from "./player.ts";
@@ -49,7 +50,7 @@ export function downPlayer(ctx: SimContext, player: Player, params: DamageParams
 
 /** Bleed damage of one tick for a player downed `downedCount` times on `mapName` (downed-revive.md "Bleeding"). */
 export function bleedDamage(mapName: string, downedCount: number, escalation: "linear" | "compound"): number {
-    const cfg = getMapDef(mapName).gameConfig;
+    const cfg = simMapDef(mapName).gameConfig;
     const mult = cfg.bleedDamageMult;
     if (mult === 1) return cfg.bleedDamage;
     return cfg.bleedDamage * (escalation === "compound" ? mult ** downedCount : downedCount * mult);

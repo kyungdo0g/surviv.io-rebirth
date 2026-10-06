@@ -3,7 +3,7 @@
 // scripts/match.ts and the match tests. The wall clock is injected (scripts pass their timer) so this module stays
 // free of non-deterministic calls.
 import { createRng } from "@rebirth/core";
-import type { GasStage } from "@rebirth/defs";
+import { type GasStage, getMapDef } from "@rebirth/defs";
 import { type DamageSource, damageSourceOf, Game } from "@rebirth/sim";
 import { BotController } from "./controller.ts";
 import { DIFFICULTIES, type Difficulty } from "./difficulty.ts";
@@ -11,7 +11,10 @@ import { pickBotName } from "./names.ts";
 
 export interface MatchConfig {
     mapName?: string;
-    /** 50v50 on the faction map (M7a): mapName "faction", squads inside the Red / Blue factions */
+    /**
+     * 50v50 (M7a): squads inside the Red / Blue factions, on `mapName` when it is a faction map (faction_potato, M7b),
+     * else on "faction"
+     */
     faction?: boolean;
     seed?: number;
     /** number of bots (default 80) */
@@ -58,17 +61,19 @@ export interface MatchReport {
     tickMs: { p50: number; p99: number; max: number; mean: number };
     stuckEvents: number;
     throws: number;
-    /** 50v50 (M7a): living players per faction at the end, roles handed out and team kills (must be 0) */
+    /** 50v50 (M7a): living players per faction at the end and team kills (must be 0) */
     teamAliveCounts?: number[];
-    roles?: Record<string, number>;
     teamKills?: number;
+    /** roles handed out (faction roles, Cobalt classes, The Hunted, Woods King; M7b: every map) */
+    roles: Record<string, number>;
 }
 
 export function runMatch(cfg: MatchConfig = {}): MatchReport {
     const clock = cfg.clock ?? (() => 0);
     const seed = cfg.seed ?? 1;
     const n = cfg.bots ?? (cfg.faction ? 100 : 80);
-    const mapName = cfg.faction ? "faction" : (cfg.mapName ?? "main");
+    const requested = cfg.mapName ?? (cfg.faction ? "faction" : "main");
+    const mapName = cfg.faction && !getMapDef(requested).gameMode.factionMode ? "faction" : requested;
     const game = new Game(
         { mapName, seed, teamMode: cfg.faction ? 4 : (cfg.teamMode ?? 1) },
         cfg.gasStages ? { gasStages: cfg.gasStages } : {},
@@ -171,6 +176,7 @@ export function runMatch(cfg: MatchConfig = {}): MatchReport {
         },
         stuckEvents: bots.reduce((a, b) => a + b.bot.follower.stuckEvents, 0),
         throws: bots.reduce((a, b) => a + b.bot.throws.throws, 0),
-        ...(game.faction ? { teamAliveCounts: game.faction.aliveCounts(), roles, teamKills } : {}),
+        roles,
+        ...(game.faction ? { teamAliveCounts: game.faction.aliveCounts(), teamKills } : {}),
     };
 }

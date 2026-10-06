@@ -240,6 +240,12 @@ describe("Update message", () => {
             smokes: [],
             airstrikeZones: [],
             emotes: [],
+            // one-shot events are sent whenever present: none here (the random draw may produce some)
+            kills: [],
+            roleAnnouncements: [],
+            recorders: [],
+            gameOver: undefined,
+            playerStats: undefined,
         };
         const first = encoder.encode(snap, 0);
         decoder.decode(first);

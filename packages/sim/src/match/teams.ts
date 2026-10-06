@@ -172,14 +172,17 @@ export class TeamSystem {
         return randomSpawnPos(this.host, rng, group, band, group.factionTeam);
     }
 
-    /** Puts a new player into its group (ids, spawn position, status). */
-    add(player: Player, group: Group): void {
+    /**
+     * Puts a new player into its group (ids, spawn position, status). `spawned` false: the player waits elsewhere
+     * (Cobalt's Twins bunker, M7b) and sets the group's spawn position once it leaves (modes/classSelect.ts).
+     */
+    add(player: Player, group: Group, spawned = true): void {
         player.group = group;
         player.groupId = group.id;
         player.teamId = group.factionTeam || group.id;
         this.faction?.add(player, group.factionTeam);
         group.players.push(player);
-        if (this.teamMode > 1 && !group.spawnPosition) group.spawnPosition = v2.copy(player.pos);
+        if (this.teamMode > 1 && !group.spawnPosition && spawned) group.spawnPosition = v2.copy(player.pos);
         this.refreshStatus(player);
     }
 
@@ -242,7 +245,8 @@ export class TeamSystem {
         const joinable = this.host.canJoin();
         for (const g of this.groups) {
             const leader = g.players[0];
-            if (!leader || leader.dead || !joinable || g.players.length >= g.maxPlayers) continue;
+            if (!leader || leader.dead || leader.awaitingClass || !joinable || g.players.length >= g.maxPlayers)
+                continue;
             g.spawnPositionTicker -= dt;
             if (g.spawnPositionTicker > 0) continue;
             g.spawnPositionTicker = SPAWN_POSITION_INTERVAL;

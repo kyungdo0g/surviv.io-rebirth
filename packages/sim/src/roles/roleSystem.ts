@@ -5,10 +5,11 @@
 // Behaviour follows survev server/src/game/objects/player.ts (PlayerBarn.update scheduled roles, scheduleRoleAssignments,
 // promoteToKillLeader, kill), group.ts (Team.checkAndApplyLastMan / checkAndApplyCaptain) and
 // docs/research/items/roles.md "50v50 promotion rules" / "Map roles" / "Cobalt classes".
-import { getDefOfType, getMapDef, hasDef, type MapDef } from "@rebirth/defs";
+import { getDefOfType, hasDef, type MapDef } from "@rebirth/defs";
 import type { LootSystem } from "../loot/loot.ts";
 import { type FactionSystem, living } from "../match/faction.ts";
 import type { TrackedIndicator } from "../match/indicators.ts";
+import { simMapDef } from "../modes/mapFixes.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
 import { type PromoteOptions, promoteToRole, removeRole } from "./roles.ts";
@@ -18,6 +19,8 @@ export interface RoleHost extends SimContext {
     readonly loot: LootSystem;
     players(): Iterable<Player>;
     canJoin(): boolean;
+    /** a Cobalt class was assigned: the player leaves the class menu / waiting room (M7b, modes/classSelect.ts) */
+    onClassChosen?(player: Player): void;
 }
 
 interface ScheduledRole {
@@ -37,7 +40,7 @@ export class RoleSystem {
 
     constructor(host: RoleHost) {
         this.host = host;
-        this.map = getMapDef(host.options.mapName);
+        this.map = simMapDef(host.options.mapName);
     }
 
     private get rules() {
@@ -82,7 +85,10 @@ export class RoleSystem {
             // Cobalt: a player who did not choose gets a random class (conflicts.md cobalt-role-timeout: 20 s)
             if (gameMode.perkMode && !p.role && p.timeAlive >= this.rules.perkModeRoleSelectTime - 1e-9) {
                 const classes = gameMode.perkModeRoles ?? [];
-                if (classes.length > 0) this.promote(p, this.host.roleRng.pick(classes));
+                if (classes.length > 0) {
+                    this.promote(p, this.host.roleRng.pick(classes));
+                    this.host.onClassChosen?.(p);
+                }
             }
             if (p.role === "leader" && this.rules.leaderAutoFlare && !p.firedFlare) this.autoFlare(p, dt);
         }
@@ -125,6 +131,7 @@ export class RoleSystem {
         const mode = this.map.gameMode;
         if (!mode.perkMode || player.role || player.dead || !(mode.perkModeRoles ?? []).includes(role)) return false;
         this.promote(player, role);
+        this.host.onClassChosen?.(player);
         return true;
     }
 

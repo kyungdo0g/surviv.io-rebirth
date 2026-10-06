@@ -7,6 +7,7 @@ import { GameObjectDefs, hasDef, Input, WeaponSlot } from "@rebirth/defs";
 import { emptyInput, type MapData, type PlayerInput, type Snapshot } from "@rebirth/sim";
 import { AimController } from "./brain/aim.ts";
 import { Brain } from "./brain/brain.ts";
+import { ClassPicker } from "./brain/classPick.ts";
 import { type BotOrder, emptyIntent, type Intent } from "./brain/context.ts";
 import { ThrowController, TriggerController } from "./brain/trigger.ts";
 import { type Difficulty, type DifficultyParams, difficultyParams } from "./difficulty.ts";
@@ -38,6 +39,10 @@ export class Bot {
     readonly aim: AimController;
     readonly trigger: TriggerController;
     readonly throws: ThrowController;
+    /** Cobalt class menu (M7b): its own random stream, so the other decisions stay as on any map */
+    readonly classPicker: ClassPicker;
+    /** class chosen by the last observe(), to send once (Game.selectRole / PerkModeRoleSelect) */
+    classChoice: string | null = null;
     intent: Intent = emptyIntent();
     /** decisions taken (diagnostics) */
     thinks = 0;
@@ -60,6 +65,7 @@ export class Bot {
         this.aim = new AimController(this.params, this.rng);
         this.trigger = new TriggerController(this.params, this.rng);
         this.throws = new ThrowController();
+        this.classPicker = new ClassPicker(map.mapName, createRng(opts.seed ^ 0x2545f491));
     }
 
     /** Overrides the brain (tests, scripted scenarios); null gives control back. */
@@ -75,6 +81,7 @@ export class Bot {
     observe(snap: Snapshot): void {
         const model = this.model;
         model.observe(snap);
+        this.classChoice = this.classPicker.update(snap);
         this.clock = model.time;
         if (model.self.dead) {
             this.intent = emptyIntent("idle");

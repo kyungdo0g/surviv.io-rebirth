@@ -5,7 +5,7 @@
 // group spawn positions and team status (M6a), faction status and role schedules / indicators (M7a), then the end-of-tick
 // match results.
 import { type Bounds, type Rng, type Vec2, v2 } from "@rebirth/core";
-import { DamageType, type GasStage, getMapDef } from "@rebirth/defs";
+import { DamageType, type GasStage } from "@rebirth/defs";
 import { type GameApi, type GameOptions, type SpectateActionName, TICK_HZ } from "./api.ts";
 import { BulletSystem } from "./combat/bullets.ts";
 import { applyObstacleDamage, applyPlayerDamage } from "./combat/combat.ts";
@@ -28,6 +28,9 @@ import { canPlayerSpawn } from "./match/spawn.ts";
 import { SpectateSystem } from "./match/spectate.ts";
 import { TeamSystem } from "./match/teams.ts";
 import { UnlockSystem } from "./match/unlocks.ts";
+import { mapBagSizes } from "./modes/bagSizes.ts";
+import { onClassChosen, startsWithoutClass, waitingRoom } from "./modes/classSelect.ts";
+import { simMapDef } from "./modes/mapFixes.ts";
 import { RoleSystem } from "./roles/roleSystem.ts";
 import { defaultRules, type SimRules } from "./rules.ts";
 import type {
@@ -41,6 +44,7 @@ import type {
 } from "./view.ts";
 import type { SimContext } from "./world/context.ts";
 import { checkDoorLayer } from "./world/doors.ts";
+import { dropItem } from "./world/dropItem.ts";
 import type { Building, Obstacle } from "./world/entities.ts";
 import { updateObstacleTimers } from "./world/interact.ts";
 import { floorsVisible } from "./world/layers.ts";
@@ -157,12 +161,14 @@ export class Game implements GameApi, SimContext {
     private readonly activeObstacles = new Set<Obstacle>();
     private readonly rng: Rng;
     private occupied = new Set<Building>();
+    /** Cobalt players waiting in the Twins bunker for their class (M7b) */
+    private readonly waitingPlayers = new Set<number>();
     private tickCount = 0;
     private readonly scratch: Entity[] = [];
 
     constructor(options: GameOptions, init: GameInit = {}) {
         this.options = { ...options };
-        const mode = getMapDef(options.mapName).gameMode;
+        const mode = simMapDef(options.mapName).gameMode;
         // 50v50 always plays in squads inside the factions (the original 50v50 squad queue, survev config)
         if (mode.factionMode) this.options.teamMode = 4;
         this.generation = init.generation ?? generateMap(options.mapName, options.seed, options.teamMode ?? 1);
@@ -267,9 +273,18 @@ export class Game implements GameApi, SimContext {
     addPlayer(name: string, opts: AddPlayerOptions = {}): number {
         const id = this.world.allocId();
         const group = this.teams.assign(opts);
-        const player = new Player(id, name, this.teams.spawnPos(group, this.rng));
+        // Cobalt: players choosing a class wait at the Twins bunker (M7b, modes/classSelect.ts)
+        const room = waitingRoom(this);
+        const player = new Player(id, name, room ? room.pos : this.teams.spawnPos(group, this.rng));
+        if (room) {
+            player.layer = room.layer;
+            player.aimLayer = room.layer;
+            this.waitingPlayers.add(id);
+        }
+        player.awaitingClass = startsWithoutClass(this.options.mapName);
         player.ctx = this;
-        this.teams.add(player, group);
+        player.inv.sizes = mapBagSizes(this.options.mapName);
+        this.teams.add(player, group, !room);
         this.playerMap.set(player.id, player);
         this.world.add(player);
         this.visible.set(player.id, new Set());
@@ -284,6 +299,7 @@ export class Game implements GameApi, SimContext {
         const player = this.playerMap.get(id);
         if (!player) return;
         this.playerMap.delete(id);
+        this.waitingPlayers.delete(id);
         this.visible.delete(id);
         this.lastSnapshotTick.delete(id);
         this.lastEventSeq.delete(id);
@@ -386,6 +402,17 @@ export class Game implements GameApi, SimContext {
     selectRole(playerId: number, role: string): boolean {
         const player = this.playerMap.get(playerId);
         return !!player && !player.disconnected && this.roles.selectClass(player, role);
+    }
+
+    /** A Cobalt class was assigned (chosen or after the timeout): leave the waiting room (M7b). */
+    onClassChosen(player: Player): void {
+        onClassChosen(this, player, this.waitingPlayers.delete(player.id), this.rng);
+    }
+
+    /** The drop-item action (the original DropItem message; M7b): armour, a gun, the melee, the loot perk, bag items. */
+    dropItem(playerId: number, item: string, weapIdx = 0): void {
+        const player = this.playerMap.get(playerId);
+        if (player && !player.disconnected) dropItem(this, player, item, weapIdx);
     }
 
     onRecorderUsed(obstacle: Obstacle): void {

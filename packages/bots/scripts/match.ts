@@ -2,9 +2,10 @@
 //   node packages/bots/scripts/match.ts [--bots 80] [--mode solo|duo|squad|faction] [--map main] [--seed 1]
 //        [--difficulty mixed|easy|normal|hard] [--gas normal|fast] [--max-ticks 60000] [--json]
 // Prints the match duration (game seconds and wall time), the winner, the kills distribution, causes of death,
-// average survival time, bot exceptions (must be 0) and tick time percentiles (bots + simulation). `--mode faction`
-// (M7a) runs 50v50 on the faction map (100 bots unless --bots is given) and also prints the factions' living counts,
-// the roles handed out and team kills (must be 0).
+// average survival time, bot exceptions (must be 0), tick time percentiles (bots + simulation) and the roles handed out
+// (Cobalt classes, The Hunted, Woods King, faction roles). `--mode faction` (M7a) runs 50v50 on the faction map (100
+// bots unless --bots is given) and also prints the factions' living counts and team kills (must be 0); a faction map
+// (`--map faction_potato`, M7b) always plays 50v50.
 import { parseArgs } from "node:util";
 import { GameConfig, MapDefs } from "@rebirth/defs";
 import { type Difficulty, isDifficulty } from "../src/difficulty.ts";
@@ -24,10 +25,12 @@ const { values } = parseArgs({
 });
 
 const MODES: Readonly<Record<string, 1 | 2 | 4>> = { solo: 1, duo: 2, squad: 4, faction: 4 };
-const teamMode = MODES[values.mode];
-if (!teamMode) throw new Error(`--mode must be solo, duo, squad or faction (got ${values.mode})`);
-const faction = values.mode === "faction";
 if (!Object.hasOwn(MapDefs, values.map)) throw new Error(`unknown map ${values.map}`);
+// a faction map (faction, faction_potato) always plays 50v50 (M7b)
+const faction = values.mode === "faction" || !!MapDefs[values.map].gameMode.factionMode;
+const teamMode = faction ? 4 : MODES[values.mode];
+if (!teamMode) throw new Error(`--mode must be solo, duo, squad or faction (got ${values.mode})`);
+const mapName = faction && !MapDefs[values.map].gameMode.factionMode ? "faction" : values.map;
 const difficulty = values.difficulty === "mixed" ? "mixed" : values.difficulty;
 if (difficulty !== "mixed" && !isDifficulty(difficulty)) throw new Error(`unknown difficulty ${difficulty}`);
 const gasStages =
@@ -38,7 +41,7 @@ const gasStages =
 const report = runMatch({
     bots: Number(values.bots ?? (faction ? 100 : 80)),
     faction,
-    mapName: values.map,
+    mapName,
     seed: Number(values.seed),
     teamMode,
     difficulty: difficulty as Difficulty | "mixed",
@@ -64,7 +67,7 @@ for (const p of report.players) {
 }
 const dead = report.players.filter((p) => p.dead).length;
 console.log(
-    `match: ${report.players.length} bots, ${values.mode}, map ${faction ? "faction" : values.map}, seed ${values.seed}, gas ${values.gas}`,
+    `match: ${report.players.length} bots, ${faction ? "faction" : values.mode}, map ${mapName}, seed ${values.seed}, gas ${values.gas}`,
 );
 console.log(`duration: ${r2(report.gameSeconds)} game s (${report.ticks} ticks), wall ${r2(report.wallMs / 1000)} s`);
 console.log(
@@ -92,13 +95,14 @@ console.log(
     `tick ms (bots + sim): p50 ${r2(report.tickMs.p50)}, p99 ${r2(report.tickMs.p99)}, max ${r2(report.tickMs.max)}, mean ${r2(report.tickMs.mean)}`,
 );
 console.log(`stuck events: ${report.stuckEvents}, grenades thrown: ${report.throws}`);
+const roles = Object.entries(report.roles)
+    .map(([r, n]) => `${r} ${n}`)
+    .join(", ");
+console.log(`roles assigned: ${roles || "none"}`);
 if (report.teamAliveCounts) {
-    const roles = Object.entries(report.roles ?? {})
-        .map(([r, n]) => `${r} ${n}`)
-        .join(", ");
     console.log(
-        `factions alive (red, blue): ${report.teamAliveCounts.join(", ")}; winning team ${report.winningTeamId}`,
+        `factions alive (red, blue): ${report.teamAliveCounts.join(", ")}; winning team ${report.winningTeamId}; ` +
+            `team kills: ${report.teamKills ?? 0}`,
     );
-    console.log(`roles assigned: ${roles || "none"}; team kills: ${report.teamKills ?? 0}`);
 }
 process.exit(report.exceptions === 0 ? 0 : 1);

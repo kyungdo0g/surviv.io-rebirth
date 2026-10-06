@@ -145,6 +145,10 @@
 //   only the map's `perkModeRoles`, once); without a choice a random class comes after 20 s. Until then it cannot emote.
 // - Spud Gun hits enlarge the target for a while (PlayerView.scale).
 // - New types: PerkView, HasteName, FactionMemberView (viewMatch.ts, re-exported here with the M4 match types).
+//
+// M7b additions (event maps; backward compatible, see viewModes.ts for the full notes): PlayerView `frozen` /
+// `frozenOri` (snowball and potato hits), the Cobalt class menu waiting room, potato emotes, GenerateMapResult
+// `skipped`, `Game.dropItem`.
 import type { Vec2 } from "@rebirth/core";
 import type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
 import type {
@@ -272,6 +276,10 @@ export interface PlayerView extends BaseView {
     perks?: PerkView[];
     /** current speed burst; `seq` increments when one starts or ends (M7a) */
     haste?: { type: HasteName; seq: number };
+    /** hit by a snowball / potato: slowed, draw the map's frozen sprite over the body (M7b, viewModes.ts) */
+    frozen?: boolean;
+    /** quarter turns (0-3) of the frozen sprite, 0 when not frozen (M7b) */
+    frozenOri?: number;
 }
 
 /** "revive": the reviver's 8 s revive animation (M6a) */
