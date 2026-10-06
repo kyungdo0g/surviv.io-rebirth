@@ -5,7 +5,44 @@
 
 export type Difficulty = "easy" | "normal" | "hard";
 
+/** Alias of Difficulty (a preset name). */
+export type DifficultyName = Difficulty;
+
 export const DIFFICULTIES: readonly Difficulty[] = ["easy", "normal", "hard"];
+
+/** Aim model: "legacy" is AimController (rate-limited turn plus a wandering error); "human" the cursor motor model. */
+export type MotorModel = "legacy" | "human";
+
+/**
+ * Parameters of the human cursor motor model (wave 2): ballistic flicks timed by Fitts' law with endpoint scatter and
+ * occasional overcorrection, smooth pursuit of moving targets with a lag, tremor, and a trigger finger that fires a
+ * little before the crosshair settles. Unused while `model` is "legacy".
+ */
+export interface MotorParams {
+    model: MotorModel;
+    /** Fitts' law movement time MT = fittsA + fittsB * log2(1 + D / W), seconds */
+    fittsA: number;
+    fittsB: number;
+    /** standard deviation of a flick's endpoint, as a fraction of the flick amplitude */
+    endpointSigma: number;
+    /** probability that a flick overshoots and needs a corrective sub-movement */
+    overcorrectP: number;
+    /** smooth pursuit: delay of the eye/hand loop behind the target, seconds */
+    pursuitLag: number;
+    /** smooth pursuit gains: velocity matching (0..1) and position error correction (1/s) */
+    pursuitKv: number;
+    pursuitKp: number;
+    /** fraction of the target's motion over the lag the pursuit predicts (0..1) */
+    pursuitPred: number;
+    /** relative noise on the cursor speed */
+    speedNoise: number;
+    /** hand tremor amplitude, radians */
+    tremor: number;
+    /** the trigger is pulled while the aim error is within this many times the hit tolerance */
+    triggerLooseness: number;
+    /** seconds between the crosshair reaching a new target and the first click */
+    confirmDelay: number;
+}
 
 export interface DifficultyParams {
     name: Difficulty;
@@ -56,6 +93,8 @@ export interface DifficultyParams {
     dodgeGrenades: boolean;
     /** reloads in cover / switches to the other loaded gun instead of reloading under fire */
     smartReload: boolean;
+    /** cursor motor model (wave 2; "legacy" keeps AimController) */
+    motor: MotorParams;
 }
 
 export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> = {
@@ -85,6 +124,21 @@ export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> 
         thinkEvery: 3,
         dodgeGrenades: false,
         smartReload: false,
+        motor: {
+            model: "legacy",
+            fittsA: 0.08,
+            fittsB: 0.13,
+            endpointSigma: 0.05,
+            overcorrectP: 0.22,
+            pursuitLag: 0.16,
+            pursuitKv: 0.8,
+            pursuitKp: 5,
+            pursuitPred: 0.3,
+            speedNoise: 0.12,
+            tremor: 0.006,
+            triggerLooseness: 1.6,
+            confirmDelay: 0.11,
+        },
     },
     normal: {
         name: "normal",
@@ -112,6 +166,21 @@ export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> 
         thinkEvery: 2,
         dodgeGrenades: true,
         smartReload: true,
+        motor: {
+            model: "legacy",
+            fittsA: 0.05,
+            fittsB: 0.09,
+            endpointSigma: 0.03,
+            overcorrectP: 0.12,
+            pursuitLag: 0.12,
+            pursuitKv: 0.88,
+            pursuitKp: 7,
+            pursuitPred: 0.55,
+            speedNoise: 0.08,
+            tremor: 0.004,
+            triggerLooseness: 1.25,
+            confirmDelay: 0.07,
+        },
     },
     hard: {
         name: "hard",
@@ -139,6 +208,21 @@ export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> 
         thinkEvery: 1,
         dodgeGrenades: true,
         smartReload: true,
+        motor: {
+            model: "legacy",
+            fittsA: 0.03,
+            fittsB: 0.06,
+            endpointSigma: 0.02,
+            overcorrectP: 0.06,
+            pursuitLag: 0.09,
+            pursuitKv: 0.95,
+            pursuitKp: 9,
+            pursuitPred: 0.8,
+            speedNoise: 0.05,
+            tremor: 0.003,
+            triggerLooseness: 1.05,
+            confirmDelay: 0.04,
+        },
     },
 };
 

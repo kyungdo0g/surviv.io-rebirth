@@ -48,6 +48,9 @@ export class NetworkBot {
         bot.observe(snap);
         // Cobalt: the class menu choice (M7b; the original PerkModeRoleSelect message)
         if (bot.classChoice) this.client.sendRoleSelect(bot.classChoice);
+        // team pings and emotes the brain asked for (the original Emote message)
+        const emote = bot.takeEmote();
+        if (emote) this.client.sendEmote(emote);
         const dt = this.lastTime < 0 ? 0.03 : Math.max(0, snap.time - this.lastTime);
         this.lastTime = snap.time;
         this.client.sendInput(bot.act(dt));

@@ -22,7 +22,9 @@ import {
 import { distToSegment, obstacleCollider, obstacleDef, pointInBounds } from "../geom.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
 import { NavGrid } from "../nav/grid.ts";
+import { type EnemyIntelProvider, NO_INTEL } from "./intel.ts";
 import { roofRegions } from "./roofs.ts";
+import { NO_THREATS, type ThreatBoard } from "./threats.ts";
 
 const BULLET_HEIGHT = GameConfig.bullet.height;
 /** Remembered loot is forgotten after this long without being seen. */
@@ -154,6 +156,10 @@ export class WorldModel {
     view: Bounds = { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } };
     /** how long enemies are remembered after leaving view */
     memory = 4;
+    /** off-screen threats (perception/threats.ts); inert unless a real board is installed (BrainFeatures.threats) */
+    threats: ThreatBoard = NO_THREATS;
+    /** per-enemy intel (perception/intel.ts); inert unless a real provider is installed */
+    intel: EnemyIntelProvider = NO_INTEL;
     private obstacleCache = new Map<number, SeenObstacle>();
     private readonly roofCache = new Map<number, Bounds[]>();
 
@@ -213,6 +219,8 @@ export class WorldModel {
         this.bullets = snap.bullets ?? [];
         this.updateObjects(snap);
         this.updateBullets();
+        this.threats.ingest(snap, this);
+        this.intel.ingest(snap, this);
     }
 
     private updateSelf(local: LocalPlayerState, me: PlayerView | undefined): void {

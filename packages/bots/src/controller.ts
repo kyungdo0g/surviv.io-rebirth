@@ -55,6 +55,9 @@ export class BotController {
             this.observed = true;
             // Cobalt: the class menu choice (M7b)
             if (this.bot.classChoice) game.selectRole(this.playerId, this.bot.classChoice);
+            // team pings and emotes the brain asked for (throttled by the game like any client's)
+            const emote = this.bot.takeEmote();
+            if (emote) game.emote(this.playerId, emote);
             if (player.dead) {
                 this.finished = true;
                 return;

@@ -1,7 +1,7 @@
 // Utility-based decision making: every think, each behaviour scores how much it matters right now (escape the gas,
-// fight, flee, heal, revive, regroup, loot, explore); the best one (with a little hysteresis for the current one)
-// plans the Intent. Weapon handling (slot to carry, reloading when safe), grenade opportunities and dodging are layered
-// on top.
+// fight, flee, heal, revive, regroup, loot, explore, plus the extension behaviours its BrainFeatures enable); the best
+// one (with a little hysteresis for the current one) plans the Intent. Weapon handling (slot to carry, reloading when
+// safe), grenade opportunities and dodging are layered on top.
 import type { Rng } from "@rebirth/core";
 import { v2 } from "@rebirth/core";
 import { Input, WeaponSlot } from "@rebirth/defs";
@@ -12,6 +12,8 @@ import type { WorldModel } from "../perception/world.ts";
 import { addCombatLayer, freeDir, grenadeOpportunity, planFight, selectTarget } from "./combat.ts";
 import { type BehaviourName, type BrainCtx, BrainMemory, emptyIntent, type Intent } from "./context.ts";
 import { bestLoot, lootScore, planExplore, planLoot } from "./explore.ts";
+import { EXTENSION_BEHAVIOURS } from "./extensions.ts";
+import { BRAIN_PRESETS, type BrainFeatures } from "./features.ts";
 import { planLayerEscape } from "./layers.ts";
 import { bestBreakable, breakScore, planBreak } from "./scavenge.ts";
 import { fleeScore, healScore, planFlee, planHeal, planZone, zoneScore } from "./survival.ts";
@@ -30,13 +32,21 @@ export class Brain {
     private readonly model: WorldModel;
     private readonly params: DifficultyParams;
     private readonly rng: Rng;
+    /** what this brain knows how to do (default: the baseline brain, every flag off) */
+    readonly features: Readonly<BrainFeatures>;
     /** scores of the last decision (diagnostics) */
     lastScores: Partial<Record<BehaviourName, number>> = {};
 
-    constructor(model: WorldModel, params: DifficultyParams, rng: Rng) {
+    constructor(
+        model: WorldModel,
+        params: DifficultyParams,
+        rng: Rng,
+        features: Readonly<BrainFeatures> = BRAIN_PRESETS.baseline,
+    ) {
         this.model = model;
         this.params = params;
         this.rng = rng;
+        this.features = features;
     }
 
     context(now: number): BrainCtx {
@@ -48,6 +58,7 @@ export class Brain {
             model,
             self,
             params: this.params,
+            features: this.features,
             rng: this.rng,
             now,
             mem: this.mem,
@@ -101,8 +112,12 @@ export class Brain {
             ["regroup", regroupScore(ctx), () => planRegroup(ctx)],
             ["loot", loot ? lootScore(ctx, loot) : 0, () => (loot ? planLoot(ctx, loot) : planExplore(ctx))],
             ["break", crate ? breakScore(ctx, crate) : 0, () => (crate ? planBreak(ctx, crate) : planExplore(ctx))],
-            ["explore", EXPLORE_SCORE, () => planExplore(ctx)],
         ];
+        // behaviours of enabled features only: a disabled one is never scored (no rng draws, no memory writes)
+        for (const ext of EXTENSION_BEHAVIOURS) {
+            if (ctx.features[ext.feature]) options.push([ext.name, ext.score(ctx), () => ext.plan(ctx)]);
+        }
+        options.push(["explore", EXPLORE_SCORE, () => planExplore(ctx)]);
         let best = options[options.length - 1];
         let bestScore = Number.NEGATIVE_INFINITY;
         const scores: Partial<Record<BehaviourName, number>> = {};

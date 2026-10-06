@@ -4,11 +4,12 @@
 // clock, no unseeded randomness. BotController (in-process) and NetworkBot (WebSocket) feed it.
 import { createRng, type Rng, type Vec2, v2 } from "@rebirth/core";
 import { GameObjectDefs, hasDef, Input, WeaponSlot } from "@rebirth/defs";
-import { emptyInput, type MapData, type PlayerInput, type Snapshot } from "@rebirth/sim";
+import { type EmoteRequest, emptyInput, type MapData, type PlayerInput, type Snapshot } from "@rebirth/sim";
 import { AimController } from "./brain/aim.ts";
 import { Brain } from "./brain/brain.ts";
 import { ClassPicker } from "./brain/classPick.ts";
-import { type BotOrder, emptyIntent, type Intent } from "./brain/context.ts";
+import { type BotOrder, emptyIntent, type Intent, type IntentEmote } from "./brain/context.ts";
+import { type BrainFeatures, type BrainName, brainFeatures, brainLabel } from "./brain/features.ts";
 import { ThrowController, TriggerController } from "./brain/trigger.ts";
 import { type Difficulty, type DifficultyParams, difficultyParams } from "./difficulty.ts";
 import { angleOf, dirOf } from "./geom.ts";
@@ -22,6 +23,8 @@ export interface BotOptions {
     difficulty?: Difficulty | DifficultyParams;
     /** seed of the bot's own random stream (aim error, tactics, exploration) */
     seed: number;
+    /** brain preset name or custom feature flags (default DEFAULT_BRAIN, "baseline" for now) */
+    brain?: BrainName | BrainFeatures;
     /** navigation grid override (default: the shared grid of the map) */
     nav?: NavGrid;
 }
@@ -34,6 +37,10 @@ export class Bot {
     readonly model: WorldModel;
     readonly brain: Brain;
     readonly params: DifficultyParams;
+    /** what the brain knows how to do (also `ctx.features` in behaviours) */
+    readonly features: Readonly<BrainFeatures>;
+    /** preset the features equal, or "custom" */
+    readonly brainName: BrainName | "custom";
     readonly rng: Rng;
     readonly follower: PathFollower;
     readonly aim: AimController;
@@ -53,14 +60,17 @@ export class Bot {
     private moveDir: Vec2 | null = null;
     private readonly pendingActions: number[] = [];
     private pendingUse = "";
+    private pendingEmote: EmoteRequest | null = null;
     private lastSlotRequest = Number.NEGATIVE_INFINITY;
 
     constructor(map: MapData, opts: BotOptions) {
         this.params = difficultyParams(opts.difficulty ?? "normal");
+        this.features = brainFeatures(opts.brain);
+        this.brainName = brainLabel(this.features);
         this.rng = createRng(opts.seed);
         this.model = new WorldModel(map, opts.nav ?? NavGrid.forMap(map));
         this.model.memory = this.params.memory;
-        this.brain = new Brain(this.model, this.params, this.rng);
+        this.brain = new Brain(this.model, this.params, this.rng, this.features);
         this.follower = new PathFollower(this.rng);
         this.aim = new AimController(this.params, this.rng);
         this.trigger = new TriggerController(this.params, this.rng);
@@ -76,6 +86,13 @@ export class Bot {
 
     get dead(): boolean {
         return this.model.self.dead;
+    }
+
+    /** The emote or ping the brain asked for since the last call (team play), or null; the host sends it once. */
+    takeEmote(): EmoteRequest | null {
+        const e = this.pendingEmote;
+        this.pendingEmote = null;
+        return e;
     }
 
     observe(snap: Snapshot): void {
@@ -106,6 +123,7 @@ export class Bot {
         for (const a of intent.actions) this.pendingActions.push(a);
         if (intent.useItem) this.pendingUse = intent.useItem;
         if (intent.throwPlan && !this.throws.active) this.throws.start(intent.throwPlan, this.clock);
+        if (intent.emote) this.pendingEmote = emoteRequest(intent.emote);
     }
 
     private updateSteering(): void {
@@ -217,4 +235,10 @@ export class Bot {
         }
         return input;
     }
+}
+
+/** The Emote message for an intent's emote: pings (def type "ping") mark their position, emotes float over the bot. */
+function emoteRequest(e: IntentEmote): EmoteRequest {
+    const isPing = hasDef(e.type) && GameObjectDefs[e.type].type === "ping";
+    return isPing && e.pos ? { type: e.type, isPing, pos: v2.copy(e.pos) } : { type: e.type, isPing };
 }

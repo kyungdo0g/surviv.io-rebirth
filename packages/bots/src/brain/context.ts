@@ -4,6 +4,7 @@ import type { Rng, Vec2 } from "@rebirth/core";
 import type { DifficultyParams } from "../difficulty.ts";
 import type { HeldGun } from "../knowledge/arsenal.ts";
 import type { Contact, SelfState, WorldModel } from "../perception/world.ts";
+import type { BrainFeatures } from "./features.ts";
 
 export type BehaviourName =
     | "idle"
@@ -17,7 +18,12 @@ export type BehaviourName =
     | "revive"
     | "regroup"
     | "downed"
-    | "order";
+    | "order"
+    // registered in brain/extensions.ts, only offered while their BrainFeatures flag is on
+    | "disengage"
+    | "thirdparty"
+    | "guard"
+    | "airdrop";
 
 export interface ThrowPlan {
     /** throwable to use (frag, mirv, smoke) */
@@ -51,6 +57,22 @@ export interface Intent {
     useItem: string;
     /** grenade to throw */
     throwPlan: ThrowPlan | null;
+    /**
+     * A point the cursor should glance at or pre-aim while `aim` is null (a corner an enemy was heard behind, a door
+     * about to be entered). Only the human motor model reads it; the legacy aim ignores it.
+     */
+    lookAt?: Vec2;
+    /**
+     * An emote or ping to send once (team play: "ping_danger" at an enemy, "ping_coming" to a teammate); `pos` is the
+     * world position of a ping. Bot.takeEmote hands it to the host (BotController: Game.emote, NetworkBot: sendEmote).
+     */
+    emote?: IntentEmote;
+}
+
+/** An emote or ping a behaviour asks for (GameObjectDefs id; pings carry the world position to mark). */
+export interface IntentEmote {
+    type: string;
+    pos?: Vec2;
 }
 
 export function emptyIntent(behaviour: BehaviourName = "idle"): Intent {
@@ -122,6 +144,8 @@ export interface BrainCtx {
     model: WorldModel;
     self: SelfState;
     params: DifficultyParams;
+    /** what this brain knows how to do (BRAIN_PRESETS); a flag that is off must not draw from `rng` */
+    features: Readonly<BrainFeatures>;
     rng: Rng;
     now: number;
     mem: BrainMemory;

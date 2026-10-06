@@ -1,0 +1,112 @@
+// Brain feature flags: every decision-making improvement of the "smart" brain sits behind one flag, so a tournament can
+// pit the smart brain against the baseline (scripts/tournament.ts) and ablate one feature at a time (`--features`).
+//
+// THE RULE: when a flag is off, its code path must not run at all, and above all must not draw from the bot's rng (nor
+// change any state another path reads). A bot with every flag off must replay exactly like the brain before the flags
+// existed, seed for seed (compare runMatch reports of a few seeds before and after a change). Gate new code with
+// `if (ctx.features.x)` before any rng draw, memory write or extra behaviour option; extra behaviours register in
+// brain/extensions.ts with the flag that enables them.
+//
+// Difficulty and brain are independent axes: DifficultyParams say how well a bot executes (reaction, aim, tactics
+// probabilities), BrainFeatures what it knows how to do. A feature may still read a difficulty parameter (e.g.
+// `smartReload` combines with DifficultyParams.smartReload: easy bots never reload smartly).
+
+export interface BrainFeatures {
+    /** fight assessment: compare own and enemy health, armour, weapon and position before committing to a fight */
+    assess: boolean;
+    /** break off a losing fight (the "disengage" behaviour): smoke, cover, run along the zone */
+    disengage: boolean;
+    /** reload behind cover or switch to the other loaded gun instead of reloading in the open */
+    smartReload: boolean;
+    /** peek from cover: shoot, step back behind it to reload / heal, peek again */
+    cover: boolean;
+    /** punish enemies that are reloading, healing or reviving */
+    opportunism: boolean;
+    /** third-partying: move on fights between other players (the "thirdparty" behaviour) */
+    thirdparty: boolean;
+    /** team play: pings (Intent.emote), focus fire on the team's target, trading */
+    teamplay: boolean;
+    /** guard a downed or healing teammate (the "guard" behaviour) */
+    guard: boolean;
+    /** endgame positioning: hold strong spots inside the last circles instead of wandering */
+    endgame: boolean;
+    /** grenades to flush campers out of cover and to finish downed enemies behind cover */
+    grenades: boolean;
+    /** scope use: equip the scope that fits the fight, step out of a building's zoom for long sight lines */
+    scope: boolean;
+    /** contest air drops (the "airdrop" behaviour) */
+    airdrop: boolean;
+    /** read the threat board (WorldModel.threats): off-screen gunfire, explosions, kill feed, air strikes, pings */
+    threats: boolean;
+    /** navigate basements and bunkers (underground layers) */
+    basements: boolean;
+}
+
+export type BrainFeature = keyof BrainFeatures;
+
+export const BRAIN_FEATURES: readonly BrainFeature[] = [
+    "assess",
+    "disengage",
+    "smartReload",
+    "cover",
+    "opportunism",
+    "thirdparty",
+    "teamplay",
+    "guard",
+    "endgame",
+    "grenades",
+    "scope",
+    "airdrop",
+    "threats",
+    "basements",
+];
+
+export type BrainName = "baseline" | "smart";
+
+export const BRAIN_NAMES: readonly BrainName[] = ["baseline", "smart"];
+
+function allFeatures(on: boolean): Readonly<BrainFeatures> {
+    const out = {} as BrainFeatures;
+    for (const f of BRAIN_FEATURES) out[f] = on;
+    return Object.freeze(out);
+}
+
+/** baseline: the brain as it was before the flags (every flag off); smart: every feature on */
+export const BRAIN_PRESETS: Readonly<Record<BrainName, Readonly<BrainFeatures>>> = {
+    baseline: allFeatures(false),
+    smart: allFeatures(true),
+};
+
+/** Default brain of a bot without `BotOptions.brain` (flips to "smart" once it passes the tournament gate). */
+export const DEFAULT_BRAIN: BrainName = "baseline";
+
+export function isBrainName(s: string): s is BrainName {
+    return (BRAIN_NAMES as readonly string[]).includes(s);
+}
+
+export function isBrainFeature(s: string): s is BrainFeature {
+    return (BRAIN_FEATURES as readonly string[]).includes(s);
+}
+
+/** The feature set of a preset name or a custom set (a frozen copy), DEFAULT_BRAIN when undefined. */
+export function brainFeatures(brain: BrainName | BrainFeatures | undefined): Readonly<BrainFeatures> {
+    if (brain === undefined) return BRAIN_PRESETS[DEFAULT_BRAIN];
+    if (typeof brain === "string") return BRAIN_PRESETS[brain];
+    return Object.freeze({ ...brain });
+}
+
+/** `base` with the listed features turned on (ablation: baseline plus a few features). */
+export function withFeatures(base: Readonly<BrainFeatures>, on: readonly BrainFeature[]): Readonly<BrainFeatures> {
+    const out = { ...base };
+    for (const f of on) out[f] = true;
+    return Object.freeze(out);
+}
+
+/** The preset name a feature set equals, or "custom". */
+export function brainLabel(f: Readonly<BrainFeatures>): BrainName | "custom" {
+    for (const name of BRAIN_NAMES) {
+        const p = BRAIN_PRESETS[name];
+        if (BRAIN_FEATURES.every((k) => p[k] === f[k])) return name;
+    }
+    return "custom";
+}
