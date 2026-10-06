@@ -1,17 +1,20 @@
-// Routes: /?gallery=<filter>&page=<n> sprite gallery; /?fixture=1 renderer fixture; anything else (including
-// /?sandbox=1&map=<name>&seed=<n>) the loopback sandbox on the main map. Debug: &debug=1 shows the HUD (F3
-// toggles it), &zoom=<radius> overrides the camera zoom radius. Sandbox: &dummies=<n> standing dummies in front of
-// the player, &loot=0 removes the map loot, &give=<id,...> guns with full ammo and bag items (throwables, heals,
-// boosts, scopes) filled to capacity, the first gun or throwable equipped. &lang=ko Korean HUD.
-// Match (M4): the loopback runs a sandbox match (starts at once, never ends) unless &sandbox=0 (a real match: two
-// players alive for 10 s start it, the last one alive wins); &gas=fast uses a shortened red-zone stage table.
-// Teams (M6): &team=2|4 makes the loopback a duo / squad game with &teammates=<n> idle teammates in the local player's
-// group (behind it) and the dummies as enemies.
-// Network: &net=1&name=<player name> joins a solo game on the server through the dev proxy, or &server=<http origin>
-// a specific server (&mode=2|4 a duo / squad one).
-// Menu (M6): /?menu=1, /?net=1 without a name, or /?team=<room code> (also /#<code>) open the start page: name, Play
-// Solo / Duo / Squad, Create Team / Join Team (the party lobby) against the dev proxy or &server=; &name= prefills the
-// name, &lang= the language (else the stored choice).
+// Routes (M8): `/` with no query, and any route that is neither a game nor a dev page, opens the start menu.
+// - Menu (M6): /?menu=1, /?net=1 without a name, or /?team=<room code> (also /#<code>) open the start page: name, region,
+//   Play Solo / Duo / Squad, Create Team / Join Team (the party lobby) against the dev proxy or &server=; &name= prefills
+//   the name, &lang= the language (else the stored choice).
+// - Network: /?net=1&name=<player name> joins a solo game on the server through the dev proxy, or &server=<http origin>
+//   a specific server (&mode=2|4 a duo / squad one).
+// - Loopback sandbox: only when one of sandbox, seed, map, give, dummies, loot, team (2|4), teammates, gas, fixture,
+//   zoom, debug is in the query (e.g. /?sandbox=1&map=<name>&seed=<n>). Debug: &debug=1 shows the HUD (F3 toggles it),
+//   &zoom=<radius> overrides the camera zoom radius. Sandbox: &dummies=<n> standing dummies in front of the player,
+//   &loot=0 removes the map loot, &give=<id,...> guns with full ammo and bag items (throwables, heals, boosts, scopes)
+//   filled to capacity, the first gun or throwable equipped. &lang=ko Korean HUD.
+//   Match (M4): the loopback runs a sandbox match (starts at once, never ends) unless &sandbox=0 (a real match: two
+//   players alive for 10 s start it, the last one alive wins); &gas=fast uses a shortened red-zone stage table.
+//   Teams (M6): &team=2|4 makes the loopback a duo / squad game with &teammates=<n> idle teammates in the local
+//   player's group (behind it) and the dummies as enemies.
+// - Dev pages: /?gallery=<filter>&page=<n> sprite gallery; /?fixture=1 renderer fixture.
+// - Any route: &touch=1 forces the touch controls on, &touch=0 off (else phones, tablets and coarse pointers, M8).
 import "@fontsource/roboto-condensed/400.css";
 import "@fontsource/roboto-condensed/700.css";
 import "@fontsource/noto-sans-kr/400.css";
@@ -36,6 +39,30 @@ function teamModeOf(value: string | null): 1 | 2 | 4 {
     return value === "2" ? 2 : value === "4" ? 4 : 1;
 }
 
+/** Query keys that open the loopback sandbox (M8: anything else without a game route opens the menu). */
+const SANDBOX_KEYS = [
+    "sandbox",
+    "seed",
+    "map",
+    "give",
+    "dummies",
+    "loot",
+    "team",
+    "teammates",
+    "gas",
+    "fixture",
+    "zoom",
+    "debug",
+] as const;
+
+function isSandboxRoute(route: URLSearchParams): boolean {
+    return SANDBOX_KEYS.some((key) => {
+        if (!route.has(key)) return false;
+        // `team` is a team mode only as 2 / 4; any other value is a party room code (the menu)
+        return key !== "team" || route.get("team") === "2" || route.get("team") === "4";
+    });
+}
+
 async function main() {
     const globals = debugGlobals();
     const app = new Application();
@@ -51,8 +78,13 @@ async function main() {
 
     const route = new URLSearchParams(location.search);
     const roomCode = roomCodeOf(route);
-    const menu = route.get("menu") === "1" || !!roomCode || (route.get("net") === "1" && !route.has("name"));
-    setLang(route.has("lang") ? parseLang(route.get("lang")) : ((menu ? storedLang() : null) ?? "en"));
+    const netRoute = route.get("net") === "1" || route.has("server");
+    const menu =
+        route.get("menu") === "1" ||
+        !!roomCode ||
+        (route.get("net") === "1" && !route.has("name")) ||
+        (!netRoute && !isSandboxRoute(route) && !route.has("gallery"));
+    setLang(route.has("lang") ? parseLang(route.get("lang")) : (storedLang() ?? "en"));
     if (route.has("gallery")) {
         await mountGallery(app, route.get("gallery") ?? "", Number(route.get("page") ?? 0));
         return;
@@ -70,14 +102,13 @@ async function main() {
         return;
     }
     const seed = Number(route.get("seed") ?? 1);
-    const net =
-        route.get("net") === "1" || route.has("server")
-            ? {
-                  server: route.get("server") ?? "",
-                  name: route.get("name") ?? "Player",
-                  teamMode: teamModeOf(route.get("mode")),
-              }
-            : undefined;
+    const net = netRoute
+        ? {
+              server: route.get("server") ?? "",
+              name: route.get("name") ?? "Player",
+              teamMode: teamModeOf(route.get("mode")),
+          }
+        : undefined;
     bootSandbox(app, {
         mapName: route.get("map") ?? "main",
         seed: Number.isFinite(seed) ? seed : 1,

@@ -28,6 +28,8 @@ const BUTTON_EXTRA_DELAY = 0.5;
 export interface GameOverCallbacks {
     playAgain(): void;
     spectate(): void;
+    /** an extra button under the others, built when the screen opens (M8: Report the killer in network games) */
+    extraButton?(): HTMLElement | null;
 }
 
 export interface GameOverInfo {
@@ -214,6 +216,8 @@ export class GameOverScreen {
         } else {
             restart.classList.add("ui-stats-restart-wide");
         }
+        const extra = this.cb.extraButton?.();
+        if (extra) buttons.push(extra);
         this.options.replaceChildren(...buttons);
         buttons.forEach((b, i) => {
             this.timed.push({ el: b, at: at + i * ROW_DELAY + BUTTON_EXTRA_DELAY, shown: "" });

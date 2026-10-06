@@ -1,5 +1,5 @@
 // Tiny DOM builders for the menus: an element with id / classes / a `data-l10n` key whose text is re-read on a language
-// change (`applyL10n`).
+// change (`applyL10n`). Settings storage lives in config.ts (M8).
 import { t } from "../l10n/index.ts";
 
 export interface ElOptions {
@@ -43,22 +43,5 @@ export function applyL10n(root: HTMLElement): void {
     }
     for (const node of root.querySelectorAll<HTMLInputElement>("[data-l10n-placeholder]")) {
         node.placeholder = t(node.dataset.l10nPlaceholder ?? "");
-    }
-}
-
-/** Reads a localStorage key; null when storage is unavailable (private mode, blocked). */
-export function loadSetting(key: string): string | null {
-    try {
-        return window.localStorage.getItem(key);
-    } catch {
-        return null;
-    }
-}
-
-export function saveSetting(key: string, value: string): void {
-    try {
-        window.localStorage.setItem(key, value);
-    } catch {
-        // storage unavailable: the setting only lasts for this page
     }
 }

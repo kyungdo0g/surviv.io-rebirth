@@ -9,6 +9,9 @@
 // M5: sounds from the other floor go through the "muffled" EQ, the club music through the "club" EQ, and positional
 // sounds feed the cathedral reverb while the listener is underground (filters.ts); looping ambience tracks start
 // silent and are driven by `setVolume`.
+// M8: the settings' volume sliders (survev audioManager.ts setMasterVolume / setSoundVolume / setMusicVolume, 0-1 each):
+// master scales the output, SFX every channel but music, Music the "music" type channel (menu and victory music);
+// they sit on gain nodes, so playing sounds follow a slider at once.
 import type { Vec2 } from "@rebirth/core";
 import { AudioBuses } from "./filters.ts";
 import { Channels, soundDef, soundGroup } from "./soundDefs.ts";
@@ -69,9 +72,20 @@ function sameAudioLayer(a: number, b: number): boolean {
     return a === b || (a & 2) !== 0 || (b & 2) !== 0;
 }
 
+export interface Volumes {
+    master: number;
+    sound: number;
+    music: number;
+}
+
 export class AudioEngine {
     private ctx: AudioContext | null = null;
     private master: GainNode | null = null;
+    /** every channel but music (the SFX volume) */
+    private soundBus: GainNode | null = null;
+    /** the music channel (the Music volume) */
+    private musicBus: GainNode | null = null;
+    private volumes: Volumes = { master: 1, sound: 1, music: 1 };
     private buses: AudioBuses | null = null;
     private readonly buffers = new Map<string, AudioBuffer>();
     private readonly loading = new Map<string, Promise<AudioBuffer | null>>();
@@ -110,7 +124,24 @@ export class AudioEngine {
 
     setMuted(muted: boolean): void {
         this.muted = muted;
-        if (this.master) this.master.gain.value = muted ? 0 : MASTER_VOLUME;
+        this.applyGains();
+    }
+
+    /** The settings' Master / SFX / Music volumes (0-1). */
+    setVolumes(volumes: Volumes): void {
+        const clamp = (v: number) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1);
+        this.volumes = { master: clamp(volumes.master), sound: clamp(volumes.sound), music: clamp(volumes.music) };
+        this.applyGains();
+    }
+
+    get currentVolumes(): Volumes {
+        return { ...this.volumes };
+    }
+
+    private applyGains(): void {
+        if (this.master) this.master.gain.value = this.muted ? 0 : MASTER_VOLUME * this.volumes.master;
+        if (this.soundBus) this.soundBus.gain.value = this.volumes.sound;
+        if (this.musicBus) this.musicBus.gain.value = this.volumes.music;
     }
 
     toggleMute(): boolean {
@@ -124,9 +155,13 @@ export class AudioEngine {
             try {
                 this.ctx = new AudioContext();
                 this.master = this.ctx.createGain();
-                this.master.gain.value = this.muted ? 0 : MASTER_VOLUME;
                 this.master.connect(this.ctx.destination);
-                this.buses = new AudioBuses(this.ctx, this.master, ASSET_ROOT);
+                this.soundBus = this.ctx.createGain();
+                this.soundBus.connect(this.master);
+                this.musicBus = this.ctx.createGain();
+                this.musicBus.connect(this.master);
+                this.applyGains();
+                this.buses = new AudioBuses(this.ctx, this.soundBus, ASSET_ROOT);
             } catch {
                 this.ctx = null;
                 return;
@@ -298,9 +333,10 @@ export class AudioEngine {
         this.started++;
     }
 
-    /** Where a sound goes: the club or muffled EQ, or straight to the master. */
+    /** Where a sound goes: the music bus, the club or muffled EQ, or straight to the SFX bus. */
     private output(opts: PlayOptions): AudioNode {
-        const master = this.master as GainNode;
+        if (Channels[opts.channel ?? "activePlayer"]?.type === "music" && this.musicBus) return this.musicBus;
+        const master = (this.soundBus ?? this.master) as GainNode;
         const buses = this.buses;
         if (!buses || opts.filter === "none") return master;
         if (opts.filter === "club") return buses.club;
@@ -310,6 +346,26 @@ export class AudioEngine {
             return buses.muffled;
         }
         return master;
+    }
+
+    /** Fades a playing sound to silence over `seconds`, then stops it (menu music when a game starts). */
+    fadeOut(handle: SoundHandle | null | undefined, seconds: number): void {
+        if (!handle || handle.stopped) return;
+        const ctx = this.ctx;
+        const gain = handle.gain;
+        if (!ctx || !gain || seconds <= 0) {
+            this.stop(handle);
+            return;
+        }
+        gain.gain.cancelScheduledValues(ctx.currentTime);
+        gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + seconds);
+        handle.stopped = true;
+        try {
+            handle.source?.stop(ctx.currentTime + seconds);
+        } catch {
+            // already stopped
+        }
     }
 
     stop(handle: SoundHandle | null | undefined): void {

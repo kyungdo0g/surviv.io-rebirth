@@ -7,6 +7,8 @@
 // M6: find_game carries the team mode and auto fill; a party game connects straight to the /play URL (with its join
 // token) the lobby's joinGame message gave (`joinUrl`); emotes and pings go out as Emote messages.
 // M7: Cobalt class choices go out as PerkModeRoleSelect and HUD drops as DropItem messages.
+// M8: disconnect texts are localized; a find_game refused with 403 {error: "banned"} ends with DisconnectReason.Banned
+// (packages/protocol connection.ts); touch clients join with useTouch / isMobile.
 import {
     DisconnectReason,
     GameConnection,
@@ -16,6 +18,8 @@ import {
     SpectateAction,
 } from "@rebirth/protocol";
 import type { EmoteRequest, PlayerInput, SpectateActionName } from "@rebirth/sim";
+import { getLang } from "../l10n/lang.ts";
+import { enSettings, koSettings } from "../l10n/settings.ts";
 import { type Transport, TransportEvents } from "./transport.ts";
 
 export interface WsTransportOptions extends GameConnectionOptions {
@@ -27,27 +31,34 @@ export interface WsTransportOptions extends GameConnectionOptions {
     joinUrl?: string;
 }
 
-/** Player-facing text for a disconnect reason. */
+/** A disconnect string in the current language (only the M8 table: this module stays free of the HUD tables). */
+function text(key: string): string {
+    return (getLang() === "ko" ? koSettings[key] : undefined) ?? enSettings[key] ?? key;
+}
+
+/** Player-facing text for a disconnect reason, in the current language (M8: Banned for a banned address). */
 export function describeDisconnect(reason: string): string {
     switch (reason) {
         case DisconnectReason.InvalidProtocol:
-            return "A new version of the game is available. Please refresh the page.";
+            return text("disconnect-invalid-protocol");
         case DisconnectReason.InvalidToken:
         case DisconnectReason.JoinTimeout:
-            return "Joining the game took too long. Please try again.";
+            return text("disconnect-join-timeout");
         case DisconnectReason.Full:
-            return "The game is full.";
+            return text("disconnect-full");
         case DisconnectReason.RateLimited:
         case DisconnectReason.InvalidPacket:
-            return "Disconnected by the server.";
+            return text("disconnect-kicked");
         case DisconnectReason.GameClosed:
-            return "The game has ended.";
+            return text("disconnect-game-closed");
         case DisconnectReason.ServerShutdown:
-            return "The server is restarting.";
+            return text("disconnect-server-shutdown");
         case DisconnectReason.FindGameFailed:
-            return "Could not reach the game server.";
+            return text("disconnect-find-game-failed");
+        case DisconnectReason.Banned:
+            return text("disconnect-banned");
         default:
-            return "Connection lost.";
+            return text("disconnect-connection-lost");
     }
 }
 

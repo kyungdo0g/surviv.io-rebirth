@@ -1,0 +1,528 @@
+/*
+ * M8 menus: the in-game (Esc) menu, the keybind screens, the main page's settings and keybind modals, the report dialog
+ * and toasts. Sizes and colours follow the original (survev client/css/game.css #ui-game-menu, .btn-game-menu,
+ * .btn-game-touch-style, #btn-game-tabs; app.css .modal, .ui-keybind-container, #keybind-link, .slider).
+ */
+#ui-game-menu-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    pointer-events: none;
+    font-family: "Roboto Condensed", "Noto Sans KR", Arial, sans-serif;
+    color: #ffffff;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#ui-game-menu {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    box-sizing: border-box;
+    margin: 120px auto 0;
+    padding: 10px 15px;
+    width: 350px;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    cursor: default;
+    pointer-events: auto;
+}
+
+/* small (phone) screens: the original's 190 px menu at the top (survev game.css max-width 850px) */
+@media (max-height: 500px), (max-width: 850px) {
+    #ui-game-menu {
+        margin-top: 8px;
+        max-height: calc(100vh - 16px);
+        width: 240px;
+        padding: 4px 10px;
+    }
+}
+
+#ui-game-menu p {
+    display: inline-block;
+    font-size: 14px;
+    margin: 6px 0 2px;
+}
+
+.btns-game-double-row {
+    display: flex;
+    gap: 2px;
+}
+
+.btn-game-menu {
+    text-align: center;
+    line-height: 38px;
+    display: block;
+    width: 100%;
+    height: 40px;
+    border: 0;
+    border-radius: 5px;
+    box-sizing: border-box;
+    position: relative;
+    margin: 5px auto;
+    color: #ffffff;
+    font-size: 16px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    background-color: #50afab;
+    border-bottom: 2px solid #387c79;
+    box-shadow: inset 0 -2px #387c79;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    text-decoration: none;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.btns-game-double-row > .btn-game-tab-select {
+    flex: 1;
+    background-color: transparent;
+    border: 2px solid #ffffff;
+    box-shadow: none;
+    background-size: 26px;
+    background-position: 8px center;
+}
+
+.btns-game-double-row > .btn-game-menu-selected {
+    border-color: #00ff00;
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
+.settings-icon {
+    background-image: url(/assets/img/gui/cog.svg);
+}
+
+.keybind-icon {
+    background-image: url(/assets/img/gui/keyboard.svg);
+}
+
+#btn-game-fullscreen {
+    background-size: 34px;
+    background-position: 4px 2px;
+    background-image: url(/assets/img/gui/minimize.svg);
+}
+
+#btn-game-sound {
+    background-size: 30px;
+    background-position: 6px center;
+}
+
+.audio-on-icon {
+    background-image: url(/assets/img/gui/audio-on.svg);
+}
+
+.audio-off-icon {
+    background-image: url(/assets/img/gui/audio-off.svg);
+}
+
+#btn-game-aim-line {
+    background-size: 24px;
+    background-position: 8px 6px;
+}
+
+.aim-line-on-icon {
+    background-image: url(/assets/img/gui/checked.svg);
+}
+
+.aim-line-off-icon {
+    background-image: url(/assets/img/gui/close.svg);
+}
+
+.btn-game-touch-style {
+    background-size: 20px;
+    background-position: 8px center;
+    font-size: 14px;
+    height: 32px;
+    line-height: 30px;
+}
+
+.locked-on-icon {
+    background-image: url(/assets/img/gui/lock.svg);
+}
+
+.unlocked-on-icon {
+    background-image: url(/assets/img/gui/unlock.svg);
+}
+
+#btn-game-quit {
+    margin-top: 24px;
+    background-size: 36px;
+    background-position: 2px center;
+    background-image: url(/assets/img/gui/quit.svg);
+}
+
+#btn-game-resume {
+    margin-top: 10px;
+    background-size: 30px;
+    background-position: 6px center;
+    background-image: url(/assets/img/gui/resume.svg);
+}
+
+.slider-container {
+    text-align: left;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: #387c79;
+    outline: none;
+    opacity: 0.85;
+    margin: 6px 0 8px;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #50afab;
+    border: 2px solid #ffffff;
+}
+
+.slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #50afab;
+    border: 2px solid #ffffff;
+}
+
+/* keybind screen */
+.ui-keybind-list {
+    max-height: 295px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.ui-keybind-container {
+    display: flex;
+    align-items: center;
+}
+
+.ui-keybind-container > .btn-keybind-desc {
+    font-size: 14px;
+    width: 55%;
+    margin: 3px 0;
+    height: 34px;
+    line-height: 32px;
+}
+
+.ui-keybind-container > .btn-keybind-desc-selected {
+    animation: pulseKeybind 1.25s linear infinite;
+}
+
+.ui-keybind-container > .btn-keybind-display {
+    font-size: 14px;
+    text-align: center;
+    width: 45%;
+    color: #ffffff;
+}
+
+@keyframes pulseKeybind {
+    0% {
+        background-color: #000000;
+    }
+
+    50% {
+        background-color: #50afab;
+    }
+
+    100% {
+        background-color: #000000;
+    }
+}
+
+.ui-keybind-share {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    margin-top: 10px;
+    box-sizing: border-box;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.keybind-link-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 10px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.keybind-link {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: all;
+}
+
+.copy-item {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: url(/assets/img/gui/copy.svg) center / 70% no-repeat rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+}
+
+.keybind-warning {
+    color: #ff5555;
+    font-weight: 700;
+    margin: 4px 0;
+}
+
+.keybind-share-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.keybind-share-row > .keybind-code-input {
+    flex: 2;
+    height: 34px;
+    margin: 0;
+    padding: 0 6px;
+    background: #ffffff;
+    color: #000000;
+    font-size: 13px;
+    border: 0;
+    border-radius: 5px;
+    cursor: text;
+}
+
+.keybind-share-row > .btn-game-menu {
+    flex: 1;
+    margin: 0;
+    height: 34px;
+    line-height: 32px;
+}
+
+.ui-keybind-footer {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+/* main page modals */
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    font-family: "Roboto Condensed", "Noto Sans KR", Arial, sans-serif;
+    color: #ffffff;
+}
+
+.modal-content {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 5px;
+    width: 420px;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.modal-header {
+    position: relative;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 22px;
+    text-align: center;
+}
+
+.modal-body {
+    padding: 12px 18px 18px;
+}
+
+.close-corner {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    width: 24px;
+    height: 24px;
+    background: url(/assets/img/gui/close.svg) center / 70% no-repeat;
+    cursor: pointer;
+}
+
+.modal-settings-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.modal-settings-item > input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.modal-settings-item.slider-container {
+    display: block;
+}
+
+.modal-settings-item.slider-container > .slider-text {
+    margin: 10px 0 2px;
+}
+
+.modal-settings-checkbox-text {
+    margin: 0;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.language-select,
+.region-select {
+    width: 100%;
+    height: 34px;
+    border-radius: 5px;
+    border: 0;
+    font-size: 15px;
+    font-family: inherit;
+    padding: 0 6px;
+}
+
+/* toasts */
+#ui-toasts {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+    font-family: "Roboto Condensed", "Noto Sans KR", Arial, sans-serif;
+}
+
+.ui-toast {
+    background: rgba(0, 0, 0, 0.75);
+    color: #ffffff;
+    border-left: 4px solid #83af50;
+    border-radius: 5px;
+    padding: 8px 14px;
+    font-size: 16px;
+    transition: opacity 0.4s ease;
+}
+
+.ui-toast-error {
+    border-left-color: #ff4444;
+}
+
+.ui-toast-out {
+    opacity: 0;
+}
+
+/* report dialog (rebirth) */
+.ui-report-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    pointer-events: auto;
+    font-family: "Roboto Condensed", "Noto Sans KR", Arial, sans-serif;
+    color: #ffffff;
+}
+
+.ui-report-reasons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin: 8px 0 12px;
+}
+
+.ui-report-reasons > .btn-game-menu {
+    margin: 0;
+    font-size: 15px;
+}
+
+.ui-report-reasons > .btn-report-reason-selected {
+    background-color: rgba(0, 0, 0, 0.35);
+    border: 2px solid #00ff00;
+    box-shadow: none;
+}
+
+.ui-report-text {
+    width: 100%;
+    height: 70px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: 0;
+    padding: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+}
+
+.ui-report-count {
+    text-align: right;
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.ui-report-buttons {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.btn-report,
+#ui-spectate-options .btn-report,
+#ui-stats-options .btn-report {
+    background: #c0392b;
+    border-bottom: 2px solid #8e2a1f;
+    box-shadow: inset 0 -2px #8e2a1f;
+}
+
+.btn-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* over #ui-stats .menu-option (gameOver.css), whichever stylesheet loads last */
+#ui-stats-options > .ui-stats-report.btn-report {
+    position: absolute;
+    left: 0;
+    top: 52px;
+    width: 150px;
+    transform: translateX(-50%);
+    color: #ffffff;
+    font-size: 16px;
+}
+
+/* the hidden attribute wins over the display of the classes above */
+.modal[hidden],
+.modal [hidden],
+.ui-report-modal[hidden],
+.ui-report-modal [hidden] {
+    display: none;
+}
+
+#ui-game-menu-wrapper[hidden],
+#ui-game-menu-wrapper [hidden] {
+    display: none;
+}

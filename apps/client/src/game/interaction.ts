@@ -12,17 +12,24 @@
 // revive the prompt is "[X] Cancel" (survev ui2.ts m_update "Reviving", InteractionType.Revive / Cancel). With the
 // Revivify perk (LocalPlayerState.perks, M7a) a downed player gets "[F] Revive Self" and may cancel its own revive.
 import { collider, math, type Vec2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, Input, MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
 import type { LocalPlayerState, ObstacleView, PlayerView } from "@rebirth/sim";
 import { sameLayer } from "@rebirth/sim";
 import type { AudioEngine } from "../audio/audio.ts";
+import { bindLabel, binds } from "../input/keybinds.ts";
 import { itemName, t, tryT } from "../l10n/index.ts";
 import type { ObjectWorld } from "../objects/world.ts";
 
-/** the prompt key: Interact (F) by default (survev ui2.ts getInteractionKey) */
-export const INTERACT_KEY = "F";
-/** the Cancel bind (X) */
-export const CANCEL_KEY = "X";
+/**
+ * The key shown in a prompt: Cancel's bind for a cancel, else Revive / Open/Use / Loot when bound, else Interact's
+ * (F by default); "<Unbound>" when there is none (survev ui2.ts getInteractionKey; M8 rebinding).
+ */
+export function promptKey(kind: "cancel" | "revive" | "object" | "loot"): string {
+    const table = binds();
+    const own = { cancel: Input.Cancel, revive: Input.Revive, object: Input.Use, loot: Input.Loot }[kind];
+    const code = table.get(own) ?? (kind === "cancel" ? null : table.get(Input.Interact));
+    return code ? bindLabel(code) : "<Unbound>";
+}
 /** a use counts as ours when the button flips this soon after our Interact press (s) */
 const USE_MATCH_WINDOW = 1;
 /** the door error sound repeats at most this often (s) */
@@ -74,7 +81,7 @@ export class InteractionTracker {
         const action = local.action?.type ?? "none";
         const selfRevive = (local.perks ?? []).some((p) => p.type === "self_revive");
         if (action === "use" || (action === "revive" && (!me.downed || selfRevive))) {
-            return { key: CANCEL_KEY, text: t("game-cancel") };
+            return { key: promptKey("cancel"), text: t("game-cancel") };
         }
         const revive =
             action === "none" && (!me.downed || selfRevive) ? this.findRevive(world, local, me, selfRevive) : null;
@@ -103,7 +110,7 @@ export class InteractionTracker {
             const res = collider.intersect(collider.createCircle(pos, rad + GameConfig.player.radius), col);
             if (!res || res.pen < bestPen) return;
             bestPen = res.pen;
-            prompt = { key: INTERACT_KEY, text, obstacleId: o.id, door };
+            prompt = { key: promptKey("object"), text, obstacleId: o.id, door };
         });
         const loot = this.findLoot(world, local, me, pos);
         return loot ?? prompt;
@@ -129,7 +136,7 @@ export class InteractionTracker {
             if (d < GameConfig.player.reviveRange && sameLayer(view.layer, me.layer)) {
                 const self = selfRevive && (view.id === me.id || me.downed);
                 return {
-                    key: INTERACT_KEY,
+                    key: promptKey("revive"),
                     text: t(self ? "game-revive-self" : "game-revive-teammate"),
                     reviveId: view.id,
                 };
@@ -161,7 +168,7 @@ export class InteractionTracker {
         const found = best as { type: string; count: number } | null;
         if (!found) return null;
         const name = itemName(found.type);
-        return { key: INTERACT_KEY, text: found.count > 1 ? `${name} (${found.count})` : name };
+        return { key: promptKey("loot"), text: found.count > 1 ? `${name} (${found.count})` : name };
     }
 
     /** The local player pressed Interact while `prompt` was shown. */

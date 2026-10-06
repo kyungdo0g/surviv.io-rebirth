@@ -1,13 +1,13 @@
 // Event-mode glue of the in-game client (M7): the Cobalt class menu (opened while the followed local player has no
-// class on a perkMode map, closed when it confirms or its role arrives), the big map toggle (M / G, Escape closes it),
+// class on a perkMode map, closed when it confirms or its role arrives), the big map toggle (Toggle Map, M by default, or G while unbound; Escape closes it, client.ts),
 // the faction members for the minimap (Snapshot.factionStatus) and role lookups for map dots and ping colours, and the
 // HUD drop sound. Survev references: game.ts (role menu on map load, RoleAnnouncement, DropItem sound, ToggleMap),
 // ui/ui.ts (displayMapLarge, createPing colours).
-import { GameConfig, getMapDef, type MapDef } from "@rebirth/defs";
+import { GameConfig, getMapDef, Input, type MapDef } from "@rebirth/defs";
 import type { FactionMemberView, Snapshot } from "@rebirth/sim";
 import type { AudioEngine } from "../audio/audio.ts";
 import type { InputManager } from "../input/input.ts";
-import { CloseMapBind, MapBinds } from "../input/keybinds.ts";
+import { MAP_FALLBACK } from "../input/keybinds.ts";
 import type { Transport } from "../net/transport.ts";
 import type { Minimap } from "../ui/minimap.ts";
 import type { MinimapFactionFrame } from "../ui/minimapFaction.ts";
@@ -113,8 +113,9 @@ export class ModeUi {
 
     /** Per frame: the map keys and the class menu countdown. */
     update(dt: number, input: InputManager, screenWidth: number, screenHeight: number): void {
-        if (MapBinds.some((code) => input.wasPressed(code))) this.setBigMap(!this.bigMap);
-        else if (this.bigMap && input.wasPressed(CloseMapBind)) this.setBigMap(false);
+        // Toggle Map, or G while unbound (survev game.ts); Escape is handled with the in-game menu (client.ts)
+        if (input.wasBindPressed(Input.ToggleMap) || input.wasFreeKeyPressed(MAP_FALLBACK))
+            this.setBigMap(!this.bigMap);
         if (this.roleMenu.confirmed) this.classDone = true;
         this.roleMenu.update(dt, screenWidth, screenHeight);
     }

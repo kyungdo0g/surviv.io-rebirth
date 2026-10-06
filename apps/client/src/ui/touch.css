@@ -1,0 +1,63 @@
+/*
+ * Touch HUD (M8): the menu button beside the minimap and the big map's close button (survev index.html
+ * #ui-menu-display, #big-map-close; css/game.css), the tappable ammo counter and interaction prompt, and a smaller HUD
+ * on phone-sized screens (the original's mobile layout shrinks the bottom HUD the same way).
+ */
+#ui-game .ui-touch-button {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.4);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 60%;
+    pointer-events: auto;
+}
+
+#ui-game .ui-touch-button[hidden] {
+    display: none;
+}
+
+#ui-menu-display {
+    background-image: url(/assets/img/gui/hamburger.svg);
+}
+
+#big-map-close {
+    top: 12px;
+    right: 12px;
+    background-image: url(/assets/img/gui/close.svg);
+}
+
+#ui-game.ui-touch #ui-interaction-press {
+    background-image: url(/assets/img/gui/tap.svg);
+    background-size: 70%;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: transparent;
+}
+
+#ui-game.ui-touch .ui-outline-hover:hover {
+    border-color: rgba(0, 255, 0, 0);
+}
+
+@media (max-height: 500px) {
+    #ui-game.ui-touch #ui-bottom-right {
+        transform: scale(0.55);
+    }
+
+    #ui-game.ui-touch #ui-right-center {
+        transform-origin: right center;
+        transform: translateY(-50%) scale(0.7);
+    }
+
+    #ui-game.ui-touch #ui-bottom-center-0,
+    #ui-game.ui-touch #ui-equipped-ammo-wrapper {
+        transform: translateX(-50%) scale(0.6);
+        transform-origin: bottom center;
+    }
+
+    #ui-game.ui-touch #ui-equipped-ammo-wrapper {
+        bottom: 30px;
+    }
+}

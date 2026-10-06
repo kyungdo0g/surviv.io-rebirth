@@ -5,9 +5,11 @@
 // options column: Duo / Squad and Auto Fill / No Fill (only the leader can change them), the leader's Play button
 // (spinner while the room finds a game) or a wait reason ("Waiting for leader to start game", "Joining game",
 // "Game in progress"), and Leave Team.
+// M8: the region select (#team-server-select, leader only, hidden with a single region; regionSelect.ts).
 import { t } from "../l10n/index.ts";
 import type { PartyRoomProps, PartyState } from "../net/party.ts";
 import { applyL10n, h } from "./dom.ts";
+import { type RegionInfo, RegionSelect } from "./regionSelect.ts";
 
 export interface TeamLobbyCallbacks {
     setProps(props: PartyRoomProps): void;
@@ -41,6 +43,7 @@ export class TeamLobby {
     private readonly fillNone: HTMLAnchorElement;
     private readonly playBtn: HTMLAnchorElement;
     private readonly waitReason: HTMLDivElement;
+    readonly regionSelect: RegionSelect;
     private state: PartyState | null = null;
     /** this member was sent into a game and has not reported back yet */
     joiningGame = false;
@@ -79,6 +82,7 @@ export class TeamLobby {
             click: () => this.play(),
         });
         this.waitReason = h("div", { id: "msg-wait-reason" });
+        this.regionSelect = new RegionSelect("team-server-select", (region) => this.setProps({ region }));
         this.contents = h(
             "div",
             { id: "team-menu-contents" },
@@ -90,6 +94,7 @@ export class TeamLobby {
                 h(
                     "div",
                     { id: "team-menu-options" },
+                    this.regionSelect.root,
                     h("div", { cls: "team-menu-options-buttons" }, this.duo, this.squad),
                     h("div", { cls: "team-menu-options-buttons" }, this.fillAuto, this.fillNone),
                     this.playBtn,
@@ -139,7 +144,7 @@ export class TeamLobby {
         const room = this.state?.room;
         if (!room || !this.isLeader) return;
         this.cb.setProps({
-            region: room.region,
+            region: patch.region ?? room.region,
             autoFill: patch.autoFill ?? room.autoFill,
             gameModeIdx: patch.gameModeIdx ?? room.gameModeIdx,
         });
@@ -165,7 +170,13 @@ export class TeamLobby {
 
     applyStrings(): void {
         applyL10n(this.panel);
+        this.regionSelect.applyStrings();
         if (this.state) this.render();
+    }
+
+    /** The regions of site_info (the room's region is selected once the state arrives). */
+    setRegions(list: readonly RegionInfo[], selected: string): void {
+        this.regionSelect.setRegions(list, this.state?.room.region || selected);
     }
 
     private render(): void {
@@ -184,6 +195,8 @@ export class TeamLobby {
         setButton(this.squad, room.gameModeIdx === 2, leader && room.enabledGameModeIdxs.includes(2));
         setButton(this.fillAuto, room.autoFill, leader);
         setButton(this.fillNone, !room.autoFill, leader);
+        if (room.region) this.regionSelect.setValue(room.region);
+        this.regionSelect.setEnabled(leader);
 
         const finding = room.findingGame || this.joiningGame;
         this.playBtn.replaceChildren();

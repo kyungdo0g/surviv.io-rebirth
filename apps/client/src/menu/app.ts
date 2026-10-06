@@ -5,18 +5,22 @@
 // page, or to the lobby with a gameComplete for a party game, like the original's onQuit (survev main.ts,
 // ui/teamMenu.ts onGameComplete). Room errors leave the lobby with the original's error text (teamMenu.ts
 // errorTypeToString); an error that arrives during a game is shown when the game ends.
+// M8: the region select (site_info `pops` / `regions`): quick play calls find_game on the chosen region's server and a
+// new room carries the region; the start page plays the menu music (audio/menuMusic.ts), faded out when a game starts;
+// the lobby settings live in the config (config.ts).
 import type { Application } from "pixi.js";
+import { MenuMusic } from "../audio/menuMusic.ts";
+import { sharedAudio } from "../audio/shared.ts";
+import { config } from "../config.ts";
 import type { GameClient } from "../game/client.ts";
+import { exposeSettings } from "../game/debugM8.ts";
 import { bootSandbox } from "../game/sandbox.ts";
 import { debugGlobals } from "../globals.ts";
 import { t } from "../l10n/index.ts";
 import { PartyClient, type PartyErrorType, type PartyState } from "../net/party.ts";
-import { loadSetting, saveSetting } from "./dom.ts";
 import { MainMenu } from "./mainMenu.ts";
+import { fetchRegions, pickRegion, type RegionInfo } from "./regionSelect.ts";
 import { TeamLobby } from "./teamLobby.ts";
-
-const MODE_KEY = "rebirth.gameModeIdx";
-const FILL_KEY = "rebirth.teamAutoFill";
 
 export interface MenuAppOptions {
     /** HTTP origin of the game server; "" = this page's origin (the dev server proxies /api, /play and /team_v2) */
@@ -61,6 +65,8 @@ export class MenuApp {
     private pendingError = "";
     /** the game in progress was started by the party room */
     private partyGame = false;
+    private regions: RegionInfo[] = [];
+    readonly music: MenuMusic;
 
     constructor(app: Application, opts: MenuAppOptions) {
         this.app = app;
@@ -70,12 +76,14 @@ export class MenuApp {
             createTeam: () => this.openParty(null),
             joinTeam: (code) => this.openParty(code),
             langChanged: () => this.lobby.applyStrings(),
+            regionChanged: (region) => config().set("region", region),
         });
         this.lobby = new TeamLobby({
             setProps: (props) => {
                 this.party?.setRoomProps(props);
-                saveSetting(MODE_KEY, String(props.gameModeIdx));
-                saveSetting(FILL_KEY, String(props.autoFill));
+                config().set("gameModeIdx", props.gameModeIdx);
+                config().set("teamAutoFill", props.autoFill);
+                if (props.region) config().set("region", props.region);
             },
             kick: (id) => this.party?.kick(id),
             play: () => this.party?.playGame(),
@@ -86,10 +94,44 @@ export class MenuApp {
             const input = this.menu.root.querySelector<HTMLInputElement>("#player-name-input-solo");
             if (input) input.value = opts.name.slice(0, 16);
         }
+        this.music = new MenuMusic(sharedAudio());
+        config().onChange((key) => {
+            if (key === "muteAudio") this.music.refresh();
+        });
         this.exposeGlobals();
         // nothing is drawn under the menu: the render loop only runs during a game
         app.stop();
         if (opts.teamCode) this.openParty(opts.teamCode);
+        this.music.start();
+        void this.loadRegions();
+    }
+
+    /** site_info regions for the selects (hidden with a single region). */
+    private async loadRegions(): Promise<void> {
+        const list = await fetchRegions(this.opts.server);
+        this.regions = list;
+        const chosen = pickRegion(list, config().get("region"));
+        this.menu.regionSelect.setRegions(list, chosen);
+        this.lobby.setRegions(list, chosen);
+    }
+
+    /** The region quick play and new rooms use ("" when the server lists none). */
+    private get region(): string {
+        if (!this.regions.length) return "";
+        return pickRegion(this.regions, this.menu.regionSelect.value || config().get("region"));
+    }
+
+    /** The server find_game goes to: the chosen region's origin, "" (this server) meaning the menu's server. */
+    private get gameServer(): string {
+        const origin = this.regions.find((r) => r.id === this.region)?.origin ?? "";
+        return origin || this.opts.server;
+    }
+
+    /** A game starts: the menu music fades out. */
+    private startGame(): void {
+        this.music.stop();
+        this.menu.hide();
+        this.app.start();
     }
 
     private get playerName(): string {
@@ -99,16 +141,22 @@ export class MenuApp {
     private quickPlay(teamMode: 1 | 2 | 4): void {
         if (this.client) return;
         this.menu.setError("");
-        this.menu.hide();
-        this.app.start();
+        this.startGame();
         this.partyGame = false;
-        const autoFill = loadSetting(FILL_KEY) !== "false";
+        const autoFill = config().get("teamAutoFill");
+        const region = this.region;
         this.client = bootSandbox(this.app, {
             mapName: this.opts.mapName,
             seed: 1,
             showDebugHud: this.opts.showDebugHud,
             debugZoom: this.opts.debugZoom,
-            net: { server: this.opts.server, name: this.playerName, teamMode, autoFill },
+            net: {
+                server: this.gameServer,
+                name: this.playerName,
+                teamMode,
+                autoFill,
+                ...(region ? { region } : {}),
+            },
             onQuit: (error) => this.gameEnded(error),
         });
     }
@@ -119,12 +167,11 @@ export class MenuApp {
         this.menu.setError("");
         this.lobby.reset(code === null);
         this.menu.show("lobby");
-        const storedMode = Number(loadSetting(MODE_KEY));
-        const gameModeIdx = storedMode === 1 || storedMode === 2 ? storedMode : 2;
-        const autoFill = loadSetting(FILL_KEY) !== "false";
+        const gameModeIdx = config().get("gameModeIdx");
+        const autoFill = config().get("teamAutoFill");
         const first =
             code === null
-                ? { create: { region: "", autoFill, gameModeIdx }, name: this.playerName }
+                ? { create: { region: this.region, autoFill, gameModeIdx }, name: this.playerName }
                 : { join: code, name: this.playerName };
         const party: PartyClient = new PartyClient(this.opts.server, first, {
             state: (s) => this.onPartyState(party, s),
@@ -150,8 +197,7 @@ export class MenuApp {
         if (party !== this.party || this.client) return;
         this.lobby.joiningGame = true;
         this.menu.setError("");
-        this.menu.hide();
-        this.app.start();
+        this.startGame();
         this.partyGame = true;
         this.client = bootSandbox(this.app, {
             mapName: this.opts.mapName,
@@ -202,9 +248,11 @@ export class MenuApp {
         }
         this.menu.setError(this.pendingError || error || "");
         this.pendingError = "";
+        this.music.start();
     }
 
     private exposeGlobals(): void {
+        exposeSettings();
         const globals = debugGlobals();
         const self = this;
         globals.menu = {
@@ -219,6 +267,21 @@ export class MenuApp {
             },
             get inGame() {
                 return !!self.client;
+            },
+            get musicPlaying() {
+                return self.music.playing;
+            },
+            get regions() {
+                return self.regions;
+            },
+            get region() {
+                return self.region;
+            },
+            get settingsOpen() {
+                return self.menu.settings.visible;
+            },
+            get keybindsOpen() {
+                return self.menu.keybinds.visible;
             },
             /** the party room as last received (null outside a room) */
             get lobby() {

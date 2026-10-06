@@ -24,12 +24,13 @@ import type { Application, Ticker } from "pixi.js";
 import { mapObjectSprites, mapSprites, outfitSprites } from "../assets/spriteSets.ts";
 import type { TextureStore } from "../assets/textures.ts";
 import { AudioEngine } from "../audio/audio.ts";
+import { bindAudioSettings } from "../audio/shared.ts";
 import { BulletSystem } from "../fx/bullets.ts";
 import { GameEffects } from "../fx/effects.ts";
 import { GasShape, WORLD_GAS_COLOR } from "../fx/gas.ts";
 import { ParticleSystem } from "../fx/particles.ts";
 import { InputManager } from "../input/input.ts";
-import { DebugHudBind, MuteBind } from "../input/keybinds.ts";
+import { DebugHudBind } from "../input/keybinds.ts";
 import { createTerrainGraphics } from "../map/terrain.ts";
 import { SnapshotInterpolator } from "../net/interp.ts";
 import type { Transport } from "../net/transport.ts";
@@ -42,6 +43,8 @@ import { DebugHud } from "../ui/debugHud.ts";
 import { Hud, type HudFrame } from "../ui/hud.ts";
 import { Minimap, uiScale } from "../ui/minimap.ts";
 import { PingIndicator } from "../ui/pingIndicator.ts";
+import type { ReportFlowDeps } from "../ui/report.ts";
+import { ClientControls } from "./clientControls.ts";
 import { InteractionTracker, type Prompt } from "./interaction.ts";
 import { MatchUi } from "./match.ts";
 import { ModeUi } from "./modes.ts";
@@ -61,6 +64,12 @@ export interface ClientOptions {
     hudParent?: HTMLElement;
     /** audio engine shared across games (kept unlocked); a private one when absent */
     audio?: AudioEngine;
+    /** play with the touch controls (M8) */
+    touch?: boolean;
+    /** the in-game menu's Quit Game (M8) */
+    onQuit?: () => void;
+    /** network games: sends a player report (M8; absent hides the Report buttons) */
+    report?: ReportFlowDeps["submit"];
 }
 
 export class GameClient {
@@ -83,6 +92,7 @@ export class GameClient {
     readonly pingIndicator: PingIndicator;
     readonly teamPlay: TeamPlay;
     readonly modes: ModeUi;
+    readonly controls: ClientControls;
     world: ObjectWorld | null = null;
     air: AirSystem | null = null;
     worldFx: WorldFx | null = null;
@@ -110,6 +120,7 @@ export class GameClient {
     private cameraPlaced = false;
     private readonly debugZoom: number | undefined;
     private readonly ownsAudio: boolean;
+    private readonly unbindAudio: () => void = () => {};
     private destroyed = false;
 
     constructor(app: Application, transport: Transport, textures: TextureStore, opts: ClientOptions = {}) {
@@ -118,6 +129,7 @@ export class GameClient {
         this.textures = textures;
         this.audio = opts.audio ?? new AudioEngine();
         this.ownsAudio = !opts.audio;
+        if (this.ownsAudio) this.unbindAudio = bindAudioSettings(this.audio);
         this.interactions = new InteractionTracker(this.audio);
         this.renderer = new Renderer(app, this.camera);
         this.renderer.gas.addChild(this.gasOverlay.display);
@@ -148,6 +160,7 @@ export class GameClient {
             playAgain,
             teamMode: () => this.teamPlay.teamMode,
             onLocalRole: () => this.modes.onLocalRole(),
+            extraButton: () => this.controls.report?.statsButton() ?? null,
         });
         this.modes = new ModeUi({
             parent,
@@ -169,6 +182,21 @@ export class GameClient {
             pingTint: (id, idx) => this.modes.pingTint(id, idx),
             pingSound: (id, def) => this.modes.pingSound(id, def),
             factionOf: (id) => this.modes.factionOf(id),
+        });
+        this.controls = new ClientControls({
+            app,
+            renderer: this.renderer,
+            textures,
+            camera: this.camera,
+            input: this.input,
+            hudRoot: this.ui.root,
+            parent,
+            touch: !!opts.touch,
+            modes: this.modes,
+            match: this.match,
+            minimap: () => this.minimap,
+            quit: opts.onQuit ?? playAgain,
+            report: opts.report ?? null,
         });
         transport.onJoin((map, playerId) => this.join(map, playerId));
         transport.onSnapshot((s) => this.onSnapshot(s));
@@ -336,7 +364,7 @@ export class GameClient {
         const uiDt = Math.min(ticker.deltaMS / 1000, 1);
         const now = performance.now() / 1000;
         if (this.input.wasPressed(DebugHudBind)) this.hud.toggle();
-        if (this.input.wasPressed(MuteBind)) this.audio.toggleMute();
+        this.controls.handleKeys(this.input);
         const world = this.world;
         const screen = this.app.screen;
         this.camera.resize(screen.width, screen.height);
@@ -347,6 +375,7 @@ export class GameClient {
         });
         this.modes.update(uiDt, this.input, screen.width, screen.height);
         if (!world || !this.local) {
+            this.controls.touchSample(dt, null, true);
             this.teamPlay.updateWheel(uiDt, this.input, null, false);
             this.renderer.update(dt);
             this.ui.update({ dt, local: null, interaction: null });
@@ -359,7 +388,8 @@ export class GameClient {
 
         const spectating = this.match.spectating;
         this.teamPlay.updateWheel(uiDt, this.input, this.local, !spectating);
-        const input = this.input.sample(this.camera, this.visualPos);
+        const touch = this.controls.touchSample(dt, this.local, spectating);
+        const input = this.input.sample(this.camera, this.visualPos, touch);
         if (!spectating) {
             this.transport.sendInput(input);
             this.effects.localInput(input.shootHold);
@@ -396,6 +426,7 @@ export class GameClient {
         this.renderer.update(dt);
         this.renderGas(now);
         this.pingIndicator.update(uiDt, this.camera);
+        this.controls.update({ dt, world, local: this.local, pos: this.visualPos, spectating });
         this.minimap?.update(this.camera, this.visualPos, {
             dt: uiDt,
             gas: this.match.gas,
@@ -461,10 +492,12 @@ export class GameClient {
         this.minimap?.destroy();
         this.minimap = null;
         this.teamPlay.destroy();
+        this.controls.destroy();
         this.modes.destroy();
         this.ui.destroy();
         this.match.dispose();
         this.renderer.destroy();
+        this.unbindAudio();
         if (this.ownsAudio) this.audio.destroy();
     }
 }

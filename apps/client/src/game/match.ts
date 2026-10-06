@@ -13,6 +13,9 @@
 // every role is announced ("You've been promoted to Red Commander!" for the holder when the def announces it), with
 // the role's assign / dead sound (Halloween kill leader voice lines; on perkMode maps a class's spawn sound only for its
 // holder) and its kill feed line; the local player's role (`onLocalRole`) closes the Cobalt class menu.
+// M8: "Anonymize player names" shows players outside the followed player's group as "Player<id>" in every name this
+// class hands out (kill feed, kill messages, kill leader, spectating; survev player.ts getPlayerName / anonName); the
+// local player's killer is kept for the death screen's Report button.
 import { GameObjectDefs, getMapDef, type RoleDef } from "@rebirth/defs";
 import type {
     KillEvent,
@@ -23,6 +26,7 @@ import type {
     SpectateActionName,
 } from "@rebirth/sim";
 import type { AudioEngine, SoundHandle } from "../audio/audio.ts";
+import { config } from "../config.ts";
 import { GasTracker } from "../fx/gas.ts";
 import { GameOverScreen } from "../ui/gameOver.ts";
 import {
@@ -56,6 +60,13 @@ export interface MatchUiOptions {
     teamMode?(): number;
     /** a role announcement for the local player arrived (M7: closes the Cobalt class menu) */
     onLocalRole?(role: string): void;
+    /** extra button of the death / result screen (M8: Report) */
+    extraButton?(): HTMLElement | null;
+}
+
+/** Generic name of an anonymized player (survev player.ts: `Player${playerId - 2750}`; rebirth ids start low). */
+export function anonName(playerId: number): string {
+    return `Player${playerId}`;
 }
 
 /** Event flags of the map that change the match UI (MapDef gameMode, M7). */
@@ -88,6 +99,8 @@ export class MatchUi implements PlayerNames {
     private mode: ModeFlags = { factionMode: false, perkMode: false, spookyKillSounds: false, turkeyMode: false };
     /** faction alive counts [Red, Blue] (faction maps, M7) */
     teamAliveCounts: number[] | null = null;
+    /** the player credited with the local player's death (0: none yet, the red zone, itself) (M8) */
+    killerId = 0;
 
     constructor(opts: MatchUiOptions) {
         this.opts = opts;
@@ -102,6 +115,7 @@ export class MatchUi implements PlayerNames {
         this.gameOver = new GameOverScreen(opts.parent, {
             playAgain: () => opts.playAgain(),
             spectate: () => opts.spectate("begin"),
+            extraButton: () => opts.extraButton?.() ?? null,
         });
     }
 
@@ -121,7 +135,18 @@ export class MatchUi implements PlayerNames {
         return this.mode.factionMode;
     }
 
+    /** Display name: anonymized outside the followed player's group when the setting is on (M8). */
     name(id: number): string {
+        const info = this.infos.get(id);
+        if (!info) return "";
+        if (config().get("anonPlayerNames") && info.groupId !== this.infos.get(this.activeId)?.groupId) {
+            return anonName(id);
+        }
+        return info.name;
+    }
+
+    /** The name the player chose, whatever the anonymize setting. */
+    realName(id: number): string {
         return this.infos.get(id)?.name ?? "";
     }
 
@@ -136,6 +161,7 @@ export class MatchUi implements PlayerNames {
         this.spectating = false;
         this.resultSeen = false;
         this.localKills = 0;
+        this.killerId = 0;
         this.hideKillIn = -1;
         this.lastHealth = -1;
         this.lastActive = -1;
@@ -219,6 +245,9 @@ export class MatchUi implements PlayerNames {
             this.hud.showKillMessage(downedMessage(e, this, this.spectating), "");
         }
         if (e.killCreditId === this.localId && e.killed) this.setLocalKills(e.killerKills);
+        if (e.targetId === this.localId && e.killed && e.killCreditId && e.killCreditId !== this.localId) {
+            this.killerId = e.killCreditId;
+        }
     }
 
     private onRole(e: RoleAnnouncementEvent): void {
@@ -256,7 +285,7 @@ export class MatchUi implements PlayerNames {
         if (stats) this.setLocalStats(stats);
         this.gameOver.show({
             event: ev,
-            name: this.name(this.localId) || "",
+            name: this.realName(this.localId) || "",
             stats,
             aliveCount: s.aliveCount ?? this.aliveCount,
             teamMode: this.opts.teamMode?.() ?? 1,

@@ -10,11 +10,10 @@
 // - the client throttle mirrors the server's: each emote or ping adds one, six in a row grey the wheels for 9 s, the
 //   counter decays by one every 3 s; the wheel closes by itself after 10 s; the aim freezes while it is open.
 import type { Vec2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, Input } from "@rebirth/defs";
 import type { EmoteRequest } from "@rebirth/sim";
 import { spriteUrl } from "../assets/hudImages.ts";
 import type { InputManager } from "../input/input.ts";
-import { EmoteMenuBind, TeamPingBind } from "../input/keybinds.ts";
 
 /** survev emote.ts emoteTimeout */
 const WHEEL_TIMEOUT = 10;
@@ -245,15 +244,15 @@ export class EmoteWheel {
             return;
         }
         const mouse = input.mouse;
-        if (input.wasPressed(TeamPingBind) && !this.pingKeyDown) {
+        if (input.wasBindPressed(Input.TeamPingMenu) && !this.pingKeyDown) {
             this.pingKeyDown = true;
             this.pingKeyTriggered = true;
         }
-        if (input.wasReleased(TeamPingBind) && this.pingKeyDown) {
+        if (input.wasBindReleased(Input.TeamPingMenu) && this.pingKeyDown) {
             this.pingKeyDown = false;
             this.pingKeyTriggered = this.open;
         }
-        if (input.wasPressed(EmoteMenuBind)) {
+        if (input.wasBindPressed(Input.EmoteMenu)) {
             if (!this.pingMouseTriggered && !this.emoteMouseTriggered && this.pingKeyDown) {
                 this.screenPos = { x: mouse.x, y: mouse.y };
                 this.pingMouseTriggered = true;
@@ -263,7 +262,7 @@ export class EmoteWheel {
                 this.emoteMouseTriggered = true;
             }
         }
-        if (input.wasReleased(EmoteMenuBind)) {
+        if (input.wasBindReleased(Input.EmoteMenu)) {
             this.select(mouse, frame.ammo);
             if (this.pingKeyTriggered && this.pingMouseTriggered) this.triggerPing();
             else if (this.emoteMouseTriggered) this.triggerEmote();

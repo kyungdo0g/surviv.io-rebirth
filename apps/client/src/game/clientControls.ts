@@ -1,0 +1,159 @@
+// M8 glue of the in-game client: the in-game (Esc) menu, the touch controls (sticks, aim line, touch HUD buttons), the
+// report flow of network games and the settings that act on a running game (screen shake; volumes and mute go through
+// the shared audio engine, audio/shared.ts). Keys: Escape closes the big map first, else toggles the menu (survev
+// game.ts / ui.ts toggleEscMenu); the Full Screen bind (L) toggles full screen; N mutes while unbound (rebirth).
+import type { Vec2 } from "@rebirth/core";
+import { Input, WeaponSlot } from "@rebirth/defs";
+import type { LocalPlayerState } from "@rebirth/sim";
+import type { Application } from "pixi.js";
+import type { TextureStore } from "../assets/textures.ts";
+import { toggleMute } from "../audio/shared.ts";
+import { config } from "../config.ts";
+import { AimLine } from "../input/aimLine.ts";
+import type { InputManager, TouchSample } from "../input/input.ts";
+import { MENU_KEY, MuteBind } from "../input/keybinds.ts";
+import { TouchControls } from "../input/touch.ts";
+import type { ObjectWorld } from "../objects/world.ts";
+import type { Camera } from "../render/camera.ts";
+import type { Renderer } from "../render/renderer.ts";
+import { GameMenu } from "../ui/gameMenu.ts";
+import type { Minimap } from "../ui/minimap.ts";
+import { ReportFlow, type ReportFlowDeps } from "../ui/report.ts";
+import { toggleFullscreen } from "../ui/settingsControls.ts";
+import { TouchHud } from "../ui/touchHud.ts";
+import type { MatchUi } from "./match.ts";
+import type { ModeUi } from "./modes.ts";
+
+export interface ClientControlsDeps {
+    app: Application;
+    renderer: Renderer;
+    textures: TextureStore;
+    camera: Camera;
+    input: InputManager;
+    /** #ui-game */
+    hudRoot: HTMLElement;
+    /** parent of the menu and dialogs */
+    parent: HTMLElement;
+    touch: boolean;
+    modes: ModeUi;
+    match: MatchUi;
+    minimap(): Minimap | null;
+    /** Quit Game */
+    quit(): void;
+    /** network games: sends a report (null hides the Report buttons) */
+    report: ReportFlowDeps["submit"] | null;
+}
+
+export interface ControlsFrame {
+    dt: number;
+    world: ObjectWorld | null;
+    local: LocalPlayerState | null;
+    /** where the followed player is drawn */
+    pos: Vec2;
+    spectating: boolean;
+}
+
+export class ClientControls {
+    readonly menu: GameMenu;
+    readonly touch: TouchControls | null = null;
+    readonly aimLine: AimLine | null = null;
+    readonly touchHud: TouchHud | null = null;
+    readonly report: ReportFlow | null = null;
+    private readonly deps: ClientControlsDeps;
+    private readonly unsubscribe: () => void;
+    /** the last touch input (tests) */
+    lastTouch: TouchSample | null = null;
+
+    constructor(deps: ClientControlsDeps) {
+        this.deps = deps;
+        this.menu = new GameMenu(deps.parent, { quit: () => deps.quit() }, deps.touch);
+        if (deps.touch) {
+            const touch = new TouchControls({
+                textures: deps.textures,
+                target: deps.app.canvas,
+                mapRect: () => deps.minimap()?.rect ?? null,
+                mapTapped: () => deps.modes.setBigMap(!deps.modes.bigMap),
+            });
+            deps.renderer.overlay.addChild(touch.container);
+            this.touch = touch;
+            this.aimLine = new AimLine(deps.renderer, deps.textures);
+            this.touchHud = new TouchHud(deps.hudRoot, {
+                action: (a) => deps.input.queueAction(a),
+                openMenu: () => this.menu.show(),
+                closeBigMap: () => deps.modes.setBigMap(false),
+            });
+        }
+        const submit = deps.report;
+        if (submit) {
+            const match = deps.match;
+            const target = (id: number) => (id ? { playerId: id, name: match.name(id) } : null);
+            this.report = new ReportFlow({
+                parent: deps.parent,
+                hudRoot: deps.hudRoot,
+                submit,
+                killer: () => target(match.killerId),
+                spectated: () => (match.spectating ? target(match.activeId) : null),
+            });
+        }
+        const cfg = config();
+        deps.camera.shakeEnabled = cfg.get("screenShake");
+        this.unsubscribe = cfg.onChange((key) => {
+            if (key === "screenShake") deps.camera.shakeEnabled = cfg.get("screenShake");
+        });
+    }
+
+    /** Client-only keys of this frame: the menu / big map (Escape), full screen and mute. */
+    handleKeys(input: InputManager): void {
+        if (input.wasPressed(MENU_KEY)) {
+            if (this.report?.dialogOpen) this.report.closeDialog();
+            else if (this.deps.modes.bigMap) this.deps.modes.setBigMap(false);
+            else this.menu.toggle();
+        }
+        if (input.wasBindPressed(Input.Fullscreen)) toggleFullscreen();
+        if (input.wasFreeKeyPressed(MuteBind)) toggleMute();
+    }
+
+    /** The touch sticks of this frame, or null on desktop and for spectators. */
+    touchSample(dt: number, local: LocalPlayerState | null, spectating: boolean): TouchSample | null {
+        if (!this.touch) return null;
+        const screen = this.deps.app.screen;
+        const sample = this.touch.update({
+            dt,
+            width: screen.width,
+            height: screen.height,
+            holdingThrowable: local?.curWeapIdx === WeaponSlot.Throwable,
+        });
+        this.lastTouch = sample;
+        return spectating ? null : sample;
+    }
+
+    update(frame: ControlsFrame): void {
+        this.report?.update();
+        this.touchHud?.update(this.deps.minimap()?.rect ?? null, this.deps.modes.bigMap);
+        if (this.aimLine && this.touch) {
+            const local = frame.local;
+            const visible =
+                !!local && !local.dead && !frame.spectating && this.touch.aimTouched && config().get("touchAimLine");
+            this.aimLine.update(
+                {
+                    visible,
+                    pos: frame.pos,
+                    dir: this.touch.aim,
+                    layer: local?.layer ?? 0,
+                    weapon: local?.weapons[local.curWeapIdx]?.type ?? "",
+                    zoom: local?.zoom ?? 28,
+                },
+                frame.world,
+            );
+        }
+    }
+
+    destroy(): void {
+        this.unsubscribe();
+        this.menu.destroy();
+        this.touch?.destroy();
+        this.aimLine?.destroy();
+        this.touchHud?.destroy();
+        this.report?.destroy();
+    }
+}

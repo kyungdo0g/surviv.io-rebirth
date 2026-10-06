@@ -11,32 +11,24 @@ import { GameConfig, GameObjectDefs, getMapDef, type OutfitDef, type RoleDef } f
 import { roleLoadout } from "@rebirth/sim";
 import { lootImageUrl } from "../assets/hudImages.ts";
 import type { AudioEngine, SoundHandle } from "../audio/audio.ts";
+import { config } from "../config.ts";
 import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { itemName, perkDesc, t } from "../l10n/index.ts";
 import { el, setLines } from "./hudDom.ts";
 import "./roleMenu.css";
 
 const AMBIENT = "ambient_lab_01";
-/** local storage key of the last class (the original config's perkModeRole) */
-const STORAGE_KEY = "rebirth.perkModeRole";
 /** the menu is laid out for 1200 x 900 and scaled down on smaller screens (survev ui.ts resize) */
 const MENU_WIDTH = 1200;
 const MENU_HEIGHT = 900;
 
+/** the last class (the original config's perkModeRole; config.ts, M8) */
 function storedRole(): string {
-    try {
-        return localStorage.getItem(STORAGE_KEY) ?? "";
-    } catch {
-        return "";
-    }
+    return config().get("perkModeRole");
 }
 
 function storeRole(role: string): void {
-    try {
-        localStorage.setItem(STORAGE_KEY, role);
-    } catch {
-        // storage blocked: the menu starts on the first class next time
-    }
+    config().set("perkModeRole", role);
 }
 
 function cssColor(c: number): string {

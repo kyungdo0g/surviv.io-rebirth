@@ -3,12 +3,19 @@
 // otherwise tears the client down and boots a fresh game (a new loopback match, or a new WebSocket game).
 // M6: games launched by the menu (menu/app.ts) pass `onQuit`: leaving the game ("Play New Game", "Leave Game", a lost
 // connection before the result) tears it down and hands control back to the menu instead.
+// M8: touch devices play with the touch controls and join as mobile players (isMobile: the loopback's AddPlayerOptions,
+// the network Join message); network games can report players (the game server's /api/report with the join token);
+// the in-game menu's Quit Game returns to the menu (the start page when the game was not launched from it); a banned
+// address gets the banned text.
 import type { Vec2 } from "@rebirth/core";
+import { DisconnectReason, type ReportResponse, submitReport } from "@rebirth/protocol";
 import type { Application } from "pixi.js";
 import { TextureStore } from "../assets/textures.ts";
-import { AudioEngine } from "../audio/audio.ts";
+import type { AudioEngine } from "../audio/audio.ts";
+import { sharedAudio } from "../audio/shared.ts";
 import { FixtureTransport } from "../dev/fixtures.ts";
 import { debugGlobals } from "../globals.ts";
+import { isTouchMode } from "../input/device.ts";
 import { t } from "../l10n/index.ts";
 import { LoopbackTransport } from "../net/loopback.ts";
 import type { Transport } from "../net/transport.ts";
@@ -16,8 +23,10 @@ import { describeDisconnect, WsTransport } from "../net/ws.ts";
 import type { BuildingRender } from "../objects/building.ts";
 import type { ObstacleRender } from "../objects/obstacle.ts";
 import type { PlayerRender } from "../objects/player.ts";
+import { showToast } from "../ui/toast.ts";
 import { GameClient } from "./client.ts";
 import { exposeM7 } from "./debugM7.ts";
+import { exposeM8 } from "./debugM8.ts";
 import { gasStagesFor } from "./gasStages.ts";
 
 export interface SandboxOptions {
@@ -55,6 +64,8 @@ export interface SandboxOptions {
         autoFill?: boolean;
         /** a party's joinGame URL: connect to it instead of calling find_game (M6) */
         joinUrl?: string;
+        /** find_game region (M8) */
+        region?: string;
     };
     /**
      * Leaving the game returns to the caller (the menu) with an error text for a failed or lost connection, instead of
@@ -74,19 +85,35 @@ function quitError(reason: string): string {
         case "join_timeout":
         case "full":
             return t("index-failed-joining-game");
+        case DisconnectReason.Banned:
+            return describeDisconnect(reason);
         default:
             return t("index-host-closed");
     }
 }
 
+/**
+ * HTTP origin of the game server behind a /play WebSocket URL, for its /api/report (M8); "" when that is this page's
+ * origin (the dev server proxies /api).
+ */
+function httpOriginOf(wsUrl: string): string {
+    try {
+        const url = new URL(wsUrl, location.href);
+        url.protocol = url.protocol === "wss:" ? "https:" : "http:";
+        return url.origin === location.origin ? "" : url.origin;
+    } catch {
+        return "";
+    }
+}
+
 /** textures and the (unlocked) audio engine outlive a game, so a new game starts warm */
 let sharedTextures: TextureStore | null = null;
-let sharedAudio: AudioEngine | null = null;
 
 export function bootSandbox(app: Application, opts: SandboxOptions): GameClient {
     sharedTextures ??= new TextureStore();
-    sharedAudio ??= new AudioEngine();
+    const audio: AudioEngine = sharedAudio();
     const textures = sharedTextures;
+    const touch = isTouchMode();
     const globals = debugGlobals();
     let transport: Transport;
     let loopback: LoopbackTransport | null = null;
@@ -109,12 +136,17 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
             teamMode: opts.net.teamMode,
             autoFill: opts.net.autoFill,
             joinUrl: opts.net.joinUrl,
+            region: opts.net.region,
+            useTouch: touch,
+            isMobile: touch,
             onDisconnect: (reason) => {
                 const normal = conn.endedNormally;
                 globals.disconnect = { reason, normal, message: describeDisconnect(reason) };
                 if (!normal) console.warn(`disconnected: ${describeDisconnect(reason)}`);
                 // like the original's onClose: a lost game without its result on screen goes back to the menu
                 if (!normal && !client?.match.gameOver.visible) quit(quitError(reason));
+                // no menu to go back to: say what happened over the game
+                if (!normal && !opts.onQuit) showToast(describeDisconnect(reason), { error: true, durationMs: 8000 });
             },
         });
         ws = conn;
@@ -131,6 +163,7 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
                 dummies: opts.dummies,
                 teammates: opts.teammates,
                 give: opts.give,
+                isMobile: touch,
             },
         );
         transport = loopback;
@@ -148,11 +181,28 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
         client?.destroy();
         bootSandbox(app, opts);
     };
+    const net = opts.net;
+    const reportVia = ws;
+    // a party game connects to the joinGame URL's server, which also takes its reports
+    const reportBase = net?.joinUrl ? httpOriginOf(net.joinUrl) : (net?.server ?? "");
     client = new GameClient(app, transport, textures, {
         showDebugHud: opts.showDebugHud,
         debugZoom: opts.debugZoom,
         onPlayAgain: playAgain,
-        audio: sharedAudio,
+        audio,
+        touch,
+        // Quit Game: back to the menu, or to the start page for games launched by URL
+        onQuit: () => {
+            if (opts.onQuit) quit();
+            else location.assign("/");
+        },
+        report: reportVia
+            ? (req) => {
+                  const token = reportVia.connection.joinToken;
+                  if (!token) return Promise.resolve<ReportResponse>({ ok: false, error: "invalid_token" });
+                  return submitReport(reportBase, { token, ...req });
+              }
+            : undefined,
     });
     exposeGlobals(client, transport, loopback, playAgain);
     globals.mode = loopback ? "loopback" : ws ? "network" : "fixture";
@@ -216,6 +266,7 @@ function exposeGlobals(
     exposeM5(client);
     exposeM6(client);
     exposeM7(client);
+    exposeM8(client);
     globals.interaction = () => client.interaction;
     globals.audio = {
         get unlocked() {
