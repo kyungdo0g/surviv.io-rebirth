@@ -104,6 +104,7 @@ export class Loot {
             pos: v2.copy(this.pos),
             layer: this.layer,
             count: this.count,
+            ...(this.isPreloadedGun ? { isPreloadedGun: true } : {}),
         };
     }
 }

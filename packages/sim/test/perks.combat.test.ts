@@ -6,7 +6,7 @@ import { DamageType, GameConfig, getDefOfType } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import type { Bullet, Game, Player } from "../src/index.ts";
 import { addPerk } from "../src/perks/perks.ts";
-import { constantRng, fireOnce, flatGame, giveGun, openSpot, send, spawnAt, steps } from "./combatHelpers.ts";
+import { constantRng, flatGame, giveGun, openSpot, send, spawnAt, steps } from "./combatHelpers.ts";
 
 function shooter(gun: string, perks: string[] = [], obstacles = []): { game: Game; p: Player; fired: () => Bullet[] } {
     const game = flatGame(obstacles);
@@ -16,7 +16,10 @@ function shooter(gun: string, perks: string[] = [], obstacles = []): { game: Gam
     for (const perk of perks) addPerk(p, perk);
     const fired = () => {
         const before = new Set(game.bullets.active.map((b) => b.id));
-        fireOnce(game, p);
+        // the cursor far away: USAS-12 rounds (toMouseHit) would burst at the muzzle (M9)
+        send(game, p, { shootHold: true, shootStart: true, toMouseLen: 64 });
+        game.step();
+        send(game, p, {});
         return game.bullets.reports
             .map((r) => r.bullet)
             .filter((b, i, all) => !before.has(b.id) && all.indexOf(b) === i);

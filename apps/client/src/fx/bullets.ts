@@ -1,12 +1,19 @@
 // Bullet tracers from the snapshot BulletEvents: a trail sprite whose head moves at the bullet speed from `pos`
-// along `dir` and stops at `endDist` (it hit something) or `maxDist`. Bullets are checked against obstacles in view
-// on the client too, for impact chips and sounds and to stop at destructible obstacles; player hits come from the
-// simulation (`hitPlayer`). Drawing follows survev client/src/objects/bullet.ts (trail sprite
+// along `dir` and stops at `endDist` (it hit something) or `maxDist`. Bullets are checked against obstacles and players
+// in view on the client too, for impact chips, blood and sounds and to stop at destructible obstacles; the simulation
+// reports player hits too (`hitPlayer`). Drawing follows survev client/src/objects/bullet.ts (trail sprite
 // player-bullet-trail-02, x-scale 0.8, y-scale tracerWidth, length min(tracerLength * 15, travelled / 2), container
 // pivot 14.5 so the head sits on the bullet, ×6/s shrink after impact, reflected bullets at half alpha).
 // M7 (survev bullet.ts addBullet): Splinter Rounds side bullets (`splinter`, the original trailSmall) draw at half the
 // tracer width, One in the Chamber shots (`thick`) at twice the width, and saturated bullets (ammo perks, Hollow-points,
 // OKAMI Bar, Last Breath, One in the Chamber) in the tracer colour's `chambered` tint, else its `saturated` one.
+// M9 (survev bullet.ts:92-506): the tracer speed is def.speed × `speedMult` (perks, shrapnel variance); a shooter on
+// stairs or a bullet crossing stairs moves the tracer to the stairs layer; a shooter on a bright floor gets the
+// saturated tint; the whiz needs a living active player on the same audio layer. Player hits: the shooter is skipped
+// unless the bullet is shrapnel or a ricochet, a held or worn pan is tested before the body (chips + the pan's bullet
+// sound, Cast Ironskin bodies chip too), the first player hit ends the player pass; blood is parented to the hit
+// player at the impact offset (rotation 1 rad) and neither blood nor the hit sound play while the shooter is dead or
+// downed. Flare rounds (`addFlare`) are drawn by fx/flare.ts.
 import { type Collider, collider, math, type Vec2 } from "@rebirth/core";
 import {
     type BulletDef,
@@ -15,13 +22,17 @@ import {
     type GunDef,
     type MapDef,
     MapObjectDefs,
+    type MeleeDef,
     type ObstacleDef,
 } from "@rebirth/defs";
 import type { BulletEvent, ObstacleView, PlayerView } from "@rebirth/sim";
 import { Container, type Sprite } from "pixi.js";
 import type { TextureStore } from "../assets/textures.ts";
 import type { AudioEngine } from "../audio/audio.ts";
+import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { type Renderer, toLocal } from "../render/renderer.ts";
+import { hasActivePan, panHit, sameAudioLayer, sameLayer, tracerTint, tracerWidth } from "./bulletHits.ts";
+import { type FlareScene, FlareSystem } from "./flare.ts";
 import type { ParticleSystem } from "./particles.ts";
 
 const TRAIL_SPRITE = "player-bullet-trail-02.img";
@@ -34,8 +45,8 @@ const WHIZ_DIST = 7.5;
 /** reports older than this are ignored when a bullet id comes back (seconds) */
 const ID_MEMORY = 4;
 const HIT_PARTICLE_SPEED = 9.5;
-/** blood splats draw over players (survev parents them to the hit player's container) */
-const PLAYER_FX_Z_ORD = 19;
+/** survev bullet.ts: blood splats on the hit player use rotation 1 rad and scale 1 */
+const BLOOD_ROT = 1;
 
 interface Tracer {
     id: number;
@@ -51,6 +62,8 @@ interface Tracer {
     tracerLength: number;
     hitPlayer: boolean;
     reflectCount: number;
+    /** shrapnel and ricochets may hit their shooter (survev damageSelf) */
+    damageSelf: boolean;
     alive: boolean;
     collided: boolean;
     scale: number;
@@ -65,30 +78,46 @@ interface Tracer {
 }
 
 /** What the tracer system needs from the object world. */
-export interface BulletScene {
+export interface BulletScene extends FlareScene {
+    /** the followed (active) player */
     readonly localId: number;
     readonly cameraPos: Vec2;
+    /** the active player is alive (bullets whiz past living players only) */
+    readonly activeAlive: boolean;
     forEachObstacle(cb: (view: ObstacleView) => void): void;
     forEachPlayer(cb: (view: PlayerView) => void): void;
+    playerById(id: number): PlayerView | undefined;
+    /** position and facing of a player in the previous snapshot (the pan sweep), when known */
+    playerOld(id: number): { pos: Vec2; dir: Vec2 } | undefined;
+    /** the root container of a player's view (blood splats follow it) */
+    playerContainer(id: number): Container | null;
+    /** whether a -> b crosses the stairs of a structure outside its stair masks */
+    segmentOnStairs(a: Vec2, b: Vec2): boolean;
+    /** whether the floor at `pos` is bright (saturated tracers) */
+    brightSurfaceAt(pos: Vec2, layer: number): boolean;
 }
 
 interface CachedCollider {
+    /** the transform it was built for (doors move and turn without changing scale) */
     scale: number;
+    ori: number;
+    x: number;
+    y: number;
     col: Collider;
     min: Vec2;
     max: Vec2;
 }
 
-/** Tracer width of a bullet: halved for Splinter Rounds side bullets, doubled for thick ones (survev addBullet). */
-export function tracerWidth(base: number, e: Pick<BulletEvent, "splinter" | "thick">): number {
-    let width = base;
-    if (e.splinter) width *= 0.5;
-    if (e.thick) width *= 2;
-    return width;
-}
-
-function sameLayer(a: number, b: number): boolean {
-    return (a & 1) === (b & 1) || ((a & 2) !== 0 && (b & 2) !== 0);
+interface Hit {
+    type: "obstacle" | "player" | "pan";
+    dist: number;
+    point: Vec2;
+    normal: Vec2;
+    collidable: boolean;
+    layer: number;
+    obstacle?: ObstacleDef;
+    player?: PlayerView;
+    id: number;
 }
 
 export class BulletSystem {
@@ -96,24 +125,29 @@ export class BulletSystem {
     private readonly textures: TextureStore;
     private readonly audio: AudioEngine;
     private readonly particles: ParticleSystem;
+    readonly flares: FlareSystem;
     private readonly tracers: Tracer[] = [];
     private readonly free: Tracer[] = [];
     /** bullet id -> seconds since first seen, so a re-report updates instead of spawning a second tracer */
     private readonly seen = new Map<number, number>();
     private readonly colliders = new Map<number, CachedCollider>();
     private tracerColors: Record<string, Record<string, number>> = {};
+    private turkeyMode = false;
     /** tracers drawn last frame (tests) */
     visibleCount = 0;
     /** tracers spawned since boot (tests) */
     spawned = 0;
     /** saturated / thick / splinter tracers spawned since boot (tests, M7) */
     readonly variants = { saturated: 0, thick: 0, splinter: 0 };
+    /** hit effects shown since boot (tests, M9): blood on players, pan chips, player hit sounds */
+    readonly hits = { blood: 0, pan: 0, sounds: 0, stairs: 0 };
 
     constructor(renderer: Renderer, textures: TextureStore, audio: AudioEngine, particles: ParticleSystem) {
         this.renderer = renderer;
         this.textures = textures;
         this.audio = audio;
         this.particles = particles;
+        this.flares = new FlareSystem(renderer, textures);
     }
 
     /** Tracer colours for the map: GameConfig.tracerColors overridden by the biome's (survev onMapLoad). */
@@ -124,6 +158,7 @@ export class BulletSystem {
             colors[key] = { ...(colors[key] ?? {}), ...value };
         }
         this.tracerColors = colors;
+        this.turkeyMode = !!mapDef.gameMode.turkeyMode;
     }
 
     get activeCount(): number {
@@ -142,7 +177,9 @@ export class BulletSystem {
                 continue;
             }
             this.seen.set(e.id, 0);
-            this.spawn(e);
+            const def = GameObjectDefs[e.bulletType] as BulletDef | undefined;
+            if (def?.type === "bullet" && def.addFlare) this.flares.add(e, def);
+            else this.spawn(e, scene);
             if (e.shotFx) this.playShot(e, scene);
         }
     }
@@ -158,7 +195,7 @@ export class BulletSystem {
         });
     }
 
-    private spawn(e: BulletEvent): void {
+    private spawn(e: BulletEvent, scene: BulletScene): void {
         const def = GameObjectDefs[e.bulletType] as BulletDef | undefined;
         if (def?.type !== "bullet") return;
         let t = this.free.pop();
@@ -171,17 +208,20 @@ export class BulletSystem {
             t = { container, sprite } as Tracer;
         }
         const colors = this.tracerColors[def.tracerColor] ?? { regular: 0xffffff };
+        const shooter = scene.playerById(e.shooterId);
         t.id = e.id;
         t.shooterId = e.shooterId;
         t.startPos = { x: e.pos.x, y: e.pos.y };
         t.pos = { x: e.pos.x, y: e.pos.y };
         t.dir = { x: e.dir.x, y: e.dir.y };
-        t.layer = e.layer;
-        t.speed = def.speed;
+        // a shooter on stairs draws its bullets on the stairs layer (survev addBullet)
+        t.layer = shooter && shooter.layer & 2 ? e.layer | 2 : e.layer;
+        t.speed = def.speed * (e.speedMult ?? 1);
         t.distance = e.endDist ?? e.maxDist;
         t.tracerLength = def.tracerLength;
         t.hitPlayer = e.hitPlayer;
         t.reflectCount = e.reflectCount;
+        t.damageSelf = def.shrapnel || e.reflectCount > 0;
         t.alive = true;
         t.collided = false;
         t.scale = 1;
@@ -192,8 +232,8 @@ export class BulletSystem {
         t.chipped = new Set();
         t.playerFx = false;
         t.sprite.scale.set(0.8, tracerWidth(def.tracerWidth, e));
-        t.sprite.tint =
-            (e.saturated ? (colors.chambered ?? colors.saturated) : undefined) ?? colors.regular ?? 0xffffff;
+        const bright = !!shooter && scene.brightSurfaceAt(shooter.pos, shooter.layer);
+        t.sprite.tint = tracerTint(colors, !!e.saturated, bright);
         t.sprite.alpha = e.reflectCount > 0 ? 0.5 : 1;
         t.sprite.visible = true;
         t.container.rotation = -Math.atan2(e.dir.y, e.dir.x);
@@ -207,30 +247,31 @@ export class BulletSystem {
 
     private obstacleCollider(view: ObstacleView, def: ObstacleDef): CachedCollider {
         let cached = this.colliders.get(view.id);
-        if (!cached || cached.scale !== view.scale) {
+        if (
+            !cached ||
+            cached.scale !== view.scale ||
+            cached.ori !== view.ori ||
+            cached.x !== view.pos.x ||
+            cached.y !== view.pos.y
+        ) {
             const col = collider.transform(def.collision, view.pos, math.oriToRad(view.ori), view.scale);
             const box = collider.toAabb(col);
-            cached = { scale: view.scale, col, min: box.min, max: box.max };
+            cached = {
+                scale: view.scale,
+                ori: view.ori,
+                x: view.pos.x,
+                y: view.pos.y,
+                col,
+                min: box.min,
+                max: box.max,
+            };
             this.colliders.set(view.id, cached);
         }
         return cached;
     }
 
-    /**
-     * First thing hit on the segment a -> b (survev bullet.ts collision pass): obstacles get chips and impact
-     * sounds and stop the bullet when collidable; a living player other than the shooter stops it with a blood
-     * splat. Returns the stop point, or null when the bullet flies on.
-     */
-    private collide(t: Tracer, a: Vec2, b: Vec2, scene: BulletScene): Vec2 | null {
-        const hits: Array<{
-            dist: number;
-            point: Vec2;
-            normal: Vec2;
-            obstacle?: ObstacleDef;
-            player?: PlayerView;
-            id: number;
-            stop: boolean;
-        }> = [];
+    /** Obstacles the segment a -> b touches (survev bullet.ts m_update obstacle pass). */
+    private obstacleHits(t: Tracer, a: Vec2, b: Vec2, scene: BulletScene, out: Hit[]): void {
         const minX = Math.min(a.x, b.x);
         const maxX = Math.max(a.x, b.x);
         const minY = Math.min(a.y, b.y);
@@ -243,40 +284,113 @@ export class BulletSystem {
             if (c.max.x < minX || c.min.x > maxX || c.max.y < minY || c.min.y > maxY) return;
             const hit = collider.intersectSegment(c.col, a, b);
             if (!hit) return;
-            const stop = def.collidable && !(view.door?.open ?? false);
-            hits.push({ dist: hit.dist, point: hit.point, normal: hit.normal, obstacle: def, id: view.id, stop });
-        });
-        scene.forEachPlayer((view) => {
-            if (view.dead || (view.id === t.shooterId && t.reflectCount === 0)) return;
-            if (!sameLayer(view.layer, t.layer) && !(view.layer & 2)) return;
-            const rad = GameConfig.player.radius * (view.scale || 1);
-            const hit = collider.intersectSegment({ type: 0, pos: view.pos, rad }, a, b);
-            if (hit)
-                hits.push({
-                    dist: hit.dist,
-                    point: hit.point,
-                    normal: hit.normal,
-                    player: view,
-                    id: view.id,
-                    stop: true,
-                });
-        });
-        hits.sort((x, y) => x.dist - y.dist);
-        for (const h of hits) {
-            if (h.obstacle) {
-                t.chipped.add(h.id);
-                this.hitFx(h.obstacle.hitParticle, h.obstacle.sound.bullet, h.point, h.normal, t.layer);
-            } else if (h.player) {
-                this.playerHitFx(h.player, h.point);
-                t.playerFx = true;
+            // a ricochet starts on the surface it bounced off, which it ignores (survev reflectObjId)
+            if (t.reflectCount > 0 && Math.hypot(hit.point.x - t.startPos.x, hit.point.y - t.startPos.y) < 1e-3) {
+                t.chipped.add(view.id);
+                return;
             }
-            if (h.stop) return h.point;
+            const collidable = def.collidable && !(view.door?.open ?? false);
+            out.push({
+                type: "obstacle",
+                dist: hit.dist,
+                point: hit.point,
+                normal: hit.normal,
+                collidable,
+                layer: t.layer,
+                obstacle: def,
+                id: view.id,
+            });
+        });
+    }
+
+    /**
+     * The first player the segment a -> b touches, pan first (survev bullet.ts:283-375): the shooter only for shrapnel
+     * and ricochets; a pan closer than the body takes the hit; Cast Ironskin bodies also chip like a pan.
+     */
+    private playerHits(t: Tracer, a: Vec2, b: Vec2, scene: BulletScene, out: Hit[]): void {
+        let done = false;
+        scene.forEachPlayer((p) => {
+            if (done || p.dead) return;
+            if (!sameLayer(p.layer, t.layer) && !(p.layer & 2)) return;
+            if (p.id === t.shooterId && !t.damageSelf) return;
+            const old = scene.playerOld(p.id) ?? { pos: p.pos, dir: p.dir };
+            const pan = hasActivePan(p) ? panHit(p, old, a, b) : null;
+            const rad = GameConfig.player.radius * (p.scale || 1);
+            const body = collider.intersectSegment({ type: 0, pos: p.pos, rad }, a, b);
+            const fromStart = (q: Vec2) => Math.hypot(q.x - t.startPos.x, q.y - t.startPos.y);
+            const distOf = (q: Vec2) => Math.hypot(q.x - a.x, q.y - a.y);
+            if (body && (!pan || fromStart(body.point) < fromStart(pan.point))) {
+                out.push({
+                    type: "player",
+                    dist: distOf(body.point),
+                    point: body.point,
+                    normal: body.normal,
+                    collidable: true,
+                    layer: p.layer,
+                    player: p,
+                    id: p.id,
+                });
+                if (p.perks?.some((perk) => perk.type === "steelskin")) {
+                    const point = { x: body.point.x + body.normal.x * 0.1, y: body.point.y + body.normal.y * 0.1 };
+                    out.push({
+                        type: "pan",
+                        dist: distOf(point),
+                        point,
+                        normal: body.normal,
+                        collidable: false,
+                        layer: p.layer,
+                        id: p.id,
+                    });
+                }
+            } else if (pan) {
+                out.push({
+                    type: "pan",
+                    dist: distOf(pan.point),
+                    point: pan.point,
+                    normal: pan.normal,
+                    collidable: true,
+                    layer: p.layer,
+                    id: p.id,
+                });
+            }
+            if (body || pan) done = true;
+        });
+    }
+
+    /** First thing that stops the bullet on a -> b, with its effects on the way (survev bullet.ts:377-458). */
+    private collide(t: Tracer, a: Vec2, b: Vec2, scene: BulletScene): Vec2 | null {
+        const hits: Hit[] = [];
+        this.obstacleHits(t, a, b, scene, hits);
+        this.playerHits(t, a, b, scene, hits);
+        if (!hits.length) return null;
+        hits.sort((x, y) => x.dist - y.dist);
+        const shooterDown = this.shooterDown(t, scene);
+        for (const h of hits) {
+            if (h.type === "obstacle" && h.obstacle) {
+                t.chipped.add(h.id);
+                this.hitFx(h.obstacle.hitParticle, h.obstacle.sound.bullet, h.point, h.normal, h.layer);
+            } else if (h.type === "player" && h.player) {
+                // no blood nor sound while the shooter is dead or downed (survev: avoids confusion with bullets
+                // the server inactivated when their shooter died)
+                if (!shooterDown) this.playerHitFx(h.player, h.point, t, scene);
+                t.playerFx = true;
+            } else if (h.type === "pan") {
+                const pan = GameObjectDefs.pan as MeleeDef | undefined;
+                this.hitFx("barrelChip", pan?.sound.bullet, h.point, h.normal, h.layer);
+                this.hits.pan++;
+            }
+            if (h.collidable) return h.point;
         }
         return null;
     }
 
+    private shooterDown(t: Tracer, scene: BulletScene): boolean {
+        const shooter = scene.playerById(t.shooterId);
+        return !!shooter && (shooter.dead || shooter.downed);
+    }
+
     /** One chip flying off the surface and the material's impact sound (survev bullet.ts playHitFx). */
-    private hitFx(particle: string, sound: string, pos: Vec2, normal: Vec2, layer: number): void {
+    private hitFx(particle: string, sound: string | undefined, pos: Vec2, normal: Vec2, layer: number): void {
         const ang = (Math.random() - 0.5) * (Math.PI / 3);
         const cos = Math.cos(ang);
         const sin = Math.sin(ang);
@@ -285,28 +399,64 @@ export class BulletSystem {
             y: (normal.x * sin + normal.y * cos) * HIT_PARTICLE_SPEED,
         };
         this.particles.add(particle, layer, pos, vel);
-        this.audio.playGroup(sound, { pos, layer });
+        if (sound) this.audio.playGroup(sound, { pos, layer, filter: "muffled" });
     }
 
-    /** Blood splat at the impact point and the flesh-hit sound (survev bullet.ts player collision). */
-    private playerHitFx(target: PlayerView, point: Vec2): void {
-        this.particles.add("bloodSplat", target.layer, point, { x: 0, y: 0 }, { zOrd: PLAYER_FX_Z_ORD });
-        this.audio.playGroup("player_bullet_hit", { pos: target.pos, layer: target.layer, fallOff: 1 });
+    /**
+     * Blood splat inside the hit player's view at the impact offset, so it moves with the player, and the flesh-hit
+     * sound (survev bullet.ts:409-440); Perky Shoot shooters on turkey maps add feathers.
+     */
+    private playerHitFx(target: PlayerView, point: Vec2, t: Tracer, scene: BulletScene): void {
+        if (this.turkeyMode && scene.playerById(t.shooterId)?.perks?.some((p) => p.type === "turkey_shoot")) {
+            const a = Math.random() * Math.PI * 2;
+            const speed = 3 + Math.random() * 3;
+            this.particles.add("turkeyFeathersHit", target.layer, target.pos, {
+                x: Math.cos(a) * speed,
+                y: Math.sin(a) * speed,
+            });
+        }
+        const parent = scene.playerContainer(target.id);
+        if (parent) {
+            const offset = {
+                x: (point.x - target.pos.x) * PIXELS_PER_UNIT,
+                y: -(point.y - target.pos.y) * PIXELS_PER_UNIT,
+            };
+            this.particles.add("bloodSplat", target.layer, offset, { x: 0, y: 0 }, { rot: BLOOD_ROT, parent });
+            this.hits.blood++;
+        }
+        this.playerHitSound(target);
     }
 
-    /** The simulation says this bullet hit a player the client missed: splat on the nearest one. */
+    /** survev bullet.ts createBulletHit: the muffled flesh hit at the player (also played by the kill frame). */
+    playerHitSound(target: Pick<PlayerView, "pos" | "layer">): void {
+        this.audio.playGroup("player_bullet_hit", {
+            pos: target.pos,
+            layer: target.layer,
+            fallOff: 1,
+            filter: "muffled",
+        });
+        this.hits.sounds++;
+    }
+
+    /**
+     * The simulation says this bullet hit a player the client missed (positions differ slightly): the same effects on
+     * the nearest player. Nothing when that player is dead (the Kill message plays the hit sound) or the shooter is
+     * down.
+     */
     private serverHitFx(t: Tracer, scene: BulletScene): void {
         let best: PlayerView | null = null;
         let bestDist = Number.POSITIVE_INFINITY;
         scene.forEachPlayer((p) => {
+            if (p.id === t.shooterId && !t.damageSelf) return;
             const d = Math.hypot(p.pos.x - t.pos.x, p.pos.y - t.pos.y);
-            if (!p.dead && d < bestDist) {
+            if (d < bestDist) {
                 bestDist = d;
                 best = p;
             }
         });
         const target = best as PlayerView | null;
-        if (target && bestDist < GameConfig.player.radius * (target.scale || 1) + 1.5) this.playerHitFx(target, t.pos);
+        if (!target || target.dead || this.shooterDown(t, scene)) return;
+        if (bestDist < GameConfig.player.radius * (target.scale || 1) + 1.5) this.playerHitFx(target, t.pos, t, scene);
     }
 
     update(dt: number, scene: BulletScene): void {
@@ -334,6 +484,7 @@ export class BulletSystem {
         }
         this.visibleCount = visible;
         if (this.colliders.size > 2048) this.colliders.clear();
+        this.flares.update(dt, scene);
     }
 
     private advance(t: Tracer, dt: number, scene: BulletScene): void {
@@ -347,14 +498,25 @@ export class BulletSystem {
         const step = Math.min(left, dt * t.speed);
         const old = t.pos;
         let next = { x: old.x + t.dir.x * step, y: old.y + t.dir.y * step };
+        const cam = scene.cameraPos;
+        if (
+            !t.whizHeard &&
+            scene.activeAlive &&
+            sameAudioLayer(scene.activeLayer, t.layer) &&
+            t.shooterId !== scene.localId &&
+            Math.hypot(cam.x - next.x, cam.y - next.y) < WHIZ_DIST
+        ) {
+            t.whizHeard = true;
+            this.audio.playGroup("bullet_whiz", { pos: next, fallOff: 4 });
+        }
+        if (t.suppressed && t.alphaRate < 1) t.sprite.alpha = Math.max(t.alphaMin, t.sprite.alpha * t.alphaRate);
         const stop = step > 0 ? this.collide(t, old, next, scene) : null;
         if (stop) next = stop;
         t.pos = next;
-        if (t.suppressed && t.alphaRate < 1) t.sprite.alpha = Math.max(t.alphaMin, t.sprite.alpha * t.alphaRate);
-        const cam = scene.cameraPos;
-        if (!t.whizHeard && t.shooterId !== scene.localId && Math.hypot(cam.x - next.x, cam.y - next.y) < WHIZ_DIST) {
-            t.whizHeard = true;
-            this.audio.playGroup("bullet_whiz", { pos: next, fallOff: 4 });
+        // crossing stairs moves the tracer to the stairs layer for good (survev bullet.ts:459-498)
+        if (!(t.layer & 2) && step > 0 && scene.segmentOnStairs(old, next)) {
+            t.layer |= 2;
+            this.hits.stairs++;
         }
         if (stop || step >= left - 1e-6) {
             if (t.hitPlayer && !t.playerFx) this.serverHitFx(t, scene);
@@ -375,5 +537,6 @@ export class BulletSystem {
         for (let i = this.tracers.length - 1; i >= 0; i--) this.release(i);
         this.seen.clear();
         this.colliders.clear();
+        this.flares.clear();
     }
 }

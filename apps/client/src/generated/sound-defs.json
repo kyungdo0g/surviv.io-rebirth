@@ -818,62 +818,74 @@
    "stone_bullet_hit_01": {
     "path": "audio/hits/stone_bullet_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "wood_bullet_hit_01": {
     "path": "audio/hits/wood_bullet_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "wood_bullet_hit_02": {
     "path": "audio/hits/wood_bullet_hit_02.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "wood_bullet_hit_03": {
     "path": "audio/hits/wood_bullet_hit_03.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "wood_bullet_hit_04": {
     "path": "audio/hits/wood_bullet_hit_04.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "bush_bullet_hit_01": {
     "path": "audio/hits/bush_bullet_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "metal_bullet_hit_01": {
     "path": "audio/hits/metal_bullet_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "metal_bullet_hit_02": {
     "path": "audio/hits/metal_bullet_hit_02.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "metal_bullet_hit_03": {
     "path": "audio/hits/metal_bullet_hit_03.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "metal_bullet_hit_04": {
     "path": "audio/hits/metal_bullet_hit_04.mp3",
     "volume": 1,
-    "maxInstances": 6
+    "maxInstances": 6,
+    "canCoalesce": true
    },
    "pan_bullet_hit_01": {
     "path": "audio/hits/pan_bullet_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 6
+    "maxInstances": 6,
+    "canCoalesce": true
    },
    "brick_bullet_hit_01": {
     "path": "audio/hits/brick_bullet_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "punch_hit_01": {
     "path": "audio/hits/punch_hit_01.mp3",
@@ -922,76 +934,91 @@
    "player_bullet_hit_01": {
     "path": "audio/hits/player_bullet_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "player_bullet_hit_02": {
     "path": "audio/hits/player_bullet_hit_02.mp3",
-    "volume": 1
+    "volume": 1,
+    "canCoalesce": true
    },
    "plastic_bullet_hit_01": {
     "path": "audio/hits/plastic_bullet_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "toilet_bullet_hit_01": {
     "path": "audio/hits/toilet_bullet_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "toilet_bullet_hit_02": {
     "path": "audio/hits/toilet_bullet_hit_02.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "glass_bullet_hit_01": {
     "path": "audio/hits/glass_bullet_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "concrete_hit_01": {
     "path": "audio/hits/concrete_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "frag_grass_01": {
     "path": "audio/hits/frag_grass_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "frag_sand_01": {
     "path": "audio/hits/frag_sand_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "frag_water_01": {
     "path": "audio/hits/frag_water_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "cloth_hit_01": {
     "path": "audio/hits/cloth_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "cloth_hit_02": {
     "path": "audio/hits/cloth_hit_02.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "organic_hit_01": {
     "path": "audio/hits/organic_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "piano_hit_01": {
     "path": "audio/hits/piano_hit_01.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    },
    "piano_hit_02": {
     "path": "audio/hits/piano_hit_02.mp3",
     "volume": 1,
-    "maxInstances": 3
+    "maxInstances": 3,
+    "canCoalesce": true
    }
   },
   "sfx": {
@@ -1013,11 +1040,13 @@
    },
    "bush_enter_01": {
     "path": "audio/sfx/bush_enter_01.mp3",
-    "volume": 1
+    "volume": 1,
+    "canCoalesce": true
    },
    "bush_enter_02": {
     "path": "audio/sfx/bush_enter_02.mp3",
-    "volume": 1
+    "volume": 1,
+    "canCoalesce": true
    },
    "barrel_break_01": {
     "path": "audio/sfx/barrel_break_01.mp3",

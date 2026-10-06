@@ -1,6 +1,6 @@
 // Extracts the original v0.8.82 sound definitions (sound lists with per-sound volumes, channels and random groups)
 // from the original client bundle into src/generated/sound-defs.json. Sounds whose mp3 is not in the imported
-// assets are dropped, so the client never requests a missing file.
+// assets are dropped, so the client never requests a missing file. M9: keeps `canCoalesce` (impact sounds that merge).
 // Usage (repo root): node apps/client/scripts/sound-defs.ts [research-cache/live/app.<hash>.js]
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -15,6 +15,8 @@ interface SoundDef {
     path: string;
     volume: number;
     maxInstances?: number;
+    /** plays of this sound ending within 30 ms of a playing one merge into it (survev createJS canCoalesce) */
+    canCoalesce?: boolean;
 }
 
 interface SoundModule {
@@ -61,6 +63,7 @@ for (const [list, sounds] of Object.entries(mod.Sounds)) {
         }
         const out: SoundDef = { path: def.path, volume: def.volume };
         if (def.maxInstances !== undefined) out.maxInstances = def.maxInstances;
+        if (def.canCoalesce) out.canCoalesce = true;
         lists[list][name] = out;
     }
 }

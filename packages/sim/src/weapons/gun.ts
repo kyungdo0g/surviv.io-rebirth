@@ -1,7 +1,8 @@
 // Firing one gun shot: muzzle position clipped against obstacles, spread, pellets with jitter, bullet spawn; potato
 // guns also launch their projectile, flare guns call an air drop, Explosive Rounds make bullets explode on impact.
 // M7a: perk modifiers (perks/shotPerks.ts), Splinter Rounds side bullets, the bugle's Inspiration and the Commander's
-// flare. Behaviour follows survev server/src/game/weaponManager.ts fireWeapon and docs/research/items/guns.md.
+// flare. M9: USAS-12 (`toMouseHit`) rounds stop at the cursor. Behaviour follows survev
+// server/src/game/weaponManager.ts fireWeapon and docs/research/items/guns.md.
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, getDefOfType } from "@rebirth/defs";
 import type { Bullet } from "../combat/bullets.ts";
@@ -110,6 +111,9 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     // Explosive Rounds: bullets explode on impact (they peter out at max range) (perks.md explosive)
     const onHitFx = player.hasPerk("explosive") ? "explosion_rounds" : undefined;
     const projDef = def.projType ? getDefOfType("throwable", def.projType) : undefined;
+    // toMouseHit: the range ends at the cursor, barrel excluded (survev weaponManager.ts fireWeapon; guns.md)
+    const clipDistance = !!def.toMouseHit;
+    const mouseDistance = clipDistance ? Math.max(player.input.toMouseLen - gunLen, 0) : undefined;
     // bullets of this shot, collected only for a host's observer (anti-cheat telemetry, M8)
     const fired: Bullet[] | null = ctx.observer?.onShotFired ? [] : null;
     for (let i = 0; i < def.bulletCount; i++) {
@@ -145,6 +149,8 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
             distanceMult: perks.distanceMult,
             saturated: perks.saturated,
             thick: perks.thick,
+            clipDistance,
+            distance: mouseDistance,
         };
         const bullet = ctx.bullets.fire(params);
         fired?.push(bullet);

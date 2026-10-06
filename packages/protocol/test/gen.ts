@@ -149,11 +149,21 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 goreKills: rng.bool(0.8) ? 0 : rng.int(0, 255),
             };
         case "loot":
-            return { id, kind, type: randGameType(rng), pos, layer, count: rng.int(0, 65535) };
+            return {
+                id,
+                kind,
+                type: randGameType(rng),
+                pos,
+                layer,
+                count: rng.int(0, 65535),
+                ...(rng.bool(0.2) ? { isPreloadedGun: true } : {}),
+            };
+        case "deadBody":
+            return { id, kind, type: "deadBody", pos, layer, playerId: rng.int(0, 65535) };
     }
 }
 
-export const KINDS = ["player", "obstacle", "building", "structure", "decal", "loot"] as const;
+export const KINDS = ["player", "obstacle", "building", "structure", "decal", "loot", "deadBody"] as const;
 
 /** A view with some fields changed (same id and kind; static fields change rarely). */
 export function mutateView(rng: Rng, ctx: NetCtx, view: ObjectView): ObjectView {
@@ -260,6 +270,7 @@ export function randBullets(rng: Rng, ctx: NetCtx): BulletEvent[] {
             saturated: rng.bool(0.2),
             thick: rng.bool(0.1),
             splinter: rng.bool(0.1),
+            speedMult: rng.bool(0.7) ? 1 : rng.range(0.5, 2.5),
         };
         if (rng.bool(0.4)) b.endDist = rng.range(0, 1024);
         out.push(b);
@@ -575,6 +586,7 @@ export function netTolerances(maxExtent = 1024): TolFn {
         zoneT: 1 / 255 / 2 + 1e-9,
         maxDist: 1024 / 65535 / 2 + 1e-9,
         endDist: 1024 / 65535 / 2 + 1e-9,
+        speedMult: 4 / 1023 / 2 + 1e-9,
         width: 1e-5,
         roughness: 1e-6,
         offsetDist: 1e-6,

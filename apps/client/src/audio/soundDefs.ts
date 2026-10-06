@@ -15,6 +15,8 @@ export interface SoundDef {
     path: string;
     volume: number;
     maxInstances?: number;
+    /** a play ending within 30 ms of a playing instance merges into it (survev createJS canCoalesce; impacts) */
+    canCoalesce?: boolean;
 }
 
 export interface SoundGroup {

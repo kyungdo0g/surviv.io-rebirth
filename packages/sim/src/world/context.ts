@@ -13,6 +13,7 @@ import type { PlaneSystem } from "../match/planes.ts";
 import type { RoleSystem } from "../roles/roleSystem.ts";
 import type { SimRules } from "../rules.ts";
 import type { RoleAnnouncementEvent } from "../view.ts";
+import type { DeadBodySystem } from "./deadBodies.ts";
 import type { Obstacle } from "./entities.ts";
 import type { Player } from "./player.ts";
 import type { SmokeSystem } from "./smoke.ts";
@@ -43,6 +44,8 @@ export interface SimContext {
     readonly smokes: SmokeSystem;
     /** planes: air drops (flare guns) and air strikes (strobes) (M4/M5); map pings ("ping_unlock", M5b) */
     readonly planes: PlaneSystem;
+    /** where players died (M9) */
+    readonly deadBodies: DeadBodySystem;
     /** red zone (heal regions do not work in the gas, M5b) */
     readonly gas: Gas;
     /** simulation time in seconds */

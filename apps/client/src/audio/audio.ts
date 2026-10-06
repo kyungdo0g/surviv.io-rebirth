@@ -9,6 +9,9 @@
 // M5: sounds from the other floor go through the "muffled" EQ, the club music through the "club" EQ, and positional
 // sounds feed the cathedral reverb while the listener is underground (filters.ts); looping ambience tracks start
 // silent and are driven by `setVolume`.
+// M9: sounds marked canCoalesce (bullet and punch impacts, bush entries) merge into an instance of the same sound
+// that ends within 30 ms instead of starting another: its volume becomes the equal-power sum and its pan the
+// volume-weighted mean (survev lib/createJS.ts play), so a shotgun blast on a wall is one louder hit.
 // M8: the settings' volume sliders (survev audioManager.ts setMasterVolume / setSoundVolume / setMusicVolume, 0-1 each):
 // master scales the output, SFX every channel but music, Music the "music" type channel (menu and victory music);
 // they sit on gain nodes, so playing sounds follow a slider at once.
@@ -25,6 +28,16 @@ const DIFF_LAYER_MULT = 0.5;
 /** a lazily loaded sound still plays if its file arrived within this many ms of the request */
 const LATE_PLAY_MS = 200;
 const MAX_INSTANCES = 64;
+/** survev createJS kCoalesceTime: instances ending this close together merge */
+const COALESCE_TIME = 0.03;
+
+/** a playing instance of a canCoalesce sound */
+interface CoalesceTarget {
+    handle: SoundHandle;
+    stopTime: number;
+    volume: number;
+    pan: number;
+}
 
 export interface PlayOptions {
     /** sound channel (activePlayer, otherPlayers, hits, sfx, ui...); default activePlayer */
@@ -91,6 +104,9 @@ export class AudioEngine {
     private readonly loading = new Map<string, Promise<AudioBuffer | null>>();
     private readonly failed = new Set<string>();
     private readonly playing = new Map<string, number>();
+    private readonly coalescing = new Map<string, CoalesceTarget[]>();
+    /** plays merged into a playing instance (tests, debug) */
+    coalesced = 0;
     private readonly pendingPreload = new Set<string>();
     private active = 0;
     private muted = false;
@@ -253,12 +269,13 @@ export class AudioEngine {
         const pan = mixed.pan;
         const volume = opts.startSilent ? 0 : mixed.volume;
         if (volume <= MIN_VOLUME && !opts.ignoreMinAllowable && !opts.startSilent) return null;
+        const buffer = this.buffers.get(def.path);
+        if (buffer && def.canCoalesce && !opts.loop && this.coalesce(name, buffer, volume, pan)) return null;
         if ((this.playing.get(name) ?? 0) >= (def.maxInstances ?? MAX_INSTANCES) || this.active >= MAX_INSTANCES) {
             return null;
         }
 
         const handle: SoundHandle = { name, source: null, stopped: false };
-        const buffer = this.buffers.get(def.path);
         if (buffer) {
             this.start(handle, buffer, volume, pan, opts);
         } else {
@@ -270,6 +287,25 @@ export class AudioEngine {
             });
         }
         return handle;
+    }
+
+    /** Merges a play into an instance of `name` ending within COALESCE_TIME of it; false when there is none. */
+    private coalesce(name: string, buffer: AudioBuffer, volume: number, pan: number): boolean {
+        const list = this.coalescing.get(name);
+        if (!list || !this.ctx) return false;
+        const stopTime = this.ctx.currentTime + buffer.duration;
+        for (const inst of list) {
+            if (inst.handle.stopped || !inst.handle.gain || Math.abs(stopTime - inst.stopTime) > COALESCE_TIME)
+                continue;
+            const total = inst.volume + volume;
+            inst.pan = (inst.volume * inst.pan + volume * pan) / Math.max(0.001, total);
+            inst.volume = Math.sqrt(inst.volume * inst.volume + volume * volume);
+            inst.handle.gain.gain.value = inst.volume;
+            if (inst.handle.panner) inst.handle.panner.pan.value = inst.pan;
+            this.coalesced++;
+            return true;
+        }
+        return false;
     }
 
     /** Volume and stereo pan of a sound of `channelName` with definition volume `defVolume`. */
@@ -319,11 +355,23 @@ export class AudioEngine {
         const name = handle.name;
         this.playing.set(name, (this.playing.get(name) ?? 0) + 1);
         this.active++;
+        let target: CoalesceTarget | null = null;
+        if (soundDef(name, opts.channel ?? "activePlayer")?.canCoalesce && !opts.loop) {
+            target = { handle, stopTime: ctx.currentTime + buffer.duration, volume, pan };
+            const list = this.coalescing.get(name) ?? [];
+            list.push(target);
+            this.coalescing.set(name, list);
+        }
         source.onended = () => {
             this.playing.set(name, Math.max(0, (this.playing.get(name) ?? 1) - 1));
             this.active = Math.max(0, this.active - 1);
             source.disconnect();
             handle.source = null;
+            if (target) {
+                const list = this.coalescing.get(name);
+                const i = list?.indexOf(target) ?? -1;
+                if (list && i >= 0) list.splice(i, 1);
+            }
         };
         const offset = opts.offset ? opts.offset % buffer.duration : 0;
         source.start(ctx.currentTime + (opts.delay ?? 0) / 1000, Math.max(0, offset));

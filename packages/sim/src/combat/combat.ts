@@ -62,8 +62,8 @@ export function applyPlayerDamage(ctx: SimContext, target: Player, params: Damag
 }
 
 /**
- * Kills a player: kill credit, everything it carried drops (survev player.ts kill). `creditId` overrides the credited
- * player (the knocker of a downed player, M6a); killing a teammate credits no kill.
+ * Kills a player: kill credit, a dead body (M9), everything it carried drops (survev player.ts kill). `creditId`
+ * overrides the credited player (the knocker of a downed player, M6a); killing a teammate credits no kill.
  */
 export function killPlayer(ctx: SimContext, player: Player, params: DamageParams, creditId?: number): void {
     if (player.dead) return;
@@ -99,6 +99,8 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     if (potato && killer && killer !== player && params.damageType === DamageType.Player) {
         randomWeaponSwap(ctx, killer, params);
     }
+    // the body slides along the killing hit, before the loot drops (survev player.ts kill addDeadBody) (M9)
+    ctx.deadBodies.add(player.pos, player.id, player.layer, params.dir);
     dropEverythingOnDeath(ctx, player);
     goreRegionKill(ctx, player);
 }

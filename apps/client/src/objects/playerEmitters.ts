@@ -2,28 +2,20 @@
 // heal emitter): while a heal is used the loadout's heal effect emitter (heal_basic: red crosses rising around the
 // player) runs, while a boost is used the boost effect (boost_basic: green arrows); standing in a building heal
 // region (PlayerView.healEffect, the bathhouse steam room) runs heal_basic too. Emitters follow the player slightly
-// above its centre, on its render layer, just over it. M6: both sides of a revive (action "revive") run the heal effect
-// in purple (survev updateActionEffect Action.Revive: hsv(0.83, 1, 0.7..1)).
+// above its centre, on its render layer, just over it. A downed player being revived runs revive_basic (purple crosses;
+// the 0.8.82 client's updateActionEffect: Action.Revive while downed, the reviver shows nothing; survev later moved
+// the purple heal effect to both sides). M9: with Mass Medicate (aoe_heal) the use-item emitter covers the heal range
+// (scale 1.5, radius medicHealRange / 1.5, a quarter of the delay).
 import type { Vec2 } from "@rebirth/core";
-import { GameObjectDefs } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs } from "@rebirth/defs";
 import type { PlayerView } from "@rebirth/sim";
-import type { Emitter, ParticleSystem } from "../fx/particles.ts";
+import type { Emitter, EmitterOptions, ParticleSystem } from "../fx/particles.ts";
 
 /** the default loadout's effects (players have no cosmetic loadout yet) */
 const HEAL_EFFECT = "heal_basic";
 const BOOST_EFFECT = "boost_basic";
-const REVIVE_EFFECT = "revive";
-
-/** survev util.hsvToRgb(0.83, 1, v) for v in 0.7..1, packed */
-function reviveColor(): number {
-    const v = 0.7 + Math.random() * 0.3;
-    const h = 0.83 * 6;
-    const f = h - Math.floor(h);
-    // sector 4: (t, p, v) with s = 1
-    const r = v * f;
-    const b = v;
-    return (Math.round(r * 255) << 16) | Math.round(b * 255);
-}
+const REVIVE_EFFECT = "revive_basic";
+const AOE_SCALE = 1.5;
 
 export class PlayerEmitters {
     private readonly particles: ParticleSystem;
@@ -38,24 +30,22 @@ export class PlayerEmitters {
     update(view: PlayerView, pos: Vec2, layer: number, zOrd: number): void {
         let type = "";
         const action = view.action;
+        const opts: EmitterOptions = { pos, layer, zOrd };
         if (!view.dead && action?.type === "use") {
             const def = GameObjectDefs[action.item];
             if (def?.type === "heal") type = HEAL_EFFECT;
             else if (def?.type === "boost") type = BOOST_EFFECT;
-        } else if (!view.dead && action?.type === "revive") {
+            if (view.perks?.some((p) => p.type === "aoe_heal")) {
+                opts.scale = AOE_SCALE;
+                opts.radius = GameConfig.player.medicHealRange / AOE_SCALE;
+                opts.rateMult = 0.25;
+            }
+        } else if (!view.dead && view.downed && action?.type === "revive") {
             type = REVIVE_EFFECT;
         }
         if (type !== this.useItemType) {
             this.useItem?.stop();
-            const revive = type === REVIVE_EFFECT;
-            this.useItem = type
-                ? this.particles.addEmitter(revive ? HEAL_EFFECT : type, {
-                      pos,
-                      layer,
-                      zOrd,
-                      color: revive ? reviveColor : undefined,
-                  })
-                : null;
+            this.useItem = type ? this.particles.addEmitter(type, opts) : null;
             this.useItemType = type;
         }
         const heal = !!view.healEffect && !view.dead;

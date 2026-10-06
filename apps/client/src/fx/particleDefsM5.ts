@@ -1,7 +1,7 @@
 // M5 particle and emitter definitions: explosion bursts and impacts, water ripples, the pin and lever of a thrown
-// grenade, heal/boost effects, chimney smoke, bathhouse steam, bunker bubbles and the roof debris of collapsing
-// buildings. Values are the original client's particle data (survev client/src/objects/particles.ts ParticleDefs and
-// EmitterDefs, the same numbers as the 0.8.82 bundle), ported as data.
+// grenade, heal/boost effects (every loadout variant of the 0.8.82 client, M9), chimney smoke, bathhouse steam, bunker
+// bubbles and the roof debris of collapsing buildings. Values are the original client's particle data (survev
+// client/src/objects/particles.ts ParticleDefs and EmitterDefs, checked against the 0.8.82 bundle), ported as data.
 import { hsv, type ParticleDef, type Range } from "./particleDefs.ts";
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -66,6 +66,9 @@ function effect(image: string, color: () => number, rotVel: Range, drag: number,
     } satisfies ParticleDef;
 }
 
+const healColor = () => hsv(0, 1, rnd(0.7, 1));
+const boostColor = () => hsv(0.3, 1, rnd(0.7, 1));
+
 export const PARTICLE_DEFS_M5: Readonly<Record<string, ParticleDef>> = {
     explosionBurst: burst("part-frag-burst-01.img", () => hsv(0.065, 1, rnd(0.98, 0.99))),
     explosionMIRV: burst("part-frag-burst-01.img", () => hsv(0, 1, rnd(0.82, 0.84))),
@@ -86,7 +89,7 @@ export const PARTICLE_DEFS_M5: Readonly<Record<string, ParticleDef>> = {
     },
     snowball_impact: impact("part-snow-01.img", () => hsv(0, 0, rnd(0.9, 0.95))),
     potato_impact: impact("part-potato-01.img", () => hsv(0, 0, rnd(0.9, 0.95))),
-    potato_smg_impact: impact("part-potato-01.img", 0xffe685),
+    potato_smg_impact: impact("part-potato-01.img", 0xffe585),
     waterRipple: {
         image: ["player-ripple-01.img"],
         zOrd: 10,
@@ -120,15 +123,23 @@ export const PARTICLE_DEFS_M5: Readonly<Record<string, ParticleDef>> = {
         alphaLerp: [0.5, 1],
         color: 0xffffff,
     },
-    heal_basic: effect("part-heal-basic.img", () => hsv(0, 1, rnd(0.7, 1)), 0, 0.25, [0.1, 0.12], [0.05, 0.07]),
-    boost_basic: effect(
-        "part-boost-basic.img",
-        () => hsv(0.3, 1, rnd(0.7, 1)),
-        [PI * 0.25, PI * 0.5],
+    heal_basic: effect("part-heal-basic.img", healColor, 0, 0.25, [0.1, 0.12], [0.05, 0.07]),
+    heal_heart: effect("part-heal-heart.img", healColor, 0, 0.25, [0.1, 0.12], [0.05, 0.07]),
+    heal_moon: effect("part-heal-moon.img", healColor, [PI * 0.25, PI * 0.5], 0.25, [0.1, 0.12], [0.05, 0.07]),
+    heal_tomoe: effect("part-heal-tomoe.img", healColor, [PI * 0.5, PI], 0.25, [0.1, 0.12], [0.05, 0.07]),
+    boost_basic: effect("part-boost-basic.img", boostColor, [PI * 0.25, PI * 0.5], 0, [0.12, 0.14], [0.06, 0.08]),
+    boost_star: effect("part-boost-star.img", boostColor, [PI * 0.25, PI * 0.5], 0, [0.12, 0.14], [0.06, 0.08]),
+    boost_naturalize: effect(
+        "part-boost-naturalize.img",
+        boostColor,
+        [PI * 0.35, PI * 0.7],
         0,
         [0.12, 0.14],
         [0.06, 0.08],
     ),
+    boost_shuriken: effect("part-boost-shuriken.img", boostColor, [PI, PI * 2], 0, [0.12, 0.14], [0.06, 0.08]),
+    // purple crosses around a downed player being revived (0.8.82 updateActionEffect: Revive while downed)
+    revive_basic: effect("part-heal-basic.img", () => hsv(0.83, 1, rnd(0.7, 1)), 0, 0.25, [0.1, 0.12], [0.05, 0.07]),
     cabinSmoke: {
         image: ["part-smoke-02.img", "part-smoke-03.img"],
         life: [3, 3.25],
@@ -195,6 +206,14 @@ export interface EmitterDef {
     rot?: Range;
     maxCount?: number;
     zOrd?: number;
+    /** the delay eases from `rate` towards `maxRate` over `maxElapsed` seconds (easeInExpo; heavy snowfall) */
+    maxRate?: Range;
+    maxElapsed?: number;
+}
+
+/** a heal / boost effect emitter around a player: 1.5 units wide, rising at 1-1.5 units/s */
+function effectEmitter(particle: string, rate: Range, rot: Range): EmitterDef {
+    return { particle, rate, radius: 1.5, speed: [1, 1.5], angle: 0, rot };
 }
 
 export const EMITTER_DEFS: Readonly<Record<string, EmitterDef>> = {
@@ -239,20 +258,13 @@ export const EMITTER_DEFS: Readonly<Record<string, EmitterDef>> = {
         angle: PI * -2.2,
         rot: [0, PI * 2],
     },
-    heal_basic: {
-        particle: "heal_basic",
-        rate: [0.3, 0.35],
-        radius: 1.5,
-        speed: [1, 1.5],
-        angle: 0,
-        rot: 0,
-    },
-    boost_basic: {
-        particle: "boost_basic",
-        rate: [0.3, 0.35],
-        radius: 1.5,
-        speed: [1, 1.5],
-        angle: 0,
-        rot: [0, PI * 2],
-    },
+    heal_basic: effectEmitter("heal_basic", [0.3, 0.35], 0),
+    heal_heart: effectEmitter("heal_heart", [0.3, 0.35], 0),
+    heal_moon: effectEmitter("heal_moon", [0.3, 0.35], 0),
+    heal_tomoe: effectEmitter("heal_tomoe", [0.3, 0.35], 0),
+    boost_basic: effectEmitter("boost_basic", [0.3, 0.35], [0, PI * 2]),
+    boost_star: effectEmitter("boost_star", [0.3, 0.35], [0, PI * 2]),
+    boost_naturalize: effectEmitter("boost_naturalize", [0.3, 0.35], [0, PI * 2]),
+    boost_shuriken: effectEmitter("boost_shuriken", [0.3, 0.35], [0, PI * 2]),
+    revive_basic: effectEmitter("revive_basic", [0.5, 0.55], 0),
 };

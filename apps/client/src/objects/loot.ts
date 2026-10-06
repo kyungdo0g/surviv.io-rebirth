@@ -1,6 +1,7 @@
 // Loot on the ground: item image inside its border circle, as in survev client/src/objects/loot.ts. The border is
-// tinted with the gun's ammo colour (tintDark) or the def's borderTint. (Preloaded guns' special border needs an
-// `isPreloadedGun` flag the LootView does not carry yet.)
+// tinted with the gun's ammo colour (tintDark) or the def's borderTint. M9: a preloaded gun (spawned with its clip
+// full, no side ammo) uses the thick `loot-circle-outer-06` border (0.8.82 loot.ts: `isPreloadedGun` of the loot
+// message, carried by LootView).
 // Freshly dropped loot pops in with an elastic scale (loot already lying there when it enters the view does not).
 // Border and item are sibling sprites because Pixi v8 multiplies tints down the hierarchy.
 import type { Vec2 } from "@rebirth/core";
@@ -14,6 +15,12 @@ import { boxAround, type FrameContext, type ObjectRender, type ViewDeps } from "
 const LOOT_Z_ORD = 13;
 /** new loot farther than this from the viewer was already lying there and entered the view (no pop-in) */
 const FRESH_DIST = 24;
+const PRELOADED_BORDER = "loot-circle-outer-06.img";
+
+/** the loot's `isPreloadedGun` flag (survev LootMsg) */
+function isPreloadedGun(view: LootView): boolean {
+    return view.isPreloadedGun === true;
+}
 
 /** survev math.easeOutElastic */
 function easeOutElastic(e: number, t = 0.3): number {
@@ -59,7 +66,7 @@ export class LootRender implements ObjectRender<LootView> {
         this.item.tint = img.tint;
         this.item.rotation = img.rot ?? 0;
         this.item.scale.set(img.mirror ? -inner : inner, inner);
-        this.deps.textures.apply(this.border, img.border, this.imgScale);
+        this.deps.textures.apply(this.border, isPreloadedGun(view) ? PRELOADED_BORDER : img.border, this.imgScale);
         const ammo = "ammo" in def ? (GameObjectDefs[def.ammo] as AmmoDef | undefined) : undefined;
         this.border.tint = ammo?.lootImg.tintDark ?? img.borderTint ?? 0;
     }

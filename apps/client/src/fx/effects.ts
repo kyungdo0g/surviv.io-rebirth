@@ -4,9 +4,22 @@
 // animPlaySound; animMeleeCollision), shot.ts (casings, cycle/pull sounds) and the PickupMsg handler. M4: button
 // use and obstacle destruction effects (survev obstacle.ts: use particle + on/off sound, 5-10 explode particles
 // + explode sound). M5: the pin and lever of a thrown grenade (survev animThrowableParticles).
-import { collider, math, type Vec2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, type GunDef, MapObjectDefs, type MeleeDef, type ObstacleDef } from "@rebirth/defs";
+// M9: the tracer queries of BulletScene (shooter, previous player transforms for pans, containers for blood, stairs,
+// bright floors); the kill frame's flesh-hit sound (survev game.ts Kill handler); melee hits as in survev player.ts
+// animMeleeCollision: teammates come last, players behind an obstacle are not hit, cleaving weapons skip obstacles
+// behind a wall, and the particles draw just above the hit object's render order.
+import { type Collider, collider, math, type Vec2 } from "@rebirth/core";
+import {
+    DamageType,
+    GameConfig,
+    GameObjectDefs,
+    type GunDef,
+    MapObjectDefs,
+    type MeleeDef,
+    type ObstacleDef,
+} from "@rebirth/defs";
 import type { LocalPlayerState, ObstacleView, PlayerView, Snapshot } from "@rebirth/sim";
+import type { Container } from "pixi.js";
 import type { AudioEngine, SoundHandle } from "../audio/audio.ts";
 import type { AnimEffect } from "../objects/anims.ts";
 import type { ObstacleFx, PlayerFx } from "../objects/types.ts";
@@ -14,8 +27,9 @@ import type { ObjectWorld } from "../objects/world.ts";
 import type { BulletScene, BulletSystem } from "./bullets.ts";
 import type { ParticleSystem } from "./particles.ts";
 
-/** players draw at zOrd 18; casings and melee hit particles go just above them */
-const PLAYER_FX_Z_ORD = 19;
+/** players draw at zOrd 18; casings go just above them */
+const PLAYER_Z_ORD = 18;
+const PLAYER_FX_Z_ORD = PLAYER_Z_ORD + 1;
 const CASING_SPEED = 9.5;
 const HIT_PARTICLE_SPEED = 7.5;
 
@@ -34,6 +48,44 @@ function gunDef(id: string): GunDef | undefined {
     return def?.type === "gun" ? def : undefined;
 }
 
+/** Render layer and zOrd of a player view (objects/player.ts update; survev player.ts updateRenderLayer). */
+export function playerRenderOrder(view: PlayerView, viewerLayer: number): { layer: number; zOrd: number } {
+    let zOrd = PLAYER_Z_ORD;
+    if (view.layer & 2 && (view.layer & 1) === (viewerLayer & 1)) zOrd += 100;
+    return { layer: view.layer, zOrd };
+}
+
+interface MeleeObstacle {
+    view: ObstacleView;
+    def: ObstacleDef;
+    col: Collider;
+}
+
+/**
+ * Obstacles a melee probe can be blocked by on pos -> pos + dir * len (survev collisionHelpers.intersectSegment):
+ * collidable, not windows, at least `height` tall, on `layer`. Returns the nearest hit's id and distance.
+ */
+function firstBlocker(
+    obstacles: readonly MeleeObstacle[],
+    pos: Vec2,
+    dir: Vec2,
+    len: number,
+    height: number,
+    layer: number,
+): { id: number; dist: number } | null {
+    const end = { x: pos.x + dir.x * len, y: pos.y + dir.y * len };
+    let best: { id: number; dist: number } | null = null;
+    for (const o of obstacles) {
+        if (o.view.dead || !o.def.collidable || o.def.isWindow || o.def.height < height) continue;
+        if (!sameLayer(o.view.layer, layer)) continue;
+        const res = collider.intersectSegment(o.col, pos, end);
+        if (!res) continue;
+        const dist = Math.hypot(res.point.x - pos.x, res.point.y - pos.y);
+        if (!best || dist < best.dist) best = { id: o.view.id, dist };
+    }
+    return best;
+}
+
 export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
     readonly audio: AudioEngine;
     readonly particles: ParticleSystem;
@@ -41,6 +93,12 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
     private world: ObjectWorld | null = null;
     localId = -1;
     cameraPos: Vec2 = { x: 0, y: 0 };
+    /** layer of the followed player (the camera's layer) */
+    activeLayer = 0;
+    /** player positions and facings of the previous snapshot (pan sweeps of the tracer check) */
+    private readonly prevPlayers = new Map<number, { pos: Vec2; dir: Vec2 }>();
+    /** kill-frame hit sounds played (tests, M9) */
+    killHitSounds = 0;
     /** latest local state (set before the snapshot's views are applied, so view hooks see this snapshot) */
     private local: LocalPlayerState | null = null;
     private prevLocal: LocalPlayerState | null = null;
@@ -64,6 +122,7 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         this.prevLocal = null;
         this.local = null;
         this.actionSounds.clear();
+        this.prevPlayers.clear();
     }
 
     forEachObstacle(cb: (view: ObstacleView) => void): void {
@@ -74,20 +133,60 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         this.world?.forEachView("player", cb);
     }
 
+    get activeAlive(): boolean {
+        return !!this.local && !this.local.dead;
+    }
+
+    playerById(id: number): PlayerView | undefined {
+        const view = this.world?.get(id);
+        return view?.kind === "player" ? view : undefined;
+    }
+
+    playerOld(id: number): { pos: Vec2; dir: Vec2 } | undefined {
+        return this.prevPlayers.get(id);
+    }
+
+    playerContainer(id: number): Container | null {
+        return this.world?.playerContainer(id) ?? null;
+    }
+
+    segmentOnStairs(a: Vec2, b: Vec2): boolean {
+        return this.world?.segmentOnStairs(a, b) ?? false;
+    }
+
+    brightSurfaceAt(pos: Vec2, layer: number): boolean {
+        return this.world?.brightSurfaceAt(pos, layer) ?? false;
+    }
+
+    insideStairMask(pos: Vec2, rad: number): boolean {
+        return this.world?.insideStructureMask(pos, rad) ?? false;
+    }
+
     /** Call before the snapshot's objects are applied. */
     beginSnapshot(s: Snapshot): void {
         this.prevLocal = this.local;
         this.local = s.local;
+        this.prevPlayers.clear();
+        this.forEachPlayer((p) => this.prevPlayers.set(p.id, { pos: p.pos, dir: p.dir }));
     }
 
     /** Call after the snapshot's objects are applied. */
     endSnapshot(s: Snapshot): void {
         if (s.bullets?.length) this.bullets.addEvents(s.bullets, this);
+        // bullets often miss their hit sound on the frame a player dies: the Kill message plays it (survev game.ts)
+        for (const kill of s.kills ?? []) {
+            if (kill.damageType !== DamageType.Player) continue;
+            const target = this.playerById(kill.targetId);
+            if (!target) continue;
+            this.bullets.playerHitSound(target);
+            this.killHitSounds++;
+        }
         if (this.prevLocal) this.localChanges(this.prevLocal, s.local);
     }
 
     update(dt: number, cameraPos: Vec2, layer: number): void {
         this.cameraPos = cameraPos;
+        this.activeLayer = layer;
         this.audio.cameraPos = cameraPos;
         this.audio.activeLayer = layer;
         this.gunSwitchCooldown -= dt;
@@ -266,39 +365,56 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         });
     }
 
-    /** Client-side melee impact: blood and hit sound on players, chips and punch sound on obstacles. */
+    /**
+     * Client-side melee impact (survev player.ts animMeleeCollision): blood and hit sound on players, chips and punch
+     * sound on obstacles. Enemies first, then obstacles, teammates last, deepest first within each; one hit unless the
+     * weapon cleaves. A player behind an obstacle the probe crosses is not hit; cleaving weapons also skip obstacles
+     * behind a wall. Particles draw just above the hit object (obstacles: the attacker's render order).
+     */
     private meleeHit(player: PlayerView, pos: Vec2, dir: Vec2, def: MeleeDef, playerHitKey?: string): void {
         const ang = Math.atan2(dir.y, dir.x);
         const off = rotate({ x: def.attack.offset.x + ((player.scale || 1) - 1), y: def.attack.offset.y }, ang);
         const center = { x: pos.x + off.x, y: pos.y + off.y };
-        const circle = collider.createCircle(center, def.attack.rad);
-        // enemies first, then obstacles; deepest first within each (survev animMeleeCollision prio)
+        const rad = def.attack.rad;
+        const circle = collider.createCircle(center, rad);
+        const meleeDist = rad + Math.hypot(off.x, off.y);
+        const all: MeleeObstacle[] = [];
+        this.forEachObstacle((o) => {
+            const odef = MapObjectDefs[o.type] as ObstacleDef | undefined;
+            if (odef)
+                all.push({
+                    view: o,
+                    def: odef,
+                    col: collider.transform(odef.collision, o.pos, math.oriToRad(o.ori), o.scale),
+                });
+        });
+        const near = all.filter((o) => collider.intersect(circle, o.col) !== null);
+        const own = playerRenderOrder(player, this.activeLayer);
         const hits: Array<{
             prio: number;
             pen: number;
             pos: Vec2;
             vel: Vec2;
             layer: number;
+            zOrd: number;
             particle: string;
             sound: () => void;
         }> = [];
-        this.forEachObstacle((o) => {
-            const odef = MapObjectDefs[o.type] as ObstacleDef | undefined;
-            if (
-                !odef ||
-                o.dead ||
-                odef.height < GameConfig.player.meleeHeight ||
-                !sameLayer(o.layer, player.layer & 1)
-            ) {
-                return;
+        for (const o of near) {
+            const { view, def: odef } = o;
+            if (view.dead || odef.height < GameConfig.player.meleeHeight || !sameLayer(view.layer, player.layer & 1)) {
+                continue;
             }
-            const col = collider.transform(odef.collision, o.pos, math.oriToRad(o.ori), o.scale);
-            const res = collider.intersect(circle, col);
-            if (!res) return;
-            const point = {
-                x: center.x + res.dir.x * (def.attack.rad - res.pen),
-                y: center.y + res.dir.y * (def.attack.rad - res.pen),
-            };
+            const res = collider.intersect(circle, o.col);
+            if (!res) continue;
+            if (def.cleave) {
+                const toObstacle = { x: view.pos.x - pos.x, y: view.pos.y - pos.y };
+                const len = Math.hypot(toObstacle.x, toObstacle.y);
+                const meleeDir = len > 1e-6 ? { x: toObstacle.x / len, y: toObstacle.y / len } : { x: 1, y: 0 };
+                const wall = firstBlocker(all, pos, meleeDir, meleeDist, odef.height, player.layer);
+                if (wall && wall.id !== view.id) continue;
+            }
+            const point = { x: center.x + res.dir.x * (rad - res.pen), y: center.y + res.dir.y * (rad - res.pen) };
             const vel = rotate(
                 { x: -res.dir.x * HIT_PARTICLE_SPEED, y: -res.dir.y * HIT_PARTICLE_SPEED },
                 (Math.random() - 0.5) * (Math.PI / 3),
@@ -308,36 +424,49 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
                 pen: res.pen,
                 pos: point,
                 vel,
-                layer: o.layer,
+                layer: own.layer,
+                zOrd: own.zOrd,
                 particle: odef.hitParticle,
                 sound: () => this.audio.playGroup(odef.sound.punch, { pos: point, layer: player.layer }),
             });
-        });
+        }
+        const ownTeam = this.world?.teamOf(player.id) ?? 0;
         this.forEachPlayer((p) => {
             if (p.id === player.id || p.dead || !sameLayer(p.layer, player.layer)) return;
-            const rad = GameConfig.player.radius * (p.scale || 1);
+            const prad = GameConfig.player.radius * (p.scale || 1);
             const d = Math.hypot(p.pos.x - center.x, p.pos.y - center.y);
-            if (d >= rad + def.attack.rad) return;
+            if (d >= prad + rad) return;
             const toP = { x: p.pos.x - pos.x, y: p.pos.y - pos.y };
-            const len = Math.hypot(toP.x, toP.y) || 1;
-            const vel = rotate({ x: toP.x / len, y: toP.y / len }, (Math.random() - 0.5) * (Math.PI / 3));
+            const len = Math.hypot(toP.x, toP.y);
+            const meleeDir = len > 1e-6 ? { x: toP.x / len, y: toP.y / len } : { x: 1, y: 0 };
+            const end = { x: pos.x + meleeDir.x * meleeDist, y: pos.y + meleeDir.y * meleeDist };
+            const line = collider.intersectSegment({ type: 0, pos: p.pos, rad: prad }, pos, end);
+            const pt = line ? line.point : p.pos;
+            const distToPlayer = Math.hypot(pt.x - pos.x, pt.y - pos.y);
+            const blocker = firstBlocker(near, pos, meleeDir, meleeDist, GameConfig.player.meleeHeight, player.layer);
+            if (blocker && blocker.dist < distToPlayer) return;
+            const team = this.world?.teamOf(p.id) ?? 0;
+            const vel = rotate(meleeDir, (Math.random() - 0.5) * (Math.PI / 3));
             const sounds = def.sound as Record<string, string | undefined>;
             const sound = (playerHitKey && sounds[playerHitKey]) || def.sound.playerHit;
+            const order = playerRenderOrder(p, this.activeLayer);
+            const at = { x: p.pos.x, y: p.pos.y };
             hits.push({
-                prio: 0,
-                pen: rad + def.attack.rad - d,
-                pos: p.pos,
+                prio: team !== 0 && team === ownTeam ? 2 : 0,
+                pen: prad + rad - d,
+                pos: at,
                 vel,
-                layer: p.layer,
+                layer: order.layer,
+                zOrd: order.zOrd,
                 particle: "bloodSplat",
-                sound: () => this.audio.playSound(sound, { channel: "hits", pos: p.pos, layer: player.layer }),
+                sound: () => this.audio.playSound(sound, { channel: "hits", pos: at, layer: player.layer }),
             });
         });
         hits.sort((a, b) => a.prio - b.prio || b.pen - a.pen);
         const count = def.cleave ? hits.length : Math.min(hits.length, 1);
         for (let i = 0; i < count; i++) {
             const h = hits[i];
-            this.particles.add(h.particle, h.layer, h.pos, h.vel, { zOrd: PLAYER_FX_Z_ORD });
+            this.particles.add(h.particle, h.layer, h.pos, h.vel, { zOrd: h.zOrd + 1 });
             h.sound();
         }
     }

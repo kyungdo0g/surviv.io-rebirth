@@ -7,8 +7,9 @@ import type { Game, Player, PlayerInput } from "../src/index.ts";
 import { constantRng, flatGame, giveGun, openSpot, send, spawnAt, steps } from "./combatHelpers.ts";
 import { hasFixture, histogramValues, loadFixture, Mismatches, TICK } from "./oracleHelpers.ts";
 
-const HOLD = { shootHold: true };
-const CLICK = { shootHold: true, shootStart: true };
+// the cursor far away like the oracle scenario: USAS-12 rounds (toMouseHit) stop at the cursor (M9)
+const HOLD = { shootHold: true, toMouseLen: 1000 };
+const CLICK = { shootHold: true, shootStart: true, toMouseLen: 1000 };
 const READY_TICKS = 300;
 
 function triggerFor(gun: string): Partial<PlayerInput> {

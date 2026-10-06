@@ -9,7 +9,7 @@
 // address gets the banned text.
 import type { Vec2 } from "@rebirth/core";
 import { DisconnectReason, type ReportResponse, submitReport } from "@rebirth/protocol";
-import type { Application } from "pixi.js";
+import { type Application, UPDATE_PRIORITY } from "pixi.js";
 import { TextureStore } from "../assets/textures.ts";
 import type { AudioEngine } from "../audio/audio.ts";
 import { sharedAudio } from "../audio/shared.ts";
@@ -27,6 +27,7 @@ import { showToast } from "../ui/toast.ts";
 import { GameClient } from "./client.ts";
 import { exposeM7 } from "./debugM7.ts";
 import { exposeM8 } from "./debugM8.ts";
+import { exposeM9 } from "./debugM9.ts";
 import { gasStagesFor } from "./gasStages.ts";
 
 export interface SandboxOptions {
@@ -263,10 +264,13 @@ function exposeGlobals(
         },
     };
     globals.playerAnim = (id: number) => (client.world?.renderOf(id) as PlayerRender | undefined)?.animName ?? null;
+    globals.perf = { sampleFrames: (frames: number) => sampleFrameTimes(client.app, frames) };
+    exposeWorldFeel(client);
     exposeM5(client);
     exposeM6(client);
     exposeM7(client);
     exposeM8(client);
+    exposeM9(client);
     globals.interaction = () => client.interaction;
     globals.audio = {
         get unlocked() {
@@ -367,6 +371,72 @@ function exposeGlobals(
             return client.pingIndicator.active;
         },
     };
+}
+
+/** M9 world-feel hooks: camera particles, ground surfaces, a player's footsteps / wading / bush effects. */
+function exposeWorldFeel(client: GameClient): void {
+    debugGlobals().worldFeel = {
+        get cameraEmitter() {
+            return { type: client.cameraFx?.type ?? "", running: !!client.cameraFx?.running };
+        },
+        get particles() {
+            return client.particles.count;
+        },
+        /** sounds merged into a playing instance (canCoalesce) */
+        get coalesced() {
+            return client.audio.coalesced;
+        },
+        surfaceAt: (x: number, y: number, layer = 0) =>
+            client.worldQueries?.groundSurface({ x, y }, layer).type ?? null,
+        /** footsteps, splashes and bush effects played by a player's view, its surface and wading depth */
+        steps: (id: number) => {
+            const r = client.world?.renderOf(id) as PlayerRender | undefined;
+            const steps = r && "steps" in r ? r.steps : null;
+            return steps ? { ...steps.counts, surface: steps.surface, depth: steps.depth } : null;
+        },
+    };
+}
+
+/** CPU time per ticker frame over a sample, in ms */
+interface FrameTimes {
+    avgMs: number;
+    medianMs: number;
+    /** mean of the frames between the 5th and the 95th percentile (stalls of a loaded machine left out) */
+    trimmedMs: number;
+    maxMs: number;
+    frames: number;
+}
+
+/**
+ * CPU time of a ticker frame (every callback: the game client's update, then Pixi's render) over the next `frames`
+ * frames, in ms (M9 frame-time check): a first and a last ticker callback bracket the frame.
+ */
+function sampleFrameTimes(app: Application, frames: number): Promise<FrameTimes> {
+    return new Promise((resolve) => {
+        let start = 0;
+        const times: number[] = [];
+        const begin = (): void => {
+            start = performance.now();
+        };
+        const end = (): void => {
+            if (!start) return;
+            times.push(performance.now() - start);
+            if (times.length < frames) return;
+            app.ticker.remove(begin);
+            app.ticker.remove(end);
+            const sorted = [...times].sort((a, b) => a - b);
+            const mid = sorted.slice(Math.floor(sorted.length * 0.05), Math.ceil(sorted.length * 0.95));
+            resolve({
+                avgMs: times.reduce((a, b) => a + b, 0) / times.length,
+                medianMs: sorted[Math.floor(sorted.length / 2)],
+                trimmedMs: mid.reduce((a, b) => a + b, 0) / mid.length,
+                maxMs: sorted[sorted.length - 1],
+                frames: times.length,
+            });
+        };
+        app.ticker.add(begin, undefined, UPDATE_PRIORITY.INTERACTION + 1);
+        app.ticker.add(end, undefined, UPDATE_PRIORITY.UTILITY - 1);
+    });
 }
 
 /** M6 test hooks: team HUD, minimap team dots, names, emotes and pings, revive prompt. */

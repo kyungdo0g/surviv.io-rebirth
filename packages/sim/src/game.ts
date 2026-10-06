@@ -1,9 +1,8 @@
 // Game: fixed-step authoritative simulation implementing the GameApi contract.
 // Tick order follows survev server/src/game/game.ts: start check, gas, players (gas damage, input actions, boost,
-// movement, weapons), loot, bullets (then their queued damage), projectiles, explosions, smoke, obstacle timers,
-// building puzzles and scheduled unlocks (M5b), planes, air strikes and air drops, building occupancy, spectators,
-// group spawn positions and team status (M6a), faction status and role schedules / indicators (M7a), then the end-of-tick
-// match results.
+// movement, weapons), loot, bullets (then their queued damage), projectiles, explosions, smoke, dead bodies (M9),
+// obstacle timers, building puzzles and scheduled unlocks (M5b), planes, air strikes and air drops, building occupancy,
+// spectators, group spawns and team status (M6a), faction status and role schedules (M7a), then the match results.
 import { type Bounds, type Rng, type Vec2, v2 } from "@rebirth/core";
 import { DamageType, type GasStage, getMapDef } from "@rebirth/defs";
 import { type GameApi, type GameOptions, type SpectateActionName, TICK_HZ } from "./api.ts";
@@ -43,6 +42,7 @@ import type {
     Snapshot,
 } from "./view.ts";
 import type { SimContext } from "./world/context.ts";
+import { DeadBodySystem } from "./world/deadBodies.ts";
 import { checkDoorLayer } from "./world/doors.ts";
 import { dropItem } from "./world/dropItem.ts";
 import type { Building, Obstacle } from "./world/entities.ts";
@@ -124,6 +124,8 @@ export class Game implements GameApi, SimContext {
     readonly explosions: ExplosionSystem;
     /** smoke emitters and clouds (M5) */
     readonly smokes: SmokeSystem;
+    /** where players died (M9) */
+    readonly deadBodies: DeadBodySystem;
     /** red zone (M4) */
     readonly gas: Gas;
     /** match lifecycle: start, alive count, kills, kill leader, game over (M4) */
@@ -186,6 +188,7 @@ export class Game implements GameApi, SimContext {
         this.projectiles = new ProjectileSystem(this);
         this.explosions = new ExplosionSystem(this);
         this.smokes = new SmokeSystem(this);
+        this.deadBodies = new DeadBodySystem(this.world);
         const gasRng = subRng(options.seed, `gas:${options.mapName}`);
         this.gas = new Gas(this.mapData.width, this.mapData.height, gasRng, init.gasStages);
         this.planes = new PlaneSystem(this, options.mapName, subRng(options.seed, `planes:${options.mapName}`));
@@ -475,6 +478,7 @@ export class Game implements GameApi, SimContext {
         this.projectiles.update(dt);
         this.explosions.update(dt);
         this.smokes.update(dt);
+        this.deadBodies.update(dt);
         for (const obstacle of [...this.activeObstacles]) {
             if (!updateObstacleTimers(this, obstacle, dt)) this.activeObstacles.delete(obstacle);
         }

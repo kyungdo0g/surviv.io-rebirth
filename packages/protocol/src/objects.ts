@@ -12,11 +12,13 @@
 //            changed groups in table order. Like 0.8.82 there is no type byte: the decoder knows the object.
 // Compared with the original fixed partial/full split (netcode.md "Object serialization"), groups make a partial
 // record carry only what changed (a moving player: 9 bytes; a gun shot: 6 bytes).
+// M9: DeadBody (original ObjectType 5).
 import type { BitReader, BitWriter } from "@rebirth/core";
 import type {
     ActionType,
     AnimType,
     BuildingView,
+    DeadBodyView,
     DecalView,
     HasteName,
     LootView,
@@ -386,11 +388,14 @@ export const DecalCodec: ObjectCodec<DecalView> = {
     },
 };
 
-/** Loot. Static: type. Groups: 0 pos, 1 count and layer (count is u16: dropped ammo stacks exceed 255). */
+/**
+ * Loot. Static: type, isPreloadedGun (M9; the original LootMsg bit). Groups: 0 pos, 1 count and layer (count is u16:
+ * dropped ammo stacks exceed 255).
+ */
 export const LootCodec: ObjectCodec<LootView> = {
     kind: "loot",
     code: ObjectTypeCode.Loot,
-    fields: [f(GT, S), f(P, 0), f(P, 0), f(LOOT_COUNT_BITS, 1), f(2, 1)],
+    fields: [f(GT, S), f(P, 0), f(P, 0), f(LOOT_COUNT_BITS, 1), f(2, 1), f(1, S)],
     groupCount: 2,
     quantize(v, ctx, out) {
         out[0] = gameTypeId(v.type);
@@ -398,6 +403,7 @@ export const LootCodec: ObjectCodec<LootView> = {
         out[2] = quantizeY(ctx, v.pos.y);
         out[3] = Math.min(Math.max(Math.round(v.count), 0), 2 ** LOOT_COUNT_BITS - 1);
         out[4] = v.layer & 3;
+        out[5] = v.isPreloadedGun ? 1 : 0;
     },
     build(id, v, ctx) {
         return {
@@ -407,6 +413,34 @@ export const LootCodec: ObjectCodec<LootView> = {
             pos: dequantizePos(ctx, v[1], v[2]),
             layer: v[4],
             count: v[3],
+            ...(v[5] === 1 ? { isPreloadedGun: true } : {}),
+        };
+    },
+};
+
+/**
+ * Dead body (M9). Static: layer, playerId u16 (the original full record: layer u8, playerId u16; a layer change on
+ * stairs is a full record, like survev's setDirty). Group 0: pos (the original partial record).
+ */
+export const DeadBodyCodec: ObjectCodec<DeadBodyView> = {
+    kind: "deadBody",
+    code: ObjectTypeCode.DeadBody,
+    fields: [f(P, 0), f(P, 0), f(2, S), f(16, S)],
+    groupCount: 1,
+    quantize(v, ctx, out) {
+        out[0] = quantizeX(ctx, v.pos.x);
+        out[1] = quantizeY(ctx, v.pos.y);
+        out[2] = v.layer & 3;
+        out[3] = v.playerId & 0xffff;
+    },
+    build(id, v, ctx) {
+        return {
+            id,
+            kind: "deadBody",
+            type: "deadBody",
+            pos: dequantizePos(ctx, v[0], v[1]),
+            layer: v[2],
+            playerId: v[3],
         };
     },
 };
@@ -418,6 +452,7 @@ export const CODECS: Readonly<Record<ObjectKind, ObjectCodec>> = {
     structure: StructureCodec as ObjectCodec,
     decal: DecalCodec as ObjectCodec,
     loot: LootCodec as ObjectCodec,
+    deadBody: DeadBodyCodec as ObjectCodec,
 };
 
 const BY_CODE = new Map<number, ObjectCodec>(Object.values(CODECS).map((c) => [c.code, c]));

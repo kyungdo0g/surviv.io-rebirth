@@ -6,7 +6,8 @@
 // Record: id (bit 1 + 4 bits = previous id + 1..16, else bit 0 + 24-bit id), shooterId u16, bulletType 10,
 // sourceType 10, pos mapPos, dir 10+10, layer 2, maxDist float 0..1024 16 bits, reflectCount 2, hitPlayer bit,
 // hasEnd bit [+ endDist float 0..1024 16 bits], shotFx bit, offHand bit, then (M7a) the original special-fx flags
-// trailSaturated, trailThick and splinter (trailSmall is implied by splinter) as 3 bits.
+// trailSaturated, trailThick and splinter (trailSmall is implied by splinter) as 3 bits, then (M9) hasSpeedMult bit
+// [+ speedMult float 0..4 10 bits]: the tracer speed factor (the original sent speedMult and varianceT instead).
 import type { BitReader, BitWriter } from "@rebirth/core";
 import type { BulletEvent } from "@rebirth/sim";
 import { NetLimits } from "./constants.ts";
@@ -28,6 +29,9 @@ const DIST_BITS = 16;
 const ID_BITS = 24;
 const ID_MASK = 2 ** ID_BITS - 1;
 const ID_DELTA_BITS = 4;
+const SPEED_MULT_BITS = 10;
+/** tracer speed factors above this are clamped (shrapnel variance reaches 2.5, perks 1.25) */
+const MAX_SPEED_MULT = 4;
 
 function writeDist(w: BitWriter, d: number): void {
     w.writeBits(quantize(d, 0, NetLimits.MaxBulletDist, DIST_BITS), DIST_BITS);
@@ -68,6 +72,10 @@ export function writeBullets(w: BitWriter, ctx: NetCtx, bullets: readonly Bullet
         w.writeBoolean(!!bl.saturated);
         w.writeBoolean(!!bl.thick);
         w.writeBoolean(!!bl.splinter);
+        const speedMult = bl.speedMult ?? 1;
+        const hasSpeedMult = Math.abs(speedMult - 1) > 1e-9;
+        w.writeBoolean(hasSpeedMult);
+        if (hasSpeedMult) w.writeBits(quantize(speedMult, 0, MAX_SPEED_MULT, SPEED_MULT_BITS), SPEED_MULT_BITS);
     }
 }
 
@@ -103,6 +111,9 @@ export function readBullets(r: BitReader, ctx: NetCtx): BulletEvent[] {
             saturated: r.readBoolean(),
             thick: r.readBoolean(),
             splinter: r.readBoolean(),
+            speedMult: r.readBoolean()
+                ? dequantize(r.readBits(SPEED_MULT_BITS), 0, MAX_SPEED_MULT, SPEED_MULT_BITS)
+                : 1,
         };
         if (endDist !== undefined) event.endDist = endDist;
         out.push(event);

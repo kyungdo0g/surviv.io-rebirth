@@ -1,6 +1,8 @@
 // Particle definitions used by M2 effects: shell casings per ammo type, blood splats and the bullet-hit chips named
 // by obstacle defs (`hitParticle`). Values are the original client's particle data (survev
-// client/src/objects/particles.ts ParticleDefs, same numbers as the 0.8.82 bundle), ported as data.
+// client/src/objects/particles.ts ParticleDefs), checked against the 0.8.82 bundle's particle module (which wins where
+// they differ: `leaf` is tinted grey there, survev made it green), ported as data. The registry of every def is
+// particleDefsAll.ts.
 
 /** [min, max] picked uniformly, or a constant */
 export type Range = number | readonly [number, number];
@@ -57,7 +59,15 @@ export function hsv(h: number, s: number, v: number): number {
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 const PI = Math.PI;
 
-function shell(image: string, life: Range, drag: Range, rotVel: number, start: number, end: number, alpha: number) {
+export function shell(
+    image: string,
+    life: Range,
+    drag: Range,
+    rotVel: number,
+    start: number,
+    end: number,
+    alpha: number,
+) {
     return {
         image: [image],
         life,
@@ -85,8 +95,8 @@ function chip(image: string, color: number | (() => number), opts: Partial<Parti
     };
 }
 
-/** a piece of an air drop crate (survev particles.ts airdropCrate01/02) */
-function crateShell(image: string, drag: Range, rotVel: Range): ParticleDef {
+/** a piece of an air drop crate (survev particles.ts airdropCrate01/02, classShell01a/b) */
+export function crateShell(image: string, drag: Range, rotVel: Range): ParticleDef {
     return {
         image: [image],
         life: [0.85, 1.15],
@@ -112,6 +122,10 @@ export const PARTICLE_DEFS: Readonly<Record<string, ParticleDef>> = {
     "308sub": shell("part-shell-05.img", [0.5, 0.75], [3, 4], PI * 3, 0.0625, 0.0325, 0.95),
     flare: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
     "45acp": shell("part-shell-01.img", [0.5, 0.75], [3, 4], PI * 3, 0.07, 0.04, 0.95),
+    "9mm_cursed": shell("part-shell-01.img", [0.5, 0.75], [3, 4], PI * 3, 0.0625, 0.0325, 0.95),
+    // the potato cannon / spud gun drop a potato wedge, the bugle a music note
+    potato_ammo: { ...shell("part-wedge-01.img", [0.5, 0.75], [3, 4], PI * 3, 0.07, 0.04, 0.95), color: 0xffffff },
+    bugle_ammo: { ...shell("part-note-02.img", [1.25, 1.3], [3, 4], PI, 0.1, 0.14, 0.5), color: 0xffda00 },
     bloodSplat: {
         image: ["part-splat-01.img", "part-splat-02.img", "part-splat-03.img"],
         life: 0.5,
@@ -129,7 +143,7 @@ export const PARTICLE_DEFS: Readonly<Record<string, ParticleDef>> = {
     blackChip: chip("part-woodchip-01.img", () => hsv(0, 0.08, rnd(0.16, 0.18)), tumbling),
     tanChip: chip("part-woodchip-01.img", () => hsv(0.1, 0.35, rnd(0.48, 0.52)), tumbling),
     ltgreenChip: chip("part-woodchip-01.img", () => hsv(0.2, 0.42, rnd(0.38, 0.42)), tumbling),
-    leaf: chip("part-leaf-01.img", () => hsv(0.29, 1, rnd(0.5, 0.75)), tumbling),
+    leaf: chip("part-leaf-01.img", () => hsv(0, 0, rnd(0.5, 0.75)), tumbling),
     leafPrickly: chip("part-leaf-01sv.img", () => hsv(0, 0, rnd(0.8, 0.85)), tumbling),
     leafRiver: chip("part-leaf-02.img", () => hsv(0, 0, rnd(0.5, 0.75)), tumbling),
     clothHit: chip("part-cloth-01.img", () => hsv(0, 0, rnd(0.95, 1))),

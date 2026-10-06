@@ -356,10 +356,11 @@ test.describe("M5 doors, roofs, layers and air strikes", () => {
                 timeout: 5_000,
             })
             .toBeGreaterThan(0.5);
-        // a few units outside the walls only the filtered track is heard, quieter
+        // a few units outside the walls only the filtered track is heard, quieter (M9: south of the east entrance, where
+        // the original's ceiling ray scan cannot peek inside)
         await page.evaluate((c) => {
             const r = (window as any).__rebirth;
-            r.game.teleportPlayer(r.player.id, { x: c.max.x + 4, y: c.center.y });
+            r.game.teleportPlayer(r.player.id, { x: c.max.x + 4, y: c.center.y - 8 });
         }, club);
         await expect
             .poll(() => page.evaluate(() => (window as any).__rebirth.fx.ambience.interior_1?.volume ?? 0), {

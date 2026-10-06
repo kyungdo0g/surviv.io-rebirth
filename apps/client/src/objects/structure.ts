@@ -13,6 +13,8 @@ export class StructureRender implements ObjectRender<StructureView> {
     masks: ViewBounds[] = [];
     /** world-space stair boxes (projectiles over stairs draw on the stairs layer) */
     stairs: ViewBounds[] = [];
+    /** the stairs bullets check (not `lootOnly`; survev bullet.ts) (M9) */
+    bulletStairs: ViewBounds[] = [];
     private data!: StructureView;
 
     constructor(id: number) {
@@ -25,6 +27,7 @@ export class StructureRender implements ObjectRender<StructureView> {
         const def = MapObjectDefs[view.type] as StructureDef;
         this.masks = def.mask.map((m) => collider.transform(m, view.pos, math.oriToRad(view.ori), 1));
         this.stairs = def.stairs.map((st) => collider.transform(st.collision, view.pos, math.oriToRad(view.ori), 1));
+        this.bulletStairs = this.stairs.filter((_, i) => !def.stairs[i].lootOnly);
     }
 
     update(_ctx: FrameContext, _pos: Vec2): void {}
@@ -40,6 +43,7 @@ export class StructureRender implements ObjectRender<StructureView> {
     destroy(): void {
         this.masks = [];
         this.stairs = [];
+        this.bulletStairs = [];
     }
 
     get layer(): number {

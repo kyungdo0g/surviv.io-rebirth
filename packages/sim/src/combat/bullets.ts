@@ -1,8 +1,9 @@
 // Bullets: swept per-tick flight, obstacle/player/pan collisions, ricochets, falloff; damage is queued and applied
 // after every bullet moved. Bullets with an on-hit explosion (USAS-12 frag rounds, Explosive Rounds) explode where
 // they stop. M7a: perk speed / range multipliers and tracer flags, Windwalk (an enemy bullet passing within 5 u of a
-// holder), High-Value Targets (x1.25 against players holding a perk). Behaviour follows survev
-// server/src/game/objects/bullet.ts and docs/research/items/bullets.md "Server simulation".
+// holder), High-Value Targets (x1.25 against players holding a perk). M9: clipped ranges (USAS-12 `toMouseHit` rounds
+// stop at the cursor), the tracer speed factor in reports, full-range reports of `skipCollision` bullets (flares).
+// Behaviour follows survev server/src/game/objects/bullet.ts and docs/research/items/bullets.md "Server simulation".
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { type BulletDef, DamageType, GameConfig, getDefOfType } from "@rebirth/defs";
 import { intersectSegmentSegment } from "../geom/polygon.ts";
@@ -50,6 +51,9 @@ export interface FireBulletParams {
     saturated?: boolean;
     thick?: boolean;
     splinter?: boolean;
+    /** the range is min(def.distance x distanceMult, `distance`) (USAS-12 toMouseHit, M9; survev clipDistance) */
+    clipDistance?: boolean;
+    distance?: number;
 }
 
 export interface Bullet {
@@ -95,6 +99,8 @@ export interface Bullet {
     readonly saturated: boolean;
     readonly thick: boolean;
     readonly splinter: boolean;
+    /** the range was clipped (USAS-12 toMouseHit); ricochets keep a clipped range (M9) */
+    readonly clipDistance: boolean;
 }
 
 interface Collision {
@@ -167,9 +173,15 @@ export class BulletSystem {
         const distAdjIdx = noDistAdj ? DIST_ADJ_STEPS / 2 : this.ctx.combatRng.int(0, DIST_ADJ_STEPS);
         const distAdj = math.remap(distAdjIdx, 0, DIST_ADJ_STEPS, -1, 1);
         // each ricochet divides the range by reflectDistDecay (1.5)
-        const baseDistance = def.distance / GameConfig.bullet.reflectDistDecay ** reflectCount;
+        let baseDistance = def.distance / GameConfig.bullet.reflectDistDecay ** reflectCount;
         const speedMult = p.speedMult ?? 1;
-        const distanceMult = p.distanceMult ?? 1;
+        let distanceMult = p.distanceMult ?? 1;
+        const clipDistance = !!p.clipDistance;
+        if (clipDistance) {
+            // the multiplier is applied here only, not twice (survev bullet.ts init clipDistance)
+            baseDistance = Math.min(def.distance * distanceMult, p.distance ?? MAX_DISTANCE);
+            distanceMult = 1;
+        }
         const distance = math.clamp(baseDistance * distanceMult * variance + distAdj, 0, MAX_DISTANCE);
         const reflectObjId = p.reflectObjId ?? 0;
         const onHitFx = def.onHit ?? p.onHitFx ?? "";
@@ -185,7 +197,10 @@ export class BulletSystem {
             layer: p.layer,
             speed: def.speed * speedMult * variance,
             distance,
-            clientDistance: this.clientDistance(pos, dir, distance, p.layer, reflectObjId),
+            // flares fly through everything (skipCollision): clients draw their whole range (M9)
+            clientDistance: def.skipCollision
+                ? distance
+                : this.clientDistance(pos, dir, distance, p.layer, reflectObjId),
             distanceTraveled: 0,
             damage: def.damage * (p.damageMult ?? 1),
             damageMult: p.damageMult ?? 1,
@@ -209,6 +224,7 @@ export class BulletSystem {
             saturated: p.saturated ?? false,
             thick: p.thick ?? false,
             splinter: p.splinter ?? false,
+            clipDistance,
         };
         this.active.push(bullet);
         this.reports.push({ tick: this.tick, bullet });
@@ -414,6 +430,10 @@ export class BulletSystem {
         if (!b.canReflect || b.reflectCount >= GameConfig.bullet.maxReflect || b.reflected) return;
         b.reflected = true;
         const dot = v2.dot(b.dir, normal);
+        // a clipped range carries over: what is left of it, divided by 1.5^n of this bullet (survev reflect)
+        const distance = b.clipDistance
+            ? Math.max(1, b.distance - b.distanceTraveled) / GameConfig.bullet.reflectDistDecay ** b.reflectCount
+            : undefined;
         this.fire({
             shooterId: b.shooterId,
             bulletType: b.bulletType,
@@ -434,6 +454,8 @@ export class BulletSystem {
             saturated: b.saturated,
             thick: b.thick,
             splinter: b.splinter,
+            clipDistance: b.clipDistance,
+            distance,
         });
     }
 
@@ -455,6 +477,7 @@ export class BulletSystem {
             saturated: b.saturated,
             thick: b.thick,
             splinter: b.splinter,
+            speedMult: b.def.speed > 0 ? b.speed / b.def.speed : 1,
         };
         if (!b.alive) event.endDist = b.distanceTraveled;
         return event;

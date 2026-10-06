@@ -10,6 +10,9 @@
 // M7: class visors, faction patches and helmet tints, Flak Jacket / Cast Ironskin sprites, the frozen overlay and the
 // haste particles (playerMode.ts), the Mass Medicate aura (playerAura.ts); the body scale follows PlayerView.scale (perks,
 // Spud Gun hits).
+// M9 (playerSteps.ts): footsteps per surface, water ripples and wading, bush enter / exit effects; every shot fired
+// since the last snapshot kicks the gun back (snapshots carry the shot counter, not each shot); the left hand keeps
+// its gun grip offset only while a gun is out and no revive runs (survev updateRotation).
 import type { Vec2 } from "@rebirth/core";
 import {
     type BackpackDef,
@@ -31,6 +34,7 @@ import { MedicAura } from "./playerAura.ts";
 import { PlayerEmitters } from "./playerEmitters.ts";
 import { GunSprites } from "./playerGun.ts";
 import { factionOf, helmetTint, PlayerModeSprites } from "./playerMode.ts";
+import { PlayerSteps } from "./playerSteps.ts";
 import { boxAround, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
 
 /** backpack offsets behind the body per bag level 1..3 (survev player.ts) */
@@ -41,6 +45,16 @@ const RECOIL_PIXELS = 1.125;
 /** a downed player crawls every this many units moved (survev server player.ts distSinceLastCrawl) */
 const CRAWL_DIST = 3;
 const BLEED_SOUND = "player_bullet_hit_02";
+/** shot counters wrap at 16 bits on the wire (protocol SEQ_MASK) */
+const SEQ_MOD = 0x10000;
+/** at most this many kicks for one snapshot (a counter jump after a long gap is not replayed) */
+const MAX_SHOTS_PER_SNAPSHOT = 4;
+
+/** Shots fired between two snapshots' shot counters, bounded. */
+export function shotsSince(prevSeq: number, seq: number): number {
+    const n = (((seq - prevSeq) % SEQ_MOD) + SEQ_MOD) % SEQ_MOD;
+    return Math.min(n, MAX_SHOTS_PER_SNAPSHOT);
+}
 
 type WeaponDef = GunDef | MeleeDef | ThrowableDef;
 type ThrowableState = "equip" | "cook" | "throwing";
@@ -108,6 +122,9 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private readonly objectRSprite: Sprite;
     private throwableState: ThrowableState = "equip";
     private readonly emitters: PlayerEmitters | null;
+    /** footsteps, wading and bush effects (M9) */
+    readonly steps: PlayerSteps;
+    private firstFrame = true;
     /** event-mode sprites and effects (M7) */
     readonly mode: PlayerModeSprites;
     /** Mass Medicate circle under the player (M7) */
@@ -183,6 +200,12 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             this.helmetSprite,
         );
         this.container.addChild(this.body);
+        this.steps = new PlayerSteps(deps, sprite, this.body, this.bodySprite, [
+            { parent: this.handL, sprite: this.handLSprite, image: "player-hands-01.img" },
+            { parent: this.handR, sprite: this.handRSprite, image: "player-hands-01.img" },
+            { parent: this.footL, sprite: this.footLSprite, image: "player-feet-01.img" },
+            { parent: this.footR, sprite: this.footRSprite, image: "player-feet-01.img" },
+        ]);
     }
 
     /** name of the running animation ("none" when idle; tests) */
@@ -236,8 +259,10 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             this.deps.fx?.actionStart(view, view.pos, view.dir);
         }
         if (shot.seq !== this.shotSeq) {
+            const shots = shotsSince(this.shotSeq, shot.seq);
             this.shotSeq = shot.seq;
-            this.onShot(view, shot.offHand);
+            // dual guns alternate hands: the latest shot was `offHand`, the one before it the other hand
+            for (let i = shots - 1; i >= 0; i--) this.onShot(view, i % 2 === 0 ? shot.offHand : !shot.offHand);
         }
     }
 
@@ -476,6 +501,8 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.anim.blend(IDLE_POSES[this.idlePose] ?? IDLE_POSES.fists, this.bones);
         this.placeBones();
         this.updateBleed(view, pos, dt, facing);
+        this.steps.update(view, pos, dt, this.firstFrame);
+        this.firstFrame = false;
 
         // survev player.ts updateRenderLayer: players on stairs draw over the stairs when on the viewer's level
         let layer = view.layer;
@@ -532,7 +559,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             this.meleeSprite.rotation = img.rot + bone.rot;
             this.meleeSprite.position.set(-bone.pivot.x, -bone.pivot.y);
         }
-        if (weapon?.type === "gun" && !view.downed && weapon.worldImg.leftHandOffset) {
+        if (weapon?.type === "gun" && !view.downed && this.anim.name !== "revive" && weapon.worldImg.leftHandOffset) {
             this.handL.position.x += weapon.worldImg.leftHandOffset.x;
             this.handL.position.y += weapon.worldImg.leftHandOffset.y;
         }
@@ -545,6 +572,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     }
 
     setVisible(visible: boolean): void {
+        if (!visible) this.steps.suspend();
         this.container.visible = visible && !this.data.dead;
         if (!visible) this.aura.container.visible = false;
     }
@@ -552,6 +580,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     destroy(): void {
         this.emitters?.stop();
         this.mode.stop();
+        this.steps.destroy();
         this.container.removeFromParent();
         for (const s of this.sprites) this.deps.renderer.pool.release(s);
         this.aura.destroy();

@@ -3,23 +3,37 @@
 // continuously (chimney smoke, heal effects). Motion follows survev client/src/objects/particles.ts
 // ParticleBarn.m_update: scale lerps over `scaleLerp` of the life (or grows by `scaleExp` per second), alpha lerps
 // from alphaStart to alphaEnd over `alphaLerp` (or changes by `alphaExp` per second), with an optional fade-in
-// (`alphaIn`); particles of an emitter are multiplied by its alpha.
+// (`alphaIn`); particles of an emitter are multiplied by its alpha. M9: a particle can live inside another display
+// object (`parent`, e.g. the hit player's container for blood splats) and follow it (survev addParticle parent).
+// Every def lives in particleDefsAll.ts; an unknown type spawns nothing and warns once in development.
 import type { Vec2 } from "@rebirth/core";
-import type { Sprite } from "pixi.js";
+import type { Container, Sprite } from "pixi.js";
 import type { TextureStore } from "../assets/textures.ts";
 import { adjustValue } from "../objects/types.ts";
 import { type Renderer, toLocal } from "../render/renderer.ts";
-import { PARTICLE_DEFS, type ParticleDef, pick, type Range } from "./particleDefs.ts";
-import { EMITTER_DEFS as EMITTER_DEFS_M5, type EmitterDef, PARTICLE_DEFS_M5 } from "./particleDefsM5.ts";
-import { EMITTER_DEFS_M7, PARTICLE_DEFS_M7 } from "./particleDefsM7.ts";
+import { type ParticleDef, pick, type Range } from "./particleDefs.ts";
+import { ALL_PARTICLE_DEFS as DEFS, ALL_EMITTER_DEFS as EMITTER_DEFS } from "./particleDefsAll.ts";
+import type { EmitterDef } from "./particleDefsM5.ts";
 
 /** default zOrd of particles (survev addParticle) */
 const DEFAULT_Z_ORD = 20;
 /** hard cap so a long firefight cannot grow the pool without bound */
 const MAX_PARTICLES = 768;
 
-const DEFS: Readonly<Record<string, ParticleDef>> = { ...PARTICLE_DEFS, ...PARTICLE_DEFS_M5, ...PARTICLE_DEFS_M7 };
-const EMITTER_DEFS: Readonly<Record<string, EmitterDef>> = { ...EMITTER_DEFS_M5, ...EMITTER_DEFS_M7 };
+/** unknown particle / emitter types already reported */
+const warned = new Set<string>();
+
+/** One console warning per unknown type, in development builds only. */
+function warnUnknown(kind: string, type: string): void {
+    if (!import.meta.env?.DEV || warned.has(type)) return;
+    warned.add(type);
+    console.warn(`unknown ${kind} type "${type}": nothing spawned`);
+}
+
+/** survev math.easeInExpo */
+function easeInExpo(t: number): number {
+    return t === 0 ? 0 : 2 ** (10 * (t - 1));
+}
 
 interface Particle {
     sprite: Sprite;
@@ -44,6 +58,8 @@ interface Particle {
     /** stable sort key within the zOrd (spawn order) */
     zIdx: number;
     emitter: Emitter | null;
+    /** drawn inside this container, `pos` in its local pixel space (null: world space in the render layers) */
+    parent: Container | null;
 }
 
 export interface ParticleOptions {
@@ -58,6 +74,11 @@ export interface ParticleOptions {
     drag?: number;
     /** overrides the def's colour */
     color?: number;
+    /**
+     * draw inside this container at `pos` in its local pixel space (16 px per unit, +y down) so the particle follows it,
+     * e.g. blood splats on the hit player (survev particles.ts parent); `layer` and `zOrd` are then unused (M9)
+     */
+    parent?: Container;
 }
 
 export interface EmitterOptions {
@@ -156,10 +177,18 @@ export class ParticleSystem {
         return this.emitters.length;
     }
 
+    /** Sprites of the live particles drawn inside `parent` (tests, M9). */
+    spritesIn(parent: Container): Sprite[] {
+        return this.particles.filter((p) => p.parent === parent && !p.sprite.destroyed).map((p) => p.sprite);
+    }
+
     /** Spawns one particle of `type` at world position `pos` moving at `vel` (world units/s). */
     add(type: string, layer: number, pos: Vec2, vel: Vec2, opts: ParticleOptions = {}, emitter?: Emitter): void {
         const def = DEFS[type];
-        if (!def) return;
+        if (!def) {
+            warnUnknown("particle", type);
+            return;
+        }
         if (this.particles.length >= MAX_PARTICLES) this.free(0);
         const sprite = this.renderer.pool.acquire();
         const image = def.image[Math.floor(Math.random() * def.image.length)];
@@ -173,6 +202,8 @@ export class ParticleSystem {
         const color = opts.color ?? (typeof def.color === "function" ? def.color() : def.color);
         sprite.tint = def.ignoreValueAdjust ? color : adjustValue(color, this.valueAdjust);
         sprite.visible = false;
+        const parent = opts.parent && !opts.parent.destroyed ? opts.parent : null;
+        parent?.addChild(sprite);
         const alphaIn = def.alphaIn;
         this.particles.push({
             sprite,
@@ -196,6 +227,7 @@ export class ParticleSystem {
             zOrd: opts.zOrd ?? def.zOrd ?? DEFAULT_Z_ORD,
             zIdx: this.spawned++ % 2 ** 31,
             emitter: emitter ?? null,
+            parent,
         });
         this.spawnedByType.set(type, (this.spawnedByType.get(type) ?? 0) + 1);
     }
@@ -204,14 +236,18 @@ export class ParticleSystem {
     addEmitter(type: string, opts: EmitterOptions): Emitter {
         const def = EMITTER_DEFS[type] ?? EMITTER_DEFS.heal_basic;
         const emitter = new Emitter(type, def, opts, DEFS[def.particle]?.zOrd ?? DEFAULT_Z_ORD);
-        if (!EMITTER_DEFS[type]) emitter.stop();
+        if (!EMITTER_DEFS[type]) {
+            warnUnknown("emitter", type);
+            emitter.stop();
+        }
         this.emitters.push(emitter);
         return emitter;
     }
 
     private free(index: number): void {
         const p = this.particles[index];
-        this.renderer.pool.release(p.sprite);
+        // a parent destroyed with its children (a player view leaving) took the sprite with it: never pool that one
+        if (!p.sprite.destroyed) this.renderer.pool.release(p.sprite);
         this.particles.splice(index, 1);
     }
 
@@ -245,7 +281,12 @@ export class ParticleSystem {
                     { scale: e.scale, rot, zOrd: e.zOrd, color: e.color?.() },
                     e,
                 );
-                e.nextSpawn += pick(def.rate) * e.rateMult;
+                let rate = pick(def.rate);
+                if (def.maxRate !== undefined && def.maxElapsed) {
+                    const w = easeInExpo(Math.min(1, e.ticker / def.maxElapsed));
+                    rate += (pick(def.maxRate) - rate) * w;
+                }
+                e.nextSpawn += rate * e.rateMult;
                 e.spawnCount++;
             }
             if (e.ticker >= e.duration) {
@@ -259,6 +300,10 @@ export class ParticleSystem {
         this.updateEmitters(dt);
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
+            if (p.sprite.destroyed) {
+                this.free(i);
+                continue;
+            }
             p.ticker += dt;
             if (p.ticker < p.delay) continue;
             const def = p.def;
@@ -289,14 +334,18 @@ export class ParticleSystem {
                 alpha = remap(t, def.alphaIn.lerp[0], def.alphaIn.lerp[1], p.alphaInStart, p.alphaInEnd);
             }
             if (p.emitter) alpha *= p.emitter.alpha;
-            const local = toLocal(p.pos);
             const s = p.sprite;
-            s.position.set(local.x, local.y);
+            if (p.parent) {
+                s.position.set(p.pos.x, p.pos.y);
+            } else {
+                const local = toLocal(p.pos);
+                s.position.set(local.x, local.y);
+                this.renderer.add(s, p.layer, p.zOrd, p.zIdx);
+            }
             s.scale.set(scale);
             s.rotation = p.rot;
             s.alpha = alpha;
             s.visible = true;
-            this.renderer.add(s, p.layer, p.zOrd, p.zIdx);
             if (t >= 1) this.free(i);
         }
     }

@@ -109,6 +109,7 @@ export {
 } from "./world/consumables.ts";
 export type { SimContext } from "./world/context.ts";
 export { BEHAVIOUR_FIELDS, type FieldStatus } from "./world/coverage.ts";
+export { DeadBody, DeadBodySystem } from "./world/deadBodies.ts";
 export {
     autoOpenDoors,
     checkDoorLayer,

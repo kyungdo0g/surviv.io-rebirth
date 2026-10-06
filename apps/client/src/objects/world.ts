@@ -1,11 +1,14 @@
 // Keeps one render view per object id in sync with the snapshots, culls views outside the camera and updates
-// the visible ones every frame with interpolated positions.
-import { math, type Vec2 } from "@rebirth/core";
-import { MapObjectDefs, type StructureDef } from "@rebirth/defs";
+// the visible ones every frame with interpolated positions. M9: dead bodies, and the queries the hit effects need
+// (a player's container for blood splats, teams, segments over stairs, bright floors).
+import { type Collider, collider, math, type Vec2 } from "@rebirth/core";
+import { type BuildingDef, type DecalDef, MapObjectDefs, type StructureDef } from "@rebirth/defs";
 import type { ObjectKind, ObjectView, PlayerView, Snapshot, StructureView } from "@rebirth/sim";
+import type { Container } from "pixi.js";
 import type { SnapshotInterpolator } from "../net/interp.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import { BuildingRender } from "./building.ts";
+import { DeadBodyRender } from "./deadBody.ts";
 import { DecalRender } from "./decal.ts";
 import { LootRender } from "./loot.ts";
 import { ObstacleRender } from "./obstacle.ts";
@@ -16,6 +19,12 @@ import type { FrameContext, ObjectRender, ViewDeps } from "./types.ts";
 interface Entry {
     render: ObjectRender;
     data: ObjectView;
+}
+
+/** Floor surfaces of a building or decal in world space, for `brightSurfaceAt` (survev map.getGroundSurface). */
+interface SurfaceCache {
+    zIdx: number;
+    surfaces: Array<{ bright: boolean; cols: Collider[] }>;
 }
 
 function overlaps(a: ViewBounds, b: ViewBounds): boolean {
@@ -34,6 +43,8 @@ export class ObjectWorld {
     private applied = 0;
     /** structure id -> layer index -> building view id (structureLayer cache) */
     private readonly layerCache = new Map<string, number>();
+    /** world-space floor surfaces of buildings and decals in view, by id (brightSurfaceAt) */
+    private readonly surfaceCache = new Map<number, SurfaceCache | null>();
 
     constructor(deps: ViewDeps, interp: SnapshotInterpolator) {
         this.deps = deps;
@@ -67,6 +78,8 @@ export class ObjectWorld {
                 return new DecalRender(this.deps, view.id);
             case "loot":
                 return new LootRender(this.deps, view.id, this.applied > 0);
+            case "deadBody":
+                return new DeadBodyRender(this.deps, view.id, (pos, rad) => this.insideStructureStairs(pos, rad));
         }
     }
 
@@ -105,6 +118,7 @@ export class ObjectWorld {
         entry.render.destroy();
         this.entries.delete(id);
         this.interp.delete(id);
+        this.surfaceCache.delete(id);
     }
 
     /** Stair masks of every structure in view when they changed since the last call, else null. */
@@ -218,9 +232,87 @@ export class ObjectWorld {
         this.visibleCount = visible;
     }
 
+    /** The root container of a player's view (blood splats are parented to it), null when it is not in view. */
+    playerContainer(id: number): Container | null {
+        const render = this.entries.get(id)?.render;
+        return render instanceof PlayerRender ? render.container : null;
+    }
+
+    /** Team of a player (PlayerInfoView.teamId), 0 when unknown. */
+    teamOf(id: number): number {
+        return this.deps.teamOf?.(id) ?? 0;
+    }
+
+    /**
+     * Whether the segment a -> b crosses the stairs of a structure in view outside its stair masks: a bullet there is
+     * drawn on the stairs layer (survev bullet.ts m_update; `lootOnly` stairs do not count).
+     */
+    segmentOnStairs(a: Vec2, b: Vec2): boolean {
+        for (const { render } of this.entries.values()) {
+            if (!(render instanceof StructureRender)) continue;
+            const hits = (boxes: ViewBounds[]) =>
+                boxes.some((m) => collider.intersectSegment({ type: 1, min: m.min, max: m.max }, b, a) !== null);
+            if (hits(render.bulletStairs) && !hits(render.masks)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Whether the ground at `pos` is a bright floor (`isBright` surface data: the bunker grass and tiles), on which
+     * tracers use their saturated colour. Decal surfaces come first, then the floor of the topmost building (survev
+     * map.getGroundSurface); terrain and rivers are never bright.
+     */
+    brightSurfaceAt(pos: Vec2, layer: number): boolean {
+        const onStairs = (layer & 2) !== 0;
+        let zIdx = 0;
+        let bright: boolean | null = null;
+        for (const [id, { data }] of this.entries) {
+            if (data.kind !== "decal" && data.kind !== "building") continue;
+            const cache = this.surfacesOf(id, data);
+            if (!cache) continue;
+            if (data.kind === "decal") {
+                const sameLayer = (data.layer & 1) === (layer & 1) || ((data.layer & 2) !== 0 && onStairs);
+                if (sameLayer && cache.surfaces[0].cols.some((c) => collider.contains(c, pos))) return false;
+                continue;
+            }
+            if (cache.zIdx < zIdx || !(data.layer === layer || onStairs) || (data.layer === 1 && onStairs)) continue;
+            for (const s of cache.surfaces) {
+                if (s.cols.some((c) => collider.contains(c, pos))) {
+                    zIdx = cache.zIdx;
+                    bright = s.bright;
+                }
+            }
+        }
+        return bright ?? false;
+    }
+
+    private surfacesOf(id: number, data: ObjectView): SurfaceCache | null {
+        const cached = this.surfaceCache.get(id);
+        if (cached !== undefined) return cached;
+        let out: SurfaceCache | null = null;
+        if (data.kind === "building") {
+            const def = MapObjectDefs[data.type] as BuildingDef | undefined;
+            const rot = math.oriToRad(data.ori);
+            const surfaces = (def?.floor.surfaces ?? []).map((s) => ({
+                bright: s.data?.isBright === true,
+                cols: s.collision.map((c) => collider.transform(c, data.pos, rot, 1)),
+            }));
+            if (surfaces.length) out = { zIdx: def?.zIdx ?? 0, surfaces };
+        } else if (data.kind === "decal") {
+            const def = MapObjectDefs[data.type] as DecalDef | undefined;
+            if (def?.surface) {
+                const col = collider.transform(def.collision, data.pos, math.oriToRad(data.ori), data.scale);
+                out = { zIdx: 0, surfaces: [{ bright: false, cols: [col] }] };
+            }
+        }
+        this.surfaceCache.set(id, out);
+        return out;
+    }
+
     clear(): void {
         for (const id of [...this.entries.keys()]) this.remove(id);
         this.layerCache.clear();
+        this.surfaceCache.clear();
         this.applied = 0;
     }
 }

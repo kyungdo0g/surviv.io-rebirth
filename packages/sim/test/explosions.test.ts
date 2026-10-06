@@ -221,7 +221,8 @@ describe("explosive bullets", () => {
         const origin = clearSpot();
         const { game, p, target } = shooter(origin, "usas");
         const log = logExplosions(game);
-        send(game, p, { shootStart: true, shootHold: true });
+        // toMouseHit: the cursor beyond the target and the def range (M9)
+        send(game, p, { shootStart: true, shootHold: true, toMouseLen: 64 });
         game.step();
         send(game, p, {});
         steps(game, 50);
@@ -237,7 +238,7 @@ describe("explosive bullets", () => {
         steps(game, 200);
         const before = log.length;
         p.weaponManager.weapons[WeaponSlot.Primary].cooldown = 0;
-        send(game, p, { shootStart: true, shootHold: true });
+        send(game, p, { shootStart: true, shootHold: true, toMouseLen: 64 });
         game.step();
         send(game, p, {});
         steps(game, 60);

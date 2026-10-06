@@ -1,10 +1,12 @@
 // Building: floor images under everything and ceiling images over players, rotated with the building.
-// The ceiling fades out while the local player stands inside one of its zoom regions and fades back in after
-// `ceiling.vision.linger` seconds at `vision.fadeRate` (survev client/src/objects/building.ts; the original
-// reveals through a vision ray-scan, approximated here by the zoomIn region test).
+// The ceiling fades out (12/s) while the followed player can see into one of its zoomIn regions and fades back in
+// `ceiling.vision.linger` seconds later at `vision.fadeRate` (survev client/src/objects/building.ts m_update, the same
+// in the 0.8.82 client): "seeing into" is the original's ray scan (worldQuery.ts scanCollider: 5 rays over
+// 2 x vision.width towards the region, reaching it within vision.dist before a wall), so the roof opens when peeking
+// through a doorway or a window, not only once inside. Defaults: dist 5.5, width 2.75, linger 0, fadeRate 12.
 // M5: a collapsed roof (`ceilingDead`) stays revealed and leaves its residue sprite on the floor; the collapse,
 // puzzle sounds, occupied emitters and sound emitters are in buildingFx.ts.
-import { collider, math, type Vec2, v2 } from "@rebirth/core";
+import { type Aabb, collider, math, type Vec2, v2 } from "@rebirth/core";
 import type { BuildingDef, FloorImage } from "@rebirth/defs";
 import { MapObjectDefs } from "@rebirth/defs";
 import type { BuildingView } from "@rebirth/sim";
@@ -14,12 +16,24 @@ import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
 import { BuildingFx } from "./buildingFx.ts";
 import { adjustValue, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
+import { type WorldQuery, worldQueriesOf } from "./worldQuery.ts";
 
 /** zOrd base of ceilings: 750 - building zIdx (survev building.ts) */
 const CEILING_Z_ORD = 750;
 /** fade-out rate (1/s) when the ceiling is revealed */
 const REVEAL_RATE = 12;
-const DEFAULT_VISION = { linger: 0, fadeRate: 12 };
+/** survev building.ts ceiling vision defaults */
+const DEFAULT_VISION = { dist: 5.5, width: 2.75, linger: 0, fadeRate: 12 };
+/** survev building.ts: scanCollider(zoomIn, ..., height 0.5, width x 2, dist, 5 rays) */
+const SCAN_HEIGHT = 0.5;
+const SCAN_RAYS = 5;
+
+/** survev building.ts step(): moves by delta x rate, snapping once the step is tiny */
+function step(cur: number, target: number, rate: number): number {
+    const delta = target - cur;
+    const s = delta * Math.min(1, rate);
+    return Math.abs(s) < 0.001 ? delta : s;
+}
 
 interface BuildingImg {
     sprite: Sprite;
@@ -61,7 +75,7 @@ export class BuildingRender implements ObjectRender<BuildingView> {
     private rot = 0;
     private scale = 1;
     /** zoomIn regions in world space */
-    private zoomIn: ViewBounds[] = [];
+    private zoomIn: Aabb[] = [];
     /** the local player stood under this roof last frame (planes fade out indoors) */
     localInside = false;
     private localBounds: ViewBounds | null = null;
@@ -71,10 +85,12 @@ export class BuildingRender implements ObjectRender<BuildingView> {
     private fx: BuildingFx | null = null;
     /** collapsed-roof residue on the floor */
     private residue: Sprite | null = null;
+    private readonly queries: WorldQuery | null;
 
     constructor(deps: ViewDeps, id: number) {
         this.deps = deps;
         this.id = id;
+        this.queries = worldQueriesOf(deps);
     }
 
     setData(view: BuildingView, isNew: boolean): void {
@@ -159,26 +175,39 @@ export class BuildingRender implements ObjectRender<BuildingView> {
         return dist;
     }
 
-    /** true while the local player stands inside a ceiling zoom region on a layer that sees this building */
-    private canSeeInside(ctx: FrameContext): boolean {
-        if (this.data.ceilingDead) return true;
+    /**
+     * Whether the followed player sees into a zoomIn region from a layer that sees this building: the original's ray
+     * scan, or (without world queries, e.g. the renderer fixture) standing inside the region.
+     */
+    private seesInside(ctx: FrameContext, vision: typeof DEFAULT_VISION): boolean {
         if (this.data.layer !== ctx.localLayer && !(ctx.localLayer & 2)) return false;
         const p = ctx.localPos;
-        return this.zoomIn.some((b) => p.x >= b.min.x && p.x <= b.max.x && p.y >= b.min.y && p.y <= b.max.y);
+        const q = this.queries;
+        return this.zoomIn.some((b) =>
+            q
+                ? q.scanCollider(b, p, ctx.localLayer, SCAN_HEIGHT, vision.width * 2, vision.dist, SCAN_RAYS)
+                : p.x >= b.min.x && p.x <= b.max.x && p.y >= b.min.y && p.y <= b.max.y,
+        );
     }
 
     update(ctx: FrameContext, pos: Vec2): void {
         const vision = { ...DEFAULT_VISION, ...this.def.ceiling.vision };
         this.visionTicker -= ctx.dt;
-        this.localInside = this.canSeeInside(ctx) && !this.data.ceilingDead;
-        if (this.canSeeInside(ctx)) this.visionTicker = vision.linger + 0.0001;
+        const seen = this.seesInside(ctx, vision);
+        this.localInside = !this.data.ceilingDead && this.insideCeiling(ctx.localPos) && seen;
+        const canSeeInside = seen || this.data.ceilingDead;
+        if (canSeeInside) this.visionTicker = vision.linger + 0.0001;
+        // next to cellar stairs nothing is revealed (survev building.ts noCeilingRevealTicker)
+        const blocked = !!this.queries?.noCeilingReveal;
+        if (blocked && !this.data.ceilingDead) this.visionTicker = 0;
         const revealed = this.visionTicker > 0;
-        const target = revealed ? 0 : 1;
-        const rate = ctx.dt * (revealed ? REVEAL_RATE : vision.fadeRate);
-        const step = (target - this.ceilingAlpha) * Math.min(1, rate);
-        this.ceilingAlpha = Math.abs(step) < 0.01 ? target : this.ceilingAlpha + step;
+        this.ceilingAlpha += step(
+            this.ceilingAlpha,
+            revealed ? 0 : 1,
+            ctx.dt * (revealed ? REVEAL_RATE : vision.fadeRate),
+        );
         // on stairs looking into the other floor the roof opens at once (survev building.ts m_update)
-        if (this.canSeeInside(ctx) && ctx.localLayer & 2 && (this.data.layer & 1) !== (ctx.localLayer & 1)) {
+        if (canSeeInside && !blocked && ctx.localLayer & 2 && (this.data.layer & 1) !== (ctx.localLayer & 1)) {
             this.ceilingAlpha = 0;
         }
 

@@ -9,6 +9,8 @@
 // members, the Cobalt class menu, the big map (M / G), haste and frozen player effects, tracer variants; mute moved to N.
 // M8: the HUD layout (uiLayout.ts: the small phone layout, re-evaluated on resize / rotation) and the HUD toggles of
 // clientControls.ts (Toggle Minimap, Hide UI) applied to the HUD, the minimap and the match HUD every frame.
+// M9: the map's falling camera particles (cameraEmitters.ts), the world queries behind footsteps, wading, bushes and the
+// ceiling ray scan (worldQuery.ts, handed to the views with their deps), and the map's particle sprites preloaded.
 import type { Vec2 } from "@rebirth/core";
 import { GameObjectDefs, getMapDef, Input, MapObjectDefs, type RoleDef } from "@rebirth/defs";
 import {
@@ -28,8 +30,10 @@ import type { TextureStore } from "../assets/textures.ts";
 import { AudioEngine } from "../audio/audio.ts";
 import { bindAudioSettings } from "../audio/shared.ts";
 import { BulletSystem } from "../fx/bullets.ts";
+import { CameraEmitters } from "../fx/cameraEmitters.ts";
 import { GameEffects } from "../fx/effects.ts";
 import { GasShape, WORLD_GAS_COLOR } from "../fx/gas.ts";
+import { mapParticleSprites } from "../fx/particleDefsAll.ts";
 import { ParticleSystem } from "../fx/particles.ts";
 import { InputManager } from "../input/input.ts";
 import { DebugHudBind } from "../input/keybinds.ts";
@@ -38,7 +42,9 @@ import { SnapshotInterpolator } from "../net/interp.ts";
 import type { Transport } from "../net/transport.ts";
 import { FadingSprites } from "../objects/fading.ts";
 import { AirSystem } from "../objects/planes.ts";
+import type { ViewDeps } from "../objects/types.ts";
 import { ObjectWorld } from "../objects/world.ts";
+import { WorldQuery, type WorldQueryDeps } from "../objects/worldQuery.ts";
 import { Camera } from "../render/camera.ts";
 import { Renderer } from "../render/renderer.ts";
 import { DebugHud } from "../ui/debugHud.ts";
@@ -99,6 +105,10 @@ export class GameClient {
     /** small / large HUD layout (M8) */
     readonly layout: HudLayout;
     world: ObjectWorld | null = null;
+    /** queries of the world views and terrain (ground surfaces, bushes, ceiling scans; M9) */
+    worldQueries: WorldQuery | null = null;
+    /** the map's falling leaves / snow around the camera (M9) */
+    cameraFx: CameraEmitters | null = null;
     air: AirSystem | null = null;
     worldFx: WorldFx | null = null;
     minimap: Minimap | null = null;
@@ -257,21 +267,26 @@ export class GameClient {
         const terrainQuery = this.terrainQuery;
         const fading = new FadingSprites(this.renderer);
         this.worldFx?.destroy();
-        this.world = new ObjectWorld(
-            {
-                renderer: this.renderer,
-                textures: this.textures,
-                mapDef,
-                fx: this.effects,
-                particles: this.particles,
-                audio: this.audio,
-                viewerPos: () => this.visualPos,
-                fading,
-                surfaceAt: (pos, layer) => surfaceAt(terrainQuery, pos, layer),
-                teamOf: (id) => this.match.teamId(id),
-            },
-            this.interp,
-        );
+        // ground surfaces, bushes and the ceiling ray scan for the player and building views (M9)
+        const queries = new WorldQuery(terrainQuery, mapDef, () => this.world);
+        this.worldQueries = queries;
+        const deps: ViewDeps & WorldQueryDeps = {
+            renderer: this.renderer,
+            textures: this.textures,
+            mapDef,
+            fx: this.effects,
+            particles: this.particles,
+            audio: this.audio,
+            viewerPos: () => this.visualPos,
+            fading,
+            surfaceAt: (pos, layer) => surfaceAt(terrainQuery, pos, layer),
+            teamOf: (id) => this.match.teamId(id),
+            nameOf: (id) => this.match.name(id),
+            worldQueries: queries,
+        };
+        this.world = new ObjectWorld(deps, this.interp);
+        this.cameraFx?.stop();
+        this.cameraFx = new CameraEmitters(this.particles, mapDef.biome.particles.camera);
         this.worldFx = new WorldFx({
             renderer: this.renderer,
             textures: this.textures,
@@ -302,6 +317,12 @@ export class GameClient {
 
         const sprites = mapSprites(map);
         outfitSprites("outfitBase", sprites);
+        // break debris, hit chips and the falling camera particles (M9)
+        mapParticleSprites(
+            map.objects.map((o) => o.type),
+            mapDef.biome.particles.camera,
+            sprites,
+        );
         // air drops: plane, chute, the crates of the map and what they turn into
         sprites.set(mapDef.biome.airdrop.planeImg, 3);
         sprites.set(mapDef.biome.airdrop.airdropImg, 1.5);
@@ -420,6 +441,8 @@ export class GameClient {
         this.input.endFrame();
 
         this.renderer.activeLayer = this.local.layer;
+        this.worldQueries?.beginFrame(dt, this.visualPos, this.local.layer, this.snapshotCount);
+        this.cameraFx?.update(dt, this.camera.pos, this.debugZoom ?? this.local.zoom, this.local.layer);
         const ctx = { dt, localPos: this.visualPos, localLayer: this.local.layer, localId: this.activeId };
         world.update(ctx, now, this.camera.viewBounds(CULL_MARGIN));
         this.teamPlay.update({
@@ -517,6 +540,8 @@ export class GameClient {
         this.effects.clear();
         this.worldFx?.destroy();
         this.worldFx = null;
+        this.cameraFx?.stop();
+        this.cameraFx = null;
         this.minimap?.destroy();
         this.minimap = null;
         this.teamPlay.destroy();

@@ -46,6 +46,8 @@ export interface ViewDeps {
     surfaceAt?: (pos: Vec2, layer: number) => string;
     /** team of a player (PlayerInfoView.teamId; faction maps: 1 Red, 2 Blue), 0 when unknown (M7) */
     teamOf?: (playerId: number) => number;
+    /** display name of a player (anonymized per the settings), "" when unknown (M9: dead bodies) */
+    nameOf?: (playerId: number) => string;
 }
 
 /** Per-frame state handed to every view. */

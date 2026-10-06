@@ -6,10 +6,11 @@ import type { GenerateMapResult } from "../mapgen/generate.ts";
 import type { Terrain } from "../mapgen/terrain.ts";
 import { riverWaterAt } from "../mapgen/terrainQuery.ts";
 import type { MapData } from "../view.ts";
+import type { DeadBody } from "./deadBodies.ts";
 import { Building, createMapEntity, type MapEntity, Obstacle, Structure } from "./entities.ts";
 import type { Player } from "./player.ts";
 
-export type Entity = MapEntity | Player | Loot;
+export type Entity = MapEntity | Player | Loot | DeadBody;
 
 /** Broadphase cell size (survev server grid.ts). */
 const GRID_CELL_SIZE = 16;

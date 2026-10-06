@@ -149,6 +149,14 @@
 // M7b additions (event maps; backward compatible, see viewModes.ts for the full notes): PlayerView `frozen` /
 // `frozenOri` (snowball and potato hits), the Cobalt class menu waiting room, potato emotes, GenerateMapResult
 // `skipped`, `Game.dropItem`.
+//
+// M9 additions (hits; backward compatible in the same way):
+// - New object kind "deadBody" (DeadBodyView, the original DeadBody object): every player that dies leaves one where it
+//   died, with its `playerId`; it slides along the killing hit's direction (speed 10, drag 4), follows stairs and is
+//   never removed (survev server/src/game/objects/deadBody.ts). Clients draw a skull and the player's name.
+// - BulletEvent: `speedMult` (tracer speed over the def speed: the perk speed multiplier times the variance of shrapnel).
+// - USAS-12 (`toMouseHit`) rounds stop at the cursor: their range is cut to `toMouseLen - barrelLength`.
+// - Bullets whose def has `skipCollision` (flares) report their full range as `maxDist`.
 import type { Vec2 } from "@rebirth/core";
 import type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
 import type {
@@ -235,7 +243,7 @@ export interface MapData {
     objects: MapObjectSpawn[];
 }
 
-export type ObjectKind = "player" | "obstacle" | "building" | "structure" | "decal" | "loot";
+export type ObjectKind = "player" | "obstacle" | "building" | "structure" | "decal" | "loot" | "deadBody";
 
 interface BaseView {
     id: number;
@@ -362,9 +370,18 @@ export interface DecalView extends BaseView {
 export interface LootView extends BaseView {
     kind: "loot";
     count: number;
+    /** a gun dropped with its clip full and no side ammo (the original LootMsg isPreloadedGun; client border) */
+    isPreloadedGun?: boolean;
 }
 
-export type ObjectView = PlayerView | ObstacleView | BuildingView | StructureView | DecalView | LootView;
+/** Where a player died (M9): `type` is always "deadBody"; `pos` moves while the body slides. */
+export interface DeadBodyView extends BaseView {
+    kind: "deadBody";
+    /** the player who died here */
+    playerId: number;
+}
+
+export type ObjectView = PlayerView | ObstacleView | BuildingView | StructureView | DecalView | LootView | DeadBodyView;
 
 /** State only the owning player sees. */
 export interface LocalPlayerState {
@@ -456,6 +473,11 @@ export interface BulletEvent {
     thick?: boolean;
     /** a Splinter Rounds side bullet (small tracer) (M7a) */
     splinter?: boolean;
+    /**
+     * tracer speed over the bullet def's speed (M9): the perk speed multiplier (9mm Overpressure) times the variance
+     * factor `1 + varianceT * def.variance` (shrapnel); 1 when absent (survev client bullet.ts speed)
+     */
+    speedMult?: number;
 }
 
 /** One simulation snapshot as seen by one player (the original UpdateMsg, decoded). */

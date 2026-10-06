@@ -2,11 +2,13 @@
 // and swapped for the residue image once dead; a used button shows its `useImg` (an opened air drop crate). A
 // button use and a destruction seen in view trigger their particles and sounds through the fx hooks. Ordering and
 // effects follow survev client/src/objects/obstacle.ts. M5: doors animate towards their new position/orientation and
-// play their sounds (door.ts); the casing stays at the closed door.
+// play their sounds (door.ts); the casing stays at the closed door. M9: an explosive obstacle (barrel) below half health
+// smokes (survev obstacle.ts smoke_barrel emitter, drifting up-right) until it blows up.
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
 import type { ObstacleView } from "@rebirth/sim";
 import type { Sprite } from "pixi.js";
+import type { Emitter } from "../fx/particles.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
@@ -17,6 +19,9 @@ import { adjustValue, type FrameContext, type ObjectRender, type ViewDeps } from
 const DEAD_Z_ORD = 5;
 /** obstacles at or above this zOrd (bushes, trees) are drawn over stairs when viewing the ground */
 const TALL_Z_ORD = 50;
+/** survev obstacle.ts: explosive obstacles smoke below half health */
+const SMOKE_HEALTH = 0.5;
+const SMOKE_DIR = { x: Math.SQRT1_2, y: Math.SQRT1_2 };
 
 export class ObstacleRender implements ObjectRender<ObstacleView> {
     readonly id: number;
@@ -36,6 +41,7 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
     door: DoorAnim | null = null;
     private buttonSeq = -1;
     private wasDead = false;
+    private smoke: Emitter | null = null;
 
     constructor(deps: ViewDeps, id: number) {
         this.deps = deps;
@@ -68,6 +74,7 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
             else if (!view.button.canUse && buttonDef.offImg) current = buttonDef.offImg;
         }
         this.effects(view, isNew);
+        this.updateSmoke(view);
         if (current !== this.img || isNew) {
             this.img = current;
             this.deps.textures.apply(this.sprite, current, img.scale ?? 1);
@@ -79,6 +86,22 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
             this.zIdx = Math.floor(view.scale * 1000) * 65535 + view.id;
         }
         this.sprite.visible = current !== "";
+    }
+
+    private updateSmoke(view: ObstacleView): void {
+        const particles = this.deps.particles;
+        if (!particles || !this.def.explosion) return;
+        if (!this.smoke?.active && view.healthT < SMOKE_HEALTH && !view.dead) {
+            this.smoke = particles.addEmitter("smoke_barrel", { pos: view.pos, dir: SMOKE_DIR, layer: view.layer });
+        }
+        if (this.smoke && view.dead) {
+            this.smoke.stop();
+            this.smoke = null;
+        }
+        if (this.smoke) {
+            this.smoke.pos = { x: view.pos.x, y: view.pos.y };
+            this.smoke.enabled = view.healthT < SMOKE_HEALTH;
+        }
     }
 
     /** Button and destruction effects for state changes seen while the obstacle is in view. */
@@ -151,6 +174,8 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
     }
 
     destroy(): void {
+        this.smoke?.stop();
+        this.smoke = null;
         this.deps.renderer.pool.release(this.sprite);
         if (this.casing) this.deps.renderer.pool.release(this.casing);
         this.casing = null;

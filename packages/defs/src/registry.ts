@@ -8,9 +8,11 @@ import mapObjectsJson from "./generated/mapObjects.json" with { type: "json" };
  * at join (it feeds PROTOCOL_HASH). 1: M3 · 2: M4 match sections, M5a effects/extended flags, M5b doors/puzzles/recorders
  * · 3: M6a team/group status, emotes, revive actions · 4: M7a perks, roles and haste of players, faction status and
  * alive counts, bullet tracer flags, PerkModeRoleSelect · 5: M7b frozen players (snowball / potato hits), DropItem
- * · 6: M8 touch movement stick in Input (touchMoveActive bit, touchMoveDir 8+8, touchMoveLen u8).
+ * · 6: M8 touch movement stick in Input (touchMoveActive bit, touchMoveDir 8+8, touchMoveLen u8) · 7: M9 DeadBody objects
+ * (type code 5: layer, playerId u16, pos), bullet tracer speed factor (hasSpeedMult bit + 10 bits), the loot's
+ * isPreloadedGun bit.
  */
-export const PROTOCOL_SCHEMA_VERSION = 6;
+export const PROTOCOL_SCHEMA_VERSION = 7;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 
