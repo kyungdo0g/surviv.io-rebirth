@@ -21,6 +21,16 @@ export interface PlayerInput {
      * is equipped, a throwable is selected in the throwable slot. Absent or "" for none.
      */
     useItem?: string;
+    /**
+     * Touch movement stick (M8; the original InputMsg touchMoveActive / touchMoveDir / touchMoveLen, survev
+     * shared/net/inputMsg.ts:39-43): while active with a non-zero length the player walks along `touchMoveDir` instead
+     * of the move keys; the length (0-255, 8 bits on the wire) does not scale the speed (survev player.ts:1925-1928).
+     */
+    touchMoveActive?: boolean;
+    /** unit vector of the touch movement stick, world space (+y is up) */
+    touchMoveDir?: Vec2;
+    /** pull of the touch movement stick, 0-255 */
+    touchMoveLen?: number;
 }
 
 export function emptyInput(seq = 0): PlayerInput {

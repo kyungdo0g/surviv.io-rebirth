@@ -66,4 +66,9 @@ export interface AddPlayerOptions {
     autoFill?: boolean;
     /** seats the party reserves in its group when its key is first used (default 1) */
     partySize?: number;
+    /**
+     * Touch client (M8; the original JoinMsg.isMobile): 1.4x loot pickup radius (touchLootRadMult), the mobile scope
+     * zoom table, server-side auto loot and auto-opened doors (docs/research/ui/controls.md "Mobile and touch controls").
+     */
+    isMobile?: boolean;
 }
