@@ -205,11 +205,12 @@ function replaceKeys(obj: Record<string, any>, map: string, path: string, log: R
     for (const [key, value] of Object.entries(obj)) {
         const to = FORK_RESKIN_ORIGINALS[key];
         if (!to) {
-            out[key] = typeof out[key] === "number" && typeof value === "number" ? out[key] + value : value;
+            // an original id already present (e.g. restored by the balance revert) wins over its fork reskin
+            out[key] = value;
             continue;
         }
         log.push({ map, path, from: key, to });
-        out[to] = typeof out[to] === "number" && typeof value === "number" ? out[to] + value : (out[to] ?? value);
+        out[to] ??= value;
     }
     return out;
 }
