@@ -11,6 +11,7 @@ import {
     killFeedSpacing,
     layoutState,
     SM_HUD_SCALE,
+    slotPulseWidth,
     uiLayoutFor,
 } from "../src/ui/uiLayout.ts";
 
@@ -58,5 +59,13 @@ describe("mobile animations", () => {
         expect(itemPopScale(0.05 * (Math.PI / 2), false)).toBeCloseTo(1.33);
         expect(itemPopScale(1, false)).toBe(1);
         expect(itemPopScale(0.05 * (Math.PI / 2), true)).toBe(1);
+    });
+
+    it("pulses a newly equipped weapon slot to full width and back to 83.33 % (visual-diff.md)", () => {
+        expect(slotPulseWidth(0, false)).toBeCloseTo(83.33);
+        expect(slotPulseWidth(0.09 * (Math.PI / 2), false)).toBeCloseTo(100);
+        expect(slotPulseWidth(0.09 * Math.PI, false)).toBeCloseTo(83.33);
+        expect(slotPulseWidth(1, false)).toBeCloseTo(83.33);
+        expect(slotPulseWidth(0.09 * (Math.PI / 2), true)).toBeCloseTo(83.33);
     });
 });

@@ -1,0 +1,52 @@
+/*
+ * The desktop minimap buttons (minimapButtons.ts; survev css/game.css #ui-settings-container-desktop,
+ * .ui-settings-button, #ui-map-minimize). The container is the #ui-map-container point (12 px from the left, bottom set
+ * by the script) scaled by the HUD scale; the settings container sits 16 px right and 12 px up of it, and the buttons
+ * hang down from its top: the magnifier at its left edge, the minimize button 185 px further right.
+ */
+#ui-settings-container-desktop {
+    position: absolute;
+    left: 12px;
+    width: 0;
+    height: 0;
+    transform-origin: 0 0;
+}
+
+#ui-settings-container-desktop[hidden],
+#ui-settings-container-desktop .ui-settings-button[hidden] {
+    display: none;
+}
+
+#ui-settings-container-desktop .ui-settings-button {
+    position: absolute;
+    top: -12px;
+    width: 48px;
+    height: 48px;
+    border-radius: 5px;
+    opacity: 0.5;
+    background: rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    transform: scale(1);
+    transition: all 100ms ease-in;
+}
+
+#ui-settings-container-desktop .ui-settings-button:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+#ui-settings-container-desktop .ui-settings-button img {
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    width: 36px;
+    height: 36px;
+}
+
+#ui-map-expand-desktop {
+    left: 16px;
+}
+
+#ui-map-minimize {
+    left: 201px;
+}

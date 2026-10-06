@@ -5,6 +5,7 @@ import { perkViews } from "../perks/perks.ts";
 import type { ActionType, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
 import type { Player } from "./player.ts";
 
+/** "reloadAlt" shows as "reload"; PlayerView carries it as `action.alt` (the client plays `sound.reloadAlt`). */
 function viewActionType(p: Player): ActionType {
     return p.action.type === "reloadAlt" ? "reload" : p.action.type;
 }
@@ -31,6 +32,7 @@ export function playerView(p: Player): PlayerView {
             seq: p.action.seq,
             item: p.action.item,
             duration: p.action.duration,
+            alt: p.action.type === "reloadAlt",
         },
         shot: { seq: p.shotSeq, offHand: p.shotOffhand },
         wearingPan: p.wearingPan,

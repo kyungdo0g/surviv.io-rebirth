@@ -308,6 +308,12 @@ export interface PlayerAction {
     item: string;
     /** total duration in seconds (0 for none) */
     duration: number;
+    /**
+     * A "reload" that is the gun's alternate full reload (the Mosin's empty-clip reload with `reloadTimeAlt`; the
+     * original Action.ReloadAlt, which plays `sound.reloadAlt`). The type stays "reload" so every reload check keeps
+     * working; absent or false for other actions.
+     */
+    alt?: boolean;
 }
 
 export interface PlayerShot {

@@ -24,10 +24,11 @@ import type { Renderer } from "../render/renderer.ts";
 import type { EmoteWheel } from "../ui/emoteWheel.ts";
 import { GameMenu } from "../ui/gameMenu.ts";
 import type { Minimap } from "../ui/minimap.ts";
+import { MinimapButtons } from "../ui/minimapButtons.ts";
 import { ReportFlow, type ReportFlowDeps } from "../ui/report.ts";
 import { toggleFullscreen } from "../ui/settingsControls.ts";
 import { TouchHud } from "../ui/touchHud.ts";
-import type { HudLayout } from "../ui/uiLayout.ts";
+import { type HudLayout, hudScale } from "../ui/uiLayout.ts";
 import type { MatchUi } from "./match.ts";
 import type { ModeUi } from "./modes.ts";
 
@@ -68,6 +69,8 @@ export class ClientControls {
     readonly touch: TouchControls | null = null;
     readonly aimLine: AimLine | null = null;
     readonly touchHud: TouchHud | null = null;
+    /** the desktop minimap's magnifier and minimize buttons */
+    readonly mapButtons: MinimapButtons | null = null;
     readonly report: ReportFlow | null = null;
     private readonly deps: ClientControlsDeps;
     private readonly unsubscribe: () => void;
@@ -103,6 +106,15 @@ export class ClientControls {
                 openMenu: () => this.menu.show(),
                 closeBigMap: () => deps.modes.setBigMap(false),
                 openEmoteWheel: () => deps.emoteWheel.openTouchEmote(this.screenCenter()),
+            });
+        }
+        if (!deps.touch) {
+            this.mapButtons = new MinimapButtons(deps.hudRoot, {
+                // survev ui.ts: the magnifier toggles the big map on the large layout; minimize toggles the minimap
+                toggleBigMap: () => deps.modes.setBigMap(!deps.modes.bigMap),
+                toggleMinimap: () => {
+                    if (!deps.modes.bigMap) this.minimapHidden = !this.minimapHidden;
+                },
             });
         }
         const submit = deps.report;
@@ -176,6 +188,11 @@ export class ClientControls {
     update(frame: ControlsFrame): void {
         this.report?.update();
         this.touchHud?.update(this.deps.minimap()?.rect ?? null, this.deps.modes.bigMap, this.deps.layout.small);
+        this.mapButtons?.update({
+            scale: hudScale(this.deps.layout.state),
+            hidden: this.deps.layout.small,
+            bigMap: this.deps.modes.bigMap,
+        });
         if (this.aimLine && this.touch) {
             const local = frame.local;
             const visible =
@@ -200,6 +217,7 @@ export class ClientControls {
         this.touch?.destroy();
         this.aimLine?.destroy();
         this.touchHud?.destroy();
+        this.mapButtons?.destroy();
         this.report?.destroy();
     }
 }

@@ -1,7 +1,8 @@
 // Bottom-left minimap like the original (survev client/src/ui/ui.ts redraw/m_render and client/src/map.ts
 // renderMap): the whole map is rendered once into a texture (terrain + every map object whose definition has
 // map.display, using map.color and map.scale), shown at 80% alpha inside a masked 256 px square that scrolls so
-// the local player stays centered, with the player dot and the camera's view rectangle on top. M4: the red zone,
+// the local player stays centered, with the player dot on top (no view rectangle: the original draws none, see
+// docs/research/provenance/visual-diff.md). M4: the red zone,
 // the next safe zone and the line to it, and the map indicators (air drop pings) are drawn over the map texture
 // inside the same mask (mapMarkers.ts). M5: the 50v50 air strike zones (airstrikeZones.ts) between the gas and the
 // indicators, like the original's container order. M6: teammate dots (minimapTeam.ts) over the indicators, the
@@ -10,7 +11,7 @@
 // M7: faction members outside the group (minimapFaction.ts) under the group's dots, role map icons for the followed
 // player and its group, and the big map (M / G, survev ui.ts displayMapLarge + redraw): the same layers drawn over a
 // square as large as the smaller screen side, centred, at full alpha, every marker at its map position, without the
-// view rectangle and the line to the safe zone.
+// line to the safe zone.
 // M8: the small layout (uiLayout.ts) puts a 192 px minimap (x the 0.5626 HUD scale) with a 4 px margin and a 1 px
 // border in the top-left corner and draws its dots at 0.15 / 0.25 (survev ui.ts getMinimapSize / Margin / BorderWidth,
 // redraw, updatePlayerMapSprites); Toggle Minimap (V) and Hide UI hide it (`setHidden`; the big map still opens).
@@ -105,11 +106,16 @@ export class Minimap {
     hidden = false;
     private readonly mask = new Graphics();
     private readonly border = new Graphics();
-    private readonly viewRect = new Graphics();
     private readonly playerOuter: Sprite;
     private readonly playerInner: Sprite;
     private readonly map: MapData;
     private readonly texture: RenderTexture;
+    /** pixel size of the map texture (tests) */
+    get textureSize(): number {
+        return this.texture.width;
+    }
+    /** font size of the place names in texture pixels (tests: 22 px on the big map once scaled to the screen) */
+    placeLabelPx = 0;
     private readonly textures: TextureStore;
     private localDotKey = "";
     private localDotScale = 0.2;
@@ -122,6 +128,7 @@ export class Minimap {
         this.map = map;
         this.textures = textures;
         this.texture = Minimap.renderMapTexture(app, map, terrain, mobile);
+        this.placeLabelPx = Minimap.lastLabelPx;
         this.mapSprite = new Sprite(this.texture);
         this.mapSprite.anchor.set(0.5);
         this.mapSprite.alpha = MAP_ALPHA;
@@ -144,7 +151,7 @@ export class Minimap {
             this.team.container,
             this.indicators.container,
         );
-        this.container.addChild(this.clip, this.viewRect, this.playerOuter, this.playerInner, this.border, this.mask);
+        this.container.addChild(this.clip, this.playerOuter, this.playerInner, this.border, this.mask);
         this.clip.mask = this.mask;
     }
 
@@ -203,12 +210,27 @@ export class Minimap {
         return this.indicators.apply(list);
     }
 
-    /** The map texture; place names are 22 px bold Arial, 20 px on mobile (survev map.ts renderMap). */
+    /**
+     * The map texture (survev map.ts renderMap). The original renders it as many pixels as the screen is tall (a
+     * portrait phone: wide, times the pixel ratio up to 2) with place names in 22 px bold Arial (20 px on mobile), so
+     * the big map shows them at 22 px and the minimap at its larger scale. Rebirth keeps those label sizes but renders
+     * the texture at the device resolution and at least as large as the minimap's 1333 px map, so it stays sharp
+     * (also after the window grows; the original re-renders it on resize).
+     */
+    /** font size of the place names of the last texture rendered, in texture pixels */
+    private static lastLabelPx = 0;
+
     static renderMapTexture(app: Application, map: MapData, terrain: TerrainShape, mobile = false): RenderTexture {
-        const size = Math.min(
-            2048,
-            Math.max(512, Math.ceil(MAP_DISPLAY_SIZE * Math.min(window.devicePixelRatio || 1, 2))),
-        );
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        const { width, height } = app.screen;
+        let screenScale = mobile && width < height ? width : height;
+        if (mobile) screenScale *= ratio;
+        screenScale = Math.max(screenScale, 1);
+        const base = Math.max(mobile ? screenScale : screenScale * ratio, MAP_DISPLAY_SIZE * ratio);
+        const size = Math.min(4096, Math.max(256, Math.round(base)));
+        // label sizes of the original's screen-sized texture, scaled to this one
+        const labelScale = size / screenScale;
+        Minimap.lastLabelPx = (mobile ? 20 : 22) * labelScale;
         const unitsPerPx = map.height / size;
         const colors = getMapDef(map.mapName).biome.colors;
         const root = new Container();
@@ -258,11 +280,17 @@ export class Minimap {
                 text: place.name,
                 style: {
                     fontFamily: "Arial",
-                    fontSize: mobile ? 20 : 22,
+                    fontSize: (mobile ? 20 : 22) * labelScale,
                     fontWeight: "bold",
                     fill: 0xffffff,
-                    stroke: { color: 0x000000, width: 1 },
-                    dropShadow: { color: 0x000000, blur: 1, angle: Math.PI / 3, distance: 1, alpha: 1 },
+                    stroke: { color: 0x000000, width: labelScale },
+                    dropShadow: {
+                        color: 0x000000,
+                        blur: labelScale,
+                        angle: Math.PI / 3,
+                        distance: labelScale,
+                        alpha: 1,
+                    },
                     align: "center",
                 },
             });
@@ -323,19 +351,6 @@ export class Minimap {
         if (!this.big) {
             const b = dims.border;
             this.border.rect(left + b / 2, top + b / 2, size - b, size - b).stroke({ width: b, color: 0x000000 });
-        }
-
-        this.viewRect.clear();
-        if (!this.big) {
-            const view = camera.viewBounds();
-            const a = px(view.min);
-            const b = px(view.max);
-            const x0 = Math.max(left, Math.min(a.x, b.x));
-            const y0 = Math.max(top, Math.min(a.y, b.y));
-            const x1 = Math.min(left + size, Math.max(a.x, b.x));
-            const y1 = Math.min(top + size, Math.max(a.y, b.y));
-            if (x1 > x0 && y1 > y0)
-                this.viewRect.rect(x0, y0, x1 - x0, y1 - y0).stroke({ width: 1, color: 0xffffff, alpha: 0.6 });
         }
 
         // map sprites: the desktop HUD scale, or the small layout's 0.15 / 0.25 dot scales

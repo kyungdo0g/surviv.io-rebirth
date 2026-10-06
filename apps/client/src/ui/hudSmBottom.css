@@ -179,9 +179,12 @@
     transform-origin: bottom right;
 }
 
+/* the small boxes keep their own offsets: no desktop margin and no (transparent) outline border */
 #ui-game.ui-layout-sm .ui-armor-counter {
     width: 20px;
     height: 24px;
+    margin-left: 0;
+    border-width: 0;
 }
 
 #ui-game.ui-layout-sm .ui-armor-image {

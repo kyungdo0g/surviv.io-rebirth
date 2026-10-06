@@ -87,12 +87,7 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 backpack: randGameType(rng),
                 scale: rng.range(0.75, 2),
                 anim: { type: rng.pick(["none", "melee", "cook", "throw", "revive"] as const), seq: rng.int(0, 65535) },
-                action: {
-                    type: rng.pick(["none", "reload", "use", "revive"] as const),
-                    seq: rng.int(0, 65535),
-                    item: randGameType(rng),
-                    duration: rng.range(0, 8.5),
-                },
+                action: randAction(rng),
                 shot: { seq: rng.int(0, 65535), offHand: rng.bool() },
                 wearingPan: rng.bool(),
                 healEffect: rng.bool(0.2),
@@ -180,6 +175,18 @@ export function mutateView(rng: Rng, ctx: NetCtx, view: ObjectView): ObjectView 
     // the frozen pose is 0 while not frozen (as the simulation sends it)
     if (view.kind === "player" && !out.frozen) out.frozenOri = 0;
     return out as unknown as ObjectView;
+}
+
+/** A player's action; only reloads can be the alternate (Mosin) reload. */
+function randAction(rng: Rng) {
+    const type = rng.pick(["none", "reload", "use", "revive"] as const);
+    return {
+        type,
+        seq: rng.int(0, 65535),
+        item: randGameType(rng),
+        duration: rng.range(0, 8.5),
+        alt: type === "reload" && rng.bool(0.3),
+    };
 }
 
 /** Snowball / potato frozen state (M7b): frozenOri is 0 while not frozen. */

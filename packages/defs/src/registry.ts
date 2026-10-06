@@ -10,9 +10,10 @@ import mapObjectsJson from "./generated/mapObjects.json" with { type: "json" };
  * alive counts, bullet tracer flags, PerkModeRoleSelect · 5: M7b frozen players (snowball / potato hits), DropItem
  * · 6: M8 touch movement stick in Input (touchMoveActive bit, touchMoveDir 8+8, touchMoveLen u8) · 7: M9 DeadBody objects
  * (type code 5: layer, playerId u16, pos), bullet tracer speed factor (hasSpeedMult bit + 10 bits), the loot's
- * isPreloadedGun bit.
+ * isPreloadedGun bit · 8: the player action's alternate-reload bit (the Mosin's full reload, original Action.ReloadAlt)
+ * as the last field of the player table, in the action group.
  */
-export const PROTOCOL_SCHEMA_VERSION = 7;
+export const PROTOCOL_SCHEMA_VERSION = 8;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

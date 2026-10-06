@@ -281,7 +281,9 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         if (!action || action.type === "none" || !action.item) return;
         const def = GameObjectDefs[action.item];
         let sound: string | undefined;
-        if (action.type === "reload" && def?.type === "gun") sound = def.sound.reload;
+        // the alternate full reload plays its own sound (survev player.ts playActionStartSfx: Action.ReloadAlt)
+        if (action.type === "reload" && def?.type === "gun")
+            sound = action.alt && def.sound.reloadAlt ? def.sound.reloadAlt : def.sound.reload;
         else if (action.type === "use" && (def?.type === "heal" || def?.type === "boost")) sound = def.sound.use;
         if (sound) {
             const handle = this.audio.playSound(sound, {

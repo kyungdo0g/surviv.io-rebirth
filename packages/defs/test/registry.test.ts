@@ -61,7 +61,7 @@ describe("PROTOCOL_HASH", () => {
         expect(Number.isInteger(PROTOCOL_HASH)).toBe(true);
         expect(PROTOCOL_HASH).toBeGreaterThanOrEqual(0);
         expect(PROTOCOL_HASH).toBeLessThan(2 ** 32);
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(7);
+        expect(PROTOCOL_SCHEMA_VERSION).toBe(8);
         expect(PROTOCOL_HASH).toBe(
             computeProtocolHash(PROTOCOL_SCHEMA_VERSION, GameObjectRegistry.types, MapObjectRegistry.types),
         );
