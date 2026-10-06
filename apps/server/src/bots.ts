@@ -94,6 +94,13 @@ export class BotFill {
         if (this.playersInGame() >= Math.min(this.options.target, this.modeMaxPlayers)) return;
         this.addBot();
         this.nextJoinTick = game.tick + this.options.joinIntervalTicks;
+        // a zero interval fills the game to its target at once instead of one bot per tick
+        while (
+            this.options.joinIntervalTicks <= 0 &&
+            game.canJoin() &&
+            this.playersInGame() < Math.min(this.options.target, this.modeMaxPlayers)
+        )
+            this.addBot();
     }
 
     private addBot(): void {
