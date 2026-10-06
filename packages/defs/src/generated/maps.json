@@ -6057,11 +6057,7 @@
       ],
       "fixedSpawns": [
         {
-          "warehouse_01": {
-            "small": 1,
-            "large": 2
-          },
-          "warehouse_03": 1,
+          "warehouse_01": 2,
           "house_red_01": {
             "small": 2,
             "large": 3
@@ -9155,11 +9151,7 @@
       ],
       "fixedSpawns": [
         {
-          "warehouse_01": {
-            "small": 1,
-            "large": 2
-          },
-          "warehouse_03": 1,
+          "warehouse_01": 2,
           "house_red_01": {
             "small": 3,
             "large": 4
@@ -11408,7 +11400,7 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 0.08
+          "weight": 3
         },
         {
           "name": "m249",
@@ -11989,23 +11981,7 @@
         "shoreInset": 8,
         "grassInset": 12,
         "rivers": {
-          "lakes": [
-            {
-              "odds": 1,
-              "innerRad": 10,
-              "outerRad": 20,
-              "centerObj": "oasis_01",
-              "noRiverObjs": true,
-              "riverMaskRad": 48,
-              "spawnBound": {
-                "pos": {
-                  "x": 0.5,
-                  "y": 0.5
-                },
-                "rad": 300
-              }
-            }
-          ],
+          "lakes": [],
           "weights": [
             {
               "weight": 0.1,
@@ -12153,7 +12129,6 @@
           "house_red_01": 3,
           "house_red_02": 1,
           "barn_01": 1,
-          "barn_02d": 1,
           "cache_01": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -15299,9 +15274,9 @@
           "shack_03a": 2,
           "shack_03b": 3,
           "greenhouse_01": 1,
-          "cache_01": 2,
-          "cache_02": 2,
-          "cache_07": 2,
+          "cache_01": 1,
+          "cache_02": 1,
+          "cache_07": 1,
           "mansion_structure_01": 1,
           "bunker_structure_01": {
             "odds": 1
@@ -27770,10 +27745,6 @@
           "potato_01": 50,
           "potato_02": 50,
           "potato_03": 50,
-          "egg_01": 15,
-          "egg_02": 15,
-          "egg_03": 15,
-          "egg_04": 15,
           "container_01": 5,
           "container_02": 5,
           "container_03": 5,
@@ -30865,7 +30836,6 @@
           "warehouse_complex_01": 1,
           "chest_01": 1,
           "tree_02": 3,
-          "stone_04x": 1,
           "club_complex_01": 1,
           "cache_02": 1,
           "cache_01": 1,
@@ -33705,7 +33675,7 @@
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
-          "cache_01": 2,
+          "cache_01": 1,
           "cache_02": 1,
           "cache_03": 48,
           "chest_03": {
@@ -36528,19 +36498,12 @@
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
-          "cache_01w": 1,
           "cache_02w": 1,
           "cache_03": 48,
-          "cache_07w": 1,
           "chest_03": {
             "odds": 0.5
           },
           "crate_19": 12,
-          "logging_complex_03x": 3,
-          "stone_04x": {
-            "small": 6,
-            "large": 8
-          },
           "tree_02": 6,
           "tree_07": 1100,
           "tree_08": 1100,
@@ -36560,7 +36523,8 @@
             "small": 2,
             "large": 3
           },
-          "stone_04": 6
+          "stone_04": 6,
+          "house_red_01": 3
         }
       ],
       "randomSpawns": [],
@@ -39392,9 +39356,7 @@
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
-          "cache_01w": 1,
           "cache_02sp": 1,
-          "cache_07w": 1,
           "chest_03": {
             "odds": 0.5
           },
@@ -39420,7 +39382,6 @@
             "small": 3,
             "large": 4
           },
-          "workshop_complex_01": 1,
           "cache_01": 1,
           "teapavilion_01w": 1,
           "logging_complex_01sp": 1
@@ -42178,7 +42139,7 @@
       "customSpawnRules": {
         "locationSpawns": [
           {
-            "type": "logging_complex_01su",
+            "type": "logging_complex_01",
             "pos": {
               "x": 0.5,
               "y": 0.5
@@ -42213,8 +42174,6 @@
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
-          "cache_01w": 1,
-          "cache_07w": 1,
           "chest_03": {
             "odds": 0.5
           },
@@ -42234,7 +42193,6 @@
             "small": 3,
             "large": 4
           },
-          "workshop_complex_01": 1,
           "cache_01": 1,
           "logging_complex_01": 1,
           "teapavilion_01w": 1,
@@ -42548,11 +42506,6 @@
           "name": "15xscope",
           "count": 1,
           "weight": 0.02
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 24
         }
       ],
       "tier_armor": [
@@ -42638,6 +42591,11 @@
           "weight": 1
         },
         {
+          "name": "strobe",
+          "count": 1,
+          "weight": 0.2
+        },
+        {
           "name": "mirv",
           "count": 2,
           "weight": 0.05
@@ -42646,6 +42604,11 @@
       "tier_ammo": [
         {
           "name": "9mm",
+          "count": 30,
+          "weight": 3
+        },
+        {
+          "name": "45acp",
           "count": 30,
           "weight": 3
         },
@@ -42663,6 +42626,11 @@
       "tier_ammo_crate": [
         {
           "name": "9mm",
+          "count": 30,
+          "weight": 3
+        },
+        {
+          "name": "45acp",
           "count": 30,
           "weight": 3
         },
@@ -42780,11 +42748,6 @@
           "name": "15xscope",
           "count": 1,
           "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
         }
       ],
       "tier_chrys_case": [
@@ -42867,32 +42830,12 @@
           "weight": 1
         },
         {
-          "name": "m4a1",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 1
-        },
-        {
           "name": "awc",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "pkp",
           "count": 1,
           "weight": 1
         }
       ],
       "tier_eye_stone": [
-        {
-          "name": "vector45",
-          "count": 1,
-          "weight": 1
-        },
         {
           "name": "45acp",
           "count": 1,
@@ -42919,22 +42862,7 @@
           "weight": 1
         },
         {
-          "name": "m4a1",
-          "count": 1,
-          "weight": 0.7
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 0.2
-        },
-        {
           "name": "awc",
-          "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "pkp",
           "count": 1,
           "weight": 0.1
         }
@@ -42976,12 +42904,17 @@
         {
           "name": "scar",
           "count": 1,
-          "weight": 0.01
+          "weight": 1
+        },
+        {
+          "name": "scorpion",
+          "count": 1,
+          "weight": 1
         },
         {
           "name": "mp5",
           "count": 1,
-          "weight": 10
+          "weight": 5
         },
         {
           "name": "mac10",
@@ -42994,14 +42927,29 @@
           "weight": 3
         },
         {
+          "name": "m1a1",
+          "count": 1,
+          "weight": 5
+        },
+        {
           "name": "ot38",
           "count": 1,
-          "weight": 8
+          "weight": 4
+        },
+        {
+          "name": "colt45",
+          "count": 1,
+          "weight": 4
         },
         {
           "name": "m9",
           "count": 1,
-          "weight": 19
+          "weight": 9
+        },
+        {
+          "name": "m1911",
+          "count": 1,
+          "weight": 9
         },
         {
           "name": "flare_gun",
@@ -43014,29 +42962,59 @@
           "weight": 0.0025
         },
         {
+          "name": "model94",
+          "count": 1,
+          "weight": 6
+        },
+        {
+          "name": "blr",
+          "count": 1,
+          "weight": 6
+        },
+        {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 3
         },
         {
           "name": "mk12",
           "count": 1,
-          "weight": 0.1
+          "weight": 2
         },
         {
           "name": "m39",
           "count": 1,
-          "weight": 0.1
+          "weight": 2
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 1.5
         },
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.75
+        },
+        {
+          "name": "mkg45",
+          "count": 1,
+          "weight": 0.75
+        },
+        {
+          "name": "l86",
+          "count": 1,
+          "weight": 0.75
+        },
+        {
+          "name": "svd",
+          "count": 1,
+          "weight": 0.75
+        },
+        {
+          "name": "garand",
+          "count": 1,
+          "weight": 0.45
         },
         {
           "name": "scarssr",
@@ -43052,51 +43030,6 @@
           "name": "sv98",
           "count": 1,
           "weight": 0.1
-        },
-        {
-          "name": "famas",
-          "count": 1,
-          "weight": 0.9
-        },
-        {
-          "name": "hk416",
-          "count": 1,
-          "weight": 4
-        },
-        {
-          "name": "ak47",
-          "count": 1,
-          "weight": 2.7
-        },
-        {
-          "name": "m1100",
-          "count": 1,
-          "weight": 6
-        },
-        {
-          "name": "m93r",
-          "count": 1,
-          "weight": 5
-        },
-        {
-          "name": "glock",
-          "count": 1,
-          "weight": 7
-        },
-        {
-          "name": "deagle",
-          "count": 1,
-          "weight": 0.05
-        },
-        {
-          "name": "vector",
-          "count": 1,
-          "weight": 0.01
-        },
-        {
-          "name": "groza",
-          "count": 1,
-          "weight": 0.8
         }
       ],
       "tier_police": [
@@ -43123,19 +43056,9 @@
       ],
       "tier_ring_case": [
         {
-          "name": "grozas",
-          "count": 1,
-          "weight": 0.75
-        },
-        {
           "name": "ots38_dual",
           "count": 1,
           "weight": 0.15
-        },
-        {
-          "name": "pkp",
-          "count": 1,
-          "weight": 0.1
         },
         {
           "name": "m9",
@@ -43198,61 +43121,6 @@
           "name": "8xscope",
           "count": 1,
           "weight": 0.25
-        },
-        {
-          "name": "famas",
-          "count": 1,
-          "weight": 1.15
-        },
-        {
-          "name": "hk416",
-          "count": 1,
-          "weight": 4
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 0.07
-        },
-        {
-          "name": "ak47",
-          "count": 1,
-          "weight": 4
-        },
-        {
-          "name": "dp28",
-          "count": 1,
-          "weight": 0.55
-        },
-        {
-          "name": "saiga",
-          "count": 1,
-          "weight": 0.26
-        },
-        {
-          "name": "mp220",
-          "count": 1,
-          "weight": 1.5
-        },
-        {
-          "name": "deagle",
-          "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "vector",
-          "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "spas12",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "groza",
-          "count": 1,
-          "weight": 1.15
         }
       ],
       "tier_conch": [
@@ -43290,78 +43158,33 @@
       ],
       "tier_hatchet": [
         {
-          "name": "vector",
+          "name": "vss",
           "count": 1,
-          "weight": 0.4
+          "weight": 1
         },
         {
-          "name": "mp220",
+          "name": "svd",
           "count": 1,
-          "weight": 0.15
+          "weight": 1
         },
         {
-          "name": "m9",
+          "name": "l86",
           "count": 1,
-          "weight": 0.01
+          "weight": 1
         }
       ],
       "tier_lmgs": [
         {
-          "name": "dp28",
+          "name": "",
           "count": 1,
-          "weight": 2
-        },
-        {
-          "name": "bar",
-          "count": 1,
-          "weight": 1.5
-        },
-        {
-          "name": "qbb97",
-          "count": 1,
-          "weight": 0.5
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 0.05
-        },
-        {
-          "name": "pkp",
-          "count": 1,
-          "weight": 0.05
+          "weight": 1
         }
       ],
       "tier_shotguns": [
         {
-          "name": "spas12",
-          "count": 1,
-          "weight": 2
-        },
-        {
-          "name": "mp220",
-          "count": 1,
-          "weight": 1.5
-        },
-        {
-          "name": "m1100",
+          "name": "",
           "count": 1,
           "weight": 1
-        },
-        {
-          "name": "m870",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "saiga",
-          "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "usas",
-          "count": 1,
-          "weight": 0.01
         }
       ],
       "tier_snipers": [
@@ -43465,21 +43288,6 @@
           "name": "naginata",
           "count": 1,
           "weight": 2
-        },
-        {
-          "name": "pkp",
-          "count": 1,
-          "weight": 2
-        },
-        {
-          "name": "dp28",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "bar",
-          "count": 1,
-          "weight": 1
         },
         {
           "name": "m9",
@@ -43743,42 +43551,12 @@
       ],
       "tier_guns_common_demo": [
         {
-          "name": "m870",
+          "name": "",
           "count": 1,
           "weight": 1
-        },
-        {
-          "name": "spas12",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "mp220",
-          "count": 1,
-          "weight": 0.5
         }
       ],
       "tier_guns_common_assault": [
-        {
-          "name": "hk416",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "ak47",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "groza",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "famas",
-          "count": 1,
-          "weight": 1
-        },
         {
           "name": "scar",
           "count": 1,
@@ -43787,19 +43565,9 @@
       ],
       "tier_guns_common_tank": [
         {
-          "name": "dp28",
+          "name": "",
           "count": 1,
           "weight": 1
-        },
-        {
-          "name": "qbb97",
-          "count": 1,
-          "weight": 0.25
-        },
-        {
-          "name": "bar",
-          "count": 1,
-          "weight": 0.5
         }
       ],
       "tier_guns_common_classless": [
@@ -43830,31 +43598,6 @@
         },
         {
           "name": "m39",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m870",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "spas12",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "ak47",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "famas",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "bar",
           "count": 1,
           "weight": 1
         }
@@ -43895,19 +43638,9 @@
       ],
       "tier_guns_rare_demo": [
         {
-          "name": "saiga",
+          "name": "",
           "count": 1,
-          "weight": 0.5
-        },
-        {
-          "name": "usas",
-          "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "m1014",
-          "count": 1,
-          "weight": 0.15
+          "weight": 1
         }
       ],
       "tier_guns_rare_healer": [
@@ -43937,38 +43670,13 @@
           "name": "scar",
           "count": 1,
           "weight": 1
-        },
-        {
-          "name": "grozas",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m4a1",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "an94",
-          "count": 1,
-          "weight": 1
         }
       ],
       "tier_guns_rare_tank": [
         {
-          "name": "qbb97",
+          "name": "",
           "count": 1,
           "weight": 1
-        },
-        {
-          "name": "pkp",
-          "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 0.2
         }
       ],
       "tier_guns_rare_classless": [
@@ -43993,37 +43701,12 @@
           "weight": 1
         },
         {
-          "name": "saiga",
-          "count": 1,
-          "weight": 1
-        },
-        {
           "name": "l86",
           "count": 1,
           "weight": 1
         },
         {
           "name": "garand",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "grozas",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m4a1",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "pkp",
           "count": 1,
           "weight": 1
         }
@@ -44086,17 +43769,7 @@
           "weight": 1
         },
         {
-          "name": "saiga",
-          "count": 1,
-          "weight": 1
-        },
-        {
           "name": "deagle_dual",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "vector",
           "count": 1,
           "weight": 1
         },
@@ -44106,17 +43779,7 @@
           "weight": 1
         },
         {
-          "name": "m4a1",
-          "count": 1,
-          "weight": 1
-        },
-        {
           "name": "garand",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "grozas",
           "count": 1,
           "weight": 1
         },
@@ -44132,16 +43795,6 @@
         },
         {
           "name": "scarssr",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "pkp",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m249",
           "count": 1,
           "weight": 1
         },
@@ -44240,11 +43893,6 @@
           "weight": 0.5
         },
         {
-          "name": "m4a1",
-          "count": 1,
-          "weight": 1
-        },
-        {
           "name": "scorpion",
           "count": 1,
           "weight": 1
@@ -44275,11 +43923,6 @@
           "weight": 1
         },
         {
-          "name": "saiga",
-          "count": 1,
-          "weight": 1
-        },
-        {
           "name": "p30l_dual",
           "count": 1,
           "weight": 0.5
@@ -44298,11 +43941,6 @@
           "name": "awc",
           "count": 1,
           "weight": 0.3
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 0.25
         }
       ],
       "tier_airdrop_uncommon": [
@@ -44327,6 +43965,11 @@
           "weight": 2.5
         },
         {
+          "name": "sv98",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "m9",
           "count": 1,
           "weight": 0.01
@@ -44337,9 +43980,24 @@
           "weight": 0.5
         },
         {
+          "name": "mkg45",
+          "count": 1,
+          "weight": 2.5
+        },
+        {
           "name": "vss",
           "count": 1,
           "weight": 2.5
+        },
+        {
+          "name": "l86",
+          "count": 1,
+          "weight": 0.75
+        },
+        {
+          "name": "svd",
+          "count": 1,
+          "weight": 0.75
         },
         {
           "name": "scarssr",
@@ -44350,16 +44008,6 @@
           "name": "awc",
           "count": 1,
           "weight": 0.15
-        },
-        {
-          "name": "sv98",
-          "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "deagle",
-          "count": 1,
-          "weight": 1
         }
       ],
       "tier_airdrop_rare": [
@@ -44392,11 +44040,6 @@
           "name": "ots38_dual",
           "count": 1,
           "weight": 4.5
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 0.1
         }
       ],
       "tier_airdrop_crimson": [
@@ -44407,11 +44050,6 @@
         }
       ],
       "tier_airdrop_mythic": [
-        {
-          "name": "usas",
-          "count": 1,
-          "weight": 1
-        },
         {
           "name": "scarssr",
           "count": 1,
@@ -44428,16 +44066,6 @@
           "weight": 1
         },
         {
-          "name": "pkp",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 1
-        },
-        {
           "name": "awc",
           "count": 1,
           "weight": 0.75
@@ -44446,6 +44074,11 @@
       "tier_airdrop_ammo": [
         {
           "name": "9mm",
+          "count": 30,
+          "weight": 3
+        },
+        {
+          "name": "45acp",
           "count": 30,
           "weight": 3
         },
@@ -44483,6 +44116,11 @@
         }
       ],
       "tier_airdrop_throwables": [
+        {
+          "name": "strobe",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "mirv",
           "count": 2,
@@ -44565,11 +44203,6 @@
         }
       ],
       "tier_saloon": [
-        {
-          "name": "vector45",
-          "count": 1,
-          "weight": 1
-        },
         {
           "name": "mkg45",
           "count": 1,
@@ -44882,11 +44515,6 @@
       ],
       "tier_dev_guns": [
         {
-          "name": "m1100",
-          "count": 1,
-          "weight": 11
-        },
-        {
           "name": "m9",
           "count": 1,
           "weight": 9
@@ -44988,7 +44616,13 @@
           "weight": 0.01
         }
       ],
-      "tier_knives": []
+      "tier_knives": [
+        {
+          "name": "",
+          "count": 1,
+          "weight": 1
+        }
+      ]
     },
     "mapGen": {
       "map": {
@@ -45007,29 +44641,13 @@
               "odds": 1,
               "innerRad": 32,
               "outerRad": 48,
-              "centerObj": "bunker_structure_10",
+              "centerObj": "crate_02sv_lake",
               "spawnBound": {
                 "pos": {
                   "x": 0.5,
                   "y": 0.5
                 },
-                "rad": 200
-              },
-              "riverMaskRad": 85
-            },
-            {
-              "odds": 1,
-              "innerRad": 10,
-              "outerRad": 20,
-              "centerObj": "oasis_01sv",
-              "noRiverObjs": true,
-              "riverMaskRad": 48,
-              "spawnBound": {
-                "pos": {
-                  "x": 0.5,
-                  "y": 0.5
-                },
-                "rad": 300
+                "rad": 0
               }
             },
             {
@@ -45063,13 +44681,6 @@
             {
               "weight": 1,
               "widths": [
-                4
-              ]
-            },
-            {
-              "weight": 1,
-              "widths": [
-                4,
                 4
               ]
             }
@@ -45148,13 +44759,18 @@
       },
       "densitySpawns": [
         {
-          "stone_01": 350,
-          "barrel_01": 76,
+          "stone_01": 72,
+          "barrel_01": 48,
+          "propane_01": 24,
+          "stone_07": 6,
           "crate_01": 50,
           "crate_02sv": 4,
           "crate_03": 8,
           "crate_21b": 2,
+          "bush_01sv": 48,
+          "tree_01sv": 48,
           "hedgehog_01": 24,
+          "tree_12": 24,
           "container_01": 5,
           "container_02": 5,
           "container_03": 5,
@@ -45162,80 +44778,77 @@
           "shack_01": 7,
           "outhouse_01": 5,
           "loot_tier_1": 24,
-          "loot_tier_beach": 4,
-          "crate_02": 4,
-          "bush_01": 78,
-          "tree_01": 320,
-          "silo_01": 8
+          "loot_tier_beach": 4
         }
       ],
       "fixedSpawns": [
         {
+          "grassy_cover_01": {
+            "small": 8,
+            "large": 9
+          },
+          "grassy_cover_02": {
+            "small": 8,
+            "large": 9
+          },
+          "grassy_cover_03": {
+            "small": 8,
+            "large": 9
+          },
+          "grassy_cover_complex_01": {
+            "small": 2,
+            "large": 3
+          },
+          "brush_clump_01": {
+            "small": 11,
+            "large": 13
+          },
+          "brush_clump_02": {
+            "small": 11,
+            "large": 13
+          },
+          "brush_clump_03": {
+            "small": 11,
+            "large": 13
+          },
+          "perch_01": {
+            "small": 11,
+            "large": 13
+          },
+          "kopje_patch_01": {
+            "small": 2,
+            "large": 3
+          },
+          "savannah_patch_01": {
+            "small": 4,
+            "large": 5
+          },
+          "mansion_structure_01": 1,
           "warehouse_01": {
             "small": 3,
             "large": 4
           },
+          "cache_01sv": 1,
+          "cache_02sv": 1,
           "cache_07": 1,
+          "bunker_structure_01sv": 1,
           "bunker_structure_03": 1,
           "chest_01": 1,
-          "tree_02": 3,
-          "club_complex_01": 1,
-          "cache_02": 1,
-          "cache_01": 1,
-          "house_red_02": {
-            "small": 3,
-            "large": 4
+          "mil_crate_05": {
+            "small": 6,
+            "large": 8
           },
-          "barn_01": {
-            "small": 1,
-            "large": 3
-          },
-          "barn_02": 1,
-          "hut_01": 3,
-          "hut_02": 1,
-          "shack_03b": {
-            "small": 2,
-            "large": 3
-          },
-          "greenhouse_01": 1,
-          "chest_03": {
-            "odds": 0.2
-          },
-          "mil_crate_02": {
-            "odds": 0.25
-          },
-          "teahouse_complex_01su": {
-            "small": 1,
-            "large": 2
-          },
-          "stone_04": 1,
-          "hut_03": 1,
-          "shack_03a": 2,
-          "bunker_structure_01": {
-            "odds": 0.05
-          },
-          "bunker_structure_02": 1,
-          "bunker_structure_04": 1,
-          "bunker_structure_05": 1,
-          "warehouse_complex_01": 1
+          "tree_02": 3
         }
       ],
-      "randomSpawns": [
-        {
-          "spawns": [
-            "mansion_structure_01",
-            "police_01",
-            "bank_01"
-          ],
-          "choose": 2
-        }
-      ],
+      "randomSpawns": [],
       "spawnReplacements": [
-        {}
+        {
+          "tree_01": "tree_01sv",
+          "bush_01": "bush_01sv"
+        }
       ],
-      "importantSpawns": [
-        "club_complex_01"
-      ]
+      "importantSpawns": []
     }
   },
   "cobalt": {
@@ -48383,7 +47996,7 @@
             "weight": 10
           },
           {
-            "name": "airdrop_crate_02",
+            "name": "airdrop_crate_02tr",
             "weight": 1
           }
         ]
@@ -51298,7 +50911,8 @@
           "loot_tier_beach": 4,
           "cache_06": 12,
           "bush_01": 78,
-          "tree_01": 320
+          "tree_01": 320,
+          "squash_01": 25
         }
       ],
       "fixedSpawns": [

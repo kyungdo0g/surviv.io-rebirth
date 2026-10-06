@@ -95,11 +95,8 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "obstacle.button.sound": impl("sound.on names a recorder's recording (RecorderEvent); otherwise client"),
     "obstacle.button.destroyOnUse": impl("interact.ts useButton / updateObstacleTimers"),
     "obstacle.button.useParticle": client(),
-    "obstacle.button.useStyle": impl("interact.ts useButton -> doors.ts updateDoorTimers"),
-    "obstacle.button.useLock": impl("doors.ts updateDoorTimers"),
-    "obstacle.button.useCooldown": impl("interact.ts interactObstacle / updateObstacleTimers"),
-    "obstacle.button.useExpiration": impl("interact.ts useButton, doors.ts updateDoorTimers"),
-    "obstacle.button.resetAfterCooldown": impl("interact.ts updateObstacleTimers"),
+    // button.useStyle / useLock / useCooldown / useExpiration / resetAfterCooldown stay implemented (interact.ts,
+    // doors.ts) but no v0.8.82 object uses them since the port stopped keeping survev's fork-only maps' objects
     // buildings
     "building.type": data(),
     "building.scale": data("buildings always spawn at scale 1"),

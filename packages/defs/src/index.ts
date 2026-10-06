@@ -15,6 +15,7 @@ import type {
 } from "./types/index.ts";
 
 export * from "./constants.ts";
+export * from "./gunClasses.ts";
 export * from "./refs.ts";
 export * from "./registry.ts";
 export type * from "./types/index.ts";

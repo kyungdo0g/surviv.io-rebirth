@@ -5,9 +5,8 @@
 // `pieceResetDelay`, is an error: the pieces lock for `errorResetDelay`, then everything resets.
 // Behaviour follows survev server/src/game/objects/building.ts (puzzlePieceToggled, update, startReset,
 // resetPuzzle); docs/research/maps/puzzles.md "Puzzle engine".
-import { DamageType } from "@rebirth/defs";
+import { DamageType, getMapDef } from "@rebirth/defs";
 import { destroyObstacle } from "../combat/combat.ts";
-import { simMapDef } from "../modes/mapFixes.ts";
 import type { SimContext } from "./context.ts";
 import { toggleDoor } from "./doors.ts";
 import type { Building, Obstacle } from "./entities.ts";
@@ -47,7 +46,7 @@ export function puzzleCode(ctx: SimContext, building: Building): readonly string
     const def = building.def.puzzle;
     if (!def) return undefined;
     let name = def.name;
-    if (name === "bunker_eye_02" && simMapDef(ctx.world.mapData.mapName).gameMode.woodsMode) {
+    if (name === "bunker_eye_02" && getMapDef(ctx.world.mapData.mapName).gameMode.woodsMode) {
         name = "bunker_eye_02_woods";
     }
     return PUZZLE_CODES[name];

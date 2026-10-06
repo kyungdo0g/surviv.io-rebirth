@@ -50,3 +50,19 @@ export function gunClass(type: string): GunClass | undefined {
 export function gunsOfClass(cls: GunClass): readonly string[] {
     return CLASSES[cls];
 }
+
+/**
+ * Items that never spawn on a map, removed from every loot table of its def by the port (tools/port-survev step 3c).
+ * Savannah: no shotguns, no assault rifles but the SCAR-H, no LMGs, no high-quality SMGs but the CZ-3A1, no 2x scopes
+ * (docs/research/modes/savannah.md "Rules", fandom Savannah_Map).
+ */
+export const LOOT_BANS: Readonly<Record<string, readonly string[]>> = {
+    savannah: [
+        ...gunsOfClass("shotgun"),
+        ...gunsOfClass("lmg"),
+        ...gunsOfClass("assault").filter((g) => g !== "scar"),
+        "vector",
+        "vector45",
+        "2xscope",
+    ],
+};

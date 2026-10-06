@@ -5,7 +5,7 @@
 // group spawn positions and team status (M6a), faction status and role schedules / indicators (M7a), then the end-of-tick
 // match results.
 import { type Bounds, type Rng, type Vec2, v2 } from "@rebirth/core";
-import { DamageType, type GasStage } from "@rebirth/defs";
+import { DamageType, type GasStage, getMapDef } from "@rebirth/defs";
 import { type GameApi, type GameOptions, type SpectateActionName, TICK_HZ } from "./api.ts";
 import { BulletSystem } from "./combat/bullets.ts";
 import { applyObstacleDamage, applyPlayerDamage } from "./combat/combat.ts";
@@ -30,7 +30,6 @@ import { TeamSystem } from "./match/teams.ts";
 import { UnlockSystem } from "./match/unlocks.ts";
 import { mapBagSizes } from "./modes/bagSizes.ts";
 import { onClassChosen, startsWithoutClass, waitingRoom } from "./modes/classSelect.ts";
-import { simMapDef } from "./modes/mapFixes.ts";
 import { RoleSystem } from "./roles/roleSystem.ts";
 import { defaultRules, type SimRules } from "./rules.ts";
 import type {
@@ -168,7 +167,7 @@ export class Game implements GameApi, SimContext {
 
     constructor(options: GameOptions, init: GameInit = {}) {
         this.options = { ...options };
-        const mode = simMapDef(options.mapName).gameMode;
+        const mode = getMapDef(options.mapName).gameMode;
         // 50v50 always plays in squads inside the factions (the original 50v50 squad queue, survev config)
         if (mode.factionMode) this.options.teamMode = 4;
         this.generation = init.generation ?? generateMap(options.mapName, options.seed, options.teamMode ?? 1);

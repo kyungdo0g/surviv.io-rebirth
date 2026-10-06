@@ -4,10 +4,10 @@
 // or drop anything. Once it picks a class (Game.selectRole, the PerkModeRoleSelect message) or the 20 s timer gives it a
 // random one, it is moved to a normal spawn point on the surface (next to its group in team modes).
 import { type Rng, type Vec2, v2 } from "@rebirth/core";
+import { getMapDef } from "@rebirth/defs";
 import type { Group } from "../match/teams.ts";
 import type { Player } from "../world/player.ts";
 import type { World } from "../world/world.ts";
-import { simMapDef } from "./mapFixes.ts";
 
 /** The building whose centre and layer are the waiting room (survev map.ts perkModeTwinsBunker). */
 export const TWINS_WAITING_ROOM = "bunker_twins_sublevel_01";
@@ -23,7 +23,7 @@ export interface ClassSelectHost {
 
 /** Players on a perkMode map start without a class. */
 export function startsWithoutClass(mapName: string): boolean {
-    return !!simMapDef(mapName).gameMode.perkMode;
+    return !!getMapDef(mapName).gameMode.perkMode;
 }
 
 /** Centre and layer of the Twins bunker waiting room, or null (rule off, other maps, no bunker generated). */

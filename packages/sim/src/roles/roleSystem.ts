@@ -5,11 +5,10 @@
 // Behaviour follows survev server/src/game/objects/player.ts (PlayerBarn.update scheduled roles, scheduleRoleAssignments,
 // promoteToKillLeader, kill), group.ts (Team.checkAndApplyLastMan / checkAndApplyCaptain) and
 // docs/research/items/roles.md "50v50 promotion rules" / "Map roles" / "Cobalt classes".
-import { getDefOfType, hasDef, type MapDef } from "@rebirth/defs";
+import { getDefOfType, getMapDef, hasDef, type MapDef } from "@rebirth/defs";
 import type { LootSystem } from "../loot/loot.ts";
 import { type FactionSystem, living } from "../match/faction.ts";
 import type { TrackedIndicator } from "../match/indicators.ts";
-import { simMapDef } from "../modes/mapFixes.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
 import { type PromoteOptions, promoteToRole, removeRole } from "./roles.ts";
@@ -40,7 +39,7 @@ export class RoleSystem {
 
     constructor(host: RoleHost) {
         this.host = host;
-        this.map = simMapDef(host.options.mapName);
+        this.map = getMapDef(host.options.mapName);
     }
 
     private get rules() {

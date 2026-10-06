@@ -1,10 +1,9 @@
 // generateMap: map size, places, rivers, terrain and every static map object, deterministic per (map, seed, mode).
 // Order follows survev server/src/game/map.ts init() and generateObjects().
 import { type Collider, math, type Vec2, v2 } from "@rebirth/core";
-import { getMapObjectDef, hasMapObjectDef, type MapDef } from "@rebirth/defs";
+import { getMapDef, getMapObjectDef, hasMapObjectDef, type MapDef } from "@rebirth/defs";
 import { polygonArea } from "../geom/polygon.ts";
 import { overlaps, transformOri } from "../geom/transform.ts";
-import { simMapDef } from "../modes/mapFixes.ts";
 import type { MapData } from "../view.ts";
 import { getBoundingAabb } from "./bounds.ts";
 import { type GeneratedObject, type LootSpawn, MapGenerator } from "./generator.ts";
@@ -404,7 +403,7 @@ function missingLandmarks(stats: readonly SpawnStat[]): string[] {
  * Deterministic: the same arguments always produce the same MapData.
  */
 export function generateMap(mapName: string, seed: number, teamMode: 1 | 2 | 4 = 1): GenerateMapResult {
-    const def = simMapDef(mapName);
+    const def = getMapDef(mapName);
     let result: ReturnType<typeof runGeneration> = null;
     const extraWarnings: string[] = [];
     for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS && !result; attempt++) {

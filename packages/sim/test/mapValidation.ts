@@ -5,12 +5,15 @@
 import {
     type GameObjectDef,
     GameObjectDefs,
+    getMapDef,
     getMapObjectDef,
+    gunClass,
     hasDef,
     hasMapObjectDef,
+    LOOT_BANS,
     type LootTableEntry,
 } from "@rebirth/defs";
-import { type GenerateMapResult, generateMap, gunClass, LOOT_BANS, simMapDef } from "../src/index.ts";
+import { type GenerateMapResult, generateMap } from "../src/index.ts";
 
 /** Seeds per map and team mode (MAPGEN_SEEDS overrides it for quick local runs). */
 export const VALIDATION_SEEDS = Number(process.env.MAPGEN_SEEDS ?? 100);
@@ -342,7 +345,7 @@ export function tiersOfObject(
 
 /** Static loot issues of a map: dangling entries, unknown tiers reachable from `types`, banned items. */
 export function lootIssues(mapName: string, types: Iterable<string>): string[] {
-    const def = simMapDef(mapName);
+    const def = getMapDef(mapName);
     const tables = def.lootTable;
     const issues: string[] = [];
     for (const [tier, entries] of Object.entries(tables)) {
@@ -368,7 +371,7 @@ export function lootIssues(mapName: string, types: Iterable<string>): string[] {
 
 /** Gun classes in a tier (recursively). */
 export function gunClassesIn(mapName: string, tier: string): Set<string> {
-    const items = reachableItems(simMapDef(mapName).lootTable, tier);
+    const items = reachableItems(getMapDef(mapName).lootTable, tier);
     const out = new Set<string>();
     for (const item of items) {
         const def = GameObjectDefs[item] as GameObjectDef | undefined;

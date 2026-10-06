@@ -1,10 +1,10 @@
+import { getMapDef } from "@rebirth/defs";
 // Scheduled unlocks (MapDef gameConfig.unlocks): when the gas reaches a timing's circle, `wait` seconds later the
 // locked doors of the named building open one every `stagger` seconds (a locked door type opens at once), each with
 // a map ping. Only Cobalt uses it (the twins bunker).
 // Behaviour follows survev server/src/game/map.ts (scheduleUnlocks, update) and objects/obstacle.ts unlock;
 // docs/research/maps/puzzles.md "Scheduled unlocks and ping_unlock".
 
-import { simMapDef } from "../modes/mapFixes.ts";
 import type { SimRules } from "../rules.ts";
 import type { SimContext } from "../world/context.ts";
 import { unlockDoor } from "../world/doors.ts";
@@ -35,7 +35,7 @@ interface Staggered {
 
 /** The map's unlock timings with the rules' circle/wait overrides applied (conflicts.md twins-unlock-time). */
 export function unlockTimings(mapName: string, rules: Pick<SimRules, "unlockOverrides">): UnlockTiming[] {
-    const timings = simMapDef(mapName).gameConfig.unlocks?.timings ?? [];
+    const timings = getMapDef(mapName).gameConfig.unlocks?.timings ?? [];
     return timings.map((t) => ({ ...t, ...rules.unlockOverrides[t.type] }));
 }
 

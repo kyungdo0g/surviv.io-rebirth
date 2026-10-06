@@ -8,8 +8,7 @@
 // TODO(M8): loadouts: the death emote 0.3 s after dying and the win emote 1 s after the game over (slots 4 and 5,
 // empty by default).
 import { math, type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, hasDef } from "@rebirth/defs";
-import { simMapDef } from "../modes/mapFixes.ts";
+import { GameConfig, GameObjectDefs, getMapDef, hasDef } from "@rebirth/defs";
 import type { EmoteEvent, EmoteRequest } from "../view.ts";
 import type { Player } from "../world/player.ts";
 import { EventLog } from "./events.ts";
@@ -80,7 +79,7 @@ export class EmoteSystem {
     request(player: Player, req: EmoteRequest): boolean {
         if (player.dead || player.emoteHardTicker > 0) return false;
         // Cobalt players cannot emote before choosing a class (survev emoteFromMsg: perkMode && !role)
-        if (player.awaitingClass || (!player.role && simMapDef(this.host.options.mapName).gameMode.perkMode)) {
+        if (player.awaitingClass || (!player.role && getMapDef(this.host.options.mapName).gameMode.perkMode)) {
             return false;
         }
         const def = emoteDef(req.type);
@@ -114,7 +113,7 @@ export class EmoteSystem {
      * "Core rule"), on Potato vs Tomato the Red faction's tomato when that emote exists (fork map; v0.8.82 has none).
      */
     slotEmote(player: Player, type: string): string {
-        const mode = simMapDef(this.host.options.mapName).gameMode;
+        const mode = getMapDef(this.host.options.mapName).gameMode;
         if (!mode.potatoMode || !this.host.rules.modes.potatoEmotes) return type;
         if (mode.factionMode && player.teamId === 1 && hasDef("emote_tomato")) return "emote_tomato";
         return hasDef("emote_potato") ? "emote_potato" : type;

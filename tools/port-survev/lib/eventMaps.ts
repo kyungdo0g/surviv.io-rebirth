@@ -14,8 +14,8 @@
 // - woods_snow / woods_spring / woods_summer / potato_spring: without fork ids and additions (cache_07w, workshop,
 //   logging_complex_03x, stone_04x, eggs); woods_snow regains its red houses, woods_summer the autumn logging complex.
 
+import { LOOT_BANS } from "../../../packages/defs/src/gunClasses.ts";
 import type { LootTableEntry, MapDef, SpawnCount } from "../../../packages/defs/src/types/index.ts";
-import { gunsOfClass } from "../../../packages/sim/src/modes/gunClasses.ts";
 import { SAVANNAH_LOOT, SAVANNAH_MAPGEN } from "./savannahDef.ts";
 
 type MapGen = MapDef["mapGen"];
@@ -126,22 +126,6 @@ export const MAP_FIXES: Readonly<Record<string, readonly MapDefFix[]>> = {
             reason: "potato.md Potato Spring: the eggs are a fork addition (2025-04-01)",
             densitySpawns: { egg_01: null, egg_02: null, egg_03: null, egg_04: null },
         },
-    ],
-};
-
-/**
- * Items that never spawn on a map: removed from every loot table of its def (a table left empty drops nothing).
- * Savannah: no shotguns, no assault rifles but the SCAR-H, no LMGs, no high-quality SMGs but the CZ-3A1, no 2x scopes
- * (savannah.md "Rules", fandom Savannah_Map).
- */
-export const LOOT_BANS: Readonly<Record<string, readonly string[]>> = {
-    savannah: [
-        ...gunsOfClass("shotgun"),
-        ...gunsOfClass("lmg"),
-        ...gunsOfClass("assault").filter((g) => g !== "scar"),
-        "vector",
-        "vector45",
-        "2xscope",
     ],
 };
 

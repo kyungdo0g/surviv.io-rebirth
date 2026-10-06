@@ -6,12 +6,19 @@
 // 50v50 scheduled zones) fly over their target and drop iron bombs (match/airstrikes.ts).
 // Behaviour follows docs/research/mechanics/airdrop-airstrike.md (survev objects/plane.ts, objects/airdrop.ts).
 import { type Bounds, type Collider, collider, math, type Rng, type Vec2, v2 } from "@rebirth/core";
-import { DamageType, GameConfig, GameObjectDefs, getMapObjectDefOfType, type MapDef, Plane } from "@rebirth/defs";
+import {
+    DamageType,
+    GameConfig,
+    GameObjectDefs,
+    getMapDef,
+    getMapObjectDefOfType,
+    type MapDef,
+    Plane,
+} from "@rebirth/defs";
 import { TICK_HZ } from "../api.ts";
 import type { DamageParams } from "../combat/damage.ts";
 import { toBounds, transformOri } from "../geom/transform.ts";
 import { randomPointInCircle } from "../mapgen/random.ts";
-import { simMapDef } from "../modes/mapFixes.ts";
 import type { AirdropView, AirstrikeZoneView, MapIndicatorView, PlaneView } from "../view.ts";
 import { createMapEntity, type Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
@@ -150,7 +157,7 @@ export class PlaneSystem {
      * `rules.roles.factionAirstrikeWaits` replaces air strike waits (conflicts.md faction-airstrike-timing).
      */
     scheduleCircle(circleIdx: number): void {
-        const def = simMapDef(this.mapName);
+        const def = getMapDef(this.mapName);
         const overrides = def.gameMode.factionMode ? this.host.rules.roles.factionAirstrikeWaits : {};
         for (const timing of def.gameConfig.planes.timings) {
             if (timing.circleIdx !== circleIdx) continue;
@@ -272,7 +279,7 @@ export class PlaneSystem {
     }
 
     private pickCrate(): string {
-        const crates = simMapDef(this.mapName).gameConfig.planes.crates;
+        const crates = getMapDef(this.mapName).gameConfig.planes.crates;
         return crates.some((c) => c.weight > 0) ? this.rng.weighted(crates, (c) => c.weight).name : "airdrop_crate_01";
     }
 

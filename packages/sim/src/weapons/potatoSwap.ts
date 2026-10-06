@@ -2,9 +2,8 @@
 // random weapon of the same kind; Rare Potato only rolls quality weapons.
 // Behaviour follows survev server/src/game/objects/player.ts randomWeaponSwap; docs/research/modes/potato.md
 // (the pool is built from the v0.8.82 defs, CONFLICT potato-swap-pool).
-import { GameObjectDefs, getDef, hasDef, WeaponSlot } from "@rebirth/defs";
+import { GameObjectDefs, getDef, getMapDef, hasDef, WeaponSlot } from "@rebirth/defs";
 import type { DamageParams } from "../combat/damage.ts";
-import { simMapDef } from "../modes/mapFixes.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
 
@@ -54,7 +53,7 @@ export function randomWeaponSwap(ctx: SimContext, player: Player, params: Damage
     if (oldDef.noPotatoSwap) return;
     if (oldDef.type !== "gun" && oldDef.type !== "melee" && oldDef.type !== "throwable") return;
     const kind: SwapKind = oldDef.type;
-    const factionMode = !!simMapDef(ctx.world.mapData.mapName).gameMode.factionMode;
+    const factionMode = !!getMapDef(ctx.world.mapData.mapName).gameMode.factionMode;
     let pool = swapPool(kind, factionMode);
     if (player.hasPerk("rare_potato")) {
         pool = pool.filter((id) => (GameObjectDefs[id] as SwapDef).quality === RARE_POTATO_QUALITY);

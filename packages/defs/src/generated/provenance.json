@@ -1478,51 +1478,15 @@
     "warehouse_wall_edge_2": "survev-only",
     "warehouse_wall_int": "survev-only",
     "warehouse_column": "survev-only",
-    "workshop_wall_right": "survev-only",
-    "workshop_wall_edge": "survev-only",
-    "workshop_wall_mid_1": "survev-only",
-    "workshop_wall_mid_2": "survev-only",
-    "workshop_wall_mid_3": "survev-only",
-    "workshop_wall_bot": "survev-only",
-    "workshop_wall_room_1": "survev-only",
-    "workshop_wall_room_2": "survev-only",
-    "workshop_wall_room_3": "survev-only",
-    "workshop_wall_room_4": "survev-only",
-    "workshop_wall_left": "survev-only",
-    "metal_wall_1x15": "survev-only",
-    "metal_wall_2x5_5": "survev-only",
-    "metal_wall_5x6": "survev-only",
-    "metal_wall_5x10": "survev-only",
-    "metal_wall_5x13": "survev-only",
-    "metal_wall_5x22_5": "survev-only",
-    "metal_wall_5x23": "survev-only",
-    "metal_wall_5x26": "survev-only",
-    "metal_wall_6x8": "survev-only",
-    "glass_wall_1x19": "survev-only",
-    "glass_wall_1x23": "survev-only",
     "rail_4": "survev-only",
     "case_08": "survev-only",
-    "case_10": "survev-only",
     "crate_09bh": "survev-only",
-    "crate_09de": "survev-only",
     "crate_12po": "survev-only",
     "crate_12dev": "survev-only",
     "airdrop_crate_03po": "survev-only",
     "airdrop_crate_03dev": "survev-only",
     "barrel_05": "survev-only",
-    "chair_01": "survev-only",
     "gun_mount_06": "survev-only",
-    "gun_mount_07": "survev-only",
-    "safe_01": "survev-only",
-    "table_04": "survev-only",
-    "table_06": "survev-only",
-    "table_07": "survev-only",
-    "table_08": "survev-only",
-    "table_09": "survev-only",
-    "vat_04": "survev-only",
-    "vat_05": "survev-only",
-    "control_panel_07sv": "survev-only",
-    "barrel_01w": "survev-only",
     "barrel_01bh": "survev-only",
     "barrel_01f": "survev-only",
     "barrel_01bd": "survev-only",
@@ -1532,15 +1496,9 @@
     "tomato_01": "survev-only",
     "tomato_02": "survev-only",
     "tomato_03": "survev-only",
-    "egg_01": "survev-only",
-    "egg_02": "survev-only",
-    "egg_03": "survev-only",
-    "egg_04": "survev-only",
-    "stone_02w": "survev-only",
     "stone_02bh": "survev-only",
     "stone_02f": "survev-only",
     "stone_03bh": "survev-only",
-    "stone_04x": "survev-only",
     "tree_interior_01bh": "survev-only",
     "tree_03sp": "survev-only",
     "tree_03f": "survev-only",
@@ -1548,24 +1506,12 @@
     "tree_03bh": "survev-only",
     "tree_13bh": "survev-only",
     "tree_14": "survev-only",
-    "tree_14d": "survev-only",
-    "woodpile_03": "survev-only",
     "warehouse_03": "survev-only",
     "hut_01bh": "survev-only",
     "hut_04": "survev-only",
     "mansion_03": "survev-only",
     "mansion_cellar_03": "survev-only",
-    "oasis_01": "survev-only",
-    "oasis_01sv": "survev-only",
-    "workshop_01": "survev-only",
-    "workshop_complex_01": "survev-only",
     "logging_complex_03sp": "survev-only",
-    "logging_complex_03x": "survev-only",
-    "bunker_cloud_01": "survev-only",
-    "bunker_cloud_sublevel_01": "survev-only",
-    "bunker_cloud_compartment_01": "survev-only",
-    "bunker_cloud_compartment_02": "survev-only",
-    "cache_01w": "survev-only",
     "cache_01bh": "survev-only",
     "cache_01f": "survev-only",
     "cache_02w": "survev-only",
@@ -1573,11 +1519,9 @@
     "cache_02f": "survev-only",
     "cache_02bh": "survev-only",
     "cache_06bh": "survev-only",
-    "cache_07w": "survev-only",
     "cache_07f": "survev-only",
     "cache_07bh": "survev-only",
-    "mansion_structure_03": "survev-only",
-    "bunker_structure_10": "survev-only"
+    "mansion_structure_03": "survev-only"
   },
   "maps": {
     "main": {
@@ -16904,6 +16848,64 @@
       "to": "cache_02"
     }
   ],
+  "eventMapFixes": [
+    {
+      "map": "savannah",
+      "reason": "savannah.md: survev's pre-fork Savannah reconstruction (the port reverted it to Main's spawns/loot)"
+    },
+    {
+      "map": "turkey",
+      "reason": "turkey.md CONFLICT turkey-map-look: 2019 = main + turkeyMode + green squashes (survev count 25)"
+    },
+    {
+      "map": "turkey",
+      "reason": "turkey.md CONFLICT turkey-gold-airdrop: airdrop_crate_02tr as the 1-in-11 gold crate"
+    },
+    {
+      "map": "desert",
+      "reason": "desert.md: the Oasis lake is a fork addition (2026-06)"
+    },
+    {
+      "map": "desert",
+      "reason": "desert.md CONFLICT desert-alt-barn: removed from desert in 0.8.5"
+    },
+    {
+      "map": "desert",
+      "reason": "desert.md CONFLICT desert-pkp-airdrop-rare: PKP 3 (0.7.51 'greatly increased')"
+    },
+    {
+      "map": "snow",
+      "reason": "snow.md CONFLICT snow-hardstone-count: one stone_04"
+    },
+    {
+      "map": "main_spring",
+      "reason": "main.md CONFLICT main-warehouses"
+    },
+    {
+      "map": "main_summer",
+      "reason": "main.md CONFLICT main-warehouses"
+    },
+    {
+      "map": "woods_snow",
+      "reason": "woods.md Woods Snow: as woods with snow skins by replacement (3 logging_complex_03, 6 stone_04, red houses); cache_01w, cache_07w, logging_complex_03x and stone_04x are fork ids / additions"
+    },
+    {
+      "map": "woods_spring",
+      "reason": "woods.md Woods Spring: cache_07w and the workshop are fork 0.2.2 additions, cache_01w a fork id"
+    },
+    {
+      "map": "woods_summer",
+      "reason": "woods.md Woods Summer: the pre-fork map was a recolour of autumn woods (autumn logging complex at the centre); cache_07w and the workshop are fork 0.2.2 additions, cache_01w a fork id"
+    },
+    {
+      "map": "potato_spring",
+      "reason": "potato.md Potato Spring: the eggs are a fork addition (2025-04-01)"
+    },
+    {
+      "map": "savannah",
+      "reason": "loot bans: m870, m1100, mp220, saiga, spas12, m1014, usas, dp28, bar, m249, qbb97, pkp, ak47, an94, groza, grozas, famas, hk416, m4a1, vector, vector45, 2xscope"
+    }
+  ],
   "lootRemovals": [
     {
       "map": "main",
@@ -19457,6 +19459,12 @@
     },
     {
       "map": "savannah",
+      "tier": "tier_guns_common_tank",
+      "item": "",
+      "reason": "table emptied: replaced with a single no-drop entry"
+    },
+    {
+      "map": "savannah",
       "tier": "tier_guns_common_classless",
       "item": "imbel",
       "reason": "item not in the original client's game objects (fork-only)"
@@ -19466,6 +19474,12 @@
       "tier": "tier_guns_rare_demo",
       "item": "spas16",
       "reason": "item not in the original client's game objects (fork-only)"
+    },
+    {
+      "map": "savannah",
+      "tier": "tier_guns_rare_demo",
+      "item": "",
+      "reason": "table emptied: replaced with a single no-drop entry"
     },
     {
       "map": "savannah",
@@ -20728,16 +20742,6 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "mapObject": "case_10",
-      "item": "backpack04_cloud",
-      "reason": "item not in the original client"
-    },
-    {
-      "mapObject": "crate_09de",
-      "item": "cutlass",
-      "reason": "item not in the original client"
-    },
-    {
       "mapObject": "barrel_05",
       "item": "coconut",
       "reason": "item not in the original client"
@@ -20745,11 +20749,6 @@
     {
       "mapObject": "gun_mount_06",
       "item": "cutlass_gold",
-      "reason": "item not in the original client"
-    },
-    {
-      "mapObject": "gun_mount_07",
-      "item": "spas16",
       "reason": "item not in the original client"
     },
     {
@@ -20769,21 +20768,6 @@
     },
     {
       "mapObject": "tree_14",
-      "item": "coconut",
-      "reason": "item not in the original client"
-    },
-    {
-      "mapObject": "tree_14d",
-      "item": "coconut",
-      "reason": "item not in the original client"
-    },
-    {
-      "mapObject": "tree_14d",
-      "item": "coconut",
-      "reason": "item not in the original client"
-    },
-    {
-      "mapObject": "tree_14d",
       "item": "coconut",
       "reason": "item not in the original client"
     },
@@ -21684,19 +21668,7 @@
       "reason": "survev `category` renamed to the original field name"
     },
     {
-      "id": "case_10",
-      "field": "obstacleType",
-      "value": "crate",
-      "reason": "survev `category` renamed to the original field name"
-    },
-    {
       "id": "crate_09bh",
-      "field": "obstacleType",
-      "value": "crate",
-      "reason": "survev `category` renamed to the original field name"
-    },
-    {
-      "id": "crate_09de",
       "field": "obstacleType",
       "value": "crate",
       "reason": "survev `category` renamed to the original field name"
@@ -21732,33 +21704,9 @@
       "reason": "survev `category` renamed to the original field name"
     },
     {
-      "id": "chair_01",
-      "field": "obstacleType",
-      "value": "furniture",
-      "reason": "survev `category` renamed to the original field name"
-    },
-    {
       "id": "gun_mount_06",
       "field": "obstacleType",
       "value": "furniture",
-      "reason": "survev `category` renamed to the original field name"
-    },
-    {
-      "id": "gun_mount_07",
-      "field": "obstacleType",
-      "value": "furniture",
-      "reason": "survev `category` renamed to the original field name"
-    },
-    {
-      "id": "table_04",
-      "field": "obstacleType",
-      "value": "furniture",
-      "reason": "survev `category` renamed to the original field name"
-    },
-    {
-      "id": "barrel_01w",
-      "field": "obstacleType",
-      "value": "barrel",
       "reason": "survev `category` renamed to the original field name"
     },
     {
@@ -22092,12 +22040,25 @@
       "stairs_03",
       "reserve_window_01",
       "reserve_window_broken_01",
+      "workshop_wall_right",
+      "workshop_wall_edge",
+      "workshop_wall_mid_1",
+      "workshop_wall_mid_2",
+      "workshop_wall_mid_3",
+      "workshop_wall_bot",
+      "workshop_wall_room_1",
+      "workshop_wall_room_2",
+      "workshop_wall_room_3",
+      "workshop_wall_room_4",
+      "workshop_wall_left",
       "concrete_wall_column_2x8",
       "concrete_wall_column_8x3",
       "metal_wall_ext_2x2",
       "metal_wall_ext_2",
+      "metal_wall_1x15",
       "metal_wall_ext_16",
       "metal_wall_ext_thick_5",
+      "metal_wall_2x5_5",
       "metal_wall_ext_thick_8",
       "metal_wall_ext_thick_16",
       "metal_wall_ext_thick_23",
@@ -22105,7 +22066,16 @@
       "metal_wall_ext_thicker_1_5",
       "metal_wall_ext_thicker_30",
       "metal_wall_ext_thicker_49",
+      "metal_wall_5x6",
+      "metal_wall_5x10",
+      "metal_wall_5x13",
+      "metal_wall_5x22_5",
+      "metal_wall_5x23",
+      "metal_wall_5x26",
+      "metal_wall_6x8",
       "glass_wall_13",
+      "glass_wall_1x19",
+      "glass_wall_1x23",
       "reserve_perm_wall_ext_1",
       "reserve_perm_wall_ext_2",
       "reserve_perm_wall_ext_4",
@@ -22142,39 +22112,59 @@
       "case_07de",
       "case_08sv",
       "case_09",
+      "case_10",
       "chest_03sv",
       "chest_03tr",
+      "crate_09de",
       "crate_13po",
       "crate_17",
       "airdrop_crate_04po",
       "airdrop_crate_05",
       "class_crate_common_classless",
       "class_crate_rare_classless",
+      "chair_01",
       "chair_02",
       "deposit_box_03",
       "gun_mount_empty",
+      "gun_mount_07",
       "rack_01",
+      "safe_01",
       "safe_01de",
       "sink_01",
       "table_01d",
+      "table_04",
       "table_05",
+      "table_06",
+      "table_07",
+      "table_08",
+      "table_09",
       "toilet_05",
       "vat_03",
+      "vat_04",
+      "vat_05",
       "control_panel_07de",
+      "control_panel_07sv",
       "switch_01o",
       "switch_01p",
       "switch_01y",
       "button_01",
       "button_01g",
       "button_01b",
+      "barrel_01w",
       "bush_06tr",
       "bush_07cb",
       "campfire_01",
+      "egg_01",
+      "egg_02",
+      "egg_03",
+      "egg_04",
       "squash_02",
       "stone_02cb",
+      "stone_02w",
       "stone_02x",
       "stone_03sv",
       "stone_03tr",
+      "stone_04x",
       "stone_08",
       "stone_08x",
       "stone_08cb",
@@ -22186,26 +22176,38 @@
       "tree_03cb",
       "tree_interior_11",
       "tree_13x",
+      "tree_14d",
       "tree_14x",
+      "woodpile_03",
       "teahouse_complex_01cb",
+      "oasis_01",
       "reserve_01",
       "reserve_basement_01",
       "reserve_armory_01",
       "reserve_security_01",
       "reserve_vault_01",
       "warehouse_03sv",
+      "oasis_01sv",
       "warehouse_03x",
       "barn_02x",
       "teahouse_01x",
       "teahouse_complex_01x",
+      "workshop_01",
+      "workshop_complex_01",
       "camp_01",
       "workshop_01w",
       "workshop_complex_01w",
       "logging_complex_02x",
+      "logging_complex_03x",
       "camp_01w",
       "logging_complex_03su",
+      "bunker_cloud_01",
+      "bunker_cloud_sublevel_01",
+      "bunker_cloud_compartment_01",
+      "bunker_cloud_compartment_02",
       "cache_01x",
       "cache_01cb",
+      "cache_01w",
       "cache_02x",
       "cache_02su",
       "cache_02cb",
@@ -22215,10 +22217,12 @@
       "cache_04",
       "cache_04x",
       "cache_04cb",
+      "cache_07w",
       "cache_06cb",
       "barn_basement_structure_01x",
       "mansion_structure_01x",
       "reserve_structure_01",
+      "bunker_structure_10",
       "decal_camera_01",
       "decal_pipe_01",
       "decal_caduceus_01",

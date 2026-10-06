@@ -9,10 +9,9 @@
 // isGameStarted, getWinningTeamId, showStatsMsg, getGameoverPlayers, getPlayersSortedByRank) and objects/player.ts
 // (kill, down, promoteToKillLeader, addGameOverMsg); docs/research/ui/hud.md (kill feed, kill leader, death and win
 // screens).
-import { DamageType } from "@rebirth/defs";
+import { DamageType, getMapDef } from "@rebirth/defs";
 import { TICK_HZ } from "../api.ts";
 import type { DamageParams } from "../combat/damage.ts";
-import { simMapDef } from "../modes/mapFixes.ts";
 import type { GameOverEvent, KillEvent, KillLeaderView, PlayerStatsView, RoleAnnouncementEvent } from "../view.ts";
 import type { Player } from "../world/player.ts";
 import { damageSourceOf, EventLog } from "./events.ts";
@@ -78,7 +77,7 @@ export class Match {
     constructor(host: MatchHost, options: MatchOptions) {
         this.host = host;
         this.options = options;
-        const mode = simMapDef(host.options.mapName).gameMode;
+        const mode = getMapDef(host.options.mapName).gameMode;
         this.killLeaderEnabled = mode.killLeaderEnabled;
         this.maxPlayers = mode.maxPlayers;
     }
@@ -220,7 +219,7 @@ export class Match {
         if (best === credit && current !== credit && credit.kills > currentKills) {
             this.killLeaderId = credit.id;
             // on Savannah the new kill leader becomes The Hunted (announced as that role) (survev promoteToKillLeader)
-            if (simMapDef(this.host.options.mapName).gameMode.sniperMode) {
+            if (getMapDef(this.host.options.mapName).gameMode.sniperMode) {
                 this.host.roles.onKillLeader(credit, current);
             } else {
                 this.logRole({ playerId: credit.id, killerId: 0, assigned: true, killed: false });

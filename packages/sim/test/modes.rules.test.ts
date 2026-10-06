@@ -1,19 +1,16 @@
-// Event-mode rules (M7b): map def corrections and loot bans (modes/mapFixes.ts), Woods bag sizes, potato emotes,
+// Event-mode rules (M7b): event-map corrections and loot bans (applied by tools/port-survev step 3c), Woods bag sizes, potato emotes,
 // snowball / potato hits (freeze + random drop), the drop-item action. Values: docs/research/modes/*.md.
 import { v2 } from "@rebirth/core";
-import { DamageType, GameConfig, getMapDef, WeaponSlot } from "@rebirth/defs";
+import { DamageType, GameConfig, getMapDef, gunClass, LOOT_BANS, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import {
     addPerk,
     dropItem,
     frozenOri,
     type Game,
-    gunClass,
-    LOOT_BANS,
     mapBagSizes,
     type Player,
     randomDropCandidates,
-    simMapDef,
 } from "../src/index.ts";
 import { flatGame, giveGun, openSpot, spawnAt, steps } from "./combatHelpers.ts";
 import { flatTeamGame, party } from "./teamHelpers.ts";
@@ -25,11 +22,11 @@ function onMap(mapName: string): { game: Game; p: Player } {
     return { game, p };
 }
 
-const items = (mapName: string, tier: string) => simMapDef(mapName).lootTable[tier].map((e) => e.name);
+const items = (mapName: string, tier: string) => getMapDef(mapName).lootTable[tier].map((e) => e.name);
 
-describe("map def corrections (modes/mapFixes.ts)", () => {
+describe("event map corrections in the ported data (tools/port-survev/lib/eventMaps.ts)", () => {
     it("savannah: survev's Savannah reconstruction replaces the Main copy (savannah.md)", () => {
-        const def = simMapDef("savannah");
+        const def = getMapDef("savannah");
         const fixed = def.mapGen.fixedSpawns[0];
         expect(fixed.club_complex_01).toBeUndefined();
         expect(fixed.perch_01).toEqual({ small: 11, large: 13 });
@@ -48,12 +45,10 @@ describe("map def corrections (modes/mapFixes.ts)", () => {
             "556mmx30",
         ]);
         expect(items("savannah", "tier_throwables")).toContain("strobe");
-        // the ported def keeps its own data: only the copy changes
-        expect(getMapDef("savannah").mapGen.fixedSpawns[0].club_complex_01).toBe(1);
     });
 
     it("savannah bans shotguns, LMGs, assault rifles but the SCAR-H, Vectors and 2x scopes from every table", () => {
-        const def = simMapDef("savannah");
+        const def = getMapDef("savannah");
         const banned = new Set(LOOT_BANS.savannah);
         expect(banned.has("scar")).toBe(false);
         expect(banned.has("scorpion")).toBe(false);
@@ -75,24 +70,24 @@ describe("map def corrections (modes/mapFixes.ts)", () => {
     });
 
     it("turkey has green squashes (Perky Shoot) and the turkey gold drop; desert, snow, woods and faction lose fork or doubled spawns", () => {
-        expect(simMapDef("turkey").mapGen.densitySpawns[0].squash_01).toBe(25);
-        expect(simMapDef("turkey").gameConfig.planes.crates.map((c) => c.name)).toEqual([
+        expect(getMapDef("turkey").mapGen.densitySpawns[0].squash_01).toBe(25);
+        expect(getMapDef("turkey").gameConfig.planes.crates.map((c) => c.name)).toEqual([
             "airdrop_crate_01",
             "airdrop_crate_02tr",
         ]);
-        const desert = simMapDef("desert");
+        const desert = getMapDef("desert");
         expect(desert.mapGen.map.rivers.lakes).toEqual([]);
         expect(desert.mapGen.fixedSpawns[0].barn_02d).toBeUndefined();
         expect(desert.lootTable.tier_airdrop_rare.find((e) => e.name === "pkp")?.weight).toBe(3);
-        expect(simMapDef("snow").mapGen.fixedSpawns[0].stone_04x).toBeUndefined();
-        expect(simMapDef("main_spring").mapGen.fixedSpawns[0]).toMatchObject({ warehouse_01: 2 });
-        expect(simMapDef("main_spring").mapGen.fixedSpawns[0].warehouse_03).toBeUndefined();
-        expect(simMapDef("woods").mapGen.fixedSpawns[0].cache_01).toBe(1);
-        expect(simMapDef("faction").mapGen.fixedSpawns[0]).toMatchObject({ cache_01: 1, cache_02: 1, cache_07: 1 });
-        expect(simMapDef("potato_spring").mapGen.densitySpawns[0].egg_01).toBeUndefined();
-        expect(simMapDef("woods_summer").mapGen.customSpawnRules.locationSpawns[0].type).toBe("logging_complex_01");
+        expect(getMapDef("snow").mapGen.fixedSpawns[0].stone_04x).toBeUndefined();
+        expect(getMapDef("main_spring").mapGen.fixedSpawns[0]).toMatchObject({ warehouse_01: 2 });
+        expect(getMapDef("main_spring").mapGen.fixedSpawns[0].warehouse_03).toBeUndefined();
+        expect(getMapDef("woods").mapGen.fixedSpawns[0].cache_01).toBe(1);
+        expect(getMapDef("faction").mapGen.fixedSpawns[0]).toMatchObject({ cache_01: 1, cache_02: 1, cache_07: 1 });
+        expect(getMapDef("potato_spring").mapGen.densitySpawns[0].egg_01).toBeUndefined();
+        expect(getMapDef("woods_summer").mapGen.customSpawnRules.locationSpawns[0].type).toBe("logging_complex_01");
         // maps without corrections are the ported defs themselves
-        expect(simMapDef("main")).toBe(getMapDef("main"));
+        expect(getMapDef("main")).toBe(getMapDef("main"));
     });
 });
 

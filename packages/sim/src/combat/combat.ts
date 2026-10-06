@@ -2,9 +2,8 @@
 // Behaviour follows survev server/src/game/objects/player.ts (damage, kill) and obstacle.ts (damage, kill); lethal
 // damage goes through the team rules (match/teams.ts handlePlayerDeath: knock or death, M6a).
 import type { Vec2 } from "@rebirth/core";
-import { DamageType, GameObjectDefs, hasDef } from "@rebirth/defs";
+import { DamageType, GameObjectDefs, getMapDef, hasDef } from "@rebirth/defs";
 import { dropEverythingOnDeath, dropObstacleLoot, spawnDestroyType } from "../loot/drops.ts";
-import { simMapDef } from "../modes/mapFixes.ts";
 import { onKillCredited, onPerkHolderDeath } from "../perks/effects.ts";
 import { clearHaste } from "../perks/perks.ts";
 import { randomWeaponSwap } from "../weapons/potatoSwap.ts";
@@ -94,7 +93,7 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     ctx.roles.onPlayerKilled(player, credit);
     // potato mode: a kill swaps the killer's weapon too (survev player.ts kill: lastDamagedBy.randomWeaponSwap)
     const killer = player.lastDamagedBy ? ctx.getPlayer(player.lastDamagedBy) : undefined;
-    const potato = !!simMapDef(ctx.options.mapName).gameMode.potatoMode;
+    const potato = !!getMapDef(ctx.options.mapName).gameMode.potatoMode;
     if (potato && killer && killer !== player && params.damageType === DamageType.Player) {
         randomWeaponSwap(ctx, killer, params);
     }

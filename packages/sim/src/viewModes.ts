@@ -23,11 +23,10 @@
 //   `perkMode` / `perkModeRoles` (class menu), `potatoMode`, `woodsMode`, `sniperMode`, `desertMode`. The night darkness
 //   some wikis describe for Halloween is not in the original code (halloween.md CONFLICT halloween-night): only
 //   `biome.valueAdjust`.
-// - The server runs corrected map defs for a few event maps (`simMapDef`, modes/mapFixes.ts: Savannah's own spawns and
-//   loot, Turkey's squashes, no fork Oasis on Desert, ...); the MapData objects it sends reflect them, so a client draws
-//   the map it receives and never needs the corrected defs. GenerateMapResult gains `skipped` (spawns a placement rule
-//   left out, e.g. the crossing bunker without a river wider than 8), and maps whose landmark buildings did not fit are
-//   regenerated (warnings mention it).
+// - Event-map corrections (Savannah's own spawns and loot, Turkey's squashes, no fork Oasis on Desert, ...) are baked
+//   into the ported MapDefs by tools/port-survev (lib/eventMaps.ts), so client and server read the same corrected defs.
+// - GenerateMapResult gains `skipped` (spawns a placement rule left out, e.g. the crossing bunker without a river wider
+//   than 8), and maps whose landmark buildings did not fit are regenerated (warnings mention it).
 // - Woods bag capacities: frags and smokes hold 6/12/15/18 per backpack level on woods maps (`mapBagSizes`); the HUD's
 //   maximum should use the map's gameConfig.bagSizes row when present.
 export {};
