@@ -7,8 +7,8 @@
 // Behaviour follows docs/research/mechanics/airdrop-airstrike.md "Air strikes" (survev objects/plane.ts).
 // Rebirth (deliberate deviation requested by the user, docs/research/rebirth-deviations.md): every zone has a variant
 // (defs AIRSTRIKE_VARIANTS): "normal" is the behaviour above, "heavy" drops 5 heavy shells per plane over a larger
-// zone, "carpet" sends 6 planes that aim inside 1.4x the radius under a marker that covers every blast. Strobe strikes
-// are always normal.
+// zone, "carpet" sends 6 planes that aim inside 1.4x the radius under a marker that covers every blast. The original
+// strobe's strikes are normal; the rebirth variant strobes call heavy and carpet strike lines (combat/projectiles.ts).
 import { type Rng, type Vec2, v2 } from "@rebirth/core";
 import {
     AIRSTRIKE_AIM_LEAD,
@@ -59,6 +59,8 @@ export interface StrikeState {
     bombType: string;
     /** player credited (the strobe thrower), 0 for the game */
     ownerId: number;
+    /** the bombs' source type: the strobe that called them, "strobe" for the 50v50 zones (survev dropBomb) */
+    sourceType: string;
 }
 
 interface Zone {
@@ -166,8 +168,9 @@ export function updateStrike(strike: StrikeState, pos: Vec2, target: Vec2, dir: 
             vel: v2.mul(dir, STRIKE.bombVel),
             fuse: getDefOfType("throwable", strike.bombType).fuseTime,
             damageType: DamageType.Airstrike,
-            // potato mode swaps weapons like a strobe kill (survev dropBomb)
-            sourceType: "strobe",
+            // the calling strobe; zone bombs say "strobe", so potato mode swaps weapons like a strobe kill (survev
+            // dropBomb)
+            sourceType: strike.sourceType,
         });
         strike.dropCounter = 0;
     }

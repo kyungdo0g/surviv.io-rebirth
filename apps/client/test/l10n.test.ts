@@ -1,11 +1,11 @@
 // l10n coverage (M8): every English UI string has a Korean one (an identical value only for the allowlisted keys), and
 // every string key the client source passes literally to t("…") / tryT("…") or as a `l10n: "…"` / `dataset.l10n = "…"`
 // element key exists in the English tables.
-import { GameObjectDefs, SURVEV_GUN_SKINS, SURVEV_ONLY_GUNS } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, STROBE_VARIANT_TYPES, SURVEV_GUN_SKINS, SURVEV_ONLY_GUNS } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { enItems } from "../src/l10n/en.ts";
+import { enHudItems, enItems } from "../src/l10n/en.ts";
 import { EN_UI, hudItemName, itemName, KO_UI, setLang } from "../src/l10n/index.ts";
-import { koItems } from "../src/l10n/ko.ts";
+import { koHudItems, koItems } from "../src/l10n/ko.ts";
 
 /** Korean values that are intentionally the same as the English ones, with the reason. */
 const SAME_IN_KOREAN: Readonly<Record<string, string>> = {
@@ -68,6 +68,14 @@ describe("item names", () => {
         const guns = Object.keys(GameObjectDefs).filter((id) => GameObjectDefs[id].type === "gun");
         expect(guns.filter((id) => !enItems[id])).toEqual([]);
         expect(guns.filter((id) => !koItems[id])).toEqual([]);
+    });
+
+    it("names every throwable a player can carry in English and Korean, the rebirth variant strobes included", () => {
+        const bag = Object.keys(GameConfig.bagSizes).filter((id) => GameObjectDefs[id]?.type === "throwable");
+        expect(bag).toEqual(expect.arrayContaining(["frag", "strobe", ...STROBE_VARIANT_TYPES]));
+        expect(bag.filter((id) => !enItems[id])).toEqual([]);
+        expect(bag.filter((id) => !koItems[id])).toEqual([]);
+        expect(STROBE_VARIANT_TYPES.filter((id) => !enHudItems[id] || !koHudItems[id])).toEqual([]);
     });
 
     it("the survev-only guns take survev's English names (en.json) and the KB's Korean ones (l10n-ko.md)", () => {

@@ -10,7 +10,9 @@
 // (Korean "<name> 지휘관 으(로) 승진했습니다!"), like the pie timer labels.
 // M8: the small layout spaces the lines 15 px apart and mobile shows them without the fade (survev ui2.ts;
 // uiLayout.ts).
-import { DamageType, GameConfig, GameObjectDefs, MapObjectDefs, type RoleDef } from "@rebirth/defs";
+// Rebirth: a kill by the bombs of a variant strobe names its strike ("with a heavy shell strike" / "with carpet
+// bombing"): the sim credits those bombs to the strobe (itemSourceType strobe_heavy / strobe_carpet).
+import { DamageType, GameConfig, GameObjectDefs, MapObjectDefs, type RoleDef, strobeStrikeOf } from "@rebirth/defs";
 import type { KillEvent, RoleAnnouncementEvent } from "@rebirth/sim";
 import { isSov, itemName, roleName, t, tryT } from "../l10n/index.ts";
 import { killFeedOpacity, killFeedSpacing } from "./uiLayout.ts";
@@ -46,6 +48,21 @@ export function sourceName(type: string): string {
     if (!type) return "";
     if (GameObjectDefs[type]) return itemName(type);
     return tryT(`game-${type}`);
+}
+
+/**
+ * What a player's air strike kill was dealt "with": "an air strike" (game-an-air-strike), or the strike of the rebirth
+ * variant strobe whose bombs it was (`itemSourceType` strobe_heavy / strobe_carpet).
+ */
+export function airstrikeName(itemSourceType: string): string {
+    switch (strobeStrikeOf(itemSourceType)?.variant) {
+        case "heavy":
+            return t("game-a-heavy-shell-strike");
+        case "carpet":
+            return t("game-a-carpet-bombing");
+        default:
+            return t("game-an-air-strike");
+    }
 }
 
 /** Kill feed line of a kill (survev getKillFeedText). */
@@ -84,7 +101,7 @@ export function killFeedText(e: KillEvent, names: PlayerNames): string {
         }
         case DamageType.Airstrike: {
             const txt = t(downed ? "game-knocked-out" : "game-killed");
-            if (killer) return `${killer} ${txt} ${target} ${t("game-with")} ${t("game-an-air-strike")}`;
+            if (killer) return `${killer} ${txt} ${target} ${t("game-with")} ${airstrikeName(e.itemSourceType)}`;
             return `${t("game-the-air-strike")} ${txt} ${target}`;
         }
         default:
@@ -149,7 +166,7 @@ export function killMessage(e: KillEvent, names: PlayerNames, spectating: boolea
             : t("game-yourself").toUpperCase()
         : truncateName(names.name(e.targetId));
     const sourceType = e.itemSourceType || e.mapSourceType;
-    const damageTxt = e.damageType === DamageType.Airstrike ? t("game-an-air-strike") : sourceName(sourceType);
+    const damageTxt = e.damageType === DamageType.Airstrike ? airstrikeName(e.itemSourceType) : sourceName(sourceType);
     const text =
         damageTxt && (completeKill || knockedOut)
             ? `${you} ${killTxt} ${target} ${t("game-with")} ${damageTxt}`
@@ -172,7 +189,7 @@ export function downedMessage(e: KillEvent, names: PlayerNames, spectating: bool
         else if (e.damageType === DamageType.Airstrike) killer = t("game-the-air-strike");
     }
     let damage = sourceName(e.itemSourceType || e.mapSourceType);
-    if (killer && e.killCreditId && e.damageType === DamageType.Airstrike) damage = t("game-an-air-strike");
+    if (killer && e.killCreditId && e.damageType === DamageType.Airstrike) damage = airstrikeName(e.itemSourceType);
     return damage ? `${killer} knocked ${you} out ${t("game-with")} ${damage}` : `${killer} knocked ${you} out`;
 }
 

@@ -161,6 +161,10 @@ export interface ThrowableHandImg {
     sprite: string;
     pos?: Vec2;
     scale?: number;
+    /** rebirth: tint of the hand image (the original draws it untinted) */
+    tint?: number;
+    /** rebirth: the client draws the sprite in greyscale under `tint`, so the tint replaces its colours */
+    recolor?: boolean;
 }
 
 export interface ThrowableDef extends BaseWeaponDef {
@@ -184,7 +188,8 @@ export interface ThrowableDef extends BaseWeaponDef {
         randomizeSpinDir?: boolean;
     };
     speed: { equip: number; attack: number };
-    worldImg: { sprite: string; scale: number; tint: number };
+    /** `recolor` (rebirth): the client draws the sprite in greyscale under `tint` (ThrowableHandImg.recolor) */
+    worldImg: { sprite: string; scale: number; tint: number; recolor?: boolean };
     handImg?: Partial<Record<"equip" | "cook" | "throwing", { right: ThrowableHandImg; left: ThrowableHandImg }>>;
     useThrowParticles: boolean;
     sound: { pullPin: string; throwing: string; pickup: string; deploy: string };

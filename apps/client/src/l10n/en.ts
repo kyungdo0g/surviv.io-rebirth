@@ -81,9 +81,23 @@ export const en: Readonly<Record<string, string>> = {
     "game-team-kills": "Team Kills",
 };
 
+/**
+ * Rebirth-only items (not in the original bundle): the variant strobes (defs rebirth/strobes.ts), named after the
+ * strike they call (the 50v50 announcements "Heavy shell strike incoming" / "Carpet bombing incoming").
+ */
+const rebirthItems: Readonly<Record<string, string>> = {
+    strobe_heavy: "Heavy Shell Strobe",
+    strobe_carpet: "Carpet Bombing Strobe",
+};
+/** weapon slot names: short like the original throwables' ("Strobe"), as the slot shows the count beside the name */
+const rebirthHudItems: Readonly<Record<string, string>> = {
+    strobe_heavy: "Heavy",
+    strobe_carpet: "Carpet",
+};
+
 /** "game-<id>" item names */
-export const enItems: Readonly<Record<string, string>> = items.names;
+export const enItems: Readonly<Record<string, string>> = { ...items.names, ...rebirthItems };
 /** "game-hud-<id>" short names shown in the weapon slots (dual guns, melee skins, throwables) */
-export const enHudItems: Readonly<Record<string, string>> = items.hud;
+export const enHudItems: Readonly<Record<string, string>> = { ...items.hud, ...rebirthHudItems };
 /** "game-<perk>-desc" perk descriptions (M7) */
 export const enPerkDesc: Readonly<Record<string, string>> = items.desc;

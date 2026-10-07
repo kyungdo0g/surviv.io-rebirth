@@ -52,10 +52,12 @@ describe("rebirth balance deviations", () => {
                 rebirth: FRAG_DECAL_TYPE,
             }),
         ]);
-        // the other deviations are the survev guns' wiki stats (survevGuns.test.ts)
+        // the other deviations are the survev guns' wiki stats (survevGuns.test.ts) and survev's strobe strikeDelay
+        // (strobes.test.ts)
         expect(rebirthDeviations.filter((d) => d.id !== "explosion_frag").map((d) => `${d.id}.${d.field}`)).toEqual([
             "potato_lmg.barrelLength",
             "potato_lmgshot.throwPhysics.velZ",
+            "strobe.strikeDelay",
         ]);
     });
 
@@ -81,7 +83,14 @@ describe("rebirth balance deviations", () => {
 describe("rebirth-only defs", () => {
     it("come after every generated id (original, then survev-only), which keep their wire ids", () => {
         const generated = Object.keys(gameObjects);
-        expect(rebirthOnlyIds).toEqual(["bomb_heavy", "explosion_bomb_heavy"]);
+        expect(rebirthOnlyIds).toEqual([
+            "bomb_heavy",
+            "explosion_bomb_heavy",
+            "strobe_heavy",
+            "strobe_carpet",
+            "ping_airstrike_heavy",
+            "ping_airstrike_carpet",
+        ]);
         expect(Object.keys(GameObjectDefs)).toEqual([...generated, ...rebirthOnlyIds]);
         expect(generated.map((id) => GameObjectRegistry.typeToId(id))).toEqual(generated.map((_, i) => i + 1));
         for (const id of rebirthOnlyIds) expect(Object.hasOwn(gameObjects, id)).toBe(false);

@@ -97,15 +97,17 @@ export interface SimRules {
     smokeHidesPlayers: boolean;
     smokeRevealDistance: number;
     /**
-     * Sideways offset between a strobe's strike lines (conflicts.md strobe-airstrike-offset: all on the strobe line
-     * for 0.8.82; survev offsets 0 / 5 / 5 / 10 / 10)
+     * Sideways offset between a strobe's strike lines: strike k flies ceil(k / 2) x this beside the strobe, on
+     * alternating sides, 0 / 5 / 5 / 10 / 10 (survev weaponManager.ts:1337-1362, projectile.ts:173-211, the baseline;
+     * conflicts.md strobe-airstrike-offset). 0 puts every line on the strobe, as fandom describes the original. The
+     * carpet strobe spaces its lines 1.4x this (defs STROBE_STRIKES offsetMult).
      */
     strobeAirstrikeOffset: number;
-    /** survev picks the side of the first offset strike at random ("was not in surviv"); off */
+    /** survev picks the side of the first offset strike at random ("was not in surviv"; the baseline): on */
     strobeRandomSide: boolean;
     /**
-     * Broken Arrow's extra strikes are counted when the strike warning appears (fandom; conflicts.md
-     * broken-arrow-check-time) instead of when the strobe is thrown (survev)
+     * Broken Arrow's extra strikes are counted when the strike warning appears (fandom's account of the original)
+     * instead of when the strobe is thrown (survev, the baseline; conflicts.md broken-arrow-check-time): off
      */
     brokenArrowAtPing: boolean;
     /** bullets whose Explosive Rounds use the quieter explosion_rounds_sg (survev bullet useExplosiveRoundsAlt) */
@@ -187,9 +189,9 @@ export function defaultRules(): SimRules {
         smokeDuration: 16,
         smokeHidesPlayers: true,
         smokeRevealDistance: 5,
-        strobeAirstrikeOffset: 0,
-        strobeRandomSide: false,
-        brokenArrowAtPing: true,
+        strobeAirstrikeOffset: 5,
+        strobeRandomSide: true,
+        brokenArrowAtPing: false,
         explosiveRoundsAltBullets: ["bullet_buckshot", "bullet_flechette", "bullet_frag", "bullet_birdshot"],
         fabricateInterval: 12,
         unlockOverrides: { bunker_twins_sublevel_01: { circleIdx: 2, wait: 5 } },

@@ -2,6 +2,7 @@
 // the rebirth layer (rebirth/: user-requested deviations and rebirth-only defs, applied in data.ts).
 import { gameObjectsData, mapObjectsData, mapsData } from "./data.ts";
 import gameConfigJson from "./generated/gameConfig.json" with { type: "json" };
+import { applyRebirthGameConfig } from "./rebirth/index.ts";
 import type {
     GameConfigDef,
     GameObjectDef,
@@ -27,7 +28,9 @@ export const MapObjectDefs: Readonly<Record<string, MapObjectDef>> = mapObjectsD
 /** generated map defs with the rebirth loot tables (air drop tiers) added */
 export const MapDefs: Readonly<Record<string, MapDef>> = mapsData;
 /** assigned without a cast: tsc checks gameConfig.json against GameConfigDef */
-export const GameConfig: GameConfigDef = gameConfigJson;
+const generatedGameConfig: GameConfigDef = gameConfigJson;
+/** generated GameConfig with the rebirth bag items (the variant strobes) after the original ones */
+export const GameConfig: GameConfigDef = applyRebirthGameConfig(generatedGameConfig);
 
 export function hasDef(id: string): boolean {
     return Object.hasOwn(GameObjectDefs, id);

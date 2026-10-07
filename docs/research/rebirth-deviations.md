@@ -15,7 +15,7 @@
 
 ## 50v50 air strike variants
 
-- Every scheduled 50v50 air strike zone rolls a variant: `normal` 60, `heavy` 25, `carpet` 15 by default (server `AIRSTRIKE_VARIANTS`, `rules.roles.factionAirstrikeVariants`); strobe strikes and other maps stay normal [src:user/2026-10-07-airstrike-variants] [H]
+- Every scheduled 50v50 air strike zone rolls a variant: `normal` 60, `heavy` 25, `carpet` 15 by default (server `AIRSTRIKE_VARIANTS`, `rules.roles.factionAirstrikeVariants`); the original strobe's strikes and other maps stay normal (the variant strobes below call heavy and carpet strikes) [src:user/2026-10-07-airstrike-variants] [src:user/2026-10-07-strobes] [H]
 - The roll uses its own seeded stream, so a zone that rolls `normal` behaves exactly like v0.8.82 (planes, aim points and bombs) [src:user/2026-10-07-airstrike-variants] [src:survev/server/src/game/objects/plane.ts:520-562] [H]
 
 | variant | planes | bombs per plane | bomb | zone radius | sources |
@@ -43,6 +43,33 @@
 - The falling heavy shell is drawn 1.5× the iron bomb (`worldImg.scale` 0.18 against 0.12) [src:user/2026-10-07-airstrike-variants] [src:kong/relaunch-client-defs] [H]
 - Explosion bursts follow the def's blast radius, and so do the scorch decals of the frag and the heavy shell (above): the frag burst is drawn ×1.3 over the original effect; the heavy shell has its own effect (`bomb_heavy`), the iron bomb's burst grown by 38 / 14 in a warm tint and lasting longer, more water ripples, the iron bomb's boom 7 semitones lower, 1.5× as loud and heard 1.5× as far, and a camera shake about twice as strong and long that reaches 1.75× as far (still off with the Screen shake setting) [src:user/2026-10-07-grenade-radius] [src:user/2026-10-07-airstrike-variants] [H]
 - The client has no throw-range or blast-radius indicator for grenades (the touch aim line only shows the throw direction, 30 u for anything but guns), so nothing else follows the frag radius [src:survev/client/src/ui/touch.ts] [H]
+
+## Variant strobes
+
+> The strobe itself follows survev master, the gameplay baseline since ADR 0003: `strikeDelay` 3 s instead of the original client's 2.5, the first strike line in front of the strobe and the next ones 5 and 10 u beside it on alternating sides from a random side, and Broken Arrow counted at the throw (`conflicts.md` `strobe-strike-delay`, `strobe-arming`, `strobe-airstrike-offset`, `broken-arrow-check-time`). The rebirth adds two strobes on top.
+
+- The owner asked for strobes that call the heavy shell strike and carpet bombing, next to the strobe of wiki.gg's Strobe and Airstrike Bomb pages (2026-10-07) [src:user/2026-10-07-strobes] [src:wikigg/Strobe] [src:wikigg/Airstrike_Bomb] [H]
+
+| strobe | strike lines (with Broken Arrow) | bombs per line | lines beside the strobe | map marker | colour | sources |
+|---|---|---|---|---|---|---|
+| `strobe` (survev) | 3 (5) | 20 × `bomb_iron`, 2 u apart | 0 / 5 / 5 / 10 / 10 u | `ping_airstrike` | `0xeaff00` | [src:survev/server/src/game/weaponManager.ts:1337-1362] [src:survev/server/src/game/objects/projectile.ts:173-211] [src:survev/shared/gameConfig.ts:293-305] [H] |
+| `strobe_heavy` (rebirth-only) | 3 (5) | 5 × `bomb_heavy`, 8 u apart (the heavy variant's strip, radius 14–38) | 0 / 5 / 5 / 10 / 10 u | `ping_airstrike_heavy` (rebirth-only) | `0xff3c1e` | [src:user/2026-10-07-strobes] [H] |
+| `strobe_carpet` (rebirth-only) | 6 (8) | 20 × `bomb_iron`, 2 u apart | 0 / 7 / 7 / 14 / 14 / 21 (/ 21 / 28) u | `ping_airstrike_carpet` (rebirth-only) | `0xe040ff` | [src:user/2026-10-07-strobes] [H] |
+
+- The heavy strobe calls 3 lines of heavy shells, 5 with Broken Arrow, as the owner put it; the carpet strobe the carpet strike's 6 passes, spaced 1.4× the strobe's 5 u (the carpet zone's 1.4× larger area) and 8 with Broken Arrow's 2 extra planes [src:user/2026-10-07-strobes] [src:survev/shared/defs/gameObjects/perkDefs.ts:64-66] [H]
+- Both are thrown exactly like the strobe (same throw physics, fuse, `explosion_strobe`, sounds, bag rows 2 / 3 / 4 / 5): the ping 3 s after the throw, the first line 1 s later, every line within 3 s, so the carpet strobe's lines come 0.5 s apart [src:user/2026-10-07-strobes] [src:survev/server/src/game/weaponManager.ts:1337-1362] [H]
+- Their map markers are `ping_airstrike` (sprites, sound, 2 s life) in the variant colour, on the minimap and the screen-edge indicator; the strobe is drawn in that colour too: the loot icon (on the ground and in the HUD weapon slot), the strobe in the hand and thrown, and its light pulse, the yellow-green art recoloured through a greyscale copy [src:user/2026-10-07-strobes] [src:survev/shared/defs/gameObjects/pingDefs.ts:70-81] [H]
+- Names: "Heavy Shell Strobe" / "고폭탄 스트로브" and "Carpet Bombing Strobe" / "대공습 스트로브", after the strike announcements "Heavy shell strike incoming" / "Carpet bombing incoming"; the weapon slot, which shows the count beside the name, says "Heavy" / "고폭탄" and "Carpet" / "대공습", short like the original throwables' slot names [src:user/2026-10-07-strobes] [src:l10n/en:game-hud-strobe] [H]
+- A kill by their bombs is the thrower's air strike kill, and the kill feed names the strike: "with a heavy shell strike" / "고폭탄 공습", "with carpet bombing" / "대공습" (the sim credits those bombs to the strobe, `itemSourceType` `strobe_heavy` / `strobe_carpet`); the original strobe's and the 50v50 zones' kills keep "an air strike" and `bomb_iron` [src:user/2026-10-07-strobes] [src:l10n/en:game-an-air-strike] [H]
+- No server knob: they are loot, and `AIRSTRIKE_VARIANTS` only weighs the 50v50 zones [src:user/2026-10-07-strobes] [H]
+
+| loot | maps | chance | sources |
+|---|---|---|---|
+| the throwable roll of the gold air drops (`crate_11`, `crate_11de`, `crate_11sv`, `crate_11tr`) | desert, savannah, woods and its seasonal copies (the maps whose air drops hold strobes) | each variant 5 % of the roll, so 1 gold drop in 10 holds one; the strobe stays far likelier (desert 82 %, savannah 45 %, woods 22 % of the roll) | [src:user/2026-10-07-strobes] [src:survev/shared/defs/maps/desertDefs.ts:194-198] [src:survev/shared/defs/maps/woodsDefs.ts:133-139] [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:593-866] [H] |
+| the throwable rolls of the 50v50 military crate (`crate_12`) and gold military crate (`crate_13`, which also holds 3 strobes) | `faction` | each variant 1.25 % of each of the 6–8 rolls: about 1 crate in 6 holds one | [src:user/2026-10-07-strobes] [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:741-842] [H] |
+
+- The rare crates roll their throwables from their own table, `tier_airdrop_throwables_rare`: the map's `tier_airdrop_throwables` with the two strobes added on those maps, an exact copy everywhere else, so every other mode keeps its loot: no floor loot, nothing in normal air drops (`crate_10` and the tier crates), and nothing in potato modes, where the 50v50 potato crates keep their table and potato kills never swap to them (`noPotatoSwap`) [src:user/2026-10-07-strobes] [H]
+- They are the last two bag items and their four game types (the strobes and their pings) follow the other rebirth-only ones (protocol schema 12) [src:user/2026-10-07-strobes] [H]
 
 ## Air drop tiers
 

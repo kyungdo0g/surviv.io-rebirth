@@ -49,9 +49,10 @@
 // - Existing fields gain M5 values: PlayerView.anim "cook" / "throw" while a throwable is cooked and thrown;
 //   PlayerView.action and LocalPlayerState.action "use" with the heal/boost item while one is used;
 //   LocalPlayerState.boost decays and heals; LocalPlayerState.zoom is the 1x radius while the player is in smoke
-//   (and 0.5 s after leaving it); MapIndicatorView "ping_airstrike" marks strobe and scheduled air strikes;
-//   PlaneView "airstrike" planes; explosion scorch marks are DecalView objects (some fade after their def
-//   lifetime); KillEvent / DamageSource "explosion" and "airstrike".
+//   (and 0.5 s after leaving it); MapIndicatorView "ping_airstrike" marks strobe and scheduled air strikes
+//   ("ping_airstrike_heavy" / "ping_airstrike_carpet" the rebirth variant strobes'); PlaneView "airstrike" planes;
+//   explosion scorch marks are DecalView objects (some fade after their def lifetime); KillEvent / DamageSource
+//   "explosion" and "airstrike".
 // - Smoke hides players: with `rules.smokeHidesPlayers` (default on) a player whose centre is inside a smoke cloud
 //   is left out of other players' snapshots unless the viewer is within `rules.smokeRevealDistance` (rebirth rule:
 //   the original client only draws the smoke above them). Bullets they fire are still reported.

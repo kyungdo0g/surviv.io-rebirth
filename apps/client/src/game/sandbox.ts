@@ -510,7 +510,14 @@ function exposeM5(client: GameClient): void {
         get projectiles() {
             const p = client.worldFx?.projectiles;
             return p
-                ? { count: p.count, visible: p.visibleCount, shadows: p.shadowCount, maxPosZ: p.maxPosZ, topZ: p.topZ }
+                ? {
+                      count: p.count,
+                      visible: p.visibleCount,
+                      shadows: p.shadowCount,
+                      maxPosZ: p.maxPosZ,
+                      topZ: p.topZ,
+                      strobes: p.strobes,
+                  }
                 : null;
         },
         get smokes() {
@@ -534,6 +541,10 @@ function exposeM5(client: GameClient): void {
         /** tint of the last map-event ping's edge indicator (rebirth: ping_airstrike takes the zone's colour) */
         get pingTint() {
             return client.pingIndicator.tint;
+        },
+        /** map-event pings on the minimap with their icon tint (rebirth: the variant strobes' pings) */
+        get mapPings() {
+            return client.minimap?.indicators.eventPings ?? [];
         },
         /** burst particle scale last drawn for an explosion type (rebirth: sized from the def radius) */
         burstScale: (type: string) => client.worldFx?.explosions.lastBurstScale.get(type) ?? 0,

@@ -24,9 +24,11 @@ import {
     type MeleeDef,
     type OutfitDef,
     type ThrowableDef,
+    type ThrowableHandImg,
 } from "@rebirth/defs";
 import type { PlayerView } from "@rebirth/sim";
 import { Container, type Sprite } from "pixi.js";
+import { greySpriteId } from "../assets/textures.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
 import { AnimPlayer, BONE_COUNT, Bone, IDENTITY_POSE, IDLE_POSES, type Pose } from "./anims.ts";
@@ -215,11 +217,12 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     }
 
     /** sprites drawn in the hands for the held throwable (tests) */
-    get throwableSprites(): { state: string; left: boolean; right: boolean } {
+    get throwableSprites(): { state: string; left: boolean; right: boolean; rightTint: number } {
         return {
             state: this.throwableState,
             left: this.objectLSprite.visible,
             right: this.objectRSprite.visible,
+            rightTint: this.objectRSprite.tint,
         };
     }
 
@@ -443,16 +446,17 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private updateThrowableSprites(): void {
         const weapon = this.weapon;
         const imgs = weapon?.type === "throwable" ? weapon.handImg?.[this.throwableState] : undefined;
-        const set = (sprite: Sprite, img: { sprite: string; pos?: Vec2; scale?: number } | undefined) => {
+        const set = (sprite: Sprite, img: ThrowableHandImg | undefined) => {
             const visible = !!img?.sprite && img.sprite !== "none" && !this.data.downed;
             sprite.visible = visible;
             if (!visible || !img) return;
             const scale = img.scale ?? 1;
-            this.deps.textures.apply(sprite, img.sprite, scale);
+            // rebirth: a variant strobe in the hand is recoloured in its variant's colour
+            this.deps.textures.apply(sprite, img.recolor ? greySpriteId(img.sprite) : img.sprite, scale);
             sprite.position.set(img.pos?.x ?? 0, img.pos?.y ?? 0);
             sprite.scale.set(scale);
             sprite.rotation = Math.PI * 0.5;
-            sprite.tint = 0xffffff;
+            sprite.tint = img.tint ?? 0xffffff;
         };
         set(this.objectLSprite, imgs?.left);
         set(this.objectRSprite, imgs?.right);
