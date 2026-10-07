@@ -271,6 +271,7 @@ export class ProjectileSystem {
                         amount,
                         damageType: p.damageType,
                         gameSourceType: p.type,
+                        weaponSourceType: p.sourceType,
                         sourceId: p.ownerId,
                         dir: v2.copy(p.dir),
                     });
@@ -340,6 +341,7 @@ export class ProjectileSystem {
         if (!def.explosionType) return;
         this.host.explosions.add(def.explosionType, p.pos, p.layer, {
             gameSourceType: killSourceOf(p),
+            weaponSourceType: p.sourceType,
             damageType: p.damageType,
             sourceId: p.ownerId,
         });

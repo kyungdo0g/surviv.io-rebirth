@@ -19682,6 +19682,12 @@
       }
     },
     {
+      "id": "crowbar",
+      "field": "noPotatoSwap",
+      "original": true,
+      "survev": "absent"
+    },
+    {
       "id": "spade_assault",
       "field": "obstacleDamage",
       "original": 1,

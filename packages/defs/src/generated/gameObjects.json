@@ -8994,7 +8994,6 @@
     "damage": 33,
     "obstacleDamage": 1.4,
     "headshotMult": 1,
-    "noPotatoSwap": true,
     "attack": {
       "offset": {
         "x": 1.25,

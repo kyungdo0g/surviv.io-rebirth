@@ -112,7 +112,9 @@ describe.skipIf(!live)("generated defs equal the original client defs", () => {
             const expected = { ...def };
             for (const c of gameplay.get(id) ?? []) {
                 expect(expected[c.field] ?? "absent", `${id}.${c.field}`).toEqual(c.original);
-                expected[c.field] = c.survev;
+                // a flag survev leaves out is off (port lib/objects.ts SURVEV_ABSENT_IS_OFF)
+                if (c.survev === "absent") delete expected[c.field];
+                else expected[c.field] = c.survev;
             }
             expect(withoutFixups(id, gameObjects[id]), id).toEqual(expected);
         }
@@ -134,7 +136,9 @@ describe.skipIf(!live)("generated defs equal the original client defs", () => {
             const expected = { ...live.mapObjects[id] };
             for (const c of mapGen.get(id) ?? []) {
                 expect(expected[c.field] ?? "absent", `${id}.${c.field}`).toEqual(c.original);
-                expected[c.field] = c.survev;
+                // a flag survev leaves out is off (port lib/objects.ts SURVEV_ABSENT_IS_OFF)
+                if (c.survev === "absent") delete expected[c.field];
+                else expected[c.field] = c.survev;
             }
             // image fields the original names without art (provenance survevSpriteFixes)
             const fixed = structuredClone(expected);

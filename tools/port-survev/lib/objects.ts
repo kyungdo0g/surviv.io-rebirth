@@ -227,13 +227,29 @@ export interface GameplayChange {
     id: string;
     field: string;
     original: unknown;
+    /** survev's value; "absent" for a flag survev leaves out (the field is deleted) */
     survev: unknown;
 }
 
 /**
+ * Gameplay flags whose absence in survev means off: survev leaving one out turns the original's `true` off (the
+ * Crowbar, noPotatoSwap in the original, can be potato-swapped in survev: meleeDefs.ts crowbar has no flag).
+ */
+const SURVEV_ABSENT_IS_OFF: ReadonlySet<string> = new Set([
+    "noPotatoSwap",
+    "armorPiercing",
+    "stonePiercing",
+    "cleave",
+    "noDistAdj",
+    "useExplosiveRoundsAlt",
+    "forceMaxThrowDistance",
+    "cookable",
+]);
+
+/**
  * Option B (policy `survevBalance`): original game objects (and the survev skins built from them) take survev's
- * gameplay fields where survev defines them and they differ. Mutates `defs`; returns what changed (provenance
- * `survevValues`).
+ * gameplay fields where survev defines them and they differ, and lose the flags survev leaves out
+ * (SURVEV_ABSENT_IS_OFF). Mutates `defs`; returns what changed (provenance `survevValues`).
  */
 export function applySurvevGameplay(
     defs: Record<string, any>,
@@ -250,6 +266,11 @@ export function applySurvevGameplay(
         if (!eligible || !fields || !(id in survev)) continue;
         for (const field of fields) {
             const value = survev[id][field];
+            if (value === undefined && SURVEV_ABSENT_IS_OFF.has(field) && def[field] === true) {
+                changes.push({ id, field, original: true, survev: "absent" });
+                delete def[field];
+                continue;
+            }
             if (value === undefined || deepEqual(value, def[field])) continue;
             changes.push({ id, field, original: def[field] ?? "absent", survev: clone(value) });
             def[field] = clone(value);

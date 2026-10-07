@@ -2,10 +2,11 @@
 // new fields are optional in the types, always filled by the simulation and by the network decoder.
 //
 // - PlayerView `frozen` / `frozenOri` (the original Player record's `frozen` bit and 2-bit `frozenOri`): a snowball or
-//   potato hit slows an enemy (rules.modes.throwableHits: 0.5 s, 1 s for heavy ones and Spud Gun shots) and makes it
-//   drop one random item. While `frozen`, draw the frozen sprite over the body turned by `frozenOri` quarter turns: the
-//   map def's `biome.frozenSprites` (potato: player-mash-01..03), else the snow sprites player-snow-01..03 (the snow map
-//   is not in the v0.8.82 client; its pre-fork def listed those, modes/snow.md). `frozenOri` is 0 while not frozen.
+//   potato hit slows an enemy (rules.modes.throwableHits from the explosion defs: 0.5 s, 2 s for a heavy snowball, 1 s
+//   for a heavy potato and Spud Gun shots) and makes it drop random items. While `frozen`, draw the frozen sprite over
+//   the body turned by `frozenOri` quarter turns: the map def's `biome.frozenSprites` (potato: player-mash-01..03), else
+//   the snow sprites player-snow-01..03 (the snow map is not in the v0.8.82 client; its pre-fork def listed those,
+//   modes/snow.md). `frozenOri` is 0 while not frozen.
 // - Cobalt (perkMode maps): a joining player has no class (`role` ""), sits at the Twins bunker
 //   (`bunker_twins_sublevel_01`, layer 1) and cannot move, act, emote, drop or be hurt; show the class menu (the original
 //   client opens it on map load when the active player has no role, survev game.ts). `Game.selectRole` (the

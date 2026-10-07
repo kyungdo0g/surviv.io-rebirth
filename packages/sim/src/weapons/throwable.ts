@@ -109,7 +109,8 @@ export function throwThrowable(ctx: SimContext | null, player: Player, noSpeed =
             vel,
             fuse,
             throwDir: dir,
-            sourceType: thrown,
+            // the item in hand, not its heavy variant (survev addProjectile(..., oldThrowableType))
+            sourceType: item,
         });
         // strobes, the rebirth variant strobes included, call an air strike (survev: oldThrowableType == "strobe")
         if (isStrobe(thrown) && def.strikeDelay) ctx.projectiles.armStrobe(proj, def.strikeDelay);

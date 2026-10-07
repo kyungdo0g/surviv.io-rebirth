@@ -44,14 +44,16 @@ function swapPool(kind: SwapKind, factionMode: boolean): string[] {
 }
 
 /**
- * Replaces the weapon of `params.gameSourceType` (the slot in hand when it is the active weapon, else the slot
+ * Replaces the weapon of `params.weaponSourceType` / `gameSourceType` (the slot in hand when it is the active weapon, else the slot
  * holding it, else the kind's default slot) with a random weapon of the same kind. Guns come with a full magazine
  * and their spare spawn ammo, throwables with a third of the bag. Nothing happens for `noPotatoSwap` items.
  */
 export function randomWeaponSwap(ctx: SimContext, player: Player, params: DamageParams): void {
-    if (player.dead) return;
-    // (the fork's "Lone Survivr keeps its weapons", 0.2.31, is not in v0.8.82)
-    const oldWeapon = params.gameSourceType;
+    // Lone Survivr keeps its weapons (survev player.ts:4048, fork 0.2.31; Potato vs Tomato)
+    if (player.dead || player.role === "last_man") return;
+    // the weapon the hit started from: the thrown potato, not its heavy projectile; the MIRV, not its bomblets
+    // (survev player.ts:4049 weaponSourceType || gameSourceType)
+    const oldWeapon = params.weaponSourceType || params.gameSourceType;
     if (!oldWeapon || !hasDef(oldWeapon)) return;
     const oldDef = getDef(oldWeapon) as SwapDef;
     if (oldDef.noPotatoSwap) return;

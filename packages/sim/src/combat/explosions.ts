@@ -38,6 +38,8 @@ const MAX_PER_TICK = 4096;
 export interface ExplosionSource {
     /** weapon or projectile that caused it ("frag", "usas", "bomb_iron"); "" for exploding obstacles */
     gameSourceType?: string;
+    /** the weapon it started from (survev weaponSourceType: the thrown item, the gun that shot the barrel) */
+    weaponSourceType?: string;
     /** map object that exploded (barrels); "" otherwise */
     mapSourceType?: string;
     /** defs DamageType: Player, or Airstrike for air strike bombs */
@@ -250,6 +252,7 @@ export class ExplosionSystem {
             amount: obj.kind === "obstacle" ? damage * e.def.obstacleDamage : damage,
             damageType: e.source.damageType,
             gameSourceType: e.source.gameSourceType ?? "",
+            weaponSourceType: e.source.weaponSourceType ?? "",
             mapSourceType: e.source.mapSourceType ?? "",
             sourceId: e.source.sourceId ?? 0,
             isExplosion: true,
