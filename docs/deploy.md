@@ -19,12 +19,15 @@ with Vite.
 
 ```sh
 pnpm install
-pnpm survev:fetch && pnpm assets   # optional: the original art and audio (not in the repository)
+pnpm survev:fetch                  # optional, with the next line: the original art and audio (not in the repository)
+pnpm assets
 pnpm start                         # builds the client, then serves it and the game on http://127.0.0.1:8001
 ```
 
 `pnpm start` is `pnpm build && node apps/server/src/index.ts`; set variables in front of it
-(`HOST=0.0.0.0 BOT_FILL=40 pnpm start`). Without `pnpm assets` the client runs with placeholder graphics and no sound.
+(`HOST=0.0.0.0 BOT_FILL=40 pnpm start`; PowerShell and cmd.exe set them first, see the README's "Environment variables
+on Windows"). Every package script runs in cmd.exe, PowerShell and POSIX shells alike. Without `pnpm assets` the client
+runs with placeholder graphics and no sound.
 The served client opens the offline sandbox at `/`; players start from `/?menu=1` (the start page with the play
 buttons and the party lobby).
 `pnpm survev:fetch` clones survev at the pinned commit into `.survev` and extracts the original client definitions

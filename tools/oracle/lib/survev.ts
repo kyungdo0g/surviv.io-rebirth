@@ -29,7 +29,7 @@ export interface Survev {
 
 async function importSurvev(rel: string): Promise<any> {
     const file = join(SURVEV_DIR, rel);
-    if (!existsSync(file)) throw new Error(`${file} missing: run sh tools/port-survev/fetch.sh`);
+    if (!existsSync(file)) throw new Error(`${file} missing: run pnpm survev:fetch`);
     return import(pathToFileURL(file).href);
 }
 

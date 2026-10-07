@@ -54,7 +54,7 @@ function bullet(id: number, shooterId: number, extra: Partial<BulletEvent> = {})
 }
 
 function fakeRenderer(): Renderer {
-    return { pool: new SpritePool(), add: () => {} } as unknown as Renderer;
+    return { pool: new SpritePool(), add: () => {}, overgroundLayer: () => 2 } as unknown as Renderer;
 }
 
 const fakeTextures = { apply: () => {} } as unknown as TextureStore;
@@ -86,7 +86,6 @@ function scene(players: PlayerView[], extra: Partial<BulletScene> = {}): BulletS
         playerContainer: (id) => containers.get(id) ?? null,
         segmentOnStairs: () => false,
         brightSurfaceAt: () => false,
-        insideStairMask: () => false,
         ...extra,
     };
 }
@@ -250,17 +249,16 @@ describe("flares (survev flare.ts)", () => {
     it("grow by easeOutExpo to maxFlareScale, fly their range, then fade", () => {
         const flares = new FlareSystem(fakeRenderer(), fakeTextures);
         const def = GameObjectDefs.bullet_flare as { speed: number; distance: number; maxFlareScale: number };
-        const s = { activeLayer: 0, insideStairMask: () => false };
         flares.add(
             bullet(1, 1, { bulletType: "bullet_flare", maxDist: def.distance }),
             GameObjectDefs.bullet_flare as never,
         );
-        flares.update(1.25, s);
+        flares.update(1.25);
         expect(flares.newestScale).toBeCloseTo((1 - 2 ** -5) * def.maxFlareScale, 6);
         // at its range (4 s) the flare stops growing and drifts on while it fades (0.8 alpha at 1/s)
-        for (let t = 1.25; t < def.distance / def.speed + 0.2; t += 0.05) flares.update(0.05, s);
+        for (let t = 1.25; t < def.distance / def.speed + 0.2; t += 0.05) flares.update(0.05);
         expect(flares.count).toBe(1);
-        for (let t = 0; t < 1; t += 0.05) flares.update(0.05, s);
+        for (let t = 0; t < 1; t += 0.05) flares.update(0.05);
         expect(flares.count).toBe(0);
     });
 });

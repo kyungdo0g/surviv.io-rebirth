@@ -9,9 +9,11 @@
 // `pnpm assets` (import.ts) runs this when the frames are missing or were cut from another bundle.
 // The art is copyrighted: every output stays in gitignored or scratch directories.
 // Usage: pnpm assets:atlas [--bundle research-cache/live/app.<hash>.js] [--out research-cache/atlas] [--no-cut]
+// (behind a proxy it restarts itself with NODE_USE_ENV_PROXY=1, tools/envProxy.ts)
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import { basename, dirname, join, posix } from "node:path";
 import { parseArgs } from "node:util";
+import { ensureEnvProxy } from "../envProxy.ts";
 import { buildInventory, type SpriteIndex, type SpriteIndexEntry } from "./atlasInventory.ts";
 import {
     choosePages,
@@ -26,6 +28,8 @@ import {
     VARIANT_DIFF,
 } from "./atlasSheets.ts";
 import { decodePng, encodePng, pngSize, type RgbaImage } from "./png.ts";
+
+ensureEnvProxy();
 
 const LIVE = "research-cache/live";
 const PAGES_DIR = join(LIVE, "atlases");
@@ -145,7 +149,8 @@ if (!args["no-cut"]) {
             const copy = index.sprites[id]!.alsoIn![rank - 1]!;
             copy.diff = imageDiff(canonical.get(id)!, img);
             if (copy.diff.mean <= VARIANT_DIFF.mean && copy.diff.max <= VARIANT_DIFF.max) continue;
-            copy.file = join("variants", family(sheet.meta.image), fileName(id, sheetScale(sheet)));
+            // "/" on every OS: index.json and inventory.json read the same everywhere (Windows accepts it in paths)
+            copy.file = posix.join("variants", family(sheet.meta.image), fileName(id, sheetScale(sheet)));
             mkdirSync(dirname(join(spritesDir, copy.file)), { recursive: true });
             writeFileSync(join(spritesDir, copy.file), encodePng(img));
             written++;

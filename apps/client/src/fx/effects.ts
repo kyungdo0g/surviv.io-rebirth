@@ -158,10 +158,6 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         return this.world?.brightSurfaceAt(pos, layer) ?? false;
     }
 
-    insideStairMask(pos: Vec2, rad: number): boolean {
-        return this.world?.insideStructureMask(pos, rad) ?? false;
-    }
-
     /** Call before the snapshot's objects are applied. */
     beginSnapshot(s: Snapshot): void {
         this.prevLocal = this.local;

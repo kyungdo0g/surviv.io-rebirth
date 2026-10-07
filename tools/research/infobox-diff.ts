@@ -1,6 +1,6 @@
 // Field-by-field comparison of fandom item infoboxes (datamined from the original client) against survev defs.
 // Usage: node --experimental-transform-types tools/research/infobox-diff.ts
-// Inputs: research-cache/fandom-infobox.json (tools/research/fandom-infobox.ts), .survev (tools/port-survev/fetch.sh)
+// Inputs: research-cache/fandom-infobox.json (tools/research/fandom-infobox.ts), .survev (pnpm survev:fetch)
 // Outputs: docs/research/data/fandom-item-stats.json, docs/research/data/wiki-vs-survev.json,
 //          docs/research/provenance/wiki-vs-survev.md
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";

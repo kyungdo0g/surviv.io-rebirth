@@ -41,4 +41,4 @@ Rights to this artwork belong to its owners (surviv.io / Kongregate). It is **no
 license, which applies to the code. Because this repository is public, the asset files are **never committed**:
 `apps/client/public/assets/` and `research-cache/` are gitignored and rebuilt locally with
 `pnpm survev:fetch && pnpm assets` (the original bundle in `research-cache/live/` comes from
-`NODE_USE_ENV_PROXY=1 node tools/research/extract-live-defs.ts --fetch`).
+`node tools/research/extract-live-defs.ts --fetch`).

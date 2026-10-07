@@ -454,6 +454,9 @@ export class GameClient {
         this.cameraFx?.update(dt, this.camera.pos, this.debugZoom ?? this.local.zoom, this.local.layer);
         const ctx = { dt, localPos: this.visualPos, localLayer: this.local.layer, localId: this.activeId };
         world.update(ctx, now, this.camera.viewBounds(CULL_MARGIN));
+        // the structures in view, before anything is placed over the ground (renderer.addOverground)
+        const masks = world.takeStairMasks();
+        if (masks) this.renderer.setStairMasks(masks);
         this.teamPlay.update({
             dt: uiDt,
             now,
@@ -474,10 +477,8 @@ export class GameClient {
         const me = world.get(this.activeId) as PlayerView | undefined;
         if (!spectating) this.interactions.updateDoors(dt, world, me, this.visualPos);
         this.worldFx?.update({ dt, viewerPos: this.visualPos, viewerLayer: this.local.layer });
-        this.minimap?.airstrikeZones.update(uiDt, this.renderer, this.local.layer);
+        this.minimap?.airstrikeZones.update(uiDt, this.renderer);
         this.camera.applyShake();
-        const masks = world.takeStairMasks();
-        if (masks) this.renderer.setStairMasks(masks);
         this.renderer.update(dt);
         this.renderGas(now);
         this.pingIndicator.update(uiDt, this.camera);

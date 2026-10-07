@@ -32,7 +32,7 @@ import type { AudioEngine } from "../audio/audio.ts";
 import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { type Renderer, toLocal } from "../render/renderer.ts";
 import { hasActivePan, panHit, sameAudioLayer, sameLayer, tracerTint, tracerWidth } from "./bulletHits.ts";
-import { type FlareScene, FlareSystem } from "./flare.ts";
+import { FlareSystem } from "./flare.ts";
 import type { ParticleSystem } from "./particles.ts";
 
 const TRAIL_SPRITE = "player-bullet-trail-02.img";
@@ -78,9 +78,11 @@ interface Tracer {
 }
 
 /** What the tracer system needs from the object world. */
-export interface BulletScene extends FlareScene {
+export interface BulletScene {
     /** the followed (active) player */
     readonly localId: number;
+    /** layer of the followed player */
+    readonly activeLayer: number;
     readonly cameraPos: Vec2;
     /** the active player is alive (bullets whiz past living players only) */
     readonly activeAlive: boolean;
@@ -484,7 +486,7 @@ export class BulletSystem {
         }
         this.visibleCount = visible;
         if (this.colliders.size > 2048) this.colliders.clear();
-        this.flares.update(dt, scene);
+        this.flares.update(dt);
     }
 
     private advance(t: Tracer, dt: number, scene: BulletScene): void {

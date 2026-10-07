@@ -3,7 +3,9 @@
 // position eases towards the cloud's (both at 3/s), slowly rotating, light grey at 90 % alpha. A cloud that leaves
 // the snapshot fades out over 0.5-0.75 s. Clouds draw above players (zOrd 1000) or, when emitted inside a building,
 // under its roof (zOrd 500), on the top render layer so stair masks do not cut them (except under a structure mask
-// while the viewer stands on stairs).
+// while the viewer stands on stairs), but only while the viewer's floor sees them: a surface smoke stays hidden on the
+// ground layer for a viewer underground and a bunker smoke on the underground layer for a viewer on the surface
+// (renderer.addOverground; survev smoke.ts:145-159).
 import type { Vec2 } from "@rebirth/core";
 import type { SmokeView } from "@rebirth/sim";
 import type { Sprite } from "pixi.js";
@@ -41,12 +43,6 @@ interface Cloud {
 export interface SmokeDeps {
     renderer: Renderer;
     textures: TextureStore;
-    /** whether a circle at `pos` touches a structure's stair mask */
-    insideStructureMask(pos: Vec2, rad: number): boolean;
-}
-
-function sameLayer(a: number, b: number): boolean {
-    return (a & 1) === (b & 1) || ((a & 2) !== 0 && (b & 2) !== 0);
 }
 
 export class SmokeSystem {
@@ -66,6 +62,11 @@ export class SmokeSystem {
 
     get count(): number {
         return this.clouds.size;
+    }
+
+    /** the sprites of the live and fading clouds (tests) */
+    get sprites(): Sprite[] {
+        return [...this.clouds.values(), ...this.fading].map((c) => c.sprite);
     }
 
     /** Applies a snapshot's smoke list (complete for the view). */
@@ -114,12 +115,12 @@ export class SmokeSystem {
         };
     }
 
-    update(dt: number, activeLayer: number): void {
+    update(dt: number): void {
         let visible = 0;
-        for (const c of this.clouds.values()) if (this.step(c, dt, activeLayer)) visible++;
+        for (const c of this.clouds.values()) if (this.step(c, dt)) visible++;
         for (let i = this.fading.length - 1; i >= 0; i--) {
             const c = this.fading[i];
-            if (this.step(c, dt, activeLayer)) continue;
+            if (this.step(c, dt)) continue;
             this.deps.renderer.pool.release(c.sprite);
             this.fading.splice(i, 1);
         }
@@ -127,7 +128,7 @@ export class SmokeSystem {
     }
 
     /** Advances and places one cloud; false once it has faded out. */
-    private step(c: Cloud, dt: number, activeLayer: number): boolean {
+    private step(c: Cloud, dt: number): boolean {
         const t = Math.min(1, dt * LERP_RATE);
         c.rad += (c.radTarget - c.rad) * t;
         c.pos.x += (c.posTarget.x - c.pos.x) * t;
@@ -136,14 +137,6 @@ export class SmokeSystem {
         c.rot += c.rotVel * dt;
         if (c.fade) c.fadeTicker += dt;
         if (c.fadeTicker >= c.fadeDuration) return false;
-        let layer = c.layer;
-        const onStairs = (activeLayer & 2) !== 0;
-        if (
-            (sameLayer(c.layer, activeLayer) || onStairs) &&
-            (c.layer === 1 || !onStairs || !this.deps.insideStructureMask(c.pos, 1))
-        ) {
-            layer |= 2;
-        }
         const s = c.sprite;
         const local = toLocal(c.pos);
         s.position.set(local.x, local.y);
@@ -151,7 +144,7 @@ export class SmokeSystem {
         s.rotation = c.rot;
         s.alpha = Math.min(1, Math.max(0, 1 - c.fadeTicker / c.fadeDuration)) * ALPHA;
         s.visible = true;
-        this.deps.renderer.add(s, layer, c.interior ? INTERIOR_Z_ORD : Z_ORD, c.zIdx);
+        this.deps.renderer.addOverground(s, c.layer, c.interior ? INTERIOR_Z_ORD : Z_ORD, c.zIdx, c.pos);
         return true;
     }
 

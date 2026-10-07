@@ -1,7 +1,9 @@
 // Layered world scene, ordered like the original client (survev client/src/renderer.ts):
 //   terrain -> layer 0 (ground) -> underground fill -> layer 1 (underground) -> layer 2/3 (stairs, tall objects)
 // then the screen-space red zone (`gas`, above every world layer like survev game.ts) and the UI overlay.
-// Each layer is sorted by (zOrd, zIdx); views register their display objects every frame with `add()`.
+// Each layer is sorted by (zOrd, zIdx); views register their display objects every frame with `add()`, and things
+// that stand over the floor (smoke, flares, planes, falling air drops) with `addOverground()`, which lifts them onto the
+// top layers only when the viewer's floor can see them (layerRules.ts), so a surface air drop stays hidden in a bunker.
 // World children live in "pixel space": 16 px per world unit at zoom 1 with +y down, i.e. (x, y) -> (16x, -16y).
 // The world root alone carries the camera transform, so moving the camera never touches individual sprites.
 
@@ -9,6 +11,7 @@ import type { Vec2 } from "@rebirth/core";
 import { type Application, Container, Graphics, Sprite } from "pixi.js";
 import type { Camera, ViewBounds } from "./camera.ts";
 import { PIXELS_PER_UNIT } from "./camera.ts";
+import { layerVisibility, overgroundLayer } from "./layerRules.ts";
 import { SpritePool } from "./pool.ts";
 
 const LAYER_COUNT = 4;
@@ -26,6 +29,17 @@ function stepTowards(cur: number, target: number, rate: number): number {
     const delta = target - cur;
     const step = delta * Math.min(1, rate);
     return Math.abs(step) < 0.01 ? target : cur + step;
+}
+
+/** Whether `obj` is on screen: attached under `root` with it and every ancestor visible and not fully transparent. */
+export function isDrawn(obj: Container, root: Container): boolean {
+    let alpha = 1;
+    for (let node: Container | null = obj; node; node = node.parent) {
+        if (node.destroyed || !node.visible) return false;
+        alpha *= node.alpha;
+        if (node === root) return alpha > 0.01;
+    }
+    return false;
 }
 
 function countSprites(node: Container): number {
@@ -151,6 +165,45 @@ export class Renderer {
         const z = zOrd * Z_ORD_STRIDE + (zIdx ?? this.zIdxCounter++ % Z_ORD_STRIDE);
         if (obj.parent !== target) target.addChild(obj);
         if (obj.zIndex !== z) obj.zIndex = z;
+    }
+
+    /** Whether a circle at `pos` touches the stair mask of a structure in view (survev map.insideStructureMask). */
+    insideStairMask(pos: Vec2, rad = 1): boolean {
+        for (const m of this.stairMasks) {
+            const dx = Math.max(m.min.x - pos.x, 0, pos.x - m.max.x);
+            const dy = Math.max(m.min.y - pos.y, 0, pos.y - m.max.y);
+            if (dx * dx + dy * dy <= rad * rad) return true;
+        }
+        return false;
+    }
+
+    /** Map layer to draw something over the floor of map layer `layer` at `pos` for the active layer (layerRules.ts). */
+    overgroundLayer(layer: number, pos: Vec2): number {
+        return overgroundLayer(layer, this.activeLayer, () => this.insideStairMask(pos, 1));
+    }
+
+    /**
+     * `add()` for something that stands over the floor of map layer `layer` at `pos` (smoke clouds, flares, planes,
+     * falling air drops): on the top layers when the active layer can see it, else on its own layer, hidden with that
+     * floor (survev smoke.ts, flare.ts, plane.ts, airdrop.ts). Returns the layer used (its sounds play on it).
+     */
+    addOverground(obj: Container, layer: number, zOrd: number, zIdx: number | undefined, pos: Vec2): number {
+        const drawLayer = this.overgroundLayer(layer, pos);
+        this.add(obj, drawLayer, zOrd, zIdx);
+        return drawLayer;
+    }
+
+    /**
+     * How visible (0-1) something on map layer `layer` drawn outside the render layers is, e.g. an emote over a player
+     * (screen space): fully when it shares the active layer, else as much as its floor shows (layerRules.ts).
+     */
+    visibility(layer: number): number {
+        return layerVisibility(layer, this.activeLayer, { layer: this.layerAlpha, ground: this.groundAlpha });
+    }
+
+    /** Whether `obj` is drawn this frame (tests and debug hooks). */
+    drawn(obj: Container): boolean {
+        return isDrawn(obj, this.app.stage);
     }
 
     /** Applies the camera to the world root and fades the underground layer for the active layer. */

@@ -25,6 +25,7 @@ import type { ObstacleRender } from "../objects/obstacle.ts";
 import type { PlayerRender } from "../objects/player.ts";
 import { showToast } from "../ui/toast.ts";
 import { GameClient } from "./client.ts";
+import { exposeLayerFx } from "./debugLayers.ts";
 import { exposeM7 } from "./debugM7.ts";
 import { exposeM8 } from "./debugM8.ts";
 import { exposeM9 } from "./debugM9.ts";
@@ -271,6 +272,7 @@ function exposeGlobals(
     exposeM7(client);
     exposeM8(client);
     exposeM9(client);
+    exposeLayerFx(client);
     globals.interaction = () => client.interaction;
     globals.audio = {
         get unlocked() {

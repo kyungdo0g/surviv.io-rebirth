@@ -75,6 +75,13 @@
 - The star images are preloaded with the map's crates, so the first tier crate of a match shows its mark as it appears [src:user/2026-10-07-airdrop-tiers] [H]
 - Once opened, the inner crate shows its tier with stars from the original client's own atlas stamped over `crate_10`'s lid: tier 1 one silver star (`star.img`, 3 u across), tier 2 two blue stars (`star-blue.img`, 2.5 u, 2.15 u apart), each over a black silhouette of itself so it stands out from the wood, stripe and emblem; the count reads at a glance and the colours follow a silver / blue / gold ladder up to the gold crate, which keeps its corners and no mark (`apps/client/src/objects/crateTierMark.ts`) [src:user/2026-10-07-airdrop-tiers] [H]
 
+## Surface effects seen from underground
+
+> The owner's report (2026-10-07): an air drop called with the flare gun was drawn over the bunker the owner stood in. That was a rebirth bug: the client drew planes, falling crates and their landing smoke on the top render layer for every viewer, while v0.8.82 leaves them on the hidden ground layer for a viewer underground (`mechanics/doors-layers-ceilings.md`, Bunkers). The fix follows the original; the two lines below are where the rebirth goes slightly further.
+
+- The air drop's landing smoke and a flare still fading out after its range are placed for the viewer's floor every frame (`renderer.addOverground`), so a viewer who has just gone down the stairs does not see them for the second they last; v0.8.82 fixes the landing smoke's layer when the crate lands and stops placing a flare once it reached its range [src:user/2026-10-07-underground-fx] [src:survev/client/src/objects/airdrop.ts:117-125] [src:survev/client/src/objects/flare.ts:113-128] [H]
+- The in-world air strike circle (a rebirth addition, above) follows the same rule as the planes, the stair mask included [src:user/2026-10-07-underground-fx] [src:user/2026-10-07-airstrike-variants] [H]
+
 ## survev-only guns
 
 > Since ADR 0003 (`docs/adr/0003-survev-baseline.md`) survev master is the gameplay baseline, so the survev-only guns themselves are survev content, ported as survev ships them (`tools/port-survev/policy.json`): `barrett`, `ash12`, `sw500`, `imbel`, `spas16`, `potato_lmg` with their bullets, `bullet_invis`, `potato_lmgshot` with `explosion_potato_lmgshot`, and the winter skins `svd_winter`, `sv98_winter`, `awc_winter`. This section lists only what the rebirth layer changes on top (`packages/defs/src/rebirth/survevGuns.ts`), and the owner's rules behind it.
