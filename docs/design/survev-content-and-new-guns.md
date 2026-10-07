@@ -762,3 +762,45 @@ Tests:
 13. **Wiki versus source.** The wiki has a few known errors: the Coconut and Tomato `cookable` flags are inverted, PMG-134
     and Petite Potato numbers differ, and the Barrett page's armour example is wrong (54.45, not 45.5). The source wins;
     each case goes to `docs/research/conflicts.md`.
+
+## 8. Owner decisions, 2026-10-07 (supersede the defaults above where they differ)
+
+Ammo colours follow the game's convention: yellow 9mm, blue 7.62mm, green 5.56mm, red 12 gauge, black .50 AE, purple
+.45 ACP, olive .308 Subsonic, orange flare; new: teal 40mm (M79 family), pink 5.7×28mm (P90 only), brown rocket.
+
+| Gun | id | Ammo (colour) | Notes |
+|---|---|---|---|
+| DP-12 (was "DBS") | `dp12` | 12 gauge (red) | renamed by the owner |
+| M202 FLASH | `m202` | none | single use, 4 rockets |
+| Panzerfaust | `panzerfaust` | none | single use |
+| Thompson M1928 drum | `m1928` | .45 ACP (purple) | same ammo as the existing M1A1 |
+| M200 Intervention | `m200` | 7.62mm (blue) | added 2026-10-07; bolt-action sniper, gold + rare tier 2 |
+| MG42 | `mg42` | 7.62mm (blue) | |
+| G3 | `g3` | 7.62mm (blue) | |
+| SIG SG 550 | `sig550` | 5.56mm (green) | |
+| P90 | `p90` | 5.7×28mm (pink, new) | its own ammo |
+| Milkor MGL | `mgl` | 40mm (teal) | gold only |
+| GL-06 | `gl06` | 40mm (teal) | |
+| Honey Badger | `honeybadger` | 5.56mm (green) | |
+| M60 | `m60` | 7.62mm (blue) | |
+| Mk 14 EBR | `mk14` | 7.62mm (blue) | |
+| DShK | `dshk` | 7.62mm (blue) | |
+| RPG-7 | `rpg7` | rocket (brown, new) | gun and rockets gold only |
+| PP-19 Bizon | `bizon` | 9mm (yellow) | |
+| FN FAL | `fal` | 7.62mm (blue) | |
+| Boys AT rifle | `boys` | none | **7 shots** (was 10), then discarded |
+| M16A4 | `m16a4` | 5.56mm (green) | |
+| AK-74 | `ak74` | 5.56mm (green) | 5.45×39 has no own ammo |
+| G36C | `g36c` | 5.56mm (green) | |
+| Škorpion vz. 61 | `vz61` | 9mm (yellow) | |
+| SPAS-15 | `spas15` | 12 gauge (red) | |
+| AA-12 | `aa12` | 12 gauge (red) | slugs only |
+| WA2000 | `wa2000` | .50 AE (black) | |
+| Hécate II | `hecate` | .50 AE (black) | |
+| Lynx | `lynx` | .50 AE (black) | |
+| AS Val | `asval` | 9mm (yellow) | |
+| TEC-9 | `tec9` | 9mm (yellow) | |
+
+Art received: five sheets of side-view line drawings, one per gun (stored in the gitignored `assets-user/source/`), usable
+as loot icons after cutting, label removal and transparency; held (top-down) sprites still fall back to the bar shape.
+The FN FAL and SPAS-15 drawings are the same picture.
