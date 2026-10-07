@@ -218,3 +218,8 @@
 - Headshots stay invisible to bystanders, as in v0.8.82: only the dealer and the target learn of them [src:user/2026-10-07-hit-feedback] [src:survev/shared/gameConfig.ts:200] [H]
 - No new art or sounds: the blood reuses `part-splat-*`, the flash the plain body sprite, the confirm sounds existing hit sounds; the marker, the ring and the arcs are drawn shapes [src:user/2026-10-07-hit-feedback] [H]
 - Bots do not read the hits and the simulation stays deterministic [src:user/2026-10-07-hit-feedback] [H]
+
+## Loadout: everything unlocked
+
+- The rebirth has no accounts, so the start menu's Loadout lets every player pick any outfit, melee skin, six emotes, heal and boost effect and crosshair; v0.8.82 and survev unlock only `unlock_default` for a guest [src:user/2026-10-07-survev-baseline] [src:survev/shared/defs/gameObjects/unlockDefs.ts] [H]
+- Role uniforms, loot melee weapons and `noCustom` emotes stay out of the menu, and the simulation replaces unknown or ineligible ids with the defaults (`packages/sim/src/match/loadout.ts`) [src:user/2026-10-07-survev-baseline] [H]

@@ -86,4 +86,26 @@ test.describe("loadout menu", () => {
         await page.screenshot({ path: `${SCREENS}/in-game.png` });
         expect(errors).toEqual([]);
     });
+
+    test("an outfit with a sprite per hand (Aurora) draws both hands without errors", async ({ page }) => {
+        test.setTimeout(90_000);
+        const errors = collectErrors(page);
+        await openMenu(page, "/?menu=1&name=Aurora");
+        await page.locator("#btn-customize").click();
+        await page.locator("#loadout-tab-outfit").click();
+        await page.locator('#loadout-grid [data-id="outfitAurora"]').click();
+        await page.keyboard.press("Escape");
+        await page.locator("#btn-start-mode-0").click();
+        await page.waitForFunction(
+            () => {
+                const s = (window as any).__rebirth?.lastSnapshot;
+                return s?.objects?.find((o: any) => o.id === s.localPlayerId)?.outfit === "outfitAurora";
+            },
+            null,
+            { timeout: 30_000 },
+        );
+        await page.waitForTimeout(1000);
+        await page.screenshot({ path: `${SCREENS}/aurora.png` });
+        expect(errors).toEqual([]);
+    });
 });

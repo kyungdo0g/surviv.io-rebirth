@@ -301,6 +301,7 @@ export class GameClient {
             surfaceAt: (pos, layer) => surfaceAt(terrainQuery, pos, layer),
             teamOf: (id) => this.match.teamId(id),
             nameOf: (id) => this.match.name(id),
+            effectsOf: (id) => this.match.effectsOf(id),
             worldQueries: queries,
         };
         this.world = new ObjectWorld(deps, this.interp);
