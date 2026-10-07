@@ -38,6 +38,8 @@
       "high_velocity",
       "captain",
       "classless",
+      "explosion_cobalt",
+      "shrapnel_cobalt",
       "heal_diamond",
       "heal_ankh",
       "heal_menacing",
@@ -117,7 +119,8 @@
       "bunker_twins_compartment_01",
       "vault_door_chrys_01",
       "tree_01x",
-      "tree_13"
+      "tree_13",
+      "bunker_structure_09"
     ],
     "survevBalance": true
   },
@@ -756,6 +759,7 @@
     "bullet_ash12": "survev-only",
     "bullet_imbel": "survev-only",
     "bullet_invis": "survev-only",
+    "shrapnel_cobalt": "survev-only",
     "heal_diamond": "survev-only",
     "heal_ankh": "survev-only",
     "heal_menacing": "survev-only",
@@ -791,6 +795,7 @@
     "explosion_potato_lmgshot": "survev-only",
     "explosion_coconut": "survev-only",
     "explosion_tomato": "survev-only",
+    "explosion_cobalt": "survev-only",
     "backpack04": "survev-only",
     "helmet04_captain": "survev-only",
     "helmet04_classless": "survev-only",
@@ -1577,7 +1582,7 @@
     "cobalt_wall_int_4": "original",
     "bunker_twins_sublevel_01": "survev-override",
     "bunker_twins_compartment_01": "survev-override",
-    "bunker_structure_09": "original",
+    "bunker_structure_09": "survev-override",
     "bridge_lg_under_column": "original",
     "concrete_wall_column_5x4": "original",
     "bridge_rail_3": "original",
@@ -15607,6 +15612,161 @@
   "survevPlacements": [],
   "survevMapGenFields": [
     {
+      "id": "chest_03",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -2.25,
+            "y": -0.8
+          },
+          "max": {
+            "x": 2.25,
+            "y": 2.4000000000000004
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -2.25,
+            "y": -0.8
+          },
+          "max": {
+            "x": 2.25,
+            "y": 2.4000000000000004
+          }
+        }
+      ]
+    },
+    {
+      "id": "chest_03cb",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -2.25,
+            "y": -0.8
+          },
+          "max": {
+            "x": 2.25,
+            "y": 2.4000000000000004
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -2.25,
+            "y": -0.8
+          },
+          "max": {
+            "x": 2.25,
+            "y": 2.4000000000000004
+          }
+        }
+      ]
+    },
+    {
+      "id": "chest_03d",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -2.25,
+            "y": -0.8
+          },
+          "max": {
+            "x": 2.25,
+            "y": 2.4000000000000004
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -2.25,
+            "y": -0.8
+          },
+          "max": {
+            "x": 2.25,
+            "y": 2.4000000000000004
+          }
+        }
+      ]
+    },
+    {
+      "id": "chest_03f",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -2.25,
+            "y": -0.8
+          },
+          "max": {
+            "x": 2.25,
+            "y": 2.4000000000000004
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -2.25,
+            "y": -0.8
+          },
+          "max": {
+            "x": 2.25,
+            "y": 2.4000000000000004
+          }
+        }
+      ]
+    },
+    {
+      "id": "chest_03x",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -2.25,
+            "y": -0.8
+          },
+          "max": {
+            "x": 2.25,
+            "y": 2.4000000000000004
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -2.25,
+            "y": -0.8
+          },
+          "max": {
+            "x": 2.25,
+            "y": 2.4000000000000004
+          }
+        }
+      ]
+    },
+    {
       "id": "crate_02sv_lake",
       "field": "terrain",
       "original": {
@@ -15679,16 +15839,1799 @@
       }
     },
     {
+      "id": "greenhouse_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -15,
+            "y": -25
+          },
+          "max": {
+            "x": 15,
+            "y": 25
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -17.5,
+            "y": 4.5
+          },
+          "max": {
+            "x": -12.5,
+            "y": 13.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 13,
+            "y": -9.5
+          },
+          "max": {
+            "x": 22,
+            "y": -4.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -15,
+            "y": -25
+          },
+          "max": {
+            "x": 15,
+            "y": 25
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -17.5,
+            "y": 4.5
+          },
+          "max": {
+            "x": -12.5,
+            "y": 13.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 13,
+            "y": -9.5
+          },
+          "max": {
+            "x": 22,
+            "y": -4.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "greenhouse_02",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -15,
+            "y": -25
+          },
+          "max": {
+            "x": 15,
+            "y": 25
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -17.5,
+            "y": 4.5
+          },
+          "max": {
+            "x": -12.5,
+            "y": 13.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 13,
+            "y": -9.5
+          },
+          "max": {
+            "x": 22,
+            "y": -4.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -15,
+            "y": -25
+          },
+          "max": {
+            "x": 15,
+            "y": 25
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -17.5,
+            "y": 4.5
+          },
+          "max": {
+            "x": -12.5,
+            "y": 13.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 13,
+            "y": -9.5
+          },
+          "max": {
+            "x": 22,
+            "y": -4.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_08",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -10,
+            "y": -10
+          },
+          "max": {
+            "x": 20,
+            "y": 20
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -10,
+            "y": -10
+          },
+          "max": {
+            "x": 20,
+            "y": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_08b",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -10,
+            "y": -10
+          },
+          "max": {
+            "x": 20,
+            "y": 20
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -10,
+            "y": -10
+          },
+          "max": {
+            "x": 20,
+            "y": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "warehouse_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -35,
+            "y": -16
+          },
+          "max": {
+            "x": 35,
+            "y": 16
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -35,
+            "y": -16
+          },
+          "max": {
+            "x": 35,
+            "y": 16
+          }
+        }
+      ]
+    },
+    {
+      "id": "warehouse_01h",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -35,
+            "y": -16
+          },
+          "max": {
+            "x": 35,
+            "y": 16
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -35,
+            "y": -16
+          },
+          "max": {
+            "x": 35,
+            "y": 16
+          }
+        }
+      ]
+    },
+    {
+      "id": "warehouse_01f",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -35,
+            "y": -16
+          },
+          "max": {
+            "x": 35,
+            "y": 16
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -35,
+            "y": -16
+          },
+          "max": {
+            "x": 35,
+            "y": 16
+          }
+        }
+      ]
+    },
+    {
+      "id": "warehouse_01x",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -35,
+            "y": -16
+          },
+          "max": {
+            "x": 35,
+            "y": 16
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -35,
+            "y": -16
+          },
+          "max": {
+            "x": 35,
+            "y": 16
+          }
+        }
+      ]
+    },
+    {
       "id": "warehouse_complex_01",
       "field": "teamId",
       "original": "absent",
       "survev": 2
     },
     {
+      "id": "warehouse_complex_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -21,
+            "y": 63
+          },
+          "max": {
+            "x": 73,
+            "y": 78
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -42,
+            "y": 42
+          },
+          "max": {
+            "x": 73,
+            "y": 63
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -42,
+            "y": -20
+          },
+          "max": {
+            "x": 108,
+            "y": 42
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -42,
+            "y": -40
+          },
+          "max": {
+            "x": 52,
+            "y": -20
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -21,
+            "y": 63
+          },
+          "max": {
+            "x": 73,
+            "y": 78
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -42,
+            "y": 42
+          },
+          "max": {
+            "x": 73,
+            "y": 63
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -42,
+            "y": -20
+          },
+          "max": {
+            "x": 108,
+            "y": 42
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -42,
+            "y": -40
+          },
+          "max": {
+            "x": 52,
+            "y": -20
+          }
+        }
+      ]
+    },
+    {
+      "id": "logging_complex_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -55,
+            "y": -54
+          },
+          "max": {
+            "x": 55,
+            "y": 46
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -55,
+            "y": -54
+          },
+          "max": {
+            "x": 55,
+            "y": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "logging_complex_01sp",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -55,
+            "y": -54
+          },
+          "max": {
+            "x": 55,
+            "y": 46
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -55,
+            "y": -54
+          },
+          "max": {
+            "x": 55,
+            "y": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "logging_complex_01su",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -55,
+            "y": -54
+          },
+          "max": {
+            "x": 55,
+            "y": 46
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -55,
+            "y": -54
+          },
+          "max": {
+            "x": 55,
+            "y": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "logging_complex_02",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 0,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "rad": 40,
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 0,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "rad": 40
+        }
+      ]
+    },
+    {
+      "id": "logging_complex_02sp",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 0,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "rad": 40,
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 0,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "rad": 40
+        }
+      ]
+    },
+    {
+      "id": "logging_complex_02su",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 0,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "rad": 40,
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 0,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "rad": 40
+        }
+      ]
+    },
+    {
+      "id": "logging_complex_03",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 0,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "rad": 32,
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 0,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "rad": 32
+        }
+      ]
+    },
+    {
+      "id": "junkyard_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 0,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "rad": 37,
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 0,
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "rad": 37
+        }
+      ]
+    },
+    {
+      "id": "desert_town_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -65,
+            "y": -102
+          },
+          "max": {
+            "x": 65,
+            "y": 102
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -20,
+            "y": -120
+          },
+          "max": {
+            "x": 20,
+            "y": 120
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -70,
+            "y": 35
+          },
+          "max": {
+            "x": -50,
+            "y": 45
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -65,
+            "y": -102
+          },
+          "max": {
+            "x": 65,
+            "y": 102
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -20,
+            "y": -120
+          },
+          "max": {
+            "x": 20,
+            "y": 120
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -70,
+            "y": 35
+          },
+          "max": {
+            "x": -50,
+            "y": 45
+          }
+        }
+      ]
+    },
+    {
+      "id": "statue_structure_03",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -7.5,
+            "y": -7.5
+          },
+          "max": {
+            "x": 7.5,
+            "y": 17.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -7.5,
+            "y": -7.5
+          },
+          "max": {
+            "x": 7.5,
+            "y": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "statue_structure_04",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -7.5,
+            "y": -7.5
+          },
+          "max": {
+            "x": 7.5,
+            "y": 17.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -7.5,
+            "y": -7.5
+          },
+          "max": {
+            "x": 7.5,
+            "y": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "river_town_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": 40,
+            "y": -56
+          },
+          "max": {
+            "x": 102,
+            "y": 56
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 53,
+            "y": 55
+          },
+          "max": {
+            "x": 101,
+            "y": 75
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 102,
+            "y": -56
+          },
+          "max": {
+            "x": 122,
+            "y": -4
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 98,
+            "y": 12.25
+          },
+          "max": {
+            "x": 114,
+            "y": 26.75
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -98,
+            "y": 17
+          },
+          "max": {
+            "x": -44,
+            "y": 47
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -79,
+            "y": 10
+          },
+          "max": {
+            "x": -63,
+            "y": 22
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -115,
+            "y": -53
+          },
+          "max": {
+            "x": -35,
+            "y": -15
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -62,
+            "y": -21
+          },
+          "max": {
+            "x": -52,
+            "y": 1
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -91,
+            "y": -21
+          },
+          "max": {
+            "x": -81,
+            "y": 1
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -121,
+            "y": -8
+          },
+          "max": {
+            "x": 79,
+            "y": 8
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -116,
+            "y": 22.75
+          },
+          "max": {
+            "x": -102,
+            "y": 37.25
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -40,
+            "y": -15
+          },
+          "max": {
+            "x": 40,
+            "y": 15
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": 40,
+            "y": -56
+          },
+          "max": {
+            "x": 102,
+            "y": 56
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 53,
+            "y": 55
+          },
+          "max": {
+            "x": 101,
+            "y": 75
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 102,
+            "y": -56
+          },
+          "max": {
+            "x": 122,
+            "y": -4
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 98,
+            "y": 12.25
+          },
+          "max": {
+            "x": 114,
+            "y": 26.75
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -98,
+            "y": 17
+          },
+          "max": {
+            "x": -44,
+            "y": 47
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -79,
+            "y": 10
+          },
+          "max": {
+            "x": -63,
+            "y": 22
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -115,
+            "y": -53
+          },
+          "max": {
+            "x": -35,
+            "y": -15
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -62,
+            "y": -21
+          },
+          "max": {
+            "x": -52,
+            "y": 1
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -91,
+            "y": -21
+          },
+          "max": {
+            "x": -81,
+            "y": 1
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -121,
+            "y": -8
+          },
+          "max": {
+            "x": 79,
+            "y": 8
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -116,
+            "y": 22.75
+          },
+          "max": {
+            "x": -102,
+            "y": 37.25
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -40,
+            "y": -15
+          },
+          "max": {
+            "x": 40,
+            "y": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": "river_town_02",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": 37,
+            "y": -24
+          },
+          "max": {
+            "x": 85,
+            "y": 18
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 40,
+            "y": -50
+          },
+          "max": {
+            "x": 52,
+            "y": -22
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -95,
+            "y": -8
+          },
+          "max": {
+            "x": -41,
+            "y": 8
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -14,
+            "y": -14
+          },
+          "max": {
+            "x": 14,
+            "y": 14
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -84,
+            "y": 28
+          },
+          "max": {
+            "x": -76,
+            "y": 36
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -21,
+            "y": 10.5
+          },
+          "max": {
+            "x": -11,
+            "y": 15.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 11,
+            "y": -15.5
+          },
+          "max": {
+            "x": 21,
+            "y": -10.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -79,
+            "y": 17
+          },
+          "max": {
+            "x": -74,
+            "y": 22
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -64.5,
+            "y": -20.5
+          },
+          "max": {
+            "x": -59.5,
+            "y": -15.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": 37,
+            "y": -24
+          },
+          "max": {
+            "x": 85,
+            "y": 18
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 40,
+            "y": -50
+          },
+          "max": {
+            "x": 52,
+            "y": -22
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -95,
+            "y": -8
+          },
+          "max": {
+            "x": -41,
+            "y": 8
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -14,
+            "y": -14
+          },
+          "max": {
+            "x": 14,
+            "y": 14
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -84,
+            "y": 28
+          },
+          "max": {
+            "x": -76,
+            "y": 36
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -21,
+            "y": 10.5
+          },
+          "max": {
+            "x": -11,
+            "y": 15.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 11,
+            "y": -15.5
+          },
+          "max": {
+            "x": 21,
+            "y": -10.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -79,
+            "y": 17
+          },
+          "max": {
+            "x": -74,
+            "y": 22
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -64.5,
+            "y": -20.5
+          },
+          "max": {
+            "x": -59.5,
+            "y": -15.5
+          }
+        }
+      ]
+    },
+    {
       "id": "shilo_01",
       "field": "teamId",
       "original": "absent",
       "survev": 2
+    },
+    {
+      "id": "shilo_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -17,
+            "y": -16
+          },
+          "max": {
+            "x": 17,
+            "y": 14
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -17,
+            "y": -16
+          },
+          "max": {
+            "x": 17,
+            "y": 14
+          }
+        }
+      ]
+    },
+    {
+      "id": "outhouse_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -5.5,
+            "y": -5.1
+          },
+          "max": {
+            "x": 5.5,
+            "y": 7.9
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -5.5,
+            "y": -5.1
+          },
+          "max": {
+            "x": 5.5,
+            "y": 7.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "outhouse_01x",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -5.5,
+            "y": -5.1
+          },
+          "max": {
+            "x": 5.5,
+            "y": 7.9
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -5.5,
+            "y": -5.1
+          },
+          "max": {
+            "x": 5.5,
+            "y": 7.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "outhouse_02",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -5.5,
+            "y": -5.1
+          },
+          "max": {
+            "x": 5.5,
+            "y": 7.9
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -5.5,
+            "y": -5.1
+          },
+          "max": {
+            "x": 5.5,
+            "y": 7.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "perch_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": -8
+          },
+          "max": {
+            "x": 7,
+            "y": 8
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": -8
+          },
+          "max": {
+            "x": 7,
+            "y": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "barn_basement_structure_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -30,
+            "y": -30
+          },
+          "max": {
+            "x": 30,
+            "y": 30
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -30,
+            "y": -30
+          },
+          "max": {
+            "x": 30,
+            "y": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "barn_basement_structure_01d",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -30,
+            "y": -30
+          },
+          "max": {
+            "x": 30,
+            "y": 30
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -30,
+            "y": -30
+          },
+          "max": {
+            "x": 30,
+            "y": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "barn_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -28,
+            "y": -18.5
+          },
+          "max": {
+            "x": 28,
+            "y": 14.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": 9
+          },
+          "max": {
+            "x": 7,
+            "y": 19
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -28,
+            "y": -18.5
+          },
+          "max": {
+            "x": 28,
+            "y": 14.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": 9
+          },
+          "max": {
+            "x": 7,
+            "y": 19
+          }
+        }
+      ]
+    },
+    {
+      "id": "barn_01h",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -28,
+            "y": -18.5
+          },
+          "max": {
+            "x": 28,
+            "y": 14.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": 9
+          },
+          "max": {
+            "x": 7,
+            "y": 19
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -28,
+            "y": -18.5
+          },
+          "max": {
+            "x": 28,
+            "y": 14.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": 9
+          },
+          "max": {
+            "x": 7,
+            "y": 19
+          }
+        }
+      ]
+    },
+    {
+      "id": "barn_01x",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -28,
+            "y": -18.5
+          },
+          "max": {
+            "x": 28,
+            "y": 14.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": 9
+          },
+          "max": {
+            "x": 7,
+            "y": 19
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -28,
+            "y": -18.5
+          },
+          "max": {
+            "x": 28,
+            "y": 14.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": 9
+          },
+          "max": {
+            "x": 7,
+            "y": 19
+          }
+        }
+      ]
+    },
+    {
+      "id": "barn_02",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -28,
+            "y": -18.5
+          },
+          "max": {
+            "x": 28,
+            "y": 14.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": 9
+          },
+          "max": {
+            "x": 7,
+            "y": 19
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -28,
+            "y": -18.5
+          },
+          "max": {
+            "x": 28,
+            "y": 14.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": 9
+          },
+          "max": {
+            "x": 7,
+            "y": 19
+          }
+        }
+      ]
+    },
+    {
+      "id": "barn_02d",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -28,
+            "y": -18.5
+          },
+          "max": {
+            "x": 28,
+            "y": 14.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": 9
+          },
+          "max": {
+            "x": 7,
+            "y": 19
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -28,
+            "y": -18.5
+          },
+          "max": {
+            "x": 28,
+            "y": 14.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": 9
+          },
+          "max": {
+            "x": 7,
+            "y": 19
+          }
+        }
+      ]
     },
     {
       "id": "bank_01",
@@ -15703,10 +17646,165 @@
       "survev": 2
     },
     {
+      "id": "house_red_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -19,
+            "y": -17.5
+          },
+          "max": {
+            "x": 19,
+            "y": 17.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -19,
+            "y": -17.5
+          },
+          "max": {
+            "x": 19,
+            "y": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "house_red_01h",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -19,
+            "y": -17.5
+          },
+          "max": {
+            "x": 19,
+            "y": 17.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -19,
+            "y": -17.5
+          },
+          "max": {
+            "x": 19,
+            "y": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "house_red_02",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -19,
+            "y": -19.5
+          },
+          "max": {
+            "x": 19,
+            "y": 17.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -19,
+            "y": -19.5
+          },
+          "max": {
+            "x": 19,
+            "y": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "house_red_02h",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -19,
+            "y": -19.5
+          },
+          "max": {
+            "x": 19,
+            "y": 17.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -19,
+            "y": -19.5
+          },
+          "max": {
+            "x": 19,
+            "y": 17.5
+          }
+        }
+      ]
+    },
+    {
       "id": "mansion_structure_01",
       "field": "teamId",
       "original": "absent",
       "survev": 1
+    },
+    {
+      "id": "saloon_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -22.5,
+            "y": -22.5
+          },
+          "max": {
+            "x": 22.5,
+            "y": 22.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -22.5,
+            "y": -22.5
+          },
+          "max": {
+            "x": 22.5,
+            "y": 22.5
+          }
+        }
+      ]
     },
     {
       "id": "teapavilion_01",
@@ -15722,6 +17820,60 @@
       }
     },
     {
+      "id": "teapavilion_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -11,
+            "y": -11
+          },
+          "max": {
+            "x": 11,
+            "y": 11
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -4,
+            "y": -32
+          },
+          "max": {
+            "x": 4,
+            "y": -8
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -11,
+            "y": -11
+          },
+          "max": {
+            "x": 11,
+            "y": 11
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -4,
+            "y": -32
+          },
+          "max": {
+            "x": 4,
+            "y": -8
+          }
+        }
+      ]
+    },
+    {
       "id": "teapavilion_01w",
       "field": "terrain",
       "original": {
@@ -15735,6 +17887,432 @@
       }
     },
     {
+      "id": "teapavilion_01w",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -11,
+            "y": -11
+          },
+          "max": {
+            "x": 11,
+            "y": 11
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -4,
+            "y": -32
+          },
+          "max": {
+            "x": 4,
+            "y": -8
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -11,
+            "y": -11
+          },
+          "max": {
+            "x": 11,
+            "y": 11
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -4,
+            "y": -32
+          },
+          "max": {
+            "x": 4,
+            "y": -8
+          }
+        }
+      ]
+    },
+    {
+      "id": "teahouse_complex_01s",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -24,
+            "y": -18
+          },
+          "max": {
+            "x": 24,
+            "y": 18
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -24,
+            "y": -18
+          },
+          "max": {
+            "x": 24,
+            "y": 18
+          }
+        }
+      ]
+    },
+    {
+      "id": "teahouse_complex_01su",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -24,
+            "y": -18
+          },
+          "max": {
+            "x": 24,
+            "y": 18
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -24,
+            "y": -18
+          },
+          "max": {
+            "x": 24,
+            "y": 18
+          }
+        }
+      ]
+    },
+    {
+      "id": "savannah_patch_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -20,
+            "y": -16
+          },
+          "max": {
+            "x": 20,
+            "y": 16
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -20,
+            "y": -16
+          },
+          "max": {
+            "x": 20,
+            "y": 16
+          }
+        }
+      ]
+    },
+    {
+      "id": "kopje_patch_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -45,
+            "y": -35
+          },
+          "max": {
+            "x": 45,
+            "y": 35
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -45,
+            "y": -35
+          },
+          "max": {
+            "x": 45,
+            "y": 35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kopje_brush_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -18,
+            "y": -18
+          },
+          "max": {
+            "x": 18,
+            "y": 18
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -18,
+            "y": -18
+          },
+          "max": {
+            "x": 18,
+            "y": 18
+          }
+        }
+      ]
+    },
+    {
+      "id": "grassy_cover_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -10,
+            "y": -10
+          },
+          "max": {
+            "x": 10,
+            "y": 10
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -10,
+            "y": -10
+          },
+          "max": {
+            "x": 10,
+            "y": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "grassy_cover_02",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -10,
+            "y": -10
+          },
+          "max": {
+            "x": 10,
+            "y": 10
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -10,
+            "y": -10
+          },
+          "max": {
+            "x": 10,
+            "y": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "grassy_cover_03",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -10,
+            "y": -10
+          },
+          "max": {
+            "x": 10,
+            "y": 10
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -10,
+            "y": -10
+          },
+          "max": {
+            "x": 10,
+            "y": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "grassy_cover_complex_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -30,
+            "y": -10
+          },
+          "max": {
+            "x": 30,
+            "y": 10
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -30,
+            "y": -10
+          },
+          "max": {
+            "x": 30,
+            "y": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "brush_clump_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -17,
+            "y": -17
+          },
+          "max": {
+            "x": 17,
+            "y": 17
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -17,
+            "y": -17
+          },
+          "max": {
+            "x": 17,
+            "y": 17
+          }
+        }
+      ]
+    },
+    {
+      "id": "brush_clump_02",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -17,
+            "y": -17
+          },
+          "max": {
+            "x": 17,
+            "y": 17
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -17,
+            "y": -17
+          },
+          "max": {
+            "x": 17,
+            "y": 17
+          }
+        }
+      ]
+    },
+    {
+      "id": "brush_clump_03",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -17,
+            "y": -17
+          },
+          "max": {
+            "x": 17,
+            "y": 17
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -17,
+            "y": -17
+          },
+          "max": {
+            "x": 17,
+            "y": 17
+          }
+        }
+      ]
+    },
+    {
       "id": "teapavilion_complex_01",
       "field": "terrain",
       "original": {
@@ -15743,6 +18321,884 @@
       "survev": {
         "grass": true
       }
+    },
+    {
+      "id": "teapavilion_complex_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -14,
+            "y": -14
+          },
+          "max": {
+            "x": 14,
+            "y": 14
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -4,
+            "y": -32
+          },
+          "max": {
+            "x": 4,
+            "y": -8
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -14,
+            "y": -14
+          },
+          "max": {
+            "x": 14,
+            "y": 14
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -4,
+            "y": -32
+          },
+          "max": {
+            "x": 4,
+            "y": -8
+          }
+        }
+      ]
+    },
+    {
+      "id": "club_complex_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -35,
+            "y": 9
+          },
+          "max": {
+            "x": 3,
+            "y": 21
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -34.5,
+            "y": -43
+          },
+          "max": {
+            "x": 18.5,
+            "y": 12
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -12,
+            "y": -52
+          },
+          "max": {
+            "x": 8,
+            "y": -42
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -41,
+            "y": -31
+          },
+          "max": {
+            "x": -33,
+            "y": -21
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 15,
+            "y": -17
+          },
+          "max": {
+            "x": 31,
+            "y": 3
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 16,
+            "y": -41
+          },
+          "max": {
+            "x": 28,
+            "y": -17
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -36,
+            "y": -44
+          },
+          "max": {
+            "x": 20,
+            "y": -2
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -14,
+            "y": -12
+          },
+          "max": {
+            "x": 18,
+            "y": 12
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -20,
+            "y": -4
+          },
+          "max": {
+            "x": -12,
+            "y": 4
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -32,
+            "y": 9
+          },
+          "max": {
+            "x": -25,
+            "y": 16
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -35,
+            "y": 9
+          },
+          "max": {
+            "x": 3,
+            "y": 21
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -34.5,
+            "y": -43
+          },
+          "max": {
+            "x": 18.5,
+            "y": 12
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -12,
+            "y": -52
+          },
+          "max": {
+            "x": 8,
+            "y": -42
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -41,
+            "y": -31
+          },
+          "max": {
+            "x": -33,
+            "y": -21
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 15,
+            "y": -17
+          },
+          "max": {
+            "x": 31,
+            "y": 3
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 16,
+            "y": -41
+          },
+          "max": {
+            "x": 28,
+            "y": -17
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -36,
+            "y": -44
+          },
+          "max": {
+            "x": 20,
+            "y": -2
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -14,
+            "y": -12
+          },
+          "max": {
+            "x": 18,
+            "y": 12
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -20,
+            "y": -4
+          },
+          "max": {
+            "x": -12,
+            "y": 4
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -32,
+            "y": 9
+          },
+          "max": {
+            "x": -25,
+            "y": 16
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -12,
+            "y": -16
+          },
+          "max": {
+            "x": 12,
+            "y": 18
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -7.5,
+            "y": -7.5
+          },
+          "max": {
+            "x": 7.5,
+            "y": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_01b",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -12,
+            "y": -16
+          },
+          "max": {
+            "x": 12,
+            "y": 18
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -7.5,
+            "y": -7.5
+          },
+          "max": {
+            "x": 7.5,
+            "y": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_01sv",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -12,
+            "y": -16
+          },
+          "max": {
+            "x": 12,
+            "y": 18
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -7.5,
+            "y": -7.5
+          },
+          "max": {
+            "x": 7.5,
+            "y": 17.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_02",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": 9.5,
+            "y": -8
+          },
+          "max": {
+            "x": 41.5,
+            "y": 15
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -23.5,
+            "y": -97
+          },
+          "max": {
+            "x": -9.5,
+            "y": -82
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 33.5,
+            "y": -54.5
+          },
+          "max": {
+            "x": 46.5,
+            "y": -40
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 0.5,
+            "y": -51.5
+          },
+          "max": {
+            "x": 6.5,
+            "y": -45.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": 9.5,
+            "y": -8
+          },
+          "max": {
+            "x": 41.5,
+            "y": 15
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -23.5,
+            "y": -97
+          },
+          "max": {
+            "x": -9.5,
+            "y": -82
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 33.5,
+            "y": -54.5
+          },
+          "max": {
+            "x": 46.5,
+            "y": -40
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 0.5,
+            "y": -51.5
+          },
+          "max": {
+            "x": 6.5,
+            "y": -45.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_03",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -12.5,
+            "y": -16.5
+          },
+          "max": {
+            "x": 29.5,
+            "y": 22.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -7,
+            "y": -10.5
+          },
+          "max": {
+            "x": 7,
+            "y": 22.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_04",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": 11.5,
+            "y": -4.5
+          },
+          "max": {
+            "x": 30.5,
+            "y": 11.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 38,
+            "y": -40.5
+          },
+          "max": {
+            "x": 58,
+            "y": -24.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": 11.5,
+            "y": -4.5
+          },
+          "max": {
+            "x": 30.5,
+            "y": 11.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 38,
+            "y": -40.5
+          },
+          "max": {
+            "x": 58,
+            "y": -24.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_05",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": 29.5,
+            "y": 22.5
+          },
+          "max": {
+            "x": 41.5,
+            "y": 34.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -42,
+            "y": 13
+          },
+          "max": {
+            "x": -30,
+            "y": 25
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 30,
+            "y": -19
+          },
+          "max": {
+            "x": 42,
+            "y": -7
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -41.5,
+            "y": -28.5
+          },
+          "max": {
+            "x": -29.5,
+            "y": -16.5
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -6,
+            "y": -6
+          },
+          "max": {
+            "x": 6,
+            "y": 6
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": 29.5,
+            "y": 22.5
+          },
+          "max": {
+            "x": 41.5,
+            "y": 34.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -42,
+            "y": 13
+          },
+          "max": {
+            "x": -30,
+            "y": 25
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 30,
+            "y": -19
+          },
+          "max": {
+            "x": 42,
+            "y": -7
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -41.5,
+            "y": -28.5
+          },
+          "max": {
+            "x": -29.5,
+            "y": -16.5
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -6,
+            "y": -6
+          },
+          "max": {
+            "x": 6,
+            "y": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_06",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -6,
+            "y": -7.5
+          },
+          "max": {
+            "x": 8,
+            "y": 19.5
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -6,
+            "y": -7.5
+          },
+          "max": {
+            "x": 8,
+            "y": 19.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "bunker_structure_07",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -8,
+            "y": 2
+          },
+          "max": {
+            "x": 6,
+            "y": 14
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -42,
+            "y": -72
+          },
+          "max": {
+            "x": -38,
+            "y": -68
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 38,
+            "y": -72
+          },
+          "max": {
+            "x": 42,
+            "y": -68
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -2,
+            "y": -32
+          },
+          "max": {
+            "x": 2,
+            "y": -28
+          },
+          "height": 0
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 3,
+            "y": 21
+          },
+          "max": {
+            "x": 7,
+            "y": 25
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -8,
+            "y": 2
+          },
+          "max": {
+            "x": 6,
+            "y": 14
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -42,
+            "y": -72
+          },
+          "max": {
+            "x": -38,
+            "y": -68
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 38,
+            "y": -72
+          },
+          "max": {
+            "x": 42,
+            "y": -68
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": -2,
+            "y": -32
+          },
+          "max": {
+            "x": 2,
+            "y": -28
+          }
+        },
+        {
+          "type": 1,
+          "min": {
+            "x": 3,
+            "y": 21
+          },
+          "max": {
+            "x": 7,
+            "y": 25
+          }
+        }
+      ]
+    },
+    {
+      "id": "bridge_md_structure_01",
+      "field": "mapObstacleBounds",
+      "original": [
+        {
+          "type": 1,
+          "min": {
+            "x": -23,
+            "y": -7
+          },
+          "max": {
+            "x": 23,
+            "y": 7
+          },
+          "height": 0
+        }
+      ],
+      "survev": [
+        {
+          "type": 1,
+          "min": {
+            "x": -23,
+            "y": -7
+          },
+          "max": {
+            "x": 23,
+            "y": 7
+          }
+        }
+      ]
     }
   ],
   "survevValues": [
@@ -17362,6 +20818,1361 @@
       "field": "headshotMult",
       "original": 1.5,
       "survev": 1.25
+    }
+  ],
+  "survevMapValues": [
+    {
+      "id": "case_01",
+      "field": "loot",
+      "original": [
+        {
+          "type": "deagle",
+          "count": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "type": "deagle",
+          "count": 1,
+          "props": {
+            "preloadGuns": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "case_02",
+      "field": "loot",
+      "original": [
+        {
+          "type": "deagle",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "deagle",
+          "count": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "type": "deagle_dual",
+          "count": 1,
+          "props": {
+            "preloadGuns": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "chest_01",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_chest",
+          "min": 3,
+          "max": 4,
+          "props": {}
+        },
+        {
+          "tier": "tier_pirate_melee",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "outfitRoyalFortune",
+          "count": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_chest",
+          "min": 3,
+          "max": 4,
+          "props": {}
+        },
+        {
+          "tier": "tier_pirate_melee",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_pirate_outfits",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "switch_01",
+      "field": "explosion",
+      "original": "explosion_barrel",
+      "survev": ""
+    },
+    {
+      "id": "switch_01",
+      "field": "health",
+      "original": 250,
+      "survev": 100
+    },
+    {
+      "id": "crate_02sv",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_soviet",
+          "min": 4,
+          "max": 5,
+          "props": {}
+        },
+        {
+          "tier": "tier_world",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_soviet",
+          "min": 4,
+          "max": 5,
+          "props": {}
+        },
+        {
+          "tier": "tier_world",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_medical",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "crate_02sv_lake",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_soviet",
+          "min": 5,
+          "max": 6,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_soviet",
+          "min": 5,
+          "max": 6,
+          "props": {}
+        },
+        {
+          "tier": "tier_medical",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "crate_02f",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_guns",
+          "min": 3,
+          "max": 3,
+          "props": {}
+        },
+        {
+          "tier": "tier_armor",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "tier": "tier_packs",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_guns",
+          "min": 3,
+          "max": 3,
+          "props": {
+            "preloadGuns": true
+          }
+        },
+        {
+          "tier": "tier_armor",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "tier": "tier_packs",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "crate_02d",
+      "field": "loot",
+      "original": [
+        {
+          "type": "m1014",
+          "count": 1,
+          "props": 1
+        },
+        {
+          "type": "helmet03_lt_aged",
+          "count": 1,
+          "props": 1
+        },
+        {
+          "type": "outfitRedLeaderAged",
+          "count": 1,
+          "props": 1
+        },
+        {
+          "type": "machete_taiga",
+          "count": 1,
+          "props": 1
+        }
+      ],
+      "survev": [
+        {
+          "type": "m1014",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "helmet03_lt_aged",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "outfitRedLeaderAged",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "machete_taiga",
+          "count": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "crate_03",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_throwables",
+          "min": 2,
+          "max": 4,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_throwables",
+          "min": 2,
+          "max": 4,
+          "props": {}
+        },
+        {
+          "tier": "tier_fragtastic",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "crate_03x",
+      "field": "loot",
+      "original": [
+        {
+          "type": "snowball",
+          "count": 4,
+          "props": 4
+        },
+        {
+          "type": "snowball",
+          "count": 4,
+          "props": 4
+        },
+        {
+          "type": "snowball",
+          "count": 4,
+          "props": 4
+        }
+      ],
+      "survev": [
+        {
+          "type": "snowball",
+          "count": 4,
+          "props": {}
+        },
+        {
+          "type": "snowball",
+          "count": 4,
+          "props": {}
+        },
+        {
+          "type": "snowball",
+          "count": 4,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "crate_11sv",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_airdrop_rare",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_armor",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_medical",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_scopes",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_outfits",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_melee",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_ammo",
+          "min": 3,
+          "max": 3,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_throwables",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_perks",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_airdrop_rare",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "backpack04_cloud",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_medical",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_scopes",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_outfits",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_melee",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_ammo",
+          "min": 3,
+          "max": 3,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_throwables",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_perks",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "crate_12",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_airdrop_rare",
+          "min": 2,
+          "max": 2,
+          "props": {
+            "preloadGuns": true
+          }
+        },
+        {
+          "tier": "tier_airdrop_uncommon",
+          "min": 4,
+          "max": 6,
+          "props": {
+            "preloadGuns": true
+          }
+        },
+        {
+          "tier": "tier_airdrop_armor",
+          "min": 4,
+          "max": 5,
+          "props": {}
+        },
+        {
+          "tier": "tier_medical",
+          "min": 12,
+          "max": 15,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_scopes",
+          "min": 6,
+          "max": 8,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_outfits",
+          "min": 3,
+          "max": 4,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_melee",
+          "min": 5,
+          "max": 7,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_ammo",
+          "min": 10,
+          "max": 12,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_throwables",
+          "min": 6,
+          "max": 8,
+          "props": {}
+        },
+        {
+          "tier": "tier_katanas",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_airdrop_rare",
+          "min": 2,
+          "max": 2,
+          "props": {
+            "preloadGuns": true
+          }
+        },
+        {
+          "tier": "tier_airdrop_uncommon",
+          "min": 7,
+          "max": 8,
+          "props": {
+            "preloadGuns": true
+          }
+        },
+        {
+          "tier": "tier_airdrop_armor",
+          "min": 5,
+          "max": 6,
+          "props": {}
+        },
+        {
+          "tier": "tier_medical",
+          "min": 12,
+          "max": 15,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_scopes",
+          "min": 7,
+          "max": 8,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_outfits",
+          "min": 3,
+          "max": 4,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_melee",
+          "min": 6,
+          "max": 7,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_ammo",
+          "min": 10,
+          "max": 12,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_throwables",
+          "min": 6,
+          "max": 8,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "crate_13",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_airdrop_mythic",
+          "min": 3,
+          "max": 4,
+          "props": {
+            "preloadGuns": true
+          }
+        },
+        {
+          "tier": "tier_airdrop_rare",
+          "min": 3,
+          "max": 4,
+          "props": {
+            "preloadGuns": true
+          }
+        },
+        {
+          "tier": "tier_airdrop_armor",
+          "min": 6,
+          "max": 8,
+          "props": {}
+        },
+        {
+          "tier": "tier_medical",
+          "min": 12,
+          "max": 15,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_scopes",
+          "min": 6,
+          "max": 8,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_faction_outfits",
+          "min": 1,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_faction_melee",
+          "min": 3,
+          "max": 4,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_ammo",
+          "min": 10,
+          "max": 12,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_throwables",
+          "min": 6,
+          "max": 8,
+          "props": {}
+        },
+        {
+          "tier": "tier_katanas",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "strobe",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "strobe",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "strobe",
+          "count": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_airdrop_mythic",
+          "min": 3,
+          "max": 4,
+          "props": {
+            "preloadGuns": true
+          }
+        },
+        {
+          "tier": "tier_airdrop_rare",
+          "min": 5,
+          "max": 5,
+          "props": {
+            "preloadGuns": true
+          }
+        },
+        {
+          "tier": "tier_airdrop_armor",
+          "min": 6,
+          "max": 8,
+          "props": {}
+        },
+        {
+          "tier": "tier_medical",
+          "min": 12,
+          "max": 15,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_scopes",
+          "min": 7,
+          "max": 8,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_faction_outfits",
+          "min": 1,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_melee",
+          "min": 2,
+          "max": 3,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_faction_melee",
+          "min": 3,
+          "max": 3,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_ammo",
+          "min": 10,
+          "max": 12,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_throwables",
+          "min": 6,
+          "max": 8,
+          "props": {}
+        },
+        {
+          "type": "strobe",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "strobe",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "strobe",
+          "count": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "crate_22",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_guns",
+          "min": 3,
+          "max": 3,
+          "props": {}
+        },
+        {
+          "tier": "tier_armor",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "tier": "tier_packs",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_guns",
+          "min": 3,
+          "max": 3,
+          "props": {
+            "preloadGuns": true
+          }
+        },
+        {
+          "tier": "tier_armor",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "tier": "tier_packs",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "crate_22d",
+      "field": "loot",
+      "original": [
+        {
+          "type": "an94",
+          "count": 1,
+          "props": 1
+        },
+        {
+          "type": "helmet03_lt_aged",
+          "count": 1,
+          "props": 1
+        },
+        {
+          "type": "outfitBlueLeaderAged",
+          "count": 1,
+          "props": 1
+        },
+        {
+          "type": "kukri_trad",
+          "count": 1,
+          "props": 1
+        }
+      ],
+      "survev": [
+        {
+          "type": "an94",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "helmet03_lt_aged",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "outfitBlueLeaderAged",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "kukri_trad",
+          "count": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "class_crate_common_scout",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_guns_common_scout",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "crowbar_scout",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "helmet01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "backpack01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "soda",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "soda",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "soda",
+          "count": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_guns_common_scout",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "crowbar_scout",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "helmet01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "backpack01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "soda",
+          "count": 2,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "class_crate_common_healer",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_guns_common_healer",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "bonesaw_healer",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "helmet01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "backpack01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "healthkit",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "painkiller",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "smoke",
+          "count": 3,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_guns_common_healer",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "bonesaw_healer",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "helmet01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "backpack01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_health_healer",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "painkiller",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "smoke",
+          "count": 3,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "class_crate_common_demo",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_guns_common_demo",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "katana_demo",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "helmet01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "backpack02",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "mirv",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "mirv",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "mirv",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "mirv",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "mirv",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "mirv",
+          "count": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_guns_common_demo",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "katana_demo",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "helmet01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "chest01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "backpack02",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "2xscope",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_throwables_demo",
+          "min": 3,
+          "max": 4,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "class_crate_common_assault",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_guns_common_assault",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "type": "spade_assault",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "helmet01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "backpack01",
+          "count": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_guns_common_assault",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "type": "spade_assault",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "bandage",
+          "count": 5,
+          "props": {}
+        },
+        {
+          "type": "helmet01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "chest01",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "backpack01",
+          "count": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "class_crate_rare_demo",
+      "field": "loot",
+      "original": [
+        {
+          "tier": "tier_guns_rare_demo",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "katana_demo",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_armor",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_medical",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_scopes",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_ammo",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_throwables",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "tier": "tier_guns_rare_demo",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "type": "katana_demo",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_armor",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_medical",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_scopes",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_airdrop_ammo",
+          "min": 2,
+          "max": 2,
+          "props": {}
+        },
+        {
+          "tier": "tier_throwables_demo",
+          "min": 4,
+          "max": 5,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "mil_crate_03",
+      "field": "loot",
+      "original": [
+        {
+          "type": "ots38_dual",
+          "count": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "type": "ots38_dual",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "outfitSpetsnaz",
+          "count": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "locker_03",
+      "field": "loot",
+      "original": [
+        {
+          "type": "ak47",
+          "count": 1,
+          "props": 1
+        },
+        {
+          "type": "backpack02",
+          "count": 1,
+          "props": 1
+        }
+      ],
+      "survev": [
+        {
+          "type": "ak47",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "type": "backpack02",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_khaki_outfit",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "squash_01",
+      "field": "loot",
+      "original": [
+        {
+          "type": "turkey_shoot",
+          "count": 1,
+          "props": 1
+        },
+        {
+          "tier": "tier_fruit_xp",
+          "min": 1,
+          "max": 1,
+          "props": {}
+        }
+      ],
+      "survev": [
+        {
+          "type": "turkey_shoot",
+          "count": 1,
+          "props": {}
+        },
+        {
+          "tier": "tier_world",
+          "min": 0,
+          "max": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "silo_01po",
+      "field": "loot",
+      "original": [
+        {
+          "type": "potato_smg",
+          "count": 1,
+          "props": 1
+        }
+      ],
+      "survev": [
+        {
+          "type": "potato_smg",
+          "count": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "toilet_02b",
+      "field": "loot",
+      "original": [
+        {
+          "type": "fireaxe",
+          "count": 1,
+          "props": 1
+        }
+      ],
+      "survev": [
+        {
+          "type": "fireaxe",
+          "count": 1,
+          "props": {}
+        }
+      ]
+    },
+    {
+      "id": "cobalt_wall_int_4",
+      "field": "explosion",
+      "original": "absent",
+      "survev": "explosion_cobalt"
     }
   ],
   "lootRemovals": [
@@ -20659,8 +25470,6 @@
   ],
   "excluded": {
     "gameObjects": [
-      "shrapnel_cobalt",
-      "explosion_cobalt",
       "outfitHalloweenTree",
       "quest_top_duo",
       "quest_win_any",

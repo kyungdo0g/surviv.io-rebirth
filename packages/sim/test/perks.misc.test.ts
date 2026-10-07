@@ -231,4 +231,17 @@ describe("Spud Gun", () => {
         steps(game, 1000);
         expect(target.scale).toBe(1);
     });
+
+    it("never enlarges the shooter's teammates (survev explosion.ts:209-238, fork 0.2.31)", () => {
+        const { game, p } = setup();
+        const mate = spawnAt(game, v2.add(p.pos, { x: 30, y: 0 }));
+        mate.teamId = p.teamId;
+        game.explosions.add("explosion_potato_smgshot", mate.pos, 0, {
+            damageType: DamageType.Player,
+            sourceId: p.id,
+            gameSourceType: "potato_smg",
+        });
+        game.step();
+        expect(mate.scale).toBe(1);
+    });
 });

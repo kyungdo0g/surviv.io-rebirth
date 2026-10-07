@@ -7,8 +7,9 @@
 // vault opens to its planter puzzle only.
 import { DamageType } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { type Building, type Game, interactObstacle, type Obstacle } from "../src/index.ts";
+import { type Building, type Game, interactableObstacles, interactObstacle, type Obstacle } from "../src/index.ts";
 import { childObstacles, findBuilding, mapGame, placePlayer, stepSeconds } from "./buildingHelpers.ts";
+import { logExplosions } from "./fxHelpers.ts";
 
 /** The puzzle pieces of a building in child order (labels may repeat: the Reserve has two "2" switches). */
 function pieceList(game: Game, building: Building): Obstacle[] {
@@ -89,6 +90,29 @@ describe("the Chrysanthemum bunker's planter vault", () => {
     });
 });
 
+describe("the Twins bunker (survev balance)", () => {
+    // survev puzzles.ts bunker_twins; mapObstacleDefs cobalt_wall_int_4 explosion_cobalt (v0.3.13)
+    it("the class code blows the two inner walls, credited to the solver", () => {
+        const game = mapGame("cobalt", 1);
+        const room = findBuilding(game, "bunker_twins_sublevel_01");
+        const walls = childObstacles(game, room, "cobalt_wall_int_4");
+        expect(walls).toHaveLength(2);
+        const pieces = pieceList(game, room);
+        const p = placePlayer(game, room.pos, 1);
+        const log = logExplosions(game);
+        for (const label of ["scout", "sniper", "medic", "demo", "assault", "tank"]) {
+            interactObstacle(game, pieces.find((o) => o.puzzlePiece === label)!, p);
+            game.step();
+        }
+        expect(room.puzzle?.solved).toBe(true);
+        stepSeconds(game, 3);
+        for (const w of walls) expect(w.dead).toBe(true);
+        const blasts = log.filter((e) => e.type === "explosion_cobalt");
+        expect(blasts).toHaveLength(2);
+        expect(blasts.every((e) => e.sourceId === p.id)).toBe(true);
+    });
+});
+
 describe("heal regions, mounts and vats", () => {
     it("a snow camp's campfire heals 2 HP/s within 15 u", () => {
         const game = mapGame("snow", 1);
@@ -130,6 +154,24 @@ describe("heal regions, mounts and vats", () => {
         expect(p.perks).toHaveLength(1);
         stepSeconds(game, 0.5);
         expect(vat.dead).toBe(true);
+    });
+
+    it("a vat takes only a player standing fully inside it, and refuses one who is already Classless", () => {
+        const game = mapGame("cobalt", 1);
+        const compartment = findBuilding(game, "bunker_twins_compartment_01");
+        const [vat] = childObstacles(game, compartment, "vat_03");
+        // survev player.ts:3611-3619: distance + radius < interactionRad x scale
+        const p = placePlayer(game, vat.pos, 1);
+        expect(interactableObstacles(game, p)).toContain(vat);
+        game.teleportPlayer(p.id, { x: vat.pos.x + vat.interactionRad * vat.scale, y: vat.pos.y }, 1);
+        expect(interactableObstacles(game, p)).not.toContain(vat);
+        // survev obstacle.ts:711-718
+        game.teleportPlayer(p.id, vat.pos, 1);
+        p.awaitingClass = false;
+        game.roles.promote(p, "classless");
+        interactObstacle(game, vat, p);
+        stepSeconds(game, 0.5);
+        expect(vat.dead).toBe(false);
     });
 
     it("the Cloud bunker's panel closes and locks its lab doors for 10 s", () => {

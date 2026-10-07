@@ -32,6 +32,8 @@
         "high_velocity",
         "captain",
         "classless",
+        "explosion_cobalt",
+        "shrapnel_cobalt",
         "heal_diamond",
         "heal_ankh",
         "heal_menacing",
@@ -110,6 +112,7 @@
         "bunker_twins_compartment_01",
         "vault_door_chrys_01",
         "tree_01x",
-        "tree_13"
+        "tree_13",
+        "bunker_structure_09"
     ]
 }

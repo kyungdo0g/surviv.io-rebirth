@@ -15786,6 +15786,19 @@
     "tracerLength": 1.2,
     "skipCollision": true
   },
+  "shrapnel_cobalt": {
+    "type": "bullet",
+    "damage": 5,
+    "obstacleDamage": 0.1,
+    "falloff": 1,
+    "speed": 20,
+    "distance": 8,
+    "variance": 1.5,
+    "shrapnel": true,
+    "tracerColor": "shrapnel",
+    "tracerWidth": 0.15,
+    "tracerLength": 0.4
+  },
   "heal_diamond": {
     "type": "heal_effect",
     "name": "Crazy Diamond",
@@ -16156,6 +16169,19 @@
       "player-mash-05.img"
     ],
     "dropRandomLoot": 1
+  },
+  "explosion_cobalt": {
+    "type": "explosion",
+    "damage": 175,
+    "obstacleDamage": 1,
+    "rad": {
+      "min": 5,
+      "max": 8
+    },
+    "shrapnelCount": 20,
+    "shrapnelType": "shrapnel_cobalt",
+    "explosionEffectType": "barrel",
+    "decalType": "decal_barrel_explosion"
   },
   "backpack04": {
     "name": "Tactical Pack",

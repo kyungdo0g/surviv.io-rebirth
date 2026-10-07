@@ -1,7 +1,7 @@
 // Scheduled unlocks (M5b): MapDef gameConfig.unlocks opens the Cobalt twins bunker's locked doors one every
 // `stagger` seconds, `wait` seconds after the gas reaches the timing's circle, each with a ping_unlock marker. The
-// default rules use the original timing (circle 2 + 5 s, conflicts.md twins-unlock-time); `unlockOverrides = {}`
-// restores the ported def (survev's circle 1 + 30 s).
+// default rules follow the ported def (survev's circle 1 + 30 s, survev balance); `unlockOverrides` can restore the
+// original timing (circle 2 + 5 s, conflicts.md twins-unlock-time).
 import { GameConfig, type GasStage } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { Game, type Obstacle, unlockTimings } from "../src/index.ts";
@@ -23,19 +23,20 @@ function cobalt(): { game: Game; doors: Obstacle[] } {
 }
 
 describe("scheduled unlocks", () => {
-    it("use the original twins timing by default and the def timing without overrides", () => {
+    it("use survev's twins timing by default and the original one through the overrides", () => {
         const { game } = cobalt();
         expect(unlockTimings("cobalt", game.rules)).toEqual([
-            { type: "bunker_twins_sublevel_01", stagger: 0.2, circleIdx: 2, wait: 5 },
-        ]);
-        expect(unlockTimings("cobalt", { unlockOverrides: {} })).toEqual([
             { type: "bunker_twins_sublevel_01", stagger: 0.2, circleIdx: 1, wait: 30 },
         ]);
+        expect(
+            unlockTimings("cobalt", { unlockOverrides: { bunker_twins_sublevel_01: { circleIdx: 2, wait: 5 } } }),
+        ).toEqual([{ type: "bunker_twins_sublevel_01", stagger: 0.2, circleIdx: 2, wait: 5 }]);
         expect(unlockTimings("main", game.rules)).toEqual([]);
     });
 
     it("open the twins bunker's locked doors one by one, wait s after the circle starts, with pings", () => {
         const { game, doors } = cobalt();
+        game.rules.unlockOverrides = { bunker_twins_sublevel_01: { circleIdx: 2, wait: 5 } };
         expect(doors.length).toBe(4);
         for (const d of doors) expect(d.door).toMatchObject({ locked: true, open: false });
         const id = game.addPlayer("watcher");
@@ -58,9 +59,8 @@ describe("scheduled unlocks", () => {
         expect(pings.length).toBe(4);
     });
 
-    it("follow the def timing when the overrides are cleared", () => {
+    it("follow the def timing without overrides (the default)", () => {
         const { game, doors } = cobalt();
-        game.rules.unlockOverrides = {};
         game.addPlayer("watcher");
         game.rules.minActiveTime = 0;
         let circle1Tick = -1;

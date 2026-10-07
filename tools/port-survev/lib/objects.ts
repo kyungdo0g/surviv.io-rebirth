@@ -234,10 +234,11 @@ export function applySurvevGameplay(
     status: Readonly<Record<string, string>>,
     survev: Readonly<Record<string, any>>,
     skins: Readonly<Record<string, string>> = {},
+    table: Readonly<Record<string, readonly string[]>> = SURVEV_GAMEPLAY_FIELDS,
 ): GameplayChange[] {
     const changes: GameplayChange[] = [];
     for (const [id, def] of Object.entries(defs)) {
-        const fields = SURVEV_GAMEPLAY_FIELDS[def.type];
+        const fields = table[def.type];
         // a skin was built from its base's original def: it takes survev's skin values like the base does
         const eligible = status[id] === "original" || id in skins;
         if (!eligible || !fields || !(id in survev)) continue;
@@ -251,8 +252,16 @@ export function applySurvevGameplay(
     return changes;
 }
 
-/** Map-generation fields of a map object (survev map.ts canSpawn / genOnGrass read them). */
-const MAP_GEN_FIELDS = ["teamId", "terrain"] as const;
+/** Map-generation fields of a map object (survev map.ts canSpawn / genOnGrass / addBounds read them). */
+const MAP_GEN_FIELDS = ["teamId", "terrain", "mapObstacleBounds"] as const;
+
+/**
+ * Gameplay fields of map objects that take survev's value under option B (policy `survevBalance`): what an obstacle
+ * drops, how it explodes and its health (survev's loot additions and preloaded guns, the Twins puzzle wall's blast).
+ */
+export const SURVEV_MAP_GAMEPLAY_FIELDS: Readonly<Record<string, readonly string[]>> = {
+    obstacle: ["loot", "explosion", "health"],
+};
 
 export interface MapGenFieldChange {
     id: string;

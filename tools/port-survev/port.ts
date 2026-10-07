@@ -25,6 +25,7 @@ import {
     portGameConfig,
     portGameObjects,
     portMapObjects,
+    SURVEV_MAP_GAMEPLAY_FIELDS,
 } from "./lib/objects.ts";
 import { loadPolicy, portedSurvevIds } from "./lib/policy.ts";
 import { keepSurvevPlacements, restoreSurvevPlacements, splitMapGenEntries } from "./lib/survevLoot.ts";
@@ -119,6 +120,33 @@ const mapObjects = portMapObjects(
     gameObjects.defs,
     policy.survevMapObjects,
 );
+// survev balance (option B): original map objects take survev's loot, explosions and health (loot of items the port
+// does not take is dropped, as for survev-only map objects)
+const survevMapValues: ReturnType<typeof applySurvevGameplay> = [];
+if (policy.survevBalance) {
+    const changes = applySurvevGameplay(
+        mapObjects.defs,
+        mapObjects.status,
+        survev.mapObjects,
+        {},
+        SURVEV_MAP_GAMEPLAY_FIELDS,
+    );
+    for (const c of changes) {
+        const def = mapObjects.defs[c.id];
+        if (c.field !== "loot" || !Array.isArray(def.loot)) continue;
+        def.loot = def.loot.filter((l: any) => {
+            const bad = typeof l?.type === "string" && l.type !== "" && !(l.type in gameObjects.defs);
+            if (bad)
+                mapObjects.lootRemovals.push({
+                    mapObject: c.id,
+                    item: l.type,
+                    reason: "item not in the ported game objects",
+                });
+            return !bad;
+        });
+    }
+    survevMapValues.push(...changes);
+}
 // survev map generation: the original map objects take survev's faction sides and placement rules
 const mapGenFields = policy.survevMapGen
     ? applySurvevMapGenFields(mapObjects.defs, mapObjects.status, survev.mapObjects)
@@ -151,6 +179,7 @@ const provenance = {
     survevPlacements,
     survevMapGenFields: mapGenFields,
     survevValues,
+    survevMapValues,
     lootRemovals: [...lootRemovals, ...mapObjects.lootRemovals, ...roleOverrideRemovals],
     gameConfigDiffs: [
         ...gameConfig.diffs,

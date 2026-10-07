@@ -189,7 +189,8 @@ export function defaultRules(): SimRules {
         strobeRandomSide: false,
         brokenArrowAtPing: true,
         explosiveRoundsAltBullets: ["bullet_buckshot", "bullet_flechette", "bullet_frag", "bullet_birdshot"],
-        unlockOverrides: { bunker_twins_sublevel_01: { circleIdx: 2, wait: 5 } },
+        // survev balance: the def's survev timing (circle 1 + 30 s) applies (twins-unlock-time; original circle 2 + 5 s)
+        unlockOverrides: {},
         cullOtherFloors: true,
         bleedEscalation: "linear",
         downedDamageBuffer: GameConfig.player.downedDamageBuffer,

@@ -1570,7 +1570,9 @@
       {
         "type": "deagle",
         "count": 1,
-        "props": {}
+        "props": {
+          "preloadGuns": true
+        }
       }
     ],
     "map": {
@@ -1626,14 +1628,11 @@
     "reflectBullets": false,
     "loot": [
       {
-        "type": "deagle",
+        "type": "deagle_dual",
         "count": 1,
-        "props": {}
-      },
-      {
-        "type": "deagle",
-        "count": 1,
-        "props": {}
+        "props": {
+          "preloadGuns": true
+        }
       }
     ],
     "map": {
@@ -2020,8 +2019,9 @@
         "props": {}
       },
       {
-        "type": "outfitRoyalFortune",
-        "count": 1,
+        "tier": "tier_pirate_outfits",
+        "min": 1,
+        "max": 1,
         "props": {}
       }
     ],
@@ -2249,8 +2249,7 @@
         "max": {
           "x": 2.25,
           "y": 2.4000000000000004
-        },
-        "height": 0
+        }
       }
     ]
   },
@@ -2325,8 +2324,7 @@
         "max": {
           "x": 2.25,
           "y": 2.4000000000000004
-        },
-        "height": 0
+        }
       }
     ]
   },
@@ -2406,8 +2404,7 @@
         "max": {
           "x": 2.25,
           "y": 2.4000000000000004
-        },
-        "height": 0
+        }
       }
     ]
   },
@@ -2487,8 +2484,7 @@
         "max": {
           "x": 2.25,
           "y": 2.4000000000000004
-        },
-        "height": 0
+        }
       }
     ]
   },
@@ -2568,8 +2564,7 @@
         "max": {
           "x": 2.25,
           "y": 2.4000000000000004
-        },
-        "height": 0
+        }
       }
     ]
   },
@@ -3098,8 +3093,8 @@
     "height": 0.5,
     "collidable": true,
     "destructible": false,
-    "explosion": "explosion_barrel",
-    "health": 250,
+    "explosion": "",
+    "health": 100,
     "hitParticle": "barrelChip",
     "explodeParticle": "depositBoxGreyBreak",
     "reflectBullets": true,
@@ -3700,6 +3695,12 @@
         "min": 1,
         "max": 1,
         "props": {}
+      },
+      {
+        "tier": "tier_medical",
+        "min": 1,
+        "max": 1,
+        "props": {}
       }
     ],
     "map": {
@@ -3759,6 +3760,12 @@
         "tier": "tier_soviet",
         "min": 5,
         "max": 6,
+        "props": {}
+      },
+      {
+        "tier": "tier_medical",
+        "min": 1,
+        "max": 1,
         "props": {}
       }
     ],
@@ -3879,7 +3886,9 @@
         "tier": "tier_guns",
         "min": 3,
         "max": 3,
-        "props": {}
+        "props": {
+          "preloadGuns": true
+        }
       },
       {
         "tier": "tier_armor",
@@ -3952,22 +3961,22 @@
       {
         "type": "m1014",
         "count": 1,
-        "props": 1
+        "props": {}
       },
       {
         "type": "helmet03_lt_aged",
         "count": 1,
-        "props": 1
+        "props": {}
       },
       {
         "type": "outfitRedLeaderAged",
         "count": 1,
-        "props": 1
+        "props": {}
       },
       {
         "type": "machete_taiga",
         "count": 1,
-        "props": 1
+        "props": {}
       }
     ],
     "map": {
@@ -4027,6 +4036,12 @@
         "tier": "tier_throwables",
         "min": 2,
         "max": 4,
+        "props": {}
+      },
+      {
+        "tier": "tier_fragtastic",
+        "min": 1,
+        "max": 1,
         "props": {}
       }
     ],
@@ -4088,17 +4103,17 @@
       {
         "type": "snowball",
         "count": 4,
-        "props": 4
+        "props": {}
       },
       {
         "type": "snowball",
         "count": 4,
-        "props": 4
+        "props": {}
       },
       {
         "type": "snowball",
         "count": 4,
-        "props": 4
+        "props": {}
       }
     ],
     "map": {
@@ -5206,9 +5221,8 @@
         "props": {}
       },
       {
-        "tier": "tier_airdrop_armor",
-        "min": 1,
-        "max": 1,
+        "type": "backpack04_cloud",
+        "count": 1,
         "props": {}
       },
       {
@@ -5533,16 +5547,16 @@
       },
       {
         "tier": "tier_airdrop_uncommon",
-        "min": 4,
-        "max": 6,
+        "min": 7,
+        "max": 8,
         "props": {
           "preloadGuns": true
         }
       },
       {
         "tier": "tier_airdrop_armor",
-        "min": 4,
-        "max": 5,
+        "min": 5,
+        "max": 6,
         "props": {}
       },
       {
@@ -5553,7 +5567,7 @@
       },
       {
         "tier": "tier_airdrop_scopes",
-        "min": 6,
+        "min": 7,
         "max": 8,
         "props": {}
       },
@@ -5565,7 +5579,7 @@
       },
       {
         "tier": "tier_airdrop_melee",
-        "min": 5,
+        "min": 6,
         "max": 7,
         "props": {}
       },
@@ -5579,12 +5593,6 @@
         "tier": "tier_airdrop_throwables",
         "min": 6,
         "max": 8,
-        "props": {}
-      },
-      {
-        "tier": "tier_katanas",
-        "min": 1,
-        "max": 1,
         "props": {}
       }
     ],
@@ -5651,8 +5659,8 @@
       },
       {
         "tier": "tier_airdrop_rare",
-        "min": 3,
-        "max": 4,
+        "min": 5,
+        "max": 5,
         "props": {
           "preloadGuns": true
         }
@@ -5671,7 +5679,7 @@
       },
       {
         "tier": "tier_airdrop_scopes",
-        "min": 6,
+        "min": 7,
         "max": 8,
         "props": {}
       },
@@ -5682,9 +5690,15 @@
         "props": {}
       },
       {
+        "tier": "tier_airdrop_melee",
+        "min": 2,
+        "max": 3,
+        "props": {}
+      },
+      {
         "tier": "tier_airdrop_faction_melee",
         "min": 3,
-        "max": 4,
+        "max": 3,
         "props": {}
       },
       {
@@ -5697,12 +5711,6 @@
         "tier": "tier_airdrop_throwables",
         "min": 6,
         "max": 8,
-        "props": {}
-      },
-      {
-        "tier": "tier_katanas",
-        "min": 1,
-        "max": 1,
         "props": {}
       },
       {
@@ -6378,7 +6386,9 @@
         "tier": "tier_guns",
         "min": 3,
         "max": 3,
-        "props": {}
+        "props": {
+          "preloadGuns": true
+        }
       },
       {
         "tier": "tier_armor",
@@ -6451,22 +6461,22 @@
       {
         "type": "an94",
         "count": 1,
-        "props": 1
+        "props": {}
       },
       {
         "type": "helmet03_lt_aged",
         "count": 1,
-        "props": 1
+        "props": {}
       },
       {
         "type": "outfitBlueLeaderAged",
         "count": 1,
-        "props": 1
+        "props": {}
       },
       {
         "type": "kukri_trad",
         "count": 1,
-        "props": 1
+        "props": {}
       }
     ],
     "map": {
@@ -7741,17 +7751,7 @@
       },
       {
         "type": "soda",
-        "count": 1,
-        "props": {}
-      },
-      {
-        "type": "soda",
-        "count": 1,
-        "props": {}
-      },
-      {
-        "type": "soda",
-        "count": 1,
+        "count": 2,
         "props": {}
       }
     ],
@@ -7900,8 +7900,9 @@
         "props": {}
       },
       {
-        "type": "healthkit",
-        "count": 1,
+        "tier": "tier_health_healer",
+        "min": 1,
+        "max": 1,
         "props": {}
       },
       {
@@ -7980,38 +7981,24 @@
         "props": {}
       },
       {
+        "type": "chest01",
+        "count": 1,
+        "props": {}
+      },
+      {
         "type": "backpack02",
         "count": 1,
         "props": {}
       },
       {
-        "type": "mirv",
+        "type": "2xscope",
         "count": 1,
         "props": {}
       },
       {
-        "type": "mirv",
-        "count": 1,
-        "props": {}
-      },
-      {
-        "type": "mirv",
-        "count": 1,
-        "props": {}
-      },
-      {
-        "type": "mirv",
-        "count": 1,
-        "props": {}
-      },
-      {
-        "type": "mirv",
-        "count": 1,
-        "props": {}
-      },
-      {
-        "type": "mirv",
-        "count": 1,
+        "tier": "tier_throwables_demo",
+        "min": 3,
+        "max": 4,
         "props": {}
       }
     ],
@@ -8075,7 +8062,17 @@
         "props": {}
       },
       {
+        "type": "bandage",
+        "count": 5,
+        "props": {}
+      },
+      {
         "type": "helmet01",
+        "count": 1,
+        "props": {}
+      },
+      {
+        "type": "chest01",
         "count": 1,
         "props": {}
       },
@@ -8514,9 +8511,9 @@
         "props": {}
       },
       {
-        "tier": "tier_airdrop_throwables",
-        "min": 1,
-        "max": 1,
+        "tier": "tier_throwables_demo",
+        "min": 4,
+        "max": 5,
         "props": {}
       }
     ],
@@ -8942,6 +8939,11 @@
     "loot": [
       {
         "type": "ots38_dual",
+        "count": 1,
+        "props": {}
+      },
+      {
+        "type": "outfitSpetsnaz",
         "count": 1,
         "props": {}
       }
@@ -10677,12 +10679,18 @@
       {
         "type": "ak47",
         "count": 1,
-        "props": 1
+        "props": {}
       },
       {
         "type": "backpack02",
         "count": 1,
-        "props": 1
+        "props": {}
+      },
+      {
+        "tier": "tier_khaki_outfit",
+        "min": 1,
+        "max": 1,
+        "props": {}
       }
     ],
     "lootSpawn": {
@@ -12055,11 +12063,11 @@
       {
         "type": "turkey_shoot",
         "count": 1,
-        "props": 1
+        "props": {}
       },
       {
-        "tier": "tier_fruit_xp",
-        "min": 1,
+        "tier": "tier_world",
+        "min": 0,
         "max": 1,
         "props": {}
       }
@@ -13333,7 +13341,7 @@
       {
         "type": "potato_smg",
         "count": 1,
-        "props": 1
+        "props": {}
       }
     ],
     "map": {
@@ -15001,7 +15009,7 @@
       {
         "type": "fireaxe",
         "count": 1,
-        "props": 1
+        "props": {}
       }
     ],
     "map": {
@@ -19187,8 +19195,7 @@
         "max": {
           "x": 15,
           "y": 25
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -19199,8 +19206,7 @@
         "max": {
           "x": -12.5,
           "y": 13.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -19211,8 +19217,7 @@
         "max": {
           "x": 22,
           "y": -4.5
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -19666,8 +19671,7 @@
         "max": {
           "x": 15,
           "y": 25
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -19678,8 +19682,7 @@
         "max": {
           "x": -12.5,
           "y": 13.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -19690,8 +19693,7 @@
         "max": {
           "x": 22,
           "y": -4.5
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -22625,8 +22627,7 @@
         "max": {
           "x": 20,
           "y": 20
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -22712,8 +22713,7 @@
         "max": {
           "x": 20,
           "y": 20
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -25346,8 +25346,7 @@
         "max": {
           "x": 35,
           "y": 16
-        },
-        "height": 0
+        }
       }
     ],
     "floor": {
@@ -25718,8 +25717,7 @@
         "max": {
           "x": 35,
           "y": 16
-        },
-        "height": 0
+        }
       }
     ],
     "floor": {
@@ -26091,8 +26089,7 @@
         "max": {
           "x": 35,
           "y": 16
-        },
-        "height": 0
+        }
       }
     ],
     "floor": {
@@ -26463,8 +26460,7 @@
         "max": {
           "x": 35,
           "y": 16
-        },
-        "height": 0
+        }
       }
     ],
     "floor": {
@@ -27861,8 +27857,7 @@
         "max": {
           "x": 73,
           "y": 78
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -27873,8 +27868,7 @@
         "max": {
           "x": 73,
           "y": 63
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -27885,8 +27879,7 @@
         "max": {
           "x": 108,
           "y": 42
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -27897,8 +27890,7 @@
         "max": {
           "x": 52,
           "y": -20
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -28847,8 +28839,7 @@
         "max": {
           "x": 55,
           "y": 46
-        },
-        "height": 0
+        }
       }
     ],
     "bridgeLandBounds": [
@@ -29501,8 +29492,7 @@
         "max": {
           "x": 55,
           "y": 46
-        },
-        "height": 0
+        }
       }
     ],
     "bridgeLandBounds": [
@@ -30157,8 +30147,7 @@
         "max": {
           "x": 55,
           "y": 46
-        },
-        "height": 0
+        }
       }
     ],
     "bridgeLandBounds": [
@@ -30810,8 +30799,7 @@
           "x": 0,
           "y": 0
         },
-        "rad": 40,
-        "height": 0
+        "rad": 40
       }
     ],
     "mapGroundPatches": [
@@ -30987,8 +30975,7 @@
           "x": 0,
           "y": 0
         },
-        "rad": 40,
-        "height": 0
+        "rad": 40
       }
     ],
     "mapGroundPatches": [
@@ -31166,8 +31153,7 @@
           "x": 0,
           "y": 0
         },
-        "rad": 40,
-        "height": 0
+        "rad": 40
       }
     ],
     "mapGroundPatches": [
@@ -31344,8 +31330,7 @@
           "x": 0,
           "y": 0
         },
-        "rad": 32,
-        "height": 0
+        "rad": 32
       }
     ],
     "mapGroundPatches": [
@@ -31446,8 +31431,7 @@
           "x": 0,
           "y": 0
         },
-        "rad": 37,
-        "height": 0
+        "rad": 37
       }
     ],
     "mapGroundPatches": [
@@ -32204,8 +32188,7 @@
         "max": {
           "x": 65,
           "y": 102
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -32216,8 +32199,7 @@
         "max": {
           "x": 20,
           "y": 120
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -32228,8 +32210,7 @@
         "max": {
           "x": -50,
           "y": 45
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -33599,8 +33580,7 @@
         "max": {
           "x": 7.5,
           "y": 17.5
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -33881,8 +33861,7 @@
         "max": {
           "x": 7.5,
           "y": 17.5
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -34109,8 +34088,7 @@
         "max": {
           "x": 102,
           "y": 56
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34121,8 +34099,7 @@
         "max": {
           "x": 101,
           "y": 75
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34133,8 +34110,7 @@
         "max": {
           "x": 122,
           "y": -4
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34145,8 +34121,7 @@
         "max": {
           "x": 114,
           "y": 26.75
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34157,8 +34132,7 @@
         "max": {
           "x": -44,
           "y": 47
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34169,8 +34143,7 @@
         "max": {
           "x": -63,
           "y": 22
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34181,8 +34154,7 @@
         "max": {
           "x": -35,
           "y": -15
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34193,8 +34165,7 @@
         "max": {
           "x": -52,
           "y": 1
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34205,8 +34176,7 @@
         "max": {
           "x": -81,
           "y": 1
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34217,8 +34187,7 @@
         "max": {
           "x": 79,
           "y": 8
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34229,8 +34198,7 @@
         "max": {
           "x": -102,
           "y": 37.25
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34241,8 +34209,7 @@
         "max": {
           "x": 40,
           "y": 15
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -34735,8 +34702,7 @@
         "max": {
           "x": 85,
           "y": 18
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34747,8 +34713,7 @@
         "max": {
           "x": 52,
           "y": -22
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34759,8 +34724,7 @@
         "max": {
           "x": -41,
           "y": 8
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34771,8 +34735,7 @@
         "max": {
           "x": 14,
           "y": 14
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34783,8 +34746,7 @@
         "max": {
           "x": -76,
           "y": 36
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34795,8 +34757,7 @@
         "max": {
           "x": -11,
           "y": 15.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34807,8 +34768,7 @@
         "max": {
           "x": 21,
           "y": -10.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34819,8 +34779,7 @@
         "max": {
           "x": -74,
           "y": 22
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -34831,8 +34790,7 @@
         "max": {
           "x": -59.5,
           "y": -15.5
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -36215,8 +36173,7 @@
         "max": {
           "x": 17,
           "y": 14
-        },
-        "height": 0
+        }
       }
     ],
     "floor": {
@@ -37813,8 +37770,7 @@
         "max": {
           "x": 5.5,
           "y": 7.9
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -37972,8 +37928,7 @@
         "max": {
           "x": 5.5,
           "y": 7.9
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -38142,8 +38097,7 @@
         "max": {
           "x": 5.5,
           "y": 7.9
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -38299,8 +38253,7 @@
         "max": {
           "x": 7,
           "y": 8
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -45403,8 +45356,7 @@
         "max": {
           "x": 30,
           "y": 30
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -45488,8 +45440,7 @@
         "max": {
           "x": 30,
           "y": 30
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -46108,8 +46059,7 @@
         "max": {
           "x": 28,
           "y": 14.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -46120,8 +46070,7 @@
         "max": {
           "x": 7,
           "y": 19
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -46889,8 +46838,7 @@
         "max": {
           "x": 28,
           "y": 14.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -46901,8 +46849,7 @@
         "max": {
           "x": 7,
           "y": 19
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -47671,8 +47618,7 @@
         "max": {
           "x": 28,
           "y": 14.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -47683,8 +47629,7 @@
         "max": {
           "x": 7,
           "y": 19
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -48486,8 +48431,7 @@
         "max": {
           "x": 28,
           "y": 14.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -48498,8 +48442,7 @@
         "max": {
           "x": 7,
           "y": 19
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -49269,8 +49212,7 @@
         "max": {
           "x": 28,
           "y": 14.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -49281,8 +49223,7 @@
         "max": {
           "x": 7,
           "y": 19
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -56035,8 +55976,7 @@
         "max": {
           "x": 19,
           "y": 17.5
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -56567,8 +56507,7 @@
         "max": {
           "x": 19,
           "y": 17.5
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -57653,8 +57592,7 @@
         "max": {
           "x": 19,
           "y": 17.5
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -58257,8 +58195,7 @@
         "max": {
           "x": 19,
           "y": 17.5
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -67970,8 +67907,7 @@
         "max": {
           "x": 22.5,
           "y": 22.5
-        },
-        "height": 0
+        }
       }
     ],
     "zIdx": 1,
@@ -69944,8 +69880,7 @@
         "max": {
           "x": 11,
           "y": 11
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -69956,8 +69891,7 @@
         "max": {
           "x": 4,
           "y": -8
-        },
-        "height": 0
+        }
       }
     ],
     "ori": 0,
@@ -70213,8 +70147,7 @@
         "max": {
           "x": 11,
           "y": 11
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -70225,8 +70158,7 @@
         "max": {
           "x": 4,
           "y": -8
-        },
-        "height": 0
+        }
       }
     ],
     "ori": 0,
@@ -70439,8 +70371,7 @@
         "max": {
           "x": 24,
           "y": 18
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -70611,8 +70542,7 @@
         "max": {
           "x": 24,
           "y": 18
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -70775,8 +70705,7 @@
         "max": {
           "x": 20,
           "y": 16
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -70966,8 +70895,7 @@
         "max": {
           "x": 45,
           "y": 35
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -71282,8 +71210,7 @@
         "max": {
           "x": 18,
           "y": 18
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [],
@@ -71520,8 +71447,7 @@
         "max": {
           "x": 10,
           "y": 10
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -71619,8 +71545,7 @@
         "max": {
           "x": 10,
           "y": 10
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -71718,8 +71643,7 @@
         "max": {
           "x": 10,
           "y": 10
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -71817,8 +71741,7 @@
         "max": {
           "x": 30,
           "y": 10
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [],
@@ -71897,8 +71820,7 @@
         "max": {
           "x": 17,
           "y": 17
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [],
@@ -72173,8 +72095,7 @@
         "max": {
           "x": 17,
           "y": 17
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [],
@@ -72436,8 +72357,7 @@
         "max": {
           "x": 17,
           "y": 17
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [],
@@ -72633,8 +72553,7 @@
         "max": {
           "x": 14,
           "y": 14
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -72645,8 +72564,7 @@
         "max": {
           "x": 4,
           "y": -8
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [
@@ -76568,8 +76486,7 @@
         "max": {
           "x": 3,
           "y": 21
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -76580,8 +76497,7 @@
         "max": {
           "x": 18.5,
           "y": 12
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -76592,8 +76508,7 @@
         "max": {
           "x": 8,
           "y": -42
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -76604,8 +76519,7 @@
         "max": {
           "x": -33,
           "y": -21
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -76616,8 +76530,7 @@
         "max": {
           "x": 31,
           "y": 3
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -76628,8 +76541,7 @@
         "max": {
           "x": 28,
           "y": -17
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -76640,8 +76552,7 @@
         "max": {
           "x": 20,
           "y": -2
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -76652,8 +76563,7 @@
         "max": {
           "x": 18,
           "y": 12
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -76664,8 +76574,7 @@
         "max": {
           "x": -12,
           "y": 4
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -76676,8 +76585,7 @@
         "max": {
           "x": -25,
           "y": 16
-        },
-        "height": 0
+        }
       }
     ],
     "mapGroundPatches": [],
@@ -77436,14 +77344,13 @@
       {
         "type": 1,
         "min": {
-          "x": -12,
-          "y": -16
+          "x": -7.5,
+          "y": -7.5
         },
         "max": {
-          "x": 12,
-          "y": 18
-        },
-        "height": 0
+          "x": 7.5,
+          "y": 17.5
+        }
       }
     ],
     "layers": [
@@ -77509,14 +77416,13 @@
       {
         "type": 1,
         "min": {
-          "x": -12,
-          "y": -16
+          "x": -7.5,
+          "y": -7.5
         },
         "max": {
-          "x": 12,
-          "y": 18
-        },
-        "height": 0
+          "x": 7.5,
+          "y": 17.5
+        }
       }
     ],
     "layers": [
@@ -77582,14 +77488,13 @@
       {
         "type": 1,
         "min": {
-          "x": -12,
-          "y": -16
+          "x": -7.5,
+          "y": -7.5
         },
         "max": {
-          "x": 12,
-          "y": 18
-        },
-        "height": 0
+          "x": 7.5,
+          "y": 17.5
+        }
       }
     ],
     "layers": [
@@ -79634,8 +79539,7 @@
         "max": {
           "x": 41.5,
           "y": 15
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -79646,8 +79550,7 @@
         "max": {
           "x": -9.5,
           "y": -82
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -79658,8 +79561,7 @@
         "max": {
           "x": 46.5,
           "y": -40
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -79670,8 +79572,7 @@
         "max": {
           "x": 6.5,
           "y": -45.5
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -80432,14 +80333,13 @@
       {
         "type": 1,
         "min": {
-          "x": -12.5,
-          "y": -16.5
+          "x": -7,
+          "y": -10.5
         },
         "max": {
-          "x": 29.5,
+          "x": 7,
           "y": 22.5
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -81501,8 +81401,7 @@
         "max": {
           "x": 30.5,
           "y": 11.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -81513,8 +81412,7 @@
         "max": {
           "x": 58,
           "y": -24.5
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -83044,8 +82942,7 @@
         "max": {
           "x": 41.5,
           "y": 34.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -83056,8 +82953,7 @@
         "max": {
           "x": -30,
           "y": 25
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -83068,8 +82964,7 @@
         "max": {
           "x": 42,
           "y": -7
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -83080,8 +82975,7 @@
         "max": {
           "x": -29.5,
           "y": -16.5
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -83092,8 +82986,7 @@
         "max": {
           "x": 6,
           "y": 6
-        },
-        "height": 0
+        }
       }
     ],
     "bridgeLandBounds": [
@@ -84637,8 +84530,7 @@
         "max": {
           "x": 8,
           "y": 19.5
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -85550,8 +85442,7 @@
         "max": {
           "x": 6,
           "y": 14
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -85562,8 +85453,7 @@
         "max": {
           "x": -38,
           "y": -68
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -85574,8 +85464,7 @@
         "max": {
           "x": 42,
           "y": -68
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -85586,8 +85475,7 @@
         "max": {
           "x": 2,
           "y": -28
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -85598,8 +85486,7 @@
         "max": {
           "x": 7,
           "y": 25
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -85918,7 +85805,8 @@
     "extents": {
       "x": 0.6,
       "y": 2
-    }
+    },
+    "explosion": "explosion_cobalt"
   },
   "bunker_twins_sublevel_01": {
     "type": "building",
@@ -86574,26 +86462,24 @@
       {
         "type": 1,
         "min": {
-          "x": 1.5,
+          "x": -2.5,
           "y": 9.4
         },
         "max": {
-          "x": 8.5,
+          "x": 4.5,
           "y": 21.4
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
         "min": {
-          "x": -8.5,
+          "x": -4.5,
           "y": -21.4
         },
         "max": {
-          "x": -1.5,
+          "x": 2.5,
           "y": -9.4
-        },
-        "height": 0
+        }
       },
       {
         "type": 1,
@@ -86603,9 +86489,8 @@
         },
         "max": {
           "x": 26.5,
-          "y": 3.5
-        },
-        "height": 0
+          "y": 8.5
+        }
       },
       {
         "type": 1,
@@ -86616,8 +86501,29 @@
         "max": {
           "x": -14.5,
           "y": 3.5
+        }
+      },
+      {
+        "type": 1,
+        "min": {
+          "x": 2,
+          "y": -18.25
         },
-        "height": 0
+        "max": {
+          "x": 14,
+          "y": -6.25
+        }
+      },
+      {
+        "type": 1,
+        "min": {
+          "x": -18,
+          "y": 2.5
+        },
+        "max": {
+          "x": -6,
+          "y": 14.5
+        }
       },
       {
         "type": 1,
@@ -86628,8 +86534,7 @@
         "max": {
           "x": 2.5,
           "y": 2.5
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [
@@ -86655,14 +86560,13 @@
         "collision": {
           "type": 1,
           "min": {
-            "x": 3,
+            "x": -1,
             "y": 11.8
           },
           "max": {
-            "x": 7,
+            "x": 3,
             "y": 17
-          },
-          "height": 0
+          }
         },
         "downDir": {
           "x": 0,
@@ -86673,14 +86577,13 @@
         "collision": {
           "type": 1,
           "min": {
-            "x": -7,
+            "x": -3,
             "y": -17
           },
           "max": {
-            "x": -3,
+            "x": 1,
             "y": -11.8
-          },
-          "height": 0
+          }
         },
         "downDir": {
           "x": 0,
@@ -86697,8 +86600,7 @@
           "max": {
             "x": 22.1,
             "y": 2
-          },
-          "height": 0
+          }
         },
         "downDir": {
           "x": -1,
@@ -86715,8 +86617,7 @@
           "max": {
             "x": -16.9,
             "y": 2
-          },
-          "height": 0
+          }
         },
         "downDir": {
           "x": 1,
@@ -86734,8 +86635,7 @@
         "max": {
           "x": 16.75,
           "y": 11.75
-        },
-        "height": 0
+        }
       }
     ]
   },
@@ -88969,8 +88869,7 @@
         "max": {
           "x": 23,
           "y": 7
-        },
-        "height": 0
+        }
       }
     ],
     "layers": [

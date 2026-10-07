@@ -59,8 +59,13 @@ describe("original client values", () => {
                 .filter(Boolean)
                 .reduce((a, k) => (a == null ? undefined : a[k]), o);
         let checked = 0;
-        // survev map generation: survev's faction sides and placement rules (provenance survevMapGenFields)
-        const mapGenFields = new Set(provenance.survevMapGenFields.map((c: any) => `${c.id}.${c.field}`));
+        // survev map generation and balance: survev's placement rules, loot, explosions and health (provenance
+        // survevMapGenFields, survevMapValues)
+        const mapGenFields = new Set(
+            [...provenance.survevMapGenFields, ...(provenance.survevMapValues ?? [])].map(
+                (c: any) => `${c.id}.${c.field}`,
+            ),
+        );
         // survev balance: survev's gameplay fields (provenance survevValues)
         const gameplay = new Set((provenance.survevValues ?? []).map((c: any) => `${c.id}.${c.field}`));
         for (const [defs, list] of [
@@ -114,9 +119,10 @@ describe.skipIf(!live)("generated defs equal the original client defs", () => {
         const ids = Object.keys(live.mapObjects);
         expect(Object.keys(mapObjects).slice(0, ids.length)).toEqual(ids);
         const overrides = new Set<string>(portPolicy.survevMapObjects);
-        // survev map generation: survev's `teamId` / `terrain` (provenance survevMapGenFields), else the original's
+        // survev map generation and balance (provenance survevMapGenFields, survevMapValues), else the original's
         const mapGen = new Map<string, any[]>();
-        for (const c of provenance.survevMapGenFields) mapGen.set(c.id, [...(mapGen.get(c.id) ?? []), c]);
+        for (const c of [...provenance.survevMapGenFields, ...(provenance.survevMapValues ?? [])])
+            mapGen.set(c.id, [...(mapGen.get(c.id) ?? []), c]);
         for (const id of ids) {
             if (overrides.has(id)) {
                 expect(provenance.mapObjects[id], id).toBe("survev-override");

@@ -232,13 +232,14 @@ export class ExplosionSystem {
         }
         // teammates of the source take no damage: the player damage pipeline drops teammate hits (potato explosions'
         // teamDamage false is informational, explosions.md "Friendly fire and credit")
-        // Spud Gun shots enlarge the target, teammates too (survev explosion.ts incrementFat; throwables.md)
-        if (obj.kind === "player" && e.type === "explosion_potato_smgshot") incrementFat(obj);
         // snowball / potato hits slow enemies and make them drop an item before the damage (M7b, modes/frozen.ts)
         if (obj.kind === "player") {
             const source = e.source.sourceId ? this.host.getPlayer(e.source.sourceId) : undefined;
+            const teammate = !!source && source.teamId === obj.teamId;
+            // Spud Gun shots enlarge enemies only (survev explosion.ts:209-238, fork 0.2.31; throwables.md)
+            if (e.type === "explosion_potato_smgshot" && !teammate) incrementFat(obj);
             // coconuts heal the thrower's side instead of hurting it (survev explosion.ts:214-220, healAmount 7)
-            if (e.def.healTeam && source && source.teamId === obj.teamId) {
+            if (e.def.healTeam && teammate) {
                 if (!obj.dead) obj.health = Math.min(obj.health + (e.def.healAmount ?? 5), 100);
                 obj.healEffectTicker = HEAL_EFFECT_TIME;
                 return;

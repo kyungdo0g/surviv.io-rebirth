@@ -8,10 +8,10 @@ import { cachedMap, objectsHash } from "./helpers.ts";
 
 /**
  * Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. Last change: the
- * survev content wave takes survev's tree_13 palm (beach only, survev's size and collision; policy survevMapObjects),
- * after stage 3 took survev's map generation (policy survevMapGen).
+ * survev content wave gives the original bunkers survev's smaller mapObstacleBounds (tools/port-survev MAP_GEN_FIELDS),
+ * after taking survev's tree_13 palm and, in stage 3, survev's map generation (policy survevMapGen).
  */
-const MAIN_12345_HASH = "e6817bd488ca1b1a";
+const MAIN_12345_HASH = "ce7c0c634070da85";
 
 /** Area an object reserves against other top-level objects (what canSpawn tests against). */
 function footprints(o: GeneratedObject): Collider[] {

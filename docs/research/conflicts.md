@@ -1150,6 +1150,7 @@
 - H (modes/cobalt.md): v0.8.82 doors open at about 0:45 left in the circle-2 wait (wait ≈ 5–6 s) [src:fandom/Twins_Bunker] [src:fandom/Cobalt_Map] [src:namu/Surviv.io/이벤트] [M]
 - I (modes/cobalt.md): fork circle 1 + 30 s [src:survev/shared/defs/maps/cobaltDefs.ts:45-54] [H]
 - proposed resolution: circleIdx 2 with a 5 s wait (survev pre-fork; fandom "0:45 in the third cooldown"), as a knob; survev's circle 1 + 30 s behind a fork flag [src:fandom/Twins_Bunker] [src:derived/git-ae55c9a8] [M]
+- in the game since the survev content wave's stage 5 (survev balance): survev's circle 1 + 30 s (`rules.unlockOverrides` empty; the original timing is one override away) [src:derived/readme-precedence] [H]
 - files: `maps/bunkers.md` (`twins-unlock-time`), `maps/puzzles.md` (`twins-unlock-timing`), `mechanics/doors-layers-ceilings.md` (`twins-bunker-unlock-time`), `modes/cobalt.md` (`cobalt-twins-unlock`) [src:derived/kb-crossref] [H]
 
 ## egg-cobalt-odds

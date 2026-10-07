@@ -104,6 +104,15 @@ may not touch, the schema number used and open questions.
   weighted explosives every 10 s. 50v50 outfits with a `teamId` fit their faction only (`loot/pickup.ts
   wearableOutfit`). Each knob stays in `rules` / `rules.perks`; `conflicts.md` notes the survev resolution under each
   conflict. The original perk descriptions stay (Fabricate's "fill your pack with frag grenades" is now loose).
+- 5c (from the wiki description audit, second half): original obstacles take survev's `loot`, `explosion` and
+  `health` (`lib/objects.ts SURVEV_MAP_GAMEPLAY_FIELDS`, provenance `survevMapValues`; loot of unported items
+  dropped); `mapObstacleBounds` joins the map-generation fields; `bunker_structure_09` is survev's (its stairs match the
+  survev Twins stairs we already took); `explosion_cobalt` / `shrapnel_cobalt` ported, so the Twins walls blow when the
+  class code is entered. Sim: Augmenting Vat needs the player fully inside and refuses a Classless player; Spud Gun
+  hits no longer enlarge teammates; Cobalt's unlock follows the def (`rules.unlockOverrides` empty). Client minimap:
+  an object is drawn only when its own `map.display` is set, as its `map.displayType` (survev's map message rule; the
+  children of a disguised building are still drawn: our map message carries no parent ids). main 12345 golden
+  `ce7c0c634070da85`; `combatViews.test.ts` finds an outdoor spot instead of a fixed one.
 - Oracle fixtures regenerated with the new defs (`tools/oracle`); main golden unchanged.
 - Tests changed: `original-values.test.ts` (original presentation + survev gameplay, each survev value checked against
   the original it replaced), `integrity.test.ts` (weighted role perks, role kits), `survevGuns.test.ts` (defs: winter
@@ -205,7 +214,7 @@ already recorded in `docs/research/conflicts.md#survev-throwable-cookable`.
 ### 4. Bot tests broken by survev's map generation (stage 3) — `packages/bots/test/**` (lead-owned, not touched)
 
 survev's map generation moves every object of `main` seed 12345 (golden hash `555953c84482c164` -> `7f48d105692eadcd`,
-then `e856eb5e71684e02` and `e6817bd488ca1b1a` in later stages; the ids below still hold),
+then `e856eb5e71684e02`, `e6817bd488ca1b1a` and `ce7c0c634070da85` in later stages; the ids below still hold),
 so the bot tests that pin object ids or coordinates of that map fail:
 - `walk.test.ts`, `nav.test.ts`, `nav.follower.test.ts`: `house_red_02` id 1391 no longer exists. The main 12345
   `house_red_02`s are now ids 1402 (610.1, 583.7, ori 0), 1440 (491.3, 144.5, ori 1) and 1478 (127.3, 501.2, ori 3).
