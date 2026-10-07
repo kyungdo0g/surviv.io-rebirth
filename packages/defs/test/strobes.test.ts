@@ -97,8 +97,9 @@ describe("the strobe (survev master, survev.wiki.gg)", () => {
 describe("variant strobes (rebirth)", () => {
     it("come after the other rebirth-only ids with their pings", () => {
         expect(VARIANTS).toEqual(["strobe_heavy", "strobe_carpet"]);
-        expect(rebirthOnlyIds.slice(2)).toEqual([...VARIANTS, "ping_airstrike_heavy", "ping_airstrike_carpet"]);
-        const last = GameObjectRegistry.typeToId("explosion_bomb_heavy");
+        // after the air strike shell and the beta new guns (rebirth/newGuns.ts)
+        expect(rebirthOnlyIds.slice(-4)).toEqual([...VARIANTS, "ping_airstrike_heavy", "ping_airstrike_carpet"]);
+        const last = GameObjectRegistry.typeToId(rebirthOnlyIds[rebirthOnlyIds.length - 5]);
         expect(VARIANTS.map((id) => GameObjectRegistry.typeToId(id))).toEqual([last + 1, last + 2]);
     });
 
@@ -164,7 +165,8 @@ describe("variant strobes (rebirth)", () => {
         const items = Object.keys(GameConfig.bagSizes);
         expect(items.slice(-2)).toEqual([...VARIANTS]);
         for (const id of VARIANTS) expect(GameConfig.bagSizes[id]).toEqual(GameConfig.bagSizes.strobe);
-        expect(items.indexOf("strobe")).toBe(10);
+        // after the 8 original ammo rows, the beta's 40mm / rocket / 57mm rows, frag and smoke
+        expect(items.indexOf("strobe")).toBe(13);
     });
 });
 

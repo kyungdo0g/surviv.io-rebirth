@@ -3,7 +3,9 @@
 // pixel resolution. SVGs are rasterized once per id at a resolution that matches their on-screen size at the reference
 // zoom, so small sprites stay cheap and large ones stay sharp; PNGs (the original v0.8.82 atlas frames, stored at their
 // atlas scale) are used at their own resolution, or shrunk when that is more than the sprite needs, never enlarged.
-// Missing sprites get a loud placeholder and are recorded in `window.__rebirth.missingSprites`.
+// Missing sprites get a loud placeholder and are recorded in `window.__rebirth.missingSprites`, unless their manifest
+// entry names a fallback sprite (the rebirth's new-gun loot icons when the owner's art is not installed): that one is
+// drawn instead and the id is recorded in `window.__rebirth.spriteFallbacks`.
 // Rebirth: `greySpriteId(id)` names a greyscale copy of a sprite (made once from its texture), so a tint replaces the
 // sprite's colours instead of multiplying them (the variant strobes' yellow-green art in their red / magenta).
 import { ImageSource, type Sprite, Texture } from "pixi.js";
@@ -166,7 +168,14 @@ export class TextureStore {
         return promise;
     }
 
-    private markMissing(id: string, reason: string): Texture {
+    private markMissing(id: string, reason: string): Promise<Texture> | Texture {
+        const fallback = SPRITES[id]?.fallback;
+        if (fallback && fallback !== id) {
+            const globals = debugGlobals();
+            globals.spriteFallbacks ??= [];
+            (globals.spriteFallbacks as string[]).push(id);
+            return this.load(fallback, 1);
+        }
         if (!this.missing.includes(id)) {
             this.missing.push(id);
             console.warn(`sprite ${id}: ${reason}`);

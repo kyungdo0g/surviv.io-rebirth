@@ -8,7 +8,9 @@
 //   zoom, debug is in the query (e.g. /?sandbox=1&map=<name>&seed=<n>). Debug: &debug=1 shows the HUD (F3 toggles it),
 //   &zoom=<radius> overrides the camera zoom radius. Sandbox: &dummies=<n> standing dummies in front of the player,
 //   &loot=0 removes the map loot, &give=<id,...> guns with full ammo and bag items (throwables, heals, boosts, scopes)
-//   filled to capacity, the first gun or throwable equipped. &lang=ko Korean HUD.
+//   filled to capacity, the first gun or throwable equipped (any gun id, the new beta guns included: give=dshk,rpg7).
+//   &beta=1 turns on the new-gun beta (the server's GUN_BETA: new and survev-only guns as common floor loot).
+//   &lang=ko Korean HUD.
 //   Match (M4): the loopback runs a sandbox match (starts at once, never ends) unless &sandbox=0 (a real match: two
 //   players alive for 10 s start it, the last one alive wins); &gas=fast uses a shortened red-zone stage table.
 //   Teams (M6): &team=2|4 makes the loopback a duo / squad game with &teammates=<n> idle teammates in the local
@@ -45,6 +47,7 @@ const SANDBOX_KEYS = [
     "seed",
     "map",
     "give",
+    "beta",
     "dummies",
     "loot",
     "team",
@@ -118,6 +121,7 @@ async function main() {
         dummies: Math.max(0, Math.min(16, Math.floor(Number(route.get("dummies") ?? 0) || 0))),
         loot: route.get("loot") !== "0",
         give: route.get("give") ?? undefined,
+        gunBeta: route.get("beta") === "1",
         sandbox: route.get("sandbox") !== "0",
         gas: route.get("gas") ?? undefined,
         teamMode: teamModeOf(route.get("team")),

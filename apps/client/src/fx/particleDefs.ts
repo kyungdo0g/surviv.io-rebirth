@@ -128,6 +128,13 @@ export const PARTICLE_DEFS: Readonly<Record<string, ParticleDef>> = {
     // the potato cannon / spud gun drop a potato wedge, the bugle a music note
     potato_ammo: { ...shell("part-wedge-01.img", [0.5, 0.75], [3, 4], PI * 3, 0.07, 0.04, 0.95), color: 0xffffff },
     bugle_ammo: { ...shell("part-note-02.img", [1.25, 1.3], [3, 4], PI, 0.1, 0.14, 0.5), color: 0xffda00 },
+    // the rebirth's new ammo and single-use guns (beta): the original casing of the nearest calibre
+    "40mm": shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
+    rocket: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
+    "57mm": shell("part-shell-04.img", [0.75, 1], [1.5, 2.5], PI * 2.5, 0.075, 0.045, 0.925),
+    boys_ammo: shell("part-shell-02.img", [0.75, 1], [1.5, 2.5], PI * 2.5, 0.075, 0.045, 0.925),
+    panzerfaust_ammo: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
+    m202_ammo: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
     bloodSplat: {
         image: ["part-splat-01.img", "part-splat-02.img", "part-splat-03.img"],
         life: 0.5,

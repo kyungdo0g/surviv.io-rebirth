@@ -369,6 +369,9 @@ export class Player implements InventoryOwner {
         if (def.type === "gun" && this.hasPerk("small_arms")) equipSpeed = perks?.smallArmsGunEquipSpeed ?? 1;
         if (equip && this.weaponManager.meleeAttacks.length === 0) speed += equipSpeed;
         if (this.shotSlowdownTimer > 0 && def.speed?.attack !== undefined) speed += def.speed.attack;
+        // rebirth new guns: a heavy gun slows its carrier while it sits in either gun slot, summed over both, held or
+        // not (DShK carry -2; docs/design/new-gun-stats.md 4.1); Small Arms changes only the equip term
+        if (!this.downed) speed += this.carrySpeed();
         // One With Nature: faster in water instead of slower (perks.md tree_climbing)
         if (world.isOnWater(this.pos, this.layer)) {
             speed += this.hasPerk("tree_climbing") ? (perks?.treeClimbingWaterSpeed ?? 2) : -PLAYER.waterSpeedPenalty;
@@ -383,6 +386,15 @@ export class Player implements InventoryOwner {
         if (this.shotSlowdownTimer > 0 || busy || (reviver && !survevReviver)) speed *= BUSY_SPEED_MULT;
         if (medic) speed += this.ctx?.rules.fieldMedicSpeedBonus ?? FIELD_MEDIC_SPEED;
         return math.clamp(speed, 1, 10000);
+    }
+
+    /** Sum of the `speed.carry` of the guns in both gun slots (rebirth new guns; 0 without a heavy gun). */
+    carrySpeed(): number {
+        const w = this.weaponManager.weapons;
+        return (
+            (gunDef(w[WeaponSlot.Primary].type)?.speed.carry ?? 0) +
+            (gunDef(w[WeaponSlot.Secondary].type)?.speed.carry ?? 0)
+        );
     }
 
     /**

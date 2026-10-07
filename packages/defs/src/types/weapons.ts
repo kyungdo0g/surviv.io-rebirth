@@ -22,6 +22,12 @@ export interface BulletDef {
     skipCollision?: boolean;
     /** explosion id spawned where the bullet hits */
     onHit?: string;
+    /** rebirth (new guns): never ricochets, explodes on metal like on anything else (rockets, the GL-06 round) */
+    noReflect?: boolean;
+    /** rebirth (new guns): the onHit explosion is a dud when the bullet stops before travelling this far */
+    armDistance?: number;
+    /** rebirth (new guns): no ±1 range jitter (as SimRules.noDistAdjBullets) */
+    noDistAdj?: boolean;
 }
 
 export type FireMode = "auto" | "single" | "burst";
@@ -50,7 +56,8 @@ export interface GunDef extends BaseWeaponDef {
     /** bullet fired instead of bulletType when the matching bonus perk (bonus_9mm, bonus_45) is active */
     bulletTypeBonus?: string;
     headshotMult: number;
-    speed: { equip: number; attack: number };
+    /** rebirth (new guns): `carry` applies while the gun sits in either gun slot, summed over both (DShK) */
+    speed: { equip: number; attack: number; carry?: number };
     worldImg: {
         sprite: string;
         scale: Vec2;
@@ -84,6 +91,8 @@ export interface GunDef extends BaseWeaponDef {
         shootAlt?: string;
         reloadAlt?: string;
         fallOff?: number;
+        /** rebirth (new guns): plays when a single-use gun is discarded */
+        discard?: string;
     };
     pullDelay?: number;
     isDual?: boolean;
@@ -110,6 +119,19 @@ export interface GunDef extends BaseWeaponDef {
     toMouseHit?: boolean;
     /** minigun hold pose (survev PMG-134) */
     isMinigun?: boolean;
+    /**
+     * rebirth (new guns, docs/design/new-gun-stats.md 4.2): shots the gun carries; it is never reloaded and its ammo
+     * is pseudo ammo with no bag row (boys_ammo, panzerfaust_ammo, m202_ammo). maxClip = extendedClip = charges.
+     */
+    charges?: number;
+    /** rebirth (new guns): the empty gun leaves its slot fireDelay after its last shot */
+    discardWhenEmpty?: boolean;
+    /** rebirth (new guns, DP-12): shots between pumps; shots inside a pair wait fireDelay */
+    pumpEvery?: number;
+    /** rebirth (new guns, DP-12): the wait after the pumpEvery-th shot (sound.cycle) */
+    pumpDelay?: number;
+    /** rebirth (new guns): spawns only from gold drops; never potato-swapped or role-rolled */
+    goldOnly?: boolean;
 }
 
 export interface MeleeImg {

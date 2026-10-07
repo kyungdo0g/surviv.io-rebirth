@@ -105,9 +105,18 @@ const ROWS: readonly Row[] = [
     // survev-only guns (est.): the Barrett one-shots like the AWM-S family and drops from the classic map's gold drop;
     // the ASh-12 (31 dmg auto .50) out-trades the SCAR-H up close; the SPAS-16 is a full-auto SPAS-12; the IMD-2 a
     // light LMG; the S&W 500 a slow .50 revolver
-    ["barrett", "S-aim", 0.16, true], ["ash12", "A+", 0.42, false], ["spas16", "A", 0.66, false],
+    ["barrett", "S-aim", 0.16, true], ["ash12", "A+", 0.42, false], ["spas16", "A", 0.66, true],
     ["imbel", "A-", 0.5, false], ["sw500", "B+", 0.45, false],
     ["svd_winter", "A", 0.3, false], ["sv98_winter", "A+", 0.28, false], ["awc_winter", "S-aim", 0.14, false],
+    // the owner's beta guns (docs/design/new-gun-stats.md; all est. from their class and the sheet's stats and tier)
+    ["ak74", "B", 0.45, true], ["g36c", "B", 0.47, true], ["m16a4", "A-", 0.4, true], ["sig550", "B+", 0.42, true],
+    ["g3", "B+", 0.42, true], ["honeybadger", "A-", 0.45, true],
+    ["fal", "B+", 0.32, true], ["mk14", "A", 0.3, true], ["wa2000", "A+", 0.24, true],
+    ["m200", "S-aim", 0.15, true], ["hecate", "S-aim", 0.13, true], ["lynx", "S-aim", 0.16, true], ["boys", "A", 0.2, true],
+    ["m60", "A", 0.5, true], ["mg42", "A+", 0.5, true], ["dshk", "S", 0.5, true],
+    ["bizon", "B", 0.6, true], ["m1928", "B", 0.6, false], ["asval", "B+", 0.55, true], ["p90", "A-", 0.55, true],
+    ["dp12", "A", 0.66, true], ["aa12", "A+", 0.6, true],
+    ["tec9", "C+", 0.62, true], ["tec9_dual", "B-", 0.58, true], ["vz61", "C+", 0.62, true], ["vz61_dual", "B-", 0.58, true],
 ];
 
 const TIERS = new Map<string, GunTierInfo>();
@@ -120,6 +129,9 @@ function kbClass(id: string): WeaponClass | undefined {
     if (c === undefined) return undefined;
     if (c === "assault") return "rifle";
     if (c === "special") return "useless";
+    // the rebirth beta launchers (M79, MGL, GL-06, RPG-7, Panzerfaust, M202) until bots learn to aim lobbed and slow
+    // explosive rounds (bot round 6): useless to them, like the potato guns
+    if (c === "launcher") return "useless";
     return c;
 }
 

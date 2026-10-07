@@ -1,9 +1,13 @@
 // The generated sprite manifest (tools/assets/import.ts): sprite id ("map-tree-01.img") -> file, source and the size the
-// definitions' sprite scales are relative to.
+// definitions' sprite scales are relative to; plus the beta new guns' loot icons (rebirthSprites.ts).
 import manifestJson from "../generated/sprite-manifest.json";
+import { rebirthSpriteEntries } from "./rebirthSprites.ts";
 
-/** "original-0.8.82": a frame of the original client's atlases; "none": the original names it but ships no image */
-export type SpriteSource = "original-0.8.82" | "survev" | "fandom" | "none";
+/**
+ * "original-0.8.82": a frame of the original client's atlases; "none": the original names it but ships no image;
+ * "rebirth": the owner's art for a rebirth-only item (tools/assets/newGuns.ts), with an original `fallback`
+ */
+export type SpriteSource = "original-0.8.82" | "survev" | "fandom" | "none" | "rebirth";
 
 export interface SpriteEntry {
     readonly source: SpriteSource;
@@ -16,9 +20,14 @@ export interface SpriteEntry {
     readonly size?: readonly [number, number];
     /** survev's vector file of the same sprite, for DOM images (the original HUD loaded img/loot/*.svg files) */
     readonly svg?: string;
+    /** sprite drawn instead when this one's file fails to load (rebirth art not installed) */
+    readonly fallback?: string;
 }
 
-export const SPRITES = manifestJson as unknown as Readonly<Record<string, SpriteEntry>>;
+export const SPRITES: Readonly<Record<string, SpriteEntry>> = {
+    ...(manifestJson as unknown as Record<string, SpriteEntry>),
+    ...rebirthSpriteEntries(),
+};
 
 /** File of sprite `id` under /assets/, or undefined when the manifest has no image for it. */
 export function spritePath(id: string): string | undefined {
