@@ -37,6 +37,11 @@ describe("JOIN_MIN_ALIVE", () => {
 
         const bob = await HeadlessClient.join({ baseUrl: server.url, name: "bob" });
         clients.push(bob);
-        expect(roomOf(server, bob.joined!.playerId)).not.toBe(room);
+        // player ids repeat across games, so find bob's game by name
+        const bobRoom = [...server.host.rooms.values()].find((r) =>
+            [...r.game.players()].some((q) => q.name === "bob"),
+        );
+        expect(bobRoom).toBeDefined();
+        expect(bobRoom).not.toBe(room);
     });
 });
