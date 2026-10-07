@@ -2,7 +2,8 @@
 // container to 0.4 of its worth and loot to half: a crate an unarmed bot was punching dropped under the cutoff when an
 // unarmed player walked into view far away, and the bot wandered off mid-crate (critique C1: 35 of 41 and 53 of 71
 // enemies that interrupted a break were unarmed). Now only a threat damps: an armed enemy that shot lately, is within
-// its gun's reach of the bot, or faces it; an unarmed one only within punching distance.
+// its gun's reach of the bot, or faces it; an unarmed one only within punching distance, and with BrainFeatures.pursuit
+// never (round 5, user report 35: fists against fists is a fight or nothing, brain/fists.ts).
 import { v2 } from "@rebirth/core";
 import type { Contact } from "../perception/world.ts";
 import { enemyGun, faces } from "./assess.ts";
@@ -21,7 +22,9 @@ export function threatening(ctx: BrainCtx, e: Contact): boolean {
     if (!e.visible || e.downed || e.teammate) return false;
     const d = v2.distance(e.pos, ctx.self.pos);
     const gun = enemyGun(ctx, e);
-    if (!gun) return d < FIST_THREAT;
+    // (round 5, report 35: an unarmed one is fought or left be, brain/fists.ts; it no longer chases the bot off its
+    // loot and out of the house it sweeps)
+    if (!gun) return !ctx.features.pursuit && d < FIST_THREAT;
     if (ctx.now - e.lastShotAt < SHOT_RECENT) return true;
     if (d <= Math.min(gun.range, gun.maxEngage)) return true;
     return d < FACING_DIST && faces(e, ctx.self.pos, FACING_DEG);

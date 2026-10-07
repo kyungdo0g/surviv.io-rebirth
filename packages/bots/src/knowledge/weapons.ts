@@ -38,6 +38,26 @@ export interface GunInfo {
 /** Guns bots never pick up: no damage (flare gun, bugle, potato guns) or ammo outside the bag. */
 const USELESS = new Set(["flare_gun", "flare_gun_dual", "bugle", "potato_cannon", "potato_smg", "m9_cursed"]);
 
+/**
+ * Guns whose damage is in a projectile's explosion, not in their bullet (round 5, user report 34): the PMG-134 fires
+ * two 0-damage carrier bullets per shot (bulletCount 2), each launching a potato (potato_lmgshot) that explodes for
+ * explosion_potato_lmgshot's 8.5 (sim weapons/gun.ts: 8.5 x 2 every 0.07 s); a potato flies about 70 units. The reach
+ * of the flight per gun.
+ */
+const PROJECTILE_GUNS: Readonly<Record<string, { range: number }>> = {
+    potato_lmg: { range: 70 },
+};
+
+/** Damage and speed of the projectile a gun fires (its explosion def's damage, its throw speed), or null. */
+function projectileOf(def: GunDef): { damage: number; speed: number } | null {
+    const projType = (def as GunDef & { projType?: string }).projType;
+    if (!projType || !hasDef(projType)) return null;
+    const p = GameObjectDefs[projType] as { explosionType?: string; throwPhysics?: { speed?: number } };
+    const ex =
+        p.explosionType && hasDef(p.explosionType) ? (GameObjectDefs[p.explosionType] as { damage?: number }) : null;
+    return ex?.damage ? { damage: ex.damage, speed: p.throwPhysics?.speed ?? 100 } : null;
+}
+
 const cache = new Map<string, GunInfo | null>();
 
 function classify(id: string, def: GunDef, range: number): WeaponClass {
@@ -75,8 +95,15 @@ export function gunInfo(id: string): GunInfo | undefined {
     const bullet = hasDef(def.bulletType)
         ? (GameObjectDefs[def.bulletType] as { damage?: number; distance?: number; speed?: number })
         : {};
-    const damage = bullet.damage ?? 0;
-    const range = bullet.distance ?? 0;
+    let damage = bullet.damage ?? 0;
+    let range = bullet.distance ?? 0;
+    let bulletSpeed = bullet.speed ?? 100;
+    const proj = Object.hasOwn(PROJECTILE_GUNS, id) && damage <= 0 ? projectileOf(def) : null;
+    if (proj) {
+        damage = proj.damage;
+        range = PROJECTILE_GUNS[id].range;
+        bulletSpeed = proj.speed;
+    }
     const useless = USELESS.has(id) || damage <= 0;
     const cls = useless ? "useless" : classify(id, def, range);
     const burst = def.fireMode === "burst" ? (def.burstCount ?? 1) : 1;
@@ -105,7 +132,7 @@ export function gunInfo(id: string): GunInfo | undefined {
         cls,
         ammo: def.ammo,
         range,
-        bulletSpeed: bullet.speed ?? 100,
+        bulletSpeed,
         idealMin,
         idealMax,
         maxEngage,

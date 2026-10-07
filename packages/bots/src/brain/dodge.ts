@@ -116,5 +116,6 @@ export function dodge(ctx: BrainCtx, intent: Intent): void {
     if (dir) {
         intent.moveDir = dir;
         intent.stop = false;
+        intent.urgent = true;
     }
 }

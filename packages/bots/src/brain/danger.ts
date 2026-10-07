@@ -15,19 +15,28 @@
 // units clear of the house (dangerToLeave: the house sweep, brain/sweep.ts, would walk it straight back in). The zone
 // rotation goes round such a place (survival.ts, dangerAcross). Triage probe (house.ts, seed 3): 7 flee cycles in a
 // row before the bot got the gun, and only because the player never shot. Goals in an air strike, or on the way
-// through one, are avoided too (brain/strikes.ts).
+// through one, are avoided too (brain/strikes.ts). Round 5 (report 35): a building with an armed enemy in it that the
+// bot does not deal with (it loots, sweeps or explores on) is remembered the same way (noteContested), and a building
+// recorded unarmed waits 120 s per flight: the bot arms up elsewhere instead of walking back in to the same gunman.
 import { type Bounds, type Vec2, v2 } from "@rebirth/core";
 import { distToSegment, pointInBounds } from "../geom.ts";
 import { roofRegions } from "../perception/roofs.ts";
 import type { Contact, WorldModel } from "../perception/world.ts";
 import { enemyGun } from "./assess.ts";
-import type { BrainCtx } from "./context.ts";
+import type { BrainCtx, Intent } from "./context.ts";
 import type { DangerArea } from "./pursuitMemory.ts";
 import { strikeBlocks } from "./strikes.ts";
 
 /** Seconds a place is avoided per flight from it: recorded unarmed, recorded armed. */
 const UNARMED_MEMORY = 45;
 const ARMED_MEMORY = 20;
+/**
+ * A building recorded unarmed waits this long per flight (round 5, report 35: it goes elsewhere to arm up; the record
+ * stops applying once it has a gun, so this only keeps an unarmed bot from walking back in to the same gunman).
+ */
+const UNARMED_BUILDING_MEMORY = 120;
+/** Behaviours that deal with the enemy itself (a building it stands in is not contested by them, round 5). */
+const FACING_IT = new Set(["fight", "flee", "evade", "disengage", "search", "hold", "revive", "downed", "zone"]);
 /** Flights from one place that lengthen its memory at most. */
 const MAX_COUNT = 3;
 /** Radius of a spot in the open (remembered half as long: an enemy in the open moves on), the margin around rooms. */
@@ -111,7 +120,8 @@ export function noteDanger(ctx: BrainCtx, e: Contact): void {
         a.enemyId = e.id;
         a.reach = Math.max(a.reach, reach);
     }
-    const memory = (ctx.armed ? ARMED_MEMORY : UNARMED_MEMORY) * a.count * (b ? 1 : OPEN_FACTOR);
+    const per = ctx.armed ? ARMED_MEMORY : b ? UNARMED_BUILDING_MEMORY : UNARMED_MEMORY;
+    const memory = per * a.count * (b ? 1 : OPEN_FACTOR);
     a.until = Math.max(a.until, now + memory);
     // an explore goal in there, or beyond it, is dropped (explore keeps a goal for 30 s: straight back in)
     const goal = ctx.mem.exploreGoal;
@@ -188,4 +198,24 @@ export function dangerAcross(ctx: BrainCtx, p: Vec2): { pos: Vec2; rad: number }
         if (b === "way" && (!best || v2.distance(me, a.pos) < v2.distance(me, best.pos))) best = a;
     }
     return best ? { pos: best.pos, rad: radiusOf(ctx, best, false) } : null;
+}
+
+/**
+ * Round 5 (user report 35, the house in-out loop): an enemy with a gun in view inside the building the bot is in or
+ * walking into, while the bot chose something else than dealing with it (looting, sweeping, exploring, a crate): the
+ * building is remembered as contested like a flight from it (noteDanger), so its loot, rooms and explore goals wait
+ * (avoidPos). The roof hides the enemy again the moment the bot steps out: without the memory every decision outside
+ * forgot it and walked the bot back in (an armed bot leaving a lost trade, an unarmed one whose flight ended).
+ */
+export function noteContested(ctx: BrainCtx, intent: Intent): void {
+    if (!ctx.features.pursuit || FACING_IT.has(intent.behaviour)) return;
+    const me = ctx.self.pos;
+    for (const e of ctx.visibleEnemies) {
+        if (e.downed || !enemyGun(ctx, e)) continue;
+        const b = buildingAround(ctx.model, e.pos);
+        if (!b) continue;
+        const goal = intent.goal;
+        const entering = v2.distance(me, b.pos) < b.rad || (!!goal && v2.distance(goal, b.pos) < b.rad);
+        if (entering) noteDanger(ctx, e);
+    }
 }

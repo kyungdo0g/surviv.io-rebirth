@@ -11,7 +11,7 @@
 // Events go to a 64-entry ring buffer on the simulation clock; `heat` sums them with a recency weight. Pure and
 // deterministic: no rng, no wall clock.
 import { type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, hasDef } from "@rebirth/defs";
+import { AIRSTRIKE_VARIANTS, type AirstrikeVariant, GameConfig, GameObjectDefs, hasDef } from "@rebirth/defs";
 import type { Snapshot } from "@rebirth/sim";
 import { bulletOrigin } from "./bulletSight.ts";
 import type {
@@ -47,6 +47,7 @@ const FALL_TIME = GameConfig.airdrop.fallTime;
  */
 const STRIKE_DANGER_RAD = (GameConfig.airstrike.bombCount * GameConfig.airstrike.bombOffset) / 2 + 4;
 const STRIKE_DANGER_TIME = 6;
+
 /** A plane id unseen this long is a new plane when it shows up again (ids 1..255 are reused). */
 const PLANE_MEMORY = 30;
 /** An air drop is forgotten this long after it landed unless its crate was seen (then until it is opened). */
@@ -73,6 +74,24 @@ function explosionRad(throwable: string): number {
             ? (GameObjectDefs[t.explosionType] as { rad?: { max: number } })
             : null;
     return ex?.rad?.max ?? 0;
+}
+
+/** Danger time of a carpet strike's marker (six planes, round 5). */
+const CARPET_DANGER_TIME = 12.5;
+/** A marker and a zone this close are the same strike (client Minimap.styledPing). */
+const SAME_STRIKE = 2;
+
+/**
+ * Round 5 (user reports 27, 32): a marker whose strike zone (within 2 u, as Minimap.styledPing matches them) is a
+ * variant: heavy shells keep half their strip plus their blast away (16 + 38 u: a heavy plane is lethal about 20 u to
+ * each side of its line and hurts out to 39 u), a carpet strike's six planes keep the danger up for 12.5 s.
+ */
+function strikeDanger(variant: AirstrikeVariant | undefined): { rad: number; time: number } {
+    const v = AIRSTRIKE_VARIANTS[variant ?? "normal"];
+    if (variant === "heavy")
+        return { rad: ((v.bombCount - 1) * v.bombOffset) / 2 + explosionRad(v.bombType), time: STRIKE_DANGER_TIME };
+    if (variant === "carpet") return { rad: STRIKE_DANGER_RAD, time: CARPET_DANGER_TIME };
+    return { rad: STRIKE_DANGER_RAD, time: STRIKE_DANGER_TIME };
 }
 
 const GRENADE_RAD: ReadonlyMap<string, number> = new Map(GRENADES.map((g) => [g, explosionRad(g)]));
@@ -318,11 +337,14 @@ export class ThreatTracker implements ThreatBoard {
                 this.push("airdrop", ind.pos, 0);
             } else if (ind.type === "ping_airstrike" && !ind.dead) {
                 if (this.strikes.some((z) => v2.distance(z.pos, ind.pos) < 2 && z.until > this.now)) continue;
+                const variant = snap.airstrikeZones?.find((z) => v2.distance(z.pos, ind.pos) < SAME_STRIKE)?.variant;
+                const danger = strikeDanger(variant);
                 this.strikes.push({
                     kind: "airstrike",
                     pos: v2.copy(ind.pos),
-                    rad: STRIKE_DANGER_RAD,
-                    until: this.now + STRIKE_DANGER_TIME,
+                    rad: danger.rad,
+                    until: this.now + danger.time,
+                    ...(variant && variant !== "normal" ? { variant } : {}),
                 });
                 this.push("airstrike", ind.pos, 0);
             }
@@ -422,7 +444,9 @@ export class ThreatTracker implements ThreatBoard {
         this.strikes = this.strikes.filter((z) => z.until > now);
         const zones: DangerZone[] = [...this.strikes];
         for (const z of snap.airstrikeZones ?? []) {
-            zones.push({ kind: "airstrike", pos: v2.copy(z.pos), rad: z.rad, until: now + z.duration * (1 - z.zoneT) });
+            const until = now + z.duration * (1 - z.zoneT);
+            const variant = z.variant && z.variant !== "normal" ? { variant: z.variant } : {};
+            zones.push({ kind: "airstrike", pos: v2.copy(z.pos), rad: z.rad, until, ...variant });
         }
         for (const d of this.drops) {
             if (!d.landed) zones.push({ kind: "airdrop", pos: d.pos, rad: CRATE_DANGER_RAD, until: d.landsAt });

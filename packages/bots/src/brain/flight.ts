@@ -228,6 +228,9 @@ export function flightScore(ctx: BrainCtx): number {
         if (chaser && isMeleeWeapon(chaser.activeWeapon) && v2.distance(chaser.pos, self.pos) < PUNCH_BACK) return 0.3;
         return 0.8;
     }
+    // a lone enemy without a gun is fought or left be, whatever the bot's health (round 5, report 35: same speed, no
+    // gun to run from; brain/fists.ts)
+    if (!armedThreats.length && threats.length < 2) return 0;
     const hasHeals = (self.inventory.healthkit ?? 0) + (self.inventory.bandage ?? 0) > 0;
     const low = self.health < fleeHealth(ctx.persona) && hasHeals;
     if (!low && armedThreats.length < 3) return 0;

@@ -9,7 +9,9 @@
 //
 // Wave 2 additions (all optional, so other implementations of the interface stay valid): ReportedThreat.confidence,
 // ThreatBoard.killLeader() and ThreatBoard.events(), the ThreatEvent and KillLeaderIntel types.
+
 import type { Vec2 } from "@rebirth/core";
+import type { AirstrikeVariant } from "@rebirth/defs";
 import type { Snapshot } from "@rebirth/sim";
 import type { WorldModel } from "./world.ts";
 
@@ -75,6 +77,8 @@ export interface DangerZone {
     rad: number;
     /** game time it stops being dangerous */
     until: number;
+    /** an air strike zone's variant (AirstrikeZoneView.variant: heavy shells, carpet); absent means normal */
+    variant?: AirstrikeVariant;
 }
 
 /** An air drop the bot knows about (map indicator, plane, falling crate or the landed crate). */

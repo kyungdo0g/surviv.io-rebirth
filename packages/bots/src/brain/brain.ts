@@ -16,6 +16,7 @@ import { reactToThreats } from "./alert.ts";
 import { assessCached, wantsAssessment } from "./assess.ts";
 import { addCombatLayer, selectTarget } from "./combat.ts";
 import { type BehaviourName, type BrainCtx, BrainMemory, emptyIntent, type Intent } from "./context.ts";
+import { noteContested } from "./danger.ts";
 import { noteDeadEnd, planDeadEnd } from "./deadEnd.ts";
 import { updateTrade } from "./disengage.ts";
 import { dodge } from "./dodge.ts";
@@ -218,7 +219,11 @@ export class Brain {
         if (ctx.features.basements) noteDeadEnd(ctx, intent);
         if (intent.behaviour !== this.mem.current) this.mem.currentSince = now;
         this.mem.current = intent.behaviour;
-        if (ctx.features.pursuit) leaveRevive(ctx, intent);
+        if (ctx.features.pursuit) {
+            leaveRevive(ctx, intent);
+            // round 5: an armed enemy in the house the bot loots on: the house waits (no in-out loop)
+            noteContested(ctx, intent);
+        }
         manageWeapons(ctx, intent);
         if (ctx.features.grenades) {
             // round 4: running from a chaser, a frag thrown back at its path (escapeFrag.ts) comes first

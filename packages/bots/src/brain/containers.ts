@@ -5,7 +5,16 @@
 // inner crate of an air drop holds the best loot of the match), where to stand to punch one and how long the rest of
 // it takes (LOOT2).
 import { type Bounds, type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, hasDef, type MeleeDef, WeaponSlot } from "@rebirth/defs";
+import {
+    AIRDROP_TIER_SPLITS,
+    GameConfig,
+    GameObjectDefs,
+    hasDef,
+    hasMapObjectDef,
+    MapObjectDefs,
+    type MeleeDef,
+    WeaponSlot,
+} from "@rebirth/defs";
 import { colliderCenter, pointInBounds } from "../geom.ts";
 import type { GunInfo } from "../knowledge/weapons.ts";
 import { sameLayer } from "../nav/cellGrid.ts";
@@ -14,18 +23,62 @@ import type { SeenObstacle, SelfState, WorldModel } from "../perception/world.ts
 import { type BrainCtx, reachable } from "./context.ts";
 
 const PLAYER_RAD = GameConfig.player.radius;
-/** Value of the inner crate of an air drop (tier_airdrop_* loot: the best guns, armour and scopes of the match). */
+/**
+ * Value of the inner crate of an air drop (tier_airdrop_* loot: the best guns, armour and scopes of the match): today's
+ * normal drop (crate_10, tier_airdrop_uncommon), which is the rebirth tier 2 drop (crate_10t2: tier_airdrop_tier2).
+ */
 export const AIRDROP_LOOT_VALUE = 88;
-/** Value of an unopened air drop crate. */
+/**
+ * Round 5 (user reports 31, 33): air drops by tier, gold > tier 2 > tier 1. The gold crate (crate_11*, and crate_12 /
+ * crate_13 that roll tier_airdrop_rare or tier_airdrop_mythic) holds the M249 / PKP / AWM-S family; a tier 1 crate
+ * (crate_10t1 / crate_10svt1: tier_airdrop_tier1) holds the low-tier DMRs and SPAS-12, on woods a MIRV or a strobe in
+ * about a third of its gun rolls.
+ */
+export const AIRDROP_GOLD_VALUE = 96;
+export const AIRDROP_TIER1_VALUE = 80;
+/** Value of an unopened air drop crate whose contents the bot cannot tell (a class pod, an event shell). */
 export const AIRDROP_VALUE = 80;
+/** An unopened shell is worth its expected inner crate less this (it still has to be opened and broken). */
+const SHELL_DISCOUNT = 8;
+/** A normal shell's tier is unknown until it opens (same type id on the wire): the even mix of tier 1 and tier 2. */
+const NORMAL_SHELL_TIER1_SHARE = 0.5;
+/** Worth of a normal shell (and of a drop whose crate the bot has not seen yet: most drops are normal ones). */
+export const NORMAL_SHELL_VALUE =
+    NORMAL_SHELL_TIER1_SHARE * AIRDROP_TIER1_VALUE +
+    (1 - NORMAL_SHELL_TIER1_SHARE) * AIRDROP_LOOT_VALUE -
+    SHELL_DISCOUNT;
+
+/** Worth of an air drop's inner crate from its loot tiers: gold, tier 2 (today's normal drop), tier 1; else null. */
+export function airdropInnerValue(tiers: readonly string[]): number | null {
+    if (tiers.some((t) => t === "tier_airdrop_rare" || t === "tier_airdrop_mythic")) return AIRDROP_GOLD_VALUE;
+    if (tiers.some((t) => t === "tier_airdrop_tier1")) return AIRDROP_TIER1_VALUE;
+    if (tiers.some((t) => t === "tier_airdrop_tier2" || t === "tier_airdrop_uncommon")) return AIRDROP_LOOT_VALUE;
+    return tiers.some((t) => t.startsWith("tier_airdrop")) ? AIRDROP_LOOT_VALUE : null;
+}
+
+/**
+ * Worth of an unopened air drop shell: a gold shell shows (its own type, airdrop_crate_02*: the gold-trimmed crate); a
+ * normal shell that splits into tiers (defs AIRDROP_TIER_SPLITS) is the even mix of tier 1 and tier 2.
+ */
+function shellValue(o: SeenObstacle): number {
+    if (Object.hasOwn(AIRDROP_TIER_SPLITS, o.view.type)) return NORMAL_SHELL_VALUE;
+    const inner = (o.def as { destroyType?: string }).destroyType;
+    const def =
+        inner && hasMapObjectDef(inner)
+            ? (MapObjectDefs[inner] as { loot?: Array<{ tier?: string; type?: string }> })
+            : undefined;
+    const value = def?.loot ? airdropInnerValue(def.loot.map((l) => l.tier ?? l.type ?? "")) : null;
+    return value === null ? AIRDROP_VALUE : value - SHELL_DISCOUNT;
+}
 
 /** Rough worth of a container's loot table (0..100). */
 export function containerValue(o: SeenObstacle): number {
-    // air drops hold the best loot of the match
-    if (o.def.airdropCrate) return AIRDROP_VALUE;
+    // air drops hold the best loot of the match (by tier: round 5)
+    if (o.def.airdropCrate) return shellValue(o);
     const tiers = o.def.loot.map((l) => l.tier ?? l.type ?? "");
     // the crate an opened air drop leaves (crate_10..13: tier_airdrop_* tables; it scored 12 and was never broken)
-    if (tiers.some((t) => t.startsWith("tier_airdrop"))) return AIRDROP_LOOT_VALUE;
+    const inner = airdropInnerValue(tiers);
+    if (inner !== null) return inner;
     if (tiers.some((t) => t === "tier_soviet" || t === "tier_chest" || t === "deagle" || t === "m870")) return 45;
     if (tiers.some((t) => t === "tier_world" || t === "tier_container" || t === "tier_toilet")) return 32;
     if (tiers.some((t) => t === "tier_throwables" || t.startsWith("tier_vending"))) return 18;

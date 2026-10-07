@@ -170,9 +170,10 @@ describe("danger memory", () => {
         expect(brain.mem.exploreGoal).toBeNull();
         // still next to it: it walks on out of the way
         expect(dangerToLeave(ctx)).not.toBeNull();
-        // 44 s later still avoided, 46 s later not
-        expect(avoidPos(brain.context(NOW + 44), housePos)).toBe(true);
-        expect(avoidPos(brain.context(NOW + 46), housePos)).toBe(false);
+        // 119 s later still avoided, 121 s later not (round 5: a house recorded unarmed waits 120 s per flight, it
+        // was 45 s; the bot arms up elsewhere instead of walking back in to the same gunman)
+        expect(avoidPos(brain.context(NOW + 119), housePos)).toBe(true);
+        expect(avoidPos(brain.context(NOW + 121), housePos)).toBe(false);
         // armed: the place no longer applies
         giveGun(w, 0, "mp5");
         expect(avoidPos(brain.context(NOW + 10), housePos)).toBe(false);
@@ -189,8 +190,8 @@ describe("danger memory", () => {
         noteDanger(brain.context(NOW), e);
         noteDanger(brain.context(NOW + 2), e);
         noteDanger(brain.context(NOW + 20), e);
-        expect(avoidPos(brain.context(NOW + 100), housePos)).toBe(true);
-        expect(avoidPos(brain.context(NOW + 111), housePos)).toBe(false);
+        expect(avoidPos(brain.context(NOW + 258), housePos)).toBe(true);
+        expect(avoidPos(brain.context(NOW + 262), housePos)).toBe(false);
     });
 
     it("unarmed, keeps out of the reach of the gun it ran from in the open, and does not regroup into it", () => {

@@ -20,12 +20,14 @@
 //   crosshair on the target and no shot, user reports 4 and 5; the assessment also reads symmetric trades as lost,
 //   A -0.15 bare and -0.66 in level 3 armour, because it times the bot's kill with whole hits and reloads and the
 //   enemy's with a smooth rate); a bot almost out of ammo restocks before it fights an enemy that leaves it alone;
-// - a fist chase ends after 3 s without a hit or closing in (the 0.7 retaliation stays).
+// - a fist chase ends after 3 s without a hit or closing in (the 0.7 retaliation stays);
+// - (round 5, report 35) bare hands against bare hands: a fist fight chosen once per enemy, or none (brain/fists.ts).
 import { hasAmmo } from "../knowledge/arsenal.ts";
 import { gunRank } from "../knowledge/gunTiers.ts";
 import { isMeleeWeapon } from "../knowledge/weapons.ts";
 import { ADVANTAGE_BAND, enemyGun, engagingMe, LOST_BAND } from "./assess.ts";
 import { type BrainCtx, nearFailedGoal } from "./context.ts";
+import { fistDuelScore } from "./fists.ts";
 import { isBusy, isWeakened } from "./opportunity.ts";
 import { closingSpeed, givenUp, notePursuit, shootRange } from "./pursuit.ts";
 import { zonePressure } from "./survival.ts";
@@ -105,10 +107,13 @@ export function patientFightScore(ctx: BrainCtx): number {
     const { now, model, params } = ctx;
     const d = ctx.targetDist;
     if (!ctx.armed) {
-        // unarmed: punch back when attacked (the 0.7 retaliation), or a fist fight with an unarmed one close by (its
-        // clock ends a chase that goes nowhere: notePursuit)
-        if (!t.visible || d > 6) return 0;
-        if (now - model.lastHurt < 2) return 0.7;
+        // unarmed: punch back when attacked (the 0.7 retaliation); against an unarmed one, the fist fight it chose or
+        // the punch of one about to swing (brain/fists.ts; its clock ends a chase that goes nowhere: notePursuit)
+        if (!t.visible) return 0;
+        if (d <= 6 && now - model.lastHurt < 2) return 0.7;
+        const duel = fistDuelScore(ctx);
+        if (duel !== null) return duel;
+        if (d > 6) return 0;
         return isMeleeWeapon(t.activeWeapon) && d < 4 ? params.meleeAggression : 0;
     }
     if (!t.visible) return 0.5 * Math.max(0, 1 - (now - t.lastSeen) / (params.memory + 0.01));

@@ -12,6 +12,7 @@ import { type BotOrder, emptyIntent, type Intent, type IntentEmote } from "./bra
 import { type BrainFeatures, type BrainName, brainFeatures, brainLabel } from "./brain/features.ts";
 import { fragNoThrowNear } from "./brain/fragMath.ts";
 import { throwBlocker } from "./brain/fragSkill.ts";
+import { zonePressure } from "./brain/survival.ts";
 import { ThrowController, TriggerController, throwAimPoint, throwMouseLen } from "./brain/trigger.ts";
 import { type Difficulty, type DifficultyParams, difficultyParams, type SkillTierName } from "./difficulty.ts";
 import { angleOf, dirOf, distanceToCollider } from "./geom.ts";
@@ -60,6 +61,16 @@ const ABORT_RUSH = 6;
 const ABORT_RUSH_DIST = 14;
 /** An enemy seen or a hit taken this recently (s): the bot is alert, nothing that follows is a surprise. */
 const CALM_AFTER = 3;
+function isGunSlot(slot: number): boolean {
+    return slot === WeaponSlot.Primary || slot === WeaponSlot.Secondary;
+}
+
+/** A goal this close is lined up on with short key taps (motor/keys.ts StickMode.fine). */
+const FINE_DIST = 2.5;
+/** Zone pressure (brain/survival.ts) above which a rotation is in a hurry: no walking pauses. */
+const ZONE_HURRY = 0.3;
+/** Behaviours that are travel: calm, they get the stop-and-go rhythm of walking (motor/rhythm.ts, round 5). */
+const CALM_TRAVEL: ReadonlySet<string> = new Set(["explore", "loot", "break", "sweep", "regroup", "zone", "airdrop"]);
 
 export class Bot {
     readonly model: WorldModel;
@@ -363,12 +374,51 @@ export class Bot {
         input.moveDown = pick.y < -0.3;
     }
 
+    /**
+     * Human motor: travelling with no enemy in view, not hit or shot at for CALM_AFTER and in no hurry (out of the gas):
+     * the keys get the stop-and-go rhythm of calm walking (motor/rhythm.ts).
+     */
+    private calmTravel(it: Intent): boolean {
+        if (!CALM_TRAVEL.has(it.behaviour) || it.moveDir !== null) return false;
+        const m = this.model;
+        if (m.time - m.lastHurt < CALM_AFTER || (m.underFire && m.time - m.underFire.time < CALM_AFTER)) return false;
+        // a rotation in a hurry (in the gas, or the zone pressing: survival.ts) goes on without a pause
+        if (it.behaviour === "zone" && (m.inGasNow() || zonePressure(m) > ZONE_HURRY)) return false;
+        return m.time - this.enemyBefore >= CALM_AFTER;
+    }
+
+    /**
+     * Human motor: getting out of fire from off the screen or out of an air strike: a reversal of the keys comes at
+     * once, as a person's would (a flight keeps the committed reversals: its cover and run goals flip as the threats
+     * move, and quick reversals there made 27 a minute against the videos' 16).
+     */
+    private hurried(it: Intent): boolean {
+        return it.behaviour === "evade" || it.behaviour === "evacuate";
+    }
+
     /** Human motor: the key octant held for the wanted heading (hysteresis, minimum holds; motor/keys.ts). */
     private humanKeys(input: PlayerInput, dir: Vec2 | null, stick: KeyStick): void {
         const it = this.steerIntent();
         const pos = this.model.self.pos;
         const free = (octant: number) => octantFree(pos, octant, this.nearColliders);
-        const k = octantKeys(stick.update(dir, this.clock, it.behaviour === "fight" || it.moveDir !== null, free));
+        const fight = it.behaviour === "fight" || it.moveDir !== null;
+        // strafing in a gunfight with a gun in hand: stop, shoot, move on
+        const gun =
+            isGunSlot(this.model.self.curWeapIdx) && !!this.model.self.weapons[this.model.self.curWeapIdx]?.type;
+        const stutter = it.behaviour === "fight" && it.moveDir !== null && gun;
+        // lining up on a goal a few steps away outside a fight (a crate's corner, an item, a door): short taps
+        const fine = !fight && it.goal !== null && v2.distance(pos, it.goal) < FINE_DIST;
+        const mode = {
+            calm: this.calmTravel(it),
+            urgent: it.urgent === true || this.hurried(it),
+            stutter,
+            fine,
+            engage: it.behaviour === "fight",
+        };
+        const octant = stick.update(dir, this.clock, fight, free, mode);
+        // keys lifted on purpose while there is somewhere to go: no stuck check over the pause (nav/follower.ts)
+        if (dir !== null && octant < 0) this.follower.pauseProgress();
+        const k = octantKeys(octant);
         input.moveRight = k.right;
         input.moveLeft = k.left;
         input.moveUp = k.up;

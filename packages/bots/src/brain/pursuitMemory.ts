@@ -177,6 +177,10 @@ export class PursuitMemory {
     jukeUntil = Number.NEGATIVE_INFINITY;
     jukeSign = 1;
 
+    // round 5
+    /** bare hands against bare hands: fight this unarmed enemy or leave it be, decided once (brain/fists.ts) */
+    readonly fists = new Map<number, { fight: boolean; until: number }>();
+
     /** Whether the engagement against `targetId` was flagged futile (COMBAT-10 reads this). */
     isFutile(targetId: number): boolean {
         return targetId !== 0 && this.futileTarget === targetId;

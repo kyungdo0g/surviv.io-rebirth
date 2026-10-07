@@ -19,12 +19,14 @@ import { distanceToCollider } from "../geom.ts";
 import type { SeenObstacle, WorldModel } from "../perception/world.ts";
 import { byThoroughness } from "../persona.ts";
 import { addCombatLayer, findCoverFrom } from "./combat.ts";
-import { AIRDROP_LOOT_VALUE, AIRDROP_VALUE, isAirdropLoot } from "./containers.ts";
+import { containerValue, isAirdropLoot, NORMAL_SHELL_VALUE } from "./containers.ts";
 import { type BrainCtx, emptyIntent, type Intent, reachable, usableSpot } from "./context.ts";
 import { lootNeed, planBreak } from "./scavenge.ts";
 import { onLeash } from "./team.ts";
 
 const STAND_MIN = 15;
+/** The score stays below fights, flight and urgent heals. */
+const MAX_SCORE = 0.66;
 const STAND_MAX = 25;
 const CAP = 45;
 const COOLDOWN = 60;
@@ -163,13 +165,17 @@ export function airdropScore(ctx: BrainCtx): number {
     // team modes: a follower does not wander off alone to a drop
     if (!onLeash(ctx, drop.pos)) return 0;
     const heat = dropHeat(ctx, drop.pos, 20);
+    // round 5 (user report 31): what the drop is worth by tier once its crate is in view (a gold shell shows; the inner
+    // crate of an opened one tells its tier), a normal shell's mix before that: gold is worth more risk, tier 1 less
+    const crate = dropCrate(model, drop.pos);
+    const worth = (crate ? containerValue(crate) : NORMAL_SHELL_VALUE) / NORMAL_SHELL_VALUE;
     const watching = ctx.features.thirdparty && sm.tpA !== 0;
-    if (heat > HOT && !watching) return 0;
+    if (heat > HOT * worth && !watching) return 0;
     if ((ctx.assessment?.advantage ?? 0) < -0.3 && ctx.target?.visible) return 0;
     // a floor that does not shrink with the loadout (the best loot of the match), below fights, flight and urgent heals
     const late = Math.max(1, Math.max(0, drop.landsAt - now) + byThoroughness(ctx.persona, LATE, 0.8));
-    const s = 0.45 + 0.1 * lootNeed(ctx) - (0.08 * d) / (TRAVEL_SPEED * late) - heat * 0.05;
-    return Math.max(0, Math.min(0.66, s));
+    const s = 0.45 * worth + 0.1 * lootNeed(ctx) - (0.08 * d) / (TRAVEL_SPEED * late) - heat * 0.05;
+    return Math.max(0, Math.min(MAX_SCORE, s));
 }
 
 /** The crate of the drop in view: the closed crate first, else its inner crate. */
@@ -245,7 +251,7 @@ export function planAirdrop(ctx: BrainCtx): Intent {
             intent.arriveDist = 4;
         } else if (crate) {
             // open it, wait out the opening, break the inner crate: the scavenge behaviour's steps
-            const value = crate.def.airdropCrate ? AIRDROP_VALUE : AIRDROP_LOOT_VALUE;
+            const value = containerValue(crate);
             const step = planBreak(ctx, { obstacle: crate, value, dist: distanceToCollider(me, crate.col) });
             step.behaviour = "airdrop";
             step.lookAt = intent.lookAt;

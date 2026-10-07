@@ -51,6 +51,9 @@ const RANGE_SOON = 6;
 const OUTRANGED_COVER = 6;
 /** pursuit: hit this recently, the bot strafes instead of standing still (s). */
 const HIT_STRAFE = 1.5;
+/** pursuit (round 5): a strafe leg lasts this long (s), and the side flips at its end with this chance. */
+const STRAFE_LEG: readonly [number, number] = [0.9, 2.4];
+const STRAFE_FLIP = 0.4;
 
 /** Pressing a target: into the near half of the gun's preferred band. */
 function pressRadial(d: number, info: GunInfo): number {
@@ -200,8 +203,15 @@ export function planFight(ctx: BrainCtx): Intent {
     // position seam (MOVE, round 3): fight from the edge of cover instead of strafing in the open (brain/position.ts)
     if (planFightPosition(ctx, intent, gun, d)) return intent;
     if (now >= mem.strafeUntil) {
-        mem.strafeSign = rng.bool() ? 1 : -1;
-        mem.strafeUntil = now + rng.range(0.35, 1.2);
+        if (features.pursuit) {
+            // round 5 (report 36): human strafe legs (the owner's videos: 7 reversals a minute in a typical 10 s
+            // stretch, 21 at the 90th percentile; the old 0.35-1.2 s legs with a fresh side each made 60+)
+            if (rng.next() < STRAFE_FLIP) mem.strafeSign = -mem.strafeSign;
+            mem.strafeUntil = now + rng.range(STRAFE_LEG[0], STRAFE_LEG[1]);
+        } else {
+            mem.strafeSign = rng.bool() ? 1 : -1;
+            mem.strafeUntil = now + rng.range(0.35, 1.2);
+        }
     }
     const perp = v2.mul(v2.perp(toT), mem.strafeSign);
     let radial = 0;

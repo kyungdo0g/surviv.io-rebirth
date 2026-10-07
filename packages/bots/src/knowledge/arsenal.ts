@@ -17,13 +17,19 @@ export interface HeldGun {
     reserve: number;
 }
 
+/** Magazines in the bag of a gun with infinite ammo, as the decisions see it. */
+const INFINITE_MAGS = 10;
+
 export function heldGunsWithAmmo(self: SelfState): HeldGun[] {
     const out: HeldGun[] = [];
     for (const slot of [WeaponSlot.Primary, WeaponSlot.Secondary]) {
         const w = self.weapons[slot];
         const info = w ? gunInfo(w.type) : undefined;
         if (!w || !info || info.score <= 0) continue;
-        out.push({ slot, info, mag: w.ammo, reserve: self.inventory[info.ammo] ?? 0 });
+        // a gun with infinite ammo (the PMG-134, round 5) reloads from nothing: its bag never runs dry
+        const infinite = (info.def as { ammoInfinite?: boolean }).ammoInfinite === true;
+        const reserve = infinite ? info.def.maxClip * INFINITE_MAGS : (self.inventory[info.ammo] ?? 0);
+        out.push({ slot, info, mag: w.ammo, reserve });
     }
     return out;
 }

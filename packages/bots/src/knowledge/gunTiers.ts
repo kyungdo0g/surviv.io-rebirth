@@ -16,9 +16,10 @@
 //   half the time, level 1 armour, magazine and reloads included. Lower F = more skill-sensitive. Guns the critique did
 //   not measure (marked "est.") carry an estimate from their class and stats.
 // - survev-only guns (ADR 0003; barrett, ash12, sw500, imbel, spas16 at their survev.wiki.gg stats, the winter skins at
-//   their base gun's tier) carry estimated F values from their class and stats; the PMG-134 (potato_lmg) is a potato
-//   gun ("special", useless to bots like the other potato guns). Post-0.8.82 guns that are still not ported (PKM, M134,
-//   M79) are not in the defs and not in this table.
+//   their base gun's tier) carry estimated F values from their class and stats; the PMG-134 (potato_lmg), a potato gun
+//   ("special" in the KB), is an LMG to the bots at its explosion damage since round 5 (report 34), the other potato
+//   guns stay useless. Post-0.8.82 guns that are still not ported (PKM, M134, M79) are not in the defs and not in
+//   this table.
 import { GameObjectDefs, type GunDef, gunClass, hasDef } from "@rebirth/defs";
 import type { WeaponClass } from "./weapons.ts";
 
@@ -78,10 +79,12 @@ const ROWS: readonly Row[] = [
     ["m249", "S", 0.5, true], ["pkp", "S", 0.53, true], ["qbb97", "A+", 0.49, true], ["dp28", "A-", 0.54, true],
     ["bar", "A-", 0.45, false], // est.
     // snipers: AWM-S one-shots chest02 + helmet01 or less (180 x 0.62 x 0.925 = 103); SV-98 always 2 body hits vs lvl 1
-    ["awc", "S-aim", 0.14, true], ["sv98", "A+", 0.28, true], ["mosin", "B", 0.34, true], ["scout_elite", "B", 0.26, true],
+    // (round 5, user report 33: the owner rates the Mosin "strong but not top, needs aim" like the AWM-S: A; it was B)
+    ["awc", "S-aim", 0.14, true], ["sv98", "A+", 0.28, true], ["mosin", "A", 0.34, true], ["scout_elite", "B", 0.26, true],
     ["blr", "A-", 0.3, false], ["model94", "B", 0.32, false], // est.
-    // DMRs
-    ["mk12", "A", 0.28, true], ["m39", "A", 0.3, true], ["garand", "A", 0.26, true], ["vss", "B", 0.29, true],
+    // DMRs (round 5, user report 33: the owner calls the MK12 and the M39 low-tier DMRs, air drop tier 1 guns: B+; they
+    // were A like the SCAR-H)
+    ["mk12", "B+", 0.28, true], ["m39", "B+", 0.3, true], ["garand", "A", 0.26, true], ["vss", "B", 0.29, true],
     ["svd", "A", 0.3, false], ["scarssr", "A", 0.28, false], ["l86", "B+", 0.35, false], ["mkg45", "B+", 0.35, false], // est.
     // assault rifles
     ["scar", "A", 0.35, true], ["m4a1", "A", 0.37, true], ["famas", "A-", 0.38, true], ["grozas", "A-", 0.45, true],
@@ -108,6 +111,9 @@ const ROWS: readonly Row[] = [
     ["barrett", "S-aim", 0.16, true], ["ash12", "A+", 0.42, false], ["spas16", "A", 0.66, false],
     ["imbel", "A-", 0.5, false], ["sw500", "B+", 0.45, false],
     ["svd_winter", "A", 0.3, false], ["sv98_winter", "A+", 0.28, false], ["awc_winter", "S-aim", 0.14, false],
+    // round 5 (report 34): the PMG-134 (potato maps and potato drops) at its explosion damage, 8.5 x 2 every 0.07 s
+    // from a 150-round never-empty magazine, 70 units of flight; its 8-degree spread and splash forgive aim (est.)
+    ["potato_lmg", "A", 0.55, false],
 ];
 
 const TIERS = new Map<string, GunTierInfo>();
@@ -116,6 +122,8 @@ const CLASS_OF = new Map<string, WeaponClass>();
 /** Bot weapon class of a gun id from the KB classes (defs gunClass): assault -> rifle, special -> useless. */
 function kbClass(id: string): WeaponClass | undefined {
     if (id === "flare_gun" || id === "flare_gun_dual") return "useless";
+    // the PMG-134 sprays exploding potatoes like an LMG (round 5, report 34; knowledge/weapons.ts PROJECTILE_GUNS)
+    if (id === "potato_lmg") return "lmg";
     const c = gunClass(id);
     if (c === undefined) return undefined;
     if (c === "assault") return "rifle";

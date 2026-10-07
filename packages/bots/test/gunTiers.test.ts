@@ -102,7 +102,8 @@ describe("gun tiers", () => {
             expect(hasDef(id), id).toBe(true);
             expect(gunTier(id), id).toBeDefined();
         }
-        expect(gunClassOf("potato_lmg")).toBe("useless");
+        // the PMG-134 is an LMG to the bots at its explosion damage (round 5, report 34)
+        expect(gunClassOf("potato_lmg")).toBe("lmg");
         for (const [id, def] of Object.entries(GameObjectDefs)) {
             if (def.type !== "gun") continue;
             const cls = gunClassOf(id);
@@ -115,7 +116,9 @@ describe("gun tiers", () => {
     it("classes follow the KB (assault rifles are the bots' rifles, LMGs their own class)", () => {
         for (const t of tieredGuns()) {
             const kb = gunClass(t.id);
-            expect(t.cls, t.id).toBe(kb === "assault" ? "rifle" : kb);
+            // (round 5, report 34: the PMG-134, "special" in the KB, is an LMG to the bots)
+            if (t.id === "potato_lmg") expect(t.cls).toBe("lmg");
+            else expect(t.cls, t.id).toBe(kb === "assault" ? "rifle" : kb);
         }
         expect(gunInfo("m249")?.cls).toBe("lmg");
         expect(gunInfo("vss")?.cls).toBe("dmr");
@@ -141,7 +144,11 @@ describe("gun tiers", () => {
         expect(gunTier("m1100")?.tier).toBe("C");
         expect(gunTier("colt45")?.tier).toBe("C");
         expect(gunTier("mac10")?.tier).toBe("C+");
-        expect(gunTier("mosin")?.tier).toBe("B");
+        // round 5 (user report 33): the Mosin strong but not top (A), the MK12 / M39 low-tier DMRs (B+)
+        expect(gunTier("mosin")?.tier).toBe("A");
+        expect(gunTier("mk12")?.tier).toBe("B+");
+        expect(gunTier("m39")?.tier).toBe("B+");
+        expect(gunRank("mk12")).toBeLessThan(gunRank("scar"));
         for (const id of ["ot38", "m9", "glock"]) expect(gunTier(id)?.tier, id).toBe("D");
         // the user's order: M249 above an AK above an M9; a Mosin is not top tier
         expect(gunRank("m249")).toBeGreaterThan(gunRank("ak47"));

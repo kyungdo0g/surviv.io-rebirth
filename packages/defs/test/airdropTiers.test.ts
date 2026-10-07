@@ -30,18 +30,20 @@ import { mapObjects, maps } from "./helpers.ts";
  * (packages/bots/src/knowledge/gunTiers.ts ROWS, TIER_ORDER; "est." rows included), which @rebirth/defs cannot import.
  * The survev-only guns (tools/port-survev/policy.json) are not on that list yet: their ranks below are estimates from
  * their wiki stats (Barrett S-aim like the AWM-S, ASh-12 A+, SPAS-16 A like the Saiga-12, IMD-2 A- like the BAR,
- * S&W 500 B+), and the winter skins rank as their base guns.
+ * S&W 500 B+), and the winter skins rank as their base guns. Round 5 (user report 33) re-ranked the MK12 / M39 to B+
+ * (the owner's "low-tier DMRs") and the Mosin to A ("strong but not top, needs aim"), and ranked the PMG-134 A at its
+ * explosion damage (report 34).
  */
 // biome-ignore format: one tier per line
 const RANK: Readonly<Record<string, number>> = {
     m249: 10, pkp: 10, // S
     awc: 9, awc_winter: 9, barrett: 9, // S-aim
     qbb97: 8, sv98: 8, sv98_winter: 8, usas: 8, ash12: 8, // A+
-    mk12: 7, m39: 7, garand: 7, scar: 7, m4a1: 7, saiga: 7, spas12: 7, p30l_dual: 7, svd: 7, scarssr: 7, // A
-    spas16: 7, svd_winter: 7, // A (survev-only)
+    mosin: 7, garand: 7, scar: 7, m4a1: 7, saiga: 7, spas12: 7, p30l_dual: 7, svd: 7, scarssr: 7, // A
+    spas16: 7, svd_winter: 7, potato_lmg: 7, // A (survev-only)
     dp28: 6, bar: 6, imbel: 6, famas: 6, grozas: 6, m870: 6, mp220: 6, vector: 6, scorpion: 6, ots38_dual: 6, // A-
-    mkg45: 5, l86: 5, deagle_dual: 5, sw500: 5, // B+
-    mosin: 4, scout_elite: 4, vss: 4, model94: 4, deagle: 4, ak47: 4, groza: 4, // B
+    mk12: 5, m39: 5, mkg45: 5, l86: 5, deagle_dual: 5, sw500: 5, // B+
+    scout_elite: 4, vss: 4, model94: 4, deagle: 4, ak47: 4, groza: 4, // B
     colt45: 1, // C
     m9: 0, // D
 };
@@ -283,21 +285,19 @@ describe("air drop tier tables", () => {
             expect(gunShare(tier2), name).toBe(1);
             expect(gunShare(tier1), name).toBeLessThanOrEqual(gunShare(tier2));
             // tier 1 vs tier 2 follows the user's examples ("low-tier DMRs, SPAS-12, a bit above AK / Groza" vs
-            // "SCAR-H, Vector"), not the bots' list, which ranks the MK12 / M39 A like the SCAR-H: tier 2's own guns
-            // (all but its low-end filler) reach tier 1 only through its 10 % tier 2 roll
+            // "SCAR-H, Vector"; the bots' list agrees since round 5 ranks the MK12 / M39 B+): tier 2's own guns (all
+            // but its low-end filler) reach tier 1 only through its 10 % tier 2 roll
             const tier2Own = t[AIRDROP_TIER2_TABLE].filter(
                 (e) => gunClass(e.name) && !AIRDROP_LOW_END_GUNS.includes(e.name),
             );
             const tier1Core = new Set(core(t[AIRDROP_TIER1_TABLE]).map((e) => e.name));
             for (const e of tier2Own) expect(tier1Core.has(e.name), `${name} ${e.name}`).toBe(false);
-            if (name === "savannah") {
-                // savannah's normal drop is sniper rifles; the bots' list ranks its Mosin B (the user rates it strong,
-                // not top), which drags tier 2's mean below tier 1's DMRs, so compare the A+ share instead (SV-98,
-                // SVD's peers, SCAR-SSR, AWM-S are tier 2's)
+            // (savannah's normal drop is sniper rifles: the mean held there only through the A+ share while the bots'
+            // list ranked its Mosin B and the MK12 / M39 A; since round 5's re-rank, the owner's, the mean holds on
+            // every map, and savannah keeps the A+ check: SV-98, SVD's peers, SCAR-SSR, AWM-S are tier 2's)
+            expect(meanRank(tier1), name).toBeLessThan(meanRank(tier2));
+            if (name === "savannah")
                 expect(shareAtLeast(tier1, A_PLUS), name).toBeLessThan(shareAtLeast(tier2, A_PLUS));
-            } else {
-                expect(meanRank(tier1), name).toBeLessThan(meanRank(tier2));
-            }
             // tier 1's own guns are at most A (the SPAS-12): A+ and better only through its tier 2 roll
             expect(shareAtLeast(core(t[AIRDROP_TIER1_TABLE]), A_PLUS), name).toBe(0);
             // every tier table entry is something the map can hold: no banned item (savannah)
@@ -323,13 +323,18 @@ describe("air drop tier tables", () => {
             }
             const tier2 = flat(def.lootTable, AIRDROP_TIER2_TABLE);
             const gold = flat(def.lootTable, "tier_airdrop_rare");
-            // snow's gold table has survev's winter AWM-S (awc_winter) instead of the AWM-S
-            expect(meanRank(tier2) + 0.5, name).toBeLessThan(meanRank(gold));
+            // snow's gold table has survev's winter AWM-S (awc_winter) instead of the AWM-S. The lead was 0.5 ranks
+            // until round 5 re-ranked the Mosin, tier 2's most common gun, from B to A (the owner: "strong but not
+            // top"): tier 2's mean rose by about 0.4 on every map, and beach (no Barrett in its gold drop) keeps a
+            // lead of 0.32; the top shares below still separate gold clearly
+            expect(meanRank(tier2) + 0.25, name).toBeLessThan(meanRank(gold));
             // the top (S: M249, PKP; S-aim: AWM-S) is gold's: tier 2 has at most savannah's AWM-S 0.15
             expect(shareAtLeast(tier2, S_AIM), name).toBeLessThan(shareAtLeast(gold, S_AIM) / 4);
-            // the A-or-better share, or A+ where every gold gun is A or better (woods: USAS-12, M249, PKP)
-            const level = shareAtLeast(gold, A) > 0.99 ? A_PLUS : A;
-            expect(shareAtLeast(tier2, level), name).toBeLessThan(shareAtLeast(gold, level));
+            // most of gold's rolls are A or better. Before round 5 tier 2's A-or-better share also had to stay below
+            // gold's; with the Mosin at A (the owner's ranking, report 33) tier 2 (SCAR-H, Mosin, Saiga, SV-98, QBB-97)
+            // holds more A and A+ guns than gold, whose lead is its top (AWM-S, M249, PKP, Barrett: the S-aim share
+            // above) and its mean rank
+            expect(shareAtLeast(gold, A), name).toBeGreaterThan(0.5);
         }
         // snow's gold drop has survev's winter AWM-S skin, not the AWM-S (survev/shared/defs/maps/snowDefs.ts:167)
         const snow = getMapDef("snow").lootTable;

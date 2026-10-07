@@ -76,6 +76,8 @@ export interface Intent {
     moveDir: Vec2 | null;
     /** stand still (accuracy, reviving) */
     stop: boolean;
+    /** a dodge (grenade, air strike): the keys may reverse at once (motor/keys.ts; round 5) */
+    urgent?: boolean;
     /** world point to aim at; null: look where walking */
     aim: Vec2 | null;
     /** contact the aim tracks (0 for none); used for the reaction delay and the aim error */

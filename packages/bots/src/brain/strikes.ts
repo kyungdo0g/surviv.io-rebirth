@@ -5,7 +5,8 @@
 // - a zone is dangerous out to its drawn radius (the view's `rad`, which already includes a variant's growth: the
 //   heavy-shell variant grows its circle by its larger blast) plus the blast of the bombs its planes drop (planes aim
 //   anywhere inside the circle, survev getAirstrikePos, so a bomb at the edge still reaches its blast radius past it:
-//   explosion_bomb_iron rad.max 14 from GameObjectDefs);
+//   explosion_bomb_iron rad.max 14 from GameObjectDefs), less what the variant's marker already adds (round 5:
+//   zoneMargin, the carpet marker covers every blast);
 // - a falling bomb (a throwable with explodeOnImpact: the iron bomb, and any heavier shell a variant drops) is
 //   dangerous out to its own explosion def's rad.max, plus the player's radius and its drift while it falls
 //   (GameConfig.airstrike.bombVel, ~1 s of fall).
@@ -14,14 +15,30 @@
 // clear of the others ("evacuate", above every behaviour but the gas), holstered when nobody is in view (13 u/s with
 // melee out, 12 with a gun: sim player.ts equip speed).
 import { type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, hasDef, WeaponSlot } from "@rebirth/defs";
+import {
+    AIRSTRIKE_VARIANTS,
+    type AirstrikeVariant,
+    GameConfig,
+    GameObjectDefs,
+    hasDef,
+    WeaponSlot,
+} from "@rebirth/defs";
 import { distToSegment } from "../geom.ts";
 import type { WorldModel } from "../perception/world.ts";
 import { addCombatLayer } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 
-/** What a zone's planes drop (sim match/airstrikes.ts updateStrike; variants pick their own: see the header). */
-const ZONE_BOMB = "bomb_iron";
+/**
+ * The margin past a zone's drawn radius (round 5, user reports 27 and 32): planes aim anywhere inside the aim radius,
+ * so a bomb at its edge reaches its blast past it. The drawn radius is the aim radius plus the variant's zoneRadAdd
+ * (defs AIRSTRIKE_VARIANTS), so the margin is the blast of the variant's bomb less that: normal 14 - 0, heavy shells
+ * 38 - 24 (both: aim radius + their own blast), carpet 0 (its marker already covers every blast). It was the iron
+ * bomb's 14 for every zone.
+ */
+function zoneMargin(variant: AirstrikeVariant | undefined): number {
+    const v = AIRSTRIKE_VARIANTS[variant ?? "normal"];
+    return Math.max(0, blastRadius(v.bombType) - v.zoneRadAdd);
+}
 const PLAYER_RAD = GameConfig.player.radius;
 /** A falling bomb drifts along its plane's heading at bombVel u/s for about a second before it lands. */
 const BOMB_DRIFT = GameConfig.airstrike.bombVel;
@@ -93,10 +110,9 @@ export function strikeDangers(ctx: BrainCtx): readonly StrikeDanger[] {
         return hit.list;
     const list: StrikeDanger[] = [];
     const now = ctx.now;
-    const zonePad = blastRadius(ZONE_BOMB);
     for (const z of zones) {
         if (z.kind !== "airstrike" || now >= z.until) continue;
-        list.push({ pos: z.pos, rad: z.rad + zonePad, until: z.until, bomb: false });
+        list.push({ pos: z.pos, rad: z.rad + zoneMargin(z.variant), until: z.until, bomb: false });
     }
     for (const p of model.projectiles) {
         if (!isFallingBomb(p.type)) continue;
