@@ -54,6 +54,13 @@ export interface SimRules {
      * crate_10. The server sets it from AIRDROP_TIERS.
      */
     airdropTiers: boolean;
+    /**
+     * Rebirth new-gun beta (deliberate deviation for testing, docs/research/rebirth-deviations.md "New guns"): the new
+     * guns and the survev-only guns are also common floor loot (defs getGunBetaLootTables; each allowed gun at least
+     * twice, loot/gunBeta.ts). Read when loot is rolled, so set it before the map loot spawns (GameInit.gunBeta). The
+     * server sets it from GUN_BETA; off by default.
+     */
+    gunBeta: boolean;
     /** seconds after the start during which players may still join (survev game.ts canJoin: startedTime < 60) */
     joinWindowSeconds: number;
     /** kills needed to become kill leader (GameConfig.player.killLeaderMinKills) */
@@ -174,6 +181,7 @@ export function defaultRules(): SimRules {
         airdropCrushInstantKill: false,
         airdropCrushArmor: false,
         airdropTiers: true,
+        gunBeta: false,
         joinWindowSeconds: 60,
         killLeaderMinKills: GameConfig.player.killLeaderMinKills,
         minActiveTime: GameConfig.player.minActiveTime,

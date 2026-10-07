@@ -115,9 +115,10 @@ function applyLoadout(ctx: SimContext, player: Player, kit: ResolvedLoadout, opt
     kit.weapons.forEach((weapon, i) => {
         const cur = wm.weapons[i];
         if (!weapon.type) {
-            // an empty kit slot refills the gun already there (fandom: promotion refills the magazine)
+            // an empty kit slot refills the gun already there (fandom: promotion refills the magazine), but for the
+            // rebirth's single-use guns, which are never reloaded (new-gun-stats.md 4.2)
             const def = gunDef(cur.type);
-            if (def) cur.ammo = Math.max(cur.ammo, wm.ammoStats(def).maxClip);
+            if (def && !def.charges) cur.ammo = Math.max(cur.ammo, wm.ammoStats(def).maxClip);
             return;
         }
         const def = getDef(weapon.type);

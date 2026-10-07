@@ -49,7 +49,8 @@ function roundTrip<T>(write: (w: BitWriter) => void, read: (r: BitReader) => T):
 
 describe("survev-only guns on the wire", () => {
     it("schema 10: their game type ids come after every original one, before the rebirth-only ones", () => {
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(10);
+        // 11 added the rebirth new guns after the rebirth-only air strike shell (newGuns.test.ts)
+        expect(PROTOCOL_SCHEMA_VERSION).toBeGreaterThanOrEqual(10);
         const firstRebirth = GameObjectRegistry.typeToId(rebirthOnlyIds[0]);
         for (const id of [...GUNS, "bullet_barrett", "potato_lmgshot", "explosion_potato_lmgshot"]) {
             const n = GameObjectRegistry.typeToId(id);

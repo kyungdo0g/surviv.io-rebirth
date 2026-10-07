@@ -8,13 +8,15 @@
 //    file for the rest. The DOM HUD gets survev's SVG of an original frame unless tools/assets/survev-redrawn.json
 //    names it (survev's later redraws);
 // 4. fills sprites the definitions reference without any file from the fandom image dump; ids the original client also
-//    names without shipping an image are recorded as source "none" (the original drew nothing for them).
+//    names without shipping an image are recorded as source "none" (the original drew nothing for them);
+// 5. installs the beta new guns' loot icons and sounds from the owner's gitignored assets-user/ (newGunInstall.ts).
 // Usage: pnpm assets [--check-only] [--atlas-out research-cache/atlas]
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import type { SpriteIndex } from "./atlasInventory.ts";
+import { installNewGunAssets, summarize } from "./newGunInstall.ts";
 import { pngSize } from "./png.ts";
 import {
     ASSET_DEST,
@@ -173,3 +175,6 @@ console.log(
 console.log(`defs reference ${refs.size} sprites; without a file: ${absent.length} absent in the original too`);
 if (absent.length) console.log(`absent in the original too: ${absent.join(", ")}`);
 if (missing.length) console.log(`MISSING: ${missing.join(", ")}`);
+
+// 5. the beta new guns (after the original files, which stand in for anything the owner has not supplied)
+if (!checkOnly) for (const line of summarize(installNewGunAssets({ dest: ASSET_DEST }))) console.log(line);

@@ -17,7 +17,7 @@
 // they sit on gain nodes, so playing sounds follow a slider at once.
 import type { Vec2 } from "@rebirth/core";
 import { AudioBuses } from "./filters.ts";
-import { Channels, soundDef, soundGroup } from "./soundDefs.ts";
+import { Channels, soundDef, soundFallback, soundGroup } from "./soundDefs.ts";
 
 const ASSET_ROOT = "/assets/";
 const BASE_VOLUME = 0.5;
@@ -195,9 +195,14 @@ export class AudioEngine {
         let promise = this.loading.get(path);
         if (!promise) {
             const ctx = this.ctx;
-            promise = fetch(ASSET_ROOT + path)
-                .then((res) => (res.ok ? res.arrayBuffer() : Promise.reject(new Error(`HTTP ${res.status}`))))
-                .then((data) => ctx.decodeAudioData(data))
+            const fetchDecode = (file: string) =>
+                fetch(ASSET_ROOT + file)
+                    .then((res) => (res.ok ? res.arrayBuffer() : Promise.reject(new Error(`HTTP ${res.status}`))))
+                    .then((data) => ctx.decodeAudioData(data));
+            // a rebirth sound whose file is not installed plays its donor's original (soundDefs.ts soundFallback)
+            const fallback = soundFallback(path);
+            promise = fetchDecode(path)
+                .catch((err) => (fallback ? fetchDecode(fallback) : Promise.reject(err)))
                 .then((buffer) => {
                     this.buffers.set(path, buffer);
                     return buffer;

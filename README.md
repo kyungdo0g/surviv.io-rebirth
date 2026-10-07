@@ -63,7 +63,13 @@ inside two factions of `FACTION_MAX_PLAYERS`, default 100). Its scheduled air st
 normal, heavy shells (a much larger blast) and carpet bombing (6 planes over a wider area), weighted by
 `AIRSTRIKE_VARIANTS` (default `normal:60,heavy:25,carpet:15`; `normal` turns them off). Normal air drops are tier 1 or
 tier 2 drops whose opened crate shows its tier (one silver or two blue stars), the gold drop unchanged;
-`AIRDROP_TIERS=off` restores the original drops. Every variable is listed in
+`AIRDROP_TIERS=off` restores the original drops. The owner's 30 new guns (a beta: AK-74, P90, DP-12, DShK, the
+M79 / RPG-7 / Panzerfaust / M202 launchers and more) spawn per their balance sheet; `GUN_BETA=on` also makes them and
+the survev-only guns (Barrett M107, ASh-12, S&W 500, IMD-2, SPAS-16) common floor loot on every map for testing, each
+at least twice per map
+(`/?beta=1` in the dev sandbox, `/?give=rpg7,dshk` to hold any gun). They are held as plain bars for now; their loot
+icons and sounds come from the owner's gitignored `assets-user/` (`pnpm assets`, or `node tools/assets/newGuns.ts`
+alone), with original guns' icons and sounds wherever a file is missing. Every variable is listed in
 [`docs/deploy.md`](docs/deploy.md#environment-variables).
 
 ## Run a server

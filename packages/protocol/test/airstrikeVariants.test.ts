@@ -49,8 +49,8 @@ function roundTrip<T>(write: (w: BitWriter) => void, read: (r: BitReader) => T):
 const near = (a: Vec2, b: Vec2) => expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeLessThan(0.05);
 
 describe("air strike variants on the wire", () => {
-    it("schema 9 (10 since the survev guns) carries the variant of every zone", () => {
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(10);
+    it("schema 9 (10 since the survev guns, 11 since the new guns) carries the variant of every zone", () => {
+        expect(PROTOCOL_SCHEMA_VERSION).toBe(11);
         const zones: AirstrikeZoneView[] = AIRSTRIKE_VARIANT_IDS.map((variant, i) => ({
             id: i + 1,
             variant,
@@ -94,7 +94,8 @@ describe("air strike variants on the wire", () => {
     });
 
     it("the heavy shell and its explosion serialize through the registry, after every generated type", () => {
-        expect(rebirthOnlyIds).toEqual(["bomb_heavy", "explosion_bomb_heavy"]);
+        // the shell and its explosion first; the rebirth's new guns follow them (newGuns.test.ts)
+        expect(rebirthOnlyIds.slice(0, 2)).toEqual(["bomb_heavy", "explosion_bomb_heavy"]);
         const firstRebirthId = GameObjectRegistry.typeToId("bomb_heavy");
         expect(GameObjectRegistry.idToType(firstRebirthId - 1)).not.toBe("explosion_bomb_heavy");
         expect(GameObjectRegistry.typeToId("explosion_bomb_heavy")).toBe(firstRebirthId + 1);

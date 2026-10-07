@@ -23,6 +23,8 @@ services:
             AIRSTRIKE_VARIANTS: "${AIRSTRIKE_VARIANTS:-}"
             # normal air drops split into tier 1 / tier 2 drops (on; "off" = v0.8.82 drops; docs/deploy.md)
             AIRDROP_TIERS: "${AIRDROP_TIERS:-}"
+            # new-gun beta: the new and survev-only guns as common floor loot (off; "on" to try them; docs/deploy.md)
+            GUN_BETA: "${GUN_BETA:-}"
             MAX_PLAYERS: "${MAX_PLAYERS:-80}"
             MAX_GAMES: "${MAX_GAMES:-16}"
             MIN_PLAYERS: "${MIN_PLAYERS:-2}"

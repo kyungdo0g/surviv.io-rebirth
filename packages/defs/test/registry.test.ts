@@ -62,8 +62,9 @@ describe("PROTOCOL_HASH", () => {
         expect(PROTOCOL_HASH).toBeGreaterThanOrEqual(0);
         expect(PROTOCOL_HASH).toBeLessThan(2 ** 32);
         // 9: rebirth air strike variants (zone variant bits, the heavy shell's game types, the rebirth scorch decals)
-        // and the air drop tier crates; 10: the survev-only guns' game types before the rebirth-only ones
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(10);
+        // and the air drop tier crates; 10: the survev-only guns' game types before the rebirth-only ones; 11: the
+        // rebirth new guns' game types and their three ammo rows in the bag
+        expect(PROTOCOL_SCHEMA_VERSION).toBe(11);
         expect(PROTOCOL_HASH).toBe(
             computeProtocolHash(PROTOCOL_SCHEMA_VERSION, GameObjectRegistry.types, MapObjectRegistry.types),
         );

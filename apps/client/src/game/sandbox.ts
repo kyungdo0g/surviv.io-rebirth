@@ -43,6 +43,8 @@ export interface SandboxOptions {
     loot?: boolean;
     /** comma-separated items for the local player: guns with full ammo, bag items filled (net/loopback.ts) */
     give?: string;
+    /** rebirth new-gun beta (the server's GUN_BETA): the new and survev-only guns are common floor loot */
+    gunBeta?: boolean;
     /**
      * Loopback match rules: true (default) for the sandbox (starts at once, never ends, always joinable); false for
      * a real match (two players alive for 10 s start it, the last one alive wins).
@@ -160,6 +162,7 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
                     spawnLoot: opts.loot ?? true,
                     sandbox: opts.sandbox ?? true,
                     gasStages: gasStagesFor(opts.gas),
+                    gunBeta: opts.gunBeta ?? false,
                 },
                 dummies: opts.dummies,
                 teammates: opts.teammates,
@@ -491,6 +494,12 @@ function exposeM6(client: GameClient): void {
     globals.playerView = (id: number) => client.world?.get(id) ?? null;
     /** bleed splats a player's view has spawned */
     globals.playerBleeds = (id: number) => (client.world?.renderOf(id) as PlayerRender | undefined)?.bleeds ?? 0;
+    /** the right-hand gun sprite a player's view draws: texture id, drawn length in sprite px (rebirth bar guns) */
+    globals.heldGun = (id: number) => {
+        const sprite = (client.world?.renderOf(id) as any)?.gunR?.container?.children?.[0];
+        if (!sprite?.texture) return null;
+        return { texture: sprite.texture.label as string, height: sprite.texture.height * Math.abs(sprite.scale.y) };
+    };
 }
 
 /** M5 test hooks: explosions, projectiles, smoke, air strike zones, doors, roofs, layers and ambience. */

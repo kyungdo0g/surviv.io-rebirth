@@ -30,7 +30,7 @@
 //   PlayerInfoView.
 // Helpers living next to the contract: `gasCircle(gas)` (current red-zone circle) and `gasTimeLeft(gas)` in
 // match/gas.ts, `damageSourceOf()` in match/events.ts.
-// Match lifecycle knobs are construction options (GameInit in game.ts): the client's loopback passes
+// Match lifecycle knobs are construction options (GameInit in gameInit.ts): the client's loopback passes
 // `{ sandbox: true }` (the match starts on the first step with a single player, never ends and always accepts
 // joins); servers pass `minPlayers`. Until the match starts `gas.mode` is "inactive" ("Waiting for players").
 // Dead players spectate through `Game.spectate(id, "begin" | "next" | "prev")` (the Spectate message).

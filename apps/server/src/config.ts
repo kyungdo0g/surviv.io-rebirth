@@ -36,6 +36,12 @@ export interface ServerConfig {
      * crate weights and inner crate), copied into every game's rules.airdropTiers
      */
     airdropTiers: boolean;
+    /**
+     * Rebirth new-gun beta (GUN_BETA "on" / "1" / "true", any case; "off", the default): the new guns and the
+     * survev-only guns are also common floor loot on every map (each at least twice), for trying them out; copied into
+     * every game's rules.gunBeta at creation
+     */
+    gunBeta: boolean;
     /** games this server runs at most */
     maxGames: number;
     /** map of games created when find_game names none */
@@ -149,6 +155,18 @@ const EnvSchema = z.object({
         .enum(["on", "off"], { message: 'expected "on" or "off"' })
         .transform((v) => v === "on")
         .default(true),
+    // any case ("ON", "True"); the message names every accepted value
+    GUN_BETA: z
+        .string()
+        .trim()
+        .toLowerCase()
+        .pipe(
+            z.enum(["on", "off", "1", "0", "true", "false"], {
+                message: 'expected "on", "off", "1", "0", "true" or "false" (any case)',
+            }),
+        )
+        .transform((v) => v === "on" || v === "1" || v === "true")
+        .default(false),
     MAX_CONNECTIONS_PER_IP: z.coerce.number().int().min(1).default(5),
     MAX_MSGS_PER_SECOND: z.coerce.number().int().min(1).default(500),
     JOIN_TOKEN_TTL_MS: z.coerce.number().int().min(1).default(10_000),
@@ -228,6 +246,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         factionMaxPlayers: e.FACTION_MAX_PLAYERS,
         airstrikeVariants: e.AIRSTRIKE_VARIANTS ?? { ...DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS },
         airdropTiers: e.AIRDROP_TIERS,
+        gunBeta: e.GUN_BETA,
         maxGames: e.MAX_GAMES,
         defaultMap: e.MAP_NAME,
         modes: e.MODES ? parseModes(e.MODES) : defaultModes(e.MAP_NAME),

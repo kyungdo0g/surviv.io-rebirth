@@ -118,7 +118,11 @@ export class GameRoom {
         this.config = config;
         this.mapName = mapName;
         this.teamMode = teamMode;
-        this.game = new Game({ mapName, seed: seed >>> 0, teamMode }, { minPlayers: config.minPlayers });
+        // rebirth new-gun beta (GUN_BETA): read when the map loot spawns, so it goes in at creation
+        this.game = new Game(
+            { mapName, seed: seed >>> 0, teamMode },
+            { minPlayers: config.minPlayers, gunBeta: config.gunBeta },
+        );
         // rebirth 50v50 air strike variants (AIRSTRIKE_VARIANTS; the sim rolls them on faction maps only)
         this.game.rules.roles.factionAirstrikeVariants = { ...config.airstrikeVariants };
         // rebirth air drop tiers (AIRDROP_TIERS; off: the v0.8.82 crate weights and inner crates)
