@@ -1,5 +1,5 @@
 {
-    "$comment": "Port policy (docs/adr/0003-survev-baseline.md, docs/design/survev-content-and-new-guns.md section 5.1). survevOnlyGameObjects: survev-only game objects ported as survev has them, appended after every original id in survev order (the owner, 2026-10-07: add what only survev.io has, the guns first). survevSkins: survev-only reskins built from the original def of their base plus the fields survev's skin changes against survev's base (same stats as the base). survevGameConfig: GameConfig paths taken from survev instead of the original (arrays cut to the original's length, so bags keep 4 levels). Later waves extend these lists. survevMapGen: map generation as survev has it (no map-spawn balance reverts, no fork-reskin revert, only the loot parts of the event-map fixes). survevMapObjects: original map objects whose survev def replaces the original (survev content wave stage 3: the Reserve's desert town, red houses, Chrysanthemum and Twins bunkers). Stage 4 adds survev's cosmetics: heal and boost effects, emotes and outfits (no quests or passes: survev meta content is out of scope).",
+    "$comment": "Port policy (docs/adr/0003-survev-baseline.md, docs/design/survev-content-and-new-guns.md section 5.1). survevOnlyGameObjects: survev-only game objects ported as survev has them, appended after every original id in survev order (the owner, 2026-10-07: add what only survev.io has, the guns first). survevSkins: survev-only reskins built from the original def of their base plus the fields survev's skin changes against survev's base (same stats as the base). survevGameConfig: GameConfig paths taken from survev instead of the original (arrays cut to the original's length, so bags keep 4 levels). Later waves extend these lists. survevMapGen: map generation as survev has it (no map-spawn balance reverts, no fork-reskin revert, only the loot parts of the event-map fixes). survevMapObjects: original map objects whose survev def replaces the original (survev content wave stage 3: the Reserve's desert town, red houses, Chrysanthemum and Twins bunkers). survevMapObjects also takes the Chrysanthemum vault door (survev opens it by the planter puzzle only) and the two trees whose art only survev has (tree_01x, tree_13: the original defs scale a sprite the original client lacks). Stage 4 adds survev's cosmetics: heal and boost effects, emotes and outfits (no quests or passes: survev meta content is out of scope).",
     "survevOnlyGameObjects": [
         "bullet_barrett",
         "bullet_sw500",
@@ -106,6 +106,9 @@
         "bunker_chrys_compartment_03",
         "bunker_twins_01",
         "bunker_twins_sublevel_01",
-        "bunker_twins_compartment_01"
+        "bunker_twins_compartment_01",
+        "vault_door_chrys_01",
+        "tree_01x",
+        "tree_13"
     ]
 }

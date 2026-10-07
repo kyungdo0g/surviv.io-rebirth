@@ -3,7 +3,8 @@
 // (pieces 1 2 3 4 2 5, survev shared/defs/puzzles.ts reserve_vault; wikigg The_Reserve), its security panel closes
 // and locks the basement doors for 12 s (survev furnitureDefs control_panel_07de), camps and the Oasis heal (building
 // healRegions, survev modeBuildingDefs camp_01 / oasis_01), the Workshop's wall mount holds the SPAS-16, Cobalt's
-// Augmenting Vat promotes to Classless, and the Cloud bunker's panel locks its lab doors.
+// Augmenting Vat promotes to Classless, the Cloud bunker's panel locks its lab doors, and the Chrysanthemum bunker's
+// vault opens to its planter puzzle only.
 import { DamageType } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { type Building, type Game, interactObstacle, type Obstacle } from "../src/index.ts";
@@ -63,6 +64,28 @@ describe("the Reserve", () => {
         for (const d of doors) expect(d.door).toMatchObject({ open: false, locked: true });
         stepSeconds(game, 12);
         for (const d of doors) expect(d.door?.locked).toBe(false);
+    });
+});
+
+describe("the Chrysanthemum bunker's planter vault", () => {
+    // survev puzzles.ts bunker_chrys_02 and vault_door_chrys_01 canUse false (policy survevMapObjects)
+    it("the vault door does not open by hand, only after the planters flower, leaves, moon, frost", () => {
+        const game = mapGame("main", 1);
+        const room = findBuilding(game, "bunker_chrys_compartment_01");
+        const [door] = childObstacles(game, room, "vault_door_chrys_01");
+        const p = placePlayer(game, door.pos, room.layer);
+        interactObstacle(game, door, p);
+        stepSeconds(game, 6);
+        expect(door.door?.open).toBe(false);
+        const pieces = pieceList(game, room);
+        expect(pieces.map((o) => o.puzzlePiece).sort()).toEqual(["flower", "frost", "leaves", "moon"]);
+        for (const label of ["flower", "leaves", "moon", "frost"]) {
+            interactObstacle(game, pieces.find((o) => o.puzzlePiece === label)!, p);
+            game.step();
+        }
+        expect(room.puzzle?.solved).toBe(true);
+        stepSeconds(game, 11);
+        expect(door.door?.open).toBe(true);
     });
 });
 

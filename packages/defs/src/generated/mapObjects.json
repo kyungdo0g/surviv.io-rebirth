@@ -15459,8 +15459,7 @@
         "x": 0,
         "y": 0
       },
-      "rad": 1.55,
-      "height": 0
+      "rad": 1.55
     },
     "aabb": {
       "type": 1,
@@ -15471,8 +15470,7 @@
       "max": {
         "x": 5.75,
         "y": 5.75
-      },
-      "height": 0
+      }
     },
     "height": 10,
     "collidable": true,
@@ -15495,7 +15493,7 @@
     "img": {
       "sprite": "map-tree-01x.img",
       "residue": "map-tree-res-01.img",
-      "scale": 0.7,
+      "scale": 0.35,
       "alpha": 1,
       "tint": 16777215,
       "zIdx": 800
@@ -17192,9 +17190,9 @@
   "tree_13": {
     "type": "obstacle",
     "scale": {
-      "createMin": 0.8,
-      "createMax": 1,
-      "destroy": 0.5
+      "createMin": 1.15,
+      "createMax": 1.3,
+      "destroy": 0.75
     },
     "collision": {
       "type": 0,
@@ -17202,8 +17200,7 @@
         "x": 0,
         "y": 0
       },
-      "rad": 1.55,
-      "height": 0
+      "rad": 1
     },
     "aabb": {
       "type": 1,
@@ -17214,8 +17211,7 @@
       "max": {
         "x": 5.75,
         "y": 5.75
-      },
-      "height": 0
+      }
     },
     "height": 10,
     "collidable": true,
@@ -17238,10 +17234,11 @@
     "img": {
       "sprite": "map-tree-13.img",
       "residue": "map-tree-res-01.img",
-      "scale": 0.7,
+      "scale": 0.35,
       "alpha": 1,
       "tint": 16777215,
-      "zIdx": 801
+      "zIdx": 801,
+      "randomRotation": true
     },
     "sound": {
       "bullet": "tree_bullet",
@@ -20952,8 +20949,7 @@
       "max": {
         "x": 2,
         "y": 7
-      },
-      "height": 0
+      }
     },
     "height": 10,
     "collidable": true,
@@ -20964,7 +20960,7 @@
     "reflectBullets": true,
     "door": {
       "interactionRad": 1.5,
-      "canUse": true,
+      "canUse": false,
       "openSpeed": 0.23,
       "openOneWay": -1,
       "openDelay": 4.1,
@@ -21000,15 +20996,7 @@
       "explode": "barrel_break_01",
       "enter": "none"
     },
-    "material": "metal",
-    "hinge": {
-      "x": 1,
-      "y": 3.5
-    },
-    "extents": {
-      "x": 1,
-      "y": 3.5
-    }
+    "material": "metal"
   },
   "vault_door_chrys_02": {
     "type": "obstacle",

@@ -107,6 +107,11 @@ may not touch, the schema number used and open questions.
   side table is gone (`mapgen/placement.ts teamIdOf` reads `teamId`) and `canSpawn` enforces
   `minDistanceFromSameType` (`mapgen/generator.ts`). Before, the Soviet / Initiative crates and the Silo Shack spawned
   anywhere. main seed 12345 golden hash: `7f48d105692eadcd` -> `e856eb5e71684e02` (tree_13 on the beach).
+- Wiki description audit (first half): `vault_door_chrys_01` opened by hand, so the Chrysanthemum planter puzzle was
+  pointless; `tree_13` (Oasis palms) and `tree_01x` (snow trees) drew at twice survev's size (original defs, survev-only
+  art). All three now take survev's def (`survevMapObjects`); main 12345 golden `e6817bd488ca1b1a`. Test:
+  `survevBuildings.test.ts` "the Chrysanthemum bunker's planter vault". Loot differences the audit found (saloon
+  crimson .50s, hatchet case, cattle crate, chrys scopes, DEagle cases) are balance reverts: stage 5.
 - Showcase: `river_town_01` added (faction, on a 20-wide river); 140 entries. Spawn spots now start at the object's
   bounds (front first), so wide buildings are on screen.
 - Checked and left as is: River Town's `goreRegion` (survev uses it only for quests: out of scope); faction crates'
@@ -170,7 +175,7 @@ already recorded in `docs/research/conflicts.md#survev-throwable-cookable`.
 ### 4. Bot tests broken by survev's map generation (stage 3) — `packages/bots/test/**` (lead-owned, not touched)
 
 survev's map generation moves every object of `main` seed 12345 (golden hash `555953c84482c164` -> `7f48d105692eadcd`,
-then `e856eb5e71684e02` in the 50v50 stage; the ids below still hold),
+then `e856eb5e71684e02` and `e6817bd488ca1b1a` in later stages; the ids below still hold),
 so the bot tests that pin object ids or coordinates of that map fail:
 - `walk.test.ts`, `nav.test.ts`, `nav.follower.test.ts`: `house_red_02` id 1391 no longer exists. The main 12345
   `house_red_02`s are now ids 1402 (610.1, 583.7, ori 0), 1440 (491.3, 144.5, ori 1) and 1478 (127.3, 501.2, ori 3).

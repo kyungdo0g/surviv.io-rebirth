@@ -114,7 +114,10 @@
       "bunker_chrys_compartment_03",
       "bunker_twins_01",
       "bunker_twins_sublevel_01",
-      "bunker_twins_compartment_01"
+      "bunker_twins_compartment_01",
+      "vault_door_chrys_01",
+      "tree_01x",
+      "tree_13"
     ]
   },
   "gameObjects": {
@@ -1077,7 +1080,7 @@
     "tree_01cb": "original",
     "tree_01sv": "original",
     "tree_interior_01": "original",
-    "tree_01x": "original",
+    "tree_01x": "survev-override",
     "tree_02": "original",
     "tree_02h": "original",
     "tree_03": "original",
@@ -1104,7 +1107,7 @@
     "tree_10": "original",
     "tree_11": "original",
     "tree_12": "original",
-    "tree_13": "original",
+    "tree_13": "survev-override",
     "tree_switch_01": "original",
     "tree_switch_02": "original",
     "tree_switch_03": "original",
@@ -1141,7 +1144,7 @@
     "lab_door_chrys": "original",
     "bunker_chrys_sublevel_01": "original",
     "bunker_chrys_sublevel_01b": "original",
-    "vault_door_chrys_01": "original",
+    "vault_door_chrys_01": "survev-override",
     "vault_door_chrys_02": "original",
     "bunker_chrys_compartment_01": "survev-override",
     "bunker_chrys_compartment_01b": "original",
@@ -16528,18 +16531,6 @@
         "beach": true,
         "riverShore": true,
         "minDistanceFromSameType": 32
-      }
-    },
-    {
-      "id": "tree_13",
-      "field": "terrain",
-      "original": {
-        "grass": true,
-        "beach": false
-      },
-      "survev": {
-        "grass": false,
-        "beach": true
       }
     },
     {
