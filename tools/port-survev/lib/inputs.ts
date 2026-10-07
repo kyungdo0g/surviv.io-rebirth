@@ -34,7 +34,7 @@ export interface Inputs {
 
 export function loadLive(root: string): LiveDefs {
     const file = join(root, "research-cache/live/defs.json");
-    if (!existsSync(file)) throw new Error(`${file} missing: run sh tools/port-survev/fetch.sh`);
+    if (!existsSync(file)) throw new Error(`${file} missing: run pnpm survev:fetch`);
     const raw = JSON.parse(readFileSync(file, "utf8"));
     const maps = new Map<number, any>();
     for (const def of Object.values<any>(raw.mapDefCandidates ?? {})) {
@@ -101,7 +101,7 @@ function loadGasStages(root: string, gasMode: Record<string, number>): unknown[]
 
 export async function loadSurvev(root: string, notes: string[]): Promise<SurvevDefs> {
     const shared = join(root, ".survev/shared");
-    if (!existsSync(shared)) throw new Error(".survev missing: run sh tools/port-survev/fetch.sh");
+    if (!existsSync(shared)) throw new Error(".survev missing: run pnpm survev:fetch");
     const commit = execFileSync("git", ["-C", join(root, ".survev"), "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
     if (commit !== SURVEV_COMMIT) console.warn(`warning: .survev is at ${commit}, expected ${SURVEV_COMMIT}`);
     const load = (rel: string) => import(pathToFileURL(join(shared, rel)).href);

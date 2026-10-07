@@ -25,6 +25,8 @@ import type { ObstacleRender } from "../objects/obstacle.ts";
 import type { PlayerRender } from "../objects/player.ts";
 import { showToast } from "../ui/toast.ts";
 import { GameClient } from "./client.ts";
+import { exposeHitFx } from "./debugHitFx.ts";
+import { exposeLayerFx } from "./debugLayers.ts";
 import { exposeM7 } from "./debugM7.ts";
 import { exposeM8 } from "./debugM8.ts";
 import { exposeM9 } from "./debugM9.ts";
@@ -43,6 +45,8 @@ export interface SandboxOptions {
     loot?: boolean;
     /** comma-separated items for the local player: guns with full ammo, bag items filled (net/loopback.ts) */
     give?: string;
+    /** rebirth new-gun beta (the server's GUN_BETA): the new and survev-only guns are common floor loot */
+    gunBeta?: boolean;
     /**
      * Loopback match rules: true (default) for the sandbox (starts at once, never ends, always joinable); false for
      * a real match (two players alive for 10 s start it, the last one alive wins).
@@ -160,6 +164,7 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
                     spawnLoot: opts.loot ?? true,
                     sandbox: opts.sandbox ?? true,
                     gasStages: gasStagesFor(opts.gas),
+                    gunBeta: opts.gunBeta ?? false,
                 },
                 dummies: opts.dummies,
                 teammates: opts.teammates,
@@ -271,6 +276,8 @@ function exposeGlobals(
     exposeM7(client);
     exposeM8(client);
     exposeM9(client);
+    exposeLayerFx(client);
+    exposeHitFx(client, loopback?.game);
     globals.interaction = () => client.interaction;
     globals.audio = {
         get unlocked() {
@@ -491,6 +498,12 @@ function exposeM6(client: GameClient): void {
     globals.playerView = (id: number) => client.world?.get(id) ?? null;
     /** bleed splats a player's view has spawned */
     globals.playerBleeds = (id: number) => (client.world?.renderOf(id) as PlayerRender | undefined)?.bleeds ?? 0;
+    /** the right-hand gun sprite a player's view draws: texture id, drawn length in sprite px (rebirth bar guns) */
+    globals.heldGun = (id: number) => {
+        const sprite = (client.world?.renderOf(id) as any)?.gunR?.container?.children?.[0];
+        if (!sprite?.texture) return null;
+        return { texture: sprite.texture.label as string, height: sprite.texture.height * Math.abs(sprite.scale.y) };
+    };
 }
 
 /** M5 test hooks: explosions, projectiles, smoke, air strike zones, doors, roofs, layers and ambience. */
@@ -506,7 +519,14 @@ function exposeM5(client: GameClient): void {
         get projectiles() {
             const p = client.worldFx?.projectiles;
             return p
-                ? { count: p.count, visible: p.visibleCount, shadows: p.shadowCount, maxPosZ: p.maxPosZ, topZ: p.topZ }
+                ? {
+                      count: p.count,
+                      visible: p.visibleCount,
+                      shadows: p.shadowCount,
+                      maxPosZ: p.maxPosZ,
+                      topZ: p.topZ,
+                      strobes: p.strobes,
+                  }
                 : null;
         },
         get smokes() {
@@ -530,6 +550,10 @@ function exposeM5(client: GameClient): void {
         /** tint of the last map-event ping's edge indicator (rebirth: ping_airstrike takes the zone's colour) */
         get pingTint() {
             return client.pingIndicator.tint;
+        },
+        /** map-event pings on the minimap with their icon tint (rebirth: the variant strobes' pings) */
+        get mapPings() {
+            return client.minimap?.indicators.eventPings ?? [];
         },
         /** burst particle scale last drawn for an explosion type (rebirth: sized from the def radius) */
         burstScale: (type: string) => client.worldFx?.explosions.lastBurstScale.get(type) ?? 0,

@@ -6,12 +6,20 @@
 // - explosions in view, the kill feed (with positions only where the bot last saw the killer or the victim, or the
 //   victim's dead body), teammates' pings (EmoteEvent isPing), the kill leader;
 // - air drops (the "ping_airdrop" map indicator appears when the crate is released and it lands
-//   GameConfig.airdrop.fallTime later; falling crates in view; the crate obstacle once seen), air strikes ("ping_airstrike"
+//   GameConfig.airdrop.fallTime later; falling crates in view; the crate obstacle once seen), air strikes ("ping_airstrike" and the variant strobes' pings
 //   indicators of strobes and 50v50 zones, the zones themselves), planes coming into view, live grenades in view.
 // Events go to a 64-entry ring buffer on the simulation clock; `heat` sums them with a recency weight. Pure and
 // deterministic: no rng, no wall clock.
 import { type Vec2, v2 } from "@rebirth/core";
-import { AIRSTRIKE_VARIANTS, type AirstrikeVariant, GameConfig, GameObjectDefs, hasDef } from "@rebirth/defs";
+import {
+    AIRSTRIKE_VARIANTS,
+    type AirstrikeVariant,
+    airstrikePingVariant,
+    GameConfig,
+    GameObjectDefs,
+    hasDef,
+    isAirstrikePing,
+} from "@rebirth/defs";
 import type { Snapshot } from "@rebirth/sim";
 import { bulletOrigin } from "./bulletSight.ts";
 import type {
@@ -335,9 +343,15 @@ export class ThreatTracker implements ThreatBoard {
                     crateSeen: Number.NEGATIVE_INFINITY,
                 });
                 this.push("airdrop", ind.pos, 0);
-            } else if (ind.type === "ping_airstrike" && !ind.dead) {
+            } else if (isAirstrikePing(ind.type) && !ind.dead) {
                 if (this.strikes.some((z) => v2.distance(z.pos, ind.pos) < 2 && z.until > this.now)) continue;
-                const variant = snap.airstrikeZones?.find((z) => v2.distance(z.pos, ind.pos) < SAME_STRIKE)?.variant;
+                // a 50v50 zone names its variant on its zone view; a variant strobe's ping names it in its type
+                // (ping_airstrike_heavy / ping_airstrike_carpet, defs rebirth/strobes.ts)
+                const pinged = airstrikePingVariant(ind.type);
+                const variant =
+                    pinged && pinged !== "normal"
+                        ? pinged
+                        : snap.airstrikeZones?.find((z) => v2.distance(z.pos, ind.pos) < SAME_STRIKE)?.variant;
                 const danger = strikeDanger(variant);
                 this.strikes.push({
                     kind: "airstrike",

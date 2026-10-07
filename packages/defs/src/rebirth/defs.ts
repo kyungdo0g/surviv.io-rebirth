@@ -2,8 +2,10 @@
 // keeps its wire id. Deliberate rebirth additions requested by the user (2026-10-07): the heavy shell of the "heavy"
 // 50v50 air strike variant (rebirth/airstrikeVariants.ts holds its values and why), the scorch decals of the two
 // enlarged blasts (the heavy shell, the x1.3 frag grenade) and the tier 1 / tier 2 inner crates of the normal air drop
-// (rebirth/airdropTiers.ts, airdropLoot.ts).
-import type { DecalDef, ExplosionDef, GameObjectDef, MapObjectDef, ThrowableDef } from "../types/index.ts";
+// (rebirth/airdropTiers.ts, airdropLoot.ts); then the owner's new guns with their ammo, bullets and explosions
+// (rebirth/newGuns.ts, the beta of 2026-10-07); then the variant strobes and their air strike pings
+// (rebirth/strobes.ts).
+import type { DecalDef, ExplosionDef, GameObjectDef, MapObjectDef, PingDef, ThrowableDef } from "../types/index.ts";
 import { airdropTierCrates } from "./airdropLoot.ts";
 import {
     HEAVY_BOMB_DECAL_TYPE,
@@ -13,15 +15,23 @@ import {
     IRON_BOMB_RAD_MAX,
 } from "./airstrikeVariants.ts";
 import { FRAG_DECAL_TYPE, FRAG_RADIUS_MULT, scaleDefValue } from "./deviations.ts";
+import { newGunDefs } from "./newGuns.ts";
+import { airstrikePingDefs, strobeVariantDefs } from "./strobes.ts";
 
 /**
  * The rebirth-only game objects, built from the generated air strike bomb so they follow its sprites, sounds and
  * physics: `bomb_heavy` is bomb_iron with its own explosion and a bigger sprite; `explosion_bomb_heavy` is
  * explosion_bomb_iron with the heavy shell's damage, radius and shrapnel, its own client explosion effect
  * ("bomb_heavy": a bigger, longer burst sized from the radius, a lower and louder boom and a stronger shake;
- * apps/client fx/explosions.ts) and its own, larger scorch decal. Both keep the iron bomb's shrapnel type.
+ * apps/client fx/explosions.ts) and its own, larger scorch decal. Both keep the iron bomb's shrapnel type. The new guns
+ * and their defs follow (newGunDefs), so the air strike ids keep their place; then the variant strobes `strobe_heavy`
+ * and `strobe_carpet`, built from `deviated`'s strobe (its survev strikeDelay), and their pings `ping_airstrike_heavy`
+ * and `ping_airstrike_carpet` (rebirth/strobes.ts).
  */
-export function rebirthOnlyDefs(generated: Readonly<Record<string, GameObjectDef>>): Record<string, GameObjectDef> {
+export function rebirthOnlyDefs(
+    generated: Readonly<Record<string, GameObjectDef>>,
+    deviated: Readonly<Record<string, GameObjectDef>> = generated,
+): Record<string, GameObjectDef> {
     const iron = generated.bomb_iron as ThrowableDef;
     const ironExplosion = generated.explosion_bomb_iron as ExplosionDef;
     const bombHeavy: ThrowableDef = {
@@ -39,7 +49,13 @@ export function rebirthOnlyDefs(generated: Readonly<Record<string, GameObjectDef
         decalType: HEAVY_BOMB_DECAL_TYPE,
         shrapnelCount: HEAVY_BOMB_EXPLOSION.shrapnelCount,
     };
-    return { bomb_heavy: bombHeavy, explosion_bomb_heavy: explosionHeavy };
+    return {
+        bomb_heavy: bombHeavy,
+        explosion_bomb_heavy: explosionHeavy,
+        ...newGunDefs(),
+        ...strobeVariantDefs(deviated.strobe as ThrowableDef),
+        ...airstrikePingDefs(generated.ping_airstrike as PingDef),
+    };
 }
 
 /** `decal` with its sprite scaled by `mult` (same sprite, tint, layer, lifetime and fade chance). */

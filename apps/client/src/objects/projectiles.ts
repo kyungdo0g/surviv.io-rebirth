@@ -6,12 +6,13 @@
 // snapshots like other objects. Air strike bombs are drawn above everything on the ground floor and are invisible
 // when they fall onto a roof (the original hides them indoors).
 // Rebirth addition: a soft ground shadow under every projectile that drifts away and fades as it rises, so the
-// throw arc reads at a glance (the original conveys the height by the sprite scale alone).
+// throw arc reads at a glance (the original conveys the height by the sprite scale alone). The rebirth variant strobes
+// (defs STROBE_STRIKES) are drawn recoloured in their variant's colour (worldImg.recolor), their light pulse too.
 import type { Vec2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, isAirstrikeBomb, type ThrowableDef } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, isAirstrikeBomb, isStrobe, type ThrowableDef } from "@rebirth/defs";
 import type { ProjectileView } from "@rebirth/sim";
 import { Container, ImageSource, type Sprite, Texture } from "pixi.js";
-import type { TextureStore } from "../assets/textures.ts";
+import { greySpriteId, type TextureStore } from "../assets/textures.ts";
 import type { AudioEngine } from "../audio/audio.ts";
 import type { ParticleSystem } from "../fx/particles.ts";
 import { type Renderer, toLocal } from "../render/renderer.ts";
@@ -25,6 +26,7 @@ const ONTOP_Z_ORD = 1000;
 /** strobe light pulse: easeInExpo scale 0..12 at 1.25 cycles per second (survev strobe variables) */
 const STROBE_SCALE_MAX = 12;
 const STROBE_SPEED = 1.25;
+const STROBE_LIGHT = "part-strobe-01.img";
 /** shadow: size relative to the sprite on the ground and at the top of the arc, alpha, drift per unit of height */
 const SHADOW_SIZE = [1.3, 0.95] as const;
 const SHADOW_ALPHA = [0.5, 0.28] as const;
@@ -131,6 +133,15 @@ export class ProjectileSystem {
         return this.projs.size;
     }
 
+    /** Strobes (the variant ones included) live now: their sprite and light tints (tests). */
+    get strobes(): Array<{ type: string; tint: number; lightTint: number }> {
+        const out: Array<{ type: string; tint: number; lightTint: number }> = [];
+        for (const p of this.projs.values()) {
+            if (p.strobe) out.push({ type: p.type, tint: p.sprite.tint, lightTint: p.strobe.tint });
+        }
+        return out;
+    }
+
     /** Applies a snapshot's projectile list (complete for the view); `interval` is the snapshot spacing (s). */
     apply(list: readonly ProjectileView[], interval: number): void {
         this.interval = Math.max(0.005, interval);
@@ -160,7 +171,9 @@ export class ProjectileSystem {
         const pool = this.deps.renderer.pool;
         const container = new Container({ label: "projectile" });
         const sprite = pool.acquire();
-        this.deps.textures.apply(sprite, def.worldImg.sprite, def.worldImg.scale * 4.75);
+        const recolor = !!def.worldImg.recolor;
+        const image = recolor ? greySpriteId(def.worldImg.sprite) : def.worldImg.sprite;
+        this.deps.textures.apply(sprite, image, def.worldImg.scale * 4.75);
         sprite.tint = def.worldImg.tint;
         let trail: Sprite | null = null;
         if (def.trail) {
@@ -172,9 +185,11 @@ export class ProjectileSystem {
         }
         container.addChild(sprite);
         let strobe: Sprite | null = null;
-        if (data.type === "strobe") {
+        if (isStrobe(data.type)) {
             strobe = pool.acquire();
-            this.deps.textures.apply(strobe, "part-strobe-01.img", 2);
+            // a variant strobe's light pulses in its colour
+            this.deps.textures.apply(strobe, recolor ? greySpriteId(STROBE_LIGHT) : STROBE_LIGHT, 2);
+            strobe.tint = recolor ? def.worldImg.tint : 0xffffff;
             strobe.scale.set(0);
             container.addChild(strobe);
         }

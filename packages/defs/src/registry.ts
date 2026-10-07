@@ -20,9 +20,18 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * (tools/port-survev/policy.json): bullet_barrett, bullet_sw500, bullet_ash12, bullet_imbel, bullet_invis,
  * explosion_potato_lmgshot, imbel, spas16, barrett, sw500, ash12, potato_lmg, svd_winter, sv98_winter, awc_winter and
  * potato_lmgshot take game type ids after the original ones and before the rebirth-only ones (bomb_heavy and
- * explosion_bomb_heavy move up by 16); every original id keeps its index. No record layout changed.
+ * explosion_bomb_heavy move up by 16); every original id keeps its index. No record layout changed · 11: rebirth hit
+ * feedback: the Update message's extended flag bit 9 announces a Hits section after FactionStatus (protocol hits.ts:
+ * the hits the active player dealt or took, with amount, headshot, armour and the direction of hits taken) · 12: the
+ * rebirth new guns (beta, rebirth/newGuns.ts): the 40mm, rocket and 57mm ammo, the guns' bullets, explosions and the
+ * 40 mm grenade, then the 32 guns take game type ids after explosion_bomb_heavy; the three ammo join the bag after
+ * 45acp, so the inventory section (5) carries three more rows. No record layout changed otherwise · 13: the rebirth
+ * variant strobes (rebirth/strobes.ts): game types strobe_heavy, strobe_carpet, ping_airstrike_heavy and
+ * ping_airstrike_carpet after the new guns' ids, and strobe_heavy and strobe_carpet as the last two
+ * GameConfig.bagSizes items, so the Local message's inventory section carries two more counts at its end (every
+ * earlier id and bag item keeps its place).
  */
-export const PROTOCOL_SCHEMA_VERSION = 10;
+export const PROTOCOL_SCHEMA_VERSION = 13;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

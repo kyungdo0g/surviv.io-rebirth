@@ -7,7 +7,7 @@
 // Behaviour follows survev server/src/game/weaponManager.ts (update, cookThrowable, throwThrowable) and
 // docs/research/items/throwables.md "Throwing, cooking and flight rules".
 import { collider, math, v2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, hasDef, type ThrowableDef, WeaponSlot } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, hasDef, isStrobe, type ThrowableDef, WeaponSlot } from "@rebirth/defs";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
@@ -99,7 +99,8 @@ export function throwThrowable(ctx: SimContext | null, player: Player, noSpeed =
             throwDir: dir,
             sourceType: item,
         });
-        if (item === "strobe" && def.strikeDelay) ctx.projectiles.armStrobe(proj, def.strikeDelay);
+        // strobes, the rebirth variant strobes included, call an air strike (survev: oldThrowableType == "strobe")
+        if (isStrobe(item) && def.strikeDelay) ctx.projectiles.armStrobe(proj, def.strikeDelay);
     }
     player.playAnim("throw", THROW_ANIM_EXTRA + PLAYER.throwTime);
     wm.throwableCooldown = PLAYER.throwTime;

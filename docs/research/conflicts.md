@@ -911,8 +911,17 @@
 - B (items/throwables.md): survev and wiki.gg 3 s [src:survev/shared/defs/gameObjects/throwableDefs.ts:357-423] [src:wikigg/Strobe] [H]
 - C (mechanics/airdrop-airstrike.md): strobe `strikeDelay` 2.5 s [src:kong/relaunch-client-defs] [src:fandom/Strobe] [H]
 - D (mechanics/airdrop-airstrike.md): 3 s [src:survev/shared/defs/gameObjects/throwableDefs.ts:367] [src:wikigg/Strobe] [H]
-- proposed resolution: rule 1: `strikeDelay` 2.5 s (original client, relaunch and fandom); 3 s is a fork value [src:kong/relaunch-client-defs] [src:derived/survev@9f64948d:src/defs/throwableDefs.js:286-352] [H]
+- status: closed (2026-10-07): 3 s. survev master is the gameplay baseline (ADR 0003), and survev.wiki.gg agrees ("three seconds after it is thrown"); the rebirth layer sets `strobe.strikeDelay` 3 over the generated 2.5 (`packages/defs/src/rebirth/strobes.ts`, listed in `rebirth-deviations.md`) [src:survev/shared/defs/gameObjects/throwableDefs.ts:367] [src:wikigg/Strobe] [src:user/2026-10-07-strobes] [H]
+- superseded resolution: rule 1: `strikeDelay` 2.5 s (original client, relaunch and fandom); 3 s is a fork value [src:kong/relaunch-client-defs] [src:derived/survev@9f64948d:src/defs/throwableDefs.js:286-352] [H]
 - files: `items/throwables.md` (`strobe-delay`), `mechanics/airdrop-airstrike.md` (`strobe-strike-delay`) [src:derived/kb-crossref] [H]
+
+## strobe-arming
+
+- A: wiki.gg's overview: the strobe calls its air strike once it has "fully stop[ped] on the ground for 3 seconds" [src:wikigg/Strobe] [M]
+- B: wiki.gg's lead and survev: the ping comes `strikeDelay` (3) s after the throw, wherever the strobe is then; the strikes start from where it lies at each strike [src:wikigg/Strobe] [src:survev/server/src/game/objects/projectile.ts:173-211] [H]
+- A full-strength throw (speed 25, velZ 5) lands about 1.04 s after the throw at gravity 10.5 and slides to under 0.5 u/s by about 2.8 s at ground drag 2.3, so at 3 s it has all but stopped; a timer from the stop would delay the strike by another ~3 s [src:derived/strobe-throw-stop-time] [M]
+- status: closed (2026-10-07): survev's timer from the throw (the baseline, ADR 0003); the overview's wording describes a full throw that has come to rest [src:survev/server/src/game/objects/projectile.ts:173-211] [src:user/2026-10-07-strobes] [M]
+- files: `items/throwables.md` (`strobe-arming`) [src:derived/kb-crossref] [H]
 
 ## snow-potato-explosion-damage
 
@@ -952,7 +961,9 @@
 
 - A: fandom says strobe planes "go directly on top of each other" and that Broken Arrow inserts its two extra runs between the three normal ones without lengthening the strike [src:fandom/Iron_Bomb] [src:fandom/Broken_Arrow] [M]
 - B: survev offsetting strikes 0 / 5 / 5 / 10 / 10 units sideways [src:survev/server/src/game/weaponManager.ts:1337-1362] [src:survev/server/src/game/objects/projectile.ts:173-211] [H]
-- proposed resolution: all strikes on the strobe line for 0.8.82, keep the offset as a config knob [src:derived/readme-precedence] [L]
+- B: wiki.gg: a strobe's first wave drops in front of it, then one wave on its left and one on its right [src:wikigg/Airstrike_Bomb] [M]
+- status: closed (2026-10-07): survev's pattern, the gameplay baseline (ADR 0003): the first line starts at the strobe along the throw, line k flies `ceil(k / 2)` × 5 u beside it on alternating sides, the first side at random (survev's "was not in surviv"); `rules.strobeAirstrikeOffset` 5 (0 restores fandom's stacked lines), `rules.strobeRandomSide` on. The rebirth carpet strobe spaces its lines 7 u apart [src:survev/server/src/game/weaponManager.ts:1337-1362] [src:survev/server/src/game/objects/projectile.ts:194-206] [src:user/2026-10-07-strobes] [H]
+- superseded resolution: all strikes on the strobe line for 0.8.82, keep the offset as a config knob [src:derived/readme-precedence] [L]
 - files: `items/throwables.md` (`strobe-airstrike-offset`) [src:derived/kb-crossref] [H]
 
 ## broken-arrow-check-time
@@ -961,7 +972,8 @@
 - B (items/throwables.md): survev counting planes when the strobe is thrown [src:survev/server/src/game/weaponManager.ts:1337-1362] [H]
 - C (mechanics/airdrop-airstrike.md): survev applies Broken Arrow at throw time [src:survev/server/src/game/weaponManager.ts:1349-1351] [H]
 - D (mechanics/airdrop-airstrike.md): fandom saying it is applied when the strike warning appears [src:fandom/Broken_Arrow] [M]
-- proposed resolution: check Broken Arrow when the airstrike warning (ping) appears, as fandom describes the original; survev's throw-time check as a knob [src:fandom/Broken_Arrow] [L]
+- status: closed (2026-10-07): survev's throw-time count, the gameplay baseline (ADR 0003); `rules.brokenArrowAtPing` (off) keeps fandom's ping-time check as the knob [src:survev/server/src/game/weaponManager.ts:1349-1351] [src:user/2026-10-07-strobes] [M]
+- superseded resolution: check Broken Arrow when the airstrike warning (ping) appears, as fandom describes the original; survev's throw-time check as a knob [src:fandom/Broken_Arrow] [L]
 - files: `items/throwables.md` (`broken-arrow-check-time`), `mechanics/airdrop-airstrike.md` (`broken-arrow-check-time`) [src:derived/kb-crossref] [H]
 
 ## heavy-throwable-fandom-infobox

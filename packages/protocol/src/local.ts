@@ -5,7 +5,8 @@
 // Sections (bit: layout):
 //   0 health   float 0..100 8 bits            1 boost  float 0..100 8 bits      2 zoom   u8 (radius)
 //   3 layer    2 bits                         4 weapons curWeapIdx 2 bits, count 3 bits, count x {type 10, ammo u8}
-//   5 inventory for each GameConfig.bagSizes item: has bit [+ count 9 bits] (original layout)
+//   5 inventory for each GameConfig.bagSizes item: has bit [+ count 9 bits] (original layout; schema 12 appends the
+//     rebirth variant strobes after the original items)
 //   6 gear     scope, outfit, helmet, chest, backpack (10 bits each)
 //   7 action   type 3 bits, item 10 bits, time and duration float 0..8.5 8 bits each, targetId u16 (M6a, the
 //              original active player data carries it too)

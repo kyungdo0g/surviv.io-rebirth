@@ -41,6 +41,8 @@ export interface AddLootOptions {
     source?: "player" | "obstacle" | "map";
     /** only this player may pick it up, for 2 s or until it dies (smartLoot crates; 0 for anyone) */
     ownerId?: number;
+    /** single-use guns (rebirth `charges`): the shots left, kept on the server until it is picked up again */
+    charges?: number;
 }
 
 export class Loot {
@@ -71,6 +73,11 @@ export class Loot {
     ownerTicker = 0;
     /** drifting under a bridge (touched `lootOnly` stairs): floor surfaces no longer shield it from the river */
     belowBridge = false;
+    /**
+     * Single-use guns (rebirth new guns, docs/design/new-gun-stats.md 4.2): the shots left of a dropped one; undefined
+     * for a fresh gun (its def's `charges`). Server-side only: not in the view.
+     */
+    charges: number | undefined = undefined;
 
     constructor(id: number, type: string, pos: Vec2, layer: number, count: number) {
         const def = getDef(type);
@@ -144,6 +151,7 @@ export class LootSystem {
         const dir = opts.dir ?? v2.randomUnit(this.rngOf());
         const ownerId = opts.ownerId ?? 0;
         const loot = this.spawn(type, pos, layer, count, pushSpeed, dir, ownerId);
+        if (def.type === "gun" && def.charges) loot.charges = opts.charges;
         if (opts.noSideAmmo || def.type !== "gun") return loot;
         if (opts.preloadGun && !def.ammoInfinite && opts.source !== "player") {
             loot.isPreloadedGun = true;

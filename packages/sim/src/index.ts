@@ -9,20 +9,29 @@ export {
     type HitRecord,
     killPlayer,
 } from "./combat/combat.ts";
-export { type ArmorState, canHeadshot, computeDamage, type DamageParams, rollHeadshot } from "./combat/damage.ts";
+export {
+    type ArmorState,
+    armorCovers,
+    canHeadshot,
+    computeDamage,
+    type DamageParams,
+    rollHeadshot,
+} from "./combat/damage.ts";
 export {
     type ExplosionHost,
     type ExplosionReport,
     type ExplosionSource,
     ExplosionSystem,
 } from "./combat/explosions.ts";
+export { HitLog } from "./combat/hitLog.ts";
 export {
     type AddProjectileParams,
     type Projectile,
     type ProjectileHost,
     ProjectileSystem,
 } from "./combat/projectiles.ts";
-export { DEFAULT_MIN_PLAYERS, entityView, Game, type GameInit, VIEW_ASPECT, VIEW_MARGIN, viewBounds } from "./game.ts";
+export { entityView, Game, VIEW_ASPECT, VIEW_MARGIN, viewBounds } from "./game.ts";
+export { DEFAULT_MIN_PLAYERS, type GameInit } from "./gameInit.ts";
 export * from "./input.ts";
 export { BAG_ITEMS, gearLevel, gearQuality, Inventory, SCOPE_LEVELS, THROWABLE_LIST } from "./items/inventory.ts";
 export { destroyTypeOf, dropGun, dropMelee, playerDropLoot, unknownLootTiers } from "./loot/drops.ts";

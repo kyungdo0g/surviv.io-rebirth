@@ -6,6 +6,8 @@
 // (`alphaIn`); particles of an emitter are multiplied by its alpha. M9: a particle can live inside another display
 // object (`parent`, e.g. the hit player's container for blood splats) and follow it (survev addParticle parent).
 // Every def lives in particleDefsAll.ts; an unknown type spawns nothing and warns once in development.
+// A particle that stands over the floor (`overground`, the air drop's landing smoke) is placed with
+// renderer.addOverground every frame, so it is hidden from a viewer on another floor even after a layer change.
 import type { Vec2 } from "@rebirth/core";
 import type { Container, Sprite } from "pixi.js";
 import type { TextureStore } from "../assets/textures.ts";
@@ -36,6 +38,7 @@ function easeInExpo(t: number): number {
 }
 
 interface Particle {
+    type: string;
     sprite: Sprite;
     def: ParticleDef;
     pos: Vec2;
@@ -54,6 +57,8 @@ interface Particle {
     alphaInStart: number;
     alphaInEnd: number;
     layer: number;
+    /** drawn over the floor of `layer`, on the top layers only while the viewer's floor sees it */
+    overground: boolean;
     zOrd: number;
     /** stable sort key within the zOrd (spawn order) */
     zIdx: number;
@@ -79,6 +84,8 @@ export interface ParticleOptions {
      * e.g. blood splats on the hit player (survev particles.ts parent); `layer` and `zOrd` are then unused (M9)
      */
     parent?: Container;
+    /** stands over the floor of `layer` (renderer.addOverground): hidden from a viewer on another floor */
+    overground?: boolean;
 }
 
 export interface EmitterOptions {
@@ -177,6 +184,11 @@ export class ParticleSystem {
         return this.emitters.length;
     }
 
+    /** Sprites of the live particles of `type` (tests). */
+    spritesOf(type: string): Sprite[] {
+        return this.particles.filter((p) => p.type === type && !p.sprite.destroyed).map((p) => p.sprite);
+    }
+
     /** Sprites of the live particles drawn inside `parent` (tests, M9). */
     spritesIn(parent: Container): Sprite[] {
         return this.particles.filter((p) => p.parent === parent && !p.sprite.destroyed).map((p) => p.sprite);
@@ -206,6 +218,7 @@ export class ParticleSystem {
         parent?.addChild(sprite);
         const alphaIn = def.alphaIn;
         this.particles.push({
+            type,
             sprite,
             def,
             pos: { x: pos.x, y: pos.y },
@@ -224,6 +237,7 @@ export class ParticleSystem {
             alphaInStart: alphaIn ? alphaIn.start : 0,
             alphaInEnd: alphaIn ? alphaIn.end : 0,
             layer,
+            overground: !!opts.overground,
             zOrd: opts.zOrd ?? def.zOrd ?? DEFAULT_Z_ORD,
             zIdx: this.spawned++ % 2 ** 31,
             emitter: emitter ?? null,
@@ -340,7 +354,8 @@ export class ParticleSystem {
             } else {
                 const local = toLocal(p.pos);
                 s.position.set(local.x, local.y);
-                this.renderer.add(s, p.layer, p.zOrd, p.zIdx);
+                if (p.overground) this.renderer.addOverground(s, p.layer, p.zOrd, p.zIdx, p.pos);
+                else this.renderer.add(s, p.layer, p.zOrd, p.zIdx);
             }
             s.scale.set(scale);
             s.rotation = p.rot;

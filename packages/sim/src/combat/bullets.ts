@@ -3,6 +3,7 @@
 // they stop. M7a: perk speed / range multipliers and tracer flags, Windwalk (an enemy bullet passing within 5 u of a
 // holder), High-Value Targets (x1.25 against players holding a perk). M9: clipped ranges (USAS-12 `toMouseHit` rounds
 // stop at the cursor), the tracer speed factor in reports, full-range reports of `skipCollision` bullets (flares).
+// Rebirth new guns (docs/design/new-gun-stats.md 4.4): `noReflect`, `armDistance` and `noDistAdj` bullet fields.
 // Behaviour follows survev server/src/game/objects/bullet.ts and docs/research/items/bullets.md "Server simulation".
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { type BulletDef, DamageType, GameConfig, getDefOfType } from "@rebirth/defs";
@@ -169,7 +170,8 @@ export class BulletSystem {
         const reflectCount = p.reflectCount ?? 0;
         const varianceT = p.varianceT ?? 1;
         const variance = 1 + varianceT * def.variance;
-        const noDistAdj = this.ctx.rules.noDistAdjBullets.includes(p.bulletType);
+        // rebirth new guns: the exploding rounds carry their own noDistAdj (new-gun-stats.md 4.4)
+        const noDistAdj = !!def.noDistAdj || this.ctx.rules.noDistAdjBullets.includes(p.bulletType);
         const distAdjIdx = noDistAdj ? DIST_ADJ_STEPS / 2 : this.ctx.combatRng.int(0, DIST_ADJ_STEPS);
         const distAdj = math.remap(distAdjIdx, 0, DIST_ADJ_STEPS, -1, 1);
         // each ricochet divides the range by reflectDistDecay (1.5)
@@ -213,7 +215,8 @@ export class BulletSystem {
             damageType: p.damageType ?? DamageType.Player,
             mapSourceType: p.mapSourceType ?? "",
             onHitFx,
-            canReflect: onHitFx !== "explosion_rounds",
+            // rebirth new guns: rockets and the GL-06 round never ricochet, they explode on metal (`noReflect`)
+            canReflect: !def.noReflect && onHitFx !== "explosion_rounds",
             alive: true,
             reflected: false,
             hitPlayer: false,
@@ -270,7 +273,11 @@ export class BulletSystem {
             // Explosive Rounds peter out at max range; USAS-12 frag rounds still explode
             if (b.onHitFx === "explosion_rounds") b.onHitFx = "";
         }
-        if (!b.alive && !b.reflected && b.onHitFx) this.explodeOnHit(b);
+        if (!b.alive && !b.reflected && b.onHitFx) {
+            // rebirth new guns: a round stopped before its arming distance is a dud (no point-blank rocket suicide)
+            if (b.def.armDistance && b.distanceTraveled < b.def.armDistance) b.onHitFx = "";
+            else this.explodeOnHit(b);
+        }
         if (!b.alive && b.hitPlayer && b.reportTicks[b.reportTicks.length - 1] !== this.tick) {
             b.reportTicks.push(this.tick);
             this.reports.push({ tick: this.tick, bullet: b });

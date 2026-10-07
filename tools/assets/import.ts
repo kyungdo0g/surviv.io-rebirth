@@ -8,13 +8,17 @@
 //    file for the rest. The DOM HUD gets survev's SVG of an original frame unless tools/assets/survev-redrawn.json
 //    names it (survev's later redraws);
 // 4. fills sprites the definitions reference without any file from the fandom image dump; ids the original client also
-//    names without shipping an image are recorded as source "none" (the original drew nothing for them).
-// Usage: pnpm assets [--check-only] [--atlas-out research-cache/atlas]
+//    names without shipping an image are recorded as source "none" (the original drew nothing for them);
+// 5. installs the beta new guns' loot icons and sounds from the owner's gitignored assets-user/ (newGunInstall.ts).
+// Usage: pnpm assets [--check-only] [--atlas-out research-cache/atlas] (behind a proxy it restarts itself with
+// NODE_USE_ENV_PROXY=1, tools/envProxy.ts, so the script runs the same in cmd.exe, PowerShell and POSIX shells)
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
+import { ensureEnvProxy } from "../envProxy.ts";
 import type { SpriteIndex } from "./atlasInventory.ts";
+import { installNewGunAssets, summarize } from "./newGunInstall.ts";
 import { pngSize } from "./png.ts";
 import {
     ASSET_DEST,
@@ -38,6 +42,8 @@ const KEEP_SURVEV = "tools/assets/keep-survev.json";
 const SURVEV_REDRAWN = "tools/assets/survev-redrawn.json";
 const FANDOM_IMAGES = "research-cache/fandom/images.json";
 const FANDOM_GAPFILL = "assets/fandom-gapfill.json";
+
+ensureEnvProxy();
 
 const { values: args } = parseArgs({
     options: {
@@ -173,3 +179,6 @@ console.log(
 console.log(`defs reference ${refs.size} sprites; without a file: ${absent.length} absent in the original too`);
 if (absent.length) console.log(`absent in the original too: ${absent.join(", ")}`);
 if (missing.length) console.log(`MISSING: ${missing.join(", ")}`);
+
+// 5. the beta new guns (after the original files, which stand in for anything the owner has not supplied)
+if (!checkOnly) for (const line of summarize(installNewGunAssets({ dest: ASSET_DEST }))) console.log(line);

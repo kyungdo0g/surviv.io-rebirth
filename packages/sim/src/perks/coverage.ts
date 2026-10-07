@@ -23,7 +23,7 @@ export const PERK_EFFECTS: Readonly<Record<string, string>> = {
     martyrdom: "12 martyr_nades on death; the Grenadier and Demo roles too (effects.ts onPerkHolderDeath)",
     targeting: "bullet damage x1.25 against players holding a perk (bullets.ts)",
     bonus_45: ".45 ACP bullets +8 %, darker tracer (shotPerks.ts)",
-    broken_arrow: "a strobe's air strike calls 5 planes instead of 3 (projectiles.ts armStrobe)",
+    broken_arrow: "a strobe's air strike calls 2 more planes: 5 instead of 3, 8 for the carpet strobe (armStrobe)",
     fabricate: "fills the pack with frag grenades every 12 s (consumables.ts updateFabricate)",
     self_revive: "a downed holder revives itself; downs instead of dying in solo (downed.ts, teams.ts, combat.ts)",
     bonus_9mm: "9mm bullets +8 %, speed and range x1.25, spread x1.1 (shotPerks.ts)",

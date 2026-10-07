@@ -14,7 +14,7 @@
 // ping wheel there (`openTouchPing`), whose map pings mark the tapped map point; tapping a wedge sends it at once, a
 // tap anywhere else closes the wheel. Sending an emote from the ping wheel closes the big map (survev triggerPing).
 import type { Vec2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, Input } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, Input, NEW_AMMO_EMOTES } from "@rebirth/defs";
 import type { EmoteRequest } from "@rebirth/sim";
 import { spriteUrl } from "../assets/hudImages.ts";
 import type { InputManager } from "../input/input.ts";
@@ -34,6 +34,8 @@ const AMMO_EMOTES: Readonly<Record<string, string>> = {
     "308sub": "emote_ammo308sub",
     flare: "emote_ammoflare",
     "45acp": "emote_ammo45acp",
+    // rebirth beta new guns: 40mm, rocket and 5.7x28 (new-gun-stats.md 4.5)
+    ...NEW_AMMO_EMOTES,
 };
 
 interface Wedge {

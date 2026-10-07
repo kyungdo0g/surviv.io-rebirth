@@ -15,10 +15,11 @@ const rebirth = applyRebirthDefs(
 
 export const gameObjectsData: Readonly<Record<string, GameObjectDef>> = rebirth.gameObjects;
 export const mapObjectsData: Readonly<Record<string, MapObjectDef>> = rebirth.mapObjects;
-/** generated map defs whose loot tables carry the rebirth air drop tier tables */
+/** generated map defs whose loot tables carry the rebirth rows (new guns, air drop tier tables, gold guns) */
 export const mapsData: Readonly<Record<string, MapDef>> = applyRebirthMaps(
     mapsJson as unknown as Readonly<Record<string, MapDef>>,
     rebirth.mapObjects,
+    rebirth.gameObjects,
 );
 /** balance deviations from the generated defs (rebirth/deviations.ts) */
 export const rebirthDeviations = rebirth.deviations;

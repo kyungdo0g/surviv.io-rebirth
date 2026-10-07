@@ -2,7 +2,7 @@
 // fandom PNG gap fills, and the size the client scales each one by. Shared by import.ts (the manifest) and
 // atlasInventory.ts (the comparison report). Pure functions apart from the file readers at the top.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { basename, extname, join, relative } from "node:path";
+import path, { basename, extname, join } from "node:path";
 import { pngSize } from "./png.ts";
 
 export const SURVEV_PUBLIC = ".survev/client/public";
@@ -65,10 +65,18 @@ function walk(dir: string): string[] {
     });
 }
 
+/**
+ * `file` relative to `dir` with "/" separators on every OS: the manifest, the URLs and every pattern here use "/",
+ * while path.relative answers "img\\map\\..." on Windows (`impl` is node:path; tests pass path.win32).
+ */
+export function posixRelative(dir: string, file: string, impl: path.PlatformPath = path): string {
+    return impl.relative(dir, file).split(impl.sep).join("/");
+}
+
 /** survev's art and audio files (paths relative to its public directory), without its own branding. */
 export function survevFiles(): string[] {
     return [...walk(join(SURVEV_PUBLIC, "img")), ...walk(join(SURVEV_PUBLIC, "audio"))]
-        .map((p) => relative(SURVEV_PUBLIC, p))
+        .map((p) => posixRelative(SURVEV_PUBLIC, p))
         .filter((p) => !EXCLUDE.test(p));
 }
 

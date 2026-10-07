@@ -3,7 +3,11 @@
 // pixel resolution. SVGs are rasterized once per id at a resolution that matches their on-screen size at the reference
 // zoom, so small sprites stay cheap and large ones stay sharp; PNGs (the original v0.8.82 atlas frames, stored at their
 // atlas scale) are used at their own resolution, or shrunk when that is more than the sprite needs, never enlarged.
-// Missing sprites get a loud placeholder and are recorded in `window.__rebirth.missingSprites`.
+// Missing sprites get a loud placeholder and are recorded in `window.__rebirth.missingSprites`, unless their manifest
+// entry names a fallback sprite (the rebirth's new-gun loot icons when the owner's art is not installed): that one is
+// drawn instead and the id is recorded in `window.__rebirth.spriteFallbacks`.
+// Rebirth: `greySpriteId(id)` names a greyscale copy of a sprite (made once from its texture), so a tint replaces the
+// sprite's colours instead of multiplying them (the variant strobes' yellow-green art in their red / magenta).
 import { ImageSource, type Sprite, Texture } from "pixi.js";
 import { debugGlobals } from "../globals.ts";
 import { SPRITES } from "./spriteManifest.ts";
@@ -16,6 +20,24 @@ const MIN_RESOLUTION = 0.25;
 const MAX_RESOLUTION = 3;
 const MAX_TEXTURE_DIM = 4096;
 const DEFAULT_CONCURRENCY = 8;
+/** Suffix of a greyscale copy's id; its luminance is scaled by GREY_GAIN so the brightest parts take the full tint. */
+const GREY_SUFFIX = "#grey";
+const GREY_GAIN = 1.3;
+
+/** Id of the greyscale copy of sprite `id` (TextureStore.apply draws it; tint it to recolour the sprite). */
+export function greySpriteId(id: string): string {
+    return isEmptySprite(id) ? id : `${id}${GREY_SUFFIX}`;
+}
+
+/** RGBA pixels (canvas ImageData order) turned to grey in place: luminance x GREY_GAIN, alpha kept. */
+export function greyscalePixels(data: Uint8ClampedArray): void {
+    for (let i = 0; i < data.length; i += 4) {
+        const l = Math.min(255, (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]) * GREY_GAIN);
+        data[i] = l;
+        data[i + 1] = l;
+        data[i + 2] = l;
+    }
+}
 
 /** Ids that mean "no image" in the definitions. */
 export function isEmptySprite(id: string | undefined): boolean {
@@ -146,7 +168,14 @@ export class TextureStore {
         return promise;
     }
 
-    private markMissing(id: string, reason: string): Texture {
+    private markMissing(id: string, reason: string): Promise<Texture> | Texture {
+        const fallback = SPRITES[id]?.fallback;
+        if (fallback && fallback !== id) {
+            const globals = debugGlobals();
+            globals.spriteFallbacks ??= [];
+            (globals.spriteFallbacks as string[]).push(id);
+            return this.load(fallback, 1);
+        }
         if (!this.missing.includes(id)) {
             this.missing.push(id);
             console.warn(`sprite ${id}: ${reason}`);
@@ -154,7 +183,32 @@ export class TextureStore {
         return this.placeholder;
     }
 
+    /** The greyscale copy of `base`'s texture (the base itself when it has no pixels to read: empty, placeholder). */
+    private async loadGrey(id: string, base: string, scale: number): Promise<Texture> {
+        const tex = await this.request(base, scale);
+        const resource = tex.source?.resource as HTMLImageElement | HTMLCanvasElement | undefined;
+        if (tex === this.placeholder || tex === Texture.EMPTY || !resource?.width) return tex;
+        const canvas = document.createElement("canvas");
+        canvas.width = resource.width;
+        canvas.height = resource.height;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+        ctx.drawImage(resource, 0, 0);
+        const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        greyscalePixels(pixels.data);
+        ctx.putImageData(pixels, 0, 0);
+        const source = new ImageSource({
+            resource: canvas,
+            alphaMode: "premultiply-alpha-on-upload",
+            resolution: tex.source.resolution,
+            autoGenerateMipmaps: true,
+        });
+        const grey = new Texture({ source });
+        grey.label = id;
+        return grey;
+    }
+
     private async load(id: string, scale: number): Promise<Texture> {
+        if (id.endsWith(GREY_SUFFIX)) return this.loadGrey(id, id.slice(0, -GREY_SUFFIX.length), scale);
         const entry = SPRITES[id];
         if (!entry) return this.markMissing(id, "not in the sprite manifest");
         // the original client names it without shipping an image, and drew nothing (survev: Texture.from of an unknown id)

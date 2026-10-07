@@ -30,7 +30,7 @@
 //   PlayerInfoView.
 // Helpers living next to the contract: `gasCircle(gas)` (current red-zone circle) and `gasTimeLeft(gas)` in
 // match/gas.ts, `damageSourceOf()` in match/events.ts.
-// Match lifecycle knobs are construction options (GameInit in game.ts): the client's loopback passes
+// Match lifecycle knobs are construction options (GameInit in gameInit.ts): the client's loopback passes
 // `{ sandbox: true }` (the match starts on the first step with a single player, never ends and always accepts
 // joins); servers pass `minPlayers`. Until the match starts `gas.mode` is "inactive" ("Waiting for players").
 // Dead players spectate through `Game.spectate(id, "begin" | "next" | "prev")` (the Spectate message).
@@ -49,9 +49,10 @@
 // - Existing fields gain M5 values: PlayerView.anim "cook" / "throw" while a throwable is cooked and thrown;
 //   PlayerView.action and LocalPlayerState.action "use" with the heal/boost item while one is used;
 //   LocalPlayerState.boost decays and heals; LocalPlayerState.zoom is the 1x radius while the player is in smoke
-//   (and 0.5 s after leaving it); MapIndicatorView "ping_airstrike" marks strobe and scheduled air strikes;
-//   PlaneView "airstrike" planes; explosion scorch marks are DecalView objects (some fade after their def
-//   lifetime); KillEvent / DamageSource "explosion" and "airstrike".
+//   (and 0.5 s after leaving it); MapIndicatorView "ping_airstrike" marks strobe and scheduled air strikes
+//   ("ping_airstrike_heavy" / "ping_airstrike_carpet" the rebirth variant strobes'); PlaneView "airstrike" planes;
+//   explosion scorch marks are DecalView objects (some fade after their def lifetime); KillEvent / DamageSource
+//   "explosion" and "airstrike".
 // - Smoke hides players: with `rules.smokeHidesPlayers` (default on) a player whose centre is inside a smoke cloud
 //   is left out of other players' snapshots unless the viewer is within `rules.smokeRevealDistance` (rebirth rule:
 //   the original client only draws the smoke above them). Bullets they fire are still reported.
@@ -159,6 +160,7 @@
 // - Bullets whose def has `skipCollision` (flares) report their full range as `maxDist`.
 import type { Vec2 } from "@rebirth/core";
 import type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+import type { HitEvent } from "./viewHits.ts";
 import type {
     AirdropView,
     FactionMemberView,
@@ -176,6 +178,7 @@ import type {
 import type { EmoteEvent, TeamMemberView } from "./viewTeams.ts";
 
 export type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+export type { HitEvent } from "./viewHits.ts";
 export type {
     AirdropView,
     DamageSource,
@@ -547,6 +550,8 @@ export interface Snapshot {
     teamAliveCounts?: number[];
     /** faction mode: the viewer's faction for the minimap, in id order (M7a) */
     factionStatus?: FactionMemberView[];
+    /** rebirth hit feedback: hits the active player dealt or took since the viewer's previous snapshot, when any */
+    hits?: HitEvent[];
 }
 
 /** Public info of a player (the original PlayerInfos record, without the heal/boost cosmetics). */

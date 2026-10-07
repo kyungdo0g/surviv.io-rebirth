@@ -1,8 +1,8 @@
 // Rebirth air strike variants (deliberate deviation requested by the user, docs/research/rebirth-deviations.md):
 // scheduled 50v50 zones roll normal / heavy / carpet from rules.roles.factionAirstrikeVariants on their own seeded
 // stream; heavy zones drop 5 heavy shells per plane whose blast reaches 38 u over a zone grown by 24 u, carpet zones
-// send 6 planes that aim inside 1.4x the radius under a marker that covers every blast; strobes and other maps stay
-// normal, and a zone that rolls normal is the original strike.
+// send 6 planes that aim inside 1.4x the radius under a marker that covers every blast; the original strobe and other
+// maps stay normal, and a zone that rolls normal is the original strike.
 import { createRng, type Vec2, v2 } from "@rebirth/core";
 import {
     AIRSTRIKE_AIM_LEAD,
@@ -238,7 +238,7 @@ describe("air strike variants (rebirth)", () => {
         expect(withDefaults).toEqual(bombs({ normal: 1 }));
     });
 
-    it("off faction maps scheduled zones and strobe strikes stay normal whatever the weights", () => {
+    it("off faction maps scheduled zones and the original strobe's strikes stay normal whatever the weights", () => {
         const main = flatMapGame("main");
         main.rules.roles.factionAirstrikeVariants = { heavy: 1 };
         main.planes.scheduleAirstrike(CIRCLE1, 0);

@@ -4,13 +4,15 @@
 // obstacle timers, building puzzles and scheduled unlocks (M5b), planes, air strikes and air drops, building occupancy,
 // spectators, group spawns and team status (M6a), faction status and role schedules (M7a), then the match results.
 import { type Bounds, type Rng, type Vec2, v2 } from "@rebirth/core";
-import { DamageType, type GasStage, getMapDef } from "@rebirth/defs";
+import { DamageType, getMapDef } from "@rebirth/defs";
 import { type GameApi, type GameOptions, type SpectateActionName, TICK_HZ } from "./api.ts";
 import { BulletSystem } from "./combat/bullets.ts";
 import { applyObstacleDamage, applyPlayerDamage } from "./combat/combat.ts";
 import type { DamageParams } from "./combat/damage.ts";
 import { ExplosionSystem } from "./combat/explosions.ts";
+import { HitLog } from "./combat/hitLog.ts";
 import { ProjectileSystem } from "./combat/projectiles.ts";
+import { DEFAULT_MIN_PLAYERS, type GameInit } from "./gameInit.ts";
 import { emptyInput, type PlayerInput } from "./input.ts";
 import { spawnMapLoot } from "./loot/drops.ts";
 import { LootSystem } from "./loot/loot.ts";
@@ -77,30 +79,6 @@ function playerInfo(p: Player): PlayerInfoView {
     return { playerId: p.id, teamId: p.teamId, groupId: p.groupId, name: p.name };
 }
 
-/** Optional construction parameters for tests, tools and the client's loopback. */
-export interface GameInit {
-    /** use this generated map instead of generating one from the options */
-    generation?: GenerateMapResult;
-    /** roll the map's loot spawners at creation (default true) */
-    spawnLoot?: boolean;
-    /**
-     * Sandbox / loopback (M4): the match starts on the first step even with a single player, never ends (no game
-     * over, no winner) and always accepts joins. The gas, planes and kill feed run as usual.
-     */
-    sandbox?: boolean;
-    /**
-     * Living players needed to start the match, each alive for `rules.minActiveTime` (10 s); default 2 like the
-     * original (M4); team modes count groups with such a player (M6a). Until then the gas stays "inactive" (the client
-     * shows "Waiting for players").
-     */
-    minPlayers?: number;
-    /** gas stage table (default GameConfig.gas.stages; tools and tests use shorter ones) */
-    gasStages?: readonly GasStage[];
-}
-
-/** Default start condition: two players (survev gameModeManager isGameStarted: cantDespawnAliveCount > 1). */
-export const DEFAULT_MIN_PLAYERS = 2;
-
 export class Game implements GameApi, SimContext {
     readonly options: GameOptions;
     readonly mapData: MapData;
@@ -147,6 +125,8 @@ export class Game implements GameApi, SimContext {
     readonly puzzleBuildings: Building[];
     /** read-only combat notifications for the host (server anti-cheat telemetry, M8); never alters the game */
     observer: CombatObserver | null = null;
+    /** damaging player hits for the dealer's and the target's snapshots (rebirth hit feedback) */
+    readonly hitLog = new HitLog();
     private readonly playerMap = new Map<number, Player>();
     /** recorders used, reported once to viewers in range (event sequence numbers, like kills) (M5b) */
     private readonly recorderReports = new RecorderLog();
@@ -217,6 +197,7 @@ export class Game implements GameApi, SimContext {
             minPlayers: init.minPlayers ?? DEFAULT_MIN_PLAYERS,
         });
         this.spectators = new SpectateSystem(this);
+        this.rules.gunBeta = init.gunBeta ?? false;
         if (init.spawnLoot ?? true) spawnMapLoot(this, this.generation.lootSpawns);
     }
 
@@ -457,6 +438,7 @@ export class Game implements GameApi, SimContext {
         // reports made during this step belong to the tick it completes
         this.bullets.tick = this.tickCount + 1;
         this.explosions.tick = this.tickCount + 1;
+        this.hitLog.tick = this.tickCount + 1;
         this.match.checkStart();
         this.gas.update();
         for (const player of this.playerMap.values()) {
@@ -499,12 +481,15 @@ export class Game implements GameApi, SimContext {
         this.faction?.update(dt);
         this.roles.update(dt);
         this.tickCount++;
+        // hits dealt between steps (tools, tests) belong to the next tick, so the next snapshot lists them
+        this.hitLog.tick = this.tickCount + 1;
         this.match.endTick();
         this.joinLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.leaveLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.emotes.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.bullets.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
         this.explosions.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
+        this.hitLog.prune(this.tickCount - BULLET_REPORT_TICKS);
         this.recorderReports.prune(this.tickCount - BULLET_REPORT_TICKS);
     }
 
@@ -597,6 +582,8 @@ export class Game implements GameApi, SimContext {
         }
         const gameOver = this.match.resultSince(owner.id, seq);
         if (gameOver) snapshot.gameOver = gameOver;
+        const hits = this.hitLog.eventsFor(player.id, sinceTick, this.tickCount, next);
+        if (hits.length) snapshot.hits = hits;
         const stats = this.match.statsSince(owner.id, seq);
         if (stats) snapshot.playerStats = stats;
         return snapshot;

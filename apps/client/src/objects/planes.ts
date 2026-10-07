@@ -7,7 +7,11 @@
 // - a falling crate is the chute sprite (`biome.airdrop.airdropImg`) whose radius shrinks from 12 to 5 over the
 //   fall (lerp((1 - fallT)^1.1, 5, 12)), with the chute and falling sounds; on landing 10 smoke puffs and the
 //   crash sound (the water variant on water).
-// Both draw on the top layer (zOrd 1500 / 1501), below the red zone.
+// Both are ground-layer objects drawn over everything (zOrd 1500 / 1501, below the red zone) while the viewer's floor
+// sees the ground: on the ground or the stairs, except under a bunker's stair mask seen from the stairs. A viewer
+// underground does not see them: they stay on the ground layer, hidden under the underground fill, the landing smoke
+// too, and their sounds play from the ground layer (halved and muffled below): survev airdrop.ts:108-115 and
+// plane.ts:268-276, here renderer.addOverground.
 import type { Vec2 } from "@rebirth/core";
 import { GameConfig, type MapDef } from "@rebirth/defs";
 import type { AirdropView, PlaneView } from "@rebirth/sim";
@@ -117,6 +121,14 @@ export class AirSystem {
         return { planes, airdrops };
     }
 
+    /** the sprites of the planes and of the air drops still falling (tests) */
+    get sprites(): { planes: Sprite[]; airdrops: Sprite[] } {
+        return {
+            planes: [...this.planes.values()].map((p) => p.sprite),
+            airdrops: [...this.airdrops.values()].filter((a) => !a.landed).map((a) => a.sprite),
+        };
+    }
+
     /** Applies a snapshot's planes and air drops (each list is complete for the view). */
     apply(planes: readonly PlaneView[], airdrops: readonly AirdropView[]): void {
         for (const p of this.planes.values()) p.seen = false;
@@ -211,10 +223,10 @@ export class AirSystem {
     }
 
     update(f: AirFrame): void {
-        // planes fly over everything; a viewer on stairs sees them too (survev: layer |= 2)
-        const layer = 2;
-        for (const p of this.planes.values()) this.updatePlane(p, f, layer);
-        for (const a of this.airdrops.values()) this.updateAirdrop(a, f, layer);
+        // ground layer, lifted over everything when the viewer can see the ground there (survev: layer |= 2)
+        const renderer = this.deps.renderer;
+        for (const p of this.planes.values()) this.updatePlane(p, f, renderer.overgroundLayer(0, p.pos));
+        for (const a of this.airdrops.values()) this.updateAirdrop(a, f, renderer.overgroundLayer(0, a.pos));
     }
 
     private updatePlane(p: PlaneState, f: AirFrame, layer: number): void {
@@ -281,9 +293,11 @@ export class AirSystem {
         if (a.landed && !a.playedLandFx) {
             a.playedLandFx = true;
             if (!a.isNew) {
+                // the puffs follow the viewer's floor while they live (survev fixes their layer at the landing)
                 for (let i = 0; i < LANDING_SMOKE; i++) {
                     const ang = Math.random() * Math.PI * 2;
-                    this.deps.particles.add("airdropSmoke", layer, a.pos, { x: Math.cos(ang), y: Math.sin(ang) });
+                    const vel = { x: Math.cos(ang), y: Math.sin(ang) };
+                    this.deps.particles.add("airdropSmoke", 0, a.pos, vel, { overground: true });
                 }
                 const water = this.deps.isWater(a.pos);
                 audio.playSound(water ? "airdrop_crash_02" : "airdrop_crash_01", { channel: "sfx", pos: a.pos, layer });
