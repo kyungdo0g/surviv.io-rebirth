@@ -87,6 +87,7 @@ directory (`/app` in the image).
 | `AIRDROP_TIERS` | `on` | rebirth: `on` makes every normal air drop a tier 1 or a tier 2 drop (the same grey shell; once opened its crate shows one silver star or two blue stars), early drops mostly tier 1 and late drops mostly tier 2, the gold drop as rare as in v0.8.82; `off` restores the v0.8.82 drops. Snow and savannah split their normal shells too; 50v50, Cobalt and every gold or special crate are unchanged (docs/research/rebirth-deviations.md "Air drop tiers") |
 | `MAX_GAMES` | `16` | games this process runs at once (find_game answers 503 `full` beyond) |
 | `MIN_PLAYERS` | `2` | living players (groups in team modes) a game needs to start |
+| `JOIN_MIN_ALIVE` | `0` | a started game takes no new human once fewer than this many players live (`0`: off); the newcomer gets a fresh game |
 | `GAME_OVER_GRACE_MS` | `1800` | a finished game closes this long after the winner is decided |
 | `EMPTY_GAME_GRACE_MS` | `30000` | a game without human players is removed after this long |
 | `DEBUG_SPAWN_TOGETHER` | `0` | testing aid: joiners spawn next to the game's first player |

@@ -5,6 +5,7 @@ set MAX_PLAYERS=200
 set BOT_FILL=200
 set BOT_DIFFICULTY=hard
 set BOT_FILL_INTERVAL_MS=0
+set JOIN_MIN_ALIVE=100
 start "server" cmd /k node apps/server/src/index.ts
 start "client" cmd /k pnpm dev
 timeout /t 5 /nobreak >nul
