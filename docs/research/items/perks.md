@@ -246,6 +246,13 @@
 - Spawns after stage 2: survev's loot tables are kept for them (Cobalt's mythic class pod adds `lifeline`; `ap_rounds` and `high_velocity` sit in survev's perk tiers) [src:survev/shared/defs/maps/cobaltDefs.ts] [src:survev/shared/defs/maps/baseDefs.ts] [M]
 - The client draws no AP tracer colour and no last-stand effect yet (handoff) [src:survev/client/src/objects/bullet.ts:165-166] [H]
 
+## In the game (survev content wave, stage 5: survev balance)
+
+- The perk numbers follow survev's `PerkProperties` (design option B; the conflicts below record the v0.8.82 values): Cast Ironskin x0.55 damage (45 % off), Flak Jacket size +10 % with +3 frags and +2 MIRVs of bag room (the excess drops when it goes), Gift of the Woods size +20 % and 1 HP/s, Splinter side bullets x0.5, each ammo perk x1.12 and Hollow-points / OKAMI Bar x1.08 multiplied together with Last Breath, 9mm Overpressure speed and range x1.2, Hollow-points bullets x1.1 as fast [src:survev/shared/defs/gameObjects/perkDefs.ts:1] [src:survev/server/src/game/weaponManager.ts:692-713] [src:survev/server/src/game/inventoryManager.ts:71-78] [H]
+- .45 in the Chamber: each .45 ACP round has a 0.166 chance to be empowered, x1.25 damage, x1.2 speed and no spread [src:survev/server/src/game/weaponManager.ts:875-885] [H]
+- Fabricate: every 10 s 8 explosives are rolled (frag 60, MIRV 35, strobe 5), cut to the bag's room, and handed out one every 0.08 s [src:survev/server/src/game/objects/player.ts:1846-1899] [H]
+- Role perks: Medic Field Medic + Combat Stimulants, Demolition Amped Explosives + Flak Jacket, Lone Survivr Cast Ironskin, AP Rounds or Splinter, Takedown, Windwalk or Field Medic [src:survev/shared/defs/gameObjects/roleDefs.ts:1] [H]
+
 ## Conflicts
 
 - CONFLICT perk-splinter-side-damage: side bullets 0.6 × 0.45 = 27 % each in v0.8.82 [src:fandom/Splinter_Rounds] vs survev `splitsDamageMult` 0.5 (30 %) since fork commit e55e094e [src:survev/shared/defs/gameObjects/perkDefs.ts:37-40]; proposed: 0.45 for the target era, 0.5 behind a fork flag [L]

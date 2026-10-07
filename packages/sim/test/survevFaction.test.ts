@@ -7,8 +7,9 @@
 // on Red (wikigg 50v50_mode Potato vs Tomato), River Town and two Faction Bridges on the river (wikigg 50v50_mode
 // "3 buildings spawn on top of the river").
 import type { Vec2 } from "@rebirth/core";
+import { getDefOfType } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import type { GeneratedObject, GenerateMapResult } from "../src/index.ts";
+import { Game, type GeneratedObject, type GenerateMapResult, pickupLoot } from "../src/index.ts";
 import { cachedMap } from "./helpers.ts";
 
 const SEEDS = [1, 2, 3];
@@ -89,5 +90,27 @@ describe("50v50 map: faction sides", () => {
             for (const type of ["tomato_01", "tomato_02", "tomato_03"])
                 for (const o of tops(g, type)) expect(sideOf(g, o.pos), type).toBeLessThan(mid);
         }
+    });
+});
+
+describe("50v50 outfits", () => {
+    // survev outfitDefs.ts teamId (Target Practice red, Cobalt Shell blue) and player.ts:3898-3903 (survev balance)
+    it("a faction outfit fits its own faction only; elsewhere anyone wears it", () => {
+        const pick = (mapName: string, teamId: number, outfit: string) => {
+            const game = new Game(
+                { mapName, seed: 1 },
+                { generation: cachedMap(mapName, 1, 4), spawnLoot: false, sandbox: true },
+            );
+            const p = game.getPlayer(game.addPlayer("p"))!;
+            p.teamId = teamId;
+            const loot = game.loot.addLoot(outfit, p.pos, p.layer, 1, { pushSpeed: 0 })!;
+            p.pickupTicker = 0;
+            pickupLoot(game, p, loot);
+            return p.outfit;
+        };
+        expect(getDefOfType("outfit", "outfitRed").teamId).toBe(1);
+        expect(pick("faction", 2, "outfitRed")).not.toBe("outfitRed");
+        expect(pick("faction", 1, "outfitRed")).toBe("outfitRed");
+        expect(pick("main", 2, "outfitRed")).toBe("outfitRed");
     });
 });

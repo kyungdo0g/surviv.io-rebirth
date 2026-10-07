@@ -236,15 +236,20 @@ describe("perks around items", () => {
         expect(r.seconds).toBeCloseTo(3 * game.rules.aoeHealUseTimeMult, 9);
     });
 
-    it("Fabricate fills the pack with frags every rules.fabricateInterval seconds", () => {
+    it("Fabricate rolls 8 explosives every 10 s and hands them out one per 0.08 s up to the bag's room (survev)", () => {
         const { game, p } = fresh(100);
         p.backpack = "backpack02";
         p.perks.push("fabricate");
-        steps(game, Math.round(game.rules.fabricateInterval * 100) - 1);
-        expect(p.inv.get("frag")).toBe(0);
+        const fab = game.rules.perks.fabricate;
+        const total = () => ["frag", "mirv", "strobe"].reduce((n, i) => n + p.inv.get(i), 0);
+        steps(game, Math.round(fab.refillInterval * 100) - 1);
+        expect(total()).toBe(0);
         game.step();
-        expect(p.inv.get("frag")).toBe(p.inv.capacity("frag"));
-        expect(p.weaponManager.weapons[WeaponSlot.Throwable].type).toBe("frag");
+        expect(p.fabricateQueue.length).toBe(fab.count);
+        steps(game, Math.ceil(fab.giveInterval * fab.count * 100) + fab.count);
+        expect(total()).toBe(fab.count);
+        expect(p.inv.get("frag") + p.inv.get("mirv")).toBeGreaterThan(0);
+        expect(p.weaponManager.weapons[WeaponSlot.Throwable].type).not.toBe("");
     });
 });
 

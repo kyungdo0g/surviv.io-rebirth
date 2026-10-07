@@ -117,18 +117,40 @@ export function selectThrowable(player: Player, item: string): void {
 }
 
 /**
- * Fabricate (original rule): every `rules.fabricateInterval` seconds the pack is filled with frag grenades up to its
- * capacity (fandom Fabricate; survev's 8 weighted explosives every 10 s is a fork rework).
+ * Fabricate (survev perkDefs.ts fabricate, player.ts:1846-1899): every `refillInterval` (10 s) `count` (8) explosives
+ * are rolled by weight (frag 60, MIRV 35, strobe 5), cut to the bag's room for each, and handed out one every
+ * `giveInterval` (0.08 s). The original filled the pack with frags every 12 s (fandom Fabricate).
  */
-export function updateFabricate(player: Player, rules: Pick<SimRules, "fabricateInterval">, dt: number): void {
+export function updateFabricate(ctx: SimContext, player: Player, dt: number): void {
     if (!player.hasPerk("fabricate")) {
         player.fabricateTicker = 0;
+        player.fabricateQueue = [];
         return;
     }
+    const rules = ctx.rules.perks.fabricate;
+    if (player.fabricateQueue.length > 0) {
+        player.fabricateGiveTicker -= dt;
+        if (player.fabricateGiveTicker < 0) {
+            player.fabricateGiveTicker = rules.giveInterval;
+            player.inv.give(player.fabricateQueue.shift()!, 1);
+        }
+    }
     player.fabricateTicker += dt;
-    if (player.fabricateTicker < rules.fabricateInterval - 1e-9) return;
+    if (player.fabricateTicker < rules.refillInterval - 1e-9) return;
     player.fabricateTicker = 0;
-    player.inv.give("frag", player.inv.capacity("frag"));
+    const items = Object.keys(rules.weights);
+    const counts: Record<string, number> = {};
+    for (let i = 0; i < rules.count; i++) {
+        const item = ctx.lootRng.weighted(items, (it) => rules.weights[it]);
+        counts[item] = (counts[item] ?? 0) + 1;
+    }
+    const queue: string[] = [];
+    for (const item of items) {
+        const room = Math.max(player.inv.capacity(item) - player.inv.get(item), 0);
+        for (let i = Math.min(counts[item] ?? 0, room); i > 0; i--) queue.push(item);
+    }
+    player.fabricateQueue = queue;
+    player.fabricateGiveTicker = rules.giveInterval;
 }
 
 /**

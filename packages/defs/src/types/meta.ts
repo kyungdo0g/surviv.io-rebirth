@@ -29,6 +29,8 @@ export interface OutfitDef extends BaseLootDef, BaseLoadoutItem {
     type: "outfit";
     name: string;
     baseType: string;
+    /** 50v50: only this faction may wear it (1 Red, 2 Blue; survev balance, survev outfitDefs.ts) */
+    teamId?: number;
     skinImg: {
         baseTint: number;
         baseSprite: string;

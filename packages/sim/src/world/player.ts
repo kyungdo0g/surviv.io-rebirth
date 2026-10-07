@@ -10,7 +10,7 @@ import type { PickupResult } from "../loot/pickup.ts";
 import { updateEmoteThrottle } from "../match/emotes.ts";
 import type { Group } from "../match/teams.ts";
 import { trackActivity, updatePerks } from "../perks/effects.ts";
-import type { PerkSource } from "../perks/perks.ts";
+import { type PerkSource, rulesOf } from "../perks/perks.ts";
 import type { AnimType, HasteName, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
 import { gunDef, TIME_EPS, WeaponManager } from "../weapons/weaponManager.ts";
 import { handleActions } from "./actions.ts";
@@ -132,6 +132,9 @@ export class Player implements InventoryOwner {
     private visionRecoveryTicker = 0;
     /** seconds towards the next Fabricate refill */
     fabricateTicker = 0;
+    /** Fabricate: explosives still to hand out, one every rules.perks.fabricate.giveInterval (survev player.ts:1846) */
+    fabricateQueue: string[] = [];
+    fabricateGiveTicker = 0;
     /** the game this player is in (set by Game.addPlayer; throws need it to spawn projectiles) */
     ctx: SimContext | null = null;
     input: PlayerInput = emptyInput();
@@ -320,6 +323,11 @@ export class Player implements InventoryOwner {
         this.animTicker = 0;
     }
 
+    /** Flak Jacket: extra frag and MIRV room (survev inventoryManager.ts getMaxCapacity) */
+    capacityBonus(item: string): number {
+        return this.hasPerk("flak_jacket") ? (rulesOf(this).perks.flakJacketBonuses[item] ?? 0) : 0;
+    }
+
     onItemAdded(item: string): void {
         const def = getDef(item);
         const wm = this.weaponManager;
@@ -435,7 +443,7 @@ export class Player implements InventoryOwner {
 
         // boost heals and decays before the action and movement (survev player.ts update)
         updateBoost(this, ctx.rules, dt);
-        updateFabricate(this, ctx.rules, dt);
+        updateFabricate(ctx, this, dt);
         // haste, Last Breath, bugle, Gift of the Woods, That Sucks, Gabby Ghost (M7a); That Sucks may kill
         updatePerks(ctx, this, dt);
         if (this.dead) return;

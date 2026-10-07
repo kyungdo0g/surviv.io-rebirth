@@ -63,11 +63,8 @@ describe("role kits", () => {
         const { game, p } = setup();
         game.roles.promote(p, "grenadier");
         expect(p.weaponManager.weapons.map((w) => w.type)).toEqual(["", "saiga", "katana", "mirv"]);
-        // the Military Pack holds 12 frags and 8 MIRVs; the rest drops (survev invManager.giveAndDrop)
-        expect([p.inv.get("frag"), p.inv.get("mirv")]).toEqual([12, 8]);
-        const dropped = (t: string) =>
-            [...game.loot.items.values()].filter((l) => l.type === t).reduce((n, l) => n + l.count, 0);
-        expect([dropped("frag"), dropped("mirv")]).toEqual([3, 2]);
+        // the Military Pack holds 12 frags and 8 MIRVs, Flak Jacket 3 and 2 more (survev getMaxCapacity)
+        expect([p.inv.get("frag"), p.inv.get("mirv")]).toEqual([15, 10]);
         expect(p.perks).toEqual(["flak_jacket"]);
         expect(p.helmet).toBe("helmet03_grenadier");
     });

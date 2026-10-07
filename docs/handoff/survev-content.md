@@ -20,7 +20,7 @@ may not touch, the schema number used and open questions.
 | 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | done | see `git log --grep "stage 3"` |
 | 3d | 50v50 buildings and structures (added scope from the lead, owner priority) | done | see `git log --grep "50v50"` |
 | 4 | cosmetics (outfits, emotes, heal / boost effects) | 4a defs + loot done; 4b loadout on hold (open question) | see `git log --grep "stage 4"` |
-| 5 | balance option B (no balance revert for shared gameplay fields) | 5a port + role kits + heavy throwables done; 5b perk numbers next | see `git log --grep "stage 5"` |
+| 5 | balance option B (no balance revert for shared gameplay fields) | done (5a port, kits, heavy throwables; 5b perk numbers, faction outfits) | see `git log --grep "stage 5"` |
 
 ### Stage 1 details
 
@@ -97,6 +97,13 @@ may not touch, the schema number used and open questions.
   Survivr's four perks; `lastManExtraPerks` now empty); a snowball or potato held 1 s (`changeTime`) leaves as its heavy
   variant (survev weaponManager.ts:1229).
 - Client: the role menu and HUD show a role's fixed perks only (`perks` may hold weighted entries).
+- 5b (sim perk numbers, survev `PerkProperties`): Cast Ironskin 45 %, Flak Jacket size +10 % with +3 frags / +2 MIRVs
+  of bag room (excess drops when it goes; the Grenadier now keeps survev's 15 / 10), Gift of the Woods +20 % and
+  1 HP/s, Splinter sides x0.5, ammo perks x1.12 multiplied with Hollow-points / OKAMI Bar x1.08 and Last Breath,
+  9mm Overpressure x1.2, Hollow-points x1.1 bullet speed, .45 in the Chamber's 1-in-6 empowered rounds, Fabricate's 8
+  weighted explosives every 10 s. 50v50 outfits with a `teamId` fit their faction only (`loot/pickup.ts
+  wearableOutfit`). Each knob stays in `rules` / `rules.perks`; `conflicts.md` notes the survev resolution under each
+  conflict. The original perk descriptions stay (Fabricate's "fill your pack with frag grenades" is now loose).
 - Oracle fixtures regenerated with the new defs (`tools/oracle`); main golden unchanged.
 - Tests changed: `original-values.test.ts` (original presentation + survev gameplay, each survev value checked against
   the original it replaced), `integrity.test.ts` (weighted role perks, role kits), `survevGuns.test.ts` (defs: winter
