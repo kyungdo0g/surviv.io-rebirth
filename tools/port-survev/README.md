@@ -49,7 +49,9 @@ this order (0 is the empty type), so every original def keeps the index its posi
    original or not in survev is an error.
    `survevMapGen` (survev content wave stage 3): map generation as survev has it, so the balance revert skips every
    `mapSpawns` entry and the map-level `other` entries (cache variants, Cobalt's unlock timing, Potato vs Tomato's
-   air drop weights), `revertForkReskins` is off and the event-map fixes apply only their loot parts.
+   air drop weights), `revertForkReskins` is off and the event-map fixes apply only their loot parts; original map
+   objects also take survev's map-generation fields `teamId` and `terrain` (50v50 sides, the faction crates' spacing;
+   logged in `provenance.survevMapGenFields`).
    `survevMapObjects`: original map object ids whose survev def replaces the original whole (status
    `survev-override`; `category` renamed back and unported loot dropped as for survev-only objects).
 1. **Game objects** are the original client defs, unchanged, then the policy's survev-only ids in survev order

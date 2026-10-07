@@ -18,6 +18,7 @@ may not touch, the schema number used and open questions.
 | 1 | melee `iceaxe`, `cutlass`, `cutlass_gold`, skins `naginata_daemon`, `karambit_borealis`; throwables `coconut`, `tomato` + explosions; `pirate` perk | done | be03cb6 |
 | 2 | gear / perks / roles (backpack04, 5-level bags, 6 more perks, captain, classless) | done | see `git log --grep "stage 2"` |
 | 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | done | see `git log --grep "stage 3"` |
+| 3d | 50v50 buildings and structures (added scope from the lead, owner priority) | done | see `git log --grep "50v50"` |
 | 4 | cosmetics (outfits, emotes, heal / boost effects) | planned | |
 | 5 | balance option B (no balance revert for shared gameplay fields) | planned | |
 
@@ -72,13 +73,40 @@ may not touch, the schema number used and open questions.
 - Building showcase (owner request): `/?building=<type>` (or `building=1` for the first) boots the loopback sandbox
   on a map holding only that building or structure (and its children), on the first map that spawns it, with its lake
   (Oasis, tea pavilion, Cloud bunker), river (bridges, river shacks, cabins) or beach (huts, docks, waterfront
-  warehouse) and no gas; the player stands beside it. `[` / `]` or the bar at the top step through all 139 buildings
+  warehouse) and no gas; the player stands beside it. `[` / `]` or the bar at the top step through all 140 buildings
   and structures the maps spawn at the top level (grouped by map); other query keys stay (`&zoom=`, `&give=`,
   `&loot=0`, `&lang=ko`). Sim `packages/sim/src/mapgen/showcase.ts` (`generateShowcase`, `showcaseEntries`,
   `showcaseSpawnSpots`), client `apps/client/src/dev/showcase.ts`, `game/sandbox.ts` (`building`),
   `game/gasStages.ts` (`noGasStages`), `net/loopback.ts` (`spawnSpots`), `main.ts` (`building` route key). Tests:
   `packages/sim/test/showcase.test.ts`, `tests/e2e/survev-buildings.spec.ts` (`SHOWCASE_ALL=1` screenshots every
   building into `__screens__/survev-buildings/all/`).
+
+### Stage 3d details (50v50)
+
+- Inventory: survev `factionDefs.ts` / `factionPotatoDefs.ts` spawn lists vs our `maps.json` (identical: survev's map
+  generation), every object in the closure of River Town (`river_town_01`), the Faction Bridge
+  (`bridge_xlg_structure_01`), the 50v50 warehouse (`warehouse_01f`), the Silo Shack (`shilo_01`), the faction caches,
+  crates, river chest, statues, potatoes and tomatoes, original client defs vs survev (`live` vs `.survev`). Layouts,
+  children, layers, stairs and masks match; the differences that mattered were survev's map-generation fields:
+  `teamId` (crate_02f Red, crate_22 Blue, shilo_01 Blue; bank / mansion / police / docks were already handled by a
+  side table) and `terrain.minDistanceFromSameType` (faction crates 32 apart, Cobalt's class shells too), plus terrain
+  tweaks (tree_13 palms beach-only, lakeCenter flags gone).
+- Fix: the port copies survev's `teamId` and `terrain` onto original map objects when `survevMapGen` is on
+  (`tools/port-survev/lib/objects.ts applySurvevMapGenFields`, logged in provenance `survevMapGenFields`); the sim's
+  side table is gone (`mapgen/placement.ts teamIdOf` reads `teamId`) and `canSpawn` enforces
+  `minDistanceFromSameType` (`mapgen/generator.ts`). Before, the Soviet / Initiative crates and the Silo Shack spawned
+  anywhere. main seed 12345 golden hash: `7f48d105692eadcd` -> `e856eb5e71684e02` (tree_13 on the beach).
+- Showcase: `river_town_01` added (faction, on a 20-wide river); 140 entries. Spawn spots now start at the object's
+  bounds (front first), so wide buildings are on screen.
+- Checked and left as is: River Town's `goreRegion` (survev uses it only for quests: out of scope); faction crates'
+  `preloadGuns` (loot, stage 5 balance); fandom's Scout Hut and 3 houses per side (survev's counts win: hut_01 x4,
+  hut_02, 4 + 4 red houses, 4 barns, 6 warehouses).
+- Tests: `packages/sim/test/survevFaction.test.ts` (sides, crate spacing, River Town orientation and statues, river
+  chest, Potato vs Tomato sides), showcase test, `tests/e2e/survev-faction-buildings.spec.ts` (River Town, Faction
+  Bridge, warehouse, Silo Shack, cache in the showcase; crates on a real 50v50 map; full-map screenshot). KB:
+  `modes/faction.md` Team sides, `conflicts.md#faction-teamid`.
+- Visual reference: if the owner has 50v50 gameplay video (River Town, bridges, team-side crates), the lead can ask for
+  it; the screenshots in `tests/e2e/__screens__/survev-faction/` are what to compare.
 
 ## Changes needed in the lead's files
 
@@ -130,13 +158,17 @@ already recorded in `docs/research/conflicts.md#survev-throwable-cookable`.
 
 ### 4. Bot tests broken by survev's map generation (stage 3) — `packages/bots/test/**` (lead-owned, not touched)
 
-survev's map generation moves every object of `main` seed 12345 (golden hash `555953c84482c164` -> `7f48d105692eadcd`),
+survev's map generation moves every object of `main` seed 12345 (golden hash `555953c84482c164` -> `7f48d105692eadcd`,
+then `e856eb5e71684e02` in the 50v50 stage; the ids below still hold),
 so the bot tests that pin object ids or coordinates of that map fail:
 - `walk.test.ts`, `nav.test.ts`, `nav.follower.test.ts`: `house_red_02` id 1391 no longer exists. The main 12345
   `house_red_02`s are now ids 1402 (610.1, 583.7, ori 0), 1440 (491.3, 144.5, ori 1) and 1478 (127.3, 501.2, ori 3).
   Re-pin, or better find the first `house_red_02` by type.
 - `nav.basements.test.ts` "plans through narrow doorways": the storm-bunker hut cells (x 564-567, y 562-565) moved;
-  the storm bunker (`bunker_structure_05`) is now id 209.
+  the storm bunker (`bunker_structure_03`) is now id 1287 at (344.3, 569.2) (the crossing bunker
+  `bunker_structure_05` is id 209).
+- 50v50 stage: faction maps changed too (team crates on their sides, 32 apart); bot tests pinning faction coordinates
+  need the same re-pin.
 
 ### 5. Survev building particles (`apps/client/src/fx/particleDefs*.ts`, lead-owned)
 

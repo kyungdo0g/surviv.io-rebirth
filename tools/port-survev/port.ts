@@ -18,7 +18,13 @@ import {
     renameTiers,
     revertForkReskins,
 } from "./lib/maps.ts";
-import { objectPaths, portGameConfig, portGameObjects, portMapObjects } from "./lib/objects.ts";
+import {
+    applySurvevMapGenFields,
+    objectPaths,
+    portGameConfig,
+    portGameObjects,
+    portMapObjects,
+} from "./lib/objects.ts";
 import { loadPolicy, portedSurvevIds } from "./lib/policy.ts";
 import { keepSurvevPlacements, restoreSurvevPlacements, splitMapGenEntries } from "./lib/survevLoot.ts";
 import { stableJson } from "./lib/util.ts";
@@ -101,6 +107,10 @@ const mapObjects = portMapObjects(
     gameObjects.defs,
     policy.survevMapObjects,
 );
+// survev map generation: the original map objects take survev's faction sides and placement rules
+const mapGenFields = policy.survevMapGen
+    ? applySurvevMapGenFields(mapObjects.defs, mapObjects.status, survev.mapObjects)
+    : [];
 
 // 6. GameConfig: original client wins, survev supplies server constants
 const gameConfig = portGameConfig(live.gameConfig, survev.gameConfig, gameObjects.defs, policy.survevGameConfig);
@@ -127,6 +137,7 @@ const provenance = {
     reskinReverts,
     eventMapFixes,
     survevPlacements,
+    survevMapGenFields: mapGenFields,
     lootRemovals: [...lootRemovals, ...mapObjects.lootRemovals, ...roleOverrideRemovals],
     gameConfigDiffs: [
         ...gameConfig.diffs,

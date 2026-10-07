@@ -1112,7 +1112,7 @@
 
 - A: survev assigns `teamId` sides to bank, mansion, police, docks, silo shack [src:survev/shared/defs/mapObjects/buildings/baseBuildingDefs.ts:7] [H]
 - B: no `teamId` in the original client [src:kong/relaunch-client-defs] [H]
-- proposed resolution: keep survev's side rule as a knob, origin unknown [src:derived/readme-precedence] [L]
+- proposed resolution: survev's `teamId` (the port copies it with `survevMapGen`, survev content wave 50v50 stage); fandom already puts the team crates on their own side in the original [src:derived/readme-precedence] [src:fandom/50v50_Map] [M]
 - files: `maps/buildings.md` (`faction-teamid`) [src:derived/kb-crossref] [H]
 
 ## preload-on-ground-crates

@@ -164,6 +164,39 @@ export function portMapObjects(
     return { defs, status, fixups, lootRemovals, excluded, missing };
 }
 
+/** Map-generation fields of a map object (survev map.ts canSpawn / genOnGrass read them). */
+const MAP_GEN_FIELDS = ["teamId", "terrain"] as const;
+
+export interface MapGenFieldChange {
+    id: string;
+    field: (typeof MAP_GEN_FIELDS)[number];
+    original: unknown;
+    survev: unknown;
+}
+
+/**
+ * survev map generation (policy `survevMapGen`): original map objects take survev's map-generation fields where they
+ * differ, the faction side (`teamId`) and the placement rules (`terrain`, e.g. the faction crates' 32-unit spacing).
+ * Mutates `defs`; returns what changed.
+ */
+export function applySurvevMapGenFields(
+    defs: Record<string, any>,
+    status: Readonly<Record<string, MapObjectStatus>>,
+    survev: Readonly<Record<string, any>>,
+): MapGenFieldChange[] {
+    const changes: MapGenFieldChange[] = [];
+    for (const id of Object.keys(defs)) {
+        if (status[id] !== "original" || !(id in survev)) continue;
+        for (const field of MAP_GEN_FIELDS) {
+            const value = survev[id][field];
+            if (value === undefined || JSON.stringify(value) === JSON.stringify(defs[id][field])) continue;
+            changes.push({ id, field, original: defs[id][field] ?? "absent", survev: clone(value) });
+            defs[id][field] = clone(value);
+        }
+    }
+    return changes;
+}
+
 export interface GameConfigPort {
     config: Record<string, any>;
     diffs: KeyDiff[];

@@ -3,10 +3,11 @@
 // (`?building=<type>`). The map def is the first map that spawns the type (biome, loot tables, spawn replacements of
 // its children); a lake centre keeps its lake, a bridge, river shack or river cabin gets one river, a building facing the sea
 // stands on the beach (survev map.ts genOnWaterEdge), everything else stands in the middle.
-import { type Vec2, v2 } from "@rebirth/core";
+import { type Bounds, type Vec2, v2 } from "@rebirth/core";
 import { getMapDef, getMapObjectDef, hasMapObjectDef, type MapDef, MapDefs } from "@rebirth/defs";
+import { toBounds, transformOri } from "../geom/transform.ts";
 import type { MapData } from "../view.ts";
-import { getBoundingAabb } from "./bounds.ts";
+import { getBoundingAabb, getBoundingCollider } from "./bounds.ts";
 import type { GenerateMapResult } from "./generate.ts";
 import { type GeneratedObject, MapGenerator } from "./generator.ts";
 import { genBridge, genOnWaterEdge, genRiverCabin } from "./placement.ts";
@@ -18,8 +19,13 @@ import { createTerrain } from "./terrain.ts";
 const SKIPPED_MAPS: ReadonlySet<string> = new Set(["test_normal", "test_faction"]);
 /** Open ground around the object, on each side. */
 const MARGIN = 48;
-/** River water widths of the bridge sizes (survev map.ts generateBridges: medium 4-9, large 8-20, xlarge 20+). */
-const BRIDGE_RIVER_WIDTH = { medium: 6, large: 12, xlarge: 24 } as const;
+/**
+ * River water widths of the bridge sizes (survev map.ts generateBridges: medium 4-9, large 8-20, xlarge 20+; the
+ * 50v50 river is 20 wide, survev factionDefs rivers.weights).
+ */
+const BRIDGE_RIVER_WIDTH = { medium: 6, large: 12, xlarge: 20 } as const;
+/** Placed on the 50v50 river by the faction bridge rule, not by a spawn list (generate.ts generateFactionBridges). */
+const FACTION_RIVER_TOWN = "river_town_01";
 
 export interface ShowcaseEntry {
     type: string;
@@ -33,8 +39,8 @@ export interface ShowcaseResult {
     type: string;
     /** the showcased object (top level, its children follow it in `generation.objects`) */
     object: GeneratedObject;
-    /** half the larger side of its bounds: players stand outside this radius around `object.pos` */
-    radius: number;
+    /** its world bounds (as placed, turned by its ori) */
+    bounds: Bounds;
 }
 
 /** Top-level buildings and structures a map's generation can spawn, after its spawn replacements. */
@@ -50,6 +56,7 @@ function spawnedTypes(def: MapDef): string[] {
         ...Object.keys(g.densitySpawns[0] ?? {}),
         ...Object.values(g.bridgeTypes),
         ...(g.map.rivers.spawnCabins ? ["cabin_01"] : []),
+        ...(def.gameMode.factionMode ? [FACTION_RIVER_TOWN] : []),
     ];
     return types
         .map((t) => repl[t] ?? t)
@@ -97,7 +104,7 @@ function riverWidthFor(type: string, def: MapDef): number {
     if (!terrain?.bridge && !terrain?.nearbyRiver) return 0;
     const sizes = def.mapGen.bridgeTypes;
     if (sizes.medium === type) return BRIDGE_RIVER_WIDTH.medium;
-    if (sizes.xlarge === type) return BRIDGE_RIVER_WIDTH.xlarge;
+    if (sizes.xlarge === type || type === FACTION_RIVER_TOWN) return BRIDGE_RIVER_WIDTH.xlarge;
     return BRIDGE_RIVER_WIDTH.large;
 }
 
@@ -222,20 +229,32 @@ export function generateShowcase(type: string, seed = 1, mapName = showcaseMapOf
         riverAreas: [],
         factionSplitOri: 0,
     };
-    return { generation, mapName, type, object, radius };
+    const bounds = toBounds(transformOri(getBoundingCollider(type), object.pos, object.ori, object.scale));
+    return { generation, mapName, type, object, bounds };
 }
 
-/** Spots around the showcased object, nearest first: `radius + 4` outwards in rings of 16 directions. */
+/**
+ * Spots around the showcased object, nearest first: the middle of each side of its bounds, its front (low y, so the
+ * object fills the top of the screen) first, then the corners, `pad` 3 units out and growing by 4.
+ */
 export function showcaseSpawnSpots(show: ShowcaseResult): Vec2[] {
     const out: Vec2[] = [];
     const { width, height } = show.generation.mapData;
-    for (let r = show.radius + 4; r < Math.max(width, height); r += 4) {
-        for (let a = 0; a < 16; a++) {
-            // start below the object (the camera looks at its front first)
-            const ang = -Math.PI / 2 + (a / 16) * Math.PI * 2;
-            const p = { x: show.object.pos.x + Math.cos(ang) * r, y: show.object.pos.y + Math.sin(ang) * r };
-            if (p.x > 8 && p.y > 8 && p.x < width - 8 && p.y < height - 8) out.push(p);
-        }
+    const { min, max } = show.bounds;
+    const cx = (min.x + max.x) / 2;
+    const cy = (min.y + max.y) / 2;
+    for (let pad = 3; pad < Math.max(width, height); pad += 4) {
+        const spots = [
+            { x: cx, y: min.y - pad },
+            { x: cx, y: max.y + pad },
+            { x: min.x - pad, y: cy },
+            { x: max.x + pad, y: cy },
+            { x: min.x - pad, y: min.y - pad },
+            { x: max.x + pad, y: min.y - pad },
+            { x: min.x - pad, y: max.y + pad },
+            { x: max.x + pad, y: max.y + pad },
+        ];
+        for (const p of spots) if (p.x > 8 && p.y > 8 && p.x < width - 8 && p.y < height - 8) out.push(p);
     }
     return out;
 }

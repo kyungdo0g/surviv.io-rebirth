@@ -49,6 +49,8 @@ describe("original client values", () => {
                 .filter(Boolean)
                 .reduce((a, k) => (a == null ? undefined : a[k]), o);
         let checked = 0;
+        // survev map generation: survev's faction sides and placement rules (provenance survevMapGenFields)
+        const mapGenFields = new Set(provenance.survevMapGenFields.map((c: any) => `${c.id}.${c.field}`));
         for (const [defs, list] of [
             [gameObjects, liveVsSurvev.gameObjects],
             [mapObjects, liveVsSurvev.mapObjects],
@@ -59,6 +61,7 @@ describe("original client values", () => {
                 if (defs === mapObjects && provenance.mapObjects[entry.id] === "survev-override") continue;
                 for (const diff of entry.diffs ?? []) {
                     if (diff.live === undefined) continue;
+                    if (defs === mapObjects && mapGenFields.has(`${entry.id}.${diff.field.split(/[.[]/)[0]}`)) continue;
                     expect(get(defs[entry.id], diff.field), `${entry.id}.${diff.field}`).toEqual(JSON.parse(diff.live));
                     checked++;
                 }
@@ -90,9 +93,20 @@ describe.skipIf(!live)("generated defs equal the original client defs", () => {
         const ids = Object.keys(live.mapObjects);
         expect(Object.keys(mapObjects).slice(0, ids.length)).toEqual(ids);
         const overrides = new Set<string>(portPolicy.survevMapObjects);
+        // survev map generation: survev's `teamId` / `terrain` (provenance survevMapGenFields), else the original's
+        const mapGen = new Map<string, any[]>();
+        for (const c of provenance.survevMapGenFields) mapGen.set(c.id, [...(mapGen.get(c.id) ?? []), c]);
         for (const id of ids) {
-            if (overrides.has(id)) expect(provenance.mapObjects[id], id).toBe("survev-override");
-            else expect(mapObjects[id], id).toEqual(live.mapObjects[id]);
+            if (overrides.has(id)) {
+                expect(provenance.mapObjects[id], id).toBe("survev-override");
+                continue;
+            }
+            const expected = { ...live.mapObjects[id] };
+            for (const c of mapGen.get(id) ?? []) {
+                expect(expected[c.field] ?? "absent", `${id}.${c.field}`).toEqual(c.original);
+                expected[c.field] = c.survev;
+            }
+            expect(mapObjects[id], id).toEqual(expected);
         }
     });
 

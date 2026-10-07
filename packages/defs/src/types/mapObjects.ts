@@ -11,6 +11,8 @@ export interface TerrainSpawnDef {
     waterEdge?: { dir: Vec2; distMin: number; distMax: number };
     river?: { centerWeight: number };
     nearbyRiver?: { radMin: number; radMax: number; facingOri: number };
+    /** no obstacle of the same type within this distance (survev: faction crates, Cobalt's class shells) */
+    minDistanceFromSameType?: number;
 }
 
 /** `tierLoot(tier, min, max)` or `autoLoot(type, count)` entry of a map object. */

@@ -28,12 +28,14 @@ describe("building showcase", () => {
             "perch_01",
             "bunker_structure_10",
             "bunker_structure_09",
+            "river_town_01",
         ]) {
             expect(types).toContain(type);
         }
         expect(showcaseMapOf("oasis_01")).toBe("desert");
         expect(showcaseMapOf("camp_01")).toBe("snow");
         expect(showcaseMapOf("house_red_01")).toBe("main");
+        expect(showcaseMapOf("river_town_01")).toBe("faction");
     });
 
     it("every entry generates a map holding only it, without warnings, and runs as a game", () => {
@@ -70,6 +72,9 @@ describe("building showcase", () => {
         expect(lakes).toHaveLength(1);
         expect(oasis.generation.terrain.rivers[0].center.x).toBeCloseTo(oasis.object.pos.x, 6);
         expect(generateShowcase("house_red_01").generation.mapData.rivers).toEqual([]);
+        // River Town sits on a 20-wide river, like the 50v50 one
+        const town = generateShowcase("river_town_01");
+        expect(town.generation.mapData.rivers.map((r) => r.width)).toEqual([20]);
     });
 
     it("the showcased Reserve keeps its vault and puzzle", () => {

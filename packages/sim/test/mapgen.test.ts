@@ -8,10 +8,10 @@ import { cachedMap, objectsHash } from "./helpers.ts";
 
 /**
  * Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. Last change: the
- * survev content wave stage 3 takes survev's map generation (main gains the Alternate Warehouse, the river-stone
- * cache_04 and survev's spawn counts; tools/port-survev/policy.json survevMapGen).
+ * survev content wave's 50v50 stage gives the original map objects survev's placement rules (tree_13 palms on the
+ * beach; tools/port-survev applySurvevMapGenFields), after stage 3 took survev's map generation (policy survevMapGen).
  */
-const MAIN_12345_HASH = "7f48d105692eadcd";
+const MAIN_12345_HASH = "e856eb5e71684e02";
 
 /** Area an object reserves against other top-level objects (what canSpawn tests against). */
 function footprints(o: GeneratedObject): Collider[] {

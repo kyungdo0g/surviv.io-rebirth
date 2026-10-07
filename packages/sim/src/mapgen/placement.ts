@@ -28,20 +28,13 @@ function divideBounds(b: Bounds, axisX: boolean, n: number, idx: number): Bounds
 }
 
 /**
- * Sides of the faction map's team buildings (M7a; conflicts.md faction-teamid: the original client defs carry no
- * `teamId`, survev's baseBuildingDefs give these, kept as survev's side rule): Bank and Mansion on Red, Police Station
- * and Docks on Blue (fandom 50v50_Map agrees).
+ * The faction side of a team object (1 Red, 2 Blue): survev's `teamId`, which the port gives the original defs too
+ * (tools/port-survev applySurvevMapGenFields; conflicts.md faction-teamid): Bank, Mansion and the Red crates on Red,
+ * Police Station, Docks, Silo Shack and the Blue crates on Blue.
  */
-export const FACTION_TEAM_BUILDINGS: Readonly<Record<string, number>> = {
-    bank_01: 1,
-    mansion_structure_01: 1,
-    police_01: 2,
-    warehouse_complex_01: 2,
-};
-
 function teamIdOf(type: string): number | undefined {
     const def = getMapObjectDef(type);
-    return "teamId" in def && def.teamId ? def.teamId : FACTION_TEAM_BUILDINGS[type];
+    return "teamId" in def && def.teamId ? def.teamId : undefined;
 }
 
 function factionGrassPos(gen: MapGenerator, type: string, spawn: Bounds): Vec2 {

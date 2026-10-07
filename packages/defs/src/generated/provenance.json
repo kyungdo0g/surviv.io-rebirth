@@ -16363,6 +16363,158 @@
       "reason": "survev placement restored"
     }
   ],
+  "survevMapGenFields": [
+    {
+      "id": "crate_02sv_lake",
+      "field": "terrain",
+      "original": {
+        "grass": true,
+        "beach": true,
+        "riverShore": true,
+        "lakeCenter": true
+      },
+      "survev": {
+        "grass": true,
+        "beach": true,
+        "riverShore": true
+      }
+    },
+    {
+      "id": "crate_02f",
+      "field": "teamId",
+      "original": "absent",
+      "survev": 1
+    },
+    {
+      "id": "crate_02f",
+      "field": "terrain",
+      "original": {
+        "grass": true,
+        "beach": false,
+        "riverShore": true
+      },
+      "survev": {
+        "grass": true,
+        "beach": false,
+        "riverShore": true,
+        "minDistanceFromSameType": 32
+      }
+    },
+    {
+      "id": "crate_22",
+      "field": "teamId",
+      "original": "absent",
+      "survev": 2
+    },
+    {
+      "id": "crate_22",
+      "field": "terrain",
+      "original": {
+        "grass": true,
+        "beach": false,
+        "riverShore": true
+      },
+      "survev": {
+        "grass": true,
+        "beach": false,
+        "riverShore": true,
+        "minDistanceFromSameType": 32
+      }
+    },
+    {
+      "id": "class_shell_01",
+      "field": "terrain",
+      "original": {
+        "grass": true,
+        "beach": true,
+        "riverShore": true
+      },
+      "survev": {
+        "grass": true,
+        "beach": true,
+        "riverShore": true,
+        "minDistanceFromSameType": 32
+      }
+    },
+    {
+      "id": "tree_13",
+      "field": "terrain",
+      "original": {
+        "grass": true,
+        "beach": false
+      },
+      "survev": {
+        "grass": false,
+        "beach": true
+      }
+    },
+    {
+      "id": "warehouse_complex_01",
+      "field": "teamId",
+      "original": "absent",
+      "survev": 2
+    },
+    {
+      "id": "shilo_01",
+      "field": "teamId",
+      "original": "absent",
+      "survev": 2
+    },
+    {
+      "id": "bank_01",
+      "field": "teamId",
+      "original": "absent",
+      "survev": 1
+    },
+    {
+      "id": "police_01",
+      "field": "teamId",
+      "original": "absent",
+      "survev": 2
+    },
+    {
+      "id": "mansion_structure_01",
+      "field": "teamId",
+      "original": "absent",
+      "survev": 1
+    },
+    {
+      "id": "teapavilion_01",
+      "field": "terrain",
+      "original": {
+        "grass": true,
+        "beach": false,
+        "lakeCenter": true
+      },
+      "survev": {
+        "grass": true,
+        "beach": false
+      }
+    },
+    {
+      "id": "teapavilion_01w",
+      "field": "terrain",
+      "original": {
+        "grass": true,
+        "beach": false,
+        "lakeCenter": true
+      },
+      "survev": {
+        "grass": true,
+        "beach": false
+      }
+    },
+    {
+      "id": "teapavilion_complex_01",
+      "field": "terrain",
+      "original": {
+        "lakeCenter": true
+      },
+      "survev": {
+        "grass": true
+      }
+    }
+  ],
   "lootRemovals": [
     {
       "map": "main",

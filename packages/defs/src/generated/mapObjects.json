@@ -3770,8 +3770,7 @@
     "terrain": {
       "grass": true,
       "beach": true,
-      "riverShore": true,
-      "lakeCenter": true
+      "riverShore": true
     },
     "img": {
       "sprite": "map-crate-02sv.img",
@@ -3903,7 +3902,8 @@
     "terrain": {
       "grass": true,
       "beach": false,
-      "riverShore": true
+      "riverShore": true,
+      "minDistanceFromSameType": 32
     },
     "img": {
       "sprite": "map-crate-02f.img",
@@ -3918,7 +3918,8 @@
       "punch": "wood_crate_bullet",
       "explode": "crate_break_01",
       "enter": "none"
-    }
+    },
+    "teamId": 1
   },
   "crate_02d": {
     "type": "obstacle",
@@ -6400,7 +6401,8 @@
     "terrain": {
       "grass": true,
       "beach": false,
-      "riverShore": true
+      "riverShore": true,
+      "minDistanceFromSameType": 32
     },
     "img": {
       "sprite": "map-crate-22.img",
@@ -6415,7 +6417,8 @@
       "punch": "wood_crate_bullet",
       "explode": "crate_break_01",
       "enter": "none"
-    }
+    },
+    "teamId": 2
   },
   "crate_22d": {
     "type": "obstacle",
@@ -7461,7 +7464,8 @@
     "terrain": {
       "grass": true,
       "beach": true,
-      "riverShore": true
+      "riverShore": true,
+      "minDistanceFromSameType": 32
     },
     "img": {
       "sprite": "map-class-shell-01a.img",
@@ -17228,8 +17232,8 @@
       "scale": 2.5
     },
     "terrain": {
-      "grass": true,
-      "beach": false
+      "grass": false,
+      "beach": true
     },
     "img": {
       "sprite": "map-tree-13.img",
@@ -28831,7 +28835,8 @@
         "scale": 1,
         "ori": 2
       }
-    ]
+    ],
+    "teamId": 2
   },
   "logging_complex_01": {
     "type": "building",
@@ -36389,7 +36394,8 @@
         "scale": 1,
         "ori": 1
       }
-    ]
+    ],
+    "teamId": 2
   },
   "shack_wall_ext_2": {
     "type": "obstacle",
@@ -50889,7 +50895,8 @@
         "scale": 0.55,
         "ori": 0
       }
-    ]
+    ],
+    "teamId": 1
   },
   "bank_01b": {
     "type": "building",
@@ -54407,7 +54414,8 @@
         "inheritOri": false,
         "ignoreMapSpawnReplacement": true
       }
-    ]
+    ],
+    "teamId": 2
   },
   "police_01x": {
     "type": "building",
@@ -66892,7 +66900,8 @@
         },
         "height": 0
       }
-    ]
+    ],
+    "teamId": 1
   },
   "mansion_structure_02": {
     "type": "structure",
@@ -69935,8 +69944,7 @@
     },
     "terrain": {
       "grass": true,
-      "beach": false,
-      "lakeCenter": true
+      "beach": false
     },
     "mapObstacleBounds": [
       {
@@ -70205,8 +70213,7 @@
     },
     "terrain": {
       "grass": true,
-      "beach": false,
-      "lakeCenter": true
+      "beach": false
     },
     "mapObstacleBounds": [
       {
@@ -72626,7 +72633,7 @@
       "shapes": []
     },
     "terrain": {
-      "lakeCenter": true
+      "grass": true
     },
     "mapObstacleBounds": [
       {

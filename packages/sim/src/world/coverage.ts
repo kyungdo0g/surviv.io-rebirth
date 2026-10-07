@@ -66,7 +66,7 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "obstacle.hinge": data("the door position is its hinge; the collision already includes the offset"),
     "obstacle.extents": data("wall half extents; the collision already includes them"),
     "obstacle.isWall": impl("buildings.ts breakWallAttachments and wall count"),
-    "obstacle.teamId": impl("entities.ts Obstacle.teamId (faction placement, stored only)"),
+    "obstacle.teamId": impl("entities.ts Obstacle.teamId; faction side (placement.ts teamIdOf, survev genOnGrass)"),
     // doors
     "obstacle.door.interactionRad": impl("interact.ts interactableObstacles, doors.ts autoOpenDoors"),
     "obstacle.door.canUse": impl("doors.ts interactDoor"),
@@ -110,6 +110,7 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "building.zIdx": impl("world.ts isOnWater surface priority"),
     "building.map": client("minimap"),
     "building.terrain": mapgen(),
+    "building.teamId": mapgen("faction side (placement.ts teamIdOf; survev map.ts genOnGrass)"),
     "building.floor": impl("world.ts isOnWater, loot.ts floors"),
     "building.ceiling": impl("player.ts updateZoom, buildings.ts"),
     "building.mapObjects": mapgen(),
@@ -189,9 +190,7 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "building.healRegions.healRate": impl("buildings.ts healRegionRate"),
     // structures
     "structure.type": data(),
-    "structure.teamId": data(
-        "survev faction-side placement (map.ts:1475-1485); only snow's mansion_structure_01x has it",
-    ),
+    "structure.teamId": mapgen("faction side (placement.ts teamIdOf; survev map.ts genOnGrass)"),
     "structure.terrain": mapgen(),
     "structure.ori": mapgen(),
     "structure.mapObstacleBounds": mapgen(),

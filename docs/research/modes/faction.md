@@ -91,6 +91,8 @@
 - Density counts scale by shore area / 250 000 (≈ 784² ≈ 614 656 on Faction, ×2.46) [src:survev/server/src/game/map.ts:1127-1129] [src:derived/faction-density-880] [M]
 - Fork: team crates pre-load their guns (0.1.2) and keep 32 units from each other (0.4.1); the relaunch crates have neither [src:survev/client/public/changelogRec.html:437] [src:survev/client/public/changelogRec.html:84] [src:kong/relaunch-client-defs] [H]
 - Middle ground: almost no structures except the Greenhouse, Egg Bunker and Storm Bunker; most air strikes and fights happen there [src:fandom/50v50_Map] [M]
+- Fandom (2019-20, the original game) already has the team crates on their own side: 11 Soviet crates on the red side, 11 Initiative crates on the blue side [src:fandom/50v50_Map] [src:wikigg/Faction_Crates] [M]
+- In the game (survev content wave, 50v50 stage): the port gives the original map objects survev's `teamId` and `terrain` (policy `survevMapGen`), so `crate_02f` / `crate_22` spawn in their team's outermost tenth 32 units apart and `shilo_01` on Blue, as survev places them [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:418-432] [src:survev/server/src/game/map.ts:1424-1438] [src:survev/server/src/game/map.ts:1564-1620] [H]
 - Beach: 5 huts (one gold, one Scout Hut), 3 Fisherman's Shacks, Conch Bunker, containers, hedgehogs, crates, one Treasure Chest; Docks always on the blue half [src:fandom/50v50_Map] [M]
 
 ### Spawn tables (survev)
