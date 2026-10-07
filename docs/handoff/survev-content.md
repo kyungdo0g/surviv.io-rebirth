@@ -6,10 +6,10 @@ may not touch, the schema number used and open questions.
 
 ## Schema
 
-- `PROTOCOL_SCHEMA_VERSION` = **12** ("survev content wave"; history comment in `packages/defs/src/registry.ts` leaves
-  11 to the lead's branch). Renumber at merge if needed: the tests pinning it are
-  `packages/defs/test/registry.test.ts`, `packages/protocol/test/survevGuns.test.ts` and
-  `packages/protocol/test/airstrikeVariants.test.ts` (each `toBe(12)`).
+- The wave shipped as `PROTOCOL_SCHEMA_VERSION` 14 ("survev content wave"; 11 hit feedback, 12 new guns beta, 13
+  variant strobes are the lead's). The lead's merge (2acdac0) took the base to **15** (AP Rounds tracer and last-stand
+  bits); further work here bumps to 16.
+- Merged: PR #2 (3b98364) into `claude/relaxed-fermat-hcg1fo` at aa63e93; the lead applied items 1-14 below in 2acdac0.
 
 ## Stages
 
@@ -183,6 +183,13 @@ may not touch, the schema number used and open questions.
   it; the screenshots in `tests/e2e/__screens__/survev-faction/` are what to compare.
 
 ## Changes needed in the lead's files
+
+All closed: applied by the lead in 2acdac0 (2026-10-07). Two items differ from the patch here: the coconut and tomato
+particles keep survev's grey tint instead of 0xffffff (item 1), and a disguise lets a client bullet through but still
+plays its chip particle and sound, as survev's client does (item 11). The sections stay as the record.
+- Sprites: `map-building-reserve-*`, `map-crate-17` and `map-airdrop-05` come in with a fresh `pnpm assets` (checked
+  after the merge); `tools/assets` needs no change. The import's four sprites without a file (`map-crate-13x`,
+  `map-tire-01`, `map-wall-glass-18`, `map-bathhouse-column-02`) belong to original defs and are missing in survev too.
 
 ### 1. Coconut and tomato explosion effects (`apps/client/src/fx/explosions.ts`, `apps/client/src/fx/particleDefs.ts`)
 
