@@ -48,8 +48,8 @@ function roundTrip<T>(write: (w: BitWriter) => void, read: (r: BitReader) => T):
 }
 
 describe("survev-only guns on the wire", () => {
-    it("schema 10: their game type ids come after every original one, before the rebirth-only ones", () => {
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(12);
+    it("schema 10 and later: their game type ids come after every original one, before the rebirth-only ones", () => {
+        expect(PROTOCOL_SCHEMA_VERSION).toBeGreaterThanOrEqual(10);
         const firstRebirth = GameObjectRegistry.typeToId(rebirthOnlyIds[0]);
         for (const id of [...GUNS, "bullet_barrett", "potato_lmgshot", "explosion_potato_lmgshot"]) {
             const n = GameObjectRegistry.typeToId(id);

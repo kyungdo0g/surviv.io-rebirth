@@ -6,6 +6,7 @@
             "!**/node_modules",
             "!**/dist",
             "!.survev",
+            "!.claude",
             "!research-cache",
             "!packages/defs/src/generated",
             "!apps/client/public",

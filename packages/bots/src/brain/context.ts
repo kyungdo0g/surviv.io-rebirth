@@ -4,8 +4,13 @@ import { type Rng, type Vec2, v2 } from "@rebirth/core";
 import type { DifficultyParams } from "../difficulty.ts";
 import type { HeldGun } from "../knowledge/arsenal.ts";
 import type { Contact, SelfState, WorldModel } from "../perception/world.ts";
+import type { PersonaParams } from "../persona.ts";
+import type { SkillProfile } from "../skill.ts";
 import type { Assessment } from "./assess.ts";
+import { CombatMemory } from "./combatMemory.ts";
 import type { BrainFeatures } from "./features.ts";
+import { LootMemory } from "./lootMemory.ts";
+import { PursuitMemory } from "./pursuitMemory.ts";
 import { SmartMemory } from "./smartMemory.ts";
 
 export type BehaviourName =
@@ -27,7 +32,13 @@ export type BehaviourName =
     | "guard"
     | "airdrop"
     | "hold"
-    | "assist";
+    | "assist"
+    // house clearing (BrainFeatures.sweep, LOOT)
+    | "sweep"
+    // round 3 (BrainFeatures.pursuit, MOVE): answer unseen fire, search a lost target, leave an air strike
+    | "evade"
+    | "search"
+    | "evacuate";
 
 export interface ThrowPlan {
     /** throwable to use (frag, mirv, smoke) */
@@ -36,6 +47,19 @@ export interface ThrowPlan {
     pos: Vec2;
     /** seconds to cook before releasing */
     cook: number;
+    /**
+     * Thrown on the run (round 4, escapeFrag.ts): the bot keeps moving through the throw instead of standing still
+     * for the release, and allows for `comp` (0..1) of its own motion, which the throw inherits (DifficultyParams
+     * frag.motionComp: a beginner's frag thrown back while running lands short).
+     */
+    run?: boolean;
+    comp?: number;
+    /**
+     * The path the bot checked for this throw (round 4, DifficultyParams.frag.pathCheck): the point and the flight it
+     * must stay clear to. The thrower then stands still through the cook and lets go only with a clear path from its
+     * hand: an uncooked throw is called off before the pin is pulled, a cooking frag is held up to its fuse deadline.
+     */
+    check?: { to: Vec2; mode: "land" | "air" };
 }
 
 export interface Intent {
@@ -149,6 +173,13 @@ export class BrainMemory {
     currentSince = 0;
     /** state of the BrainFeatures behaviours; written only by the code paths of enabled features */
     readonly smart = new SmartMemory();
+    // bot overhaul packages (stage 0 contracts): each written only by its owner's code paths
+    /** looting, containers, air drops, sweeps, holstering (LOOT: brain/lootMemory.ts) */
+    readonly loot2 = new LootMemory();
+    /** exposure reactions, the futile-engagement reposition, grenade gates, melee timing (COMBAT: combatMemory.ts) */
+    readonly fight = new CombatMemory();
+    /** futile-engagement clocks, ignore windows, flee and danger state (MOVE: brain/pursuitMemory.ts) */
+    readonly pursuit = new PursuitMemory();
 }
 
 export interface BrainCtx {
@@ -158,6 +189,18 @@ export interface BrainCtx {
     /** what this brain knows how to do (BRAIN_PRESETS); a flag that is off must not draw from `rng` */
     features: Readonly<BrainFeatures>;
     rng: Rng;
+    /**
+     * The bot's taste (persona.ts): NEUTRAL unless the population assigned one. Gate persona code paths on a
+     * non-neutral field so a neutral bot replays exactly.
+     */
+    persona: Readonly<PersonaParams>;
+    /** The bot's skill (skill.ts): tier label, mechanics s and game sense g in 0..1 (presets: PRESET_SKILL) */
+    skill: Readonly<SkillProfile>;
+    /**
+     * The persona/skill rng stream (createRng(seed ^ PERSONA_SALT), bot.ts): persona-gated draws (camping, taste) come
+     * from here, never from `rng`, so they cannot shift the brain's decisions. The neutral path draws nothing.
+     */
+    personaRng: Rng;
     now: number;
     mem: BrainMemory;
     /** living enemies, visible or remembered */

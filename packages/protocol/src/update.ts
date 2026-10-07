@@ -18,6 +18,8 @@
 //                    (LocalPlayerState.team, sent when their wire values change) and the emote events
 //   [FactionStatus]  teams.ts section (M7a, extended flags): the viewer's faction (Snapshot.factionStatus) when it
 //                    changed
+//   [Hits]           hits.ts section (rebirth hit feedback, extended flags, schema 11): the hits the active player
+//                    dealt or took (Snapshot.hits), when any
 // `time` is not sent: it is tick / TICK_HZ like Game.time.
 //
 // A server frame per netsync (ClientEncoder.writeFrame) follows the original order: [AliveCounts when changed: one
@@ -51,6 +53,7 @@ import type { ObjectCache } from "./cache.ts";
 import { writeServerMsg } from "./codec.ts";
 import { MsgType, OBJECT_TYPE_BITS, UpdateExtFlag, UpdateFlag } from "./constants.ts";
 import { effectFlags, readEffects, writeEffects } from "./effects.ts";
+import { readHits, writeHits } from "./hits.ts";
 import {
     cloneLocal,
     emptyLocalState,
@@ -239,6 +242,8 @@ export class ClientEncoder {
         if (groupChanged) ext |= UpdateExtFlag.GroupStatus;
         if (emotes.length) ext |= UpdateExtFlag.Emotes;
         if (factionChanged) ext |= UpdateExtFlag.FactionStatus;
+        const hits = snap.hits ?? [];
+        if (hits.length) ext |= UpdateExtFlag.Hits;
         if (ext) flags |= UpdateFlag.Extended;
 
         w.alignToNextByte();
@@ -303,6 +308,7 @@ export class ClientEncoder {
             writeFactionStatus(w, factionQ);
             this.factionStatus = factionQ;
         }
+        if (hits.length) writeHits(w, hits, snap.localPlayerId);
         const last = this.last;
         last.full = fulls.length;
         last.part = parts.length;
@@ -479,6 +485,7 @@ export class UpdateDecoder {
         }
         const emotes = ext & UpdateExtFlag.Emotes ? readEmotes(r, this.ctx) : [];
         if (ext & UpdateExtFlag.FactionStatus) this.factionStatus = readFactionStatus(r, this.ctx);
+        const hits = ext & UpdateExtFlag.Hits ? readHits(r, this.localPlayerId) : [];
         if (this.teamStatus) this.local.team = teamFromStatus(this.teamStatus, this.groupStatus, this.names);
         for (const id of deletedPlayerIds) this.names.delete(id);
         const mapIndicators = [...deadIndicators, ...this.indicators.values()]
@@ -514,6 +521,7 @@ export class UpdateDecoder {
         }
         if (this.killLeader) snapshot.killLeader = { ...this.killLeader };
         if (this.factionStatus) snapshot.factionStatus = this.factionStatus.map((m) => ({ ...m, pos: { ...m.pos } }));
+        if (hits.length) snapshot.hits = hits;
         return { type: MsgType.Update, snapshot, ack };
     }
 

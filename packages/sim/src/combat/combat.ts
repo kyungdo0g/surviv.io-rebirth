@@ -20,7 +20,7 @@ import { disguiseOf } from "../world/disguise.ts";
 import { downPlayer } from "../world/downed.ts";
 import type { Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
-import { computeDamage, type DamageParams, rollHeadshot } from "./damage.ts";
+import { armorCovers, computeDamage, type DamageParams, rollHeadshot } from "./damage.ts";
 
 /** Result of the last hit a player took (tests, kill feed later). */
 export interface HitRecord {
@@ -81,6 +81,9 @@ export function applyPlayerDamage(ctx: SimContext, target: Player, params: Damag
         sourceId: params.sourceId ?? 0,
         gameSourceType: params.gameSourceType ?? "",
     };
+    // rebirth hit feedback (user/2026-10-07-hit-feedback): the dealer and the target learn of the hit
+    const armored = armorCovers(params, headshot, target, ctx.rules);
+    ctx.hitLog?.record(target.id, params.sourceId ?? 0, damage, params.damageType, headshot, armored, params.dir);
     ctx.observer?.onPlayerDamaged?.(target, params, damage, headshot);
     if (target.health > 0) return;
     // Revivify downs its holder even in solo; otherwise the team rules decide between a knock and a death

@@ -1,7 +1,8 @@
 // The real threat board (BrainFeatures.threats; installed by perception/install.ts): everything a player knows beyond
 // the enemies on its screen, built only from its own snapshots, like the original client shows it:
-// - gunfire: every bullet of a non-friendly shooter (the client draws its tracer from the start position and plays the
-//   shot sound there); shooters not on screen become UnseenShooters and ghost contacts;
+// - gunfire: every bullet of a non-friendly shooter whose tracer crosses the screen; a shooter not on screen becomes an
+//   UnseenShooter and a ghost contact at the fuzzy origin the tracer and the shot sound give (perception/bulletSight.ts:
+//   back along the tracer from where it enters the screen, never the exact muzzle; bot overhaul COMBAT-5);
 // - explosions in view, the kill feed (with positions only where the bot last saw the killer or the victim, or the
 //   victim's dead body), teammates' pings (EmoteEvent isPing), the kill leader;
 // - air drops (the "ping_airdrop" map indicator appears when the crate is released and it lands
@@ -12,6 +13,7 @@
 import { type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, hasDef } from "@rebirth/defs";
 import type { Snapshot } from "@rebirth/sim";
+import { bulletOrigin } from "./bulletSight.ts";
 import type {
     AirdropIntel,
     DangerZone,
@@ -50,7 +52,7 @@ const PLANE_MEMORY = 30;
 /** An air drop is forgotten this long after it landed unless its crate was seen (then until it is opened). */
 const AIRDROP_MEMORY = 180;
 /** Projectiles that explode (brain/brain.ts DANGEROUS), with their explosion radius. */
-const GRENADES = ["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron"] as const;
+const GRENADES = ["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron", "bomb_heavy"] as const;
 const KIND_WEIGHT: Readonly<Record<ThreatKind, number>> = {
     gunfire: 1,
     explosion: 2,
@@ -218,13 +220,14 @@ export class ThreatTracker implements ThreatBoard {
             const sid = b.shooterId;
             // first bullet of a shot only (no extra pellets, no ricochets: their start is not the shooter)
             if (sid === 0 || sid === model.selfId || model.isTeammate(sid) || !b.shotFx || b.reflectCount > 0) continue;
-            const merged = this.recent("gunfire", sid, b.pos);
+            const from = bulletOrigin(b);
+            const merged = this.recent("gunfire", sid, from);
             if (merged) {
                 merged.time = this.now;
-                merged.pos = v2.copy(b.pos);
+                merged.pos = v2.copy(from);
                 merged.weight = Math.min(merged.weight + 0.5, 4);
             } else {
-                this.push("gunfire", b.pos, sid);
+                this.push("gunfire", from, sid);
             }
             const c = model.contacts.get(sid);
             if (c?.visible) {
@@ -233,14 +236,14 @@ export class ThreatTracker implements ThreatBoard {
             }
             let s = this.shooters.get(sid);
             if (!s || this.now - s.lastShot > SHOOTER_LIFE) {
-                s = { id: sid, pos: v2.copy(b.pos), firstShot: this.now, lastShot: this.now, shots: 0, weapon: "" };
+                s = { id: sid, pos: v2.copy(from), firstShot: this.now, lastShot: this.now, shots: 0, weapon: "" };
                 this.shooters.set(sid, s);
             }
-            s.pos = v2.copy(b.pos);
+            s.pos = v2.copy(from);
             s.lastShot = this.now;
             s.shots++;
             s.weapon = b.sourceType;
-            this.report("gunfire", b.pos, sid, b.sourceType, `shot:${sid}`);
+            this.report("gunfire", from, sid, b.sourceType, `shot:${sid}`);
         }
     }
 
@@ -257,9 +260,10 @@ export class ThreatTracker implements ThreatBoard {
         const kills = snap.kills;
         if (!kills?.length) return;
         const bodies = new Map<number, Vec2>();
-        // M9 dead bodies (kind "deadBody") carry the dead player's id; read loosely so older views still type-check
+        // M9 dead bodies (kind "deadBody") carry the dead player's id; read loosely so older views still type-check;
+        // only bodies on the screen (the snapshot's margin is not drawn: bot overhaul COMBAT-1)
         for (const o of snap.objects as ReadonlyArray<{ kind: string; pos: Vec2; playerId?: number }>) {
-            if (o.kind === "deadBody" && o.playerId) bodies.set(o.playerId, o.pos);
+            if (o.kind === "deadBody" && o.playerId && model.onScreen(o.pos)) bodies.set(o.playerId, o.pos);
         }
         for (const k of kills) {
             const killer = k.killerId;

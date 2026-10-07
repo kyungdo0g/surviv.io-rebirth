@@ -159,6 +159,7 @@
 // - Bullets whose def has `skipCollision` (flares) report their full range as `maxDist`.
 import type { Vec2 } from "@rebirth/core";
 import type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+import type { HitEvent } from "./viewHits.ts";
 import type {
     AirdropView,
     FactionMemberView,
@@ -176,6 +177,7 @@ import type {
 import type { EmoteEvent, TeamMemberView } from "./viewTeams.ts";
 
 export type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+export type { HitEvent } from "./viewHits.ts";
 export type {
     AirdropView,
     DamageSource,
@@ -552,6 +554,8 @@ export interface Snapshot {
     teamAliveCounts?: number[];
     /** faction mode: the viewer's faction for the minimap, in id order (M7a) */
     factionStatus?: FactionMemberView[];
+    /** rebirth hit feedback: hits the active player dealt or took since the viewer's previous snapshot, when any */
+    hits?: HitEvent[];
 }
 
 /** Public info of a player (the original PlayerInfos record, without the heal/boost cosmetics). */

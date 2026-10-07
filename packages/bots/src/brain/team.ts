@@ -2,13 +2,24 @@
 // revive) once no enemy covers them (reviveThreat; the smart brain smokes the threat line first), sticking with the
 // group (followers stay near the lowest-id living teammate), and crawling to safety while downed. Teammate positions
 // come from the team status rows of the bot's own snapshots.
+//
+// BrainFeatures.pursuit (bot overhaul MOVE-7): an enemy seen covering the downed teammate is remembered for 8 s after
+// it left view (the contact itself is forgotten 2 s after: it has probably just stepped behind a wall or off the
+// screen, and is still there), from where it was last seen, until smoke or an obstacle cuts that line; and while
+// someone covers the teammate the bot waits in cover next to it instead of kneeling (the revive score of 0.2 still
+// beat exploring, so bots knelt in front of the enemy whenever nothing else was going on: HARNESS BEFORE, 31 unsafe
+// revives of 624). An unarmed follower does not regroup through a place it was just chased out of (brain/danger.ts).
+// Round 3: nobody kneels in an air strike, and a downed bot crawls out of one first (brain/strikes.ts).
 import { type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, Input } from "@rebirth/defs";
 import type { TeamMemberView } from "@rebirth/sim";
 import { distToSegment } from "../geom.ts";
 import { isMeleeWeapon } from "../knowledge/weapons.ts";
 import type { Contact } from "../perception/world.ts";
+import { findCoverFrom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
+import { avoidPos } from "./danger.ts";
+import { inStrike, planEvacuate, strikeScore } from "./strikes.ts";
 
 const REVIVE_RANGE = GameConfig.player.reviveRange;
 /** Followers start regrouping farther than this from their leader, and stop once within REGROUP_DONE. */
@@ -49,6 +60,10 @@ const THREAT_REACH = 45;
 const HURT_RECENT = 1.5;
 /** Smoke grenades are thrown this far at most (trigger.ts: about 22 units at full strength). */
 const SMOKE_THROW = 20;
+/** pursuit: an enemy that covered the downed teammate is remembered this long after it was last seen. */
+const COVER_MEMORY = 8;
+/** pursuit: waiting for a covered teammate, the bot takes cover this close to it. */
+const WAIT_COVER = 8;
 
 /** Whether a smoke cloud lies across the segment from `a` to `b` (it hides whoever kneels behind it). */
 function smokeBetween(ctx: BrainCtx, a: Vec2, b: Vec2): boolean {
@@ -72,7 +87,26 @@ export function reviveThreat(ctx: BrainCtx, at: Vec2): Contact | "hurt" | null {
         if (v2.distance(e.pos, at) > THREAT_REACH) continue;
         if (model.lineOfFire(e.pos, at) && !smokeBetween(ctx, e.pos, at)) return e;
     }
+    // pursuit: an enemy that covered the teammate a few seconds ago, from where it was last seen
+    if (!ctx.features.pursuit) return null;
+    for (const c of ctx.mem.pursuit.coverers.values()) {
+        if (now - c.seen > COVER_MEMORY || c.contact.dead || c.contact.downed) continue;
+        if (v2.distance(c.pos, at) > THREAT_REACH) continue;
+        if (model.lineOfFire(c.pos, at) && !smokeBetween(ctx, c.pos, at)) return c.contact;
+    }
     return null;
+}
+
+/** pursuit: remembers the armed enemies in view that have a line of fire on the downed teammate at `at`. */
+function noteCoverers(ctx: BrainCtx, at: Vec2): void {
+    const { model, now } = ctx;
+    const cov = ctx.mem.pursuit.coverers;
+    for (const [id, c] of cov) if (now - c.seen > COVER_MEMORY || c.contact.dead) cov.delete(id);
+    for (const e of ctx.visibleEnemies) {
+        if (e.downed || (isMeleeWeapon(e.activeWeapon) && now - e.lastArmedAt > 15)) continue;
+        if (v2.distance(e.pos, at) > THREAT_REACH || !model.lineOfFire(e.pos, at)) continue;
+        cov.set(e.id, { contact: e, pos: v2.copy(e.pos), seen: now });
+    }
 }
 
 /** Where a smoke grenade hides the teammate at `at` from `threat`: on the line between, 5 units off the teammate. */
@@ -86,19 +120,80 @@ function canSmoke(ctx: BrainCtx, at: Vec2, threat: Contact): boolean {
     return v2.distance(ctx.self.pos, smokeSpot(at, threat.pos)) < SMOKE_THROW;
 }
 
+/** Kneeling: an armed enemy this close in view with a line of fire ends the revive (it walks into a kneeling target)... */
+const KNEEL_CLOSE = 18;
+/** ...and one within KNEEL_REACH that closes in faster than KNEEL_CLOSING (u/s) or fired within KNEEL_FIRED. */
+const KNEEL_REACH = 35;
+const KNEEL_CLOSING = 2;
+const KNEEL_FIRED = 1;
+/** A revive this close to done is finished unless the enemy is inside KNEEL_FINISH_NEAR or the bot is hit. */
+const KNEEL_FINISH = 0.8;
+const KNEEL_FINISH_NEAR = 12;
+
+/**
+ * Kneeling over a teammate (8 s of standing still): the armed enemy in view, noticed after a human reaction, that will
+ * shoot the bot there, or null. The start of a revive is checked by reviveThreat; this is the enemy that shows up or
+ * walks in during it (adversarial review: bots kept kneeling while an enemy walked from 22 to 10 u in plain view, and
+ * reacted only once hit, 12.6 s and 64 HP later).
+ */
+export function kneelThreat(ctx: BrainCtx, at: Vec2): Contact | null {
+    const { model, now, self } = ctx;
+    const react = ctx.params.reactionTime[0];
+    const left = self.action.duration - self.action.time;
+    for (const e of ctx.visibleEnemies) {
+        if (e.downed || now - e.firstSeen < react) continue;
+        if (isMeleeWeapon(e.activeWeapon) && now - e.lastArmedAt > 15) continue;
+        const d = v2.distance(e.pos, self.pos);
+        if (d > KNEEL_REACH) continue;
+        if (!model.bodyLineOfFire(e.pos, self.pos) && !model.lineOfFire(e.pos, at)) continue;
+        if (smokeBetween(ctx, e.pos, self.pos)) continue;
+        if (left < KNEEL_FINISH && d > KNEEL_FINISH_NEAR) continue;
+        const toMe = v2.normalizeSafe(v2.sub(self.pos, e.pos));
+        const closing = v2.dot(e.vel, toMe);
+        if (d < KNEEL_CLOSE || closing > KNEEL_CLOSING || now - e.lastShotAt < KNEEL_FIRED) return e;
+    }
+    return null;
+}
+
+/** pursuit: the enemy that ended a revive keeps the bot off its knees while seen within this long, for KNEEL_ABORT_HOLD. */
+const KNEEL_ABORT_SEEN = 2;
+const KNEEL_ABORT_HOLD = 6;
+
+function kneelAbortHolds(ctx: BrainCtx): boolean {
+    const a = ctx.mem.pursuit.kneelAbort;
+    if (!a || ctx.now - a.at > KNEEL_ABORT_HOLD) return false;
+    const c = ctx.model.contacts.get(a.id);
+    return !!c && !c.dead && !c.downed && ctx.now - c.lastSeen < KNEEL_ABORT_SEEN;
+}
+
 export function reviveScore(ctx: BrainCtx): number {
     if (!ctx.teamMode) return 0;
     const m = downedMate(ctx);
+    // pursuit: never kneel in an air strike (the downed teammate crawls out of it: planDowned)
+    const strike = ctx.features.pursuit && inStrike(ctx, ctx.self.pos);
     if (ctx.self.action.type === "revive") {
         // kneeling already: finish it, unless the bot is being shot (then fight or run, and come back)
-        return ctx.now - ctx.model.lastHurt < 0.5 ? 0.3 : 0.95;
+        if (strike) return 0;
+        // (pursuit: hit while kneeling, it gets up and answers: evade.ts takes over even from a kneel; the baseline
+        // keeps 0.3, enough to stay down when nothing else scores)
+        if (ctx.now - ctx.model.lastHurt < 0.5) return ctx.features.pursuit ? 0 : 0.3;
+        // pursuit: an enemy walking in or opening fire in view ends it too (Brain cancels the revive action)
+        const walkIn = ctx.features.pursuit ? kneelThreat(ctx, m?.at ?? ctx.self.pos) : null;
+        if (walkIn) {
+            ctx.mem.pursuit.kneelAbort = { id: walkIn.id, at: ctx.now };
+            return 0;
+        }
+        return 0.95;
     }
     if (!m) return 0;
     const d = v2.distance(m.at, ctx.self.pos);
-    if (d > 60) return 0;
+    if (d > 60 || (ctx.features.pursuit && inStrike(ctx, m.at))) return 0;
+    if (ctx.features.pursuit) noteCoverers(ctx, m.at);
     // in an enemy's sights: smoke it first (guard), else deal with the enemy (fight, flee, cover) and come back
     const threat = reviveThreat(ctx, m.at);
     if (threat === "hurt") return 0.2;
+    // pursuit: the enemy that just ended a revive is still around: no kneeling again in front of it
+    if (ctx.features.pursuit && kneelAbortHolds(ctx)) return 0.2;
     if (threat) return canSmoke(ctx, m.at, threat) ? 0.6 : 0.2;
     const close = ctx.visibleEnemies.some((e) => !e.downed && v2.distance(e.pos, ctx.self.pos) < 18);
     return close ? 0.45 : 0.88;
@@ -125,6 +220,22 @@ export function planRevive(ctx: BrainCtx): Intent {
         return intent;
     }
     const d = v2.distance(m.at, self.pos);
+    if (ctx.features.pursuit && covering) {
+        // pursuit: someone covers the teammate: wait in cover next to it (facing the threat) instead of kneeling
+        const threatPos = covering === "hurt" ? null : covering.pos;
+        const cover = threatPos ? findCoverFrom(ctx.model, m.at, threatPos, WAIT_COVER) : null;
+        if (threatPos) intent.aim = v2.copy(threatPos);
+        if (cover && v2.distance(cover, self.pos) > 0.8) {
+            intent.goal = cover;
+            intent.arriveDist = 0.6;
+        } else if (!cover && d > WAIT_COVER) {
+            intent.goal = v2.copy(m.at);
+            intent.arriveDist = WAIT_COVER;
+        } else {
+            intent.stop = true;
+        }
+        return intent;
+    }
     if (d < REVIVE_RANGE - 1.6) {
         intent.stop = true;
         if (now - mem.lastReviveRequest > 0.6) {
@@ -171,6 +282,8 @@ export function regroupScore(ctx: BrainCtx): number {
         return 0;
     }
     const d = v2.distance(leader.at, ctx.self.pos);
+    // pursuit: an unarmed follower does not walk back through the place it was just chased out of (it arms first)
+    if (ctx.features.pursuit && !ctx.armed && avoidPos(ctx, leader.at)) return 0;
     // a band between starting and stopping keeps the follower from flip-flopping at one distance
     if (mem.regrouping ? d < REGROUP_DONE : d < REGROUP_DIST) {
         mem.regrouping = false;
@@ -193,6 +306,14 @@ export function planRegroup(ctx: BrainCtx): Intent {
 export function planDowned(ctx: BrainCtx): Intent {
     const intent = emptyIntent("downed");
     const { self } = ctx;
+    // pursuit: out of an air strike first (a teammate will not kneel in one either: reviveScore)
+    if (ctx.features.pursuit && strikeScore(ctx) > 0) {
+        const out = planEvacuate(ctx);
+        intent.goal = out.goal;
+        intent.arriveDist = out.arriveDist;
+        intent.moveDir = out.moveDir;
+        return intent;
+    }
     if (self.action.type === "revive") {
         // being revived: crawling away would cancel it
         intent.stop = true;

@@ -42,6 +42,19 @@ export interface BrainFeatures {
     basements: boolean;
     /** commit to a chosen course: no running back and forth between two goals (flee / zone / loot dithering) */
     steady: boolean;
+    // bot overhaul (stage 0 flags; their code lands in wave 1, so until then they change nothing)
+    /**
+     * patience: give up stalled fights and futile chases, fist-chase give-up, holster sprint (MOVE: pursuit.ts); the
+     * flight, danger memory, survival items and revive memory; round 3: unseen fire (evade.ts), searching a lost
+     * target (search.ts), fighting from cover (position.ts), air strikes (strikes.ts)
+     */
+    pursuit: boolean;
+    /** holster (fists / melee) while travelling with no enemy in sight, draw on sight (LOOT: weapons.ts) */
+    holster: boolean;
+    /** clear houses room by room, weight buildings by loot potential (the "sweep" behaviour, LOOT: sweep.ts) */
+    sweep: boolean;
+    /** put on outfits by persona taste when it is quiet and they lie close (LOOT2: outfits.ts, user report 22) */
+    outfits: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -62,6 +75,10 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "threats",
     "basements",
     "steady",
+    "pursuit",
+    "holster",
+    "sweep",
+    "outfits",
 ];
 
 export type BrainName = "baseline" | "smart";

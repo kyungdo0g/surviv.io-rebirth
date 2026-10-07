@@ -24,7 +24,8 @@ import "./match.css";
 
 /**
  * Rebirth addition, not in the original client: a short red vignette when the local player takes red-zone damage.
- * Set to false for the original look.
+ * Set to false for the original look; the Enhanced hit effects setting turns it off too (`gasFlashEnabled`,
+ * user/2026-10-07-hit-feedback), so that setting off is exactly v0.8.82.
  */
 export const GAS_DAMAGE_FLASH = true;
 const FLASH_DECAY = 1.6;
@@ -138,6 +139,8 @@ export class MatchHud {
     private killTicker = Number.MAX_VALUE;
     private announceTicker = Number.MAX_VALUE;
     private flashLevel = 0;
+    /** the Enhanced hit effects setting (fx/hitFeedback.ts): off disables the red-zone flash as well */
+    gasFlashEnabled = true;
 
     constructor(root: HTMLElement, cb: MatchHudCallbacks, opts: { killLeaderEnabled: boolean }) {
         // top right: alive counter and the (big map only) kill counter
@@ -370,7 +373,7 @@ export class MatchHud {
 
     /** Rebirth addition (GAS_DAMAGE_FLASH): the local player just took red-zone damage. */
     flashGas(): void {
-        if (GAS_DAMAGE_FLASH) this.flashLevel = FLASH_PEAK;
+        if (GAS_DAMAGE_FLASH && this.gasFlashEnabled) this.flashLevel = FLASH_PEAK;
     }
 
     update(dt: number, map: MapInfoLayout): void {

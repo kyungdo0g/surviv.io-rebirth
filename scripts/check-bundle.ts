@@ -19,7 +19,13 @@ interface Budget {
 const kb = (n: number) => `${(n / 1000).toFixed(1)} kB`;
 
 if (!process.argv.includes("--no-build")) {
-    execFileSync("pnpm", ["--filter", "@rebirth/client", "build"], { cwd: ROOT, stdio: "inherit" });
+    const build = ["--filter", "@rebirth/client", "build"];
+    // under `pnpm check:bundle` npm_execpath is pnpm's own script: run it with this Node, since Windows cannot start
+    // the pnpm.cmd shim without a shell; started some other way, fall back to pnpm on the PATH
+    const pnpm = process.env.npm_execpath;
+    if (pnpm && /\.[cm]?js$/.test(pnpm))
+        execFileSync(process.execPath, [pnpm, ...build], { cwd: ROOT, stdio: "inherit" });
+    else execFileSync("pnpm", build, { cwd: ROOT, stdio: "inherit", shell: process.platform === "win32" });
 }
 
 const budget = JSON.parse(readFileSync(BUDGET_FILE, "utf8")) as Budget;

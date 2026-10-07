@@ -2,6 +2,12 @@
 // The numbers are tuned so an easy bot plays like a new player (late reactions, wide misses, no cover), a normal bot
 // like an average one and a hard bot like a solid regular (fast, leads targets, peeks from cover, stops for long
 // shots). None of them sees more than its own snapshot.
+//
+// Skill tiers (bot overhaul POPULATION-3): beginner, intermediate and expert are bands of a continuous skill s in [0, 1]
+// (mechanics) with a correlated game sense g; skill.ts composes a DifficultyParams for any (s, g) and draws them per
+// bot. The three presets below stay fixed points, unchanged, for replays, tests, the tournament gate and the aim-bench
+// fixture: "easy", "normal" and "hard" are kept as the legacy names, aliases that carry the tier labels beginner,
+// intermediate and expert (LEGACY_TIER). Since the tiers were calibrated, a beginner misses clearly more than "easy".
 
 export type Difficulty = "easy" | "normal" | "hard";
 
@@ -9,6 +15,36 @@ export type Difficulty = "easy" | "normal" | "hard";
 export type DifficultyName = Difficulty;
 
 export const DIFFICULTIES: readonly Difficulty[] = ["easy", "normal", "hard"];
+
+/** Skill tiers (초보 / 중수 / 고수): bands of the skill s, see skill.ts SKILL_TIERS. */
+export type SkillTierName = "beginner" | "intermediate" | "expert";
+
+export const SKILL_TIER_NAMES: readonly SkillTierName[] = ["beginner", "intermediate", "expert"];
+
+/** The tier label each legacy preset name stands for (the presets keep their own fixed values). */
+export const LEGACY_TIER: Readonly<Record<Difficulty, SkillTierName>> = {
+    easy: "beginner",
+    normal: "intermediate",
+    hard: "expert",
+};
+
+/** The legacy preset family of a tier (DifficultyParams.name of params composed for that tier). */
+export const TIER_FAMILY: Readonly<Record<SkillTierName, Difficulty>> = {
+    beginner: "easy",
+    intermediate: "normal",
+    expert: "hard",
+};
+
+/** A difficulty a host can ask for: a legacy preset name or a skill tier. */
+export type DifficultySetting = Difficulty | SkillTierName;
+
+export function isSkillTier(s: string): s is SkillTierName {
+    return (SKILL_TIER_NAMES as readonly string[]).includes(s);
+}
+
+export function isDifficultySetting(s: string): s is DifficultySetting {
+    return isDifficulty(s) || isSkillTier(s);
+}
 
 /** Aim model: "legacy" is AimController (rate-limited turn plus a wandering error); "human" the cursor motor model. */
 export type MotorModel = "legacy" | "human";
@@ -43,6 +79,37 @@ export interface MotorParams {
     triggerLooseness: number;
     /** mean seconds between the cursor reaching the target and the click (sd 30%) */
     confirmDelay: number;
+}
+
+/**
+ * Grenade craft (round 4, user report 30: "beginners forget grenades, waste them, throw late, short or into walls;
+ * intermediates use them sometimes and plainly; experts throw purposefully with good timing and placement"). The
+ * decision fields follow the game sense g (skill.ts: the easy, normal and hard presets at g 0, 0.5 and 1), the hand
+ * fields the mechanics s (NOVICE, AVERAGE and hard at s 0, 0.5 and 1). Read by the smart brain only
+ * (BrainFeatures.grenades: brain/fragSkill.ts, grenades.ts, escapeFrag.ts); the baseline brain ignores them.
+ */
+export interface FragParams {
+    /** chance the bot thinks of its frags at all in an engagement (one roll per target; beginners forget them) */
+    recall: number;
+    /** seconds a covered or hiding target must have been out of the line of fire before a frag goes at it */
+    coverWait: number;
+    /**
+     * 0..1 purposeful use: scales the rate of the deliberate throws (denying a push, a revive or a heal, covering an
+     * escape, flushing a building) and the chance of a burst over low cover instead of a plain throw
+     */
+    craft: number;
+    /** frags per second thrown away at an enemy in the open or out of reach (only while there is no real reason) */
+    waste: number;
+    /** chance a throw's path is checked for walls and trees in the way (else the frag may bounce off them) */
+    pathCheck: number;
+    /** hand: a throw falls short by this fraction of its distance on average... */
+    shortBias: number;
+    /** ...with this spread of the distance (sd, as a fraction of it)... */
+    rangeSd: number;
+    /** ...and this sideways spread (sd, degrees) */
+    lateralDeg: number;
+    /** hand: the share of its own running speed the bot allows for when it throws on the run (0 none: it lands short) */
+    motionComp: number;
 }
 
 export interface DifficultyParams {
@@ -85,6 +152,14 @@ export interface DifficultyParams {
     meleeAggression: number;
     /** chance per second to throw a grenade when a good opportunity exists */
     grenadeRate: number;
+    /** grenade craft and the throwing hand (round 4; the smart brain's grenades read it) */
+    frag: FragParams;
+    /**
+     * judgement (round 4, user report 30): sd of a per-engagement error in how the bot judges a fight (added to the
+     * assessment's advantage, ln of the time-to-kill ratio), and a bias towards believing it wins; beginners only
+     */
+    misjudge: number;
+    overconfidence: number;
     /** heals below this health when no enemy is close */
     healBelow: number;
     /** uses boosts (soda/pills) to stay above this boost when safe */
@@ -99,6 +174,21 @@ export interface DifficultyParams {
     smartReload: boolean;
     /** cursor motor model: "human" (motor/human.ts, the default) or "legacy" (motor/legacy.ts, the wave 1 aim) */
     motor: MotorParams;
+    // Human latencies (bot overhaul stage 0 contract; COMBAT implements the mechanisms in wave 1, nothing reads them
+    // before). The tier data keeps the human floors (skill.ts REACTION_FLOOR).
+    /**
+     * seconds from a known target stepping out of cover (back on screen, line of fire opening) until the bot may fire
+     * again [min, max]: a fresh, shorter reaction than `reactionTime` (about 0.6 x its mean)
+     */
+    exposureReaction: [number, number];
+    /** absolute floor of a flick's onset after a sighting, seconds (motor/human.ts) */
+    onsetFloor: number;
+    /** perception latency of the snapshots the bot acts on, seconds (network and interpolation delay of a client) */
+    perceptionDelay: number;
+    /** melee: lag of the chase and swing percept behind the target's real position, seconds */
+    meleeLag: number;
+    /** seconds from a grenade's first on-screen sighting until the bot starts dodging [min, max] */
+    dodgeReaction: [number, number];
 }
 
 export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> = {
@@ -122,12 +212,30 @@ export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> 
         aggression: 0.45,
         meleeAggression: 0.1,
         grenadeRate: 0.05,
+        frag: {
+            recall: 0.4,
+            coverWait: 2.2,
+            craft: 0.1,
+            waste: 0.05,
+            pathCheck: 0.15,
+            shortBias: 0.1,
+            rangeSd: 0.12,
+            lateralDeg: 5,
+            motionComp: 0.35,
+        },
+        misjudge: 0.6,
+        overconfidence: 0.3,
         healBelow: 45,
         boostAbove: 0,
         memory: 2,
         thinkEvery: 3,
         dodgeGrenades: false,
         smartReload: false,
+        exposureReaction: [0.3, 0.42],
+        onsetFloor: 0.18,
+        perceptionDelay: 0.08,
+        meleeLag: 0.25,
+        dodgeReaction: [0.45, 0.75],
         motor: {
             model: "human",
             fittsA: 0.08,
@@ -164,12 +272,30 @@ export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> 
         aggression: 0.56,
         meleeAggression: 0.2,
         grenadeRate: 0.2,
+        frag: {
+            recall: 1,
+            coverWait: 1,
+            craft: 0.5,
+            waste: 0,
+            pathCheck: 0.6,
+            shortBias: 0.03,
+            rangeSd: 0.05,
+            lateralDeg: 2,
+            motionComp: 0.75,
+        },
+        misjudge: 0,
+        overconfidence: 0,
         healBelow: 60,
         boostAbove: 25,
         memory: 4,
         thinkEvery: 2,
         dodgeGrenades: true,
         smartReload: true,
+        exposureReaction: [0.22, 0.32],
+        onsetFloor: 0.16,
+        perceptionDelay: 0.08,
+        meleeLag: 0.18,
+        dodgeReaction: [0.3, 0.5],
         motor: {
             model: "human",
             fittsA: 0.05,
@@ -206,12 +332,30 @@ export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> 
         aggression: 0.68,
         meleeAggression: 0.3,
         grenadeRate: 0.4,
+        frag: {
+            recall: 1,
+            coverWait: 0.7,
+            craft: 1,
+            waste: 0,
+            pathCheck: 1,
+            shortBias: 0,
+            rangeSd: 0.035,
+            lateralDeg: 1.2,
+            motionComp: 0.95,
+        },
+        misjudge: 0,
+        overconfidence: 0,
         healBelow: 70,
         boostAbove: 50,
         memory: 6,
         thinkEvery: 1,
         dodgeGrenades: true,
         smartReload: true,
+        exposureReaction: [0.16, 0.22],
+        onsetFloor: 0.15,
+        perceptionDelay: 0.08,
+        meleeLag: 0.12,
+        dodgeReaction: [0.22, 0.35],
         motor: {
             model: "human",
             fittsA: 0.03,
@@ -230,7 +374,7 @@ export const DIFFICULTY_PRESETS: Readonly<Record<Difficulty, DifficultyParams>> 
     },
 };
 
-/** Preset by name; "mixed" or unknown names fall back to `fallback`. */
+/** Preset by name, or the custom parameters themselves (skill tiers: skill.ts tierParams / skillParams). */
 export function difficultyParams(d: Difficulty | DifficultyParams): DifficultyParams {
     return typeof d === "string" ? DIFFICULTY_PRESETS[d] : d;
 }

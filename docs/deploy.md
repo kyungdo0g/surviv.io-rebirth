@@ -19,12 +19,15 @@ with Vite.
 
 ```sh
 pnpm install
-pnpm survev:fetch && pnpm assets   # optional: the original art and audio (not in the repository)
+pnpm survev:fetch                  # optional, with the next line: the original art and audio (not in the repository)
+pnpm assets
 pnpm start                         # builds the client, then serves it and the game on http://127.0.0.1:8001
 ```
 
 `pnpm start` is `pnpm build && node apps/server/src/index.ts`; set variables in front of it
-(`HOST=0.0.0.0 BOT_FILL=40 pnpm start`). Without `pnpm assets` the client runs with placeholder graphics and no sound.
+(`HOST=0.0.0.0 BOT_FILL=40 pnpm start`; PowerShell and cmd.exe set them first, see the README's "Environment variables
+on Windows"). Every package script runs in cmd.exe, PowerShell and POSIX shells alike. Without `pnpm assets` the client
+runs with placeholder graphics and no sound.
 The served client opens the offline sandbox at `/`; players start from `/?menu=1` (the start page with the play
 buttons and the party lobby).
 `pnpm survev:fetch` clones survev at the pinned commit into `.survev` and extracts the original client definitions
@@ -108,7 +111,9 @@ region's server origin (`regions`: `""` for the answering server), and the clien
 |---|---|---|
 | `BOT_FILL` | `0` | fill games with in-process bots up to this many players while they are joinable (`0`: off); humans take a bot's seat |
 | `FACTION_BOT_FILL` | `BOT_FILL` scaled to `FACTION_MAX_PLAYERS` | bot fill target of 50v50 games |
-| `BOT_DIFFICULTY` | `normal` | `easy`, `normal`, `hard` or `mixed` |
+| `BOT_DIFFICULTY` | `mixed` | `mixed`: each bot's skill tier is drawn from `BOT_SKILL_MIX` (shuffle bags of 20, so small games get the mix too) and each bot draws its own skill inside the tier's band; `beginner`, `intermediate` or `expert`: every bot in that tier; `easy`, `normal` or `hard`: the legacy fixed presets (a beginner now misses clearly more than `easy`; see docs/design/bot-population.md) |
+| `BOT_SKILL_MIX` | `35,45,20` | weights of beginner, intermediate and expert bots for `BOT_DIFFICULTY=mixed` |
+| `BOT_PERSONAS` | `on` | `on` / `off` (also `1`/`0`, `true`/`false`): fill bots get personas (rusher 22%, rifleman 30%, marksman 14%, camper 10%, looter 14%, rat 10%) that shape their weapon taste, range, aggression, chasing, looting and risk; `off`: every bot plays the neutral persona |
 | `BOT_FILL_INTERVAL_MS` | `250` | time between two bot joins |
 
 ### Limits

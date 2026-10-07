@@ -78,11 +78,7 @@ export class WorldFx {
             insideStairMask: (pos, rad) => deps.world.insideStructureMask(pos, rad),
             rippleColor,
         });
-        this.smokes = new SmokeSystem({
-            renderer: deps.renderer,
-            textures: deps.textures,
-            insideStructureMask: (pos, rad) => deps.world.insideStructureMask(pos, rad),
-        });
+        this.smokes = new SmokeSystem({ renderer: deps.renderer, textures: deps.textures });
         this.ambience = new Ambience(deps.audio);
         deps.audio.preload(explosionSounds(), "sfx");
         deps.audio.preload(["frag_pin_01", "frag_throw_01", "strobe_click_01", "ceiling_break_01"], "sfx");
@@ -112,7 +108,7 @@ export class WorldFx {
         audio.updateListener();
         this.explosions.update(f.dt);
         this.projectiles.update(f.dt, f.viewerLayer);
-        this.smokes.update(f.dt, f.viewerLayer);
+        this.smokes.update(f.dt);
         this.deps.fading.update(f.dt);
         this.ambience.updateEnvironment(f.viewerPos, f.viewerLayer, this.deps.terrainShape);
         this.interior.update(f.dt, world, f.viewerPos, f.viewerLayer, this.ambience);

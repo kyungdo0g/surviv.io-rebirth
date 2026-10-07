@@ -9,13 +9,21 @@ export {
     type HitRecord,
     killPlayer,
 } from "./combat/combat.ts";
-export { type ArmorState, canHeadshot, computeDamage, type DamageParams, rollHeadshot } from "./combat/damage.ts";
+export {
+    type ArmorState,
+    armorCovers,
+    canHeadshot,
+    computeDamage,
+    type DamageParams,
+    rollHeadshot,
+} from "./combat/damage.ts";
 export {
     type ExplosionHost,
     type ExplosionReport,
     type ExplosionSource,
     ExplosionSystem,
 } from "./combat/explosions.ts";
+export { HitLog } from "./combat/hitLog.ts";
 export {
     type AddProjectileParams,
     type Projectile,

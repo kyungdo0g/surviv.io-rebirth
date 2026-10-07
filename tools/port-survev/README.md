@@ -13,7 +13,7 @@ Builds the data of `@rebirth/defs` (`packages/defs/src/generated/*.json`) from t
 ## Running it
 
 ```sh
-sh tools/port-survev/fetch.sh                                   # clone/verify .survev, extract defs.json if missing
+pnpm survev:fetch                                               # clone/verify .survev, extract defs.json if missing
 node --experimental-transform-types tools/port-survev/port.ts   # write packages/defs/src/generated/*.json
 npx vitest run packages/defs tools/port-survev                  # integrity, original-value and registry tests
 ```
@@ -122,4 +122,4 @@ whose tiers no loot table defines.
 - `lib/validate.ts`: the reference check
 - `balance.test.ts`: unit tests of the balance-revert resolver
 - `survevLoot.test.ts`: unit tests of the policy, the survev-only ids and skins, and the survev placements
-- `fetch.sh`: fetches the inputs
+- `fetch.ts`: fetches the inputs (`pnpm survev:fetch`; Node and git only, any shell)

@@ -3,7 +3,8 @@
 // for the zone's whole duration, fading in over its first 0.5 s and out over its last 0.5 s. The snapshot lists every
 // live zone with its progress; the client advances the timer between snapshots.
 // Rebirth addition: the same circle drawn faintly on the ground in the world (the original shows it on the map only),
-// on the ground floor and hidden underground like the planes.
+// placed over the ground like the planes (renderer.addOverground): hidden underground and under a stair mask seen from
+// the stairs.
 // Rebirth air strike variants (docs/research/rebirth-deviations.md): each zone is drawn in its variant's style
 // (airstrikeVariantStyle.ts; normal is the original yellow circle), and `apply` reports the zones that just appeared
 // so the client announces the heavy and carpet ones.
@@ -151,15 +152,19 @@ export class AirstrikeZones {
         return smoothstep(z.ticker, 0, FADE) * (1 - smoothstep(z.ticker, z.duration - FADE, z.duration));
     }
 
-    /** Advances the timers and draws the in-world circles; `viewerLayer` hides them underground. */
-    update(dt: number, renderer: Renderer, viewerLayer: number): void {
+    /** the in-world circles (tests) */
+    get worldGraphics(): Graphics[] {
+        return [...this.zones.values()].map((z) => z.world);
+    }
+
+    /** Advances the timers and draws the in-world circles over the ground for the renderer's active layer. */
+    update(dt: number, renderer: Renderer): void {
         for (const z of this.zones.values()) {
             z.ticker = Math.min(z.duration, z.ticker + dt);
             const local = toLocal(z.pos);
             z.world.position.set(local.x, local.y);
             z.world.alpha = this.alpha(z) * blinkAlpha(z.style, z.ticker);
-            const layer = (viewerLayer & 1) === 0 || viewerLayer & 2 ? 2 : 0;
-            renderer.add(z.world, layer, WORLD_Z_ORD, z.id);
+            renderer.addOverground(z.world, 0, WORLD_Z_ORD, z.id, z.pos);
         }
     }
 

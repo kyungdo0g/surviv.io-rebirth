@@ -48,7 +48,7 @@ Every disagreement goes to `conflicts.md`.
 | `README.md` | this file: scope, era target, line format, precedence, layout |
 | `sources.md` | source registry (prefixes, snapshots, maximum confidence) |
 | `conflicts.md` | every disagreement, merged and deduplicated: one `## <id>` entry with sides, proposed resolution and the files that raise it |
-| `rebirth-deviations.md` | deliberate deviations from v0.8.82 the project owner asked for (frag radius, 50v50 air strike variants, air drop tiers, the survev guns' wiki stats and the classic gold-drop Barrett), applied by `packages/defs/src/rebirth/` |
+| `rebirth-deviations.md` | deliberate deviations from v0.8.82 the project owner asked for (frag radius, 50v50 air strike variants, air drop tiers, the survev guns' wiki stats, the classic gold-drop Barrett and surface effects seen from underground), applied by `packages/defs/src/rebirth/` |
 | `open-questions.md` | every unresolved question, merged and deduplicated: one `## <id>` entry with proposed handling, related conflicts and files |
 | `history.md` | timeline from 2017 development to the 2026 Kongregate relaunch and the survev revival |
 | `community-ko.md` | Korean community: servers, clans, creators, DC Inside gallery |

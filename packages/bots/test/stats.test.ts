@@ -1,12 +1,13 @@
 // Match statistics: the finish order from death ticks (players and teams, ties), the combat observer in a scripted
-// fight (shots, bullets, hits, damage, the kill, forwarding to the host's observer) and the per-bot records of a short
-// match with assigned brains and custom difficulty parameters.
+// fight (shots, bullets, hits, damage, the kill, forwarding to the host's observer), the observer fan-out (the host's
+// and the metrics probes') and the per-bot records of a short match with assigned brains and custom difficulty
+// parameters.
 import { v2 } from "@rebirth/core";
 import type { CombatObserver } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import { DIFFICULTY_PRESETS } from "../src/difficulty.ts";
 import { runMatch } from "../src/runner.ts";
-import { finishOrder, MatchStats } from "../src/stats.ts";
+import { fanOut, finishOrder, MatchStats } from "../src/stats.ts";
 import { flatGame, giveGun, openSpot, placeBot, placePlayer, QUICK_GAS, runUntil } from "./helpers.ts";
 
 describe("match stats", () => {
@@ -21,6 +22,23 @@ describe("match stats", () => {
         expect([1, 2, 3, 4, 5].map((id) => f.get(id)?.placement)).toEqual([5, 2, 3, 3, 1]);
         // team 3 alive, team 1 lasted until 300, team 2 until 200
         expect([1, 2, 3, 4, 5].map((id) => f.get(id)?.teamPlacement)).toEqual([2, 2, 3, 3, 1]);
+    });
+
+    it("fans notifications out to every observer in order", () => {
+        expect(fanOut([])).toBeNull();
+        const only: CombatObserver = {};
+        expect(fanOut([null, only, undefined])).toBe(only);
+        const calls: string[] = [];
+        const a: CombatObserver = {
+            onShotFired: () => calls.push("a shot"),
+            onPlayerKilled: () => calls.push("a kill"),
+        };
+        const b: CombatObserver = { onShotFired: () => calls.push("b shot") };
+        const both = fanOut([a, null, b]);
+        both?.onShotFired?.(undefined as never, "mp5", []);
+        both?.onPlayerKilled?.(undefined as never, undefined as never, undefined);
+        both?.onBulletHitPlayer?.(undefined as never, undefined as never);
+        expect(calls).toEqual(["a shot", "b shot", "a kill"]);
     });
 
     it("counts shots, hits, damage and the kill of a scripted fight and forwards to the host's observer", () => {

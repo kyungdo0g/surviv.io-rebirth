@@ -6,8 +6,16 @@ import { startServer } from "./server.ts";
 const config = loadConfig();
 const server = await startServer(config);
 console.log(`listening on ${server.url}${config.clientDist ? ` (serving ${config.clientDist})` : ""}`);
-if (config.botFill > 0)
-    console.log(`bot fill: games fill up to ${config.botFill} players (${config.botDifficulty} bots)`);
+if (config.botFill > 0) {
+    const mix = config.botSkillMix;
+    const skill =
+        config.botDifficulty === "mixed"
+            ? `skill mix ${mix.beginner}/${mix.intermediate}/${mix.expert} beginner/intermediate/expert`
+            : `${config.botDifficulty} bots`;
+    console.log(
+        `bot fill: games fill up to ${config.botFill} players (${skill}, personas ${config.botPersonas ? "on" : "off"})`,
+    );
+}
 const m = server.moderation;
 console.log(
     [

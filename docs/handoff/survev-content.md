@@ -245,8 +245,13 @@ so the bot tests that pin object ids or coordinates of that map fail:
   need the same re-pin.
 - Stage 5 (survev balance): `perception.intel.test.ts` (3 tests) hard-codes the M9 round at 12 damage; survev's
   `bullet_m9.damage` is 13 (the misses are exactly 13/12). Patch: `m9Hit` uses `13 * (1 - 0.3 * (dist / 100))` (or
-  `getDef("bullet_m9").damage`) and line 39 expects `13 * (0.85 + 0.15 * 2)`. With these, 10 bot tests fail on this
-  branch, all listed here.
+  `getDef("bullet_m9").damage`) and line 39 expects `13 * (0.85 + 0.15 * 2)`.
+- After merging the base's bot overhaul (51c2c4b): `gunTiers.test.ts` "every gun reachable on the main map" fails on
+  `bar`: survev's main loot tables drop the BAR (stage 5), so `packages/bots/src/knowledge/gunTiers.ts:79`
+  `["bar", "A-", 0.45, false]` needs `true` (main-map flag). `move-scenarios.test.ts` "an unarmed bot chased out of a
+  house" fails for house index 4 (seed 4: the bot never flees): the red houses of main 12345 moved with survev's map
+  generation, so the scenario's house pick needs re-checking. With these, 12 bot tests fail on this branch, all listed
+  here.
 
 ### 5. Survev building particles (`apps/client/src/fx/particleDefs*.ts`, lead-owned)
 

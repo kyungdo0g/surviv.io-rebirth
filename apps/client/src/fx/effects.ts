@@ -8,6 +8,8 @@
 // bright floors); the kill frame's flesh-hit sound (survev game.ts Kill handler); melee hits as in survev player.ts
 // animMeleeCollision: teammates come last, players behind an obstacle are not hit, cleaving weapons skip obstacles
 // behind a wall, and the particles draw just above the hit object's render order.
+// Rebirth (user/2026-10-07-hit-feedback): a melee hit on a player is passed to `hitListener` (fx/hitFeedback.ts) after
+// its original effects, with the weapon's damage.
 import { type Collider, collider, math, type Vec2 } from "@rebirth/core";
 import {
     DamageType,
@@ -25,6 +27,7 @@ import type { AnimEffect } from "../objects/anims.ts";
 import type { ObstacleFx, PlayerFx } from "../objects/types.ts";
 import type { ObjectWorld } from "../objects/world.ts";
 import type { BulletScene, BulletSystem } from "./bullets.ts";
+import type { PlayerHitListener } from "./hitFeedback.ts";
 import type { ParticleSystem } from "./particles.ts";
 
 /** players draw at zOrd 18; casings go just above them */
@@ -99,6 +102,8 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
     private readonly prevPlayers = new Map<number, { pos: Vec2; dir: Vec2 }>();
     /** kill-frame hit sounds played (tests, M9) */
     killHitSounds = 0;
+    /** rebirth Enhanced hit effects: told about melee hits on players after their original effects */
+    hitListener: PlayerHitListener | null = null;
     /** latest local state (set before the snapshot's views are applied, so view hooks see this snapshot) */
     private local: LocalPlayerState | null = null;
     private prevLocal: LocalPlayerState | null = null;
@@ -156,10 +161,6 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
 
     brightSurfaceAt(pos: Vec2, layer: number): boolean {
         return this.world?.brightSurfaceAt(pos, layer) ?? false;
-    }
-
-    insideStairMask(pos: Vec2, rad: number): boolean {
-        return this.world?.insideStructureMask(pos, rad) ?? false;
     }
 
     /** Call before the snapshot's objects are applied. */
@@ -402,6 +403,7 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
             zOrd: number;
             particle: string;
             sound: () => void;
+            player?: PlayerView;
         }> = [];
         for (const o of near) {
             const { view, def: odef } = o;
@@ -463,6 +465,7 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
                 zOrd: order.zOrd,
                 particle: "bloodSplat",
                 sound: () => this.audio.playSound(sound, { channel: "hits", pos: at, layer: player.layer }),
+                player: p,
             });
         });
         hits.sort((a, b) => a.prio - b.prio || b.pen - a.pen);
@@ -471,6 +474,7 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
             const h = hits[i];
             this.particles.add(h.particle, h.layer, h.pos, h.vel, { zOrd: h.zOrd + 1 });
             h.sound();
+            if (h.player) this.hitListener?.onPlayerHit(h.player, h.pos, h.vel, def.damage, player.id);
         }
     }
 

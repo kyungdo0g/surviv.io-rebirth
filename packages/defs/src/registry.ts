@@ -20,14 +20,16 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * (tools/port-survev/policy.json): bullet_barrett, bullet_sw500, bullet_ash12, bullet_imbel, bullet_invis,
  * explosion_potato_lmgshot, imbel, spas16, barrett, sw500, ash12, potato_lmg, svd_winter, sv98_winter, awc_winter and
  * potato_lmgshot take game type ids after the original ones and before the rebirth-only ones (bomb_heavy and
- * explosion_bomb_heavy move up by 16); every original id keeps its index. No record layout changed. · 11: (lead's
- * branch) · 12: survev content wave (tools/port-survev/policy.json): the survev-only melee iceaxe, cutlass,
- * cutlass_gold, naginata_daemon and karambit_borealis, the throwables coconut and tomato with explosion_coconut and
- * explosion_tomato, and the pirate perk take game type ids in survev order among the survev-only ones; the bag gains
- * the coconut and tomato rows (GameConfig.bagSizes order: two more inventory entries in the local player record);
- * later stages of the wave add the level-4 packs, role helmets, six perks and the captain / classless roles, then
- * survev's outfits, emotes and heal / boost effects (game type ids only, 722 of 1024); (still 12, unreleased) the
- * obstacle record gains the original's static isSkin bit + skinPlayerId u16 (obstacle disguises).
+ * explosion_bomb_heavy move up by 16); every original id keeps its index. No record layout changed · 11: rebirth hit
+ * feedback: the Update message's extended flag bit 9 announces a Hits section after FactionStatus (protocol hits.ts:
+ * the hits the active player dealt or took, with amount, headshot, armour and the direction of hits taken) · 12: survev
+ * content wave (tools/port-survev/policy.json): the survev-only melee iceaxe, cutlass, cutlass_gold, naginata_daemon
+ * and karambit_borealis, the throwables coconut and tomato with explosion_coconut and explosion_tomato, and the pirate
+ * perk take game type ids in survev order among the survev-only ones; the bag gains the coconut and tomato rows
+ * (GameConfig.bagSizes order: two more inventory entries in the local player record); later stages of the wave add the
+ * level-4 packs, role helmets, six perks and the captain / classless roles, then survev's outfits, emotes and heal /
+ * boost effects (game type ids only, 722 of 1024); (still 12, unreleased) the obstacle record gains the original's
+ * static isSkin bit + skinPlayerId u16 (obstacle disguises).
  */
 export const PROTOCOL_SCHEMA_VERSION = 12;
 export const GAME_OBJECT_TYPE_BITS = 10;

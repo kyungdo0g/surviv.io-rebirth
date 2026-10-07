@@ -3,6 +3,7 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DEFAULT_SKILL_MIX, parseSkillMix, type SkillTierName } from "@rebirth/bots";
 import {
     AIRSTRIKE_VARIANT_IDS,
     type AirstrikeVariant,
@@ -91,8 +92,16 @@ export interface ServerConfig {
      * (BOT_FILL 80 of 80 fills a faction game to 100), 0 when BOT_FILL is 0.
      */
     factionBotFill: number;
-    /** difficulty of fill bots: easy, normal, hard or mixed (a third each) */
+    /**
+     * difficulty of fill bots: "mixed" (default: skill tiers drawn in the botSkillMix proportions), a tier (beginner,
+     * intermediate, expert: every bot in it, each with its own skill in the band) or a legacy fixed preset (easy,
+     * normal, hard)
+     */
     botDifficulty: BotDifficultySetting;
+    /** tier weights of "mixed": beginner / intermediate / expert (BOT_SKILL_MIX, default 35 / 45 / 20) */
+    botSkillMix: Record<SkillTierName, number>;
+    /** fill bots get personas (BOT_PERSONAS, default on) */
+    botPersonas: boolean;
     /** milliseconds between two bot joins (bots trickle in like players; 0: all at once) */
     botFillIntervalMs: number;
     /** bearer token of the /api/admin/* routes (M8); null disables them */
@@ -176,7 +185,23 @@ const EnvSchema = z.object({
         .min(1000)
         .default(8 * 60 * 1000),
     BOT_FILL: z.coerce.number().int().min(0).max(255).default(0),
-    BOT_DIFFICULTY: z.enum(["easy", "normal", "hard", "mixed"]).default("normal"),
+    BOT_DIFFICULTY: z.enum(["easy", "normal", "hard", "beginner", "intermediate", "expert", "mixed"]).default("mixed"),
+    BOT_SKILL_MIX: z
+        .string()
+        .max(100)
+        .transform((text, ctx) => {
+            try {
+                return parseSkillMix(text);
+            } catch (err) {
+                ctx.addIssue({ code: "custom", message: (err as Error).message });
+                return z.NEVER;
+            }
+        })
+        .optional(),
+    BOT_PERSONAS: z
+        .enum(["0", "1", "true", "false", "on", "off"])
+        .transform((v) => v === "1" || v === "true" || v === "on")
+        .default(true),
     BOT_FILL_INTERVAL_MS: z.coerce.number().int().min(0).default(250),
     ADMIN_TOKEN: z.string().min(16, { message: "at least 16 characters" }).optional(),
     ANTICHEAT: bool.default(true),
@@ -254,6 +279,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
             e.FACTION_BOT_FILL ??
             Math.min(e.FACTION_MAX_PLAYERS, Math.round((e.BOT_FILL * e.FACTION_MAX_PLAYERS) / e.MAX_PLAYERS)),
         botDifficulty: e.BOT_DIFFICULTY,
+        botSkillMix: e.BOT_SKILL_MIX ?? { ...DEFAULT_SKILL_MIX },
+        botPersonas: e.BOT_PERSONAS,
         botFillIntervalMs: e.BOT_FILL_INTERVAL_MS,
         adminToken: e.ADMIN_TOKEN ?? null,
         antiCheat: e.ANTICHEAT ? loadThresholds(e.ANTICHEAT_CONFIG, e.ANTICHEAT_FLAG_SCORE) : null,

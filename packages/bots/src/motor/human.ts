@@ -1,30 +1,53 @@
 // The human cursor motor model (motor model "human"): the bot moves a cursor like a hand moves a mouse. State: the
 // cursor relative to the player (world units) and its velocity, integrated in fixed 10 ms substeps so the 100 Hz
 // in-process controller and the ~33 Hz NetworkBot trace the same path. A new target is acquired with a ballistic flick
-// (motor/flick.ts) that starts 55% of the brain's reaction time after the sighting, then up to two corrective
-// submovements, then smooth pursuit (motor/pursuit.ts). The hand works from a delayed percept of the target (the
-// pursuit lag, partly extrapolated); the trigger finger judges "on target" from the same percept. A slowly wandering
-// error (smoothed OU drift) shifts where the bot believes it should aim and hand tremor shakes the cursor
-// (motor/noise.ts). The bot's own movement is predicted (efference copy) for SELF_COMP of the bearing change it causes;
-// the rest the pursuit has to follow. Without a target the cursor rests ahead of the walking direction (35 degree dead
-// zone) or glances at Intent.lookAt; throws put it at the throw distance. The cursor stays on the visible screen
+// (motor/flick.ts) that starts 55% of the brain's reaction time after the sighting (never before onsetFloor), then up
+// to two corrective submovements, then smooth pursuit (motor/pursuit.ts). The hand works from a delayed percept of the
+// target (the pursuit lag, partly extrapolated); the trigger finger judges "on target" from the same percept. A slowly
+// wandering error (smoothed OU drift) shifts where the bot believes it should aim and hand tremor shakes the cursor
+// (motor/noise.ts). The bot's own movement is predicted (efference copy) for SELF_COMP of the bearing change it causes,
+// with a gain that wanders once that bearing turns fast (SELF_COMP_SD from WANDER_FROM, in full from WANDER_FULL: no
+// hand cancels a fast turn of its own exactly; a fixed gain turned the cursor at a perfectly constant rate while the bot
+// walked past a crate it aimed at, which the server's constant-aim detector flags; slow turns, a fight at range, keep
+// the exact gain); the rest the pursuit has to follow. Without a target the cursor rests ahead of the walking direction
+// (35 degree dead zone) or glances at Intent.lookAt; throws put it at the throw distance. The cursor stays on the visible screen
 // (motor/screen.ts) and never turns faster than 1300 deg/s. Draws only from its own rng stream, so motor noise never
 // shifts the brain's decisions.
 import { type Rng, type Vec2, v2 } from "@rebirth/core";
 import type { DifficultyParams, MotorParams } from "../difficulty.ts";
 import { angleDelta, angleOf } from "../geom.ts";
-import { type Flick, type FlickKind, flickPoint, HIT_HALF_WIDTH, planFlick, STEP, wristKappa } from "./flick.ts";
-import { gaussian, SmoothDrift, Tremor } from "./noise.ts";
+import {
+    capTurnRate,
+    type Flick,
+    type FlickKind,
+    flickPoint,
+    HIT_HALF_WIDTH,
+    planFlick,
+    STEP,
+    wristKappa,
+} from "./flick.ts";
+import { gaussian, OuProcess, SmoothDrift, Tremor } from "./noise.ts";
 import { Pursuit } from "./pursuit.ts";
 import { limitCursor, MIN_RADIUS, screenEdge } from "./screen.ts";
 
+/** The hand starts its flick this share of the brain's reaction after a sighting (never before params.onsetFloor). */
+export const ONSET_SHARE = 0.55;
 const DEG = Math.PI / 180;
 /** Drift of the believed aim point: OU time constant (s), smoothing (s), stationary sd as a fraction of aimErrorDeg. */
 const DRIFT_TAU = 0.35;
 const DRIFT_SMOOTH = 0.1;
 const DRIFT_SCALE = 0.6;
-/** Fraction of the bearing change caused by the bot's own movement that the hand predicts. */
+/** Fraction of the bearing change caused by the bot's own movement that the hand predicts... */
 const SELF_COMP = 0.85;
+/** ...with this wander of the gain (OU: sd as a fraction of SELF_COMP, correlation time in seconds)... */
+const SELF_COMP_SD = 0.35;
+const SELF_COMP_TAU = 0.05;
+/**
+ * ...when the bearing turns faster than WANDER_FROM (rad/s), in full from WANDER_FULL: the detector counts turns of
+ * 1.5 degrees per input, 50 deg/s at the 33 Hz a NetworkBot sends.
+ */
+const WANDER_FROM = 0.6;
+const WANDER_FULL = 1.2;
 /** Safety cap on the cursor's angular speed (1300 deg/s), per substep. */
 const MAX_STEP_ANGLE = 1300 * DEG * STEP;
 /** Cursor radius bounds while aiming (world units) and the low-pass of the radius towards the target's distance. */
@@ -121,6 +144,8 @@ export class HumanMotor {
     private readonly tremor: Tremor;
     private readonly drift: SmoothDrift;
     private readonly pursuit: Pursuit;
+    /** wander of the efference copy's gain (SELF_COMP_SD) */
+    private readonly selfGain: OuProcess;
     private zoom = 28;
     private k = -1;
     private pending = 0;
@@ -128,6 +153,8 @@ export class HumanMotor {
     private flick: Flick | null = null;
     /** frame angle when the flick was planned (own movement rotates the flick with the frame) */
     private flickPhi = 0;
+    /** the current flick's own top speed per substep (flick.ts capTurnRate; Infinity: the safety cap only) */
+    private flickCap = Number.POSITIVE_INFINITY;
     /** target motion a corrective stroke rides on (pursuit continues under it), compensated frame */
     private carry: Vec2 = { x: 0, y: 0 };
     private key = 0;
@@ -151,6 +178,7 @@ export class HumanMotor {
         this.tremor = new Tremor(rng);
         this.drift = new SmoothDrift(rng, DRIFT_TAU, DRIFT_SMOOTH, DRIFT_SCALE * params.aimErrorDeg * DEG);
         this.pursuit = new Pursuit(rng);
+        this.selfGain = new OuProcess(rng, SELF_COMP_TAU, SELF_COMP_SD);
         this.cursor = { x: this.restRadius, y: 0 };
         this.output = v2.copy(this.cursor);
     }
@@ -248,21 +276,28 @@ export class HumanMotor {
         this.offSince = Number.POSITIVE_INFINITY;
     }
 
-    /** Delay before the primary flick: 55% of the brain's reaction time after the sighting (its fire gate stays). */
+    /**
+     * Delay before the primary flick: 55% of the brain's reaction time after the sighting (its fire gate stays), never
+     * sooner than params.onsetFloor after it (bot overhaul COMBAT-4: the hard preset flicked 0.09-0.13 s after a target
+     * appeared, below the human visuomotor floor; diagnosis round 1 issue 1 RC4).
+     */
     private onsetDelay(g: TargetGoal, startBot: number): number {
         if (g.key < 0) return this.rng.range(0.05, 0.15);
-        return Math.max(g.firstSeen + 0.55 * g.reaction - startBot, 0.2 * g.reaction);
+        const onset = g.firstSeen + Math.max(ONSET_SHARE * g.reaction, this.params.onsetFloor);
+        return Math.max(onset - startBot, 0.2 * g.reaction);
     }
 
     private substep(input: MotorInput, t: number): void {
         this.drift.step(STEP);
+        this.selfGain.step(STEP);
         const prev = this.cursor;
         const prevPhi = this.phi;
         const g = input.goal;
         if (g?.kind === "target") this.stepTarget(g, input.selfVel, t);
         else if (g?.kind === "throw") this.stepThrow(g, t);
         else this.stepIdle(input, t);
-        this.cursor = limitCursor(this.zoom, prev, this.cursor, MAX_STEP_ANGLE);
+        const cap = this.phase === "flick" ? Math.min(MAX_STEP_ANGLE, this.flickCap) : MAX_STEP_ANGLE;
+        this.cursor = limitCursor(this.zoom, prev, this.cursor, cap);
         this.vel = v2.div(v2.sub(this.cursor, prev), STEP);
         // the hand moved only as far as the limits let it (pursuit velocity lives in the compensated frame)
         if (this.phase === "track") {
@@ -279,7 +314,10 @@ export class HumanMotor {
         const d = Math.max(v2.length(a), MIN_RADIUS);
         const dir = v2.div(a, d);
         // own movement: the bearing change it causes is predicted (no lag) for SELF_COMP of it
-        const dphi = (SELF_COMP * v2.det(a, v2.neg(selfVel)) * STEP) / (d * d);
+        const turn = v2.det(a, v2.neg(selfVel)) / (d * d);
+        const wander = Math.min(1, Math.max(0, (Math.abs(turn) - WANDER_FROM) / (WANDER_FULL - WANDER_FROM)));
+        const gain = SELF_COMP * Math.max(0, 1 + wander * this.selfGain.value);
+        const dphi = gain * turn * STEP;
         this.phi += dphi;
         this.rc += ((d > NEAR_DIST ? d : this.nearR) - this.rc) * (STEP / RADIUS_TAU);
         this.pursuit.push(v2.rotate(v2.mul(dir, this.clampRadius(this.rc, dir)), -this.phi));
@@ -467,6 +505,7 @@ export class HumanMotor {
             sigma: m.endpointSigma,
             kappa,
         });
+        this.flickCap = capTurnRate(this.rng, this.flick) * STEP;
         this.flickPhi = this.phi;
         this.carry = { x: 0, y: 0 };
         this.phase = "flick";
