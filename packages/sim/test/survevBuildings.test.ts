@@ -187,4 +187,17 @@ describe("heal regions, mounts and vats", () => {
         stepSeconds(game, 10);
         for (const d of doors) expect(d.door?.locked).toBe(false);
     });
+
+    // survev map.ts isOnWater: the last matching floor surface wins, and both flooded spots lie in corridor tiles
+    it("the Cloud bunker's flooded corridor spots are water", () => {
+        const game = mapGame("savannah", 1);
+        const sub = findBuilding(game, "bunker_cloud_sublevel_01");
+        const water = sub.surfaces.find((s) => s.type === "water")!;
+        expect(water.colliders).toHaveLength(2);
+        for (const c of water.colliders) {
+            if (c.type !== 1) throw new Error("expected an aabb");
+            const mid = { x: (c.min.x + c.max.x) / 2, y: (c.min.y + c.max.y) / 2 };
+            expect(game.world.isOnWater(mid, sub.layer)).toBe(true);
+        }
+    });
 });

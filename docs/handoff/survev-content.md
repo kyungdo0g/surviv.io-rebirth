@@ -154,6 +154,9 @@ may not touch, the schema number used and open questions.
 - Wiki description audit (second half): `perch_01`'s roof residue named `map-perch-res.img`, which the original
   client lacks (the collapsed perch drew nothing); survev's def names the original `map-perch-res-01.img`, so
   `perch_01` takes survev's def too (`survevMapObjects`).
+- Cloud Bunker flooded spots: `world.ts isOnWater` kept the first matching floor surface, survev the last; both
+  water patches of `bunker_cloud_sublevel_01` lie inside corridor tiles, so the sim saw tile (no slow) while the
+  client drew wading. Last match wins now; test "the Cloud bunker's flooded corridor spots are water".
 - Showcase: `river_town_01` added (faction, on a 20-wide river); 140 entries. Spawn spots now start at the object's
   bounds (front first), so wide buildings are on screen.
 - Checked and left as is: River Town's `goreRegion` (survev uses it only for quests: out of scope); faction crates'
