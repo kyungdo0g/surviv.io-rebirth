@@ -2,7 +2,8 @@
 // glass, metal plates, books, feathers), plus the remaining pieces of air drop crates and Cobalt class crates named by
 // `button.useParticle` / `explodeParticle`. Values are the 0.8.82 client's particle module (the original bundle,
 // same numbers as survev client/src/objects/particles.ts ParticleDefs), ported as data; tomatoBreak_01/02 exist only in
-// survev (its faction_potato tomatoes, which our generated map objects include).
+// survev (its faction_potato tomatoes, which our generated map objects include), so do toiletGoldBreak and
+// depositBoxSilverBreak (survev buildings).
 import { crateShell, hsv, type ParticleDef } from "./particleDefs.ts";
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -129,6 +130,8 @@ export const PARTICLE_DEFS_BREAK: Readonly<Record<string, ParticleDef>> = {
     }),
     toiletBreak: chunk("part-spark-02.img", porcelainColor),
     toiletMetalBreak: chunk("part-spark-02.img", metalColor, { drag: [4, 5] }),
+    // survev-only: the Reserve's gold toilet (survev particles.ts:1632)
+    toiletGoldBreak: chunk("part-spark-02.img", () => hsv(0.14, rnd(0.72, 0.86), rnd(0.71, 0.85)), { drag: [4, 5] }),
     windowBreak: glass(0x80d9ff),
     bottleBrownBreak: glass(0x783808, { scaleStart: [0.03, 0.06] }),
     bottleBlueBreak: glass(0x004c58, { scaleStart: [0.03, 0.06] }),
@@ -137,6 +140,11 @@ export const PARTICLE_DEFS_BREAK: Readonly<Record<string, ParticleDef>> = {
     depositBoxGreyBreak: plate(() => hsv(0, 0, rnd(0.36, 0.38)), [0.15, 0.25], [0.12, 0.2]),
     depositBoxGoldBreak: {
         ...plate(() => hsv(0.11, 0.84, rnd(0.64, 0.66)), [0.2, 0.35], [0.18, 0.25]),
+        drag: [6, 8],
+    },
+    // survev-only: the Reserve's silver deposit boxes (survev particles.ts:772)
+    depositBoxSilverBreak: {
+        ...plate(() => hsv(0, 0, rnd(0.68, 0.72)), [0.2, 0.35], [0.18, 0.25]),
         drag: [6, 8],
     },
     turkeyFeathersHit: feathers([0.1, 0.2], [0.08, 0.12]),

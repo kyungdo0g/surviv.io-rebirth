@@ -91,6 +91,7 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 shot: { seq: rng.int(0, 65535), offHand: rng.bool() },
                 wearingPan: rng.bool(),
                 healEffect: rng.bool(0.2),
+                lastStand: rng.bool(0.1),
                 role: rng.bool(0.7) ? "" : randGameType(rng),
                 perks: randPerks(rng),
                 haste: { type: rng.pick(["none", "windwalk", "takedown", "inspire"] as const), seq: rng.int(0, 65535) },
@@ -277,6 +278,7 @@ export function randBullets(rng: Rng, ctx: NetCtx): BulletEvent[] {
             saturated: rng.bool(0.2),
             thick: rng.bool(0.1),
             splinter: rng.bool(0.1),
+            apRounds: rng.bool(0.1),
             speedMult: rng.bool(0.7) ? 1 : rng.range(0.5, 2.5),
         };
         if (rng.bool(0.4)) b.endDist = rng.range(0, 1024);

@@ -5,9 +5,11 @@
 import { v2 } from "@rebirth/core";
 import { DamageType, GameConfig, getDefOfType, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
+import { BulletSystem } from "../src/combat/bullets.ts";
 import { type Game, type Player, pickupLoot } from "../src/index.ts";
 import { addPerk } from "../src/perks/perks.ts";
 import { completeUse, updateBoost } from "../src/world/consumables.ts";
+import { playerView } from "../src/world/playerView.ts";
 import { constantRng, fireOnce, flatGame, giveGun, openSpot, spawnAt, steps } from "./combatHelpers.ts";
 import { clearSpot, cookAndThrow, fxGame, holdThrowable, logExplosions } from "./fxHelpers.ts";
 
@@ -62,6 +64,17 @@ describe("AP Rounds and High-Velocity Rounds", () => {
             return crate.maxHealth - crate.health;
         };
         expect(hit("ap_rounds")).toBeCloseTo(hit() * 1.5, 9);
+    });
+
+    it("AP Rounds: the bullet report carries the flag for the tracer colour (survev bullet apRounds)", () => {
+        const flag = (perk?: string) => {
+            const { game, p } = range(perk);
+            giveGun(p, "m9");
+            fireOnce(game, p);
+            return BulletSystem.toEvent(game.bullets.active.at(-1)!).apRounds;
+        };
+        expect(flag("ap_rounds")).toBe(true);
+        expect(flag()).toBe(false);
     });
 
     it("High-Velocity Rounds: bullets fly x1.4 as fast and x1.3 as far", () => {
@@ -122,8 +135,12 @@ describe("Indomitable Spirit", () => {
         expect(t.health).toBe(1);
         expect(t.boost).toBe(8);
         expect(t.lastStandTicker).toBe(1);
+        // the client shows the last stand effect for that second (survev lastStandEffect)
+        expect(playerView(t).lastStand).toBe(true);
+        expect(playerView(p).lastStand).toBe(false);
         game.damagePlayer(t, { amount: 25, damageType: DamageType.Player, sourceId: p.id });
         expect(t.health).toBe(0);
+        expect(playerView(t).lastStand).toBe(false);
     });
 
     it("adrenaline decays x0.75", () => {

@@ -95,11 +95,13 @@ export function isAirstrikePing(type: string): boolean {
 }
 
 /**
- * Applies survev's strobe strikeDelay to `defs` (a mutable copy of the generated record; the generated strobe keeps
- * the original client's 2.5). Returns what changed.
+ * Applies survev's strobe strikeDelay to `defs` (a mutable copy of the generated record). Returns what changed:
+ * nothing while the generated strobe already has it (survev balance, tools/port-survev/policy.json survevBalance,
+ * ports survev's 3 s), else the original client's 2.5 replaced.
  */
 export function applySurvevStrobe(defs: Record<string, GameObjectDef>): DefDeviation[] {
     const strobe = defs.strobe as ThrowableDef;
+    if (strobe.strikeDelay === STROBE_STRIKE_DELAY) return [];
     defs.strobe = { ...strobe, strikeDelay: STROBE_STRIKE_DELAY };
     return [
         {

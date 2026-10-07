@@ -95,6 +95,8 @@ const PERK_FIELD = 26;
 const FROZEN_FIELD = PERK_FIELD + 2 * MAX_NET_PERKS;
 /** the action's alternate-reload bit (visual diff: the original Action.ReloadAlt), in the action group */
 const ACTION_ALT_FIELD = FROZEN_FIELD + 2;
+/** Indomitable Spirit's last stand (schema 15: survev lastStandEffect), in the status group */
+const LAST_STAND_FIELD = ACTION_ALT_FIELD + 1;
 
 function codeOf<T extends string>(list: readonly T[], value: T | undefined): number {
     const i = list.indexOf(value ?? list[0]);
@@ -115,11 +117,12 @@ const mapScaleOf = (n: number): number =>
 
 /**
  * Player. Groups: 0 movement (pos, dir), 1 status (layer, dead, downed, wearingPan, healEffect (M5b), haste type and
- * seq (M7a), frozen + frozenOri (M7b; the original `frozen b, frozenOri 2 bits`)), 2 active weapon, 3 gear (role and
- * perks (M7a)), 4 scale, 5 animation, 6 action (its alternate-reload bit, the original Action.ReloadAlt, is the
- * table's last field), 7 last shot. Seq counters are sent mod 2^16 (the original used 3 bits). Perks (the original
- * `perks b + array of {type, droppable}`) are a chain of up to 8 slots: a slot's type is written only when the previous
- * slot holds a perk, its droppable bit only when it holds one itself, so a perkless player costs one empty 10-bit type.
+ * seq (M7a), frozen + frozenOri (M7b; the original `frozen b, frozenOri 2 bits`), survev's lastStandEffect bit
+ * (schema 15, the table's last field)), 2 active weapon, 3 gear (role and perks (M7a)), 4 scale, 5 animation, 6 action
+ * (its alternate-reload bit, the original Action.ReloadAlt, follows the frozen fields), 7 last shot. Seq counters are
+ * sent mod 2^16 (the original used 3 bits). Perks (the original `perks b + array of {type, droppable}`) are a chain
+ * of up to 8 slots: a slot's type is written only when the previous slot holds a perk, its droppable bit only when it
+ * holds one itself, so a perkless player costs one empty 10-bit type.
  */
 export const PlayerCodec: ObjectCodec<PlayerView> = {
     kind: "player",
@@ -140,6 +143,7 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
         ...perkFields(),
         f(1, 1), f(2, 1, FROZEN_FIELD),
         f(1, 6),
+        f(1, 1),
     ],
     groupCount: 8,
     quantize(v, ctx, out) {
@@ -178,6 +182,7 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
         out[FROZEN_FIELD] = b(v.frozen);
         out[FROZEN_FIELD + 1] = v.frozen ? (v.frozenOri ?? 0) & 3 : 0;
         out[ACTION_ALT_FIELD] = b(v.action?.alt);
+        out[LAST_STAND_FIELD] = b(v.lastStand);
     },
     build(id, v, ctx) {
         return {
@@ -206,6 +211,7 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
             shot: { seq: v[20], offHand: v[21] === 1 },
             wearingPan: v[7] === 1,
             healEffect: v[22] === 1,
+            lastStand: v[LAST_STAND_FIELD] === 1,
             role: gameTypeOf(v[25]),
             perks: perksOf(v),
             haste: { type: fromCode(HASTE_TYPES, v[23], "haste"), seq: v[24] },

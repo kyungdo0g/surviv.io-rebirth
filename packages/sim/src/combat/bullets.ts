@@ -493,6 +493,7 @@ export class BulletSystem {
             saturated: b.saturated,
             thick: b.thick,
             splinter: b.splinter,
+            apRounds: b.apRounds,
             speedMult: b.def.speed > 0 ? b.speed / b.def.speed : 1,
         };
         if (!b.alive) event.endDist = b.distanceTraveled;

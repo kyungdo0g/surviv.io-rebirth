@@ -204,12 +204,13 @@ describe("new guns: mechanics fields (new-gun-stats.md section 4)", () => {
 });
 
 describe("new ammo (new-gun-stats.md 4.5)", () => {
-    it("40mm teal, rocket brown, 5.7x28 pink: defs, bags after .45 ACP (the sheet's first four sizes), tracers", () => {
+    it("40mm teal, rocket brown, 5.7x28 pink: defs, bags after .45 ACP (the sheet's five sizes), tracers", () => {
         expect([...NEW_AMMO_IDS]).toEqual(["40mm", "rocket", "57mm"]);
         for (const id of NEW_AMMO_IDS) {
             const a = sheet.ammo[id];
             expect(GameObjectDefs[id]).toEqual(a.def);
-            expect(GameConfig.bagSizes[id]).toEqual(a.bagSizes.slice(0, 4));
+            expect(GameConfig.bagSizes[id]).toEqual(a.bagSizes);
+            expect(a.bagSizes, id).toHaveLength(5);
             expect(GameConfig.tracerColors[id]).toEqual(a.tracerColor);
         }
         expect(getDefOfType("ammo", "40mm").lootImg.tint).toBe(0x0cddab);
@@ -226,7 +227,7 @@ describe("new ammo (new-gun-stats.md 4.5)", () => {
             expect(GameConfig.bagSizes[k]).toEqual(gameConfig.bagSizes[k]);
         expect(gameConfig.bagSizes["40mm"]).toBeUndefined();
         // 9-bit inventory counts on the wire
-        expect(Math.max(...NEW_AMMO_IDS.map((id) => GameConfig.bagSizes[id][3]))).toBeLessThan(512);
+        expect(Math.max(...NEW_AMMO_IDS.map((id) => GameConfig.bagSizes[id][4]))).toBeLessThan(512);
     });
 
     it("each gets the sheet's ping emote, an original ammo emote but for its own texture (ammo-<id>.img)", () => {

@@ -158,6 +158,12 @@
 // - BulletEvent: `speedMult` (tracer speed over the def speed: the perk speed multiplier times the variance of shrapnel).
 // - USAS-12 (`toMouseHit`) rounds stop at the cursor: their range is cut to `toMouseLen - barrelLength`.
 // - Bullets whose def has `skipCollision` (flares) report their full range as `maxDist`.
+//
+// Survev content wave additions (protocol schema 15; backward compatible in the same way):
+// - BulletEvent: `apRounds` (fired with AP Rounds: the tracer takes the ammo's `apSaturated` colour, survev client
+//   bullet.ts:165-166).
+// - PlayerView: `lastStand` (Indomitable Spirit absorbed a fatal hit within the last second: survev's
+//   lastStandEffect, drawn as the boost effect in blue).
 import type { Vec2 } from "@rebirth/core";
 import type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
 import type { HitEvent } from "./viewHits.ts";
@@ -281,6 +287,8 @@ export interface PlayerView extends BaseView {
     wearingPan?: boolean;
     /** standing in a building heal region (heal particles) (M5b) */
     healEffect?: boolean;
+    /** Indomitable Spirit absorbed a fatal hit within the last second (survev lastStandEffect) (schema 15) */
+    lastStand?: boolean;
     /** GameObjectDefs role id, "" for none (M7a) */
     role?: string;
     /** perks in pickup / grant order, at most 8 (M7a) */
@@ -487,6 +495,8 @@ export interface BulletEvent {
     thick?: boolean;
     /** a Splinter Rounds side bullet (small tracer) (M7a) */
     splinter?: boolean;
+    /** fired with AP Rounds: the ammo's apSaturated tracer colour (survev bullet apRounds) (schema 15) */
+    apRounds?: boolean;
     /**
      * tracer speed over the bullet def's speed (M9): the perk speed multiplier (9mm Overpressure) times the variance
      * factor `1 + varianceT * def.variance` (shrapnel); 1 when absent (survev client bullet.ts speed)

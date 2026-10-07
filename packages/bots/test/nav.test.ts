@@ -5,11 +5,12 @@ import { type Vec2, v2 } from "@rebirth/core";
 import { describe, expect, it } from "vitest";
 import { findPath } from "../src/nav/astar.ts";
 import { NavGrid, NavTerrain } from "../src/nav/grid.ts";
-import { cachedMap } from "./helpers.ts";
+import { cachedMap, firstOfType } from "./helpers.ts";
 
 const gen = cachedMap("main", 12345);
 const grid = new NavGrid(gen.mapData);
-const house = gen.objects.find((o) => o.type === "house_red_02" && o.id === 1391)!;
+// the first unrotated red house (ori 0: the offsets below assume it)
+const house = firstOfType(gen, "house_red_02", 0);
 const children = gen.objects.filter((o) => o.parentId === house.id);
 
 function pathLength(start: Vec2, points: readonly Vec2[]): number {
@@ -68,15 +69,19 @@ describe("nav grid", () => {
     });
 
     it("finds a path around a building when the straight line is blocked", () => {
-        const west = { x: house.pos.x - 22, y: house.pos.y };
-        const east = { x: house.pos.x + 22, y: house.pos.y };
+        // the nearest free cells 22 units either side (a tree can stand on the exact spot)
+        const west = grid.center(grid.nearestWalkable({ x: house.pos.x - 22, y: house.pos.y }, 4));
+        const east = grid.center(grid.nearestWalkable({ x: house.pos.x + 22, y: house.pos.y }, 4));
+        expect(Math.abs(west.x - house.pos.x + 22) + Math.abs(east.x - house.pos.x - 22)).toBeLessThan(6);
         expect(grid.walkableAt(west) && grid.walkableAt(east)).toBe(true);
         expect(grid.lineWalkable(west, east)).toBe(false);
         const res = findPath(grid, west, east)!;
         expect(res.complete).toBe(true);
+        // every leg crosses only cells A* may cross: free ones, or tight gaps a player fits through (this house's way
+        // around crosses such gaps, which lineWalkable counts as blocked)
         let prev = west;
         for (const p of res.points) {
-            expect(grid.lineWalkable(prev, p)).toBe(true);
+            expect(grid.linePassable(prev, p)).toBe(true);
             prev = p;
         }
         expect(pathLength(west, res.points)).toBeGreaterThan(v2.distance(west, east));

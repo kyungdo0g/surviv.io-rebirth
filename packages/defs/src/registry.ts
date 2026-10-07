@@ -35,9 +35,11 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * ones; the bag gains the coconut and tomato rows (GameConfig.bagSizes order: two more inventory entries in the local
  * player record); later stages of the wave add the level-4 packs, role helmets, six perks and the captain / classless
  * roles, then survev's outfits, emotes and heal / boost effects; the obstacle record gains the original's static isSkin
- * bit + skinPlayerId u16 (obstacle disguises).
+ * bit + skinPlayerId u16 (obstacle disguises) · 15: survev's presentation flags of the survev content wave's perks:
+ * each bullet record ends with an apRounds bit (AP Rounds tracer colour, survev bullet apRounds) and the player table
+ * ends with a lastStand bit in the status group (Indomitable Spirit, survev lastStandEffect).
  */
-export const PROTOCOL_SCHEMA_VERSION = 14;
+export const PROTOCOL_SCHEMA_VERSION = 15;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

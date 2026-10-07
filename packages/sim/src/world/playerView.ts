@@ -37,6 +37,7 @@ export function playerView(p: Player): PlayerView {
         shot: { seq: p.shotSeq, offHand: p.shotOffhand },
         wearingPan: p.wearingPan,
         healEffect: p.healEffect && !p.dead,
+        lastStand: p.lastStandTicker > 0 && !p.dead,
         role: p.role,
         perks: perkViews(p),
         haste: { type: p.haste.type, seq: p.haste.seq },

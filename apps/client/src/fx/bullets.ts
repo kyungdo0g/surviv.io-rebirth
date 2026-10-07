@@ -243,7 +243,7 @@ export class BulletSystem {
         t.playerFx = false;
         t.sprite.scale.set(0.8, tracerWidth(def.tracerWidth, e));
         const bright = !!shooter && scene.brightSurfaceAt(shooter.pos, shooter.layer);
-        t.sprite.tint = tracerTint(colors, !!e.saturated, bright);
+        t.sprite.tint = tracerTint(colors, !!e.saturated, bright, !!e.apRounds);
         t.sprite.alpha = e.reflectCount > 0 ? 0.5 : 1;
         t.sprite.visible = true;
         t.container.rotation = -Math.atan2(e.dir.y, e.dir.x);
@@ -299,7 +299,9 @@ export class BulletSystem {
                 t.chipped.add(view.id);
                 return;
             }
-            const collidable = def.collidable && !(view.door?.open ?? false);
+            // a player's disguise never stops a bullet, which still chips it on the way (survev client obstacle.ts
+            // `collidable = def.collidable && !isSkin`, bullet.ts:274-276 and 394-407)
+            const collidable = def.collidable && !(view.door?.open ?? false) && view.skinPlayerId === undefined;
             out.push({
                 type: "obstacle",
                 dist: hit.dist,

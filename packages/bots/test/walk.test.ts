@@ -3,10 +3,11 @@
 import { type Vec2, v2 } from "@rebirth/core";
 import { describe, expect, it } from "vitest";
 import { NavGrid } from "../src/nav/grid.ts";
-import { cachedMap, mainGame, placeBot, runUntil } from "./helpers.ts";
+import { cachedMap, firstOfType, mainGame, placeBot, runUntil } from "./helpers.ts";
 
 const gen = cachedMap("main", 12345);
-const house = gen.objects.find((o) => o.id === 1391 && o.type === "house_red_02")!;
+// the first unrotated red house (ori 0: the offsets below assume it)
+const house = firstOfType(gen, "house_red_02", 0);
 
 function walkable(p: Vec2): Vec2 {
     const grid = NavGrid.forMap(gen.mapData);

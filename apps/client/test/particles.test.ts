@@ -1,10 +1,13 @@
 // Particle coverage (M9): every particle and emitter the generated game data names has a client definition (a missing
 // one silently drew nothing, e.g. obstacle break debris), every definition's sprites are in the sprite manifest, and
-// every emitter spawns a defined particle.
-import { GameObjectDefs, MapDefs, MapObjectDefs } from "@rebirth/defs";
+// every emitter spawns a defined particle; every explosion has an effect whose scattered pieces are defined, and every
+// heal / boost effect resolves to defined emitters.
+import { type ExplosionDef, GameObjectDefs, MapDefs, MapObjectDefs } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
+import { explosionVisual } from "../src/fx/explosions.ts";
 import { ALL_EMITTER_DEFS, ALL_PARTICLE_DEFS } from "../src/fx/particleDefsAll.ts";
 import manifest from "../src/generated/sprite-manifest.json";
+import { effectEmitters } from "../src/objects/playerEmitters.ts";
 
 /** referenced emitters the client deliberately does not define */
 const EMITTER_ALLOWLIST: Readonly<Record<string, string>> = {
@@ -15,27 +18,6 @@ const EMITTER_ALLOWLIST: Readonly<Record<string, string>> = {
     xp_common: "XP loot removed",
     xp_rare: "XP loot removed",
     xp_mythic: "XP loot removed",
-    // survev content wave stage 3: the camps' smoke; the emitter belongs in the lead-owned apps/client/src/fx
-    // (docs/handoff/survev-content.md "Survev building particles")
-    campfire_smoke: "pending (handoff): survev particles.ts:3520 campfire_smoke = cabinSmoke, rate 2-4",
-    // survev content wave stage 4: survev's heal / boost effects, run by the lead-owned player emitters
-    // (docs/handoff/survev-content.md "Survev heal and boost effects")
-    heal_diamond: "pending (handoff): survev particles.ts:3685",
-    heal_ankh: "pending (handoff): survev particles.ts:3694",
-    heal_menacing: "pending (handoff): survev particles.ts:3703",
-    boost_club: "pending (handoff): survev particles.ts:3751",
-    boost_lightning: "pending (handoff): survev particles.ts:3760",
-    boost_hermes: "pending (handoff): survev particles.ts:3769",
-    boost_gearshift_01: "pending (handoff): survev particles.ts:3778",
-    boost_gearshift_02: "pending (handoff): survev particles.ts:3787",
-};
-
-/** Particles survev's buildings name that the lead-owned fx files still lack (docs/handoff/survev-content.md). */
-const PARTICLE_PENDING: Readonly<Record<string, string>> = {
-    depositBoxSilverBreak: "the Reserve's deposit boxes (survev particles.ts:772)",
-    toiletGoldChip: "the Reserve's gold toilet (survev particles.ts:1613)",
-    toiletGoldBreak: "the Reserve's gold toilet (survev particles.ts:1632)",
-    leafSynthetic: "Cobalt's bush_07cb (survev particles.ts:992)",
 };
 
 /** sprites of particle defs that are not in the manifest (none today) */
@@ -93,9 +75,7 @@ describe("particle coverage", () => {
     });
 
     it("defines every particle the game data names", () => {
-        const missing = [...refs.particles]
-            .filter(([n]) => !ALL_PARTICLE_DEFS[n] && !PARTICLE_PENDING[n])
-            .map(([n, at]) => `${n} (${at})`);
+        const missing = [...refs.particles].filter(([n]) => !ALL_PARTICLE_DEFS[n]).map(([n, at]) => `${n} (${at})`);
         expect(missing).toEqual([]);
     });
 
@@ -123,6 +103,33 @@ describe("particle coverage", () => {
             }
         }
         expect(missing).toEqual([]);
+    });
+
+    it("plays an effect for every explosion, scattering defined particles", () => {
+        const bad: string[] = [];
+        for (const [id, def] of Object.entries(GameObjectDefs)) {
+            if (def.type !== "explosion") continue;
+            const visual = explosionVisual(id);
+            if (!visual) bad.push(`${id}: no effect "${(def as ExplosionDef).explosionEffectType}"`);
+            else if (visual.effect.scatter && !ALL_PARTICLE_DEFS[visual.effect.scatter.particle]) {
+                bad.push(`${id}: scatter ${visual.effect.scatter.particle}`);
+            }
+        }
+        expect(bad).toEqual([]);
+        // survev's coconut and tomato splats (survev client explosion.ts:672-715)
+        expect(explosionVisual("explosion_coconut")?.effect.scatter).toMatchObject({ particle: "coconut_impact" });
+        expect(explosionVisual("explosion_tomato")?.effect.burst.grass).toBe("tomato_01");
+    });
+
+    it("resolves every heal / boost effect to defined emitters, the default for an unknown one", () => {
+        for (const [id, def] of Object.entries(GameObjectDefs)) {
+            if (def.type !== "heal_effect" && def.type !== "boost_effect") continue;
+            for (const e of effectEmitters(id, def.type)) expect(ALL_EMITTER_DEFS[e], `${id}: ${e}`).toBeDefined();
+        }
+        expect(effectEmitters("boost_gearshift", "boost_effect")).toEqual(["boost_gearshift_01", "boost_gearshift_02"]);
+        expect(effectEmitters("heal_diamond", "heal_effect")).toEqual(["heal_diamond"]);
+        expect(effectEmitters("", "heal_effect")).toEqual(["heal_basic"]);
+        expect(effectEmitters("heal_diamond", "boost_effect")).toEqual(["boost_basic"]);
     });
 
     it("keeps definitions sane", () => {

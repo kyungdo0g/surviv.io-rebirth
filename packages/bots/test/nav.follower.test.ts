@@ -7,10 +7,11 @@ import { describe, expect, it } from "vitest";
 import { PathFollower } from "../src/nav/follower.ts";
 import { NavGrid } from "../src/nav/grid.ts";
 import { WorldModel } from "../src/perception/world.ts";
-import { cachedMap } from "./helpers.ts";
+import { cachedMap, firstOfType } from "./helpers.ts";
 
 const gen = cachedMap("main", 12345);
-const house = gen.objects.find((o) => o.type === "house_red_02" && o.id === 1391)!;
+// the first unrotated red house (ori 0: the offsets below assume it)
+const house = firstOfType(gen, "house_red_02", 0);
 
 function modelAt(pos: Vec2, grid = NavGrid.forMap(gen.mapData)): WorldModel {
     const m = new WorldModel(gen.mapData, grid);

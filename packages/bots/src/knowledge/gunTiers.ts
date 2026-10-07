@@ -67,7 +67,10 @@ export interface GunTierInfo {
     skillDemand: number;
     /** an aim gun (sniper or DMR): the stronger skill penalty applies */
     aim: boolean;
-    /** reachable on the v0.8.82 main map (ground, containers, air drops, or as the dual of a reachable pistol) */
+    /**
+     * reachable on the main map with survev's loot tables (ground, containers, air drops, or as the dual of a reachable
+     * pistol)
+     */
     mainMap: boolean;
 }
 
@@ -77,7 +80,7 @@ type Row = [id: string, tier: GunTier, F: number, mainMap: boolean];
 const ROWS: readonly Row[] = [
     // LMGs: the M249 and the PKP are the hype guns; the QBB-97 is 20-25% slower at every range (A+, no S-rule)
     ["m249", "S", 0.5, true], ["pkp", "S", 0.53, true], ["qbb97", "A+", 0.49, true], ["dp28", "A-", 0.54, true],
-    ["bar", "A-", 0.45, false], // est.
+    ["bar", "A-", 0.45, true], // est.; survev's main tables drop it (tier_guns, tier_chest, tier_lmgs, air drops)
     // snipers: AWM-S one-shots chest02 + helmet01 or less (180 x 0.62 x 0.925 = 103); SV-98 always 2 body hits vs lvl 1
     // (round 5, user report 33: the owner rates the Mosin "strong but not top, needs aim" like the AWM-S: A; it was B)
     ["awc", "S-aim", 0.14, true], ["sv98", "A+", 0.28, true], ["mosin", "A", 0.34, true], ["scout_elite", "B", 0.26, true],

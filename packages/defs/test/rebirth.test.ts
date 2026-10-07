@@ -53,12 +53,11 @@ describe("rebirth balance deviations", () => {
                 rebirth: FRAG_DECAL_TYPE,
             }),
         ]);
-        // the other deviations are the survev guns' wiki stats (survevGuns.test.ts) and survev's strobe strikeDelay
-        // (strobes.test.ts)
+        // the other deviations are the survev guns' wiki stats (survevGuns.test.ts); survev's strobe strikeDelay is
+        // already the generated one under survev balance (strobes.test.ts)
         expect(rebirthDeviations.filter((d) => d.id !== "explosion_frag").map((d) => `${d.id}.${d.field}`)).toEqual([
             "potato_lmg.barrelLength",
             "potato_lmgshot.throwPhysics.velZ",
-            "strobe.strikeDelay",
         ]);
     });
 

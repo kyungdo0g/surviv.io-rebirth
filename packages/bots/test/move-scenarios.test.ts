@@ -74,7 +74,11 @@ describe("MOVE scenarios", () => {
 
     it("an unarmed bot chased out of a house by an armed player goes elsewhere and does not come back", () => {
         const houses = mainGame().world.buildings.filter((b) => b.type === "house_red_01" || b.type === "house_red_02");
-        for (const s of [3, 4, 5]) {
+        // three red houses of main 12345 the bot walks into (survev's map generation moved them: at house 4, a
+        // house_red_01 at ori 1, the seed-15 bot explores the other way and never meets the player, so s = 7, house 1
+        // with seed 18, replaced it)
+        expect(houses.length).toBe(6);
+        for (const s of [3, 5, 7]) {
             const game = mainGame({ minPlayers: 99 });
             const hb = houses[s % houses.length];
             const def = getMapObjectDef(hb.type);

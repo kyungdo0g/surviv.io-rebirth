@@ -29,7 +29,7 @@ export interface NewGunEntry {
 
 interface NewGunData {
     ammo: Record<string, AmmoDef>;
-    /** the sheet's five pack sizes cut to the game's four (GameConfig.bagSizes has four levels) */
+    /** the sheet's five pack sizes (GameConfig.bagSizes has survev's five levels) */
     bagSizes: Record<string, number[]>;
     tracerColors: Record<string, TracerColor>;
     guns: Record<string, NewGunEntry>;

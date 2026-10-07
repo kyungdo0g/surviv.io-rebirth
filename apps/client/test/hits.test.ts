@@ -115,6 +115,11 @@ describe("tracer rules (survev bullet.ts)", () => {
         expect(tracerTint(colors, false, true)).toBe(2);
         expect(tracerTint(colors, true, true)).toBe(3);
         expect(tracerTint({ regular: 1, saturated: 2 }, true, false)).toBe(2);
+        // AP Rounds: the ammo's apSaturated colour first (survev bullet.ts:165-166), the usual rules without one
+        const ap = { ...colors, apSaturated: 4 };
+        expect(tracerTint(ap, true, true, true)).toBe(4);
+        expect(tracerTint(ap, false, false, true)).toBe(4);
+        expect(tracerTint(colors, false, true, true)).toBe(2);
     });
 
     it("whizzes on the listener's layer or when either is on stairs", () => {
@@ -181,6 +186,42 @@ describe("tracer rules (survev bullet.ts)", () => {
         expect(system.hits.pan).toBe(1);
         expect(system.hits.blood).toBe(0);
         expect(sounds).toContain((GameObjectDefs.pan as MeleeDef).sound.bullet);
+    });
+
+    it("passes a player's disguise, chipping it, but stops at the same obstacle undisguised (survev isSkin)", () => {
+        const barrel = (skinPlayerId?: number): ObstacleView => ({
+            id: 50,
+            kind: "obstacle",
+            type: "barrel_01",
+            pos: { x: 108, y: 100 },
+            layer: 0,
+            ori: 0,
+            scale: 1,
+            healthT: 1,
+            dead: false,
+            ...(skinPlayerId === undefined ? {} : { skinPlayerId }),
+        });
+        for (const [skin, blood] of [
+            [3, 1],
+            [undefined, 0],
+        ] as const) {
+            const { system } = tracers();
+            const behind = player(2, { x: 116, y: 100 });
+            const obstacle = barrel(skin);
+            const s = scene([player(1, { x: 98, y: 100 }), behind], {
+                forEachObstacle: (cb: (v: ObstacleView) => void) => cb(obstacle),
+            });
+            const chips: string[] = [];
+            const hitFx = (system as unknown as { hitFx: (p: string, ...rest: unknown[]) => void }).hitFx.bind(system);
+            (system as unknown as { hitFx: (p: string, ...rest: unknown[]) => void }).hitFx = (p, ...rest) => {
+                chips.push(p);
+                hitFx(p, ...rest);
+            };
+            system.addEvents([bullet(1, 1)], s);
+            run(system, s, 0.3);
+            expect(chips, `skin ${skin}`).toEqual(["barrelChip"]);
+            expect(system.hits.blood, `skin ${skin}`).toBe(blood);
+        }
     });
 
     it("draws at def speed x speedMult", () => {

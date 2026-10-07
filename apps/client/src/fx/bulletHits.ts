@@ -12,8 +12,18 @@ export function tracerWidth(base: number, e: Pick<BulletEvent, "splinter" | "thi
     return width;
 }
 
-/** Tracer tint (survev addBullet): saturated bullets, else the saturated colour on a bright floor, else regular. */
-export function tracerTint(colors: Record<string, number>, saturated: boolean, brightFloor: boolean): number {
+/**
+ * Tracer tint (survev addBullet, client bullet.ts:163-172): AP Rounds bullets take the ammo's apSaturated colour where
+ * it has one, else saturated bullets the chambered or saturated colour, else the saturated colour on a bright floor,
+ * else regular.
+ */
+export function tracerTint(
+    colors: Record<string, number>,
+    saturated: boolean,
+    brightFloor: boolean,
+    apRounds = false,
+): number {
+    if (apRounds && colors.apSaturated !== undefined) return colors.apSaturated;
     if (saturated) return colors.chambered ?? colors.saturated ?? colors.regular ?? 0xffffff;
     if (brightFloor) return colors.saturated ?? colors.regular ?? 0xffffff;
     return colors.regular ?? 0xffffff;

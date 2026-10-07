@@ -169,15 +169,23 @@ describe("underground navigation", () => {
 
     it("plans through narrow doorways: the storm bunker's entrance hut, a shack's door", () => {
         const storm = region("bunker_structure_03").portals[0];
-        expect(ground.component(ground.cellOf(storm.top as Vec2))).toBe(mainComp);
-        // the hut's door is 2.9 units wide: no cell centre is a full clearance from both jambs, its cells are tight
+        const top = storm.top as Vec2;
+        expect(ground.component(ground.cellOf(top))).toBe(mainComp);
+        // the hut's door is 2.9 units wide: no cell centre is a full clearance from both jambs, its cells (within 3
+        // cells of the stair top, inside the hut) are tight
         let tight = 0;
-        for (let y = 562; y <= 565; y++) for (let x = 564; x <= 567; x++) tight += ground.tight[y * ground.w + x];
+        const c = ground.cellOf(top);
+        const [cx, cy] = [c % ground.w, Math.floor(c / ground.w)];
+        for (let y = cy - 3; y <= cy + 3; y++) {
+            for (let x = cx - 3; x <= cx + 3; x++) tight += ground.tight[y * ground.w + x];
+        }
         expect(tight).toBeGreaterThan(0);
+        // a shack of another seed (found by type: map generation changes move the objects)
         const g1000 = cachedMap("main", 1000);
         const grid = new NavGrid(g1000.mapData);
-        const shack = g1000.objects.find((o) => o.type === "shack_01" && Math.abs(o.pos.x - 628.7) < 1)!;
+        const shack = g1000.objects.find((o) => o.type === "shack_01")!;
         const inside = grid.center(grid.nearestWalkable(shack.pos, 3));
-        expect(grid.reachable({ x: 600, y: 600 }, inside)).toBe(true);
+        const centre = grid.center(grid.nearestWalkable({ x: 360, y: 360 }, 30));
+        expect(grid.reachable(centre, inside)).toBe(true);
     });
 });

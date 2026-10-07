@@ -1,17 +1,19 @@
 // Strobes in the defs: the strobe's numbers against survev.wiki.gg (research-cache/wikigg/pages/Strobe.json, rev 7010)
-// and survev master, survev's strikeDelay applied over the original client's, and the rebirth variant strobes
-// (rebirth/strobes.ts, strobeLoot.ts; docs/research/rebirth-deviations.md "Variant strobes"): same throw physics,
-// their variant's colour, their own pings, bag rows after the original items, and loot only in the rare crates of the
-// modes that already drop strobes.
+// and survev master, survev's strikeDelay (ported by survev balance; applied over the original client's otherwise), and
+// the rebirth variant strobes (rebirth/strobes.ts, strobeLoot.ts; docs/research/rebirth-deviations.md "Variant
+// strobes"): same throw physics, their variant's colour, their own pings, bag rows after the original items, and loot
+// only in the rare crates of the modes that already drop strobes.
 import { describe, expect, it } from "vitest";
 import {
     AIRSTRIKE_PINGS,
     AIRSTRIKE_VARIANT_COLORS,
     AIRSTRIKE_VARIANTS,
     airstrikePingVariant,
+    applySurvevStrobe,
     dropsStrobeVariants,
     FACTION_STROBE_VARIANT_ROLL_SHARE,
     GameConfig,
+    type GameObjectDef,
     GameObjectDefs,
     GameObjectRegistry,
     getDefOfType,
@@ -28,6 +30,7 @@ import {
     STROBE_VARIANT_ROLL_SHARE,
     STROBE_VARIANT_TYPES,
     strobeStrikeOf,
+    type ThrowableDef,
 } from "../src/index.ts";
 import { gameObjects, mapObjects } from "./helpers.ts";
 
@@ -75,13 +78,15 @@ describe("the strobe (survev master, survev.wiki.gg)", () => {
         expect(gameObjects.strobe.strikeDelay).toBe(3);
         expect(STROBE_STRIKE_DELAY).toBe(3);
         expect(getDefOfType("throwable", "strobe").strikeDelay).toBe(3);
-        expect(rebirthDeviations.find((d) => d.id === "strobe")).toMatchObject({
-            field: "strikeDelay",
-            original: gameObjects.strobe.strikeDelay,
-            rebirth: 3,
-        });
-        // nothing else of the strobe changes
-        expect({ ...GameObjectDefs.strobe, strikeDelay: gameObjects.strobe.strikeDelay }).toEqual(gameObjects.strobe);
+        // so the rebirth layer changes nothing of the strobe and records no deviation
+        expect(rebirthDeviations.find((d) => d.id === "strobe")).toBeUndefined();
+        expect(GameObjectDefs.strobe).toEqual(gameObjects.strobe);
+        // were the generated strobe the original client's 2.5, the layer would apply survev's 3 s
+        const defs: Record<string, GameObjectDef> = { strobe: { ...gameObjects.strobe, strikeDelay: 2.5 } };
+        expect(applySurvevStrobe(defs)).toEqual([
+            expect.objectContaining({ id: "strobe", field: "strikeDelay", original: 2.5, rebirth: 3 }),
+        ]);
+        expect((defs.strobe as ThrowableDef).strikeDelay).toBe(3);
     });
 
     it("calls 3 normal strikes, 5 with Broken Arrow, 5 u apart (survev weaponManager.ts:1337-1362)", () => {

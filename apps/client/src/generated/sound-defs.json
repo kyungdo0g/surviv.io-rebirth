@@ -1592,8 +1592,18 @@
     "path": "audio/sfx/feather_01.mp3",
     "volume": 1
    },
+   "coconut_01": {
+    "path": "audio/sfx/coconut_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
    "egg_break_01": {
     "path": "audio/sfx/egg_break_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
+   "tomato_01": {
+    "path": "audio/sfx/tomato_01.mp3",
     "volume": 1,
     "source": "survev"
    },

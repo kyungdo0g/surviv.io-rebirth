@@ -18,7 +18,7 @@ import {
     SURVEV_ONLY_GUNS,
     WIKI_STAT_OVERRIDES,
 } from "../src/index.ts";
-import { gameObjects, PORTED_SURVEV_IDS, portPolicy, provenance, readOptionalJson } from "./helpers.ts";
+import { gameObjects, PORTED_SURVEV_IDS, portPolicy, provenance } from "./helpers.ts";
 
 type Pins = Readonly<Record<string, unknown>>;
 
@@ -347,7 +347,6 @@ describe("survev-only guns: stats", () => {
         expect(Object.keys(SKIN_WIKI).sort()).toEqual(Object.keys(SURVEV_GUN_SKINS).sort());
         const gaps = new Map(SKIN_WIKI_GAPS.map((g) => [`${g.id}.${g.field}`, g]));
         const seen = new Set<string>();
-        const closed = new Set<string>();
         for (const [skin, w] of Object.entries(SKIN_WIKI)) {
             const gun = getDefOfType("gun", skin);
             const base = getDefOfType("gun", SURVEV_GUN_SKINS[skin]);
@@ -376,46 +375,24 @@ describe("survev-only guns: stats", () => {
                 }
                 seen.add(key);
                 expect(gap.wikiRef, key).toContain(w.page.split(" rev ")[0]);
-                // option B (policy survevBalance) gives the base survev's value: the gap is closed
-                // (docs/handoff/survev-content.md: the lead drops these SKIN_WIKI_GAPS entries)
-                if (survevBalanced(SURVEV_GUN_SKINS[skin], field, base)) {
-                    closed.add(key);
-                    expect(ours, key).toEqual(wiki);
-                    continue;
-                }
-                // a listed gap: ours is the base's 0.8.82 value
+                // a listed gap: ours is the base's 0.8.82 value, which survev balance did not move
+                expect(survevBalanced(SURVEV_GUN_SKINS[skin], field, base), key).toBe(false);
                 expect([gap.wiki, gap.rebirth], key).toEqual([wiki, ours]);
                 expect(ours, key).not.toEqual(wiki);
             }
         }
         expect([...seen].sort()).toEqual([...gaps.keys()].sort());
-        expect([...closed].sort()).toEqual(
-            portPolicy.survevBalance
-                ? ["sv98_winter.headshotMult", "svd_winter.bullet.damage", "svd_winter.headshotMult"]
-                : [],
-        );
         expect(SKIN_WIKI_GAPS.map((g) => `${g.id}.${g.field}`)).toEqual([
             "svd_winter.barrelLength",
-            "svd_winter.headshotMult",
-            "svd_winter.bullet.damage",
             "sv98_winter.barrelLength",
-            "sv98_winter.headshotMult",
             "awc_winter.barrelLength",
         ]);
-        // the damage and headshot gaps are survev balance changes the port reverts on the base guns (balance.txt
-        // lines 61, 62, 93): the revert record holds the wiki's number as survev's
-        const revert: Array<{ target: string; forkValue: unknown; originalValue: unknown }> =
-            readOptionalJson("docs/research/provenance/balance-revert.json") ?? [];
-        for (const g of SKIN_WIKI_GAPS.filter((x) => x.field !== "barrelLength" && !closed.has(`${x.id}.${x.field}`))) {
-            const base = getDefOfType("gun", SURVEV_GUN_SKINS[g.id]);
-            const target = g.field.startsWith("bullet.")
-                ? `${base.bulletType}.${g.field.slice("bullet.".length)}`
-                : `${SURVEV_GUN_SKINS[g.id]}.${g.field}`;
-            expect(
-                revert.find((e) => e.target === target),
-                target,
-            ).toMatchObject({ forkValue: g.wiki, originalValue: g.rebirth });
-        }
+        // survev balance (policy survevBalance, ADR 0003 option B) closed the damage and headshot gaps: the base guns
+        // take survev's numbers, the wiki's (balance.txt lines 61, 62, 93)
+        expect(portPolicy.survevBalance).toBe(true);
+        expect(getDefOfType("gun", "svd").headshotMult).toBe(1.5);
+        expect(getDefOfType("gun", "sv98").headshotMult).toBe(1.25);
+        expect(getDefOfType("bullet", "bullet_svd").damage).toBe(37);
     });
 });
 

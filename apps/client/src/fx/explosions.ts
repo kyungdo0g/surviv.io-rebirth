@@ -1,9 +1,9 @@
 // Explosion effects (survev client/src/objects/explosion.ts; docs/research/mechanics/explosions.md): every
 // ExplosionEvent plays its def's `explosionEffectType`: a burst particle (the expanding fireball), scattered pieces for
-// snowballs and potatoes, the grass or water sound (sfx channel, range x2, muffled on another floor) and water
-// ripples, then shakes the camera for `shakeDur` seconds. Air strike bombs that burst under a roof show no visuals
-// (the original hides them indoors). Visuals go to the explosion's layer, so the renderer hides an explosion on the
-// other floor like every other object; its sound is halved and muffled there by the audio engine.
+// snowballs, potatoes, coconuts and tomatoes, the grass or water sound (sfx channel, range x2, muffled on another
+// floor) and water ripples, then shakes the camera for `shakeDur` seconds. Air strike bombs that burst under a roof
+// show no visuals (the original hides them indoors). Visuals go to the explosion's layer, so the renderer hides an
+// explosion on the other floor like every other object; its sound is halved and muffled there by the audio engine.
 // The scorch mark is a DecalView from the simulation (objects/decal.ts).
 // Rebirth (docs/research/rebirth-deviations.md "Client presentation"): the burst follows the def's blast radius, so an
 // explosion the rebirth layer resized (the frag grenade, x1.3) draws its burst that much bigger than the original
@@ -69,7 +69,10 @@ function fx(
 
 const scatter = (particle: string, count: number) => ({ particle, count, speed: [5, 25] as const });
 
-/** survev explosion.ts ExplosionEffectDefs (same values as the 0.8.82 client; potato_lmgshot is survev-only) */
+/**
+ * survev explosion.ts ExplosionEffectDefs (same values as the 0.8.82 client; potato_lmgshot, coconut and tomato are
+ * survev-only)
+ */
 const EFFECTS: Readonly<Record<string, EffectDef>> = {
     frag: fx("explosionBurst", 1, "explosion_01", "explosion_02", 10, [0.2, 0.35], 2),
     smoke: fx("explosionBurst", 0, "explosion_smoke_01", "explosion_smoke_01", 10, [0, 0], 6),
@@ -102,6 +105,9 @@ const EFFECTS: Readonly<Record<string, EffectDef>> = {
         scatter: { particle: "potato_smg_impact", count: 1, speed: [5, 20] as const },
     }),
     bomb_iron: fx("explosionBomb", 2, "explosion_01", "explosion_02", 12, [0.25, 0.4], 2),
+    // survev-only coconut and tomato throwables (survev client explosion.ts:672-715): a splat, no burst
+    coconut: fx("", 0.75, "coconut_01", "frag_water_01", 1, [0, 0], 1, { scatter: scatter("coconut_impact", 6) }),
+    tomato: fx("", 0.75, "tomato_01", "frag_water_01", 1, [0, 0], 1, { scatter: scatter("tomato_impact", 4) }),
     /**
      * Rebirth-only heavy air strike shell: the iron bomb's burst (scale 2 at its 14 u radius) grown to the heavy radius
      * (38 u: x2.7), a longer warm-tinted burst particle, more ripples, the iron bomb's boom 7 semitones lower, 1.5x as

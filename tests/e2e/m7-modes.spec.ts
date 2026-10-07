@@ -210,7 +210,8 @@ test.describe("korean", () => {
         }
         expect(names).toEqual(["스카우트", "저격수", "메딕", "폭파병", "돌격병", "장갑병"]);
         await page.locator('#ui-role-header .ui-role-option[data-role="healer"]').click();
-        await expect(page.locator(".ui-role-body-perk-name")).toHaveText(["전투 의무병", "윈드워크"]);
+        // survev roleDefs.ts healer: Field Medic + Combat Stimulants (survev balance; Windwalk in v0.8.82)
+        await expect(page.locator(".ui-role-body-perk-name")).toHaveText(["전투 의무병", "전투 각성제"]);
         await page.screenshot({ path: `${SCREENS}/ko-cobalt-menu.png` });
 
         await bootMode(page, "/?map=faction&team=4&dummies=1&loot=0&lang=ko");

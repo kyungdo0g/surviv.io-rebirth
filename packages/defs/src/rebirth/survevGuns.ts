@@ -37,11 +37,11 @@ export interface SkinWikiGap {
  * Not applied: the fields where the winter skins differ from survev.wiki.gg and survev's source (sweep of 2026-10-07;
  * every other infobox field matches). The wiki shows each skin as the "World image 2" of its base gun's page, and
  * survev builds it as its base plus that image (defineGunSkin, survev/shared/defs/gameObjects/gunDefs.ts:3643-3663),
- * so a skin hits like its base. Our base guns keep their 0.8.82 values, which survev rebalanced, until the owner
- * confirms option B of ADR 0003 point 3 (shared ids take survev's gameplay values). Giving only the skins the wiki's
- * numbers would put two different SVD-63s with one loot icon on the snow maps, which spawn both, and the SVD's damage
- * is in `bullet_svd`, which the base shares. Option B moves the base guns and closes every gap below.
- * packages/defs/test/survevGuns.test.ts fails when a gap closes or a new one appears, so this list stays exact.
+ * so a skin hits like its base. Survev balance (ADR 0003 option B, tools/port-survev/policy.json survevBalance) gives
+ * the base guns survev's gameplay values, which closed the SVD's headshot multiplier and `bullet_svd` damage and the
+ * SV-98's headshot multiplier; what is left is the barrel length, presentation the bases keep from the original
+ * client (survev lengthened the barrels). packages/defs/test/survevGuns.test.ts fails when a gap closes or a new one
+ * appears, so this list stays exact.
  */
 export const SKIN_WIKI_GAPS: readonly SkinWikiGap[] = [
     {
@@ -53,36 +53,12 @@ export const SKIN_WIKI_GAPS: readonly SkinWikiGap[] = [
         survevRef: "survev/shared/defs/gameObjects/gunDefs.ts:1681",
     },
     {
-        id: "svd_winter",
-        field: "headshotMult",
-        wiki: 1.5,
-        rebirth: 2,
-        wikiRef: "wikigg/SVD-63 (rev 7355): Headshot multiplier = 1.5",
-        survevRef: "survev/shared/defs/gameObjects/gunDefs.ts:1688",
-    },
-    {
-        id: "svd_winter",
-        field: "bullet.damage",
-        wiki: 37,
-        rebirth: 36,
-        wikiRef: "wikigg/SVD-63 (rev 7355): Damage = 37",
-        survevRef: "survev/shared/defs/gameObjects/bulletDefs.ts:200",
-    },
-    {
         id: "sv98_winter",
         field: "barrelLength",
         wiki: 4.1,
         rebirth: 3.5,
         wikiRef: "wikigg/SV-98 (rev 7360): Barrel length = 4.1",
         survevRef: "survev/shared/defs/gameObjects/gunDefs.ts:1533",
-    },
-    {
-        id: "sv98_winter",
-        field: "headshotMult",
-        wiki: 1.25,
-        rebirth: 1.5,
-        wikiRef: "wikigg/SV-98 (rev 7360): Headshot multiplier = 1.25",
-        survevRef: "survev/shared/defs/gameObjects/gunDefs.ts:1540",
     },
     {
         id: "awc_winter",

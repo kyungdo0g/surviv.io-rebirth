@@ -4,7 +4,8 @@
 // Sounds the game objects name (gun, melee and throwable `sound` fields) that the original lists lack, i.e. those of
 // the survev-only items the port takes (tools/port-survev/policy.json), come from survev's own list
 // (.survev/client/src/soundDefs.ts) with `source: "survev"`; so do the sounds survev's map objects name (buildings,
-// music, sound emitters) and survev-only sound groups (egg hits).
+// music, sound emitters) and survev-only sound groups (egg hits), plus the client effect sounds no def names
+// (EFFECT_SOUNDS).
 // Usage (repo root): node apps/client/scripts/sound-defs.ts [research-cache/live/app.<hash>.js]
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -16,6 +17,11 @@ const OUT = "apps/client/src/generated/sound-defs.json";
 const DEFS = "packages/defs/src/generated/gameObjects.json";
 const MAP_OBJECTS = "packages/defs/src/generated/mapObjects.json";
 const SURVEV_SOUNDS = ".survev/client/src/soundDefs.ts";
+/**
+ * Sounds the client's own effects play that no game or map object def names: survev's coconut and tomato explosion
+ * effects (survev client/src/objects/explosion.ts:672-715; apps/client/src/fx/explosions.ts).
+ */
+const EFFECT_SOUNDS = ["coconut_01", "tomato_01"];
 /** where the audio files live: the imported client assets, else the survev clone they are copied from */
 const AUDIO_ROOTS = ["apps/client/public/assets", ".survev/client/public"];
 
@@ -78,7 +84,7 @@ for (const [list, sounds] of Object.entries(mod.Sounds)) {
     }
 }
 // sounds the game objects name that no original list has: survev's definition (survev-only items)
-const named = new Set<string>();
+const named = new Set<string>(EFFECT_SOUNDS);
 for (const def of Object.values(JSON.parse(readFileSync(DEFS, "utf8")) as Record<string, { sound?: object }>)) {
     for (const v of Object.values(def.sound ?? {})) if (typeof v === "string" && v) named.add(v);
 }

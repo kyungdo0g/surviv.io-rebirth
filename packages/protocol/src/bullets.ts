@@ -7,7 +7,8 @@
 // sourceType 10, pos mapPos, dir 10+10, layer 2, maxDist float 0..1024 16 bits, reflectCount 2, hitPlayer bit,
 // hasEnd bit [+ endDist float 0..1024 16 bits], shotFx bit, offHand bit, then (M7a) the original special-fx flags
 // trailSaturated, trailThick and splinter (trailSmall is implied by splinter) as 3 bits, then (M9) hasSpeedMult bit
-// [+ speedMult float 0..4 10 bits]: the tracer speed factor (the original sent speedMult and varianceT instead).
+// [+ speedMult float 0..4 10 bits]: the tracer speed factor (the original sent speedMult and varianceT instead), then
+// (schema 15) survev's apRounds bit (AP Rounds tracer colour; survev shared/net/updateMsg.ts bullet apRounds).
 import type { BitReader, BitWriter } from "@rebirth/core";
 import type { BulletEvent } from "@rebirth/sim";
 import { NetLimits } from "./constants.ts";
@@ -76,6 +77,7 @@ export function writeBullets(w: BitWriter, ctx: NetCtx, bullets: readonly Bullet
         const hasSpeedMult = Math.abs(speedMult - 1) > 1e-9;
         w.writeBoolean(hasSpeedMult);
         if (hasSpeedMult) w.writeBits(quantize(speedMult, 0, MAX_SPEED_MULT, SPEED_MULT_BITS), SPEED_MULT_BITS);
+        w.writeBoolean(!!bl.apRounds);
     }
 }
 
@@ -114,6 +116,7 @@ export function readBullets(r: BitReader, ctx: NetCtx): BulletEvent[] {
             speedMult: r.readBoolean()
                 ? dequantize(r.readBits(SPEED_MULT_BITS), 0, MAX_SPEED_MULT, SPEED_MULT_BITS)
                 : 1,
+            apRounds: r.readBoolean(),
         };
         if (endDist !== undefined) event.endDist = endDist;
         out.push(event);

@@ -69,7 +69,8 @@ interface MeleeObstacle {
 
 /**
  * Obstacles a melee probe can be blocked by on pos -> pos + dir * len (survev collisionHelpers.intersectSegment):
- * collidable, not windows, at least `height` tall, on `layer`. Returns the nearest hit's id and distance.
+ * collidable (a player's disguise never is: survev client obstacle.ts `collidable = def.collidable && !isSkin`), not
+ * windows, at least `height` tall, on `layer`. Returns the nearest hit's id and distance.
  */
 function firstBlocker(
     obstacles: readonly MeleeObstacle[],
@@ -82,7 +83,8 @@ function firstBlocker(
     const end = { x: pos.x + dir.x * len, y: pos.y + dir.y * len };
     let best: { id: number; dist: number } | null = null;
     for (const o of obstacles) {
-        if (o.view.dead || !o.def.collidable || o.def.isWindow || o.def.height < height) continue;
+        if (o.view.dead || o.view.skinPlayerId !== undefined || !o.def.collidable || o.def.isWindow) continue;
+        if (o.def.height < height) continue;
         if (!sameLayer(o.view.layer, layer)) continue;
         const res = collider.intersectSegment(o.col, pos, end);
         if (!res) continue;
@@ -426,9 +428,9 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         }> = [];
         for (const o of near) {
             const { view, def: odef } = o;
-            if (view.dead || odef.height < GameConfig.player.meleeHeight || !sameLayer(view.layer, player.layer & 1)) {
-                continue;
-            }
+            // a player's disguise takes no melee hit (survev client player.ts:2353 `obstacle.dead || obstacle.isSkin`)
+            if (view.dead || view.skinPlayerId !== undefined) continue;
+            if (odef.height < GameConfig.player.meleeHeight || !sameLayer(view.layer, player.layer & 1)) continue;
             const res = collider.intersect(circle, o.col);
             if (!res) continue;
             if (def.cleave) {
