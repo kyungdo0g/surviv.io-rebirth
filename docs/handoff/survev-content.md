@@ -19,7 +19,7 @@ may not touch, the schema number used and open questions.
 | 2 | gear / perks / roles (backpack04, 5-level bags, 6 more perks, captain, classless) | done | see `git log --grep "stage 2"` |
 | 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | done | see `git log --grep "stage 3"` |
 | 3d | 50v50 buildings and structures (added scope from the lead, owner priority) | done | see `git log --grep "50v50"` |
-| 4 | cosmetics (outfits, emotes, heal / boost effects) | 4a defs + loot done; 4b loadout next | see `git log --grep "stage 4"` |
+| 4 | cosmetics (outfits, emotes, heal / boost effects) | 4a defs + loot done; 4b loadout on hold (open question) | see `git log --grep "stage 4"` |
 | 5 | balance option B (no balance revert for shared gameplay fields) | planned | |
 
 ### Stage 1 details
@@ -237,6 +237,14 @@ player emitters still hard-code `heal_basic` / `boost_basic`; once stage 4b send
 
 ## Open questions
 
+- Loadout (stage 4b, on hold): the original and survev both validate a guest's loadout against `unlock_default`
+  (survev player.ts:4295-4340 `setLoadout(..., useDefaultUnlocks)`), which unlocks only `outfitBase`, `fists`,
+  `heal_basic`, `boost_basic`, 15 crosshairs and the emotes (survev's list adds its 19 new emotes and drops
+  `emote_flagisrael`). With no accounts, a loadout menu would only change emotes; survev's outfits stay world loot and
+  the heal / boost effects stay unused. Options: (a) guest rules as survev: an emote / crosshair picker only (crosshair
+  is the lead's settings UI); (b) rebirth deviation "everything unlocked": a full loadout menu (outfit, melee, heal,
+  boost, emotes) with the Join message's survev loadout fields and per-player heal / boost emitters. Needs the owner's
+  call (rebirth-deviations.md is the lead's).
 - Cookable flags: the plan (section 2.3) proposed survev's source values; ADR 0003 point 4 and this wave's brief say
   the wiki wins, so the wiki's apply. Flip `WIKI_SPEC_OVERRIDES` if the owner prefers the source.
 - English name of `cutlass_gold`: survev's en.json says "Cutlass Gold" (used, the presentation source for survev-only
