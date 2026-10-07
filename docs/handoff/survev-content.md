@@ -166,6 +166,10 @@ may not touch, the schema number used and open questions.
   drawn over the wearer at the wearer's interpolated position (`objects/world.ts anchorOf`, `objects/obstacle.ts`),
   no sight or aim-line blocking. Tests: `packages/sim/test/disguise.test.ts`, `packages/protocol/test/disguise.test.ts`,
   `tests/e2e/survev-disguise.spec.ts`. Lead patch: section 11.
+- Wiki audit finished (32 pages of the Buildings navbox, every tab and linked page): what is left is wiki-vs-survev
+  (survev wins: Oven count, Potato spring hardstone, river cache modes, Camp on Winter classic), quest-only data (River
+  Town `goreRegion`, hardstone quest tracking: out of scope) and the Cloud Bunker lab door's unlock sound (the original
+  def has none; presentation stays the original's).
 - Showcase: `river_town_01` added (faction, on a 20-wide river); 140 entries. Spawn spots now start at the object's
   bounds (front first), so wide buildings are on screen.
 - Checked and left as is: River Town's `goreRegion` (survev uses it only for quests: out of scope); faction crates'
