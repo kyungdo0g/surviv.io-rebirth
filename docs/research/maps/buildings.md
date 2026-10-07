@@ -386,6 +386,7 @@
 - Kopje patch: 2 cloud crates, 2 crates, 4 corner crates at 75 %, 3 savannah stones, 3 acacias, 4 savannah trees and 6 kopje brushes [src:survev/shared/defs/mapObjects/buildings/modeBuildingDefs.ts:4286] [src:fandom/Kopje_Patch] [H]
 - Fandom counts 4 kopje brushes and 3 kopje patches per map; survev has 6 brushes per patch and 2/3 patches [src:fandom/Kopje_Patch] [src:survev/shared/defs/maps/savannahDefs.ts:288] [L]
 - Hunting perch: destructible (roof falls after 5 walls), no zoom region so the player keeps their scope, one `loot_tier_1` [src:survev/shared/defs/mapObjects/buildings/modeBuildingDefs.ts:4475] [src:fandom/Hunting_Perch] [H]
+- Hunting perch roof residue: the original def names `map-perch-res.img`, which the original client does not ship; survev's def names the shipped `map-perch-res-01.img`, so `perch_01` takes survev's def (`tools/port-survev/policy.json` survevMapObjects) [src:survev/shared/defs/mapObjects/buildings/modeBuildingDefs.ts:4475] [src:kong/relaunch-client-defs] [H]
 - survev had no own savannah spawn table before 2025-08, so the savannah counts are the fork's reconstruction [src:balance/220] [src:derived/git-ae55c9a8] [M]
 
 ## Woods map

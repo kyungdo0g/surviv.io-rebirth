@@ -151,6 +151,9 @@ may not touch, the schema number used and open questions.
   art). All three now take survev's def (`survevMapObjects`); main 12345 golden `e6817bd488ca1b1a`. Test:
   `survevBuildings.test.ts` "the Chrysanthemum bunker's planter vault". Loot differences the audit found (saloon
   crimson .50s, hatchet case, cattle crate, chrys scopes, DEagle cases) are balance reverts: stage 5.
+- Wiki description audit (second half): `perch_01`'s roof residue named `map-perch-res.img`, which the original
+  client lacks (the collapsed perch drew nothing); survev's def names the original `map-perch-res-01.img`, so
+  `perch_01` takes survev's def too (`survevMapObjects`).
 - Showcase: `river_town_01` added (faction, on a 20-wide river); 140 entries. Spawn spots now start at the object's
   bounds (front first), so wide buildings are on screen.
 - Checked and left as is: River Town's `goreRegion` (survev uses it only for quests: out of scope); faction crates'
@@ -224,6 +227,10 @@ so the bot tests that pin object ids or coordinates of that map fail:
   `bunker_structure_05` is id 209).
 - 50v50 stage: faction maps changed too (team crates on their sides, 32 apart); bot tests pinning faction coordinates
   need the same re-pin.
+- Stage 5 (survev balance): `perception.intel.test.ts` (3 tests) hard-codes the M9 round at 12 damage; survev's
+  `bullet_m9.damage` is 13 (the misses are exactly 13/12). Patch: `m9Hit` uses `13 * (1 - 0.3 * (dist / 100))` (or
+  `getDef("bullet_m9").damage`) and line 39 expects `13 * (0.85 + 0.15 * 2)`. With these, 10 bot tests fail on this
+  branch, all listed here.
 
 ### 5. Survev building particles (`apps/client/src/fx/particleDefs*.ts`, lead-owned)
 

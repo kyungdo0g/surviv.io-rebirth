@@ -38271,8 +38271,7 @@
               "max": {
                 "x": 4.25,
                 "y": 5
-              },
-              "height": 0
+              }
             },
             {
               "type": 1,
@@ -38283,8 +38282,7 @@
               "max": {
                 "x": 6.25,
                 "y": 2
-              },
-              "height": 0
+              }
             },
             {
               "type": 1,
@@ -38295,8 +38293,7 @@
               "max": {
                 "x": -3.75,
                 "y": 2
-              },
-              "height": 0
+              }
             }
           ]
         }
@@ -38328,7 +38325,7 @@
         "wallCount": 5,
         "particleCount": 15,
         "particle": "shackGreenBreak",
-        "residue": "map-perch-res.img"
+        "residue": "map-perch-res-01.img"
       }
     },
     "mapObjects": [

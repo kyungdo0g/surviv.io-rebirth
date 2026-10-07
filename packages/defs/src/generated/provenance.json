@@ -120,7 +120,8 @@
       "vault_door_chrys_01",
       "tree_01x",
       "tree_13",
-      "bunker_structure_09"
+      "bunker_structure_09",
+      "perch_01"
     ],
     "survevBalance": true
   },
@@ -1246,7 +1247,7 @@
     "outhouse_01": "original",
     "outhouse_01x": "original",
     "outhouse_02": "original",
-    "perch_01": "original",
+    "perch_01": "survev-override",
     "brick_wall_ext_1": "original",
     "brick_wall_ext_2": "original",
     "brick_wall_ext_3": "original",
@@ -17266,37 +17267,6 @@
           "max": {
             "x": 5.5,
             "y": 7.9
-          }
-        }
-      ]
-    },
-    {
-      "id": "perch_01",
-      "field": "mapObstacleBounds",
-      "original": [
-        {
-          "type": 1,
-          "min": {
-            "x": -7,
-            "y": -8
-          },
-          "max": {
-            "x": 7,
-            "y": 8
-          },
-          "height": 0
-        }
-      ],
-      "survev": [
-        {
-          "type": 1,
-          "min": {
-            "x": -7,
-            "y": -8
-          },
-          "max": {
-            "x": 7,
-            "y": 8
           }
         }
       ]
