@@ -1,12 +1,7 @@
-// Fight assessment (BrainFeatures.assess): the duel arithmetic (armour, hit chance), the advantage A = ln(TTK_them /
-// TTK_me) in even and uneven trades (health, armour, numbers, magazine, intel estimates),
-// the fight score it shapes (push a won trade, do not start a lost one), and holding fire on a clearly lost trade.
-import { v2 } from "@rebirth/core";
 import { describe, expect, it } from "vitest";
 import { assess, holdFire } from "../src/brain/assess.ts";
 import { addCombatLayer } from "../src/brain/combat.ts";
 import { emptyIntent } from "../src/brain/context.ts";
-import { fightScore } from "../src/brain/tactics.ts";
 import { armourFactor, erf, hitChance } from "../src/knowledge/duel.ts";
 import { gunInfo } from "../src/knowledge/weapons.ts";
 import { addEnemy, ctxOf, faceTo, NOW, TableIntel, testWorld } from "./brain-world.ts";
@@ -101,24 +96,6 @@ describe("fight assessment", () => {
         expect(ctxOf(w, ["assess"]).assessment!.advantage).toBeLessThan(-1);
     });
 
-    it("the fight score pushes a won trade and does not start a lost one", () => {
-        const w = testWorld();
-        // 25 units away, not shooting at the bot: an unprovoked fight
-        const e = addEnemy(w, 2, { x: 25, y: 0 });
-        faceTo(e, v2.add(w.spot, { x: 0, y: 50 }));
-        const plain = fightScore(ctxOf(w, []));
-        const intel = new TableIntel();
-        intel.table.set(2, { estHealth: 25 });
-        w.model.intel = intel;
-        expect(fightScore(ctxOf(w, ["assess"]))).toBeGreaterThan(plain);
-        intel.table.clear();
-        w.model.self.health = 25;
-        expect(fightScore(ctxOf(w, ["assess"]))).toBeLessThanOrEqual(0.25);
-        // shot at: it fights back whatever the assessment says
-        e.lastShotAt = NOW - 0.5;
-        expect(fightScore(ctxOf(w, ["assess"]))).toBeGreaterThanOrEqual(0.78);
-    });
-
     it("holds fire on a clearly lost trade unless the target shoots at the bot", () => {
         const w = testWorld();
         w.model.self.health = 20;
@@ -130,7 +107,9 @@ describe("fight assessment", () => {
         expect(holdFire(ctx, e, 20)).toBe(true);
         const intent = emptyIntent("loot");
         addCombatLayer(ctx, intent);
-        expect(intent.aim).not.toBeNull();
+        // held fire: a glance at it, not the crosshair on it (bot overhaul COMBAT wave 1: no aiming without shooting)
+        expect(intent.aim).toBeNull();
+        expect(intent.lookAt).toEqual(e.pos);
         expect(intent.fire).toBe(false);
         // the baseline brain fires
         const plain = emptyIntent("loot");

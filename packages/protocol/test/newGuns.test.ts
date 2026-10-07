@@ -45,9 +45,10 @@ function roundTrip<T>(write: (w: BitWriter) => void, read: (r: BitReader) => T):
     return out;
 }
 
-describe("new guns on the wire (schema 11)", () => {
+describe("new guns on the wire (schema 12 and later)", () => {
     it("their game type ids follow the rebirth air strike shell; every id fits the 10 type bits", () => {
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(11);
+        // 12: the new guns (11 was the hit feedback's Hits section on another branch)
+        expect(PROTOCOL_SCHEMA_VERSION).toBeGreaterThanOrEqual(12);
         const after = GameObjectRegistry.typeToId("explosion_bomb_heavy");
         const ids = Object.keys(newGunDefs());
         for (const [i, id] of ids.entries()) expect(GameObjectRegistry.typeToId(id), id).toBe(after + 1 + i);

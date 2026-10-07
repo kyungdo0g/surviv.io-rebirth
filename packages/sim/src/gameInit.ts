@@ -1,4 +1,5 @@
-// Construction options of a Game (tests, tools, the client's loopback and the server's rooms), apart from game.ts.
+// Construction options of a Game (tests, tools, the client's loopback and the server's rooms) and the default start
+// condition, kept apart from game.ts so the simulation class stays readable; index.ts exports both.
 import type { GasStage } from "@rebirth/defs";
 import type { GenerateMapResult } from "./mapgen/generate.ts";
 

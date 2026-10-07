@@ -8,6 +8,8 @@
 //   lasts 4.25 s and fades out in 0.1 s; one ping per group member at a time; the pinger sees no edge arrow for its own
 //   ping; its sound plays at full volume. The minimap marker is added by the caller (MapIndicators.addPlayerPing).
 // Everything is drawn in screen space over the world (survev draws emotes on the top layer, pings in the UI layer).
+// An emote of a player on another floor shows only as much as that floor does (survev emote.ts:1088-1092 draws it on
+// the player's layer then): none from the surface while the viewer is underground, none from a bunker on the surface.
 import { GameConfig, GameObjectDefs } from "@rebirth/defs";
 import type { EmoteEvent } from "@rebirth/sim";
 import { type Container, Container as PixiContainer, Sprite } from "pixi.js";
@@ -84,6 +86,8 @@ export interface EmoteFxFrame {
     camera: Camera;
     /** drawn position of a living player in view, else null */
     player(id: number): EmotePlayer | null;
+    /** how visible (0-1) something on a map layer is to the viewer (renderer.visibility); fully when omitted */
+    visibility?(layer: number): number;
 }
 
 export class EmoteFx {
@@ -145,6 +149,11 @@ export class EmoteFx {
             own: false,
             type: "",
         };
+    }
+
+    /** the containers of the live emote bubbles (tests) */
+    get bubbleContainers(): Container[] {
+        return this.bubbles.filter((b) => b.alive).map((b) => b.container);
     }
 
     /** bubbles on screen (tests) */
@@ -271,7 +280,8 @@ export class EmoteFx {
             const s = scale * EMOTE_BASE_SCALE * Math.min(Math.max(zoom, 0.9), 1.75);
             b.container.position.set(screen.x, screen.y);
             b.container.scale.set(s);
-            b.container.visible = b.alive;
+            b.container.alpha = frame.visibility ? frame.visibility(target.layer) : 1;
+            b.container.visible = b.alive && b.container.alpha > 0;
         }
         this.updatePings(frame.dt, cam);
     }

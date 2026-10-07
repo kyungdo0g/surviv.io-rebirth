@@ -1,9 +1,11 @@
 import { existsSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
     chooseSprites,
     formatManifest,
     type OriginalFrame,
+    posixRelative,
     type Size,
     SURVEV_PUBLIC,
     scaleSize,
@@ -11,6 +13,13 @@ import {
 } from "./sources.ts";
 
 describe("sprite sources", () => {
+    it("lists survev's files with / separators on Windows too (the manifest, URLs and patterns use /)", () => {
+        const pub = "C:\\rebirth\\.survev\\client\\public";
+        expect(posixRelative(pub, `${pub}\\img\\map\\map-tree-01.svg`, path.win32)).toBe("img/map/map-tree-01.svg");
+        expect(posixRelative(pub, `${pub}\\audio\\sfx\\frag_01.mp3`, path.win32)).toBe("audio/sfx/frag_01.mp3");
+        expect(posixRelative("/r/public", "/r/public/img/map/a.svg", path.posix)).toBe("img/map/a.svg");
+    });
+
     it("scales by the original frame's logical size unless the vector has other proportions", () => {
         // a ceiling the original stored at 0.75: the defs' scale is relative to the shrunk size
         expect(scaleSize([960, 864], [720, 648], true)).toEqual([720, 648]);

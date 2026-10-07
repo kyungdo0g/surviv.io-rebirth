@@ -29,7 +29,10 @@ services:
             MAX_GAMES: "${MAX_GAMES:-16}"
             MIN_PLAYERS: "${MIN_PLAYERS:-2}"
             BOT_FILL: "${BOT_FILL:-0}"
-            BOT_DIFFICULTY: "${BOT_DIFFICULTY:-normal}"
+            # mixed: skill tiers drawn 35/45/20 beginner/intermediate/expert (BOT_SKILL_MIX), personas on (docs/deploy.md)
+            BOT_DIFFICULTY: "${BOT_DIFFICULTY:-mixed}"
+            BOT_SKILL_MIX: "${BOT_SKILL_MIX:-}"
+            BOT_PERSONAS: "${BOT_PERSONAS:-}"
             # this server's region id and the other regions' servers (kr=https://kr.example.com,eu=...; docs/deploy.md)
             REGION: "${REGION:-local}"
             REGION_SERVERS: "${REGION_SERVERS:-}"

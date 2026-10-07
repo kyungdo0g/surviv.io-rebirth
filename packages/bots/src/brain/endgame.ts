@@ -7,7 +7,14 @@
 // in the utility choice; standing still under fire loses), the gas and healing still win, and 30 s without an enemy in
 // sight give looting and exploring 8 s. In team modes followers hold within 30 units of their leader (team.ts onLeash):
 // a team spread over four endgame spots fights the last squad one at a time.
+// BrainFeatures.pursuit (critique C8, persona campiness): a persona that camps (rolled once per bot from its
+// campiness on the persona stream) holds three times as long before a break, but only with a B+ gun or better and
+// armour (persona.ts mayCamp): the zone still comes first (spots are inside the next circle), and an under-armed camper
+// keeps moving.
 import { type Vec2, v2 } from "@rebirth/core";
+import { hasAmmo } from "../knowledge/arsenal.ts";
+import { gunRank } from "../knowledge/gunTiers.ts";
+import { mayCamp } from "../persona.ts";
 import { addCombatLayer, obstacleGeom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent, nearFailedGoal, reachable } from "./context.ts";
 import { onLeash } from "./team.ts";
@@ -26,6 +33,28 @@ const QUIET_CAP = 30;
 const QUIET_BREAK = 8;
 /** An enemy seen this recently ends the hold (the fight takes over). */
 const ENEMY_RECENT = 3;
+/** pursuit: a camping persona's quiet cap is this many times QUIET_CAP. */
+const CAMP_FACTOR = 3;
+
+/** pursuit: whether this bot camps its hold (persona campiness rolled once, a B+ gun or better and armour). */
+export function camps(ctx: BrainCtx): boolean {
+    const p = ctx.persona;
+    if (!ctx.features.pursuit || p.campiness <= 0) return false;
+    const pm = ctx.mem.pursuit;
+    if (pm.camper === null) pm.camper = ctx.personaRng.next() < p.campiness;
+    if (!pm.camper) return false;
+    let best = "";
+    let rank = -1;
+    for (const g of ctx.guns) {
+        if (!hasAmmo(g)) continue;
+        const r = gunRank(g.info.id);
+        if (r > rank) {
+            rank = r;
+            best = g.info.id;
+        }
+    }
+    return mayCamp(p, best, !!ctx.self.chest || !!ctx.self.helmet);
+}
 
 /**
  * Endgame conditions: a small next circle, or few players left once the circles have closed in somewhat (with a huge
@@ -108,8 +137,9 @@ export function holdScore(ctx: BrainCtx): number {
     // never camp forever: a long quiet hold makes room for looting and exploring for a while
     if (ctx.enemies.some((e) => ctx.now - e.lastSeen < 1)) sm.holdQuietSince = ctx.now;
     if (!Number.isFinite(sm.holdQuietSince)) sm.holdQuietSince = ctx.now;
-    if (ctx.now - sm.holdQuietSince > QUIET_CAP + QUIET_BREAK) sm.holdQuietSince = ctx.now;
-    if (ctx.now - sm.holdQuietSince > QUIET_CAP) return 0;
+    const cap = camps(ctx) ? QUIET_CAP * CAMP_FACTOR : QUIET_CAP;
+    if (ctx.now - sm.holdQuietSince > cap + QUIET_BREAK) sm.holdQuietSince = ctx.now;
+    if (ctx.now - sm.holdQuietSince > cap) return 0;
     return HOLD_SCORE;
 }
 

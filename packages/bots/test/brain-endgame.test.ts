@@ -5,7 +5,19 @@ import { v2 } from "@rebirth/core";
 import { describe, expect, it } from "vitest";
 import { endgameActive, holdScore, holdSpotScore, planHold } from "../src/brain/endgame.ts";
 import { healScore } from "../src/brain/survival.ts";
-import { addEnemy, addObstacle, brainOf, ctxOf, FixedBoard, faceTo, NOW, setGas, testWorld } from "./brain-world.ts";
+import { PERSONAS } from "../src/persona.ts";
+import {
+    addEnemy,
+    addObstacle,
+    brainOf,
+    ctxOf,
+    FixedBoard,
+    faceTo,
+    giveGun,
+    NOW,
+    setGas,
+    testWorld,
+} from "./brain-world.ts";
 
 describe("endgame", () => {
     it("applies with ten players or fewer in a closing zone, or a next circle under 80 units", () => {
@@ -90,6 +102,28 @@ describe("endgame", () => {
         expect(holdScore(brain.context(NOW + 29))).toBeGreaterThan(0.45);
         expect(holdScore(brain.context(NOW + 31))).toBe(0);
         expect(holdScore(brain.context(NOW + 39))).toBeGreaterThan(0.45);
+    });
+
+    it("a camping persona with a good gun and armour holds three times as long (pursuit)", () => {
+        const w = testWorld();
+        setGas(w, { x: 10, y: 0 }, 60);
+        addObstacle(w, { x: 12, y: 0 });
+        giveGun(w, 0, "ak47");
+        w.model.self.chest = "chest02";
+        const camper = { ...PERSONAS.camper, campiness: 1 };
+        const brain = brainOf(w, ["endgame", "pursuit"], "normal", 1, { persona: camper });
+        expect(holdScore(brain.context(NOW))).toBeGreaterThan(0.45);
+        expect(holdScore(brain.context(NOW + 60))).toBeGreaterThan(0.45);
+        expect(holdScore(brain.context(NOW + 91))).toBe(0);
+        // without armour it keeps moving like anyone (and the neutral bot never camps)
+        w.model.self.chest = "";
+        const bare = brainOf(w, ["endgame", "pursuit"], "normal", 1, { persona: camper });
+        holdScore(bare.context(NOW));
+        expect(holdScore(bare.context(NOW + 31))).toBe(0);
+        w.model.self.chest = "chest02";
+        const neutral = brainOf(w, ["endgame", "pursuit"]);
+        holdScore(neutral.context(NOW));
+        expect(holdScore(neutral.context(NOW + 31))).toBe(0);
     });
 
     it("once the zone is gone, heals and boosts in the gas to outlast the others", () => {

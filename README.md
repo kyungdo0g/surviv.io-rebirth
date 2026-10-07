@@ -11,13 +11,15 @@ targeting the original v0.8.82 (December 2019).
 
 ## Play locally
 
-Requirements: Node 22.18+ and pnpm 10 (`corepack enable`).
+Requirements: Node 22.18+, pnpm 10 (`corepack enable`, on Windows in a terminal run as administrator, or
+`npm install -g pnpm@10`) and git for the original art. The commands are the same in bash, zsh, PowerShell and cmd.exe:
 
 ```sh
 pnpm install
-pnpm survev:fetch && pnpm assets   # the original art and audio (optional, not in this repository; needs git + network)
-pnpm server                        # game server on http://127.0.0.1:8001 (restarts on changes)
-pnpm dev                           # client dev server on http://127.0.0.1:5173 (proxies /api, /play, /team_v2)
+pnpm survev:fetch   # optional, with the next line: the original art and audio (not in this repository; git + network)
+pnpm assets         # copies them into apps/client/public/assets
+pnpm server         # game server on http://127.0.0.1:8001 (restarts on changes)
+pnpm dev            # in a second terminal: client dev server on http://127.0.0.1:5173 (proxies /api, /play, /team_v2)
 ```
 
 Then open:
@@ -27,9 +29,12 @@ Then open:
 - <http://127.0.0.1:5173/?net=1&name=alice> — straight into a solo game on the server (`&mode=2` or `&mode=4` for duo /
   squad, `&server=http://host:8001` for another server).
 
-Open a second browser tab to have an opponent, or let bots fill the games: `BOT_FILL=20 BOT_DIFFICULTY=mixed pnpm server`
-(bots join one by one until a game holds 20 players; a human takes a bot's seat when it joins). A match starts when
-two players (`MIN_PLAYERS`) have been alive for 10 seconds.
+Open a second browser tab to have an opponent, or let bots fill the games: `BOT_FILL=20 pnpm server`
+(bots join one by one until a game holds 20 players; a human takes a bot's seat when it joins; on Windows see
+[Environment variables on Windows](#environment-variables-on-windows)). Bots default to `BOT_DIFFICULTY=mixed`: 35%
+beginner, 45% intermediate and 20% expert bots, each with a persona; `BOT_SKILL_MIX`, `BOT_PERSONAS`, the single tiers
+and the legacy `easy`/`normal`/`hard` presets are in docs/deploy.md. A match starts when two players (`MIN_PLAYERS`)
+have been alive for 10 seconds.
 
 Without `pnpm assets` everything works with placeholder graphics and no sound.
 
@@ -72,6 +77,24 @@ icons and sounds come from the owner's gitignored `assets-user/` (`pnpm assets`,
 alone), with original guns' icons and sounds wherever a file is missing. Every variable is listed in
 [`docs/deploy.md`](docs/deploy.md#environment-variables).
 
+### Environment variables on Windows
+
+The examples here set server variables the POSIX way, in front of the command (`BOT_FILL=20 pnpm server`). PowerShell
+and cmd.exe set them for the terminal window first, then run the command:
+
+```powershell
+# PowerShell
+$env:BOT_FILL = 20; $env:BOT_DIFFICULTY = "mixed"
+pnpm server
+Remove-Item Env:BOT_FILL, Env:BOT_DIFFICULTY   # back to the defaults
+```
+
+```bat
+:: cmd.exe (the quotes keep a trailing space out of the value)
+set "BOT_FILL=20" & set "BOT_DIFFICULTY=mixed"
+pnpm server
+```
+
 ## Run a server
 
 ```sh
@@ -80,13 +103,34 @@ HOST=0.0.0.0 PORT=8001 ADMIN_TOKEN=$(openssl rand -hex 24) BOT_FILL=40 pnpm star
 docker compose up -d --build        # or the Docker image (without the original art unless WITH_ORIGINAL_ASSETS=1)
 ```
 
+The second line on Windows (Node makes the admin token, Windows has no `openssl`). The token is optional: without
+`ADMIN_TOKEN` the admin API answers 403 and the game runs the same.
+
+```powershell
+# PowerShell
+$env:HOST = "0.0.0.0"; $env:PORT = 8001; $env:BOT_FILL = 40
+$env:ADMIN_TOKEN = node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
+pnpm start
+```
+
+```bat
+:: cmd.exe, typed at the prompt (write %%t instead of %t in a .bat file)
+set "HOST=0.0.0.0" & set "PORT=8001" & set "BOT_FILL=40"
+for /f "usebackq" %t in (`node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"`) do set "ADMIN_TOKEN=%t"
+pnpm start
+```
+
+With `HOST=0.0.0.0` other machines join at `http://<this computer's address>:8001` (`ipconfig` on Windows, `ip addr`
+on Linux); on Windows allow Node.js through the Windows Defender Firewall prompt (private networks), and forward TCP
+port 8001 on the router for players outside your network. Docker needs Docker Desktop on Windows and macOS.
+
 A served client opens the start page at `/`. Put a TLS reverse proxy in front for a public server (WebSockets on
 `/play` and `/team_v2`), set `TRUST_PROXY=1`, and see [`docs/deploy.md`](docs/deploy.md) for regions (`REGION`,
 `REGION_SERVERS`; Seoul hosting for Korean players), player reports, bans, the name filter, the anti-cheat telemetry
 and the admin API (`/api/admin/*`).
 
-Checks: `pnpm verify` (typecheck, lint, unit tests, knowledge base), `pnpm e2e` (Playwright), `pnpm check:bundle`
-(client bundle-size budget).
+Checks: `pnpm verify` (typecheck, lint, unit tests, knowledge base), `pnpm e2e` (Playwright; `npx playwright install
+chromium` once on a new machine), `pnpm check:bundle` (client bundle-size budget).
 
 ## License
 

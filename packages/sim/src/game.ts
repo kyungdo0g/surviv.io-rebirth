@@ -10,6 +10,7 @@ import { BulletSystem } from "./combat/bullets.ts";
 import { applyObstacleDamage, applyPlayerDamage } from "./combat/combat.ts";
 import type { DamageParams } from "./combat/damage.ts";
 import { ExplosionSystem } from "./combat/explosions.ts";
+import { HitLog } from "./combat/hitLog.ts";
 import { ProjectileSystem } from "./combat/projectiles.ts";
 import { DEFAULT_MIN_PLAYERS, type GameInit } from "./gameInit.ts";
 import { emptyInput, type PlayerInput } from "./input.ts";
@@ -124,6 +125,8 @@ export class Game implements GameApi, SimContext {
     readonly puzzleBuildings: Building[];
     /** read-only combat notifications for the host (server anti-cheat telemetry, M8); never alters the game */
     observer: CombatObserver | null = null;
+    /** damaging player hits for the dealer's and the target's snapshots (rebirth hit feedback) */
+    readonly hitLog = new HitLog();
     private readonly playerMap = new Map<number, Player>();
     /** recorders used, reported once to viewers in range (event sequence numbers, like kills) (M5b) */
     private readonly recorderReports = new RecorderLog();
@@ -435,6 +438,7 @@ export class Game implements GameApi, SimContext {
         // reports made during this step belong to the tick it completes
         this.bullets.tick = this.tickCount + 1;
         this.explosions.tick = this.tickCount + 1;
+        this.hitLog.tick = this.tickCount + 1;
         this.match.checkStart();
         this.gas.update();
         for (const player of this.playerMap.values()) {
@@ -477,12 +481,15 @@ export class Game implements GameApi, SimContext {
         this.faction?.update(dt);
         this.roles.update(dt);
         this.tickCount++;
+        // hits dealt between steps (tools, tests) belong to the next tick, so the next snapshot lists them
+        this.hitLog.tick = this.tickCount + 1;
         this.match.endTick();
         this.joinLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.leaveLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.emotes.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.bullets.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
         this.explosions.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
+        this.hitLog.prune(this.tickCount - BULLET_REPORT_TICKS);
         this.recorderReports.prune(this.tickCount - BULLET_REPORT_TICKS);
     }
 
@@ -575,6 +582,8 @@ export class Game implements GameApi, SimContext {
         }
         const gameOver = this.match.resultSince(owner.id, seq);
         if (gameOver) snapshot.gameOver = gameOver;
+        const hits = this.hitLog.eventsFor(player.id, sinceTick, this.tickCount, next);
+        if (hits.length) snapshot.hits = hits;
         const stats = this.match.statsSince(owner.id, seq);
         if (stats) snapshot.playerStats = stats;
         return snapshot;

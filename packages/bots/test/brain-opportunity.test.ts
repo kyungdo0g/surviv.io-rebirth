@@ -4,8 +4,8 @@
 import { v2 } from "@rebirth/core";
 import { describe, expect, it } from "vitest";
 import { selectTarget } from "../src/brain/combat.ts";
+import { fightScore } from "../src/brain/fightScore.ts";
 import { opportunityMult } from "../src/brain/opportunity.ts";
-import { fightScore } from "../src/brain/tactics.ts";
 import { findTrade, planThirdparty, thirdpartyScore } from "../src/brain/thirdparty.ts";
 import {
     addEnemy,

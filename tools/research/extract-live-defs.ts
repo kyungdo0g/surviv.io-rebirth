@@ -1,9 +1,13 @@
 // Extracts the game definitions from the original surviv.io client served by the 2026 Kongregate relaunch.
-// Usage: NODE_USE_ENV_PROXY=1 node tools/research/extract-live-defs.ts [--fetch]
+// Usage: node tools/research/extract-live-defs.ts [--fetch] (behind a proxy it restarts itself with
+// NODE_USE_ENV_PROXY=1, tools/envProxy.ts)
 // Writes research-cache/live/defs.json ({ gameObjects, mapObjects, maps, gameConfig, meta }).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import vm from "node:vm";
+import { ensureEnvProxy } from "../envProxy.ts";
+
+ensureEnvProxy();
 
 const DIR = "research-cache/live";
 const BASE = "https://surviv.io";

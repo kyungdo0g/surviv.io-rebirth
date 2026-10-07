@@ -8,7 +8,7 @@ coverage/
 # raw scraped wiki dumps (CC BY-SA, regenerable via tools/scrape)
 research-cache/
 
-# reference clone of survev (regenerable via tools/port-survev/fetch.sh)
+# reference clone of survev (regenerable via pnpm survev:fetch)
 .survev/
 
 # runtime data of a local server: reports, bans, anti-cheat flags (REPORTS_FILE, BAN_FILE, SUSPECTS_FILE)

@@ -2,10 +2,12 @@
 // tracer. survev client/src/objects/flare.ts (FlareBarn): a part-flare-01 sprite tinted `flareColor` at alpha 0.8 that
 // grows by easeOutExpo(timeAlive / 2.5) up to `maxFlareScale`, behind it the bullet trail (player-bullet-trail-02, the
 // def's tracer colour and width, the trail fading by the colour's alphaRate x 0.9 every frame down to alphaMin); both
-// at zOrd 1000 on the stairs layer (over everything on the ground) unless the viewer is underground or inside a stair
-// mask. Flares fly through everything (skipCollision) to their range at the def speed; there the flare keeps drifting
-// while it shrinks by 0.5/s and fades by 1/s, the trail shrinking by 6/s. The original computes a smoke throttle but
-// never spawns smoke, so neither does this.
+// at zOrd 1000 over the ground (renderer.addOverground: over everything unless the viewer is underground, where they
+// stay hidden on the ground layer, or on stairs under a stair mask; survev flare.ts:158-168). The original stops
+// placing a flare once it reached its range, so a viewer who goes underground during its fade still saw it; here the
+// fading flare follows the viewer's floor too. Flares fly through everything (skipCollision) to their range at the def
+// speed; there the flare keeps drifting while it shrinks by 0.5/s and fades by 1/s, the trail shrinking by 6/s. The
+// original computes a smoke throttle but never spawns smoke, so neither does this.
 import type { Vec2 } from "@rebirth/core";
 import { type BulletDef, GameConfig, GameObjectDefs, type TracerColor } from "@rebirth/defs";
 import type { BulletEvent } from "@rebirth/sim";
@@ -26,14 +28,6 @@ const MAX_RASTER_SCALE = 2;
 /** survev math.easeOutExpo */
 function easeOutExpo(t: number): number {
     return t === 1 ? 1 : 1 - 2 ** (-10 * t);
-}
-
-/** What flares need from the world. */
-export interface FlareScene {
-    /** layer of the followed player */
-    readonly activeLayer: number;
-    /** whether a circle at `pos` touches a structure's stair mask */
-    insideStairMask(pos: Vec2, rad: number): boolean;
 }
 
 interface Flare {
@@ -73,6 +67,11 @@ export class FlareSystem {
     /** flares drawn now (tests) */
     get count(): number {
         return this.flares.length;
+    }
+
+    /** the flare and trail containers of the live flares (tests) */
+    get containers(): Container[] {
+        return this.flares.flatMap((f) => [f.flareContainer, f.trailContainer]);
     }
 
     /** current flare scale of the newest flare (tests), 0 when none */
@@ -128,7 +127,7 @@ export class FlareSystem {
         this.spawned++;
     }
 
-    update(dt: number, scene: FlareScene): void {
+    update(dt: number): void {
         for (let i = this.flares.length - 1; i >= 0; i--) {
             const f = this.flares[i];
             if (f.collided) {
@@ -142,12 +141,12 @@ export class FlareSystem {
                     continue;
                 }
             }
-            if (f.alive) this.advance(f, dt, scene);
+            if (f.alive) this.advance(f, dt);
             this.draw(f);
         }
     }
 
-    private advance(f: Flare, dt: number, scene: FlareScene): void {
+    private advance(f: Flare, dt: number): void {
         // the original compares the active player with a playerId it never sets: always the 0.9 rate
         if (f.alphaRate) f.trail.alpha = Math.max(f.alphaMin, f.trail.alpha * f.alphaRate * 0.9);
         f.timeAlive += dt;
@@ -160,16 +159,13 @@ export class FlareSystem {
             f.collided = true;
             f.alive = false;
         }
-        const active = scene.activeLayer;
-        let layer = 0;
-        if (((active & 1) === 0 || (active & 2) !== 0) && (!(active & 2) || !scene.insideStairMask(f.pos, 1))) {
-            layer |= 2;
-        }
-        this.renderer.add(f.trailContainer, layer, Z_ORD, 0);
-        this.renderer.add(f.flareContainer, layer, Z_ORD, 1);
     }
 
     private draw(f: Flare): void {
+        // a ground-layer object over the floor (survev flare.ts: layer 0, | 2 when the viewer sees the ground there)
+        const layer = this.renderer.overgroundLayer(0, f.pos);
+        this.renderer.add(f.trailContainer, layer, Z_ORD, 0);
+        this.renderer.add(f.flareContainer, layer, Z_ORD, 1);
         const local = toLocal(f.pos);
         f.flareContainer.position.set(local.x, local.y);
         f.flareContainer.scale.set(f.flareScale);

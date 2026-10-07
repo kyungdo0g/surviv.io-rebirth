@@ -1,10 +1,14 @@
-// What bots know about guns, derived from the defs: a class (shotgun, smg, rifle, dmr, sniper, pistol), the distances
-// they like to fight at, a sustained-DPS based score used to compare guns on the ground, and a suitability curve per
-// distance used to pick the slot in a fight. Ranges follow docs/research/items/guns.md (bullet distance, spread) and
-// the community loadout advice (docs/research/namu.md /팁: a medium-range gun plus a shotgun or SMG).
+// What bots know about guns, derived from the defs: a class (shotgun, smg, rifle, lmg, dmr, sniper, pistol), the
+// distances they like to fight at, a sustained-DPS based score used to compare guns on the ground, and a suitability
+// curve per distance used to pick the slot in a fight. Classes come from the KB (docs/research/items/guns.md "Stat
+// tables by class", knowledge/gunTiers.ts gunClassOf: LMGs are their own class, the VSS a DMR, the M1014 a shotgun);
+// the stat heuristic only covers ids the KB does not class. Ranges follow guns.md (bullet distance, spread) and the
+// community loadout advice (docs/research/namu.md /팁: a medium-range gun plus a shotgun or SMG).
 import { GameObjectDefs, type GunDef, hasDef } from "@rebirth/defs";
+import { gunClassOf } from "./gunTiers.ts";
 
-export type WeaponClass = "shotgun" | "smg" | "rifle" | "dmr" | "sniper" | "pistol" | "useless";
+/** Weapon classes ("rifle" is the assault rifle; "lmg" the light machine guns, fought like rifles). */
+export type WeaponClass = "shotgun" | "smg" | "rifle" | "lmg" | "dmr" | "sniper" | "pistol" | "useless";
 
 export interface GunInfo {
     id: string;
@@ -36,7 +40,9 @@ const USELESS = new Set(["flare_gun", "flare_gun_dual", "bugle", "potato_cannon"
 
 const cache = new Map<string, GunInfo | null>();
 
-function classify(def: GunDef, range: number): WeaponClass {
+function classify(id: string, def: GunDef, range: number): WeaponClass {
+    const kb = gunClassOf(id);
+    if (kb !== undefined) return kb;
     if (def.bulletCount > 1 || (def.ammo === "12gauge" && range < 40)) return "shotgun";
     if (def.fireMode === "single" && def.fireDelay >= 0.7 && range >= 300) return "sniper";
     if (def.fireMode === "single" && range >= 300) return "dmr";
@@ -50,6 +56,7 @@ const IDEAL: Readonly<Record<WeaponClass, [number, number, number]>> = {
     smg: [4, 16, 32],
     pistol: [4, 16, 30],
     rifle: [8, 30, 55],
+    lmg: [8, 30, 55],
     dmr: [15, 42, 70],
     sniper: [20, 50, 80],
     useless: [0, 0, 0],
@@ -71,7 +78,7 @@ export function gunInfo(id: string): GunInfo | undefined {
     const damage = bullet.damage ?? 0;
     const range = bullet.distance ?? 0;
     const useless = USELESS.has(id) || damage <= 0;
-    const cls = useless ? "useless" : classify(def, range);
+    const cls = useless ? "useless" : classify(id, def, range);
     const burst = def.fireMode === "burst" ? (def.burstCount ?? 1) : 1;
     const cycle =
         def.fireMode === "burst" ? (def.fireDelay + (burst - 1) * (def.burstDelay ?? 0)) / burst : def.fireDelay;
@@ -83,7 +90,14 @@ export function gunInfo(id: string): GunInfo | undefined {
     const [idealMin, idealMax, maxEngageBase] = IDEAL[cls];
     const maxEngage = Math.min(maxEngageBase, range * 0.9);
     // longer reach is worth more: it wins fights before they start
-    const reach = cls === "sniper" || cls === "dmr" ? 1.25 : cls === "rifle" ? 1.15 : cls === "shotgun" ? 1.1 : 1;
+    const reach =
+        cls === "sniper" || cls === "dmr"
+            ? 1.25
+            : cls === "rifle" || cls === "lmg"
+              ? 1.15
+              : cls === "shotgun"
+                ? 1.1
+                : 1;
     const score = useless ? 0 : sustained * reach;
     const info: GunInfo = {
         id,

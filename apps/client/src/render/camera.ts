@@ -36,6 +36,9 @@ export class Camera {
     /** the "Screen shake" setting */
     shakeEnabled = true;
     private shakeInt = 0;
+    /** directed offset of this frame (rebirth hit kick, fx/hitFeedback.ts), applied with the shake */
+    private offsetX = 0;
+    private offsetY = 0;
     /** offset applied by the last `applyShake` (tests) */
     lastShake = 0;
 
@@ -51,17 +54,34 @@ export class Camera {
         this.shakeInt = Math.max(this.shakeInt, t * intensity);
     }
 
-    /** Moves the camera by this frame's shake in a random direction, then resets it (survev m_applyShake). */
+    /**
+     * Rebirth (user/2026-10-07-hit-feedback): a directed camera offset in world units for the next `applyShake`, the
+     * kick of a hit taken. Like the shake it needs the Screen shake setting.
+     */
+    addOffset(x: number, y: number): void {
+        this.offsetX += x;
+        this.offsetY += y;
+    }
+
+    /**
+     * Moves the camera by this frame's shake in a random direction (survev m_applyShake), plus the rebirth hit kick
+     * (`addOffset`), then resets both.
+     */
     applyShake(): void {
-        this.lastShake = this.shakeEnabled ? this.shakeInt : 0;
+        const shake = this.shakeEnabled ? this.shakeInt : 0;
+        const ox = this.shakeEnabled ? this.offsetX : 0;
+        const oy = this.shakeEnabled ? this.offsetY : 0;
+        this.lastShake = shake + Math.hypot(ox, oy);
         if (this.lastShake > 0) {
             const ang = Math.random() * Math.PI * 2;
             this.pos = {
-                x: this.pos.x + Math.cos(ang) * this.lastShake,
-                y: this.pos.y + Math.sin(ang) * this.lastShake,
+                x: this.pos.x + Math.cos(ang) * shake + ox,
+                y: this.pos.y + Math.sin(ang) * shake + oy,
             };
         }
         this.shakeInt = 0;
+        this.offsetX = 0;
+        this.offsetY = 0;
     }
 
     resize(width: number, height: number): void {

@@ -183,6 +183,7 @@ export class TeamPlay {
                 const p = this.playerPos(id, now);
                 return p ? { pos: p.pos, layer: p.layer } : null;
             },
+            visibility: (layer) => this.deps.renderer.visibility(layer),
         });
         this.world = world;
     }

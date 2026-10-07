@@ -41,6 +41,7 @@ import {
     randZones,
     snapshotTolerances,
 } from "./gen.ts";
+import { randHits } from "./genHits.ts";
 import { mutateFaction, mutateTeam, randEmotes, randFaction, randTeam } from "./genTeams.ts";
 
 interface Seq {
@@ -102,6 +103,9 @@ function matchFields(
     };
     if (rng.bool(0.1)) fields.gameOver = randGameOver(rng);
     if (rng.bool(0.1)) fields.playerStats = randStats(rng);
+    // rebirth hit feedback (schema 11): sent when any, so an empty list stays absent
+    const hits = randHits(rng, localPlayerId);
+    if (hits.length) fields.hits = hits;
     if (seq.faction) {
         // 50v50 (M7a): two alive counts (aliveCount is their sum) and the faction rows
         const red = prev?.teamAliveCounts && rng.bool(0.7) ? prev.teamAliveCounts[0] : rng.int(0, 50);
@@ -246,6 +250,7 @@ describe("Update message", () => {
             recorders: [],
             gameOver: undefined,
             playerStats: undefined,
+            hits: undefined,
         };
         const first = encoder.encode(snap, 0);
         decoder.decode(first);
@@ -341,6 +346,7 @@ describe("Update message", () => {
         delete base.playerStats;
         delete base.teamAliveCounts;
         delete base.factionStatus;
+        delete base.hits;
         const flagsOf = (bytes: Uint8Array) =>
             bytes[bytes.indexOf(MsgType.Update) + 5] | (bytes[bytes.indexOf(MsgType.Update) + 6] << 8);
         const first = encoder.encodeFrame(base, 0);
@@ -422,6 +428,7 @@ describe("Update message", () => {
             airstrikeZones: [],
             recorders: [],
             emotes: [],
+            hits: undefined,
         };
         decoder.decode(encoder.encode(base, 0));
         const effects = {
