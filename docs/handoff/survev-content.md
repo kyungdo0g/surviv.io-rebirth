@@ -408,5 +408,5 @@ added the deviation entry and an e2e join in `outfitAurora`. The patch notes bel
 
 - Cookable flags: the plan (section 2.3) proposed survev's source values; ADR 0003 point 4 and this wave's brief say
   the wiki wins, so the wiki's apply. Flip `WIKI_SPEC_OVERRIDES` if the owner prefers the source.
-- English name of `cutlass_gold`: survev's en.json says "Cutlass Gold" (used, the presentation source for survev-only
-  items); the def name and the wiki say "Gold Cutlass".
+- English name of `cutlass_gold` (closed): "Gold Cutlass" as its def name and the wiki have it, fixed in
+  `apps/client/scripts/l10n-items.ts` NAME_FIXES (survev's en.json says "Cutlass Gold").
