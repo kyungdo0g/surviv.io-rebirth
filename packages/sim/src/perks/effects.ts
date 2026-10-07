@@ -28,6 +28,9 @@ function allEmotes(): string[] {
 
 /** Per-tick perk timers, before the action and movement of the player's tick (survev update order). */
 export function updatePerks(ctx: SimContext, player: Player, dt: number): void {
+    // survev-only Combat Stimulants bonus and Indomitable Spirit effect (survev player.ts:1797-1803, 2128-2133)
+    player.combatStimsTicker = Math.max(0, player.combatStimsTicker - dt);
+    player.lastStandTicker = Math.max(0, player.lastStandTicker - dt);
     const rules = ctx.rules.perks;
     updateHaste(player, dt);
     updateFat(player, dt);

@@ -1,4 +1,5 @@
-// Perk modifiers of one gun shot (M7a): damage multipliers (Splinter main bullet, the 8 % ammo / Hollow-points /
+// Perk modifiers of one gun shot (M7a; the survev-only Combat Stimulants, High-Velocity and AP Rounds since the survev
+// content wave): damage multipliers (Splinter main bullet, the 8 % ammo / Hollow-points /
 // OKAMI Bar / Last Breath bonus, One in the Chamber), 9mm Overpressure's spread, speed and range, the tracer flags,
 // and Splinter Rounds' side bullets. Behaviour follows survev server/src/game/weaponManager.ts isBulletSaturated and
 // the "Perks" block of fireWeapon, with the KB's conflict resolutions in rules.perks (perks.md "Damage multipliers and
@@ -18,6 +19,8 @@ export interface ShotPerks {
     thick: boolean;
     /** fire the two Splinter Rounds side bullets */
     splinter: boolean;
+    /** AP Rounds bullets (survev-only perk) */
+    apRounds: boolean;
 }
 
 /**
@@ -45,8 +48,9 @@ export function shotPerks(player: Player, def: GunDef, ammoLeft: number, maxClip
         saturated: false,
         thick: false,
         splinter: false,
+        apRounds: false,
     };
-    if (player.perks.length === 0 && player.lastBreathTicker <= 0) return out;
+    if (player.perks.length === 0 && player.lastBreathTicker <= 0 && player.combatStimsTicker <= 0) return out;
     if (player.hasPerk("splinter")) {
         // noSplinter guns (USAS-12, flare guns, potato guns, bugle) skip the perk (conflicts.md perk-splinter-nosplinter-main)
         out.splinter = !def.noSplinter;
@@ -58,6 +62,8 @@ export function shotPerks(player: Player, def: GunDef, ammoLeft: number, maxClip
         out.damageMult *= rules.ammoBonusDamageMult ** (rules.ammoBonusStacking ? bonuses : 1);
         out.saturated = true;
     }
+    // Combat Stimulants: x1.15 for 5 s after a heal or boost (survev weaponManager.ts:830-832)
+    if (player.combatStimsTicker > 0) out.damageMult *= rules.combatStims.bonusDamageMult;
     const chambered = player.hasPerk("chambered") && def.ammo !== "12gauge";
     if (chambered && (ammoLeft === 0 || ammoLeft === maxClip - 1)) {
         out.damageMult *= rules.chamberedDamageMult;
@@ -69,5 +75,11 @@ export function shotPerks(player: Player, def: GunDef, ammoLeft: number, maxClip
         out.speedMult *= rules.bonus9mmSpeedMult;
         out.distanceMult *= rules.bonus9mmDistanceMult;
     }
+    // survev-only perks: High-Velocity Rounds x1.4 speed, x1.3 range; AP Rounds (survev weaponManager.ts:812-866)
+    if (player.hasPerk("high_velocity")) {
+        out.speedMult *= rules.highVelocity.speedMult;
+        out.distanceMult *= rules.highVelocity.distanceMult;
+    }
+    out.apRounds = player.hasPerk("ap_rounds");
     return out;
 }

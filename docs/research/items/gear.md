@@ -209,6 +209,13 @@
 - Flak Jacket capacity bonuses (+3 frag, +2 MIRV) are fork-only (fork) [src:balance/299] [H]
 - en name ".50 Caliber" is a fork rename of ".50 AE" (fork) [src:survev/client/src/en.json:391] [src:derived/survev@9f64948d:src/defs/gearDefs.js:63-77] [src:l10n/ko:game-50AE] [H]
 
+## In the game (survev content wave, stage 2)
+
+- The port takes `backpack04` (Tactical Pack) and `backpack04_cloud` (Experimental Pack, `maxPerks: 2`) as survev has them, and `helmet04_captain` / `helmet04_classless` as the original `helmet04` plus survev's name, images and `noDrop` [src:derived/tools/port-survev/policy.json] [src:survev/shared/defs/gameObjects/gearDefs.ts:290-306] [src:survev/shared/defs/gameObjects/gearDefs.ts:885-923] [H]
+- `GameConfig.bagSizes` is survev's whole table: five levels per row (the fifth for the level-4 packs), the original's rows first in their original order, then `tomato` and `coconut`; `308sub` becomes 20 / 40 / 55 / 70 / 85 and `50AE` 50 / 100 / 150 / 200 / 250 (protocol schema 12) [src:survev/shared/gameConfig.ts:415-441] [src:wikigg/.308_Subsonic] [src:wikigg/.50_Caliber] [H]
+- The Experimental Pack holds two loot perks: a pickup swaps the oldest loot perk only once both slots are full; its gear quality is level x10 + `maxPerks`, so it beats the Tactical Pack (simulation `loot/pickup.ts`, `items/inventory.ts gearQuality`) [src:survev/server/src/game/objects/player.ts:785-793] [src:survev/server/src/game/objects/player.ts:3954-3975] [src:wikigg/Equipment] [H]
+- Neither level-4 pack spawns on the maps we have before stage 3: the Experimental Pack comes from the Cloud bunker's `case_10` [src:survev/shared/defs/mapObjects/buildings/bunkerDefs.ts:1482] [src:wikigg/Cloud_Bunker] [M]
+
 ## Conflicts
 
 - CONFLICT 308sub-capacity-fandom: fandom backpack template lists .308 Subsonic 10/20/30/40 [src:fandom/Backpacks] vs original config 10/20/40/80, also on fandom's own .308 page [src:derived/survev@9f64948d:src/gameConfig.ts:266] [src:fandom/.308_Subsonic] [src:kong/relaunch-client-defs]; proposed: 10/20/40/80 [H]

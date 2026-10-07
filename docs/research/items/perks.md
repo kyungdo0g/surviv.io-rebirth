@@ -233,7 +233,18 @@
 ## In the game (survev content wave, stage 1)
 
 - The port takes `pirate` (needed by the Gold Cutlass); the simulation drops `randomInt(3, 4)` rolls of `tier_pirate` at the victim, plus one `tier_pirate_rare` roll with chance 0.12, each pushed 7.5-11 in a random direction, when the final hit of a credited kill is a melee weapon (`perks/effects.ts onKillCredited`, `loot/drops.ts dropPirateBounty`, `rules.perks.pirate`) [src:survev/shared/defs/gameObjects/perkDefs.ts:121-127] [src:survev/server/src/game/objects/player.ts:2727-2763] [src:wikigg/Pirate's_Bounty] [H]
-- The other six survev perks (`assume_leadership`, `ap_rounds`, `lifeline`, `combat_stims`, `amped_explosives`, `high_velocity`) come with stage 2 [src:derived/tools/port-survev/policy.json] [H]
+- The other six survev perks (`assume_leadership`, `ap_rounds`, `lifeline`, `combat_stims`, `amped_explosives`, `high_velocity`) came with stage 2 (below) [src:derived/tools/port-survev/policy.json] [H]
+
+## In the game (survev content wave, stage 2)
+
+- `ap_rounds`: the holder's bullets (ricochets and Splinter side bullets too) make every damage reduction of the target, armour and perks alike, work at x0.8, and deal x1.5 to obstacles [src:survev/shared/defs/gameObjects/perkDefs.ts:41-44] [src:survev/server/src/game/objects/bullet.ts:593-637] [src:survev/server/src/game/objects/player.ts:2447-2452] [src:wikigg/AP_Rounds] [H]
+- `high_velocity`: bullet speed x1.4 and range x1.3, stacking with 9mm Overpressure [src:survev/shared/defs/gameObjects/perkDefs.ts:141-144] [src:survev/server/src/game/weaponManager.ts:858-866] [src:wikigg/High-Velocity_Rounds] [H]
+- `amped_explosives`: throws x2 speed with x1.75 aim range; the holder's explosions fire ceil(x2) shrapnel at x1.5 damage and x1.4 speed with a darker tracer [src:survev/shared/defs/gameObjects/perkDefs.ts:26-32] [src:survev/server/src/game/weaponManager.ts:1236-1247] [src:survev/server/src/game/objects/explosion.ts:146-178] [src:wikigg/Hyperfragmentation] [H]
+- `combat_stims`: for 5 s after its holder completes a heal or boost (Mass Medicate's area uses too), bullets deal x1.15 and gun hits on teammates heal them 6 % of the hit with the heal effect [src:survev/shared/defs/gameObjects/perkDefs.ts:97-101] [src:survev/server/src/game/objects/player.ts:1688-1705] [src:survev/server/src/game/objects/player.ts:2423-2439] [src:wikigg/Combat_Stimulants] [H]
+- `lifeline`: adrenaline decays x0.75; a hit that would kill leaves 1 HP when adrenaline / 2 covers the excess (damage - health + 1), spending 2 adrenaline per HP, and shows the last-stand effect for 1 s [src:survev/shared/defs/gameObjects/perkDefs.ts:90-93] [src:survev/server/src/game/objects/player.ts:1535-1541] [src:survev/server/src/game/objects/player.ts:2493-2510] [src:wikigg/Indomitable_Spirit] [H]
+- `assume_leadership`: adrenaline floor 50, size +15 % (`rules.perks.minBoost` / `scales`) [src:survev/shared/defs/gameObjects/perkDefs.ts:9-12] [src:wikigg/Assume_Leadership] [H]
+- Spawns after stage 2: survev's loot tables are kept for them (Cobalt's mythic class pod adds `lifeline`; `ap_rounds` and `high_velocity` sit in survev's perk tiers) [src:survev/shared/defs/maps/cobaltDefs.ts] [src:survev/shared/defs/maps/baseDefs.ts] [M]
+- The client draws no AP tracer colour and no last-stand effect yet (handoff) [src:survev/client/src/objects/bullet.ts:165-166] [H]
 
 ## Conflicts
 

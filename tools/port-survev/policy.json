@@ -21,14 +21,26 @@
         "tomato",
         "explosion_coconut",
         "explosion_tomato",
-        "pirate"
+        "pirate",
+        "backpack04",
+        "backpack04_cloud",
+        "assume_leadership",
+        "ap_rounds",
+        "lifeline",
+        "combat_stims",
+        "amped_explosives",
+        "high_velocity",
+        "captain",
+        "classless"
     ],
     "survevSkins": {
         "svd_winter": "svd",
         "sv98_winter": "sv98",
         "awc_winter": "awc",
         "naginata_daemon": "naginata",
-        "karambit_borealis": "karambit"
+        "karambit_borealis": "karambit",
+        "helmet04_captain": "helmet04",
+        "helmet04_classless": "helmet04"
     },
-    "survevGameConfig": ["bagSizes.50AE"]
+    "survevGameConfig": ["bagSizes"]
 }

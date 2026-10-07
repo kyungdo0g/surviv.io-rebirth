@@ -191,8 +191,7 @@ describe("survev-only melee and throwables: specs", () => {
         for (const [field, value] of Object.entries(w.explosion)) {
             expect(at(explosion, field), `${def.explosionType}.${field}`).toEqual(value);
         }
-        // the game has four packs (survev's fifth level is wave 1 stage 2)
-        expect(GameConfig.bagSizes[id]).toEqual(w.bag.slice(0, 4));
+        expect(GameConfig.bagSizes[id]).toEqual(w.bag);
     });
 
     it("only the cookable flags differ between the wiki and survev's source; the wiki's apply", () => {
@@ -245,3 +244,27 @@ describe("survev-only melee and throwables: placements", () => {
 function maps() {
     return ["main", "desert", "beach", "snow", "woods", "cobalt", "savannah", "faction"].map((m) => getMapDef(m));
 }
+
+describe("survev-only gear, perks and roles (stage 2)", () => {
+    it("ports the level-4 packs, the role helmets, six perks and two roles as survev has them", () => {
+        // survev gearDefs.ts:290-306, 885-923; wikigg/Equipment
+        expect(getDefOfType("backpack", "backpack04")).toMatchObject({ level: 4, name: "Tactical Pack" });
+        expect(getDefOfType("backpack", "backpack04_cloud")).toMatchObject({ level: 4, maxPerks: 2 });
+        for (const id of ["helmet04_captain", "helmet04_classless"]) {
+            expect(getDefOfType("helmet", id)).toMatchObject({ level: 4, noDrop: true });
+        }
+        for (const id of [
+            "assume_leadership",
+            "ap_rounds",
+            "lifeline",
+            "combat_stims",
+            "amped_explosives",
+            "high_velocity",
+        ]) {
+            expect(getDefOfType("perk", id).type).toBe("perk");
+        }
+        // survev roleDefs.ts:162-193, 557-571
+        expect(getDefOfType("role", "captain").perks).toEqual(["assume_leadership", "firepower"]);
+        expect(getDefOfType("role", "classless").perks).toEqual([]);
+    });
+});

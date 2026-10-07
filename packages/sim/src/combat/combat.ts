@@ -29,6 +29,19 @@ export interface HitRecord {
     gameSourceType: string;
 }
 
+/**
+ * Combat Stimulants: while the shooter's bonus runs, its gun hits on a teammate heal 6 % of the hit and show the heal
+ * effect (survev player.ts:2423-2439).
+ */
+function combatStimsHeal(ctx: SimContext, source: Player, target: Player, params: DamageParams): void {
+    if (source.combatStimsTicker <= 0 || !params.gameSourceType || !hasDef(params.gameSourceType)) return;
+    if (GameObjectDefs[params.gameSourceType].type !== "gun") return;
+    const heal = params.amount * ctx.rules.perks.combatStims.healPercent;
+    if (heal <= 0 || target.dead) return;
+    target.health = Math.min(100, target.health + heal);
+    target.healEffectTicker = 0.5;
+}
+
 export function applyPlayerDamage(ctx: SimContext, target: Player, params: DamageParams): void {
     // Cobalt players in the class menu take no damage (survev damage: perkMode && !role; M7b)
     if (target.dead || target.awaitingClass) return;
@@ -36,9 +49,22 @@ export function applyPlayerDamage(ctx: SimContext, target: Player, params: Damag
     if (target.downed && target.downedDamageTicker > 0) return;
     const source = params.sourceId ? ctx.getPlayer(params.sourceId) : undefined;
     // teammates cannot hurt each other unless the target left; self damage stays (damage-armor.md "Pipeline order" 2)
-    if (source && source !== target && source.teamId === target.teamId && !target.disconnected) return;
+    if (source && source !== target && source.teamId === target.teamId && !target.disconnected) {
+        combatStimsHeal(ctx, source, target, params);
+        return;
+    }
     const headshot = rollHeadshot(params, ctx.rules, ctx.combatRng);
     let damage = computeDamage(params, headshot, target, ctx.rules);
+    // Indomitable Spirit: adrenaline absorbs a fatal hit at 2 per HP, leaving 1 HP (survev player.ts:2493-2510)
+    if (target.health - damage < 0 && target.hasPerk("lifeline")) {
+        const excess = damage - target.health + 1;
+        const rate = ctx.rules.perks.lifeline.conversionRate;
+        if (target.boost / rate >= excess) {
+            target.boost -= excess * rate;
+            damage = target.health - 1;
+            target.lastStandTicker = 1;
+        }
+    }
     // overkill is clamped to the remaining health
     if (target.health - damage < 0) damage = target.health;
     target.damageTaken += damage;

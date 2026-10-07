@@ -106,7 +106,7 @@
 ### 누락 키 처리
 
 - 0.8.82 콘텐츠 중 ko에 없는 것: 이모트 이름 148개 전부, 조준선 이름, 치유·부스트 효과 이름, 기본 근접 무기 이름(`game-knuckles` 등 9개), `game-max-perks`, 퀘스트 다수 — 표의 "리버스 표기" 열에 제안 번역을 넣었다 [src:l10n/en:game-emote_happyface, l10n/en:game-heal_basic, l10n/en:game-knuckles, l10n/en:game-max-perks] [H]
-- fork 전용 키(예: S&W 500, Barrett M107, ASh-12, IMD-2, 보호구역 퀘스트, Survevr 패스 2, Tactical Pack)는 제안 번역 앞에 `(fork)`를 붙였다; survev 기준(ADR 0003) 이후 포트가 가져온 항목(survev 전용 총 6종, 겨울 스킨 3종, PMG-134 탄, 근접 무기 5종, 코코넛·토마토, 해적의 현상금)은 `(fork)` 없이 리버스 표기를 쓴다 (`apps/client/src/l10n/ko.ts`) [src:l10n/en:game-sw500, l10n/en:game-barrett, l10n/en:game-ash12, l10n/en:quest_reserve_kills, l10n/en:pass_survivr2, derived/fork-vs-original-json, user/2026-10-07-survev-guns] [H]
+- fork 전용 키(예: S&W 500, Barrett M107, ASh-12, IMD-2, 보호구역 퀘스트, Survevr 패스 2, Tactical Pack)는 제안 번역 앞에 `(fork)`를 붙였다; survev 기준(ADR 0003) 이후 포트가 가져온 항목(survev 전용 총 6종, 겨울 스킨 3종, PMG-134 탄, 근접 무기 5종, 코코넛·토마토, 해적의 현상금, 4레벨 가방 2종, 역할 헬멧 2종, 퍽 6종, 대장·무소속 역할)은 `(fork)` 없이 리버스 표기를 쓴다 (`apps/client/src/l10n/ko.ts`) [src:l10n/en:game-sw500, l10n/en:game-barrett, l10n/en:game-ash12, l10n/en:quest_reserve_kills, l10n/en:pass_survivr2, derived/fork-vs-original-json, user/2026-10-07-survev-guns] [H]
 
 ## 전체 용어표
 
@@ -411,8 +411,8 @@
 | `backpack01` | Small Pack | 작은 가방 (원본: 스몰 팩) | = | [src:l10n/en:game-backpack01, l10n/ko:game-backpack01] [H] |
 | `backpack02` | Regular Pack | 큰 가방 (원본: 레귤러 팩) | 보통 가방 | [src:l10n/en:game-backpack02, l10n/ko:game-backpack02] [H] |
 | `backpack03` | Military Pack | 밀리터리 가방 (원본: 밀리터리 팩) | 군용 가방 | [src:l10n/en:game-backpack03, l10n/ko:game-backpack03] [H] |
-| `backpack04` | Tactical Pack (fork) | — (누락) | (fork) 전술 가방 | [src:l10n/en:game-backpack04] [H] |
-| `backpack04_cloud` | Experimental Pack (fork) / 설명: You can equip an extra perk. | — (누락) / — | (fork) 실험용 가방 | [src:l10n/en:game-backpack04_cloud, l10n/en:game-backpack04_cloud-desc] [H] |
+| `backpack04` | Tactical Pack (fork) | — (누락) | 전술 가방 | [src:l10n/en:game-backpack04] [H] |
+| `backpack04_cloud` | Experimental Pack (fork) / 설명: You can equip an extra perk. | — (누락) / — | 실험용 가방 | [src:l10n/en:game-backpack04_cloud, l10n/en:game-backpack04_cloud-desc] [H] |
 | `chest01` | Level 1 Vest | 1레벨 조끼 (원본: 1등급 조끼) | = | [src:l10n/en:game-chest01, l10n/ko:game-chest01] [H] |
 | `chest02` | Level 2 Vest | 2레벨 조끼 (원본: 2등급 조끼) | = | [src:l10n/en:game-chest02, l10n/ko:game-chest02] [H] |
 | `chest03` | Level 3 Vest | 3레벨 조끼 (원본: 3등급 조끼) | = | [src:l10n/en:game-chest03, l10n/ko:game-chest03] [H] |
@@ -429,8 +429,8 @@
 | `helmet03_marksman` | Marksman Helmet | 명사수 헬멧 | = | [src:l10n/en:game-helmet03_marksman, l10n/ko:game-helmet03_marksman] [H] |
 | `helmet04_lone_survivr` | Lone Survivr Helmet | 론 서바이버 헬멧 | = | [src:l10n/en:game-helmet04_lone_survivr, l10n/ko:game-helmet04_lone_survivr] [H] |
 | `helmet04_leader` | Commander Helmet | 지휘관 헬멧 | = | [src:l10n/en:game-helmet04_leader, l10n/ko:game-helmet04_leader] [H] |
-| `helmet04_captain` | Captain Helmet (fork) | 대장모 † | (fork) 대장 헬멧 | [src:l10n/en:game-helmet04_captain, l10n/ko:game-helmet04_captain] [H] |
-| `helmet04_classless` | Classless Helmet (fork) | — (누락) | (fork) 무소속 헬멧 | [src:l10n/en:game-helmet04_classless] [H] |
+| `helmet04_captain` | Captain Helmet (fork) | 대장모 † | 대장 헬멧 | [src:l10n/en:game-helmet04_captain, l10n/ko:game-helmet04_captain] [H] |
+| `helmet04_classless` | Classless Helmet (fork) | — (누락) | 무소속 헬멧 | [src:l10n/en:game-helmet04_classless] [H] |
 | `1xscope` | 1x Scope | 1배율 스코프 | = | [src:l10n/en:game-1xscope, l10n/ko:game-1xscope] [H] |
 | `2xscope` | 2x Scope | 2배율 스코프 | = | [src:l10n/en:game-2xscope, l10n/ko:game-2xscope] [H] |
 | `4xscope` | 4x Scope | 4배율 스코프 | = | [src:l10n/en:game-4xscope, l10n/ko:game-4xscope] [H] |
@@ -610,8 +610,8 @@
 | `small_arms` | Small Arms / 설명: Move faster with weapons deployed. / Decreased size. | 소형 화기 / 무기를 들면 빠르게 이동. / 크기가 줄어듬. (원본: 무기를 든 채로 빠르게 이동합니다. / 크기가 줄었습니다.) | = | [src:l10n/en:game-small_arms, l10n/ko:game-small_arms, l10n/en:game-small_arms-desc, l10n/ko:game-small_arms-desc] [H] |
 | `takedown` | Takedown / 설명: Kills grant health, boost and a short burst of speed. | 급습 / 사살 시 체력, 아드레날린 및 짧은 스피드 부스트를 얻는다. (원본: 사살 시 체력, 부스트 및 짧은 스피드 부스트를 얻습니다.) | = | [src:l10n/en:game-takedown, l10n/ko:game-takedown, l10n/en:game-takedown-desc, l10n/ko:game-takedown-desc] [H] |
 | `field_medic` | Combat Medic / 설명: Move quickly while healing. | 전투 의무병 / 치유 아이템 사용 중에 더 빨리 이동. (원본: 치유 중에 더 빨리 이동합니다.) | = | [src:l10n/en:game-field_medic, l10n/ko:game-field_medic, l10n/en:game-field_medic-desc, l10n/ko:game-field_medic-desc] [H] |
-| `combat_stims` | Combat Stimulants (fork) / 설명: Consumables grant a temporary boost to bullet damage and allow them t… | — (누락) / — | (fork) 전투 각성제 | [src:l10n/en:game-combat_stims, l10n/en:game-combat_stims-desc] [H] |
-| `lifeline` | Indomitable Spirit (fork) / 설명: Adrenaline loss slowed. Taking fatal damage consumes adrenaline to mi… | — (누락) / — | (fork) 불굴의 의지 | [src:l10n/en:game-lifeline, l10n/en:game-lifeline-desc] [H] |
+| `combat_stims` | Combat Stimulants (fork) / 설명: Consumables grant a temporary boost to bullet damage and allow them t… | — (누락) / — | 전투 각성제 | [src:l10n/en:game-combat_stims, l10n/en:game-combat_stims-desc] [H] |
+| `lifeline` | Indomitable Spirit (fork) / 설명: Adrenaline loss slowed. Taking fatal damage consumes adrenaline to mi… | — (누락) / — | 불굴의 의지 | [src:l10n/en:game-lifeline, l10n/en:game-lifeline-desc] [H] |
 | `tree_climbing` | One With Nature / 설명: Move through trees. Move faster in water. | 자연과 함께 하는 자 / 나무 사이를 이동. 물에서 더 빠르게 움직임. (원본: 나무 사이를 이동합니다. 물에서 더 빠르게 움직입니다.) | = | [src:l10n/en:game-tree_climbing, l10n/ko:game-tree_climbing, l10n/en:game-tree_climbing-desc, l10n/ko:game-tree_climbing-desc] [H] |
 | `scavenger` | Scavenger / 설명: Obstacles drop additional items when destroyed. | 수집가 (원본: 스케빈저) / 장애물을 파괴했을 때 추가 아이템을 얻는다. (원본: 장애물을 파괴했을 때 추가 아이템을 떨굽니다.) | = | [src:l10n/en:game-scavenger, l10n/ko:game-scavenger, l10n/en:game-scavenger-desc, l10n/ko:game-scavenger-desc] [H] |
 | `scavenger_adv` | Master Scavenger / 설명: Obstacles drop additional high-quality items when destroyed. | 숙련된 수집가 (원본: 마스터 스케빈저) / 장애물을 파괴했을 때 고품질의 추가 아이템을 얻는다. (원본: 장애물을 파괴했을 때 고품질의 추가 아이템을 떨굽니다.) | = | [src:l10n/en:game-scavenger_adv, l10n/ko:game-scavenger_adv, l10n/en:game-scavenger_adv-desc, l10n/ko:game-scavenger_adv-desc] [H] |
@@ -626,7 +626,7 @@
 | `self_revive` | Revivify / 설명: You can revive yourself when downed. | 환원 / 쓰러졌을 때 스스로를 부활시킬 수 있습니다. | 자가 소생 | [src:l10n/en:game-self_revive, l10n/ko:game-self_revive, l10n/en:game-self_revive-desc, l10n/ko:game-self_revive-desc] [H] |
 | `bonus_9mm` | 9mm Overpressure / 설명: 9mm bullets have increased speed, range, damage and spread. | 9mm 탄 과부화 (원본: 과충전 9mm) / 9mm 탄환이 증가된 속도, 사거리, 대미지 및 확산 능력을 갖습니다. | 9mm 과압탄 | [src:l10n/en:game-bonus_9mm, l10n/ko:game-bonus_9mm, l10n/en:game-bonus_9mm-desc, l10n/ko:game-bonus_9mm-desc] [H] |
 | `flak_jacket` | Flak Jacket / 설명: Greatly reduces damage from explosions & shrapnel. / Increased grenad… (원본: Greatly reduces damage from explosions and shrapnel.) | 방탄 조끼 / 폭발물 및 파편탄으로부터의 대미지를 크게 줄여줍니다. | 방폭 재킷 | [src:l10n/en:game-flak_jacket, l10n/ko:game-flak_jacket, l10n/en:game-flak_jacket-desc, l10n/ko:game-flak_jacket-desc] [H] |
-| `amped_explosives` | Hyperfragmentation (fork) / 설명: Throwables travel farther and faster. Fragmenting explosives release … | — (누락) / — | (fork) 초파편화 | [src:l10n/en:game-amped_explosives, l10n/en:game-amped_explosives-desc] [H] |
+| `amped_explosives` | Hyperfragmentation (fork) / 설명: Throwables travel farther and faster. Fragmenting explosives release … | — (누락) / — | 초파편화 | [src:l10n/en:game-amped_explosives, l10n/en:game-amped_explosives-desc] [H] |
 | `explosive` | Explosive Rounds / 설명: Bullets explode on impact. | 폭발 탄환 / 적을 타격하면 탄환이 폭발합니다. (원본: 타격이 탄환이 폭발합니다.) | = | [src:l10n/en:game-explosive, l10n/ko:game-explosive, l10n/en:game-explosive-desc, l10n/ko:game-explosive-desc] [H] |
 | `bonus_assault` | Hollow-Points (원본: Hollow-points) / 설명: Bullets have increased damage & speed. (원본: All your bullets deal bonus damage.) | 할로우 포인트 / 모든 탄환이 보너스 대미지를 줍니다. | = | [src:l10n/en:game-bonus_assault, l10n/ko:game-bonus_assault, l10n/en:game-bonus_assault-desc, l10n/ko:game-bonus_assault-desc] [H] |
 | `inspiration` | Inspiration / 설명: Your bugle call grants nearby allies a short burst of speed. | 영감 / 나팔소리가 근처의 아군이 짧은 스피드 부스트를 얻습니다. | = | [src:l10n/en:game-inspiration, l10n/ko:game-inspiration, l10n/en:game-inspiration-desc, l10n/ko:game-inspiration-desc] [H] |

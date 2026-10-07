@@ -62,9 +62,15 @@ export function promoteToRole(ctx: SimContext, player: Player, role: string, opt
     const newPerks = new Set(def.perks ?? []);
     if (role === "last_man" && rules.lastManExtraPerks.length > 0)
         newPerks.add(ctx.roleRng.pick(rules.lastManExtraPerks));
+    // Classless: one random class perk it does not hold; earlier role perks stay (survev player.ts:935-972)
+    const classless = role === "classless";
+    if (classless) {
+        const pool = rules.classlessPerkPool.filter((p) => !player.hasPerk(p));
+        if (pool.length) newPerks.add(ctx.roleRng.pick(pool));
+    }
     for (const src of [...player.perkSources]) {
         if (src.fromRole) {
-            if (newPerks.has(src.type)) newPerks.delete(src.type);
+            if (newPerks.has(src.type) || classless) newPerks.delete(src.type);
             else removePerk(player, src.type);
         } else if (src.droppable && newPerks.has(src.type)) {
             playerDropLoot(ctx, player, src.type);
@@ -74,6 +80,21 @@ export function promoteToRole(ctx: SimContext, player: Player, role: string, opt
     for (const perk of newPerks) addPerk(player, perk, { fromRole: true });
     const kit = roleLoadout(role, getMapDef(ctx.options.mapName));
     if (kit) applyLoadout(ctx, player, resolveLoadout(kit, player.teamId, ctx.roleRng), opts);
+}
+
+/**
+ * Classless kill: one of the killer's role perks is swapped for a random pool perk it does not hold, unless it holds
+ * all four Lone Survivr perks (survev player.ts:2768-2797, the "secret" interaction).
+ */
+export function swapClasslessPerk(ctx: SimContext, player: Player): void {
+    if (["takedown", "steelskin", "field_medic", "splinter"].every((p) => player.hasPerk(p))) return;
+    const rolePerks = player.perkSources.filter((s) => s.fromRole).map((s) => s.type);
+    const pool = ctx.rules.roles.classlessPerkPool.filter((p) => !player.hasPerk(p));
+    if (!rolePerks.length || !pool.length) return;
+    const old = ctx.roleRng.pick(rolePerks);
+    const perk = ctx.roleRng.pick(pool);
+    removePerk(player, old);
+    addPerk(player, perk, { fromRole: true });
 }
 
 /** Applies a resolved kit in survev's order: backpack, items, outfit, role helmet, chest, weapons. */

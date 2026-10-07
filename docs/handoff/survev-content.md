@@ -16,8 +16,8 @@ may not touch, the schema number used and open questions.
 | stage | content | state | commit |
 |---|---|---|---|
 | 1 | melee `iceaxe`, `cutlass`, `cutlass_gold`, skins `naginata_daemon`, `karambit_borealis`; throwables `coconut`, `tomato` + explosions; `pirate` perk | done | be03cb6 |
-| 2 | gear / perks / roles (backpack04, 5-level bags, 6 more perks, captain, classless) | next | |
-| 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) | planned | |
+| 2 | gear / perks / roles (backpack04, 5-level bags, 6 more perks, captain, classless) | done | see `git log --grep "stage 2"` |
+| 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | next (owner: top priority) | |
 | 4 | cosmetics (outfits, emotes, heal / boost effects) | planned | |
 | 5 | balance option B (no balance revert for shared gameplay fields) | planned | |
 
@@ -37,6 +37,22 @@ may not touch, the schema number used and open questions.
   `modes.ts` (glossary `docs/research/l10n-ko.md`). E2E: `tests/e2e/survev-melee-throwables.spec.ts`.
 - KB: `docs/research/items/{melee,throwables,perks}.md` "In the game (survev content wave, stage 1)",
   `conflicts.md#survev-throwable-cookable`. ADR 0003 stage table has a row.
+
+### Stage 2 details
+
+- Port: policy adds `backpack04`, `backpack04_cloud`, the six perks, roles `captain` / `classless`, skins
+  `helmet04_captain` / `helmet04_classless`; `survevGameConfig` is now `["bagSizes"]` (survev's whole 5-level table,
+  original row order first). `308sub` takes survev's 20/40/55/70/85.
+- Sim: AP Rounds / High-Velocity (`perks/shotPerks.ts`, `combat/bullets.ts`, `combat/damage.ts armorPenetration`),
+  Hyperfragmentation (`weapons/throwable.ts`, `combat/explosions.ts fireShrapnel`), Combat Stimulants
+  (`world/consumables.ts`, `combat/combat.ts combatStimsHeal`), Indomitable Spirit (`combat/combat.ts`,
+  `world/consumables.ts`), Assume Leadership (`rules.perks.minBoost / scales`), Experimental Pack two perk slots
+  (`loot/pickup.ts`), Captain succession on by default (`rules.roles.commanderSuccession`, promotes to `captain`,
+  checked on knocks too), Classless (`roles/roles.ts`, `roleSystem.ts`), buttons with `roleToPromote`
+  (`world/interact.ts`). Tests: `packages/sim/test/survevPerksRoles.test.ts`, `faction.test.ts` (Captain).
+- Changed tests (not bot tests): `faction.test.ts` succession test, `protocol/test/game.m7.test.ts` (role
+  `captain`), `modes.rules.test.ts` (woods bag rows 5 levels), `modes.cobalt.test.ts` (mythic pod has `lifeline`),
+  `gameConfig.test.ts`, `integrity.test.ts`, `survevGuns.test.ts` (5-level bags).
 
 ## Changes needed in the lead's files
 
@@ -74,11 +90,32 @@ wiki stats: "survev-only throwables: coconut `cookable` true (wikigg/Coconut rev
 false), tomato `cookable` false (wikigg/Tomato_(Throwable) rev 7178; survev throwableDefs.ts:913 true)". They are
 already recorded in `docs/research/conflicts.md#survev-throwable-cookable`.
 
-### 3. Held melee sprites
+### 3. Stage 2 client presentation (lead-owned rendering)
+
+- AP Rounds tracer colour: survev draws AP bullets with `tracerColors.<ammo>.apSaturated`
+  (`.survev/client/src/objects/bullet.ts:165-166`). The sim marks bullets `apRounds` (`combat/bullets.ts`) but the
+  bullet wire record has no flag for it; adding one is a protocol change (bump the schema) plus the tracer tint in the
+  bullet renderer. Hyperfragmentation shrapnel already uses the existing `saturated` flag.
+- Indomitable Spirit's last-stand effect: the sim sets `Player.lastStandTicker` (1 s) when the perk absorbs a fatal
+  hit; survev shows `lastStandEffect` on the player (`.survev/client/src/objects/player.ts`). Needs a player flag on
+  the wire and an effect in `apps/client/src/objects/player*.ts`.
+- HUD: a fifth backpack level needs no change (bag counts come from GameConfig); two loot perks show as two perk
+  slots like role perks.
+
+### 4. Held melee sprites
 
 The Cutlass / Gold Cutlass use the existing `cutlass` idle pose and `cut` / `cutReverse` animations
 (`apps/client/src/objects/anims.ts`, unchanged); the held sprite comes from `worldImg` like other melee. Nothing to do
 unless the held-sprite renderer special-cases melee ids.
+
+## Owner requests (2026-10-07, while stage 2 ran)
+
+- Buildings first: stage 3 is top priority. Go through every building of the survev.wiki.gg Buildings navbox
+  (https://survev.wiki.gg/wiki/Buildings), follow each link and check every infobox tab (Roof, Layout, Alt.Roof,
+  Alt.Layout, Basement, Basement Layout, ...) and its picture against our buildings. A loot icon on a layout picture
+  (a pill on the Hunting Perch) is only the loot spawner's position (`loot_tier_*`), not a fixed item; fixed items are
+  what the page's "Special loot" lists.
+- When the buildings are done: a building test mode, a map with only buildings that can be cycled through.
 
 ## Shared hotspots touched (minimal)
 

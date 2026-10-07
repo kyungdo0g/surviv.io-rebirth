@@ -92,9 +92,10 @@ describe("event map corrections in the ported data (tools/port-survev/lib/eventM
 });
 
 describe("Woods bag sizes", () => {
-    it("frags and smokes hold 6/12/15/18 per backpack level on woods maps, 3/6/9/12 elsewhere (woods.md)", () => {
-        expect(mapBagSizes("woods").frag).toEqual([6, 12, 15, 18]);
-        expect(mapBagSizes("woods_snow").smoke).toEqual([6, 12, 15, 18]);
+    it("frags and smokes hold 6/12/15/18/20 per backpack level on woods maps, 3/6/9/12/15 elsewhere (woods.md)", () => {
+        // survev's fifth level (backpack04) holds 20 (survev/shared/defs/maps/woodsDefs.ts:60-61)
+        expect(mapBagSizes("woods").frag).toEqual([6, 12, 15, 18, 20]);
+        expect(mapBagSizes("woods_snow").smoke).toEqual([6, 12, 15, 18, 20]);
         expect(mapBagSizes("main").frag).toEqual(GameConfig.bagSizes.frag);
         const woods = flatGame();
         Object.assign(woods.options, { mapName: "woods" });

@@ -1,7 +1,7 @@
 // Encoder/decoder against the simulation in 50v50 (M7a): ten players of both factions move and aim at random next to
 // each other; roles are handed out (Commander, Lieutenant, Medic with perks), perks are picked up and fired (Splinter
 // side bullets, One in the Chamber tracers), Windwalk hastes a holder, the Commander dies and its Lieutenant takes over
-// (rules.roles.commanderSuccession), Blue is cut down to its Lone Survivrs, and Red wins. Every netsync frame goes
+// (rules.roles.commanderSuccession: the Captain), Blue is cut down to its Lone Survivrs, and Red wins. Every netsync frame goes
 // through the shared-cache encoder and a decoder fed by the Map message; the decoded snapshot (roles, perks, haste,
 // tracer flags, per-faction alive counts, faction minimap rows) must equal Game.getSnapshot within quantization tolerance.
 import { createRng, type Rng, v2 } from "@rebirth/core";
@@ -148,7 +148,7 @@ describe("Update encoder/decoder against the simulation (M7a 50v50)", () => {
                 if (snap.teamAliveCounts) counts.add(snap.teamAliveCounts.join(":"));
             }
         }
-        expect(player(red[1]).role).toBe("leader");
+        expect(player(red[1]).role).toBe("captain");
         expect(player(red[1]).weaponManager.weapons[WeaponSlot.Secondary].type).toBe("m4a1");
         expect([player(blue[0]).role, player(blue[1]).role]).toEqual(["last_man", "last_man"]);
         expect(game.over).toBe(true);

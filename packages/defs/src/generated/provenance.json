@@ -27,17 +27,29 @@
       "tomato",
       "explosion_coconut",
       "explosion_tomato",
-      "pirate"
+      "pirate",
+      "backpack04",
+      "backpack04_cloud",
+      "assume_leadership",
+      "ap_rounds",
+      "lifeline",
+      "combat_stims",
+      "amped_explosives",
+      "high_velocity",
+      "captain",
+      "classless"
     ],
     "survevSkins": {
       "svd_winter": "svd",
       "sv98_winter": "sv98",
       "awc_winter": "awc",
       "naginata_daemon": "naginata",
-      "karambit_borealis": "karambit"
+      "karambit_borealis": "karambit",
+      "helmet04_captain": "helmet04",
+      "helmet04_classless": "helmet04"
     },
     "survevGameConfig": [
-      "bagSizes.50AE"
+      "bagSizes"
     ]
   },
   "gameObjects": {
@@ -678,6 +690,10 @@
     "explosion_potato_lmgshot": "survev-only",
     "explosion_coconut": "survev-only",
     "explosion_tomato": "survev-only",
+    "backpack04": "survev-only",
+    "helmet04_captain": "survev-only",
+    "helmet04_classless": "survev-only",
+    "backpack04_cloud": "survev-only",
     "imbel": "survev-only",
     "spas16": "survev-only",
     "barrett": "survev-only",
@@ -692,7 +708,15 @@
     "karambit_borealis": "survev-only",
     "naginata_daemon": "survev-only",
     "cutlass_gold": "survev-only",
+    "assume_leadership": "survev-only",
+    "ap_rounds": "survev-only",
+    "lifeline": "survev-only",
+    "combat_stims": "survev-only",
     "pirate": "survev-only",
+    "amped_explosives": "survev-only",
+    "high_velocity": "survev-only",
+    "captain": "survev-only",
+    "classless": "survev-only",
     "potato_lmgshot": "survev-only",
     "coconut": "survev-only",
     "tomato": "survev-only"
@@ -7031,30 +7055,6 @@
       "reason": "originalValue is not concrete"
     },
     {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "cobalt.lootTable.tier_class_crate_mythic[lifeline]",
-        "field": "weight",
-        "forkValue": 1,
-        "originalValue": "absent",
-        "line": 294,
-        "confidence": "H",
-        "note": "Indomitable Spirit = lifeline (fork perk)",
-        "refs": [
-          "balance/294",
-          "survev/shared/defs/maps/baseDefs.ts:533",
-          "derived/git-939023c5",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.cobalt.lootTable.tier_class_crate_mythic.lifeline"
-      ]
-    },
-    {
       "status": "skipped",
       "entry": {
         "section": "lootTables",
@@ -7563,30 +7563,6 @@
         ]
       },
       "reason": "originalValue is not concrete"
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "desert.lootTable.tier_perks[amped_explosives]",
-        "field": "weight",
-        "forkValue": 1,
-        "originalValue": "absent",
-        "line": 320,
-        "confidence": "H",
-        "note": "Hyperfragmentation (fork perk)",
-        "refs": [
-          "balance/320",
-          "survev/shared/defs/maps/desertDefs.ts:206",
-          "derived/git-ff9bbabe",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.desert.lootTable.tier_perks.amped_explosives"
-      ]
     },
     {
       "status": "applied",
@@ -9291,59 +9267,6 @@
         "maps.woods_snow.lootTable.tier_guns_rare_demo.usas",
         "maps.woods_spring.lootTable.tier_guns_rare_demo.usas",
         "maps.woods_summer.lootTable.tier_guns_rare_demo.usas"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "lootTable.tier_perks[high_velocity]",
-        "field": "weight",
-        "forkValue": "1",
-        "originalValue": "absent",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/baseDefs.ts:762",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "main",
-          "faction",
-          "halloween",
-          "potato",
-          "snow",
-          "woods",
-          "savannah",
-          "cobalt",
-          "turkey",
-          "main_spring",
-          "main_summer",
-          "potato_spring",
-          "woods_snow",
-          "woods_spring",
-          "woods_summer"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.main.lootTable.tier_perks.high_velocity",
-        "maps.faction.lootTable.tier_perks.high_velocity",
-        "maps.halloween.lootTable.tier_perks.high_velocity",
-        "maps.potato.lootTable.tier_perks.high_velocity",
-        "maps.snow.lootTable.tier_perks.high_velocity",
-        "maps.woods.lootTable.tier_perks.high_velocity",
-        "maps.savannah.lootTable.tier_perks.high_velocity",
-        "maps.cobalt.lootTable.tier_perks.high_velocity",
-        "maps.turkey.lootTable.tier_perks.high_velocity",
-        "maps.main_spring.lootTable.tier_perks.high_velocity",
-        "maps.main_summer.lootTable.tier_perks.high_velocity",
-        "maps.potato_spring.lootTable.tier_perks.high_velocity",
-        "maps.woods_snow.lootTable.tier_perks.high_velocity",
-        "maps.woods_spring.lootTable.tier_perks.high_velocity",
-        "maps.woods_summer.lootTable.tier_perks.high_velocity"
       ]
     },
     {
@@ -16243,6 +16166,48 @@
       "status": "skipped",
       "entry": {
         "section": "lootTables",
+        "target": "cobalt.lootTable.tier_class_crate_mythic[lifeline]",
+        "field": "weight",
+        "forkValue": 1,
+        "originalValue": "absent",
+        "line": 294,
+        "confidence": "H",
+        "note": "Indomitable Spirit = lifeline (fork perk)",
+        "refs": [
+          "balance/294",
+          "survev/shared/defs/maps/baseDefs.ts:533",
+          "derived/git-939023c5",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "desert.lootTable.tier_perks[amped_explosives]",
+        "field": "weight",
+        "forkValue": 1,
+        "originalValue": "absent",
+        "line": 320,
+        "confidence": "H",
+        "note": "Hyperfragmentation (fork perk)",
+        "refs": [
+          "balance/320",
+          "survev/shared/defs/maps/desertDefs.ts:206",
+          "derived/git-ff9bbabe",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
         "target": "faction.lootTable.tier_airdrop_rare[barrett]",
         "field": "weight",
         "forkValue": 0.5,
@@ -16440,6 +16405,42 @@
         "maps": [
           "main",
           "desert",
+          "faction",
+          "halloween",
+          "potato",
+          "snow",
+          "woods",
+          "savannah",
+          "cobalt",
+          "turkey",
+          "main_spring",
+          "main_summer",
+          "potato_spring",
+          "woods_snow",
+          "woods_spring",
+          "woods_summer"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_perks[high_velocity]",
+        "field": "weight",
+        "forkValue": "1",
+        "originalValue": "absent",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/baseDefs.ts:762",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "main",
           "faction",
           "halloween",
           "potato",
@@ -16904,12 +16905,6 @@
     },
     {
       "map": "main",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -16991,12 +16986,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "main",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "main_spring",
@@ -17018,12 +17007,6 @@
     },
     {
       "map": "main_spring",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17105,12 +17088,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "main_summer",
@@ -17132,12 +17109,6 @@
     },
     {
       "map": "main_summer",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17219,12 +17190,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "desert",
@@ -17246,12 +17211,6 @@
     },
     {
       "map": "desert",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17333,12 +17292,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "faction",
@@ -17360,12 +17313,6 @@
     },
     {
       "map": "faction",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17447,12 +17394,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "faction_potato",
@@ -17474,12 +17415,6 @@
     },
     {
       "map": "faction_potato",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17561,18 +17496,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_perks",
-      "item": "high_velocity",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "halloween",
@@ -17600,12 +17523,6 @@
     },
     {
       "map": "halloween",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17687,12 +17604,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "potato",
@@ -17714,12 +17625,6 @@
     },
     {
       "map": "potato",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17801,12 +17706,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "potato_spring",
@@ -17828,12 +17727,6 @@
     },
     {
       "map": "potato_spring",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17915,12 +17808,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "snow",
@@ -17942,12 +17829,6 @@
     },
     {
       "map": "snow",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18029,12 +17910,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "woods",
@@ -18056,12 +17931,6 @@
     },
     {
       "map": "woods",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18143,12 +18012,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "woods_snow",
@@ -18170,12 +18033,6 @@
     },
     {
       "map": "woods_snow",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18257,12 +18114,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "woods_spring",
@@ -18284,12 +18135,6 @@
     },
     {
       "map": "woods_spring",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18371,12 +18216,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "woods_summer",
@@ -18398,12 +18237,6 @@
     },
     {
       "map": "woods_summer",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18485,12 +18318,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "savannah",
@@ -18512,12 +18339,6 @@
     },
     {
       "map": "savannah",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18599,18 +18420,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_perks",
-      "item": "amped_explosives",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "cobalt",
@@ -18707,12 +18516,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "cobalt",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "turkey",
@@ -18734,12 +18537,6 @@
     },
     {
       "map": "turkey",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18821,12 +18618,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "birthday",
@@ -18848,12 +18639,6 @@
     },
     {
       "map": "birthday",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18935,18 +18720,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_perks",
-      "item": "high_velocity",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "beach",
@@ -18976,12 +18749,6 @@
       "map": "beach",
       "tier": "tier_coconut_outfit",
       "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19075,18 +18842,6 @@
       "reason": "table emptied: replaced with a single no-drop entry"
     },
     {
-      "map": "beach",
-      "tier": "tier_perks",
-      "item": "high_velocity",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "test_normal",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
@@ -19102,12 +18857,6 @@
       "map": "test_normal",
       "tier": "tier_coconut_outfit",
       "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19195,18 +18944,6 @@
       "reason": "table emptied: replaced with a single no-drop entry"
     },
     {
-      "map": "test_normal",
-      "tier": "tier_perks",
-      "item": "high_velocity",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "test_faction",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
@@ -19222,12 +18959,6 @@
       "map": "test_faction",
       "tier": "tier_coconut_outfit",
       "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_class_crate_mythic",
-      "item": "lifeline",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19313,18 +19044,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_perks",
-      "item": "high_velocity",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_crimson_perks",
-      "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
     }
   ],
   "gameConfigDiffs": [
@@ -20171,29 +19890,324 @@
       }
     },
     {
-      "path": "bagSizes.tomato",
-      "reason": "cut to the original's 4 backpack levels",
-      "kind": "pruned"
-    },
-    {
-      "path": "bagSizes.coconut",
-      "reason": "cut to the original's 4 backpack levels",
-      "kind": "pruned"
-    },
-    {
-      "path": "bagSizes.50AE",
-      "original": [
-        49,
-        98,
-        147,
-        196
-      ],
-      "survev": [
-        50,
-        100,
-        150,
-        200
-      ],
+      "path": "bagSizes",
+      "original": {
+        "9mm": [
+          120,
+          240,
+          330,
+          420
+        ],
+        "762mm": [
+          90,
+          180,
+          240,
+          300
+        ],
+        "556mm": [
+          90,
+          180,
+          240,
+          300
+        ],
+        "12gauge": [
+          15,
+          30,
+          60,
+          90
+        ],
+        "50AE": [
+          49,
+          98,
+          147,
+          196
+        ],
+        "308sub": [
+          10,
+          20,
+          40,
+          80
+        ],
+        "flare": [
+          2,
+          4,
+          6,
+          8
+        ],
+        "45acp": [
+          90,
+          180,
+          240,
+          300
+        ],
+        "frag": [
+          3,
+          6,
+          9,
+          12
+        ],
+        "smoke": [
+          3,
+          6,
+          9,
+          12
+        ],
+        "strobe": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "mirv": [
+          2,
+          4,
+          6,
+          8
+        ],
+        "snowball": [
+          10,
+          20,
+          30,
+          40
+        ],
+        "potato": [
+          10,
+          20,
+          30,
+          40
+        ],
+        "bandage": [
+          5,
+          10,
+          15,
+          30
+        ],
+        "healthkit": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "soda": [
+          2,
+          5,
+          10,
+          15
+        ],
+        "painkiller": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "1xscope": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "2xscope": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "4xscope": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "8xscope": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "15xscope": [
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "survev": {
+        "9mm": [
+          120,
+          240,
+          330,
+          420,
+          510
+        ],
+        "762mm": [
+          90,
+          180,
+          240,
+          300,
+          360
+        ],
+        "556mm": [
+          90,
+          180,
+          240,
+          300,
+          360
+        ],
+        "12gauge": [
+          15,
+          30,
+          60,
+          90,
+          120
+        ],
+        "50AE": [
+          50,
+          100,
+          150,
+          200,
+          250
+        ],
+        "308sub": [
+          20,
+          40,
+          55,
+          70,
+          85
+        ],
+        "flare": [
+          2,
+          4,
+          6,
+          8,
+          10
+        ],
+        "45acp": [
+          90,
+          180,
+          240,
+          300,
+          360
+        ],
+        "frag": [
+          3,
+          6,
+          9,
+          12,
+          15
+        ],
+        "smoke": [
+          3,
+          6,
+          9,
+          12,
+          15
+        ],
+        "strobe": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "mirv": [
+          2,
+          4,
+          6,
+          8,
+          10
+        ],
+        "snowball": [
+          10,
+          20,
+          30,
+          40,
+          50
+        ],
+        "potato": [
+          10,
+          20,
+          30,
+          40,
+          50
+        ],
+        "bandage": [
+          5,
+          10,
+          15,
+          30,
+          45
+        ],
+        "healthkit": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "soda": [
+          2,
+          5,
+          10,
+          15,
+          20
+        ],
+        "painkiller": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "1xscope": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "2xscope": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "4xscope": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "8xscope": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "15xscope": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "tomato": [
+          10,
+          20,
+          30,
+          40,
+          50
+        ],
+        "coconut": [
+          3,
+          6,
+          9,
+          12,
+          15
+        ]
+      },
       "kind": "survev (policy.json)"
     }
   ],
@@ -20475,10 +20489,6 @@
       "emote_salutingface",
       "emote_screamingface",
       "explosion_cobalt",
-      "backpack04",
-      "helmet04_captain",
-      "helmet04_classless",
-      "backpack04_cloud",
       "outfitClassless",
       "outfitMaintainer",
       "outfitGD",
@@ -20547,15 +20557,7 @@
       "quest_demo_damage",
       "quest_assault_damage",
       "quest_classless_damage",
-      "assume_leadership",
-      "ap_rounds",
-      "lifeline",
-      "combat_stims",
-      "amped_explosives",
-      "high_velocity",
-      "pass_survivr2",
-      "captain",
-      "classless"
+      "pass_survivr2"
     ],
     "mapObjects": [
       "vault_door_reserve",

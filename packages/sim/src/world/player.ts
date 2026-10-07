@@ -95,6 +95,10 @@ export class Player implements InventoryOwner {
     readonly haste = { type: "none" as HasteName, ticker: 0, seq: 0 };
     /** seconds of Last Breath left (bonus damage, size, M7a) */
     lastBreathTicker = 0;
+    /** Combat Stimulants (survev-only perk): seconds its bonus still runs after a heal or boost */
+    combatStimsTicker = 0;
+    /** Indomitable Spirit absorbed a fatal hit: seconds its effect still shows (survev lastStandEffectTicker) */
+    lastStandTicker = 0;
     /** Spud Gun hits: extra size, shrinking 2.5 s after the last hit (survev fatModifier / fatTicker, M7a) */
     fat = { mod: 0, ticker: 0 };
     /** snowball / potato hit: slowed for `ticker` s, frozen pose turned by `ori` (M7b, modes/frozen.ts) */

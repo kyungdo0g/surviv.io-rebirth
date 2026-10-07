@@ -53,6 +53,23 @@ export const ROLE_LOADOUTS: Readonly<Record<string, RoleLoadout>> = {
         noDropOutfit: true,
         inventory: { "8xscope": 1 },
     },
+    // survev-only Captain (survev roleDefs.ts:162-193): weapons refilled, the leader outfit, healing items
+    captain: {
+        weapons: [NONE, NONE, NONE, NONE],
+        backpack: "backpack03",
+        helmet: "helmet04_captain",
+        chest: "chest03",
+        outfit: byTeam("outfitRedLeader", "outfitBlueLeader"),
+        noDropOutfit: true,
+        inventory: { "8xscope": 1, bandage: 10, healthkit: 1, soda: 2 },
+    },
+    // survev-only Classless (survev roleDefs.ts:557-571): its helmet, nothing else (outfitClassless comes with the
+    // survev outfits)
+    classless: {
+        weapons: [NONE, NONE, NONE, NONE],
+        helmet: "helmet04_classless",
+        inventory: {},
+    },
     lieutenant: {
         weapons: [NONE, byTeam(w("m4a1", 40, true), w("grozas", 40, true)), w("spade_assault"), NONE],
         backpack: "backpack03",

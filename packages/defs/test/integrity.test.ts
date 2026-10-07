@@ -226,7 +226,7 @@ describe("loot tables", () => {
             for (const entries of Object.values<any[]>(map.lootTable)) {
                 for (const e of entries) {
                     if (!stackable.has(gameObjects[e.name]?.type)) continue;
-                    expect(gameConfig.bagSizes[e.name], `${name}: bagSizes.${e.name}`).toHaveLength(4);
+                    expect(gameConfig.bagSizes[e.name], `${name}: bagSizes.${e.name}`).toHaveLength(5);
                 }
             }
         }

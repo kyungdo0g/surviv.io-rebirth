@@ -14994,6 +14994,96 @@
     ],
     "dropRandomLoot": 1
   },
+  "backpack04": {
+    "name": "Tactical Pack",
+    "type": "backpack",
+    "level": 4,
+    "tint": 6710835,
+    "playerRad": 1,
+    "lootImg": {
+      "sprite": "loot-pack-04.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "pack_pickup_01"
+    }
+  },
+  "helmet04_captain": {
+    "name": "Captain Helmet",
+    "type": "helmet",
+    "level": 4,
+    "damageReduction": 0.7,
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseTintRed": 16777215,
+      "baseTintBlue": 16777215,
+      "baseSprite": "player-helmet-captain.img",
+      "spriteScale": 0.3
+    },
+    "lootImg": {
+      "sprite": "player-helmet-captain.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.3,
+      "rot": 1.5707963267948966
+    },
+    "sound": {
+      "pickup": "helmet_pickup_01"
+    },
+    "baseType": "helmet04",
+    "noDrop": true
+  },
+  "helmet04_classless": {
+    "name": "Classless Helmet",
+    "type": "helmet",
+    "level": 4,
+    "damageReduction": 0.7,
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseTintRed": 16777215,
+      "baseTintBlue": 16777215,
+      "baseSprite": "player-helmet-classless.img",
+      "spriteScale": 0.275
+    },
+    "lootImg": {
+      "sprite": "player-helmet-classless.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2,
+      "rot": 1.5707963267948966
+    },
+    "sound": {
+      "pickup": "helmet_pickup_01"
+    },
+    "baseType": "helmet04",
+    "noDrop": true
+  },
+  "backpack04_cloud": {
+    "name": "Experimental Pack",
+    "type": "backpack",
+    "level": 4,
+    "tint": 6710835,
+    "playerRad": 1,
+    "lootImg": {
+      "sprite": "loot-pack-04-cloud.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "pack_pickup_01"
+    },
+    "baseType": "backpack04",
+    "hasDesc": true,
+    "desc": "You can equip an extra perk.",
+    "maxPerks": 2
+  },
   "imbel": {
     "name": "IMD-2",
     "type": "gun",
@@ -15859,6 +15949,62 @@
     "noPotatoSwap": true,
     "perk": "pirate"
   },
+  "assume_leadership": {
+    "name": "Assume Leadership",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-assume-leadership.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "ap_rounds": {
+    "name": "AP Rounds",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-ap-rounds.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "lifeline": {
+    "name": "Indomitable",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-lifeline.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "combat_stims": {
+    "name": "Combat Stimulants",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-combat-stims.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
   "pirate": {
     "name": "Pirate's Bounty",
     "type": "perk",
@@ -15871,6 +16017,167 @@
     },
     "sound": {
       "pickup": "perk_pickup_01"
+    }
+  },
+  "amped_explosives": {
+    "name": "Hyperfragmentation",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-amped-explosives.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "high_velocity": {
+    "name": "High-Velocity Rounds",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-high-velocity.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "captain": {
+    "type": "role",
+    "announce": true,
+    "killFeed": {
+      "assign": true
+    },
+    "sound": {
+      "assign": "captain_assigned_01"
+    },
+    "mapIcon": {
+      "alive": "player-captain.img"
+    },
+    "perks": [
+      "assume_leadership",
+      "firepower"
+    ],
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "backpack03",
+      "helmet": "helmet04_captain",
+      "chest": "chest03",
+      "outfit": {
+        "$byTeam": {
+          "red": "outfitRedLeader",
+          "blue": "outfitBlueLeader"
+        }
+      },
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 10,
+        "healthkit": 1,
+        "soda": 2,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 1,
+        "15xscope": 0
+      },
+      "noDropOutfit": true
+    }
+  },
+  "classless": {
+    "type": "role",
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "",
+      "helmet": "helmet04_classless",
+      "chest": "",
+      "outfit": "outfitClassless",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 0,
+        "healthkit": 0,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    },
+    "announce": false,
+    "sound": {
+      "assign": "spawn_01"
+    },
+    "perks": [],
+    "visorImg": {
+      "baseSprite": "player-visor-classless.img",
+      "spriteScale": 0.3
     }
   },
   "potato_lmgshot": {

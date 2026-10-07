@@ -149,6 +149,7 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
             distanceMult: perks.distanceMult,
             saturated: perks.saturated,
             thick: perks.thick,
+            apRounds: perks.apRounds,
             clipDistance,
             distance: mouseDistance,
         };

@@ -100,6 +100,32 @@ export interface PerkRules {
         rareChance: number;
         rareTier: string;
     };
+    /** AP Rounds: armour reductions x0.8, obstacle damage x1.5 (survev perkDefs.ts:41-44; wikigg/AP_Rounds) */
+    apRounds: { armorPenetration: number; obstacleMult: number };
+    /** High-Velocity Rounds: bullet speed x1.4, range x1.3 (survev perkDefs.ts:141-144; wikigg/High-Velocity_Rounds) */
+    highVelocity: { speedMult: number; distanceMult: number };
+    /**
+     * Hyperfragmentation: throws x2 speed and x1.75 aim range; its explosions' shrapnel x2 count (rounded up), x1.5
+     * damage, x1.4 speed (survev perkDefs.ts:26-32, weaponManager.ts:1236-1247, explosion.ts:146-158;
+     * wikigg/Hyperfragmentation)
+     */
+    ampedExplosives: {
+        throwableRangeMult: number;
+        throwableSpeedMult: number;
+        shrapnelCountMult: number;
+        shrapnelDamageMult: number;
+        shrapnelSpeedMult: number;
+    };
+    /**
+     * Combat Stimulants: for 5 s after the holder uses a heal or boost, its bullets deal x1.15 and its gun hits on
+     * teammates heal them 6 % of the hit (survev perkDefs.ts:97-101, player.ts:1688-1705, 2423-2439)
+     */
+    combatStims: { bonusDamageMult: number; healPercent: number; effectDuration: number };
+    /**
+     * Indomitable Spirit: adrenaline decays x0.75; a fatal hit leaves 1 HP when the adrenaline covers the excess at 2
+     * adrenaline per HP (survev perkDefs.ts:90-93, player.ts:1535-1541, 2493-2510; wikigg/Indomitable_Spirit)
+     */
+    lifeline: { decayMult: number; conversionRate: number };
 }
 
 export function defaultPerkRules(): PerkRules {
@@ -111,8 +137,10 @@ export function defaultPerkRules(): PerkRules {
             small_arms: -0.25,
             trick_size: 0.25,
             gotw: 0.25,
+            // survev-only Assume Leadership (survev perkDefs.ts:9-12)
+            assume_leadership: 0.15,
         },
-        minBoost: { leadership: 100 },
+        minBoost: { leadership: 100, assume_leadership: 50 },
         hasteSpeedBonus: 4.8,
         windwalkTriggerDistance: 5,
         windwalkDuration: 3,
@@ -152,6 +180,17 @@ export function defaultPerkRules(): PerkRules {
         firepowerExcess: "delete",
         scavengerTiers: { scavenger: "tier_world", scavenger_adv: "tier_scavenger_adv" },
         pirate: { minCount: 3, maxCount: 4, tier: "tier_pirate", rareChance: 0.12, rareTier: "tier_pirate_rare" },
+        apRounds: { armorPenetration: 0.8, obstacleMult: 1.5 },
+        highVelocity: { speedMult: 1.4, distanceMult: 1.3 },
+        ampedExplosives: {
+            throwableRangeMult: 1.75,
+            throwableSpeedMult: 2,
+            shrapnelCountMult: 2,
+            shrapnelDamageMult: 1.5,
+            shrapnelSpeedMult: 1.4,
+        },
+        combatStims: { bonusDamageMult: 1.15, healPercent: 0.06, effectDuration: 5 },
+        lifeline: { decayMult: 0.75, conversionRate: 2 },
     };
 }
 

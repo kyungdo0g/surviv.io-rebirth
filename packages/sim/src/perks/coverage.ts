@@ -44,5 +44,12 @@ export const PERK_EFFECTS: Readonly<Record<string, string>> = {
     treat_762: "7.62mm bullets +8 %, darker tracer (shotPerks.ts)",
     treat_super: "every bullet +8 %, darker tracer (shotPerks.ts)",
     pirate: "melee kills drop 3-4 tier_pirate rolls and 12 % a tier_pirate_rare roll (effects.ts, drops.ts)",
+    assume_leadership: "adrenaline floor 50, size +15 % (perks.ts perkMinBoost / recalcScale; captain role)",
+    ap_rounds: "bullets: armour reductions x0.8, obstacle damage x1.5 (shotPerks.ts, bullets.ts, damage.ts)",
+    lifeline: "adrenaline decays x0.75; fatal hits leave 1 HP for 2 adrenaline per HP (consumables.ts, combat.ts)",
+    combat_stims: "5 s after a heal or boost: bullets x1.15, gun hits heal teammates 6 % (shotPerks.ts, combat.ts)",
+    amped_explosives:
+        "throws x2 speed and x1.75 range; shrapnel x2 count, x1.5 damage, x1.4 speed (throwable.ts, explosions.ts)",
+    high_velocity: "bullet speed x1.4, range x1.3 (shotPerks.ts)",
     turkey_shoot: "cosmetic: emotes a turkey on pickup; clients burst victims into feathers (pickup.ts)",
 };

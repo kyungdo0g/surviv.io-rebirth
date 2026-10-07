@@ -18,6 +18,8 @@ export interface DamageParams {
     sourceId?: number;
     /** direction of the hit */
     dir?: Vec2;
+    /** every reduction is multiplied by this (AP Rounds 0.8: armour is 80 % as effective; survev player.ts:2447-2452) */
+    armorPenetration?: number;
 }
 
 /** What a target wears, for the reductions. */
@@ -64,7 +66,7 @@ export function computeDamage(params: DamageParams, headshot: boolean, target: A
     let damage = params.amount;
     if (params.damageType === DamageType.Gas || params.damageType === DamageType.Bleeding) return damage;
     const reduce = (mult: number) => {
-        damage -= damage * mult;
+        damage -= damage * mult * (params.armorPenetration ?? 1);
     };
     if (headshot) damage *= headshotMultOf(params.gameSourceType) ?? 1;
     if (target.hasPerk("flak_jacket")) {

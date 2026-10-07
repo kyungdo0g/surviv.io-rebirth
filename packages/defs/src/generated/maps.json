@@ -1866,6 +1866,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -2695,9 +2700,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -4975,6 +4990,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -5814,9 +5834,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -8128,6 +8158,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -8967,9 +9002,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -11252,6 +11297,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -12031,9 +12081,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "amped_explosives",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -14464,6 +14524,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -15298,9 +15363,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -17923,6 +17998,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -18832,9 +18912,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -21139,6 +21229,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -21958,9 +22053,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -24114,6 +24219,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -24948,9 +25058,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -27159,6 +27279,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -27983,9 +28108,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -30314,6 +30449,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -31153,9 +31293,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -33276,6 +33426,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -34060,9 +34215,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -36190,6 +36355,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -36969,9 +37139,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -39096,6 +39276,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -39880,9 +40065,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -41990,6 +42185,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -42774,9 +42974,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -44694,6 +44904,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -45463,9 +45678,24 @@
           "name": "bonus_9mm",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "amped_explosives",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -47708,6 +47938,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -48527,9 +48762,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -50851,6 +51096,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -51690,9 +51940,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -53830,6 +54090,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -54669,9 +54934,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -56841,6 +57116,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -57675,9 +57955,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -60003,6 +60293,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -60842,9 +61137,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -63019,6 +63324,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -63858,9 +64168,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,

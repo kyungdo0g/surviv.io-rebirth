@@ -98,6 +98,9 @@ export const koItems: Readonly<Record<string, string>> = {
     backpack01: "작은 가방",
     backpack02: "보통 가방",
     backpack03: "군용 가방",
+    // survev-only packs and role helmets (l10n-ko.md proposals; survev's ko.json has none)
+    backpack04: "전술 가방",
+    backpack04_cloud: "실험용 가방",
     chest01: "1레벨 조끼",
     chest02: "2레벨 조끼",
     chest03: "3레벨 조끼",
@@ -113,6 +116,8 @@ export const koItems: Readonly<Record<string, string>> = {
     helmet03_potato: "K-포-테토",
     helmet03_marksman: "명사수 헬멧",
     helmet04_leader: "지휘관 헬멧",
+    helmet04_captain: "대장 헬멧",
+    helmet04_classless: "무소속 헬멧",
     "1xscope": "1배율 스코프",
     "2xscope": "2배율 스코프",
     "4xscope": "4배율 스코프",

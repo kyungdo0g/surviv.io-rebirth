@@ -98,6 +98,10 @@ export interface ObstacleDef {
         offImg?: string;
         sound: { on: string; off: string };
         destroyOnUse?: boolean;
+        /** survev: the user is promoted to this role (the Augmenting Vat: "classless") */
+        roleToPromote?: string;
+        /** survev: an Augmenting Vat (client presentation) */
+        isVat?: boolean;
         useParticle?: string;
     };
     /** map object spawned when destroyed; with smartLoot it is a prefix completed with `_${role}` */

@@ -4,7 +4,7 @@
 // useBoostItem, the action block and the boost block of update).
 import { GameConfig, getDef, hasDef, WeaponSlot } from "@rebirth/defs";
 import { isBagItem, SCOPE_LEVELS, THROWABLE_LIST } from "../items/inventory.ts";
-import { perkMinBoost } from "../perks/perks.ts";
+import { perkMinBoost, rulesOf } from "../perks/perks.ts";
 import { boostHealAmounts, type SimRules } from "../rules.ts";
 import type { SimContext } from "./context.ts";
 import { teammatesInRange } from "./downed.ts";
@@ -57,7 +57,11 @@ export function updateBoost(player: Player, rules: Pick<SimRules, "boostModel">,
     player.boost = Math.min(Math.max(player.boost, floor), MAX_BOOST);
     if (!(player.boost > 0)) return;
     player.health = Math.min(PLAYER.health, player.health + boostHealRate(player.boost, rules) * dt);
-    if (player.boost > floor) player.boost = Math.max(floor, player.boost - PLAYER.boostDecay * dt);
+    // Indomitable Spirit: adrenaline decays x0.75 (survev player.ts:1535-1541)
+    const decay = player.hasPerk("lifeline")
+        ? PLAYER.boostDecay * rulesOf(player).perks.lifeline.decayMult
+        : PLAYER.boostDecay;
+    if (player.boost > floor) player.boost = Math.max(floor, player.boost - decay * dt);
 }
 
 /** Whether a throwable is being cooked (survev weaponManager cookingThrowable: the cook animation runs). */
@@ -144,5 +148,7 @@ export function completeUse(player: Player, item: string, ctx?: SimContext): voi
         if (def.type === "heal") t.health = Math.min(PLAYER.health, t.health + def.heal);
         else t.boost = Math.min(MAX_BOOST, t.boost + def.boost);
     }
+    // Combat Stimulants: the user's bonus runs for 5 s after any heal or boost (survev player.ts:1688-1705)
+    if (player.hasPerk("combat_stims")) player.combatStimsTicker = rulesOf(player).perks.combatStims.effectDuration;
     player.inv.take(item, 1);
 }

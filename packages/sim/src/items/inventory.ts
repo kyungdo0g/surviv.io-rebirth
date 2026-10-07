@@ -42,7 +42,8 @@ export function gearQuality(id: string): number {
         if (def.perk) quality += 1;
         if (def.role) quality += 1;
     } else if (def.type === "backpack") {
-        quality += 1;
+        // the Experimental Pack's second perk slot makes it better than the Tactical Pack (survev player.ts:791-793)
+        quality += def.maxPerks ?? 1;
     }
     return quality;
 }

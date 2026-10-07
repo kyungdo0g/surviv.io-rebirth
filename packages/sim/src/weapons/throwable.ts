@@ -8,6 +8,7 @@
 // docs/research/items/throwables.md "Throwing, cooking and flight rules".
 import { collider, math, v2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, hasDef, type ThrowableDef, WeaponSlot } from "@rebirth/defs";
+import { rulesOf } from "../perks/perks.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
@@ -52,7 +53,9 @@ export function throwThrowable(ctx: SimContext | null, player: Player, noSpeed =
     const def = throwableDef(item);
     if (!def || player.inv.get(item) <= 0) return;
     // TODO(M8): heavy snowballs/potatoes (heavyType) need the original cook time, unknown (throwables.md)
-    const maxDist = PLAYER.throwableMaxMouseDist;
+    // Hyperfragmentation: x1.75 aim range and x2 throw speed (survev weaponManager.ts:1236-1247)
+    const amped = player.hasPerk("amped_explosives") ? rulesOf(player).perks.ampedExplosives : undefined;
+    const maxDist = PLAYER.throwableMaxMouseDist * (amped?.throwableRangeMult ?? 1);
     let strength: number;
     if (def.forceMaxThrowDistance) strength = 1;
     else if (wm.curWeapIdx !== WeaponSlot.Throwable || noSpeed) strength = 0;
@@ -84,7 +87,7 @@ export function throwThrowable(ctx: SimContext | null, player: Player, noSpeed =
     }
     const vel = v2.add(
         v2.mul(player.moveVel, def.throwPhysics.playerVelMult),
-        v2.mul(dir, strength * def.throwPhysics.speed),
+        v2.mul(dir, strength * def.throwPhysics.speed * (amped?.throwableSpeedMult ?? 1)),
     );
     const fuse = def.cookable ? Math.max(0, def.fuseTime - wm.cookTicker + cookedThisTick) : def.fuseTime;
     if (ctx) {

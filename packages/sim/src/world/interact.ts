@@ -51,7 +51,6 @@ export function interactableObstacles(ctx: SimContext, player: Player): Obstacle
 export function interactObstacle(ctx: SimContext, obstacle: Obstacle, player: Player | null, auto = false): void {
     if (obstacle.dead) return;
     if (player && !auto && obstacle.interactCooldown > 0) return;
-    // (buttons with roleToPromote, the fork's Augmenting Vat, do not exist in the v0.8.82 defs)
     if (obstacle.door) interactDoor(ctx, obstacle, player, auto);
     const button = obstacle.button;
     const def = obstacle.def.button;
@@ -78,7 +77,7 @@ export function useObstacle(ctx: SimContext, obstacle: Obstacle, player: Player 
  * puzzle piece switched on reports to its building, recorders play, `destroyOnUse` buttons die after `useDelay`
  * (survev useButton).
  */
-export function useButton(ctx: SimContext, obstacle: Obstacle, _player: Player | null): void {
+export function useButton(ctx: SimContext, obstacle: Obstacle, player: Player | null): void {
     const button = obstacle.button;
     const def = obstacle.def.button;
     if (obstacle.dead || !button || !def || !button.canUse) return;
@@ -107,6 +106,8 @@ export function useButton(ctx: SimContext, obstacle: Obstacle, _player: Player |
             });
         }
     }
+    // survev's Augmenting Vat promotes its user (button roleToPromote "classless", survev obstacle.ts:793-796)
+    if (def.roleToPromote && player) ctx.roles.promote(player, def.roleToPromote);
     if (button.onOff && obstacle.puzzlePiece && building) puzzlePieceToggled(ctx, building, obstacle);
     // recorders only play their recording (maps/puzzles.md "Recorders")
     if (obstacle.type.startsWith("recorder_")) ctx.onRecorderUsed(obstacle);

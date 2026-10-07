@@ -407,9 +407,9 @@ describe("survev-only guns: stats", () => {
 });
 
 describe("survev-only guns: ammo, ids", () => {
-    // wikigg .50 Caliber rev 7198: 50 / 100 / 150 / 200 / 250; the game has four packs
-    it(".50 ammo: survev's bag sizes for the four packs", () => {
-        expect(GameConfig.bagSizes["50AE"]).toEqual([50, 100, 150, 200]);
+    // wikigg .50 Caliber rev 7198: 50 / 100 / 150 / 200 / 250
+    it(".50 ammo: survev's bag sizes for the five packs", () => {
+        expect(GameConfig.bagSizes["50AE"]).toEqual([50, 100, 150, 200, 250]);
         for (const id of ["barrett", "ash12", "sw500", "deagle"]) expect(getDefOfType("gun", id).ammo).toBe("50AE");
         // the S&W 500's 35 and the ASh-12's 70 spawn rounds fit a level 0 bag
         expect(GameConfig.bagSizes["50AE"][0]).toBeGreaterThanOrEqual(35);

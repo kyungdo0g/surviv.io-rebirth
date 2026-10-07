@@ -263,7 +263,12 @@ export class ExplosionSystem {
         const { def } = e;
         if (!def.shrapnelCount || !def.shrapnelType || !hasDef(def.shrapnelType)) return;
         const rng = this.host.fxRng;
-        for (let i = 0; i < def.shrapnelCount; i++) {
+        // Hyperfragmentation: the source's shrapnel x2 count (rounded up), x1.5 damage, x1.4 speed, darker tracer
+        // (survev explosion.ts:146-178)
+        const source = e.source.sourceId ? this.host.getPlayer(e.source.sourceId) : undefined;
+        const amped = source?.hasPerk("amped_explosives") ? this.host.rules.perks.ampedExplosives : undefined;
+        const count = Math.ceil(def.shrapnelCount * (amped?.shrapnelCountMult ?? 1));
+        for (let i = 0; i < count; i++) {
             const varianceT = rng.next();
             this.host.bullets.fire({
                 shooterId: e.source.sourceId ?? 0,
@@ -276,6 +281,9 @@ export class ExplosionSystem {
                 layer: e.layer,
                 varianceT,
                 shotFx: false,
+                damageMult: amped?.shrapnelDamageMult ?? 1,
+                speedMult: amped?.shrapnelSpeedMult ?? 1,
+                saturated: !!amped,
             });
         }
     }

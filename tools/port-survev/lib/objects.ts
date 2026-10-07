@@ -192,6 +192,13 @@ export function portGameConfig(
         let value = clone(pathGet(survev, keys));
         if (value === undefined) throw new Error(`policy.json survevGameConfig: survev has no ${path}`);
         if (Array.isArray(value) && Array.isArray(original)) value = value.slice(0, original.length);
+        // a whole table (bagSizes): survev's rows, the original's keys first so their order stays the original's
+        if (isPlainObject(value) && isPlainObject(original)) {
+            const ordered: Record<string, unknown> = {};
+            for (const k of Object.keys(original)) if (k in value) ordered[k] = value[k];
+            for (const k of Object.keys(value)) if (!(k in ordered)) ordered[k] = value[k];
+            value = ordered;
+        }
         const holder = pathGet(config, keys.slice(0, -1));
         if (!isPlainObject(holder)) throw new Error(`policy.json survevGameConfig: ${path} has no parent object`);
         holder[keys.at(-1)!] = value;
@@ -209,8 +216,10 @@ export function portGameConfig(
             prunes.push({ path: `${path}.${key}`, reason: "item not in the ported game objects" });
         }
     }
-    // survev-only bag rows (coconut, tomato) have survev's five levels; every row keeps the original's level count
-    const levels = Object.values(live.bagSizes ?? {}).find(Array.isArray)?.length;
+    // survev-only bag rows (coconut, tomato) have survev's five levels; every row keeps the level count of the
+    // original's rows (four, or survev's five when the policy takes the whole bagSizes table)
+    const firstLive = Object.keys(live.bagSizes ?? {})[0];
+    const levels = firstLive && Array.isArray(config.bagSizes?.[firstLive]) ? config.bagSizes[firstLive].length : 0;
     for (const [key, row] of Object.entries(config.bagSizes ?? {})) {
         if (!levels || !Array.isArray(row) || row.length <= levels) continue;
         config.bagSizes[key] = row.slice(0, levels);

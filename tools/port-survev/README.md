@@ -45,7 +45,7 @@ this order (0 is the empty type), so every original def keeps the index its posi
    base's original def plus every field survev's skin changes against survev's base, so `svd_winter`, `sv98_winter`
    and `awc_winter` keep their base's stats with survev's winter world image; `naginata_daemon` and
    `karambit_borealis` likewise) and `survevGameConfig` (GameConfig paths from survev, arrays cut to
-   the original's length: `bagSizes.50AE` 50 / 100 / 150 / 200). Unknown keys are errors; a listed id that is
+   the original's length; a whole table keeps the original's keys first: today `bagSizes`, survev's five levels). Unknown keys are errors; a listed id that is
    original or not in survev is an error.
 1. **Game objects** are the original client defs, unchanged, then the policy's survev-only ids in survev order
    (`provenance.gameObjects`: `"original"` or `"survev-only"`). Other survev-only ids are left out
@@ -93,7 +93,8 @@ this order (0 is the empty type), so every original def keeps the index its posi
    enum reverse mappings are dropped. survev's gas stage table (a private const in
    `server/src/game/objects/gas.ts`) is added as `gas.stages`. The policy's `survevGameConfig` paths take survev's
    value instead. `bagSizes` and `player.defaultItems.inventory` keys for items that don't exist are pruned, and
-   survev-only bag rows (`coconut`, `tomato`) are cut to the original's four levels.
+   survev-only bag rows are cut to the level count of the original's rows (no-op since the policy takes survev's
+   whole five-level `bagSizes`).
    `provenance.gameConfigDiffs` lists every key that differs, exists on one side only, was pruned or was taken from
    survev by the policy.
 

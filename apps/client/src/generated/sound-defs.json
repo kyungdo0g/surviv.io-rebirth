@@ -1840,6 +1840,12 @@
    "spawn_01": {
     "path": "audio/ui/spawn_01.mp3",
     "volume": 3
+   },
+   "captain_assigned_01": {
+    "path": "audio/ui/captain_assigned_01.mp3",
+    "volume": 2,
+    "source": "survev",
+    "maxInstances": 1
    }
   },
   "music": {
