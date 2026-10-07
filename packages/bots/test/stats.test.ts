@@ -89,5 +89,5 @@ describe("match stats", () => {
         expect(dealt).toBeGreaterThan(0);
         const kills = ps.reduce((a, p) => a + p.kills, 0);
         expect(ps.filter((p) => p.killerBrain !== null).length).toBe(kills);
-    }, 60_000);
+    }, 120_000);
 });

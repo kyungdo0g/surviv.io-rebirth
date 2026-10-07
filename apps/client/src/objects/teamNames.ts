@@ -1,6 +1,6 @@
 // Teammates' names in the world (survev client/src/objects/player.ts createPlayerNameText and the nameText update of
-// m_update): bold 22 px Arial in cyan with a 1 px black drop shadow, drawn at half scale 30 px under the player's
-// centre, for every member of the followed player's group except the followed player itself.
+// m_update): bold 22 px Arial (30 px when devicePixelRatio > 1) in cyan with a 1 px black drop shadow, drawn at half
+// scale 30 px under the player's centre, for every member of the followed player's group except the followed player.
 import { Text } from "pixi.js";
 import { type Renderer, toLocal } from "../render/renderer.ts";
 
@@ -22,6 +22,11 @@ export class TeamNames {
         this.renderer = renderer;
     }
 
+    /** font size of the names drawn (tests) */
+    get fontSizes(): number[] {
+        return [...this.texts.values()].filter((t) => t.visible).map((t) => Number(t.style.fontSize));
+    }
+
     /** names drawn (tests) */
     get shown(): string[] {
         return [...this.texts.values()].filter((t) => t.visible).map((t) => t.text);
@@ -34,13 +39,15 @@ export class TeamNames {
             seen.add(e.playerId);
             let text = this.texts.get(e.playerId);
             if (!text) {
+                // survev player.ts createPlayerNameText: larger on high-density screens (the recordings show it)
+                const hiDpi = typeof window !== "undefined" && window.devicePixelRatio > 1;
                 text = new Text({
                     text: e.name,
                     resolution: 2,
                     style: {
                         fontFamily: "Arial",
                         fontWeight: "bold",
-                        fontSize: 22,
+                        fontSize: hiDpi ? 30 : 22,
                         align: "center",
                         fill: 0x00ffff,
                         dropShadow: { color: 0x000000, blur: 1, angle: Math.PI / 3, distance: 1, alpha: 1 },

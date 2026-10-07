@@ -75,6 +75,8 @@ export const PARTICLE_DEFS_M5: Readonly<Record<string, ParticleDef>> = {
     explosionUSAS: burst("part-frag-burst-01.img", () => hsv(0.08, 1, rnd(0.98, 0.99))),
     explosionRounds: burst("part-frag-burst-03.img", () => hsv(0.08, 0.7, rnd(0.75, 0.8))),
     explosionBomb: burst("part-frag-burst-02.img", 0xffffff),
+    /** rebirth-only: the heavy air strike shell's burst, the bomb burst lasting 1.6x as long in a warm tint */
+    explosionBombHeavy: { ...burst("part-frag-burst-02.img", 0xffc890), life: 0.8 },
     explosionPotato: burst("part-frag-burst-01.img", 0xad661a),
     explosionPotatoSMG: burst("part-frag-burst-01.img", 0xc4a80a),
     explosionSmoke: {

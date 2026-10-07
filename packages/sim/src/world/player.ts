@@ -97,6 +97,8 @@ export class Player implements InventoryOwner {
     fat = { mod: 0, ticker: 0 };
     /** snowball / potato hit: slowed for `ticker` s, frozen pose turned by `ori` (M7b, modes/frozen.ts) */
     frozen = { ticker: 0, ori: 0 };
+    /** PMG-134 hits: zoom radius taken off the view until `ticker` s pass without a hit (modes/frozen.ts) */
+    viewShrink = { amount: 0, ticker: 0 };
     /** Cobalt: no class chosen yet; the player waits (in the Twins bunker) and cannot act or be hurt (M7b) */
     awaitingClass = false;
     /** seconds until the bugle regains a charge (Inspiration), 0 when not recharging */
@@ -437,6 +439,10 @@ export class Player implements InventoryOwner {
         updateEmoteThrottle(this, dt);
         // snowball / potato slowdown (survev update "Projectile slowdown logic")
         if (this.frozen.ticker > 0) this.frozen.ticker = Math.max(0, this.frozen.ticker - dt);
+        if (this.viewShrink.amount > 0) {
+            this.viewShrink.ticker -= dt;
+            if (this.viewShrink.ticker <= 0) this.viewShrink = { amount: 0, ticker: 0 };
+        }
         this.updateAction(ctx, dt);
         if (this.animType !== "none") {
             this.animTicker -= dt;
@@ -505,10 +511,14 @@ export class Player implements InventoryOwner {
         if (this.visionRecoveryTicker >= VISION_RECOVERY_TIME - TIME_EPS) this.visionObscured = false;
     }
 
-    /** Scope zoom, overridden by building zoom regions while indoors and by smoke (survev player.ts). */
+    /**
+     * Scope zoom less the PMG-134 view shrink (never below 1x), overridden by building zoom regions while indoors and
+     * by smoke (survev player.ts).
+     */
     private updateZoom(objs: readonly Entity[]): void {
         const lowestZoom = this.zoomRadius["1xscope"];
-        let finalZoom = Math.max(lowestZoom, this.zoomRadius[this.scope] ?? lowestZoom);
+        const scopeZoom = this.zoomRadius[this.scope] ?? lowestZoom;
+        let finalZoom = Math.max(lowestZoom, scopeZoom - this.viewShrink.amount);
         let regionZoom = lowestZoom;
         let outsideAllRegions = true;
         this.indoors = false;

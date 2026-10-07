@@ -5,10 +5,12 @@
 // heat; it rotates there early in hops of at most 30 units from cover to cover, then holds, scanning around with its
 // crosshair (Intent.lookAt). As soon as an enemy shows up the regular fight takes over (a hold below an unprovoked fight
 // in the utility choice; standing still under fire loses), the gas and healing still win, and 30 s without an enemy in
-// sight give looting and exploring 8 s.
+// sight give looting and exploring 8 s. In team modes followers hold within 30 units of their leader (team.ts onLeash):
+// a team spread over four endgame spots fights the last squad one at a time.
 import { type Vec2, v2 } from "@rebirth/core";
 import { addCombatLayer, obstacleGeom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent, nearFailedGoal, reachable } from "./context.ts";
+import { onLeash } from "./team.ts";
 
 const ALIVE_LIMIT = 10;
 const SMALL_CIRCLE = 80;
@@ -81,9 +83,12 @@ function searchHoldSpot(ctx: BrainCtx): Vec2 | null {
         const { c, r } = obstacleGeom(o);
         if (r < 0.9 || r > 7) continue;
         if (v2.distance(c, self.pos) > SEARCH_RANGE) continue;
-        // the side of the obstacle facing the circle centre: enemies come in from the edge
+        // the side of the obstacle facing the circle centre: enemies come in from the edge (at the centre of its
+        // navigation cell, where a player can stand: findCoverFrom)
         const toCentre = v2.normalizeSafe(v2.sub(gas.posNew, c));
-        consider(v2.add(c, v2.mul(toCentre, r * (o.col.type === 1 ? 0.75 : 1) + 1.3)), 0);
+        const raw = v2.add(c, v2.mul(toCentre, r * (o.col.type === 1 ? 0.75 : 1) + 1.3));
+        if (!model.nav.walkableAt(raw)) continue;
+        consider(model.nav.center(model.nav.nearestWalkable(raw, 1)), 0);
     }
     return found.best;
 }
@@ -96,7 +101,8 @@ export function holdScore(ctx: BrainCtx): number {
         sm.holdSearchAt = ctx.now;
         sm.holdSpot = searchHoldSpot(ctx);
     }
-    if (!sm.holdSpot) return 0;
+    // team modes: followers hold near their leader (the leader's spot is the team's)
+    if (!sm.holdSpot || !onLeash(ctx, sm.holdSpot)) return 0;
     // a hold is for positioning while nobody is around: any enemy seen lately is the fight behaviour's business
     if (ctx.enemies.some((e) => !e.downed && ctx.now - e.lastSeen < ENEMY_RECENT)) return 0;
     // never camp forever: a long quiet hold makes room for looting and exploring for a while

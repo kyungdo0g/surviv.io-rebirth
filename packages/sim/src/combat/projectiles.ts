@@ -6,7 +6,7 @@
 // Behaviour follows survev server/src/game/objects/projectile.ts and docs/research/items/throwables.md
 // "Throwing, cooking and flight rules" (gravity and drag are survev reconstructions from recorded packets).
 import { type Bounds, collider, math, type Vec2, v2 } from "@rebirth/core";
-import { DamageType, GameConfig, getDefOfType, type ThrowableDef } from "@rebirth/defs";
+import { DamageType, GameConfig, getDefOfType, isAirstrikeBomb, type ThrowableDef } from "@rebirth/defs";
 import { randomPointInCircle } from "../mapgen/random.ts";
 import type { ProjectileView } from "../view.ts";
 import type { SimContext } from "../world/context.ts";
@@ -293,7 +293,10 @@ export class ProjectileSystem {
         if (p.fuse <= TIME_EPS) this.explode(p);
     }
 
-    /** Air strike bombs never explode inside a building with an indestructible roof (survev canBombIronExplode). */
+    /**
+     * Air strike bombs (bomb_iron, the rebirth heavy shell) never explode inside a building with an indestructible roof
+     * (survev canBombIronExplode).
+     */
     private canBombExplode(p: Projectile): boolean {
         const box = { min: v2.sub(p.pos, { x: p.rad, y: p.rad }), max: v2.add(p.pos, { x: p.rad, y: p.rad }) };
         for (const obj of this.host.world.query(box)) {
@@ -314,7 +317,7 @@ export class ProjectileSystem {
         if (def.splitType && def.numSplit) {
             this.addSplit(p.ownerId, def.splitType, p.pos, p.layer, p.vel, def.numSplit, SPLIT_MAX_VEL, p.sourceType);
         }
-        if (p.type === "bomb_iron" && !this.canBombExplode(p)) return;
+        if (isAirstrikeBomb(p.type) && !this.canBombExplode(p)) return;
         if (!def.explosionType) return;
         this.host.explosions.add(def.explosionType, p.pos, p.layer, {
             gameSourceType: p.type,

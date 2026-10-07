@@ -6,7 +6,7 @@
 // overpressure-typo, flak-vs-vest, medic-healer, scout-recon, turkey-sound, revive-term). Descriptions keep the
 // original "</br>" line breaks (perkDesc splits on them).
 
-/** English HUD keys of the event modes (original bundle "game-*" strings). */
+/** English HUD keys of the event modes (original bundle "game-*" strings; keys marked "rebirth" are not original). */
 export const enModes: Readonly<Record<string, string>> = {
     "game-red-team": "Red Team",
     "game-blue-team": "Blue Team",
@@ -16,6 +16,9 @@ export const enModes: Readonly<Record<string, string>> = {
     "game-enter-game": "ENTER GAME",
     "game-waiting-for-hunted": "Searching for the Hunted",
     "game-turkey": "Winner winner turkey dinner!",
+    /** rebirth: announcement when a heavy or carpet 50v50 air strike zone appears (ui/airstrikeVariantStyle.ts) */
+    "game-airstrike-heavy-incoming": "Heavy shell strike incoming",
+    "game-airstrike-carpet-incoming": "Carpet bombing incoming",
 };
 
 export const koModes: Readonly<Record<string, string>> = {
@@ -27,6 +30,8 @@ export const koModes: Readonly<Record<string, string>> = {
     "game-enter-game": "게임에 입장",
     "game-waiting-for-hunted": "새로운 수배자 대기 중",
     "game-turkey": "위너위너 터키 디너!",
+    "game-airstrike-heavy-incoming": "고폭탄 공습 경보",
+    "game-airstrike-carpet-incoming": "대공습 경보",
 };
 
 /** Korean perk names ("game-<perk>"). */

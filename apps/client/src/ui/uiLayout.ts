@@ -78,6 +78,17 @@ export function itemPopScale(ticker: number, mobile: boolean): number {
     return 1 + (w < 0.001 ? 0 : w) * 0.33;
 }
 
+/**
+ * Width (% of the weapon column) of a weapon slot `ticker` seconds after it was equipped: a sine pulse from 83.33 % to
+ * 100 % and back over 0.09 x pi s, 83.33 % otherwise and on mobile (survev ui2.ts updateAnimationWidth, render
+ * weapons `math.lerp(width, 83.33, 100)`).
+ */
+export function slotPulseWidth(ticker: number, mobile: boolean): number {
+    if (mobile) return 83.33;
+    const w = Math.sin(Math.min(ticker / 0.09, Math.PI));
+    return 83.33 + (w < 0.001 ? 0 : w) * (100 - 83.33);
+}
+
 export function layoutState(width: number, height: number, pixelRatio: number, mobile: boolean): LayoutState {
     return {
         layout: uiLayoutFor(width, height, pixelRatio, mobile),

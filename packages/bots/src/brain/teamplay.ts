@@ -1,7 +1,8 @@
 // Team play (BrainFeatures.teamplay, duo / squad): pings and focus fire. On first spotting an enemy no teammate is
 // near, the bot pings it ("ping_danger" at its position, at most one ping per 4 s); a teammate's danger ping (threat
 // board reports) becomes a contact the bot moves to support ("assist"); the enemy the team's visible bullets fly
-// towards gets a target selection bonus so the team focuses one player.
+// towards gets a target selection bonus so the team focuses one player. A follower assists only pings within 30 units
+// of its leader (team.ts onLeash).
 import { type Vec2, v2 } from "@rebirth/core";
 import { distToSegment } from "../geom.ts";
 import type { ReportedThreat } from "../perception/threats.ts";
@@ -9,6 +10,7 @@ import type { Contact } from "../perception/world.ts";
 import { addCombatLayer } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 import { zonePressure } from "./survival.ts";
+import { onLeash } from "./team.ts";
 
 /** GameObjectDefs ping id (defs: ping_danger, ping_coming, ping_help, ...). */
 export const PING_DANGER = "ping_danger";
@@ -102,7 +104,7 @@ export function assistScore(ctx: BrainCtx): number {
     if (!ctx.teamMode || !ctx.armed || ctx.model.inGasNow() || zonePressure(ctx.model) > 0.5) return 0;
     if (ctx.target && ctx.now - ctx.target.lastSeen < 3) return 0;
     const ping = teammatePing(ctx);
-    if (!ping || v2.distance(ping.pos, ctx.self.pos) < 12) return 0;
+    if (!ping || v2.distance(ping.pos, ctx.self.pos) < 12 || !onLeash(ctx, ping.pos)) return 0;
     return 0.48;
 }
 

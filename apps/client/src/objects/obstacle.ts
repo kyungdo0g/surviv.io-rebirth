@@ -3,7 +3,8 @@
 // button use and a destruction seen in view trigger their particles and sounds through the fx hooks. Ordering and
 // effects follow survev client/src/objects/obstacle.ts. M5: doors animate towards their new position/orientation and
 // play their sounds (door.ts); the casing stays at the closed door. M9: an explosive obstacle (barrel) below half health
-// smokes (survev obstacle.ts smoke_barrel emitter, drifting up-right) until it blows up.
+// smokes (survev obstacle.ts smoke_barrel emitter, drifting up-right) until it blows up. Rebirth: an air drop tier
+// inner crate carries its tier's star marking (crateTierMark.ts).
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
 import type { ObstacleView } from "@rebirth/sim";
@@ -12,6 +13,7 @@ import type { Emitter } from "../fx/particles.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
+import { CrateTierMark, crateTierMarkStyle } from "./crateTierMark.ts";
 import { DoorAnim } from "./door.ts";
 import { adjustValue, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
 
@@ -28,6 +30,8 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
     private readonly deps: ViewDeps;
     private readonly sprite: Sprite;
     private casing: Sprite | null = null;
+    /** rebirth air drop tier crates: the tier's stars */
+    private mark: CrateTierMark | null = null;
     private def!: ObstacleDef;
     private data!: ObstacleView;
     private img = "";
@@ -56,6 +60,8 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
             // survev: "random" rotation keyed on the id so it stays stable when the obstacle re-enters the view
             this.imgRot = this.def.img.randomRotation ? math.deg2rad(view.id % 360) : 0;
             if (this.def.door) this.door = new DoorAnim(this.def.door, view);
+            const markStyle = crateTierMarkStyle(view.type);
+            if (markStyle && !this.mark) this.mark = new CrateTierMark(this.deps, markStyle);
             const casingImg = this.def.door?.casingImg;
             if (casingImg && !this.casing) {
                 this.casing = this.deps.renderer.pool.acquire();
@@ -152,6 +158,20 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
             this.casing.visible = !view.dead;
             renderer.add(this.casing, layer, zOrd + 1, this.zIdx);
         }
+        this.mark?.update(
+            pos,
+            rot - this.imgRot,
+            view.scale,
+            this.sprite.visible && !view.dead,
+            layer,
+            zOrd,
+            this.zIdx,
+        );
+    }
+
+    /** the obstacle (door panel) sprite, a door's slot casing and a tier crate's stars, as drawn (tests) */
+    get drawn(): { sprite: Sprite; casing: Sprite | null; mark: readonly Sprite[] } {
+        return { sprite: this.sprite, casing: this.casing, mark: this.mark?.sprites ?? [] };
     }
 
     bounds(pos: Vec2): ViewBounds {
@@ -171,6 +191,7 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
     setVisible(visible: boolean): void {
         this.sprite.visible = visible && this.img !== "";
         if (this.casing) this.casing.visible = visible && !this.data.dead;
+        this.mark?.setVisible(visible && this.img !== "" && !this.data.dead);
     }
 
     destroy(): void {
@@ -179,5 +200,7 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
         this.deps.renderer.pool.release(this.sprite);
         if (this.casing) this.deps.renderer.pool.release(this.casing);
         this.casing = null;
+        this.mark?.destroy();
+        this.mark = null;
     }
 }

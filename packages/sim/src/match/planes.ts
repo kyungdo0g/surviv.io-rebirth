@@ -3,10 +3,18 @@
 // inside the next safe circle, releases a crate that falls for GameConfig.airdrop.fallTime, crushes what is under
 // it and lands as an airdrop_crate_* obstacle that players open with Interact. Each release puts an air drop
 // marker on the minimap (MapIndicatorView "ping_airdrop" for the ping's mapLife). Air strike planes (strobes and the
-// 50v50 scheduled zones) fly over their target and drop iron bombs (match/airstrikes.ts).
+// 50v50 scheduled zones) fly over their target and drop iron bombs (match/airstrikes.ts); on faction maps each
+// scheduled zone rolls a rebirth variant (normal / heavy / carpet) from rules.roles.factionAirstrikeVariants.
+// Rebirth air drop tiers (rules.airdropTiers, docs/research/rebirth-deviations.md): a normal drop picked by the map's
+// crate weights is a tier 1 or a tier 2 drop (defs tieredAirdropCrates, by the gas circle); the shell stays the normal
+// one and opens into the tier's inner crate (Obstacle.destroyTypeOverride, kept server-side until it is opened).
 // Behaviour follows docs/research/mechanics/airdrop-airstrike.md (survev objects/plane.ts, objects/airdrop.ts).
 import { type Bounds, type Collider, collider, math, type Rng, type Vec2, v2 } from "@rebirth/core";
 import {
+    AIRSTRIKE_VARIANTS,
+    type AirdropTier,
+    type AirstrikeVariant,
+    airdropTierCrate,
     DamageType,
     GameConfig,
     GameObjectDefs,
@@ -14,11 +22,12 @@ import {
     getMapObjectDefOfType,
     type MapDef,
     Plane,
+    tieredAirdropCrates,
 } from "@rebirth/defs";
 import { TICK_HZ } from "../api.ts";
 import type { DamageParams } from "../combat/damage.ts";
 import { toBounds, transformOri } from "../geom/transform.ts";
-import { randomPointInCircle } from "../mapgen/random.ts";
+import { randomPointInCircle, subRng } from "../mapgen/random.ts";
 import type { AirdropView, AirstrikeZoneView, MapIndicatorView, PlaneView } from "../view.ts";
 import { createMapEntity, type Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
@@ -28,6 +37,7 @@ import {
     AirstrikeZones,
     type BombDropper,
     bombPositions,
+    pickAirstrikeVariant,
     type StrikeState,
     updateStrike,
 } from "./airstrikes.ts";
@@ -69,7 +79,11 @@ export interface PlaneHost {
     readonly rules: {
         airdropCrushDamage: number;
         airdropCrushInstantKill: boolean;
-        roles: { factionAirstrikeWaits: Readonly<Record<number, number>> };
+        airdropTiers: boolean;
+        roles: {
+            factionAirstrikeWaits: Readonly<Record<number, number>>;
+            factionAirstrikeVariants: Readonly<Partial<Record<AirstrikeVariant, number>>>;
+        };
     };
     /** air strike bombs are projectiles */
     readonly projectiles: BombDropper;
@@ -94,6 +108,8 @@ export interface PlaneState {
     /** drop point */
     target: Vec2;
     crateType: string;
+    /** rebirth air drop tiers: the inner crate the shell opens into instead of its destroyType ("" for that) */
+    innerType: string;
     crateCollider: Collider;
     /** air strike planes: their bomb run */
     strike?: StrikeState;
@@ -103,6 +119,7 @@ export interface FallingAirdrop {
     id: number;
     pos: Vec2;
     crateType: string;
+    innerType: string;
     crateCollider: Collider;
     ticks: number;
     landed: boolean;
@@ -119,16 +136,21 @@ export class PlaneSystem {
     private readonly scheduled: ScheduledPlane[] = [];
     private readonly host: PlaneHost;
     private readonly rng: Rng;
+    /** rolls the variant of scheduled faction zones, apart from `rng` so normal zones keep the original draws */
+    private readonly variantRng: Rng;
     private readonly mapName: string;
     private readonly fallTicks = Math.round(AIRDROP.fallTime * TICK_HZ);
     private readonly planeBounds: Bounds;
     private nextPlaneId = 1;
     private readonly freePlaneIds: number[] = [];
 
-    constructor(host: PlaneHost, mapName: string, rng: Rng) {
+    /** `seed`: the game seed; planes draw from its "planes:<map>" stream, variants from "airstrikeVariants:<map>" */
+    constructor(host: PlaneHost, mapName: string, seed: number) {
         this.host = host;
         this.mapName = mapName;
+        const rng = subRng(seed, `planes:${mapName}`);
         this.rng = rng;
+        this.variantRng = subRng(seed, `airstrikeVariants:${mapName}`);
         const { width, height } = host.world;
         this.planeBounds = {
             min: { x: -PLANE_BOUNDS_MARGIN, y: -PLANE_BOUNDS_MARGIN },
@@ -140,7 +162,7 @@ export class PlaneSystem {
                 gas: host.gas,
                 world: host.world,
                 players: () => host.players(),
-                addAirstrike: (pos, dir, ownerId) => this.addAirstrike(pos, dir, ownerId),
+                addAirstrike: (pos, dir, ownerId, variant) => this.addAirstrike(pos, dir, ownerId, variant),
                 addPing: (type, pos) => this.addPing(type, pos),
             },
             rng,
@@ -165,6 +187,14 @@ export class PlaneSystem {
             const wait = strike ? (overrides[circleIdx] ?? timing.wait) : timing.wait;
             this.scheduled.push({ ticks: Math.round(wait * TICK_HZ), options: timing.options });
         }
+    }
+
+    /**
+     * A scheduled air strike zone with the timing `options` `wait` seconds from now, as if a map timing came due (it
+     * rolls its variant like one: faction maps only).
+     */
+    scheduleAirstrike(options: PlaneOptions, wait: number): void {
+        this.scheduled.push({ ticks: Math.round(wait * TICK_HZ), options: { ...options, type: Plane.Airstrike } });
     }
 
     /** A scheduled air drop of `crateType` `wait` seconds from now (the 50v50 gold military drop, M7a). */
@@ -207,21 +237,32 @@ export class PlaneSystem {
             if (--s.ticks > 0) continue;
             this.scheduled.splice(i--, 1);
             if (s.options.type === Plane.Airdrop) this.scheduleAirdrop(s.options.airdropType);
-            else if (s.options.type === Plane.Airstrike) this.zones.schedule(s.options);
+            else if (s.options.type === Plane.Airstrike) this.zones.schedule(s.options, this.rollVariant());
         }
         this.zones.update(dt);
         this.mapIndicators.update();
     }
 
     /**
-     * An air strike plane: it spawns 2.5 s of flight behind `target`, flies along `dir` and bombs a strip starting at
-     * `target` (survev PlaneBarn.addAirStrike). `ownerId` is credited with the bombs (strobe thrower, 0 for the game).
+     * Variant of a scheduled air strike zone: rolled from rules.roles.factionAirstrikeVariants on faction maps (rebirth
+     * deviation, docs/research/rebirth-deviations.md), normal elsewhere.
      */
-    addAirstrike(target: Vec2, dir: Vec2, ownerId: number): void {
+    private rollVariant(): AirstrikeVariant {
+        if (!getMapDef(this.mapName).gameMode.factionMode) return "normal";
+        return pickAirstrikeVariant(this.variantRng, this.host.rules.roles.factionAirstrikeVariants);
+    }
+
+    /**
+     * An air strike plane: it spawns 2.5 s of flight behind `target`, flies along `dir` and bombs a strip starting at
+     * `target` (survev PlaneBarn.addAirStrike) with the bombs of `variant`. `ownerId` is credited with the bombs
+     * (strobe thrower, 0 for the game).
+     */
+    addAirstrike(target: Vec2, dir: Vec2, ownerId: number, variant: AirstrikeVariant = "normal"): void {
         const id = this.allocPlaneId();
         if (id === 0) return;
         const d = v2.normalizeSafe(dir, { x: 1, y: 0 });
         const pos = v2.sub(target, v2.mul(d, GameConfig.airstrike.planeVel * AIRSTRIKE_SPAWN_TIME));
+        const strip = AIRSTRIKE_VARIANTS[variant];
         this.planes.push({
             id,
             type: Plane.Airstrike,
@@ -230,13 +271,15 @@ export class PlaneSystem {
             actionComplete: false,
             target: v2.copy(target),
             crateType: "",
+            innerType: "",
             crateCollider: collider.createCircle(target, 0),
             strike: {
                 startPos: v2.copy(pos),
-                bombs: bombPositions(this.rng, target, d),
+                bombs: bombPositions(this.rng, target, d, strip),
                 reachedTarget: false,
                 // the first bomb drops on the tick the plane passes the target (survev dropDelayCounter = 2)
                 dropCounter: 2,
+                bombType: strip.bombType,
                 ownerId,
             },
         });
@@ -255,32 +298,43 @@ export class PlaneSystem {
 
     /**
      * A scheduled air drop: a uniform point inside the next safe circle (survev PlaneBarn.update), moved off
-     * indestructible obstacles, roofs and other crates; rerolled while that pushes it out of the circle.
+     * indestructible obstacles, roofs and other crates; rerolled while that pushes it out of the circle. Without
+     * `crateType` the map's crate weights pick it (with the rebirth tiers); `tier` forces a tier of a splittable shell.
      */
-    scheduleAirdrop(crateType?: string): void {
+    scheduleAirdrop(crateType?: string, tier?: AirdropTier): void {
         const gas = this.host.gas;
-        const type = crateType || this.pickCrate();
+        const { type, inner } = this.crateChoice(crateType, tier);
         let target = v2.add(gas.posNew, randomPointInCircle(this.rng, gas.radNew));
         let drop = this.resolveDrop(target, type);
         for (let i = 0; i < DROP_REROLLS && (!drop.ok || v2.distance(drop.pos, gas.posNew) >= gas.radNew); i++) {
             target = v2.add(gas.posNew, randomPointInCircle(this.rng, gas.radNew));
             drop = this.resolveDrop(target, type);
         }
-        this.addPlane(target, drop.pos, type);
+        this.addPlane(target, drop.pos, type, inner);
     }
 
     /**
      * An air drop at `target` (flare guns, tests): the drop point is only moved off what it overlaps, it may lie
-     * anywhere (survev PlaneBarn.addAirdrop).
+     * anywhere (survev PlaneBarn.addAirdrop). `crateType` and `tier` as in scheduleAirdrop.
      */
-    addAirdrop(target: Vec2, crateType?: string): void {
-        const type = crateType || this.pickCrate();
-        this.addPlane(target, this.findDropPos(target, type), type);
+    addAirdrop(target: Vec2, crateType?: string, tier?: AirdropTier): void {
+        const { type, inner } = this.crateChoice(crateType, tier);
+        this.addPlane(target, this.findDropPos(target, type), type, inner);
     }
 
-    private pickCrate(): string {
+    /**
+     * Crate of a drop: `crateType` as asked (a forced `tier` of a splittable shell picks its inner crate; an explicit
+     * crate is never tiered otherwise, e.g. the 50v50 gold drop), else a pick from the map's crate weights. With
+     * rules.airdropTiers the splittable normal shells are split by the current circle (defs tieredAirdropCrates); the
+     * pick is one weighted draw either way, so the gold drop keeps its chance and the draws stay in step.
+     */
+    private crateChoice(crateType?: string, tier?: AirdropTier): { type: string; inner: string } {
+        if (crateType) return { type: crateType, inner: (tier && airdropTierCrate(crateType, tier)) || "" };
         const crates = getMapDef(this.mapName).gameConfig.planes.crates;
-        return crates.some((c) => c.weight > 0) ? this.rng.weighted(crates, (c) => c.weight).name : "airdrop_crate_01";
+        if (!crates.some((c) => c.weight > 0)) return { type: "airdrop_crate_01", inner: "" };
+        if (!this.host.rules.airdropTiers) return { type: this.rng.weighted(crates, (c) => c.weight).name, inner: "" };
+        const pick = this.rng.weighted(tieredAirdropCrates(crates, this.host.gas.circleIdx), (c) => c.weight);
+        return { type: pick.name, inner: pick.inner ?? "" };
     }
 
     private crateCollider(type: string, pos: Vec2): Collider {
@@ -344,7 +398,7 @@ export class PlaneSystem {
         return null;
     }
 
-    private addPlane(requested: Vec2, drop: Vec2, crateType: string): void {
+    private addPlane(requested: Vec2, drop: Vec2, crateType: string, innerType: string): void {
         const id = this.allocPlaneId();
         if (id === 0) return;
         const pos = v2.add(requested, v2.mul(v2.randomUnit(this.rng), AIRDROP_SPAWN_DIST));
@@ -358,6 +412,7 @@ export class PlaneSystem {
             actionComplete: false,
             target: drop,
             crateType,
+            innerType,
             crateCollider: this.crateCollider(crateType, drop),
         });
     }
@@ -373,6 +428,7 @@ export class PlaneSystem {
             id: this.host.world.allocId(),
             pos: v2.copy(plane.target),
             crateType: plane.crateType,
+            innerType: plane.innerType,
             crateCollider: plane.crateCollider,
             ticks: 0,
             landed: false,
@@ -403,18 +459,19 @@ export class PlaneSystem {
             }
         }
         const def = getMapObjectDefOfType("obstacle", drop.crateType);
-        world.add(
-            createMapEntity({
-                id: world.allocId(),
-                kind: "obstacle",
-                type: drop.crateType,
-                pos: v2.copy(drop.pos),
-                ori: 0,
-                scale: this.rng.range(def.scale.createMin, def.scale.createMax),
-                layer: 0,
-                parentId: 0,
-            }),
-        );
+        const shell = createMapEntity({
+            id: world.allocId(),
+            kind: "obstacle",
+            type: drop.crateType,
+            pos: v2.copy(drop.pos),
+            ori: 0,
+            scale: this.rng.range(def.scale.createMin, def.scale.createMax),
+            layer: 0,
+            parentId: 0,
+        }) as Obstacle;
+        // a tiered drop opens into its tier's crate (never on the wire: tier 1 and tier 2 shells look the same)
+        shell.destroyTypeOverride = drop.innerType;
+        world.add(shell);
         this.host.wakeLoot(toBounds(crate), 0);
     }
 

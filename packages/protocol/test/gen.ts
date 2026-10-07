@@ -1,7 +1,7 @@
 // Random value generators for the round-trip property tests (seeded, so failures reproduce) and the quantization
 // tolerances of every field.
 import type { Rng, Vec2 } from "@rebirth/core";
-import { GameObjectRegistry, MapObjectRegistry } from "@rebirth/defs";
+import { AIRSTRIKE_VARIANT_IDS, GameObjectRegistry, MapObjectRegistry } from "@rebirth/defs";
 import {
     type AirdropView,
     type AirstrikeZoneView,
@@ -87,12 +87,7 @@ export function randView(rng: Rng, ctx: NetCtx, id: number, kind = rng.pick(KIND
                 backpack: randGameType(rng),
                 scale: rng.range(0.75, 2),
                 anim: { type: rng.pick(["none", "melee", "cook", "throw", "revive"] as const), seq: rng.int(0, 65535) },
-                action: {
-                    type: rng.pick(["none", "reload", "use", "revive"] as const),
-                    seq: rng.int(0, 65535),
-                    item: randGameType(rng),
-                    duration: rng.range(0, 8.5),
-                },
+                action: randAction(rng),
                 shot: { seq: rng.int(0, 65535), offHand: rng.bool() },
                 wearingPan: rng.bool(),
                 healEffect: rng.bool(0.2),
@@ -180,6 +175,18 @@ export function mutateView(rng: Rng, ctx: NetCtx, view: ObjectView): ObjectView 
     // the frozen pose is 0 while not frozen (as the simulation sends it)
     if (view.kind === "player" && !out.frozen) out.frozenOri = 0;
     return out as unknown as ObjectView;
+}
+
+/** A player's action; only reloads can be the alternate (Mosin) reload. */
+function randAction(rng: Rng) {
+    const type = rng.pick(["none", "reload", "use", "revive"] as const);
+    return {
+        type,
+        seq: rng.int(0, 65535),
+        item: randGameType(rng),
+        duration: rng.range(0, 8.5),
+        alt: type === "reload" && rng.bool(0.3),
+    };
 }
 
 /** Snowball / potato frozen state (M7b): frozenOri is 0 while not frozen. */
@@ -438,6 +445,8 @@ export function randSmokes(rng: Rng, ctx: NetCtx): SmokeView[] {
 export function randZones(rng: Rng, ctx: NetCtx): AirstrikeZoneView[] {
     return Array.from({ length: rng.bool(0.8) ? 0 : rng.int(1, 3) }, () => ({
         id: rng.int(1, 255),
+        // rebirth air strike variant (schema 9)
+        variant: rng.pick(AIRSTRIKE_VARIANT_IDS),
         pos: randPos(rng, ctx),
         rad: rng.range(0, 256),
         duration: rng.range(0, 60),

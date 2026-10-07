@@ -1,13 +1,19 @@
 // Extracts the original v0.8.82 sound definitions (sound lists with per-sound volumes, channels and random groups)
 // from the original client bundle into src/generated/sound-defs.json. Sounds whose mp3 is not in the imported
 // assets are dropped, so the client never requests a missing file. M9: keeps `canCoalesce` (impact sounds that merge).
+// Sounds the game objects name (gun, melee and throwable `sound` fields) that the original lists lack, i.e. those of
+// the survev-only items the port takes (tools/port-survev/policy.json), come from survev's own list
+// (.survev/client/src/soundDefs.ts) with `source: "survev"`.
 // Usage (repo root): node apps/client/scripts/sound-defs.ts [research-cache/live/app.<hash>.js]
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { runInNewContext } from "node:vm";
 
 const LIVE = "research-cache/live";
 const OUT = "apps/client/src/generated/sound-defs.json";
+const DEFS = "packages/defs/src/generated/gameObjects.json";
+const SURVEV_SOUNDS = ".survev/client/src/soundDefs.ts";
 /** where the audio files live: the imported client assets, else the survev clone they are copied from */
 const AUDIO_ROOTS = ["apps/client/public/assets", ".survev/client/public"];
 
@@ -17,6 +23,8 @@ interface SoundDef {
     maxInstances?: number;
     /** plays of this sound ending within 30 ms of a playing one merge into it (survev createJS canCoalesce) */
     canCoalesce?: boolean;
+    /** "survev": not in the original lists, taken from survev's for a survev-only item */
+    source?: "survev";
 }
 
 interface SoundModule {
@@ -67,9 +75,36 @@ for (const [list, sounds] of Object.entries(mod.Sounds)) {
         lists[list][name] = out;
     }
 }
+// sounds the game objects name that no original list has: survev's definition (survev-only items)
+const named = new Set<string>();
+for (const def of Object.values(JSON.parse(readFileSync(DEFS, "utf8")) as Record<string, { sound?: object }>)) {
+    for (const v of Object.values(def.sound ?? {})) if (typeof v === "string" && v) named.add(v);
+}
+const inOriginal = (name: string) => Object.values(mod.Sounds).some((list) => Object.hasOwn(list, name));
+const survev = existsSync(SURVEV_SOUNDS)
+    ? ((await import(pathToFileURL(resolve(SURVEV_SOUNDS)).href)).default as Pick<SoundModule, "Sounds">)
+    : undefined;
+const fromSurvev: string[] = [];
+for (const name of [...named].sort()) {
+    if (inOriginal(name) || !survev) continue;
+    const list = Object.keys(survev.Sounds).find((l) => Object.hasOwn(survev.Sounds[l], name));
+    if (!list) continue;
+    const def = survev.Sounds[list][name];
+    if (audioRoot && !existsSync(join(audioRoot, def.path))) {
+        missing.push(def.path);
+        continue;
+    }
+    const out: SoundDef = { path: def.path, volume: def.volume, source: "survev" };
+    if (def.maxInstances !== undefined) out.maxInstances = def.maxInstances;
+    if (def.canCoalesce) out.canCoalesce = true;
+    lists[list] ??= {};
+    lists[list][name] = out;
+    fromSurvev.push(name);
+}
 const result = { channels: mod.Channels, lists, groups: mod.Groups };
 writeFileSync(OUT, `${JSON.stringify(result, null, 1)}\n`);
 const count = Object.values(lists).reduce((n, l) => n + Object.keys(l).length, 0);
 console.log(`${count} sounds, ${Object.keys(mod.Groups).length} groups, ${Object.keys(mod.Channels).length} channels`);
 console.log(audioRoot ? `checked against ${audioRoot}` : "audio files not found: existence not checked");
+console.log(`${fromSurvev.length} from survev's list: ${fromSurvev.join(", ")}`);
 if (missing.length) console.log(`dropped ${missing.length} without a file: ${missing.join(", ")}`);

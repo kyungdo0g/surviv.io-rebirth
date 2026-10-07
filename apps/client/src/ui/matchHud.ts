@@ -153,7 +153,9 @@ export class MatchHud {
         leaderboardWrapper.append(leaderboard, killCounterWrapper);
 
         this.leaderName.textContent = t("game-waiting-for-new-leader");
-        this.leaderWrapper.append(this.leaderName, div("ui-kill-leader-icon"), this.leaderCount);
+        // the spaces between the three inline blocks come from the original's line-broken markup (survev 8715a605
+        // index.html; docs/research/provenance/visual-diff.md)
+        this.leaderWrapper.append(this.leaderName, " ", div("ui-kill-leader-icon"), " ", this.leaderCount);
         const leaderContainer = div("ui-kill-leader-container");
         leaderContainer.append(this.leaderWrapper);
         leaderContainer.style.display = opts.killLeaderEnabled ? "block" : "none";

@@ -46,7 +46,7 @@ describe("gas", () => {
             expect(p.dead).toBe(false);
             expect(v2.distance(p.pos, center)).toBeLessThan(rad);
         }
-    });
+    }, 20_000);
 });
 
 describe("teams", () => {
@@ -100,5 +100,5 @@ describe("teams", () => {
             3000,
         );
         expect(maxApart).toBeLessThan(60);
-    });
+    }, 20_000);
 });

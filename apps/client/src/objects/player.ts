@@ -73,6 +73,7 @@ export function idlePoseName(weapon: WeaponDef | undefined, downed: boolean): st
         if (weapon.pistol) name = weapon.isDual ? "dualPistol" : "pistol";
         else if (weapon.isBullpup) name = "bullpup";
         else if (weapon.isLauncher) name = "launcher";
+        else if (weapon.isMinigun) name = "minigun";
         else name = weapon.isDual ? "dualRifle" : "rifle";
     } else if (weapon?.type === "throwable") name = "throwable";
     return IDLE_POSES[name] ? name : "fists";

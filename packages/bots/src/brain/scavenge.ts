@@ -111,10 +111,43 @@ function closestPoint(o: SeenObstacle, p: Vec2): Vec2 {
     return { x: Math.min(Math.max(p.x, col.min.x), col.max.x), y: Math.min(Math.max(p.y, col.min.y), col.max.y) };
 }
 
-/** The point next to the container to stand on: its surface towards the bot, pushed out by the punch distance. */
+/** A point just outside the container's surface towards `p`. */
+function nearSurface(o: SeenObstacle, p: Vec2): Vec2 {
+    const c = closestPoint(o, p);
+    return v2.add(c, v2.mul(v2.normalizeSafe(v2.sub(p, c)), 0.3));
+}
+
+/** Distance from a container's centre to its surface along the unit direction `u` (box: its support function). */
+function extentAlong(o: SeenObstacle, u: Vec2): number {
+    const col = o.col;
+    if (col.type === 0) return col.rad;
+    return Math.abs(u.x) * (col.max.x - col.min.x) * 0.5 + Math.abs(u.y) * (col.max.y - col.min.y) * 0.5;
+}
+
+/**
+ * The point to stand on to punch the container: of the eight spots 1.5 units off its surface around it, a walkable,
+ * reachable one with nothing between it and the container (furniture and toilets stand in rooms: the spot outside the
+ * room's wall is useless), the nearest to the bot (one it sees from where it stands first). Falls back to the surface
+ * towards the bot, pushed out, when none qualifies.
+ */
 function standPoint(ctx: BrainCtx, o: SeenObstacle): Vec2 {
     const me = ctx.self.pos;
+    const model = ctx.model;
     const c = colliderCenter(o.col);
+    let best: Vec2 | null = null;
+    let bestCost = Number.POSITIVE_INFINITY;
+    for (let k = 0; k < 8; k++) {
+        const u = { x: Math.cos((k * Math.PI) / 4), y: Math.sin((k * Math.PI) / 4) };
+        const p = v2.add(c, v2.mul(u, extentAlong(o, u) + 1.5));
+        if (!model.nav.walkableAt(p) || !reachable(ctx, p, 1)) continue;
+        if (!model.lineOfFire(p, nearSurface(o, p))) continue;
+        const cost = v2.distance(me, p) + (model.lineOfFire(me, p) ? 0 : 6);
+        if (cost < bestCost) {
+            bestCost = cost;
+            best = p;
+        }
+    }
+    if (best) return best;
     const out = v2.normalizeSafe(v2.sub(me, c));
     const col = o.col;
     let surface: Vec2;
@@ -125,8 +158,8 @@ function standPoint(ctx: BrainCtx, o: SeenObstacle): Vec2 {
             y: Math.min(Math.max(me.y, col.min.y), col.max.y),
         };
     const p = v2.add(surface, v2.mul(out, 1.3));
-    const cell = ctx.model.nav.nearestWalkable(p, 3, ctx.myComp);
-    return cell >= 0 ? ctx.model.nav.center(cell) : p;
+    const cell = model.nav.nearestWalkable(p, 3, ctx.myComp);
+    return cell >= 0 ? model.nav.center(cell) : p;
 }
 
 export function planBreak(ctx: BrainCtx, choice: BreakChoice): Intent {
@@ -161,10 +194,12 @@ export function planBreak(ctx: BrainCtx, choice: BreakChoice): Intent {
     const rich = guns.find((g) => g.mag > 0 && g.reserve >= g.info.def.maxClip * 2 && g.info.cls !== "sniper");
     const shootRange = rich ? 7 : PUNCH_DIST;
     intent.slot = rich ? rich.slot : WeaponSlot.Melee;
-    if (choice.dist <= shootRange) {
+    // (a shot needs a clear line to the container: from behind a wall it only hits the wall)
+    if (choice.dist <= shootRange && (!rich || ctx.model.lineOfFire(self.pos, nearSurface(o, self.pos)))) {
         intent.stop = true;
         intent.fire = self.curWeapIdx === intent.slot;
-    } else if (choice.dist < APPROACH_DIST && ctx.model.lineOfFire(self.pos, target)) {
+    } else if (choice.dist < APPROACH_DIST && ctx.model.lineOfFire(self.pos, nearSurface(o, self.pos))) {
+        // (the line to the container's centre always crosses the container itself: check the way to its surface)
         intent.moveDir = v2.normalizeSafe(v2.sub(closestPoint(o, self.pos), self.pos));
     } else {
         intent.goal = standPoint(ctx, o);

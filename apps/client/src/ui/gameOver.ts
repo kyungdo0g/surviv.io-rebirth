@@ -10,6 +10,8 @@
 // Play New Game / Spectate buttons.
 // M7 (survev ui.ts getTitleVictoryText / getOverviewElems): faction maps show "Red Team N" and "Blue Team N" (the alive
 // counts) instead of the rank, Turkey maps win with "Winner winner turkey dinner!".
+// The end-of-game screen carries the surviv.io logo in the top-left corner (survev ui.ts showStats statsLogo; hidden on
+// the team "You died." screen, showTeamAd); the recordings show it (docs/research/provenance/visual-diff.md).
 import type { GameOverEvent, PlayerStatsView } from "@rebirth/sim";
 import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { t } from "../l10n/index.ts";
@@ -73,6 +75,7 @@ export class GameOverScreen {
     private readonly header = el("div", "ui-stats-header");
     private readonly infoBox = el("div", "ui-stats-info-box");
     private readonly options = el("div", "ui-stats-options");
+    private readonly logo = el("div", "ui-stats-logo");
     private readonly cb: GameOverCallbacks;
     private timed: Timed[] = [];
     private ticker = 0;
@@ -85,7 +88,7 @@ export class GameOverScreen {
     constructor(parent: HTMLElement, cb: GameOverCallbacks) {
         this.cb = cb;
         const inner = el("div", "ui-stats-contents-inner");
-        inner.append(this.header, this.infoBox, this.options);
+        inner.append(this.header, this.infoBox, this.options, this.logo);
         this.contents.append(inner);
         this.root.append(this.bg, this.contents);
         this.root.style.display = "none";
@@ -106,6 +109,7 @@ export class GameOverScreen {
         this.open = true;
         this.timed = [];
         this.screenShown = "";
+        this.logo.style.display = "";
         const teamMode = info.teamMode ?? 1;
         const lossTitle = teamMode > 1 ? t("game-team-eliminated") : `${t("game-You")} ${t("game-you-died")}.`;
         const title = won ? t(info.turkeyMode ? "game-turkey" : "game-chicken") : lossTitle;
@@ -183,6 +187,7 @@ export class GameOverScreen {
         this.open = true;
         this.timed = [];
         this.screenShown = "";
+        this.logo.style.display = "none";
         const overview = el("div", "", "ui-stats-header-overview");
         const kills = el("div", "");
         kills.append(

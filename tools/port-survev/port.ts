@@ -1,10 +1,12 @@
 // Ports the game definitions into packages/defs/src/generated/: original client defs (research-cache/live/defs.json)
-// for everything the client has, survev (.survev @ c6185e31) for the server-only data. See README.md for the policy.
+// for everything the client has, survev (.survev @ c6185e31) for the server-only data and for the survev-only content
+// policy.json lists (docs/adr/0003-survev-baseline.md). See README.md for the policy.
 // Usage: node --experimental-transform-types tools/port-survev/port.ts
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { LOOT_BANS } from "../../packages/defs/src/gunClasses.ts";
 import { applyBalanceRevert, type RevertLog } from "./lib/balance.ts";
 import { applyEventMapFixes } from "./lib/eventMaps.ts";
 import { loadInputs } from "./lib/inputs.ts";
@@ -17,6 +19,8 @@ import {
     revertForkReskins,
 } from "./lib/maps.ts";
 import { objectPaths, portGameConfig, portGameObjects, portMapObjects } from "./lib/objects.ts";
+import { loadPolicy, portedSurvevIds } from "./lib/policy.ts";
+import { keepSurvevPlacements, restoreSurvevPlacements } from "./lib/survevLoot.ts";
 import { stableJson } from "./lib/util.ts";
 import { validate } from "./lib/validate.ts";
 
@@ -30,13 +34,16 @@ const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const OUT = join(ROOT, "packages/defs/src/generated");
 const BALANCE_REVERT_REL = "docs/research/provenance/balance-revert.json";
 const BALANCE_REVERT = join(ROOT, BALANCE_REVERT_REL);
+const POLICY_REL = "tools/port-survev/policy.json";
 
 const warnings: string[] = [];
 const inputs = await loadInputs(ROOT);
 const { live, survev } = inputs;
+const policy = loadPolicy(join(ROOT, POLICY_REL));
+const ported = portedSurvevIds(policy);
 
-// 1. game objects: the original client, nothing else
-const gameObjects = portGameObjects(live.gameObjects, survev.gameObjects);
+// 1. game objects: the original client, then the survev-only ids policy.json ports
+const gameObjects = portGameObjects(live.gameObjects, survev.gameObjects, policy);
 
 // 2. map defs: survev, client-visible parts from the original client
 const maps = portMaps(survev.mapDefs, live.maps, warnings);
@@ -45,7 +52,14 @@ const maps = portMaps(survev.mapDefs, live.maps, warnings);
 let balanceRevert: RevertLog[] = [];
 let balanceRevertNote = "";
 if (existsSync(BALANCE_REVERT)) {
-    const entries = JSON.parse(readFileSync(BALANCE_REVERT, "utf8"));
+    // the ported survev-only items keep survev's placements: their revert entries are skipped (logged as such)
+    const kept = keepSurvevPlacements(
+        JSON.parse(readFileSync(BALANCE_REVERT, "utf8")),
+        ported,
+        policy.survevSkins,
+        Object.keys(maps.maps),
+    );
+    const entries = kept.apply;
     const survevOnlyMapObjects = Object.fromEntries(
         Object.entries(survev.mapObjects).filter(([id]) => !(id in live.mapObjects)),
     );
@@ -58,6 +72,7 @@ if (existsSync(BALANCE_REVERT)) {
         mapObjectStatus: Object.fromEntries(Object.keys(survevOnlyMapObjects).map((id) => [id, "survev-only"])),
         knownMapObjects: new Set([...Object.keys(live.mapObjects), ...Object.keys(survev.mapObjects)]),
     });
+    balanceRevert.push(...kept.skipped);
 } else {
     balanceRevertNote = `${BALANCE_REVERT_REL} not found: balance reverts skipped (re-run the port once it exists)`;
     console.warn(`warning: ${balanceRevertNote}`);
@@ -68,6 +83,8 @@ const reskinReverts = revertForkReskins(maps.maps, live.mapObjects);
 
 // 3c. event maps whose revert baseline was not the original (Savannah, Turkey, seasonal variants) + loot bans
 const eventMapFixes = applyEventMapFixes(maps.maps);
+// 3d. survev's placements of the ported survev-only items in tables a fix rebuilt (Savannah), bans permitting
+const survevPlacements = restoreSurvevPlacements(maps.maps, survev.mapDefs, ported, LOOT_BANS);
 
 // 4. loot tables: original tier names, only items that exist, no xp drops
 const tierRenames = renameTiers(maps.maps);
@@ -78,7 +95,7 @@ const roleOverrideRemovals = cleanRoleOverrides(maps.maps, gameObjects.defs);
 const mapObjects = portMapObjects(live.mapObjects, survev.mapObjects, maps.maps, gameObjects.defs);
 
 // 6. GameConfig: original client wins, survev supplies server constants
-const gameConfig = portGameConfig(live.gameConfig, survev.gameConfig, gameObjects.defs);
+const gameConfig = portGameConfig(live.gameConfig, survev.gameConfig, gameObjects.defs, policy.survevGameConfig);
 
 const validation = validate(gameObjects.defs, mapObjects.defs, maps.maps);
 const problems = [
@@ -92,15 +109,22 @@ const provenance = {
         survevCommit: survev.commit,
         liveBundle: live.bundle,
         balanceRevert: existsSync(BALANCE_REVERT) ? BALANCE_REVERT_REL : null,
+        policy: POLICY_REL,
     },
-    gameObjects: Object.fromEntries(Object.keys(gameObjects.defs).map((id) => [id, "original"])),
+    policy,
+    gameObjects: gameObjects.status,
     mapObjects: mapObjects.status,
     maps: maps.provenance,
     balanceRevert,
     reskinReverts,
     eventMapFixes,
+    survevPlacements,
     lootRemovals: [...lootRemovals, ...mapObjects.lootRemovals, ...roleOverrideRemovals],
-    gameConfigDiffs: [...gameConfig.diffs, ...gameConfig.prunes.map((p) => ({ ...p, kind: "pruned" }))],
+    gameConfigDiffs: [
+        ...gameConfig.diffs,
+        ...gameConfig.prunes.map((p) => ({ ...p, kind: "pruned" })),
+        ...gameConfig.survev.map((d) => ({ ...d, kind: "survev (policy.json)" })),
+    ],
     fixups: [...gameObjects.fixups, ...mapObjects.fixups, ...tierRenames],
     excluded: { gameObjects: gameObjects.excluded, mapObjects: mapObjects.excluded },
     conversionNotes: inputs.conversionNotes.filter((n) => n.startsWith("survev.maps")),
@@ -134,7 +158,10 @@ lines.push(`survev ${survev.commit.slice(0, 8)}, original client bundle ${live.b
 lines.push(
     `game objects: ${Object.keys(gameObjects.defs).length} (${fmt(countBy(Object.values(gameObjects.defs), (d: any) => d.type))})`,
 );
-lines.push(`  excluded survev-only: ${gameObjects.excluded.length}; fixups: ${gameObjects.fixups.length}`);
+lines.push(
+    `  survev-only ported (policy.json): ${ported.size}; excluded survev-only: ${gameObjects.excluded.length}; ` +
+        `fixups: ${gameObjects.fixups.length}`,
+);
 const moStatus = countBy(Object.values(mapObjects.status), (s) => s);
 lines.push(`map objects: ${Object.keys(mapObjects.defs).length} (${fmt(moStatus)})`);
 lines.push(`  by type: ${fmt(countBy(Object.values(mapObjects.defs), (d: any) => d.type))}`);
@@ -148,6 +175,7 @@ for (const [name, p] of Object.entries(maps.provenance)) {
 }
 if (balanceRevertNote) lines.push(`balance revert: SKIPPED (${balanceRevertNote})`);
 else lines.push(`balance revert: ${fmt(countBy(balanceRevert, (r) => r.status)) || "0 entries"}`);
+lines.push(`survev placements restored: ${survevPlacements.length}`);
 lines.push(`loot removals: ${provenance.lootRemovals.length}`);
 const byItem = countBy(provenance.lootRemovals, (r) => r.item || "(emptied table)");
 lines.push(`  by item (count of map tables): ${fmt(byItem)}`);

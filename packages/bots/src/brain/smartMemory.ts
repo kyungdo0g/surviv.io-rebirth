@@ -17,6 +17,28 @@ export interface TradeSample {
 
 export type CoverState = "none" | "hide" | "peek";
 
+/** Trail and trap state of the dead-end escape (brain/deadEnd.ts). */
+export interface DeadEndMemory {
+    trail: Array<{ t: number; pos: Vec2 }>;
+    /** since when the bot has stayed near `anchor` while wanting to go farther (Infinity: not trapped) */
+    since: number;
+    anchor: Vec2 | null;
+    escapeTo: Vec2 | null;
+    escapeUntil: number;
+    cooldown: number;
+}
+
+export function emptyDeadEnd(): DeadEndMemory {
+    return {
+        trail: [],
+        since: Number.POSITIVE_INFINITY,
+        anchor: null,
+        escapeTo: null,
+        escapeUntil: Number.NEGATIVE_INFINITY,
+        cooldown: Number.NEGATIVE_INFINITY,
+    };
+}
+
 export type AirdropState = "approach" | "scan" | "loot";
 
 export class SmartMemory {
@@ -111,4 +133,6 @@ export class SmartMemory {
     /** kills counted so far, and when the last one came */
     kills = 0;
     lastKill = Number.NEGATIVE_INFINITY;
+    /** the trail and trap state of the dead-end escape (basements: navigation) */
+    readonly deadEnd: DeadEndMemory = emptyDeadEnd();
 }

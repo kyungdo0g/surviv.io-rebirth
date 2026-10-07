@@ -1,5 +1,6 @@
 // Spot checks of values only the original v0.8.82 client has (survev's fork changed them), and a full comparison
-// against the extracted client defs when research-cache/live/defs.json is available.
+// against the extracted client defs when research-cache/live/defs.json is available. The survev-only ids the port
+// takes (tools/port-survev/policy.json) follow the original ones and are checked in survevGuns.test.ts.
 import { describe, expect, it } from "vitest";
 import { getDefOfType } from "../src/index.ts";
 import { gameObjects, mapObjects, maps, provenance, readOptionalJson } from "./helpers.ts";
@@ -73,8 +74,11 @@ describe.skipIf(!live)("generated defs equal the original client defs", () => {
         return out;
     };
 
-    it("game objects: same ids, same order, same values", () => {
-        expect(Object.keys(gameObjects)).toEqual(Object.keys(live.gameObjects));
+    it("game objects: original ids first in client order (the survev-only ones after them), same values", () => {
+        const ids = Object.keys(live.gameObjects);
+        expect(Object.keys(gameObjects).slice(0, ids.length)).toEqual(ids);
+        for (const id of Object.keys(gameObjects).slice(ids.length))
+            expect(provenance.gameObjects[id], id).toBe("survev-only");
         for (const [id, def] of Object.entries(live.gameObjects)) {
             expect(withoutFixups(id, gameObjects[id]), id).toEqual(def);
         }

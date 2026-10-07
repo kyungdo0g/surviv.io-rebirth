@@ -26,6 +26,7 @@ export {
     DEFAULT_BRAIN,
     isBrainFeature,
     isBrainName,
+    SMART_EXCLUDED,
     withFeatures,
 } from "./brain/features.ts";
 export { type AimSense, ThrowController, TriggerController, throwMouseLen } from "./brain/trigger.ts";

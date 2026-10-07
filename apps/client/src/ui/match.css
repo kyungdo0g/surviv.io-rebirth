@@ -60,11 +60,12 @@
     white-space: nowrap;
 }
 
+/* no text shadow (game.css #ui-kill-leader-name / -count); the gaps around the icon are spaces between the inline
+   blocks, as in the original's line-broken markup (matchHud.ts; docs/research/provenance/visual-diff.md) */
 #ui-kill-leader-name,
 #ui-kill-leader-count {
     display: inline-block;
     font-size: 24px;
-    text-shadow: 1px 1px #000000;
 }
 
 #ui-kill-leader-icon {
@@ -73,7 +74,6 @@
     top: 12px;
     width: 40px;
     height: 40px;
-    margin: 0 4px;
     border-radius: 20px;
     background-color: rgba(0, 0, 0, 0.4);
     background-image: url(/assets/img/gui/crosshair.svg);

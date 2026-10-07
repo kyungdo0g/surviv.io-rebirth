@@ -18,6 +18,7 @@ export const SOURCE_PREFIXES = [
     "kong", // observation on the 2026 Kongregate relaunch (v0.8.82)
     "web", // any other URL: web/<url>
     "derived", // computed from other cited facts: derived/<short note>
+    "user", // the project owner's request for a deliberate rebirth deviation: user/<yyyy-mm-dd>-<topic>
 ] as const;
 
 const SNIPPET_ONLY = new Set(["namu", "web"]);

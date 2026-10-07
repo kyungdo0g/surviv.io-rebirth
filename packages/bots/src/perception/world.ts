@@ -21,6 +21,7 @@ import {
 } from "@rebirth/sim";
 import { distToSegment, obstacleCollider, obstacleDef, pointInBounds } from "../geom.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
+import { sameLayer } from "../nav/cellGrid.ts";
 import { NavGrid } from "../nav/grid.ts";
 import type { UndergroundNav } from "../nav/underground.ts";
 import { type EnemyIntelProvider, NO_INTEL } from "./intel.ts";
@@ -94,7 +95,9 @@ export interface SeenObstacle {
     view: ObstacleView;
     def: ObstacleDef;
     col: Collider;
-    /** stops bullets: collidable, alive and at least bullet height */
+    /** collidable, alive and at least bullet height: stops bullets on its own floor */
+    solid: boolean;
+    /** stops the bot's bullets: solid, on the bot's floor (refreshed with every snapshot) */
     blocksBullets: boolean;
     /** blocks movement */
     blocksMove: boolean;
@@ -297,6 +300,11 @@ export class WorldModel {
                 case "obstacle": {
                     const seen = this.seeObstacle(o);
                     if (seen) {
+                        // snapshots carry the obstacles of every floor (the sim culls only players and loot of other
+                        // floors), but a bullet only meets the ones on its own floor: a basement crate right below
+                        // two bots fighting on the ground blocked every shot between them, and they stood face to face
+                        // without firing
+                        seen.blocksBullets = seen.solid && sameLayer(this.self.layer, o.layer);
                         this.obstacles.push(seen);
                         this.obstacleById.set(o.id, seen);
                     }
@@ -408,6 +416,7 @@ export class WorldModel {
             view: o,
             def,
             col: obstacleCollider(def, o.pos, o.ori, o.scale),
+            solid: alive && def.height >= BULLET_HEIGHT,
             blocksBullets: alive && def.height >= BULLET_HEIGHT,
             blocksMove: alive,
         };

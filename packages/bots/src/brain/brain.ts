@@ -12,6 +12,7 @@ import { reactToThreats } from "./alert.ts";
 import { assessCached, wantsAssessment } from "./assess.ts";
 import { addCombatLayer, freeDir, selectTarget } from "./combat.ts";
 import { type BehaviourName, type BrainCtx, BrainMemory, emptyIntent, type Intent } from "./context.ts";
+import { noteDeadEnd, planDeadEnd } from "./deadEnd.ts";
 import { updateTrade } from "./disengage.ts";
 import { bestLoot, lootScore, planExplore, planLoot } from "./explore.ts";
 import { EXTENSION_BEHAVIOURS } from "./extensions.ts";
@@ -116,6 +117,14 @@ export class Brain {
             return upstairs;
         }
 
+        // basements (navigation): walk back out of a dead end the grid does not connect (a bank vault)
+        const back = ctx.features.basements ? planDeadEnd(ctx) : null;
+        if (back) {
+            addCombatLayer(ctx, back);
+            this.mem.current = back.behaviour;
+            return back;
+        }
+
         if (ctx.features.disengage) updateTrade(ctx);
         if (ctx.features.steady && this.mem.current === "flee") noteFlight(ctx);
         // steadiness: the loot and crate choices hold for a moment (no flip-flopping between near-equal items)
@@ -153,6 +162,7 @@ export class Brain {
         this.lastScores = scores;
         const intent = best[2]();
         if (ctx.features.steady) noteChoice(ctx, this.mem.current, intent.behaviour);
+        if (ctx.features.basements) noteDeadEnd(ctx, intent);
         if (intent.behaviour !== this.mem.current) this.mem.currentSince = now;
         this.mem.current = intent.behaviour;
         this.manageWeapons(ctx, intent);

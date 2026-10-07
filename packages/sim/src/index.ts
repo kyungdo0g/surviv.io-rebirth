@@ -34,7 +34,13 @@ export { type GenerateMapResult, generateMap, type SpawnSource, type SpawnStat }
 export type { GeneratedObject, LootSpawn } from "./mapgen/generator.ts";
 export { buildTerrain, createTerrain, type River, type Terrain, terrainToShape } from "./mapgen/terrain.ts";
 export { isTerrainWater, type TerrainSurface, terrainSurfaceAt } from "./mapgen/terrainQuery.ts";
-export { AIRSTRIKE_SPAWN_TIME, AirstrikeZones, bombPositions, type StrikeState } from "./match/airstrikes.ts";
+export {
+    AIRSTRIKE_SPAWN_TIME,
+    AirstrikeZones,
+    bombPositions,
+    pickAirstrikeVariant,
+    type StrikeState,
+} from "./match/airstrikes.ts";
 export { EmoteSystem, updateEmoteThrottle } from "./match/emotes.ts";
 export { damageSourceOf, EventLog } from "./match/events.ts";
 export { FactionSystem, type FactionTeam, living } from "./match/faction.ts";

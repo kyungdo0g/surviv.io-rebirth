@@ -36,6 +36,39 @@
     margin-top: 75px;
 }
 
+/* the surviv.io logo in the top-left corner (game.css #ui-stats-logo) */
+#ui-stats-logo {
+    position: absolute;
+    left: 20px;
+    top: 8px;
+    width: 250px;
+    height: 125px;
+    background-image: url(/assets/img/surviv_logo_full.png);
+    background-repeat: no-repeat;
+    background-size: 250px;
+    background-position: center;
+}
+
+@media (max-width: 1280px), (max-height: 768px) {
+    #ui-stats-logo {
+        width: 175px;
+        height: 90px;
+        background-size: 175px;
+    }
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+    #ui-stats-logo {
+        left: initial;
+        top: initial;
+        right: 8px;
+        bottom: 4px;
+        width: 124px;
+        height: 64px;
+        background-size: 124px;
+    }
+}
+
 .ui-stats-header-title {
     font-weight: bold;
     font-size: 48px;
@@ -55,18 +88,37 @@
     border-bottom: 2px solid rgba(255, 255, 255, 0.25);
 }
 
-/* team modes: rank and team kills side by side (survev .ui-stats-header-right / -left) */
+/* team modes: rank and team kills side by side, 100 px apart
+   (game.css .ui-stats-header-overview div:not(:first-child)) */
 .ui-stats-header-team-kills {
-    margin-left: 32px;
+    margin-left: 100px;
 }
 
+/* 32 px labels and 48 px values (game.css span.ui-stats-header-stat / -value; the recordings show the large values) */
 .ui-stats-header-stat {
-    font-size: 24px;
+    font-size: 32px;
 }
 
 .ui-stats-header-value {
-    font-size: 24px;
+    margin-left: 24px;
+    font-size: 48px;
     font-weight: bold;
+}
+
+/* phones (game.css mobile block): 22 / 28 px, 12 px apart */
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+    .ui-stats-header-stat {
+        font-size: 22px;
+    }
+
+    .ui-stats-header-value {
+        margin-left: 12px;
+        font-size: 28px;
+    }
+
+    .ui-stats-header-team-kills {
+        margin-left: 32px;
+    }
 }
 
 #ui-stats-info-box {

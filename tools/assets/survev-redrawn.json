@@ -1,0 +1,17 @@
+{
+    "$comment": "Sprites drawn from an original v0.8.82 atlas frame whose survev SVG is different art (survev's later redraws of the loot icons and emotes), so the DOM HUD shows the original frame for them too: tools/assets/import.ts gives them no `svg` alternative. The original HUD loaded SVGs of the same art as its atlas frames, so a player saw one picture on the ground and in the HUD. Found by comparing every original frame with survev's file at the same size (IoU of the alpha masks, mean colour). Names only; no art.",
+    "sprites": {
+        "chick.img": "different emote art (another drawing of the chick in its shell; IoU 0.88, mean colour 29.6 apart)",
+        "coconut.img": "different emote art (the original is an orange coconut split open, survev a whole brown one; IoU 0.69)",
+        "forest.img": "different emote art (round-crowned trees in the original, pointed ones in survev; IoU 0.80)",
+        "loot-weapon-glock-dual.img": "survev's later redraw of the loot icon (IoU 0.72)",
+        "loot-weapon-glock.img": "survev's later redraw of the loot icon (IoU 0.74)",
+        "loot-weapon-hk416.img": "survev's later redraw of the loot icon (IoU 0.79)",
+        "loot-weapon-m39.img": "survev's later redraw of the loot icon (rail and scope, another stock; IoU 0.46)",
+        "loot-weapon-mac10.img": "survev's later redraw of the loot icon (IoU 0.74)",
+        "loot-weapon-mp5.img": "survev's later redraw of the loot icon (IoU 0.63)",
+        "loot-weapon-ot38-dual.img": "survev's later redraw of the loot icon (IoU 0.72)",
+        "loot-weapon-ot38.img": "survev's later redraw of the loot icon (IoU 0.65)",
+        "loot-weapon-ump9.img": "survev's later redraw of the loot icon (IoU 0.85)"
+    }
+}

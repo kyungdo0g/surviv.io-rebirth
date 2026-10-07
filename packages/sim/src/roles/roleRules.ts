@@ -1,6 +1,7 @@
 // Role and 50v50 knobs (M7a). Promotion timing, role loadouts and the faction schedule were server-side in the
 // original; values follow docs/research/items/roles.md and modes/faction.md with their conflict resolutions, each
 // cited per line. `game.rules.roles` is a mutable copy.
+import { type AirstrikeVariant, DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS } from "@rebirth/defs";
 
 /** One promotion slot of the 50v50 schedule: one of `roles` (picked once per game) at `wait` s into `circleIdx`. */
 export interface RoleSlot {
@@ -50,6 +51,13 @@ export interface RoleRules {
      */
     factionAirstrikeWaits: Readonly<Record<number, number>>;
     /**
+     * Rebirth (deliberate deviation requested by the user, docs/research/rebirth-deviations.md): roll weights of the
+     * variant of every scheduled air strike zone on faction maps (normal / heavy / carpet, defs AIRSTRIKE_VARIANTS);
+     * missing, non-positive or non-finite weights never win, none left means normal. `{ normal: 1 }` restores
+     * v0.8.82. The server sets it from AIRSTRIKE_VARIANTS.
+     */
+    factionAirstrikeVariants: Readonly<Partial<Record<AirstrikeVariant, number>>>;
+    /**
      * One scheduled gold military drop per match (conflicts.md faction-gold-drop: "same time each match", time
      * unknown; mid-game knob). null: none.
      */
@@ -87,6 +95,7 @@ export function defaultRoleRules(): RoleRules {
         leaderAutoFlareDelay: 15,
         leaderFlareLocked: true,
         factionAirstrikeWaits: { 2: 24, 4: 18 },
+        factionAirstrikeVariants: { ...DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS },
         factionGoldDrop: { circleIdx: 3, wait: 2, crate: "airdrop_crate_04" },
         helpLosingTeam: false,
         helpLosingTeamCrate: "airdrop_crate_04",

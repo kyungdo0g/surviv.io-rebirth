@@ -36,6 +36,16 @@ describe("air drops", () => {
         expect(airdropScore(brain.context(NOW + 60))).toBe(0);
     });
 
+    it("unarmed, leaves contested drops alone", () => {
+        const w = testWorld();
+        const board = new FixedBoard();
+        board.drops = [{ pos: v2.add(w.spot, { x: 40, y: 0 }), seenAt: NOW - 1, landed: true, crateId: 0 }];
+        w.model.threats = board;
+        expect(airdropScore(ctxOf(w, ["airdrop"]))).toBeGreaterThan(0.3);
+        w.model.self.weapons[0] = { type: "", ammo: 0 };
+        expect(airdropScore(ctxOf(w, ["airdrop"]))).toBe(0);
+    });
+
     it("skips a hot drop and one out of reach", () => {
         const w = testWorld();
         const drop = v2.add(w.spot, { x: 70, y: 0 });

@@ -39,10 +39,15 @@ export class Camera {
     /** offset applied by the last `applyShake` (tests) */
     lastShake = 0;
 
-    /** An explosion at `pos` shakes the camera this frame (survev camera.ts m_addShake). */
-    addShake(pos: Vec2, intensity: number): void {
+    /**
+     * An explosion at `pos` shakes the camera this frame (survev camera.ts m_addShake). `rangeMult` stretches the
+     * near/far distances (rebirth: the heavy air strike shell is felt farther; 1 is the original).
+     */
+    addShake(pos: Vec2, intensity: number, rangeMult = 1): void {
         const dist = Math.hypot(this.pos.x - pos.x, this.pos.y - pos.y);
-        const t = Math.min(1, Math.max(0, (dist - SHAKE_FAR) / (SHAKE_NEAR - SHAKE_FAR)));
+        const near = SHAKE_NEAR * rangeMult;
+        const far = SHAKE_FAR * rangeMult;
+        const t = Math.min(1, Math.max(0, (dist - far) / (near - far)));
         this.shakeInt = Math.max(this.shakeInt, t * intensity);
     }
 

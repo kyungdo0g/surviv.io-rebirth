@@ -3,7 +3,8 @@
 // fine and it lies within 120 units in the safe zone. The bot does not run straight onto it: it stops in cover 15-25
 // units away, scans the area for 3-6 s (players drawn to the drop show up), then goes for the crate (opening it with
 // the break behaviour's Use). It skips a drop with a lot of threat heat around it, unless it means to third-party the
-// fight there. Capped at 45 s per drop, then the drop is left alone for a minute.
+// fight there. Capped at 45 s per drop, then the drop is left alone for a minute. Unarmed bots leave drops alone; in
+// team modes a follower goes only for a drop within 30 units of its leader (team.ts onLeash).
 import { type Vec2, v2 } from "@rebirth/core";
 import { Input } from "@rebirth/defs";
 import { colliderCenter, colliderRadius, distanceToCollider } from "../geom.ts";
@@ -11,6 +12,7 @@ import type { SeenObstacle, WorldModel } from "../perception/world.ts";
 import { addCombatLayer, findCoverFrom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent, reachable, usableSpot } from "./context.ts";
 import { lootNeed } from "./scavenge.ts";
+import { onLeash } from "./team.ts";
 
 const MAX_DIST = 120;
 const STAND_MIN = 15;
@@ -70,7 +72,8 @@ function done(ctx: BrainCtx): void {
 export function airdropScore(ctx: BrainCtx): number {
     const { model, now } = ctx;
     const sm = ctx.mem.smart;
-    if (now < sm.airdropCooldown || model.inGasNow()) return 0;
+    // unarmed: a contested drop is no place to be without a gun (the guns lying around come first)
+    if (now < sm.airdropCooldown || model.inGasNow() || !ctx.armed) return 0;
     // nothing known: look again in a moment (air drops are rare)
     if (!sm.airdropPos && now - sm.airdropCheckAt < CHECK_EVERY) return 0;
     sm.airdropCheckAt = now;
@@ -89,6 +92,8 @@ export function airdropScore(ctx: BrainCtx): number {
         done(ctx);
         return 0;
     }
+    // team modes: a follower does not wander off alone to a drop
+    if (!onLeash(ctx, drop.pos)) return 0;
     const heat = model.threats.heat(drop.pos, 20);
     const watching = ctx.features.thirdparty && sm.tpA !== 0;
     if (heat > HOT && !watching) return 0;

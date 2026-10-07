@@ -3,7 +3,14 @@
 // PerkModeRoleSelect message reaching a Cobalt game.
 import { HeadlessClient } from "@rebirth/protocol";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { effectiveTeamMode, isFactionMap, loadConfig, makeConfig, roomCapacity } from "../src/config.ts";
+import {
+    effectiveTeamMode,
+    isFactionMap,
+    loadConfig,
+    makeConfig,
+    parseAirstrikeVariants,
+    roomCapacity,
+} from "../src/config.ts";
 import { GameHost } from "../src/host.ts";
 import { type RunningServer, startServer } from "../src/server.ts";
 import { roomOf, until } from "./helpers.ts";
@@ -34,6 +41,37 @@ describe("faction config", () => {
         expect(loadConfig({}).factionBotFill).toBe(0);
         expect(loadConfig({ BOT_FILL: "40", FACTION_BOT_FILL: "10" }).factionBotFill).toBe(10);
         expect([roomCapacity(c, "faction"), roomCapacity(c, "main")]).toEqual([100, 80]);
+    });
+
+    it("AIRSTRIKE_VARIANTS sets the 50v50 air strike variant weights of every game (rebirth)", () => {
+        expect(loadConfig({}).airstrikeVariants).toEqual({ normal: 60, heavy: 25, carpet: 15 });
+        expect(loadConfig({ AIRSTRIKE_VARIANTS: "normal" }).airstrikeVariants).toEqual({
+            normal: 1,
+            heavy: 0,
+            carpet: 0,
+        });
+        expect(parseAirstrikeVariants(" heavy:2.5 , carpet:0,normal:7 ")).toEqual({ normal: 7, heavy: 2.5, carpet: 0 });
+        expect(parseAirstrikeVariants("carpet")).toEqual({ normal: 0, heavy: 0, carpet: 1 });
+        expect(parseAirstrikeVariants("normal:1000000,heavy:0.5")).toEqual({ normal: 1e6, heavy: 0.5, carpet: 0 });
+        const bad = ["nuke:5", "heavy:-1", "heavy:x", "heavy:", "normal:1,normal:2", "normal:0", "heavy:1:2"];
+        // weights are capped plain decimals: huge weights would sum to Infinity in rng.weighted (always the last
+        // variant), and Number() would quietly read hex, exponents and "Infinity"
+        bad.push("normal:1e308,heavy:1e308", "heavy:1000001", "heavy:0x10", "heavy:1e3", "heavy:Infinity");
+        bad.push("heavy:+5", "heavy:.5", "heavy:5.");
+        for (const text of bad) {
+            expect(() => loadConfig({ AIRSTRIKE_VARIANTS: text }), text).toThrow(/AIRSTRIKE_VARIANTS/);
+        }
+        const host = new GameHost(
+            makeConfig({
+                log: false,
+                botFill: 0,
+                factionBotFill: 0,
+                airstrikeVariants: parseAirstrikeVariants("carpet:3"),
+            }),
+        );
+        const room = host.findRoom("faction", 4)!;
+        expect(room.game.rules.roles.factionAirstrikeVariants).toEqual({ normal: 0, heavy: 0, carpet: 3 });
+        host.stop();
     });
 
     it("a faction room fills with bots of both factions up to its target", () => {

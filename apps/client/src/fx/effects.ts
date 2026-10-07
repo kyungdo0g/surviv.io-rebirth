@@ -281,7 +281,9 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         if (!action || action.type === "none" || !action.item) return;
         const def = GameObjectDefs[action.item];
         let sound: string | undefined;
-        if (action.type === "reload" && def?.type === "gun") sound = def.sound.reload;
+        // the alternate full reload plays its own sound (survev player.ts playActionStartSfx: Action.ReloadAlt)
+        if (action.type === "reload" && def?.type === "gun")
+            sound = action.alt && def.sound.reloadAlt ? def.sound.reloadAlt : def.sound.reload;
         else if (action.type === "use" && (def?.type === "heal" || def?.type === "boost")) sound = def.sound.use;
         if (sound) {
             const handle = this.audio.playSound(sound, {
@@ -330,7 +332,8 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
             shellPos = { x: shellPos.x + shellDir.x * p.shellOffsetY, y: shellPos.y + shellDir.y * p.shellOffsetY };
         }
         if (p.shellReverse) vel = { x: -vel.x, y: -vel.y };
-        this.particles.add(def.ammo, player.layer, shellPos, vel, {
+        // a gun's own casing (survev particle.casing: the .50 guns' "50cal"), else its ammo's
+        this.particles.add(p.casing ?? def.ammo, player.layer, shellPos, vel, {
             scale: p.shellScale,
             rot: -Math.atan2(shellDir.y, shellDir.x),
             zOrd: PLAYER_FX_Z_ORD,

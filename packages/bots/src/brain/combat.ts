@@ -8,6 +8,7 @@ import { colliderCenter, colliderRadius } from "../geom.ts";
 import { currentGun, fightSlot, hasAmmo } from "../knowledge/arsenal.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
 import type { Contact, SeenObstacle, WorldModel } from "../perception/world.ts";
+import { holdFire } from "./assess.ts";
 import type { BrainCtx, Intent } from "./context.ts";
 import { opportunityMult } from "./opportunity.ts";
 import { focusMult } from "./teamplay.ts";
@@ -151,8 +152,11 @@ export function findCoverFrom(
     for (const { c, r, box } of coverCandidates(model)) {
         if (v2.distance(from, c) > maxDist) continue;
         const away = v2.normalizeSafe(v2.sub(c, threat));
-        const spot = v2.add(c, v2.mul(away, r * (box ? 0.75 : 1) + 1.5));
-        if (!model.nav.walkableAt(spot)) continue;
+        const raw = v2.add(c, v2.mul(away, r * (box ? 0.75 : 1) + 1.5));
+        if (!model.nav.walkableAt(raw)) continue;
+        // the centre of its navigation cell: a player can stand there (the raw spot can sit closer to the obstacle
+        // than the player's radius, and a goal no one can reach only piles up path follower stuck events)
+        const spot = model.nav.center(model.nav.nearestWalkable(raw, 1));
         if (model.lineOfFire(threat, spot)) continue;
         if (accept && !accept(spot)) continue;
         // prefer close spots that do not make the bot walk towards the threat
@@ -179,7 +183,8 @@ export function addCombatLayer(ctx: BrainCtx, intent: Intent): void {
     intent.slot = slot;
     intent.targetId = t.id;
     intent.aim = leadPoint(ctx, t);
-    intent.fire = canShoot(ctx, t, d);
+    // (canShoot first: it draws the reaction time of a new target)
+    intent.fire = canShoot(ctx, t, d) && !holdFire(ctx, t, d);
 }
 
 /** Whether the bot holds a usable gun in its hands (loaded or with reserve). */

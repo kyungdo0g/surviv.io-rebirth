@@ -105,6 +105,9 @@ export class AirSystem {
         );
     }
 
+    /** air strike planes created since boot (tests: a carpet zone sends 6) */
+    strikePlanesSeen = 0;
+
     /** planes and falling crates drawn last frame (tests) */
     get counts(): { planes: number; airdrops: number } {
         let planes = 0;
@@ -156,6 +159,7 @@ export class AirSystem {
         this.deps.textures.apply(sprite, img, 2);
         sprite.tint = AIR_TINT;
         const config = planeConfig(data.planeType);
+        if (data.planeType === "airstrike") this.strikePlanesSeen++;
         return {
             id: data.id,
             sprite,

@@ -46,10 +46,7 @@ test.describe("M5 throwables, explosions, smoke and heals", () => {
         expect(await page.evaluate(() => (window as any).__rebirth.fx.particles("fragPin"))).toBeGreaterThan(0);
         await page.screenshot({ path: `${SCREENS}/grenade-mid-air.png` });
 
-        // step back out of the blast while the fuse burns; the explosion stays in view
-        const me = await localPos(page);
-        expect(await moveLocalAway(page, target, 15, me)).not.toBeNull();
-        // record the camera shake every frame
+        // record the camera shake every frame from now on (under load the walk away can outlast the fuse)
         await page.evaluate(() => {
             const r = (window as any).__rebirth;
             r.maxShake = 0;
@@ -60,6 +57,9 @@ test.describe("M5 throwables, explosions, smoke and heals", () => {
             };
             tick();
         });
+        // step back out of the blast while the fuse burns; the explosion stays in view
+        const me = await localPos(page);
+        expect(await moveLocalAway(page, target, 15, me)).not.toBeNull();
         await page.waitForFunction(() => (window as any).__rebirth.fx.explosions > 0, null, { timeout: 8_000 });
         await page.screenshot({ path: `${SCREENS}/explosion.png` });
         expect(await page.evaluate(() => (window as any).__rebirth.fx.particles("explosionBurst"))).toBeGreaterThan(0);
@@ -69,12 +69,15 @@ test.describe("M5 throwables, explosions, smoke and heals", () => {
             return { health: p?.health ?? 0, dead: p?.dead ?? true };
         }, dummy);
         expect(hit.dead || hit.health < 100).toBe(true);
-        // the scorch mark decal appears and the camera shook
+        // the scorch mark decal appears (the rebirth frag's x1.3 decal, docs/research/rebirth-deviations.md) and the
+        // camera shook
         await page.waitForTimeout(300);
         expect(await page.evaluate(() => (window as any).__rebirth.maxShake)).toBeGreaterThan(0);
         expect(
             await page.evaluate(() =>
-                (window as any).__rebirth.lastSnapshot.objects.some((o: any) => o.type === "decal_frag_explosion"),
+                (window as any).__rebirth.lastSnapshot.objects.some(
+                    (o: any) => o.type === "decal_frag_large_explosion",
+                ),
             ),
         ).toBe(true);
         await page.screenshot({ path: `${SCREENS}/explosion-after.png` });

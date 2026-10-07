@@ -1,7 +1,8 @@
 /*
  * In-game HUD, laid out like the original desktop ("Lg") HUD: sizes, colours and positions follow the original
  * game.css (survev client/css/game.css; docs/research/ui/hud.md). Everything is click-through except elements
- * marked [data-hud-click].
+ * marked [data-hud-click]. Like the original, item counts, weapon names and slot numbers have no text shadow (only the
+ * armour level does); docs/research/provenance/visual-diff.md.
  */
 #ui-game {
     position: fixed;
@@ -120,7 +121,6 @@
     font-weight: bold;
     left: 10px;
     top: 1px;
-    text-shadow: 1px 1px #000000;
 }
 
 .ui-loot .ui-loot-image {
@@ -154,7 +154,6 @@
     top: 26px;
     width: 100%;
     text-align: center;
-    text-shadow: 1px 1px #000000;
 }
 
 .ui-ammo .ui-loot-image,
@@ -435,6 +434,7 @@
     bottom: 0;
     width: 48px;
     height: 60px;
+    margin-left: 4px;
     background: rgba(0, 0, 0, 0.4);
     border-radius: 5px;
 }
@@ -443,12 +443,15 @@
     right: 4px;
 }
 
+/* game.css: the chest box keeps its static place (0) and the 4 px margin; the backpack is 60 px right of it with a
+   transparent 2 px border */
 #ui-armor-chest {
-    left: 4px;
+    left: 0;
 }
 
 #ui-armor-backpack {
     left: 60px;
+    border: 2px solid transparent;
 }
 
 .ui-armor-image {
@@ -459,20 +462,17 @@
     width: 36px;
 }
 
+/* the level sits above its box: the original's in-flow label moved up 24 px (game.css .ui-armor-level: relative,
+   bottom 24px; docs/research/provenance/visual-diff.md) */
 .ui-armor-level {
     position: absolute;
-    bottom: 2px;
+    top: -24px;
     width: 100%;
     font-size: 16px;
-    letter-spacing: -0.5px;
     font-weight: bold;
     text-align: center;
     text-shadow: 1px 1px #000000;
     white-space: nowrap;
-}
-
-:lang(ko) .ui-armor-level {
-    font-size: 13px;
 }
 
 /* bottom right: weapon slots */
@@ -497,7 +497,6 @@
     border-radius: 5px;
     border: 2px solid transparent;
     transition:
-        width 0.09s ease-out,
         opacity 0.15s linear,
         background-color 0.1s;
 }
@@ -506,8 +505,8 @@
     border-color: #00ff00;
 }
 
+/* the equipped slot keeps the 83.33 % width; hud.ts pulses it wider for 0.28 s when it is equipped */
 .ui-weapon-switch.ui-weapon-equipped {
-    width: 100%;
     opacity: 1;
     background: rgba(0, 0, 0, 0.4);
 }
@@ -539,7 +538,6 @@
     font-size: 18px;
     font-weight: bold;
     white-space: nowrap;
-    text-shadow: 1px 1px #000000;
 }
 
 .ui-weapon-number {
@@ -548,7 +546,6 @@
     top: 0;
     font-size: 24px;
     font-weight: bold;
-    text-shadow: 1px 1px #000000;
 }
 
 .ui-weapon-image {

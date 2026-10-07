@@ -5,8 +5,23 @@
 // a "ping_airstrike" marker, then 3-5 planes `delay` seconds apart, each aimed at a random point in the zone or, half
 // of the time, near a random player in it.
 // Behaviour follows docs/research/mechanics/airdrop-airstrike.md "Air strikes" (survev objects/plane.ts).
+// Rebirth (deliberate deviation requested by the user, docs/research/rebirth-deviations.md): every zone has a variant
+// (defs AIRSTRIKE_VARIANTS): "normal" is the behaviour above, "heavy" drops 5 heavy shells per plane over a larger
+// zone, "carpet" sends 6 planes that aim inside 1.4x the radius under a marker that covers every blast. Strobe strikes
+// are always normal.
 import { type Rng, type Vec2, v2 } from "@rebirth/core";
-import { DamageType, GameConfig, getDefOfType, type MapDef } from "@rebirth/defs";
+import {
+    AIRSTRIKE_AIM_LEAD,
+    AIRSTRIKE_VARIANT_IDS,
+    AIRSTRIKE_VARIANTS,
+    type AirstrikeVariant,
+    type AirstrikeVariantDef,
+    airstrikeAimRad,
+    DamageType,
+    GameConfig,
+    getDefOfType,
+    type MapDef,
+} from "@rebirth/defs";
 import { randomPointInCircle } from "../mapgen/random.ts";
 import type { AirstrikeZoneView } from "../view.ts";
 import type { Player } from "../world/player.ts";
@@ -40,14 +55,20 @@ export interface StrikeState {
     bombs: Vec2[];
     reachedTarget: boolean;
     dropCounter: number;
+    /** throwable dropped (the variant's bombType; bomb_iron for strobes) */
+    bombType: string;
     /** player credited (the strobe thrower), 0 for the game */
     ownerId: number;
 }
 
 interface Zone {
     id: number;
+    variant: AirstrikeVariant;
     pos: Vec2;
+    /** shown radius: the aim radius plus the variant's zoneRadAdd */
     rad: number;
+    /** planes aim inside this radius (the map's airstrikeZoneRad times the variant's aimRadMult) */
+    aimRad: number;
     duration: number;
     elapsed: number;
     startTicker: number;
@@ -62,19 +83,48 @@ export interface AirstrikeHost {
     readonly gas: { posNew: Vec2 };
     readonly world: { clampToMap(pos: Vec2, rad: number): Vec2 };
     players(): Iterable<Player>;
-    /** spawns a strike plane flying along `dir` over `pos` */
-    addAirstrike(pos: Vec2, dir: Vec2, ownerId: number): void;
+    /** spawns a strike plane of `variant` flying along `dir` over `pos` */
+    addAirstrike(pos: Vec2, dir: Vec2, ownerId: number, variant: AirstrikeVariant): void;
     addPing(type: string, pos: Vec2): void;
 }
 
-/** Bomb points of one strike: target + dir x bombOffset x i + jitter (survev PlaneBarn.addAirStrike). */
-export function bombPositions(rng: Rng, target: Vec2, dir: Vec2): Vec2[] {
+/**
+ * Bomb points of one strike: target + dir x bombOffset x i + jitter (survev PlaneBarn.addAirStrike), with the bomb
+ * count, spacing and jitter of `strip` (GameConfig.airstrike for the normal variant).
+ */
+export function bombPositions(
+    rng: Rng,
+    target: Vec2,
+    dir: Vec2,
+    strip: AirstrikeVariantDef = AIRSTRIKE_VARIANTS.normal,
+): Vec2[] {
     const out: Vec2[] = [];
-    for (let i = 0; i < STRIKE.bombCount; i++) {
-        const p = v2.add(target, v2.mul(dir, STRIKE.bombOffset * i));
-        out.push(v2.add(p, randomPointInCircle(rng, STRIKE.bombJitter)));
+    for (let i = 0; i < strip.bombCount; i++) {
+        const p = v2.add(target, v2.mul(dir, strip.bombOffset * i));
+        out.push(v2.add(p, randomPointInCircle(rng, strip.bombJitter)));
     }
     return out;
+}
+
+/**
+ * Variant of a scheduled zone, rolled from `weights` (rules.roles.factionAirstrikeVariants); missing, non-positive and
+ * non-finite weights never win, normal when none is left (no draw then).
+ */
+export function pickAirstrikeVariant(
+    rng: Rng,
+    weights: Readonly<Partial<Record<AirstrikeVariant, number>>>,
+): AirstrikeVariant {
+    const weightOf = (id: AirstrikeVariant): number => {
+        const w = weights[id] ?? 0;
+        return Number.isFinite(w) && w > 0 ? w : 0;
+    };
+    const ids = AIRSTRIKE_VARIANT_IDS.filter((id) => weightOf(id) > 0);
+    if (ids.length === 0) return "normal";
+    // weights near Number.MAX_VALUE sum to Infinity, which makes rng.weighted always pick the last one: compare them
+    // relative to the largest instead (the server caps AIRSTRIKE_VARIANTS weights; rules set in code may not)
+    const total = ids.reduce((sum, id) => sum + weightOf(id), 0);
+    const scale = Number.isFinite(total) ? 1 : 1 / Math.max(...ids.map(weightOf));
+    return rng.weighted(ids, (id) => weightOf(id) * scale);
 }
 
 /** What a strike plane's bomb run needs. */
@@ -109,12 +159,12 @@ export function updateStrike(strike: StrikeState, pos: Vec2, target: Vec2, dir: 
         const bombPos = strike.bombs.shift() as Vec2;
         dropper.add({
             ownerId: strike.ownerId,
-            type: "bomb_iron",
+            type: strike.bombType,
             pos: bombPos,
             posZ: BOMB_HEIGHT,
             layer: 0,
             vel: v2.mul(dir, STRIKE.bombVel),
-            fuse: getDefOfType("throwable", "bomb_iron").fuseTime,
+            fuse: getDefOfType("throwable", strike.bombType).fuseTime,
             damageType: DamageType.Airstrike,
             // potato mode swaps weapons like a strobe kill (survev dropBomb)
             sourceType: "strobe",
@@ -137,30 +187,50 @@ export class AirstrikeZones {
         this.rng = rng;
     }
 
-    /** A scheduled air strike timing came due (survev PlaneBarn.update, Plane.Airstrike). */
-    schedule(options: PlaneOptions): void {
+    /**
+     * A scheduled air strike timing came due (survev PlaneBarn.update, Plane.Airstrike); `variant` was rolled by the
+     * plane system (normal off faction maps). The plane count is rolled for every variant, so the zone and plane
+     * draws of a normal zone are the original ones.
+     */
+    schedule(options: PlaneOptions, variant: AirstrikeVariant = "normal"): void {
         const rad = options.airstrikeZoneRad;
         if (!rad) return;
         const planes = options.numPlanes?.length
             ? this.rng.weighted(options.numPlanes, (n) => n.weight).count
             : DEFAULT_PLANES;
-        this.addZone(this.zonePos(rad), rad, planes, options.wait ?? DEFAULT_WAIT, options.delay ?? DEFAULT_DELAY);
+        const wait = options.wait ?? DEFAULT_WAIT;
+        this.addZone(this.zonePos(rad), rad, planes, wait, options.delay ?? DEFAULT_DELAY, variant);
     }
 
-    /** A zone at `pos`; the ping marks it on the map (survev addAirstrikeZone). */
-    addZone(pos: Vec2, rad: number, planeCount: number, wait: number, interval: number): void {
-        const duration = wait + AIRSTRIKE_SPAWN_TIME + planeCount * interval + ZONE_FINISH_BUFFER;
+    /**
+     * A zone of `variant` at `pos`; the ping marks it on the map (survev addAirstrikeZone). `rad` and `planeCount` are
+     * the map's: the variant may widen the planes' aim radius, grow the shown radius and fix the plane count.
+     */
+    addZone(
+        pos: Vec2,
+        rad: number,
+        planeCount: number,
+        wait: number,
+        interval: number,
+        variant: AirstrikeVariant = "normal",
+    ): void {
+        const def = AIRSTRIKE_VARIANTS[variant];
+        const planes = def.planeCount ?? planeCount;
+        const aimRad = airstrikeAimRad(variant, rad);
+        const duration = wait + AIRSTRIKE_SPAWN_TIME + planes * interval + ZONE_FINISH_BUFFER;
         const id = this.nextId;
         this.nextId = this.nextId >= MAX_ZONE_ID ? 1 : this.nextId + 1;
         this.zones.push({
             id,
+            variant,
             pos: v2.copy(pos),
-            rad,
+            rad: aimRad + def.zoneRadAdd,
+            aimRad,
             duration,
             elapsed: 0,
             startTicker: wait,
             strikeTicker: 0,
-            planesLeft: planeCount,
+            planesLeft: planes,
             interval,
             planeDir: v2.randomUnit(this.rng),
         });
@@ -194,19 +264,25 @@ export class AirstrikeZones {
         return this.host.world.clampToMap(v2.add(pos, randomPointInCircle(this.rng, ZONE_JITTER)), 0);
     }
 
-    /** Aim point of one plane of `zone`, shifted back so the bomb strip centres on it (survev getAirstrikePos). */
+    /**
+     * Aim point of one plane of `zone` inside its aim radius, shifted back so the bomb strip centres on it (survev
+     * getAirstrikePos).
+     */
     private strikePos(zone: Zone): Vec2 {
-        let pos = v2.add(zone.pos, randomPointInCircle(this.rng, zone.rad));
+        const strip = AIRSTRIKE_VARIANTS[zone.variant];
+        let pos = v2.add(zone.pos, randomPointInCircle(this.rng, zone.aimRad));
         if (this.rng.next() < AIM_CHANCE) {
             for (const p of this.rng.shuffle(this.connectedLiving())) {
-                const test = v2.add(p.pos, randomPointInCircle(this.rng, (STRIKE.bombCount * STRIKE.bombOffset) / 4));
-                if (p.layer !== 1 && v2.distance(zone.pos, test) <= zone.rad) {
+                const test = v2.add(p.pos, randomPointInCircle(this.rng, (strip.bombCount * strip.bombOffset) / 4));
+                if (p.layer !== 1 && v2.distance(zone.pos, test) <= zone.aimRad) {
                     pos = test;
                     break;
                 }
             }
         }
-        return v2.add(pos, v2.mul(zone.planeDir, (-(STRIKE.bombCount + 1.75) * STRIKE.bombOffset) / 2));
+        // the strip centres on the aim point (defs AIRSTRIKE_AIM_LEAD: the bombs drift ~2.9 u forward while they fall)
+        const back = ((strip.bombCount - 1) * strip.bombOffset) / 2 + AIRSTRIKE_AIM_LEAD;
+        return v2.add(pos, v2.mul(zone.planeDir, -back));
     }
 
     update(dt: number): void {
@@ -232,7 +308,7 @@ export class AirstrikeZones {
     }
 
     private strike(zone: Zone): void {
-        this.host.addAirstrike(this.strikePos(zone), zone.planeDir, 0);
+        this.host.addAirstrike(this.strikePos(zone), zone.planeDir, 0, zone.variant);
         zone.strikeTicker = zone.interval;
         zone.planesLeft--;
     }
@@ -240,6 +316,7 @@ export class AirstrikeZones {
     views(): AirstrikeZoneView[] {
         return this.zones.map((z) => ({
             id: z.id,
+            variant: z.variant,
             pos: v2.copy(z.pos),
             rad: z.rad,
             duration: z.duration,

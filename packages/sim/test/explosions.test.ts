@@ -2,7 +2,7 @@
 // explosion rows, obstacle damage and plating, barrel chains with kill credit, shrapnel, loot pushes, USAS-12 frag
 // rounds, Explosive Rounds, scorch decals and snapshot events.
 import { type Vec2, v2 } from "@rebirth/core";
-import { DamageType, getDefOfType, WeaponSlot } from "@rebirth/defs";
+import { DamageType, FRAG_DECAL_TYPE, getDefOfType, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import type { Game, Player } from "../src/index.ts";
 import { constantRng, giveGun, send, spawnAt, steps } from "./combatHelpers.ts";
@@ -37,22 +37,38 @@ describe("explosion damage", () => {
     it("is full inside rad.min, then falls off to 0 at rad.max (conflicts.md explosion-falloff-curve)", () => {
         const origin = clearSpot();
         const { game } = fxGame(origin);
-        const frag = getDefOfType("explosion", "explosion_frag");
+        // The model is checked with the MIRV's main charge, which keeps the original frag values (125, radius 5-12):
+        // the rebirth scales explosion_frag's radius by 1.3 (user request, docs/research/rebirth-deviations.md).
+        const mirv = getDefOfType("explosion", "explosion_mirv");
+        expect([mirv.damage, mirv.rad.min, mirv.rad.max]).toEqual([125, 5, 12]);
         const far = { type: 0 as const, pos: { x: 100, y: 0 }, rad: 0.1 };
-        const at = (d: number) => game.explosions.damageAt(frag, { x: 0, y: 0 }, far, d);
+        const at = (d: number) => game.explosions.damageAt(mirv, { x: 0, y: 0 }, far, d);
         expect([at(0), at(5), at(6), at(9), at(12), at(13)]).toEqual([125, 125, 62.5, 31.25, 0, 0]);
         // touching the rad.min circle counts as inside
-        expect(game.explosions.damageAt(frag, { x: 0, y: 0 }, { type: 0, pos: { x: 5.5, y: 0 }, rad: 1 }, 9)).toBe(125);
+        expect(game.explosions.damageAt(mirv, { x: 0, y: 0 }, { type: 0, pos: { x: 5.5, y: 0 }, rad: 1 }, 9)).toBe(125);
         game.rules.explosionFalloff = "smooth";
         expect([at(5), at(8.5), at(12)]).toEqual([125, 62.5, 0]);
 
         // in the world the ray meets the body surface, 1 unit before its centre
         expect(damageAt(origin, "explosion_mirv_mini", 4)).toBeCloseTo(75, 9);
         expect(damageAt(origin, "explosion_mirv_mini", 6)).toBeCloseTo(75 * (1 - 5 / 8), 9);
-        expect(damageAt(origin, "explosion_frag", 7)).toBeCloseTo(62.5, 9);
-        expect(damageAt(origin, "explosion_frag", 10)).toBeCloseTo(31.25, 9);
-        expect(damageAt(origin, "explosion_frag", 13.5)).toBe(0);
-        expect(damageAt(origin, "explosion_frag", 9.5, "smooth")).toBeCloseTo(62.5, 9);
+        expect(damageAt(origin, "explosion_mirv", 7)).toBeCloseTo(62.5, 9);
+        expect(damageAt(origin, "explosion_mirv", 10)).toBeCloseTo(31.25, 9);
+        expect(damageAt(origin, "explosion_mirv", 13.5)).toBe(0);
+        expect(damageAt(origin, "explosion_mirv", 9.5, "smooth")).toBeCloseTo(62.5, 9);
+    });
+
+    it("rebirth: the frag grenade reaches 1.3x farther (radius 6.5-15.6 instead of 5-12, user request)", () => {
+        const origin = clearSpot();
+        const frag = getDefOfType("explosion", "explosion_frag");
+        expect(frag.rad).toEqual({ min: 6.5, max: 15.6 });
+        // 7 u away (body surface at 6, inside rad.min now): the full 125 kills; the original radius dealt 62.5
+        expect(damageAt(origin, "explosion_frag", 7)).toBe(100);
+        expect(damageAt(origin, "explosion_frag", 8.8)).toBeCloseTo(62.5, 9);
+        // 13.5 u: out of the original 12 u reach, still hit now
+        expect(damageAt(origin, "explosion_frag", 13.5)).toBeCloseTo(125 * (1 - 12.5 / 15.6), 9);
+        expect(damageAt(origin, "explosion_frag", 17)).toBe(0);
+        expect(damageAt(origin, "explosion_frag", 12.05, "smooth")).toBeCloseTo(62.5, 9);
     });
 
     it("is blocked by walls: an explosion behind a wall does no damage", () => {
@@ -185,7 +201,8 @@ describe("explosion damage", () => {
             shrapnel.every((b) => b.bulletType === "shrapnel_frag" && b.shooterId === 7 && b.sourceType === "frag"),
         ).toBe(true);
         expect(loot.vel.x).toBeGreaterThan(0);
-        const decals = [...game.world.objects.values()].filter((o) => o.type === "decal_frag_explosion");
+        // the rebirth frag leaves its x1.3 scorch (defs rebirth layer; the MIRV keeps decal_frag_explosion)
+        const decals = [...game.world.objects.values()].filter((o) => o.type === FRAG_DECAL_TYPE);
         expect(decals).toHaveLength(1);
         // explosion_rounds scorches fade after 2-2.5 s
         game.explosions.add("explosion_rounds", origin, 0, PLAYER_SRC);

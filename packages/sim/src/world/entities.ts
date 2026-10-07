@@ -113,6 +113,11 @@ export class Obstacle {
     /** smartLoot replacement crates: their loot belongs to `lootOwnerId` (survev shouldApplyLootOwner) */
     applyLootOwner = false;
     lootOwnerId = 0;
+    /**
+     * Rebirth air drop tiers: the map object this obstacle turns into instead of its def's `destroyType` ("" for that).
+     * Set on a landed tiered air drop (match/planes.ts); server-side only, so the shell's tier is not on the wire.
+     */
+    destroyTypeOverride = "";
     /** set by the world to keep the broadphase in sync when the collider shrinks or moves */
     onBoundsChanged?: (obstacle: Obstacle) => void;
 

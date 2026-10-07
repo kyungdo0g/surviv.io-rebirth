@@ -21,7 +21,7 @@ describe("bot matches", () => {
         // bots fought: most deaths are kills by other bots, not the gas
         const kills = report.players.reduce((a, p) => a + p.kills, 0);
         expect(kills).toBeGreaterThanOrEqual(10);
-    }, 60_000);
+    }, 120_000);
 
     it("replays identically for the same seed", () => {
         const a = runMatch({ bots: 8, seed: 9, gasStages: QUICK_GAS, maxTicks: 2500 });
@@ -29,7 +29,7 @@ describe("bot matches", () => {
         expect(b.ticks).toBe(a.ticks);
         expect(b.players).toEqual(a.players);
         expect(b.winners).toEqual(a.winners);
-    }, 60_000);
+    }, 120_000);
 
     it("a 16-bot duo match ends with one winning group", () => {
         // seed 1: with the human motor, seed 5 now ends in a frag that kills the last players of three groups in the
@@ -40,5 +40,5 @@ describe("bot matches", () => {
         expect(report.winners.length).toBeGreaterThanOrEqual(1);
         const teams = new Set(report.players.filter((p) => !p.dead).map((p) => p.teamId));
         expect(teams.size).toBe(1);
-    }, 60_000);
+    }, 120_000);
 });

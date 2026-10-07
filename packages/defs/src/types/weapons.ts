@@ -67,6 +67,8 @@ export interface GunDef extends BaseWeaponDef {
         shellOffsetY?: number;
         shellForward?: number;
         shellReverse?: boolean;
+        /** casing particle instead of the ammo's (survev: "50cal" for the Barrett and the ASh-12) */
+        casing?: string;
     };
     sound: {
         shoot: string;
@@ -106,6 +108,8 @@ export interface GunDef extends BaseWeaponDef {
     extendedReloadAlt?: number;
     reloadTimeAlt?: number;
     toMouseHit?: boolean;
+    /** minigun hold pose (survev PMG-134) */
+    isMinigun?: boolean;
 }
 
 export interface MeleeImg {
@@ -207,4 +211,8 @@ export interface ExplosionDef {
     /** decal map object id, "" for none */
     decalType: string;
     teamDamage?: boolean;
+    /** survev: seconds a hit enemy is slowed (the simulation reads rules.modes.throwableHits instead) */
+    freezeDuration?: number;
+    /** survev: sprites drawn over a slowed player (the client draws the map's biome.frozenSprites) */
+    frozenSprites?: string[];
 }

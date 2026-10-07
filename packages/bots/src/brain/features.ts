@@ -38,7 +38,7 @@ export interface BrainFeatures {
     airdrop: boolean;
     /** read the threat board (WorldModel.threats): off-screen gunfire, explosions, kill feed, air strikes, pings */
     threats: boolean;
-    /** navigate basements and bunkers (underground layers) */
+    /** navigation: basements and bunkers (underground layers), and walking back out of dead ends (brain/deadEnd.ts) */
     basements: boolean;
     /** commit to a chosen course: no running back and forth between two goals (flee / zone / loot dithering) */
     steady: boolean;
@@ -68,20 +68,36 @@ export type BrainName = "baseline" | "smart";
 
 export const BRAIN_NAMES: readonly BrainName[] = ["baseline", "smart"];
 
-function allFeatures(on: boolean): Readonly<BrainFeatures> {
+/**
+ * Features the smart preset leaves out; their code stays for ablations (`tournament.ts --features scope`). Each was
+ * measured against the baseline in mirrored tournaments (48 matches per configuration) and could not be made to help:
+ * - scope: the view is the zoom, and the baseline already wears the best scope it picks up (a better one is equipped
+ *   at once, sim Player.addItem), so the feature can only change how often the bot owns a big scope. The first
+ *   version stepped down to the 1x in close fights, which blinded the bot to third parties (a third of its losses to
+ *   enemies it could not see came at the 1x zoom); valuing scopes as loot instead (brain/gear.ts) moved the
+ *   head-to-head kill share by +0.014 with hard bots and -0.029 with normal ones: noise or worse, so it stays off.
+ */
+export const SMART_EXCLUDED: readonly BrainFeature[] = ["scope"];
+
+function featureSet(on: (f: BrainFeature) => boolean): Readonly<BrainFeatures> {
     const out = {} as BrainFeatures;
-    for (const f of BRAIN_FEATURES) out[f] = on;
+    for (const f of BRAIN_FEATURES) out[f] = on(f);
     return Object.freeze(out);
 }
 
-/** baseline: the brain as it was before the flags (every flag off); smart: every feature on */
+/** baseline: the brain as it was before the flags (every flag off); smart: every feature but SMART_EXCLUDED */
 export const BRAIN_PRESETS: Readonly<Record<BrainName, Readonly<BrainFeatures>>> = {
-    baseline: allFeatures(false),
-    smart: allFeatures(true),
+    baseline: featureSet(() => false),
+    smart: featureSet((f) => !SMART_EXCLUDED.includes(f)),
 };
 
-/** Default brain of a bot without `BotOptions.brain` (flips to "smart" once it passes the tournament gate). */
-export const DEFAULT_BRAIN: BrainName = "baseline";
+/**
+ * Default brain of a bot without `BotOptions.brain`: "smart" since it passed the tournament gate against the
+ * bug-fixed baseline (solo normal 120 matches: wins 89/31, h2h kill share 0.527; squad 96: wins 52/44, h2h 0.553;
+ * solo hard 144: wins 99/45, h2h 0.525 — its stuck events were 1.32x, about 1.15x per second alive, as smart bots
+ * live longer). The baseline stays for comparison runs (scripts/tournament.ts).
+ */
+export const DEFAULT_BRAIN: BrainName = "smart";
 
 export function isBrainName(s: string): s is BrainName {
     return (BRAIN_NAMES as readonly string[]).includes(s);

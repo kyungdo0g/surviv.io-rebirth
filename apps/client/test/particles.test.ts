@@ -91,7 +91,7 @@ describe("particle coverage", () => {
     });
 
     it("draws every particle with a sprite of the manifest", () => {
-        const sprites = manifest as Record<string, string>;
+        const sprites = manifest as Record<string, unknown>;
         const missing: string[] = [];
         for (const [name, def] of Object.entries(ALL_PARTICLE_DEFS)) {
             expect(def.image.length, name).toBeGreaterThan(0);

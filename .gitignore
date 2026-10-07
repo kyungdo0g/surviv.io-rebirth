@@ -22,3 +22,9 @@ playwright-report/
 apps/client/public/assets/
 # e2e screenshots contain original art too
 tests/e2e/__screens__/
+
+# agent worktrees (Claude Code workflows)
+.claude/worktrees/
+
+# user-supplied art and audio for rebirth-only guns (never committed; docs/design/survev-content-and-new-guns.md)
+assets-user/

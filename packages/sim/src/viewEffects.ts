@@ -1,6 +1,7 @@
 // Contract types of the M5 effect sections (explosions, projectiles, smoke, air strike zones, recorders), re-exported
 // from view.ts (whose header documents them); consumers import them from "@rebirth/sim".
 import type { Vec2 } from "@rebirth/core";
+import type { AirstrikeVariant } from "@rebirth/defs";
 
 /** A recorder obstacle was used: the client plays its recording (the def's `button.sound.on`) at `pos` (M5b). */
 export interface RecorderEvent {
@@ -52,6 +53,11 @@ export interface SmokeView {
 export interface AirstrikeZoneView {
     /** zone id (1..255) */
     id: number;
+    /**
+     * Rebirth air strike variant (defs AIRSTRIKE_VARIANTS: normal, heavy shells, carpet); absent means normal. The
+     * radius already includes the variant's growth.
+     */
+    variant?: AirstrikeVariant;
     pos: Vec2;
     rad: number;
     /** total duration in seconds (at most 60) */

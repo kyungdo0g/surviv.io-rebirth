@@ -1,5 +1,6 @@
 import { getDefOfType, Input, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
+import { playerView } from "../src/world/playerView.ts";
 import {
     constantRng,
     DT,
@@ -217,6 +218,27 @@ describe("reloads", () => {
         expect(single).toHaveLength(1);
         expect((single[0].end - single[0].start) * DT).toBeCloseTo(def.reloadTime, 9);
         expect(single[0].ammoAfter).toBe(1);
+    });
+
+    it("shows the mosin's alternate reload as a reload with the alt flag (the original Action.ReloadAlt)", () => {
+        const viewAction = (q: ReturnType<typeof spawnAt>) => playerView(q).action;
+        const { game, p } = shooter("mosin", 20);
+        emptyMag(game, p, false);
+        for (let i = 0; i < 200 && p.action.type === "none"; i++) {
+            send(game, p, {});
+            game.step();
+        }
+        expect(p.action.type).toBe("reloadAlt");
+        expect(viewAction(p)).toMatchObject({ type: "reload", item: "mosin", alt: true });
+        // the single-round reload is a plain reload
+        const low = shooter("mosin", 1);
+        emptyMag(low.game, low.p, false);
+        for (let i = 0; i < 200 && low.p.action.type === "none"; i++) {
+            send(low.game, low.p, {});
+            low.game.step();
+        }
+        expect(low.p.action.type).toBe("reload");
+        expect(viewAction(low.p)).toMatchObject({ type: "reload", alt: false });
     });
 
     it("reloads on request, cancels on switch and refuses with an empty bag", () => {

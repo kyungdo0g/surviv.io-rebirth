@@ -1,9 +1,11 @@
 // Fight assessment (BrainFeatures.assess): the duel arithmetic (armour, hit chance), the advantage A = ln(TTK_them /
-// TTK_me) in even and uneven trades (health, armour, numbers, magazine, intel estimates), and the fight score it
-// shapes (push a won trade, do not start a lost one).
+// TTK_me) in even and uneven trades (health, armour, numbers, magazine, intel estimates),
+// the fight score it shapes (push a won trade, do not start a lost one), and holding fire on a clearly lost trade.
 import { v2 } from "@rebirth/core";
 import { describe, expect, it } from "vitest";
-import { assess } from "../src/brain/assess.ts";
+import { assess, holdFire } from "../src/brain/assess.ts";
+import { addCombatLayer } from "../src/brain/combat.ts";
+import { emptyIntent } from "../src/brain/context.ts";
 import { fightScore } from "../src/brain/tactics.ts";
 import { armourFactor, erf, hitChance } from "../src/knowledge/duel.ts";
 import { gunInfo } from "../src/knowledge/weapons.ts";
@@ -115,6 +117,30 @@ describe("fight assessment", () => {
         // shot at: it fights back whatever the assessment says
         e.lastShotAt = NOW - 0.5;
         expect(fightScore(ctxOf(w, ["assess"]))).toBeGreaterThanOrEqual(0.78);
+    });
+
+    it("holds fire on a clearly lost trade unless the target shoots at the bot", () => {
+        const w = testWorld();
+        w.model.self.health = 20;
+        // an armoured enemy watching the bot without shooting
+        const e = addEnemy(w, 2, { x: 20, y: 0 }, { helmet: "helmet03", chest: "chest03" });
+        faceTo(e, w.spot);
+        const ctx = ctxOf(w, ["assess"]);
+        expect(ctx.assessment!.advantage).toBeLessThan(-1);
+        expect(holdFire(ctx, e, 20)).toBe(true);
+        const intent = emptyIntent("loot");
+        addCombatLayer(ctx, intent);
+        expect(intent.aim).not.toBeNull();
+        expect(intent.fire).toBe(false);
+        // the baseline brain fires
+        const plain = emptyIntent("loot");
+        addCombatLayer(ctxOf(w, []), plain);
+        expect(plain.fire).toBe(true);
+        // a brawl, or the enemy shooting at the bot: fire back
+        expect(holdFire(ctx, e, 8)).toBe(false);
+        faceTo(e, w.spot);
+        e.lastShotAt = NOW - 0.3;
+        expect(holdFire(ctxOf(w, ["assess"]), e, 20)).toBe(false);
     });
 
     it("is computed only while a feature reads it", () => {

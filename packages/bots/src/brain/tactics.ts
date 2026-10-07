@@ -1,7 +1,8 @@
 // The engagement against ctx.target: how much fighting matters now (fightScore) and how to fight (planFight: slot by
 // distance, the weapon's preferred range, strafing, cover while reloading, standing still for long shots, going around
 // cover or keeping a grenade distance). The smart brain adds, each behind its flag: the fight assessment (push a won
-// trade, otherwise take the range where its guns beat the enemy's, back off in a lost one, never start a lost one),
+// trade, otherwise take the range where its guns beat the enemy's, back off in a lost one, never start a lost one and
+// hold fire on a clearly lost one that is not shooting at the bot),
 // opportunism (press a busy or weakened enemy), cover (peek from cover in a lost trade, hold a building, hold a lost
 // target's angle, flank around the obstacle between: brain/cover.ts, brain/building.ts) and reloading in cover
 // (smartReload).
@@ -9,10 +10,10 @@ import { v2 } from "@rebirth/core";
 import { fightSlot, hasAmmo } from "../knowledge/arsenal.ts";
 import type { GunInfo } from "../knowledge/weapons.ts";
 import { isMeleeWeapon } from "../knowledge/weapons.ts";
-import { ADVANTAGE_BAND, pushAdvantageOf, rangePreference } from "./assess.ts";
+import { ADVANTAGE_BAND, holdFire, pushAdvantageOf, rangePreference } from "./assess.ts";
 import { planBuildingHold } from "./building.ts";
 import { canShoot, FRAG_TYPES, findCover, freeDir, leadPoint, MELEE_REACH } from "./combat.ts";
-import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
+import { type BrainCtx, emptyIntent, type Intent, nearFailedGoal } from "./context.ts";
 import { flankSpot, holdLostAngle, planCoverPeek } from "./cover.ts";
 import { isBusy, isWeakened } from "./opportunity.ts";
 import { smartReloadOn } from "./reload.ts";
@@ -46,6 +47,10 @@ function baseFightScore(ctx: BrainCtx): number {
     const reach = Math.max(...ctx.guns.filter(hasAmmo).map((g) => g.info.maxEngage), 10);
     if (d > reach * 1.4 && !shootingAtMe) return 0.35;
     if (t.downed && ctx.visibleEnemies.some((e) => !e.downed && e !== t)) return 0.5;
+    // in sight behind an obstacle, and the way round it just failed (a wall between, no path): nothing to fight
+    // here; another behaviour moves on (the bot comes back as soon as the target shoots or a shot opens)
+    if (nearFailedGoal(ctx, t.pos) && ctx.now - ctx.model.lastHurt > 3 && !ctx.model.lineOfFire(ctx.self.pos, t.pos))
+        return 0.1;
     // shot at, or too close to ignore: fight; an enemy that has not noticed the bot is a choice (looting may win)
     const threatened = shootingAtMe || ctx.now - ctx.model.lastHurt < 3 || d < 12;
     return threatened ? 0.78 : ctx.params.aggression;
@@ -152,6 +157,8 @@ export function planFight(ctx: BrainCtx): Intent {
         mem.standStill = rng.bool(params.standStillChance);
     }
     intent.fire = canShoot(ctx, t, d);
+    // assess: no shot that only opens a clearly lost trade
+    if (intent.fire && holdFire(ctx, t, d)) intent.fire = false;
     // cover: take an even fight at range into a building, else peek from cover (reload and heal behind it)
     if (features.cover && (planBuildingHold(ctx, intent, gun) || planCoverPeek(ctx, intent, gun))) return intent;
     const info = gun.info;
@@ -185,7 +192,9 @@ export function planFight(ctx: BrainCtx): Intent {
             // cover: around the obstacle to a spot with a shot (walking straight at the target can stall against it)
             const flank = features.cover ? flankSpot(ctx, t) : null;
             intent.goal = flank ?? v2.copy(t.pos);
-            intent.arriveDist = flank ? 1 : Math.max(6, info.idealMin);
+            // within the usual stopping distance already (two bots on either side of a tree, a crate or a wall): keep
+            // walking round the obstacle, or both stand facing each other without a shot until the zone comes
+            intent.arriveDist = flank ? 1 : Math.min(Math.max(6, info.idealMin), Math.max(0.5, d - 3));
             return intent;
         }
     }

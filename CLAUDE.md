@@ -21,11 +21,20 @@ Dependency direction: core → defs → protocol → sim → {server, client, bo
 
 ## Data sources and precedence
 
-1. Original client definitions extracted from the 2026 relaunch bundle (`research-cache/live/defs.json`) — authoritative for every client-visible value.
-2. survev (`.survev`, GPL-3.0, commit `c6185e31`) for server-only data (loot tables, map generation, gas, roles) and as a behavioural reference/oracle. We write our own code; we port data, not code.
-3. Wikis for qualitative facts. See `docs/research/README.md`.
+1. survev (`.survev`, GPL-3.0, master commit `c6185e31`, 2026-09-29) is the gameplay baseline: gameplay values and
+   survev content (survev-only guns, perks, buildings and maps included), loot tables, map generation, gas and roles.
+   The switch is staged (`docs/adr/0003-survev-baseline.md`): the port takes what `tools/port-survev/policy.json`
+   lists as survev has it; everything else keeps the reverted 0.8.82 values until its stage lands. We write our own
+   code; we port data, not code.
+2. Original client definitions extracted from the 2026 relaunch bundle (`research-cache/live/defs.json`) are the
+   presentation source (sprites, sounds, UI, names) and fix the wire order of the original ids.
+3. Rebirth additions requested by the user live in `packages/defs/src/rebirth` and are listed in
+   `docs/research/rebirth-deviations.md`.
+4. Wikis for qualitative facts, and survev.wiki.gg for the specs of survev-only items where it differs from the source.
+   See `docs/research/README.md`.
 
-Fork-only survev content (barrett, ash12, sw500, imbel, reserve_* buildings, ...) is excluded.
+Out of scope: survev accounts and meta content (quests, passes, XP items) and unmerged survev branches.
+User-supplied art and sound live only in the gitignored `assets-user/`.
 
 ## Conventions
 

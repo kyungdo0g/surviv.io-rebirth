@@ -24,7 +24,15 @@ import { el, Patcher } from "./hudDom.ts";
 import { bindDrop, type DropRequest } from "./hudDrop.ts";
 import { ModeHud } from "./hudModes.ts";
 import { PieTimer } from "./pieTimer.ts";
-import { AMMO_ORDER_LANDSCAPE, ammoOrder, itemPopScale, type LayoutState, layoutState } from "./uiLayout.ts";
+import {
+    AMMO_ORDER_LANDSCAPE,
+    ammoOrder,
+    itemPopScale,
+    type LayoutState,
+    layoutState,
+    slotPulseWidth,
+    UiLayout,
+} from "./uiLayout.ts";
 
 export interface HudCallbacks {
     /** queue a one-shot input action (defs `Input` value) */
@@ -99,6 +107,9 @@ interface SlotDom {
     name: HTMLDivElement;
     image: HTMLImageElement;
     ammo: HTMLDivElement;
+    /** equipped last frame, and seconds since it was equipped (the width pulse) */
+    equipped: boolean;
+    ticker: number;
 }
 
 export class Hud {
@@ -316,7 +327,11 @@ export class Hud {
             const image = el("img", { cls: "ui-armor-image" });
             image.draggable = false;
             const level = el("div", { cls: "ui-armor-level" });
-            const div = el("div", { id: `ui-armor-${slot}`, cls: "ui-armor-counter ui-hidden" }, image, level);
+            // helmet and chest take the green hover outline (2 px border) like the original markup; the backpack has a
+            // transparent border of the same width (game.css)
+            const cls =
+                slot === "backpack" ? "ui-armor-counter ui-hidden" : "ui-armor-counter ui-outline-hover ui-hidden";
+            const div = el("div", { id: `ui-armor-${slot}`, cls }, image, level);
             // the backpack cannot be dropped (survev ui2.ts: no drop action for the backpack)
             if (slot !== "backpack") {
                 bindDrop(
@@ -352,7 +367,7 @@ export class Hud {
                 () => this.weaponDrop(i),
                 (r) => this.drop(r),
             );
-            this.slots.push({ div, name, image, ammo });
+            this.slots.push({ div, name, image, ammo, equipped: false, ticker: 1 });
             container.append(div);
         }
         return el("div", { id: "ui-bottom-right" }, container);
@@ -399,7 +414,7 @@ export class Hud {
         }
         this.frames++;
         this.updateBars(local, !!frame.downed);
-        this.updateWeapons(local);
+        this.updateWeapons(local, frame.dt);
         this.updateItems(local, frame.dt);
         this.updateGear(local);
         this.pie.update(local, frame.dt, frame.objectAction ?? null, frame.actionTarget ?? "", this.layout);
@@ -432,7 +447,7 @@ export class Hud {
         });
     }
 
-    private updateWeapons(local: LocalPlayerState): void {
+    private updateWeapons(local: LocalPlayerState, dt: number): void {
         for (let i = 0; i < this.slots.length; i++) {
             const slot = this.slots[i];
             const type = local.weapons[i]?.type ?? "";
@@ -451,6 +466,20 @@ export class Hud {
             });
             const equipped = i === local.curWeapIdx;
             this.p.set(`slotEq${i}`, equipped, () => slot.div.classList.toggle("ui-weapon-equipped", equipped));
+            // a newly equipped slot widens from 83.33 % to 100 % and back over 0.09 x pi s, else stays at 83.33 %
+            // (160 px) (survev ui2.ts updateAnimationWidth + render weapons width; provenance/visual-diff.md)
+            slot.ticker += dt;
+            if (!equipped || !slot.equipped) slot.ticker = 0;
+            if (this.frames < 2) slot.ticker = 1;
+            slot.equipped = equipped;
+            // the small layout keeps its fixed 68 px slots (hudSmBottom.css)
+            const width =
+                this.layout.layout === UiLayout.Sm
+                    ? ""
+                    : `${slotPulseWidth(slot.ticker, this.layout.mobile).toFixed(2)}%`;
+            this.p.set(`slotW${i}`, width, () => {
+                slot.div.style.width = width;
+            });
             const count = def?.type === "throwable" ? (local.inventory[type] ?? 0) : 0;
             this.p.set(`slotAmmo${i}`, count, () => {
                 slot.ammo.textContent = String(count);
