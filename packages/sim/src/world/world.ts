@@ -140,11 +140,12 @@ export class World {
             if (obj.kind !== "building" || obj.zIdx < zIdx) continue;
             // on stairs, ground floor surfaces take priority
             if ((obj.layer !== layer && !onStairs) || (obj.layer === 1 && onStairs)) continue;
+            // the last matching surface wins (survev's break leaves only the collider loop): the Cloud Bunker's
+            // flooded spots lie inside corridor tiles listed earlier (survev bunkerDefs.ts bunker_cloud_sublevel_01)
             for (const s of obj.surfaces) {
                 if (s.colliders.some((c) => collider.contains(c, pos))) {
                     zIdx = obj.zIdx;
                     surface = s.type;
-                    break;
                 }
             }
         }

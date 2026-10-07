@@ -40,11 +40,11 @@
   },
   "bullet_an94": {
     "type": "bullet",
-    "damage": 17.5,
+    "damage": 20,
     "obstacleDamage": 1,
     "falloff": 0.94,
     "distance": 300,
-    "speed": 110,
+    "speed": 120,
     "variance": 0,
     "shrapnel": false,
     "tracerColor": "762mm",
@@ -146,7 +146,7 @@
   },
   "bullet_scarssr": {
     "type": "bullet",
-    "damage": 60,
+    "damage": 81,
     "obstacleDamage": 1.5,
     "falloff": 0.85,
     "distance": 200,
@@ -160,7 +160,7 @@
   },
   "bullet_m39": {
     "type": "bullet",
-    "damage": 27,
+    "damage": 28,
     "obstacleDamage": 1,
     "falloff": 0.9,
     "distance": 400,
@@ -173,7 +173,7 @@
   },
   "bullet_svd": {
     "type": "bullet",
-    "damage": 36,
+    "damage": 37,
     "obstacleDamage": 1,
     "falloff": 0.9,
     "distance": 425,
@@ -186,11 +186,11 @@
   },
   "bullet_garand": {
     "type": "bullet",
-    "damage": 35,
+    "damage": 44,
     "obstacleDamage": 1,
-    "falloff": 0.9,
-    "distance": 400,
-    "speed": 130,
+    "falloff": 0.94,
+    "distance": 444,
+    "speed": 144,
     "variance": 0,
     "shrapnel": false,
     "tracerColor": "762mm",
@@ -208,7 +208,9 @@
     "shrapnel": false,
     "tracerColor": "12gauge",
     "tracerWidth": 0.1,
-    "tracerLength": 0.8
+    "tracerLength": 0.8,
+    "noDistAdj": true,
+    "useExplosiveRoundsAlt": true
   },
   "bullet_flechette": {
     "type": "bullet",
@@ -221,7 +223,9 @@
     "shrapnel": false,
     "tracerColor": "12gauge",
     "tracerWidth": 0.075,
-    "tracerLength": 0.5
+    "tracerLength": 0.5,
+    "noDistAdj": true,
+    "useExplosiveRoundsAlt": true
   },
   "bullet_frag": {
     "type": "bullet",
@@ -235,7 +239,8 @@
     "tracerColor": "frag",
     "tracerWidth": 0.1,
     "tracerLength": 0.5,
-    "onHit": "explosion_usas"
+    "onHit": "explosion_usas",
+    "noDistAdj": true
   },
   "bullet_slug": {
     "type": "bullet",
@@ -261,11 +266,13 @@
     "shrapnel": false,
     "tracerColor": "12gauge",
     "tracerWidth": 0.1,
-    "tracerLength": 0.1
+    "tracerLength": 0.1,
+    "noDistAdj": true,
+    "useExplosiveRoundsAlt": true
   },
   "bullet_m9": {
     "type": "bullet",
-    "damage": 12,
+    "damage": 13,
     "obstacleDamage": 1,
     "falloff": 0.7,
     "speed": 85,
@@ -278,7 +285,7 @@
   },
   "bullet_m9_cursed": {
     "type": "bullet",
-    "damage": 12,
+    "damage": 13,
     "obstacleDamage": 1,
     "falloff": 0.7,
     "speed": 85,
@@ -357,7 +364,7 @@
   },
   "bullet_m1911": {
     "type": "bullet",
-    "damage": 14,
+    "damage": 16,
     "obstacleDamage": 1,
     "falloff": 0.7,
     "speed": 80,
@@ -383,7 +390,7 @@
   },
   "bullet_mkg45": {
     "type": "bullet",
-    "damage": 28,
+    "damage": 29,
     "obstacleDamage": 1,
     "falloff": 0.75,
     "distance": 145,
@@ -422,7 +429,7 @@
   },
   "bullet_ump9": {
     "type": "bullet",
-    "damage": 15,
+    "damage": 14.5,
     "obstacleDamage": 1,
     "falloff": 0.75,
     "distance": 100,
@@ -475,11 +482,11 @@
   },
   "bullet_vss": {
     "type": "bullet",
-    "damage": 22,
+    "damage": 24,
     "obstacleDamage": 1,
-    "falloff": 0.8,
+    "falloff": 0.85,
     "distance": 125,
-    "speed": 95,
+    "speed": 110,
     "variance": 0,
     "shrapnel": false,
     "suppressed": true,
@@ -581,7 +588,7 @@
   },
   "bullet_mk12": {
     "type": "bullet",
-    "damage": 22.5,
+    "damage": 23,
     "obstacleDamage": 1,
     "falloff": 0.9,
     "distance": 400,
@@ -594,7 +601,7 @@
   },
   "bullet_l86": {
     "type": "bullet",
-    "damage": 26.5,
+    "damage": 25,
     "obstacleDamage": 1,
     "falloff": 0.9,
     "distance": 425,
@@ -2945,7 +2952,7 @@
   },
   "explosion_snowball": {
     "type": "explosion",
-    "damage": 2,
+    "damage": 6,
     "obstacleDamage": 1,
     "rad": {
       "min": 1.24,
@@ -2954,11 +2961,13 @@
     "shrapnelCount": 0,
     "shrapnelType": "",
     "explosionEffectType": "snowball",
-    "decalType": "decal_snowball_explosion"
+    "decalType": "decal_snowball_explosion",
+    "freezeDuration": 0.5,
+    "dropRandomLoot": 1
   },
   "explosion_snowball_heavy": {
     "type": "explosion",
-    "damage": 5,
+    "damage": 28,
     "obstacleDamage": 1,
     "rad": {
       "min": 1.24,
@@ -2967,11 +2976,13 @@
     "shrapnelCount": 0,
     "shrapnelType": "",
     "explosionEffectType": "snowball_heavy",
-    "decalType": "decal_snowball_explosion"
+    "decalType": "decal_snowball_explosion",
+    "freezeDuration": 2,
+    "dropRandomLoot": 1
   },
   "explosion_potato": {
     "type": "explosion",
-    "damage": 2,
+    "damage": 8,
     "obstacleDamage": 1,
     "teamDamage": false,
     "rad": {
@@ -2981,11 +2992,13 @@
     "shrapnelCount": 0,
     "shrapnelType": "",
     "explosionEffectType": "potato",
-    "decalType": "decal_potato_explosion"
+    "decalType": "decal_potato_explosion",
+    "freezeDuration": 0.5,
+    "dropRandomLoot": 1
   },
   "explosion_potato_heavy": {
     "type": "explosion",
-    "damage": 5,
+    "damage": 15,
     "obstacleDamage": 1,
     "teamDamage": false,
     "rad": {
@@ -2995,7 +3008,9 @@
     "shrapnelCount": 0,
     "shrapnelType": "",
     "explosionEffectType": "potato_heavy",
-    "decalType": "decal_potato_explosion"
+    "decalType": "decal_potato_explosion",
+    "freezeDuration": 1,
+    "dropRandomLoot": 2
   },
   "explosion_potato_cannonball": {
     "type": "explosion",
@@ -3013,7 +3028,7 @@
   },
   "explosion_potato_smgshot": {
     "type": "explosion",
-    "damage": 12,
+    "damage": 13,
     "obstacleDamage": 1.25,
     "teamDamage": false,
     "rad": {
@@ -3023,7 +3038,8 @@
     "shrapnelCount": 0,
     "shrapnelType": "",
     "explosionEffectType": "potato_smgshot",
-    "decalType": ""
+    "decalType": "",
+    "freezeDuration": 1
   },
   "explosion_bomb_iron": {
     "type": "explosion",
@@ -4069,8 +4085,8 @@
     "extendedClip": 40,
     "extendedReload": 40,
     "reloadTime": 1.9,
-    "fireDelay": 0.35,
-    "burstDelay": 0.07,
+    "fireDelay": 0.3,
+    "burstDelay": 0.06,
     "switchDelay": 0.75,
     "barrelLength": 2.7,
     "barrelOffset": 0,
@@ -4301,7 +4317,7 @@
   "vss": {
     "name": "VSS",
     "type": "gun",
-    "quality": 1,
+    "quality": 0,
     "fireMode": "single",
     "caseTiming": "shoot",
     "ammo": "9mm",
@@ -4321,7 +4337,7 @@
     "bulletCount": 1,
     "bulletType": "bullet_vss",
     "bulletTypeBonus": "bullet_vss_bonus",
-    "headshotMult": 2,
+    "headshotMult": 1.5,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -4374,7 +4390,7 @@
     "extendedReload": 35,
     "reloadTime": 2.3,
     "fireDelay": 0.35,
-    "burstDelay": 0.07,
+    "burstDelay": 0.05,
     "switchDelay": 0.75,
     "barrelLength": 3.1,
     "barrelOffset": 0,
@@ -4566,7 +4582,7 @@
     "shotSpread": 1,
     "bulletCount": 1,
     "bulletType": "bullet_mk12",
-    "headshotMult": 2,
+    "headshotMult": 1.5,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -4625,7 +4641,7 @@
     "shotSpread": 1,
     "bulletCount": 1,
     "bulletType": "bullet_l86",
-    "headshotMult": 2,
+    "headshotMult": 1.5,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -4791,7 +4807,8 @@
       "pickup": "gun_pickup_01",
       "empty": "empty_fire_02",
       "deploy": "qbb97_switch_01"
-    }
+    },
+    "quality": 1
   },
   "scout_elite": {
     "name": "Scout Elite",
@@ -4996,7 +5013,7 @@
     "shotSpread": 1.5,
     "bulletCount": 1,
     "bulletType": "bullet_scarssr",
-    "headshotMult": 1.5,
+    "headshotMult": 1.25,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -5099,7 +5116,7 @@
   "groza": {
     "name": "Groza",
     "type": "gun",
-    "quality": 1,
+    "quality": 0,
     "fireMode": "auto",
     "caseTiming": "shoot",
     "isBullpup": true,
@@ -5502,7 +5519,7 @@
     "shotSpread": 3.5,
     "bulletCount": 1,
     "bulletType": "bullet_mkg45",
-    "headshotMult": 2,
+    "headshotMult": 1.75,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -5628,7 +5645,7 @@
     "shotSpread": 1,
     "bulletCount": 1,
     "bulletType": "bullet_mosin",
-    "headshotMult": 1.5,
+    "headshotMult": 1.25,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -5692,7 +5709,7 @@
     "shotSpread": 1,
     "bulletCount": 1,
     "bulletType": "bullet_sv98",
-    "headshotMult": 1.5,
+    "headshotMult": 1.25,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -5817,7 +5834,7 @@
     "shotSpread": 1,
     "bulletCount": 1,
     "bulletType": "bullet_m39",
-    "headshotMult": 2,
+    "headshotMult": 1.5,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -5876,7 +5893,7 @@
     "shotSpread": 1,
     "bulletCount": 1,
     "bulletType": "bullet_svd",
-    "headshotMult": 2,
+    "headshotMult": 1.5,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -5932,10 +5949,10 @@
     "barrelOffset": 0,
     "recoilTime": 0.36,
     "moveSpread": 4,
-    "shotSpread": 1,
+    "shotSpread": 0.4,
     "bulletCount": 1,
     "bulletType": "bullet_garand",
-    "headshotMult": 2,
+    "headshotMult": 1.44,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -6304,7 +6321,7 @@
     "bulletCount": 1,
     "jitter": 0.2,
     "bulletType": "bullet_slug",
-    "headshotMult": 1.5,
+    "headshotMult": 1.25,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -6423,8 +6440,8 @@
     "barrelLength": 2.2,
     "barrelOffset": 0,
     "recoilTime": 10000000000,
-    "moveSpread": 8,
-    "shotSpread": 8,
+    "moveSpread": 5,
+    "shotSpread": 3,
     "bulletCount": 1,
     "bulletType": "bullet_m9",
     "bulletTypeBonus": "bullet_m9_bonus",
@@ -6474,7 +6491,7 @@
     "isDual": true,
     "pistol": true,
     "ammo": "9mm",
-    "ammoSpawnCount": 45,
+    "ammoSpawnCount": 90,
     "maxClip": 30,
     "maxReload": 30,
     "extendedClip": 60,
@@ -6486,8 +6503,8 @@
     "barrelOffset": 0,
     "dualOffset": 0.6,
     "recoilTime": 10000000000,
-    "moveSpread": 9,
-    "shotSpread": 11,
+    "moveSpread": 3.5,
+    "shotSpread": 4,
     "bulletCount": 1,
     "bulletType": "bullet_m9",
     "bulletTypeBonus": "bullet_m9_bonus",
@@ -6550,8 +6567,8 @@
     "barrelLength": 2.2,
     "barrelOffset": 0,
     "recoilTime": 10000000000,
-    "moveSpread": 8,
-    "shotSpread": 8,
+    "moveSpread": 3,
+    "shotSpread": 3,
     "bulletCount": 1,
     "bulletType": "bullet_m9_cursed",
     "headshotMult": 2,
@@ -6664,7 +6681,7 @@
     "isDual": true,
     "pistol": true,
     "ammo": "9mm",
-    "ammoSpawnCount": 60,
+    "ammoSpawnCount": 120,
     "maxClip": 40,
     "maxReload": 40,
     "extendedClip": 60,
@@ -6789,7 +6806,7 @@
     "fireMode": "auto",
     "caseTiming": "shoot",
     "ammo": "9mm",
-    "ammoSpawnCount": 51,
+    "ammoSpawnCount": 102,
     "isDual": true,
     "pistol": true,
     "maxClip": 34,
@@ -6848,7 +6865,7 @@
   "p30l": {
     "name": "P30L",
     "type": "gun",
-    "quality": 1,
+    "quality": 0,
     "fireMode": "single",
     "caseTiming": "shoot",
     "ammo": "9mm",
@@ -7038,7 +7055,7 @@
     "fireMode": "single",
     "caseTiming": "reload",
     "ammo": "762mm",
-    "ammoSpawnCount": 20,
+    "ammoSpawnCount": 40,
     "isDual": true,
     "pistol": true,
     "maxClip": 10,
@@ -7286,7 +7303,7 @@
     "fireMode": "auto",
     "caseTiming": "reload",
     "ammo": "45acp",
-    "ammoSpawnCount": 48,
+    "ammoSpawnCount": 96,
     "isDual": true,
     "pistol": true,
     "maxClip": 12,
@@ -7361,8 +7378,8 @@
     "barrelLength": 2.1,
     "barrelOffset": 0,
     "recoilTime": 10000000000,
-    "moveSpread": 7,
-    "shotSpread": 6,
+    "moveSpread": 3,
+    "shotSpread": 2,
     "bulletCount": 1,
     "bulletType": "bullet_m1911",
     "headshotMult": 2,
@@ -7411,7 +7428,7 @@
     "isDual": true,
     "pistol": true,
     "ammo": "45acp",
-    "ammoSpawnCount": 28,
+    "ammoSpawnCount": 56,
     "maxClip": 14,
     "maxReload": 14,
     "extendedClip": 24,
@@ -7423,8 +7440,8 @@
     "barrelOffset": 0,
     "dualOffset": 0.6,
     "recoilTime": 10000000000,
-    "moveSpread": 8,
-    "shotSpread": 9.5,
+    "moveSpread": 3.5,
+    "shotSpread": 4,
     "bulletCount": 1,
     "bulletType": "bullet_m1911",
     "headshotMult": 2,
@@ -8915,7 +8932,7 @@
     "autoAttack": false,
     "switchDelay": 0.25,
     "damage": 40,
-    "obstacleDamage": 1,
+    "obstacleDamage": 1.3,
     "headshotMult": 1,
     "noPotatoSwap": true,
     "attack": {
@@ -8927,7 +8944,7 @@
       "damageTimes": [
         0.12
       ],
-      "cooldownTime": 0.35
+      "cooldownTime": 0.3
     },
     "speed": {
       "equip": 1
@@ -10463,7 +10480,7 @@
     "autoAttack": false,
     "switchDelay": 0.25,
     "damage": 40,
-    "obstacleDamage": 1,
+    "obstacleDamage": 1.3,
     "headshotMult": 1,
     "noPotatoSwap": false,
     "attack": {
@@ -10475,7 +10492,7 @@
       "damageTimes": [
         0.12
       ],
-      "cooldownTime": 0.35
+      "cooldownTime": 0.3
     },
     "speed": {
       "equip": 1
@@ -10630,7 +10647,8 @@
       "pickup": "clothes_pickup_01"
     },
     "baseType": "outfitBase",
-    "noDrop": true
+    "noDrop": true,
+    "teamId": 1
   },
   "outfitTank": {
     "name": "Basic Outfit",
@@ -10734,7 +10752,8 @@
       "pickup": "clothes_pickup_01"
     },
     "baseType": "outfitBase",
-    "noDrop": true
+    "noDrop": true,
+    "teamId": 2
   },
   "outfitAssault": {
     "name": "Basic Outfit",
@@ -10844,7 +10863,8 @@
     "baseType": "outfitBase",
     "noDropOnDeath": true,
     "rarity": 3,
-    "lore": "For those who wield the power of the pan."
+    "lore": "For those who wield the power of the pan.",
+    "teamId": 2
   },
   "outfitWheat": {
     "name": "Splintered Wheat",
@@ -10919,7 +10939,8 @@
     "sound": {
       "pickup": "clothes_pickup_01"
     },
-    "baseType": "outfitBase"
+    "baseType": "outfitBase",
+    "teamId": 1
   },
   "outfitBlueLeaderAged": {
     "name": "Stifled Blue",
@@ -10944,7 +10965,8 @@
     "sound": {
       "pickup": "clothes_pickup_01"
     },
-    "baseType": "outfitBase"
+    "baseType": "outfitBase",
+    "teamId": 2
   },
   "outfitRedLeader": {
     "name": "Red Leader",
@@ -10970,7 +10992,8 @@
       "pickup": "clothes_pickup_01"
     },
     "baseType": "outfitBase",
-    "noDrop": true
+    "noDrop": true,
+    "teamId": 1
   },
   "outfitBlueLeader": {
     "name": "Blue Leader",
@@ -10996,7 +11019,8 @@
       "pickup": "clothes_pickup_01"
     },
     "baseType": "outfitBase",
-    "noDrop": true
+    "noDrop": true,
+    "teamId": 2
   },
   "outfitSpetsnaz": {
     "name": "Siberian Assault",
@@ -11071,7 +11095,8 @@
     "sound": {
       "pickup": "clothes_pickup_01"
     },
-    "baseType": "outfitBase"
+    "baseType": "outfitBase",
+    "teamId": 1
   },
   "outfitImperial": {
     "name": "Imperial Seal",
@@ -11096,7 +11121,8 @@
     "sound": {
       "pickup": "clothes_pickup_01"
     },
-    "baseType": "outfitBase"
+    "baseType": "outfitBase",
+    "teamId": 1
   },
   "outfitLumber": {
     "name": "Woodcutter's Wrap",
@@ -11121,7 +11147,8 @@
     "sound": {
       "pickup": "clothes_pickup_01"
     },
-    "baseType": "outfitBase"
+    "baseType": "outfitBase",
+    "teamId": 1
   },
   "outfitVerde": {
     "name": "Poncho Verde",
@@ -11171,7 +11198,8 @@
     "sound": {
       "pickup": "clothes_pickup_01"
     },
-    "baseType": "outfitBase"
+    "baseType": "outfitBase",
+    "teamId": 1
   },
   "outfitTarkhany": {
     "name": "Tarkhany Regal",
@@ -11221,7 +11249,8 @@
     "sound": {
       "pickup": "clothes_pickup_01"
     },
-    "baseType": "outfitBase"
+    "baseType": "outfitBase",
+    "teamId": 2
   },
   "outfitHeaven": {
     "name": "Celestial Garb",
@@ -11271,7 +11300,8 @@
     "sound": {
       "pickup": "clothes_pickup_01"
     },
-    "baseType": "outfitBase"
+    "baseType": "outfitBase",
+    "teamId": 1
   },
   "outfitIslander": {
     "name": "Island Time",
@@ -11321,7 +11351,8 @@
     "sound": {
       "pickup": "clothes_pickup_01"
     },
-    "baseType": "outfitBase"
+    "baseType": "outfitBase",
+    "teamId": 2
   },
   "outfitCoral": {
     "name": "Coral Guise",
@@ -11453,7 +11484,8 @@
     "sound": {
       "pickup": "clothes_pickup_01"
     },
-    "baseType": "outfitBase"
+    "baseType": "outfitBase",
+    "teamId": 1
   },
   "outfitPrisoner": {
     "name": "The New Black",
@@ -11556,7 +11588,8 @@
       "pickup": "clothes_pickup_01"
     },
     "baseType": "outfitBase",
-    "rarity": 3
+    "rarity": 3,
+    "teamId": 1
   },
   "outfitKeyLime": {
     "name": "Key Lime",
@@ -11610,7 +11643,8 @@
     },
     "baseType": "outfitBase",
     "rarity": 1,
-    "lore": "It means bluish."
+    "lore": "It means bluish.",
+    "teamId": 2
   },
   "outfitCarbonFiber": {
     "name": "Carbon Fiber",
@@ -11801,7 +11835,8 @@
     "baseType": "outfitBase",
     "noDropOnDeath": true,
     "rarity": 1,
-    "lore": "On the plus side, they won't see you bleed."
+    "lore": "On the plus side, they won't see you bleed.",
+    "teamId": 1
   },
   "outfitWhite": {
     "name": "Arctic Avenger",
@@ -13355,7 +13390,80 @@
     },
     "perks": [
       "leadership"
-    ]
+    ],
+    "defaultItems": {
+      "weapons": [
+        {
+          "$byTeam": {
+            "red": {
+              "type": "m1014",
+              "ammo": 8,
+              "fillInv": true
+            },
+            "blue": {
+              "type": "an94",
+              "ammo": 45,
+              "fillInv": true
+            }
+          }
+        },
+        {
+          "type": "flare_gun",
+          "ammo": 1
+        },
+        {
+          "$byTeam": {
+            "red": {
+              "type": "machete_taiga",
+              "ammo": 0
+            },
+            "blue": {
+              "type": "kukri_trad",
+              "ammo": 0
+            }
+          }
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "backpack03",
+      "helmet": "helmet04_leader",
+      "chest": "chest03",
+      "outfit": {
+        "$byTeam": {
+          "red": "outfitRedLeader",
+          "blue": "outfitBlueLeader"
+        }
+      },
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 10,
+        "healthkit": 1,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 1,
+        "15xscope": 0
+      },
+      "noDropOutfit": true
+    }
   },
   "lieutenant": {
     "type": "role",
@@ -13368,7 +13476,66 @@
     },
     "perks": [
       "firepower"
-    ]
+    ],
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "$byTeam": {
+            "red": {
+              "type": "m4a1",
+              "ammo": 40,
+              "fillInv": true
+            },
+            "blue": {
+              "type": "grozas",
+              "ammo": 40,
+              "fillInv": true
+            }
+          }
+        },
+        {
+          "type": "spade_assault",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "backpack03",
+      "helmet": "helmet03_lt",
+      "chest": "chest03",
+      "outfit": "",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 10,
+        "healthkit": 1,
+        "soda": 2,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 1,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "medic": {
     "type": "role",
@@ -13386,7 +13553,56 @@
     "perks": [
       "aoe_heal",
       "self_revive"
-    ]
+    ],
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "bonesaw_rusted",
+          "ammo": 0
+        },
+        {
+          "type": "smoke",
+          "ammo": 0
+        }
+      ],
+      "backpack": "backpack03",
+      "helmet": "helmet04_medic",
+      "chest": "chest03",
+      "outfit": "",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 6,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 30,
+        "healthkit": 4,
+        "soda": 15,
+        "painkiller": 4,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 1,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "marksman": {
     "type": "role",
@@ -13399,7 +13615,88 @@
     },
     "perks": [
       "targeting"
-    ]
+    ],
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "$byTeam": {
+            "red": {
+              "$weighted": [
+                {
+                  "type": "l86",
+                  "ammo": 30,
+                  "fillInv": true,
+                  "weight": 0.9
+                },
+                {
+                  "type": "scarssr",
+                  "ammo": 10,
+                  "fillInv": true,
+                  "weight": 0.1
+                }
+              ]
+            },
+            "blue": {
+              "$weighted": [
+                {
+                  "type": "svd",
+                  "ammo": 10,
+                  "fillInv": true,
+                  "weight": 0.9
+                },
+                {
+                  "type": "scarssr",
+                  "ammo": 10,
+                  "fillInv": true,
+                  "weight": 0.1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "kukri_sniper",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "backpack03",
+      "helmet": "helmet03_marksman",
+      "chest": "chest03",
+      "outfit": "",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 5,
+        "healthkit": 0,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 1,
+        "15xscope": 0
+      }
+    }
   },
   "recon": {
     "type": "role",
@@ -13412,7 +13709,57 @@
     },
     "perks": [
       "small_arms"
-    ]
+    ],
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "glock_dual",
+          "ammo": 34,
+          "fillInv": true
+        },
+        {
+          "type": "crowbar_recon",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "backpack03",
+      "helmet": "helmet03_recon",
+      "chest": "chest03",
+      "outfit": "",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 5,
+        "healthkit": 0,
+        "soda": 6,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 1,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "grenadier": {
     "type": "role",
@@ -13425,7 +13772,57 @@
     },
     "perks": [
       "flak_jacket"
-    ]
+    ],
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "saiga",
+          "ammo": 5,
+          "fillInv": true
+        },
+        {
+          "type": "katana",
+          "ammo": 0
+        },
+        {
+          "type": "mirv",
+          "ammo": 10
+        }
+      ],
+      "backpack": "backpack03",
+      "helmet": "helmet03_grenadier",
+      "chest": "chest03",
+      "outfit": "",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 15,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 10,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 5,
+        "healthkit": 0,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 1,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "bugler": {
     "type": "role",
@@ -13439,7 +13836,56 @@
     "perks": [
       "inspiration",
       "final_bugle"
-    ]
+    ],
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "bugle",
+          "ammo": 1
+        },
+        {
+          "type": "pan",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "backpack03",
+      "helmet": "helmet03_bugler",
+      "chest": "chest03",
+      "outfit": "",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 5,
+        "healthkit": 0,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 1,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "last_man": {
     "type": "role",
@@ -13452,8 +13898,118 @@
     },
     "perks": [
       "steelskin",
-      "splinter"
-    ]
+      {
+        "$weighted": [
+          {
+            "type": "ap_rounds",
+            "weight": 1
+          },
+          {
+            "type": "splinter",
+            "weight": 1
+          }
+        ]
+      },
+      "takedown",
+      {
+        "$weighted": [
+          {
+            "type": "windwalk",
+            "weight": 1
+          },
+          {
+            "type": "field_medic",
+            "weight": 1
+          }
+        ]
+      }
+    ],
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "$byTeam": {
+            "red": {
+              "$weighted": [
+                {
+                  "type": "m249",
+                  "ammo": 100,
+                  "fillInv": true,
+                  "weight": 1
+                },
+                {
+                  "type": "pkp",
+                  "ammo": 200,
+                  "fillInv": true,
+                  "weight": 1
+                }
+              ]
+            },
+            "blue": {
+              "$weighted": [
+                {
+                  "type": "m249",
+                  "ammo": 100,
+                  "fillInv": true,
+                  "weight": 1
+                },
+                {
+                  "type": "pkp",
+                  "ammo": 200,
+                  "fillInv": true,
+                  "weight": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "mirv",
+          "ammo": 8
+        }
+      ],
+      "backpack": "backpack03",
+      "helmet": {
+        "$byTeam": {
+          "red": "helmet04_last_man_red",
+          "blue": "helmet04_last_man_blue"
+        }
+      },
+      "chest": "chest04",
+      "outfit": "",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 8,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 10,
+        "healthkit": 1,
+        "soda": 2,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 1,
+        "15xscope": 0
+      }
+    }
   },
   "woods_king": {
     "type": "role",
@@ -13513,14 +14069,63 @@
     },
     "perks": [
       "field_medic",
-      "windwalk"
+      "combat_stims"
     ],
     "visorImg": {
       "baseSprite": "player-visor-healer.img",
       "spriteScale": 0.3
     },
     "guiImg": "img/gui/role-healer.svg",
-    "color": 11468975
+    "color": 11468975,
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "",
+      "helmet": "",
+      "chest": "",
+      "outfit": "outfitMedic",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 0,
+        "healthkit": 1,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "tank": {
     "type": "role",
@@ -13537,7 +14142,56 @@
       "spriteScale": 0.3
     },
     "guiImg": "img/gui/role-tank.svg",
-    "color": 13862400
+    "color": 13862400,
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "",
+      "helmet": "",
+      "chest": "chest01",
+      "outfit": "outfitTank",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 0,
+        "healthkit": 0,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "sniper": {
     "type": "role",
@@ -13554,7 +14208,56 @@
       "spriteScale": 0.3
     },
     "guiImg": "img/gui/role-sniper.svg",
-    "color": 30696
+    "color": 30696,
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "",
+      "helmet": "",
+      "chest": "",
+      "outfit": "outfitSniper",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 0,
+        "healthkit": 0,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 1,
+        "4xscope": 0,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "scout": {
     "type": "role",
@@ -13571,7 +14274,56 @@
       "spriteScale": 0.3
     },
     "guiImg": "img/gui/role-scout.svg",
-    "color": 6725632
+    "color": 6725632,
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "",
+      "helmet": "",
+      "chest": "",
+      "outfit": "outfitScout",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 0,
+        "healthkit": 0,
+        "soda": 1,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "demo": {
     "type": "role",
@@ -13580,7 +14332,7 @@
       "assign": "spawn_01"
     },
     "perks": [
-      "fabricate",
+      "amped_explosives",
       "flak_jacket"
     ],
     "visorImg": {
@@ -13588,7 +14340,56 @@
       "spriteScale": 0.3
     },
     "guiImg": "img/gui/role-demo.svg",
-    "color": 6750976
+    "color": 6750976,
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "backpack01",
+      "helmet": "",
+      "chest": "",
+      "outfit": "outfitDemo",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 0,
+        "healthkit": 0,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "assault": {
     "type": "role",
@@ -13605,7 +14406,56 @@
       "spriteScale": 0.3
     },
     "guiImg": "img/gui/role-assault.svg",
-    "color": 16772119
+    "color": 16772119,
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "",
+      "helmet": "",
+      "chest": "",
+      "outfit": "outfitAssault",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 5,
+        "healthkit": 0,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    }
   },
   "frag": {
     "name": "Frag Grenade",
@@ -13961,7 +14811,7 @@
     "explodeOnImpact": false,
     "playerCollision": false,
     "fuseTime": 13.5,
-    "strikeDelay": 2.5,
+    "strikeDelay": 3,
     "aimDistance": 0,
     "rad": 1,
     "throwPhysics": {
@@ -14053,7 +14903,7 @@
     "throwPhysics": {
       "playerVelMult": 0,
       "velZ": 3.35,
-      "speed": 40,
+      "speed": 52,
       "spinVel": 31.41592653589793,
       "spinDrag": 1,
       "fixedCollisionHeight": 0.25
@@ -14116,7 +14966,9 @@
       "throwing": "frag_throw_01",
       "pickup": "snowball_pickup_01",
       "deploy": "frag_deploy_01"
-    }
+    },
+    "heavyType": "snowball_heavy",
+    "changeTime": 1
   },
   "snowball_heavy": {
     "name": "Snowball",
@@ -14129,7 +14981,7 @@
     "forceMaxThrowDistance": true,
     "explodeOnImpact": true,
     "playerCollision": true,
-    "fuseTime": 5,
+    "fuseTime": 9999,
     "aimDistance": 32,
     "rad": 1.25,
     "throwPhysics": {
@@ -14247,7 +15099,8 @@
       "pickup": "potato_pickup_01",
       "deploy": "frag_deploy_01"
     },
-    "emoteId": 210
+    "emoteId": 210,
+    "changeTime": 1
   },
   "potato_heavy": {
     "name": "Potato",
@@ -14260,7 +15113,7 @@
     "forceMaxThrowDistance": true,
     "explodeOnImpact": true,
     "playerCollision": true,
-    "fuseTime": 5,
+    "fuseTime": 9999,
     "aimDistance": 32,
     "rad": 1.25,
     "throwPhysics": {
@@ -14448,7 +15301,8 @@
       "throwing": "frag_throw_01",
       "pickup": "frag_pickup_01",
       "deploy": "frag_deploy_01"
-    }
+    },
+    "forceMaxThrowDistance": false
   },
   "unlock_default": {
     "type": "unlock",
@@ -14932,6 +15786,328 @@
     "tracerLength": 1.2,
     "skipCollision": true
   },
+  "shrapnel_cobalt": {
+    "type": "bullet",
+    "damage": 5,
+    "obstacleDamage": 0.1,
+    "falloff": 1,
+    "speed": 20,
+    "distance": 8,
+    "variance": 1.5,
+    "shrapnel": true,
+    "tracerColor": "shrapnel",
+    "tracerWidth": 0.15,
+    "tracerLength": 0.4
+  },
+  "heal_diamond": {
+    "type": "heal_effect",
+    "name": "Crazy Diamond",
+    "lore": "Dora-ra-ra-ra!",
+    "rarity": 1,
+    "texture": "part-heal-diamond.img",
+    "emitter": "heal_diamond"
+  },
+  "heal_ankh": {
+    "type": "heal_effect",
+    "name": "Ankh Charm",
+    "lore": "Grants immunity to most debuffs.",
+    "rarity": 2,
+    "texture": "part-heal-ankh.img",
+    "emitter": "heal_ankh"
+  },
+  "heal_menacing": {
+    "type": "heal_effect",
+    "name": "Phantom Blood",
+    "lore": "Oh? You're approaching me?",
+    "rarity": 3,
+    "texture": "part-heal-menacing.img",
+    "emitter": "heal_menacing"
+  },
+  "boost_club": {
+    "type": "boost_effect",
+    "name": "Club Cola",
+    "lore": "Copyright 2026, PARMA Institute.",
+    "rarity": 1,
+    "texture": "part-boost-club.img",
+    "emitter": "boost_club"
+  },
+  "boost_hermes": {
+    "type": "boost_effect",
+    "name": "Winged Grace",
+    "lore": "Graced by the mythical holy moly.",
+    "rarity": 2,
+    "texture": "part-boost-hermes.img",
+    "emitter": "boost_hermes"
+  },
+  "boost_lightning": {
+    "type": "boost_effect",
+    "name": "Surged",
+    "lore": "Feel the surge!",
+    "rarity": 3,
+    "texture": "part-boost-lightning.img",
+    "emitter": "boost_lightning"
+  },
+  "boost_gearshift": {
+    "type": "boost_effect",
+    "name": "Gearshift",
+    "lore": "What is the landspeed velocity of an unladen survevr?",
+    "rarity": 4,
+    "texture": "part-boost-gearshift.img",
+    "emitter": [
+      "boost_gearshift_01",
+      "boost_gearshift_02"
+    ]
+  },
+  "emote_boffy": {
+    "type": "emote",
+    "name": "Boffy",
+    "rarity": 1,
+    "texture": "face-boffy.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
+  "emote_sadboffy": {
+    "type": "emote",
+    "name": "Sad Boffy",
+    "rarity": 1,
+    "texture": "face-sadboffy.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
+  "emote_flagbosnia": {
+    "type": "emote",
+    "name": "Flag Bosnia",
+    "rarity": 1,
+    "texture": "flag-bosnia-and-herzegovina.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flaglibya": {
+    "type": "emote",
+    "name": "Flag Libya",
+    "rarity": 1,
+    "texture": "flag-libya.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_tomato": {
+    "type": "emote",
+    "name": "Tomato",
+    "rarity": 1,
+    "texture": "tomato.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 2
+  },
+  "emote_cake": {
+    "type": "emote",
+    "name": "Cake",
+    "rarity": 1,
+    "texture": "cake.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 2
+  },
+  "emote_leaf": {
+    "type": "emote",
+    "name": "Leaf",
+    "rarity": 1,
+    "texture": "leaf.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 5
+  },
+  "emote_flagpalestine": {
+    "type": "emote",
+    "name": "Flag Palestine",
+    "rarity": 1,
+    "texture": "flag-palestine.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagiran": {
+    "type": "emote",
+    "name": "Flag Iran",
+    "rarity": 1,
+    "texture": "flag-iran.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flaglebanon": {
+    "type": "emote",
+    "name": "Flag Lebanon",
+    "rarity": 1,
+    "texture": "flag-lebanon.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagyemen": {
+    "type": "emote",
+    "name": "Flag Yemen",
+    "rarity": 1,
+    "texture": "flag-yemen.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagtransgender": {
+    "type": "emote",
+    "name": "Flag Transgender",
+    "rarity": 1,
+    "texture": "flag-transgender.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagpride": {
+    "type": "emote",
+    "name": "Flag Pride",
+    "rarity": 1,
+    "texture": "flag-pride.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flaglesbian": {
+    "type": "emote",
+    "name": "Flag Lesbian",
+    "rarity": 1,
+    "texture": "flag-lesbian.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flaggay": {
+    "type": "emote",
+    "name": "Flag Gay",
+    "rarity": 1,
+    "texture": "flag-gay.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagasexual": {
+    "type": "emote",
+    "name": "Flag Asexual",
+    "rarity": 1,
+    "texture": "flag-asexual.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagnonbinary": {
+    "type": "emote",
+    "name": "Flag Non-Binary",
+    "rarity": 1,
+    "texture": "flag-nonbinary.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagbisexual": {
+    "type": "emote",
+    "name": "Flag Bisexual",
+    "rarity": 1,
+    "texture": "flag-bisexual.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_antisocial": {
+    "type": "emote",
+    "name": "Antisocial",
+    "rarity": 1,
+    "texture": "antisocial.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 5
+  },
+  "emote_timeout": {
+    "type": "emote",
+    "name": "Timeout!",
+    "rarity": 2,
+    "texture": "timeout.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 5
+  },
+  "emote_traumatizedface": {
+    "type": "emote",
+    "name": "Traumatized Face",
+    "rarity": 3,
+    "texture": "face-traumatized.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
+  "emote_bruh": {
+    "type": "emote",
+    "name": "b r u h",
+    "rarity": 2,
+    "texture": "bruh.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 5
+  },
+  "emote_flatteredface": {
+    "type": "emote",
+    "name": "Flattered Face",
+    "rarity": 3,
+    "texture": "face-flattered.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
+  "emote_salutingface": {
+    "type": "emote",
+    "name": "Saluting Face",
+    "rarity": 2,
+    "texture": "face-salute.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
+  "emote_screamingface": {
+    "type": "emote",
+    "name": "Screaming Face",
+    "rarity": 3,
+    "texture": "face-screaming.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
   "explosion_potato_lmgshot": {
     "type": "explosion",
     "damage": 8.5,
@@ -14951,6 +16127,151 @@
       "player-mash-02.img",
       "player-mash-03.img"
     ]
+  },
+  "explosion_coconut": {
+    "type": "explosion",
+    "damage": 22,
+    "obstacleDamage": 1,
+    "teamDamage": false,
+    "freezeDuration": 1,
+    "frozenSprites": [
+      "player-mash-01.img",
+      "player-mash-02.img",
+      "player-mash-03.img"
+    ],
+    "rad": {
+      "min": 1.34,
+      "max": 1.35
+    },
+    "shrapnelCount": 0,
+    "shrapnelType": "",
+    "explosionEffectType": "coconut",
+    "decalType": "",
+    "healTeam": true,
+    "healAmount": 7
+  },
+  "explosion_tomato": {
+    "type": "explosion",
+    "damage": 11,
+    "obstacleDamage": 1,
+    "teamDamage": false,
+    "rad": {
+      "min": 1.29,
+      "max": 1.3
+    },
+    "shrapnelCount": 0,
+    "shrapnelType": "",
+    "explosionEffectType": "tomato",
+    "decalType": "",
+    "freezeDuration": 0.5,
+    "frozenSprites": [
+      "player-mash-04.img",
+      "player-mash-05.img"
+    ],
+    "dropRandomLoot": 1
+  },
+  "explosion_cobalt": {
+    "type": "explosion",
+    "damage": 175,
+    "obstacleDamage": 1,
+    "rad": {
+      "min": 5,
+      "max": 8
+    },
+    "shrapnelCount": 20,
+    "shrapnelType": "shrapnel_cobalt",
+    "explosionEffectType": "barrel",
+    "decalType": "decal_barrel_explosion"
+  },
+  "backpack04": {
+    "name": "Tactical Pack",
+    "type": "backpack",
+    "level": 4,
+    "tint": 6710835,
+    "playerRad": 1,
+    "lootImg": {
+      "sprite": "loot-pack-04.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "pack_pickup_01"
+    }
+  },
+  "helmet04_captain": {
+    "name": "Captain Helmet",
+    "type": "helmet",
+    "level": 4,
+    "damageReduction": 0.7,
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseTintRed": 16777215,
+      "baseTintBlue": 16777215,
+      "baseSprite": "player-helmet-captain.img",
+      "spriteScale": 0.3
+    },
+    "lootImg": {
+      "sprite": "player-helmet-captain.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.3,
+      "rot": 1.5707963267948966
+    },
+    "sound": {
+      "pickup": "helmet_pickup_01"
+    },
+    "baseType": "helmet04",
+    "noDrop": true
+  },
+  "helmet04_classless": {
+    "name": "Classless Helmet",
+    "type": "helmet",
+    "level": 4,
+    "damageReduction": 0.7,
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseTintRed": 16777215,
+      "baseTintBlue": 16777215,
+      "baseSprite": "player-helmet-classless.img",
+      "spriteScale": 0.275
+    },
+    "lootImg": {
+      "sprite": "player-helmet-classless.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2,
+      "rot": 1.5707963267948966
+    },
+    "sound": {
+      "pickup": "helmet_pickup_01"
+    },
+    "baseType": "helmet04",
+    "noDrop": true
+  },
+  "backpack04_cloud": {
+    "name": "Experimental Pack",
+    "type": "backpack",
+    "level": 4,
+    "tint": 6710835,
+    "playerRad": 1,
+    "lootImg": {
+      "sprite": "loot-pack-04-cloud.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "pack_pickup_01"
+    },
+    "baseType": "backpack04",
+    "hasDesc": true,
+    "desc": "You can equip an extra perk.",
+    "maxPerks": 2
   },
   "imbel": {
     "name": "IMD-2",
@@ -15342,7 +16663,7 @@
     "shotSpread": 1,
     "bulletCount": 1,
     "bulletType": "bullet_svd",
-    "headshotMult": 2,
+    "headshotMult": 1.5,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -15405,7 +16726,7 @@
     "shotSpread": 1,
     "bulletCount": 1,
     "bulletType": "bullet_sv98",
-    "headshotMult": 1.5,
+    "headshotMult": 1.25,
     "speed": {
       "equip": 0,
       "attack": 0
@@ -15512,6 +16833,1127 @@
     "baseType": "awc",
     "noPotatoSwap": true
   },
+  "iceaxe": {
+    "name": "Ice Axe",
+    "type": "melee",
+    "quality": 1,
+    "armorPiercing": true,
+    "stonePiercing": true,
+    "autoAttack": false,
+    "switchDelay": 0.25,
+    "damage": 44,
+    "obstacleDamage": 2.4,
+    "attack": {
+      "offset": {
+        "x": 1.4,
+        "y": 0
+      },
+      "rad": 1.3,
+      "damageTimes": [
+        0.21
+      ],
+      "cooldownTime": 0.4
+    },
+    "speed": {
+      "equip": 1
+    },
+    "lootImg": {
+      "sprite": "loot-melee-ice_pick.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-02.img",
+      "borderTint": 16777215,
+      "scale": 0.3,
+      "mirror": true,
+      "rot": 2.35619
+    },
+    "worldImg": {
+      "sprite": "loot-melee-ice_pick.img",
+      "pos": {
+        "x": -12.5,
+        "y": -10
+      },
+      "rot": 1.2,
+      "scale": {
+        "x": 0.4,
+        "y": 0.4
+      },
+      "tint": 16777215,
+      "leftHandOntop": true
+    },
+    "anim": {
+      "idlePose": "meleeTwoHanded",
+      "attackAnims": [
+        "axeSwing"
+      ]
+    },
+    "sound": {
+      "pickup": "heavy_pickup_01",
+      "swing": "medium_swing_01",
+      "deploy": "stow_weapon_01",
+      "playerHit": "knife_hit_01"
+    }
+  },
+  "cutlass": {
+    "name": "Cutlass",
+    "type": "melee",
+    "quality": 1,
+    "cleave": true,
+    "autoAttack": false,
+    "switchDelay": 0.25,
+    "damage": 30,
+    "obstacleDamage": 1,
+    "attack": {
+      "offset": {
+        "x": 2.25,
+        "y": 0
+      },
+      "rad": 1.75,
+      "damageTimes": [
+        0.1
+      ],
+      "cooldownTime": 0.225
+    },
+    "speed": {
+      "equip": 1
+    },
+    "anim": {
+      "idlePose": "cutlass",
+      "attackAnims": [
+        "cut",
+        "cutReverse"
+      ]
+    },
+    "sound": {
+      "pickup": "frag_pickup_01",
+      "swing": "knife_swing_01",
+      "deploy": "knife_deploy_01",
+      "playerHit": "knife_hit_01"
+    },
+    "lootImg": {
+      "sprite": "loot-melee-cutlass.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-02.img",
+      "borderTint": 16777215,
+      "scale": 0.3,
+      "rot": 0.9
+    },
+    "worldImg": {
+      "sprite": "loot-melee-cutlass.img",
+      "pos": {
+        "x": 2.5,
+        "y": -75
+      },
+      "rot": 1.885,
+      "scale": {
+        "x": 0.325,
+        "y": 0.325
+      },
+      "tint": 16777215
+    }
+  },
+  "karambit_borealis": {
+    "name": "Karambit Borealis",
+    "type": "melee",
+    "quality": 0,
+    "autoAttack": false,
+    "switchDelay": 0.25,
+    "damage": 24,
+    "obstacleDamage": 1,
+    "headshotMult": 1,
+    "noPotatoSwap": false,
+    "noDropOnDeath": true,
+    "attack": {
+      "offset": {
+        "x": 1.35,
+        "y": 0
+      },
+      "rad": 0.9,
+      "damageTimes": [
+        0.1
+      ],
+      "cooldownTime": 0.25
+    },
+    "speed": {
+      "equip": 1
+    },
+    "anim": {
+      "idlePose": "slash",
+      "attackAnims": [
+        "slash",
+        "fists"
+      ]
+    },
+    "sound": {
+      "pickup": "frag_pickup_01",
+      "swing": "knife_swing_01",
+      "deploy": "knife_deploy_01",
+      "playerHit": "knife_hit_01"
+    },
+    "lootImg": {
+      "sprite": "loot-melee-karambit-borealis.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-02.img",
+      "borderTint": 16777215,
+      "scale": 0.3,
+      "mirror": true,
+      "rot": 2.35619
+    },
+    "worldImg": {
+      "sprite": "loot-melee-karambit-borealis.img",
+      "pos": {
+        "x": 15.5,
+        "y": -5
+      },
+      "rot": 1.5707963267948966,
+      "scale": {
+        "x": 0.35,
+        "y": 0.35
+      },
+      "tint": 16777215
+    },
+    "baseType": "karambit",
+    "rarity": 4,
+    "lore": "Rend the skies asunder."
+  },
+  "naginata_daemon": {
+    "name": "Naginata Daemon",
+    "type": "melee",
+    "quality": 1,
+    "armorPiercing": true,
+    "cleave": true,
+    "autoAttack": false,
+    "switchDelay": 0.25,
+    "damage": 56,
+    "obstacleDamage": 1.92,
+    "headshotMult": 1,
+    "attack": {
+      "offset": {
+        "x": 3.5,
+        "y": 0
+      },
+      "rad": 2,
+      "damageTimes": [
+        0.27
+      ],
+      "cooldownTime": 0.54
+    },
+    "speed": {
+      "equip": 1
+    },
+    "anim": {
+      "idlePose": "meleeNaginata",
+      "attackAnims": [
+        "naginataSwing"
+      ]
+    },
+    "sound": {
+      "pickup": "heavy_pickup_01",
+      "swing": "heavy_swing_01",
+      "deploy": "stow_weapon_01",
+      "playerHit": "axe_hit_01"
+    },
+    "lootImg": {
+      "sprite": "loot-melee-naginata-daemon.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-02.img",
+      "borderTint": 16777215,
+      "scale": 0.3,
+      "mirror": true,
+      "rot": 2.35619
+    },
+    "worldImg": {
+      "sprite": "loot-melee-naginata-daemon.img",
+      "pos": {
+        "x": 42.5,
+        "y": -3
+      },
+      "rot": 1.9,
+      "scale": {
+        "x": 0.35,
+        "y": 0.35
+      },
+      "tint": 16777215,
+      "leftHandOntop": true
+    },
+    "baseType": "naginata"
+  },
+  "cutlass_gold": {
+    "name": "Gold Cutlass",
+    "type": "melee",
+    "quality": 1,
+    "cleave": true,
+    "autoAttack": false,
+    "switchDelay": 0.25,
+    "damage": 35,
+    "obstacleDamage": 1,
+    "attack": {
+      "offset": {
+        "x": 2.25,
+        "y": 0
+      },
+      "rad": 1.75,
+      "damageTimes": [
+        0.1
+      ],
+      "cooldownTime": 0.225
+    },
+    "speed": {
+      "equip": 1
+    },
+    "anim": {
+      "idlePose": "cutlass",
+      "attackAnims": [
+        "cut",
+        "cutReverse"
+      ]
+    },
+    "sound": {
+      "pickup": "frag_pickup_01",
+      "swing": "knife_swing_01",
+      "deploy": "knife_deploy_01",
+      "playerHit": "knife_hit_01"
+    },
+    "lootImg": {
+      "sprite": "loot-melee-cutlass-gold.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-02.img",
+      "borderTint": 16777215,
+      "scale": 0.3,
+      "rot": 0.9
+    },
+    "worldImg": {
+      "sprite": "loot-melee-cutlass-gold.img",
+      "pos": {
+        "x": 2.5,
+        "y": -75
+      },
+      "rot": 1.885,
+      "scale": {
+        "x": 0.325,
+        "y": 0.325
+      },
+      "tint": 16777215
+    },
+    "baseType": "cutlass",
+    "noPotatoSwap": true,
+    "perk": "pirate"
+  },
+  "outfitClassless": {
+    "name": "Basic Outfit",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 6579300,
+      "baseSprite": "player-base-02.img",
+      "handTint": 5263440,
+      "handSprite": "player-hands-02.img",
+      "footTint": 5263440,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 3289650,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-02.img",
+      "tint": 6579300,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "noDrop": true
+  },
+  "outfitMaintainer": {
+    "name": "Maintainer Swag",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 9596644,
+      "baseSprite": "player-base-outfitDC.img",
+      "handTint": 9596644,
+      "handSprite": "player-hands-02.img",
+      "footTint": 9596644,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 6441625,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitDC.img",
+      "tint": 9596644,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "noDropOnDeath": true,
+    "rarity": 5,
+    "lore": "// TODO: Come up with something funny"
+  },
+  "outfitGD": {
+    "name": "Game Designr",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 11218992,
+      "baseSprite": "player-base-outfitDC.img",
+      "handTint": 14901087,
+      "handSprite": "player-hands-02.img",
+      "footTint": 14901087,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 7213072,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitDC.img",
+      "tint": 13383993,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "noDropOnDeath": true,
+    "rarity": 4,
+    "lore": "'We agreed on this'",
+    "teamId": 1
+  },
+  "outfitFragtastic": {
+    "name": "Fragtastic",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 6445343,
+      "baseSprite": "player-base-01.img",
+      "handTint": 8352810,
+      "handSprite": "player-hands-01.img",
+      "footTint": 8352810,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 10066329,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 9668146,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1,
+    "lore": "Pin not included. Maybe."
+  },
+  "outfitSnow": {
+    "name": "Snowed Over",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitSnow.img",
+      "handTint": 16777215,
+      "handSprite": "player-hands-outfitSnow.img",
+      "footTint": 11725567,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 7849181,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitSnow.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 2,
+    "lore": "It's shirt weather!!"
+  },
+  "outfitBlackIce": {
+    "name": "Black Ice",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 6843758,
+      "baseSprite": "player-base-02.img",
+      "handTint": 4278099,
+      "handSprite": "player-hands-01.img",
+      "footTint": 3355453,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 6186099,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-02.img",
+      "tint": 6186099,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1
+  },
+  "outfitBeachCamo": {
+    "name": "Beach Shored",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 15583870,
+      "baseSprite": "player-base-01.img",
+      "handTint": 16442806,
+      "handSprite": "player-hands-01.img",
+      "footTint": 16442806,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 8165723,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 15583870,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase"
+  },
+  "outfitCoconut": {
+    "name": "Coconut Frenzy",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 7755830,
+      "baseSprite": "player-base-01.img",
+      "handTint": 3550498,
+      "handSprite": "player-hands-01.img",
+      "footTint": 15330806,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 15330806,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 7755830,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1,
+    "lore": "It's the coco fruit!"
+  },
+  "outfitWave": {
+    "name": "Tidal Wave",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 1153260,
+      "baseSprite": "player-base-02.img",
+      "handTint": 16643569,
+      "handSprite": "player-hands-02.img",
+      "footTint": 16643569,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 2193582,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-02.img",
+      "tint": 1153260,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1,
+    "lore": "Send them to Davy Jones' locker.",
+    "teamId": 2
+  },
+  "outfitParrotfish": {
+    "name": "Parrotfish",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitParrotfish.img",
+      "handTint": 3851974,
+      "handSprite": "player-hands-02.img",
+      "footTint": 3172240,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 3649195,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitParrotfish.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 3,
+    "lore": "Show off your scales around the island. Coral, beware!"
+  },
+  "outfitEvent": {
+    "name": "Event Winnr",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitEvent.img",
+      "handTint": 11369195,
+      "handSprite": "player-hands-01.img",
+      "footTint": 11369195,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 11369195,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitEvent.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 3,
+    "lore": "Shining beacons of the community.",
+    "noDropOnDeath": true
+  },
+  "outfitGold": {
+    "name": "Capital Gains",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitGold.img",
+      "handTint": 16777215,
+      "handSprite": "player-hands-outfitGold.img",
+      "footTint": 16777215,
+      "footSprite": "player-feet-outfitGold.img",
+      "backpackTint": 16777215,
+      "backpackSprite": "player-bag-outfitGold.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitGold.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "lore": "Justice for Chrome"
+  },
+  "outfitRain": {
+    "name": "Rainy Day",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 3365795,
+      "baseSprite": "player-base-01.img",
+      "handTint": 7838164,
+      "handSprite": "player-hands-01.img",
+      "footTint": 2837640,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 9806255,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 4485828,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1,
+    "lore": "Feeling a little blue there?",
+    "noDropOnDeath": true,
+    "teamId": 2
+  },
+  "outfitCowz": {
+    "name": "Cowz Cloak",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitCowz.img",
+      "handTint": 11250603,
+      "handSprite": "player-hands-01.img",
+      "footTint": 11250603,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 8224125,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 11250603,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1,
+    "lore": "Also play cowz.io!",
+    "noDropOnDeath": true
+  },
+  "outfitChameleon": {
+    "name": "The Chameleon",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 4705222,
+      "baseSprite": "player-base-01.img",
+      "handTint": 9100079,
+      "handSprite": "player-hands-01.img",
+      "footTint": 9100079,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 14721591,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitChameleon.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 2,
+    "lore": "Jack of all trades, master of none.",
+    "noDropOnDeath": true
+  },
+  "outfitPastel": {
+    "name": "Pastel Sky",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitPastel.img",
+      "handTint": 14138866,
+      "handSprite": "player-hands-01.img",
+      "footTint": 8819711,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 8819711,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitPastel.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 2,
+    "lore": "What an artistic phenomenon!",
+    "noDropOnDeath": true,
+    "teamId": 2
+  },
+  "outfitChrys": {
+    "name": "Chrysanthemum Garb",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitChrys.img",
+      "handTint": 11627340,
+      "handSprite": "player-hands-02.img",
+      "footTint": 11627340,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 11627340,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitChrys.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 3,
+    "lore": "Sourced from the luxurious plants of Bunker 16.",
+    "noDropOnDeath": true
+  },
+  "outfitFahrenheit": {
+    "name": "Fahrenheit 5182",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitFahrenheit.img",
+      "handTint": 16777215,
+      "handSprite": "player-hands-outfitFahrenheit.img",
+      "footTint": 12067335,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 8724499,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitFahrenheit.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 3,
+    "lore": "It was a pleasure to boil.",
+    "noDropOnDeath": true,
+    "teamId": 1
+  },
+  "outfitPotatoskin": {
+    "name": "Potatoskin",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitPotatoskin.img",
+      "handTint": 16777215,
+      "handSprite": "player-hands-outfitPotatoskin.img",
+      "footTint": 16777215,
+      "footSprite": "player-feet-outfitPotatoskin.img",
+      "backpackTint": 16777215,
+      "backpackSprite": "player-bag-outfitPotatoskin.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitPotatoskin.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 4,
+    "lore": "Mama didn't raise no spud.",
+    "noDropOnDeath": true
+  },
+  "outfitAurora": {
+    "name": "Auroric Ascension",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitAurora.img",
+      "handTint": 16777215,
+      "handSprite": {
+        "left": "player-hand-left-outfitAurora.img",
+        "right": "player-hand-right-outfitAurora.img"
+      },
+      "footTint": 2305360,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 16777215,
+      "backpackSprite": "player-bag-outfitAurora.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitAurora.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 5,
+    "lore": "As the island is coated with blood, the skies are lit aflame by the borealis.",
+    "noDropOnDeath": true,
+    "teamId": 2
+  },
+  "outfitSpringTree": {
+    "name": "Tree Costume",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16303476,
+      "baseSprite": "player-base-01.img",
+      "handTint": 16303476,
+      "handSprite": {
+        "left": "player-hands-01.img",
+        "right": "player-hands-01.img"
+      },
+      "footTint": 16303476,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 8480055,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 4599058,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "obstacleType": "tree_07sp",
+    "baseScale": 1
+  },
+  "assume_leadership": {
+    "name": "Assume Leadership",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-assume-leadership.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "ap_rounds": {
+    "name": "AP Rounds",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-ap-rounds.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "lifeline": {
+    "name": "Indomitable",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-lifeline.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "combat_stims": {
+    "name": "Combat Stimulants",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-combat-stims.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "pirate": {
+    "name": "Pirate's Bounty",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-pirate.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "amped_explosives": {
+    "name": "Hyperfragmentation",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-amped-explosives.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "high_velocity": {
+    "name": "High-Velocity Rounds",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-high-velocity.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
+  "captain": {
+    "type": "role",
+    "announce": true,
+    "killFeed": {
+      "assign": true
+    },
+    "sound": {
+      "assign": "captain_assigned_01"
+    },
+    "mapIcon": {
+      "alive": "player-captain.img"
+    },
+    "perks": [
+      "assume_leadership",
+      "firepower"
+    ],
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "backpack03",
+      "helmet": "helmet04_captain",
+      "chest": "chest03",
+      "outfit": {
+        "$byTeam": {
+          "red": "outfitRedLeader",
+          "blue": "outfitBlueLeader"
+        }
+      },
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 10,
+        "healthkit": 1,
+        "soda": 2,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 1,
+        "15xscope": 0
+      },
+      "noDropOutfit": true
+    }
+  },
+  "classless": {
+    "type": "role",
+    "defaultItems": {
+      "weapons": [
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        },
+        {
+          "type": "",
+          "ammo": 0
+        }
+      ],
+      "backpack": "",
+      "helmet": "helmet04_classless",
+      "chest": "",
+      "outfit": "outfitClassless",
+      "inventory": {
+        "9mm": 0,
+        "762mm": 0,
+        "556mm": 0,
+        "12gauge": 0,
+        "50AE": 0,
+        "308sub": 0,
+        "flare": 0,
+        "45acp": 0,
+        "frag": 0,
+        "smoke": 0,
+        "strobe": 0,
+        "mirv": 0,
+        "snowball": 0,
+        "potato": 0,
+        "bandage": 0,
+        "healthkit": 0,
+        "soda": 0,
+        "painkiller": 0,
+        "1xscope": 1,
+        "2xscope": 0,
+        "4xscope": 0,
+        "8xscope": 0,
+        "15xscope": 0
+      }
+    },
+    "announce": false,
+    "sound": {
+      "assign": "spawn_01"
+    },
+    "perks": [],
+    "visorImg": {
+      "baseSprite": "player-visor-classless.img",
+      "spriteScale": 0.3
+    }
+  },
   "potato_lmgshot": {
     "name": "PMG-134",
     "type": "throwable",
@@ -15564,5 +18006,173 @@
       "alpha": 1,
       "tint": 11365669
     }
+  },
+  "coconut": {
+    "name": "Coconut",
+    "type": "throwable",
+    "quality": 0,
+    "explosionType": "explosion_coconut",
+    "freezeOnImpact": true,
+    "changeTime": 1,
+    "inventoryOrder": 0,
+    "cookable": false,
+    "noPotatoSwap": true,
+    "forceMaxThrowDistance": true,
+    "explodeOnImpact": true,
+    "playerCollision": true,
+    "fuseTime": 9999,
+    "aimDistance": 32,
+    "rad": 1.15,
+    "throwPhysics": {
+      "playerVelMult": 0,
+      "velZ": 3.35,
+      "speed": 45,
+      "spinVel": 31.41592653589793,
+      "spinDrag": 1,
+      "fixedCollisionHeight": 0.25
+    },
+    "speed": {
+      "equip": 0,
+      "attack": 0
+    },
+    "lootImg": {
+      "sprite": "loot-throwable-coconut.img",
+      "tint": 65280,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "worldImg": {
+      "sprite": "proj-coconut-01.img",
+      "scale": 0.15,
+      "tint": 16777215
+    },
+    "handImg": {
+      "equip": {
+        "right": {
+          "sprite": "proj-coconut-01.img",
+          "pos": {
+            "x": 3,
+            "y": 4.2
+          },
+          "scale": 0.15
+        },
+        "left": {
+          "sprite": "none"
+        }
+      },
+      "cook": {
+        "right": {
+          "sprite": "proj-coconut-01.img",
+          "pos": {
+            "x": 3,
+            "y": 4.2
+          },
+          "scale": 0.15
+        },
+        "left": {
+          "sprite": "none"
+        }
+      },
+      "throwing": {
+        "right": {
+          "sprite": "none"
+        },
+        "left": {
+          "sprite": "none"
+        }
+      }
+    },
+    "useThrowParticles": false,
+    "sound": {
+      "pullPin": "",
+      "throwing": "frag_throw_01",
+      "pickup": "potato_pickup_01",
+      "deploy": "frag_deploy_01"
+    }
+  },
+  "tomato": {
+    "name": "Tomato",
+    "type": "throwable",
+    "quality": 0,
+    "explosionType": "explosion_tomato",
+    "freezeOnImpact": true,
+    "changeTime": 1,
+    "inventoryOrder": 0,
+    "cookable": true,
+    "forceMaxThrowDistance": true,
+    "explodeOnImpact": true,
+    "playerCollision": true,
+    "fuseTime": 9999,
+    "aimDistance": 32,
+    "rad": 1,
+    "throwPhysics": {
+      "playerVelMult": 0,
+      "velZ": 3.35,
+      "speed": 55,
+      "spinVel": 31.41592653589793,
+      "spinDrag": 1,
+      "fixedCollisionHeight": 0.25
+    },
+    "speed": {
+      "equip": 0,
+      "attack": 0
+    },
+    "lootImg": {
+      "sprite": "loot-throwable-tomato.img",
+      "tint": 65280,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "worldImg": {
+      "sprite": "proj-tomato-01.img",
+      "scale": 0.12,
+      "tint": 16777215
+    },
+    "handImg": {
+      "equip": {
+        "right": {
+          "sprite": "proj-tomato-01.img",
+          "pos": {
+            "x": 3,
+            "y": 4.2
+          },
+          "scale": 0.14
+        },
+        "left": {
+          "sprite": "none"
+        }
+      },
+      "cook": {
+        "right": {
+          "sprite": "proj-tomato-01.img",
+          "pos": {
+            "x": 3,
+            "y": 4.2
+          },
+          "scale": 0.14
+        },
+        "left": {
+          "sprite": "none"
+        }
+      },
+      "throwing": {
+        "right": {
+          "sprite": "none"
+        },
+        "left": {
+          "sprite": "none"
+        }
+      }
+    },
+    "useThrowParticles": false,
+    "sound": {
+      "pullPin": "",
+      "throwing": "frag_throw_01",
+      "pickup": "potato_pickup_01",
+      "deploy": "frag_deploy_01"
+    },
+    "emoteId": 210
   }
 }

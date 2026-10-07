@@ -12,7 +12,8 @@ import type { Entity } from "./world.ts";
 /** `objs` is the player's movement broadphase result (it covers the reach of this tick's movement). */
 export function updateSurroundings(ctx: SimContext, player: Player, objs: readonly Entity[], dt: number): void {
     // heal regions work for players standing up, outside the red zone (fandom Steam_Rock; survev player.ts)
-    player.healEffect = false;
+    player.healEffectTicker = Math.max(0, player.healEffectTicker - dt);
+    player.healEffect = player.healEffectTicker > 0;
     if (!player.downed && !ctx.gas.isInGas(player.pos)) {
         const rate = healRegionRate(player.pos, player.layer, objs);
         if (rate > 0) {

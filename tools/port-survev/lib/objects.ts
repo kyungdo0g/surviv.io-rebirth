@@ -81,9 +81,11 @@ export function portGameObjects(
     return { defs, status, fixups, excluded };
 }
 
+export type MapObjectStatus = "original" | "survev-only" | "survev-override";
+
 export interface MapObjectPort {
     defs: Record<string, any>;
-    status: Record<string, "original" | "survev-only">;
+    status: Record<string, MapObjectStatus>;
     fixups: Fixup[];
     lootRemovals: Array<{ mapObject: string; item: string; reason: string }>;
     excluded: string[];
@@ -108,25 +110,15 @@ export function portMapObjects(
     survev: Record<string, any>,
     maps: Record<string, any>,
     gameObjects: Record<string, unknown>,
+    survevOverrides: readonly string[] = [],
 ): MapObjectPort {
     const defs: Record<string, any> = {};
-    const status: Record<string, "original" | "survev-only"> = {};
-    for (const [id, def] of Object.entries(live)) {
-        defs[id] = clone(def);
-        status[id] = "original";
-    }
-    const roles = perkModeRoles(Object.values(maps));
-    const roots: string[] = [];
-    for (const map of Object.values(maps)) roots.push(...mapDefSpawnRefs(map).map((r) => r.id));
-    for (const def of Object.values(live)) roots.push(...mapObjectChildIds(def, roles));
-    const reachable = new Set(mapObjectClosure(roots, { ...survev, ...live }, roles));
-    const missing = [...reachable].filter((id) => !(id in live) && !(id in survev)).sort();
-
+    const status: Record<string, MapObjectStatus> = {};
     const fixups: Fixup[] = [];
     const lootRemovals: MapObjectPort["lootRemovals"] = [];
-    for (const [id, def] of Object.entries(survev)) {
-        if (id in live || !reachable.has(id)) continue;
-        let out = clone(def);
+    /** a survev map object in the original's shape: `category` renamed back, loot of unported items dropped */
+    const fromSurvev = (id: string): any => {
+        let out = clone(survev[id]);
         const field = CATEGORY_FIELD[out.type];
         if (field && "category" in out && !(field in out)) {
             out = renameKey(out, "category", field);
@@ -144,11 +136,161 @@ export function portMapObjects(
                 return !bad;
             });
         }
-        defs[id] = out;
+        return out;
+    };
+    for (const id of survevOverrides) {
+        if (!(id in live) || !(id in survev))
+            throw new Error(`policy.json survevMapObjects: ${id} is not in both sources`);
+    }
+    // structure overrides (policy survevMapObjects) take survev's def in the original's slot (the Reserve's town)
+    const overridden = new Set(survevOverrides);
+    for (const [id, def] of Object.entries(live)) {
+        defs[id] = overridden.has(id) ? fromSurvev(id) : clone(def);
+        status[id] = overridden.has(id) ? "survev-override" : "original";
+    }
+    const roles = perkModeRoles(Object.values(maps));
+    const roots: string[] = [];
+    for (const map of Object.values(maps)) roots.push(...mapDefSpawnRefs(map).map((r) => r.id));
+    for (const def of Object.values(defs)) roots.push(...mapObjectChildIds(def, roles));
+    const reachable = new Set(mapObjectClosure(roots, { ...survev, ...defs }, roles));
+    const missing = [...reachable].filter((id) => !(id in live) && !(id in survev)).sort();
+
+    for (const id of Object.keys(survev)) {
+        if (id in live || !reachable.has(id)) continue;
+        defs[id] = fromSurvev(id);
         status[id] = "survev-only";
     }
     const excluded = Object.keys(survev).filter((id) => !(id in defs));
     return { defs, status, fixups, lootRemovals, excluded, missing };
+}
+
+/**
+ * Gameplay fields per game object type that take survev's value under option B (policy `survevBalance`;
+ * docs/design/survev-content-and-new-guns.md sections 1.2 and 3). Everything else (sprites, sounds, names, lore,
+ * `barrelLength`, `dualOffset`, animations) stays the original client's. Only fields survev defines are taken.
+ */
+export const SURVEV_GAMEPLAY_FIELDS: Readonly<Record<string, readonly string[]>> = {
+    bullet: [
+        "damage",
+        "obstacleDamage",
+        "falloff",
+        "distance",
+        "speed",
+        "variance",
+        "noDistAdj",
+        "useExplosiveRoundsAlt",
+    ],
+    gun: [
+        "ammo",
+        "maxClip",
+        "maxReload",
+        "extendedClip",
+        "extendedReload",
+        "reloadTime",
+        "reloadTimeAlt",
+        "fireDelay",
+        "switchDelay",
+        "shotSpread",
+        "moveSpread",
+        "headshotMult",
+        "fireMode",
+        "burstCount",
+        "burstDelay",
+        "ammoSpawnCount",
+        "quality",
+        "bulletCount",
+        "jitter",
+        "recoilTime",
+    ],
+    melee: ["damage", "obstacleDamage", "attack", "speed", "noPotatoSwap", "armorPiercing", "stonePiercing", "cleave"],
+    throwable: [
+        "fuseTime",
+        "strikeDelay",
+        "throwPhysics",
+        "heavyType",
+        "changeTime",
+        "forceMaxThrowDistance",
+        "cookable",
+    ],
+    explosion: ["damage", "obstacleDamage", "rad", "freezeDuration", "freezeAmount", "dropRandomLoot", "shrapnelCount"],
+    role: ["perks", "defaultItems"],
+    outfit: ["teamId"],
+};
+
+export interface GameplayChange {
+    id: string;
+    field: string;
+    original: unknown;
+    survev: unknown;
+}
+
+/**
+ * Option B (policy `survevBalance`): original game objects (and the survev skins built from them) take survev's
+ * gameplay fields where survev defines them and they differ. Mutates `defs`; returns what changed (provenance
+ * `survevValues`).
+ */
+export function applySurvevGameplay(
+    defs: Record<string, any>,
+    status: Readonly<Record<string, string>>,
+    survev: Readonly<Record<string, any>>,
+    skins: Readonly<Record<string, string>> = {},
+    table: Readonly<Record<string, readonly string[]>> = SURVEV_GAMEPLAY_FIELDS,
+): GameplayChange[] {
+    const changes: GameplayChange[] = [];
+    for (const [id, def] of Object.entries(defs)) {
+        const fields = table[def.type];
+        // a skin was built from its base's original def: it takes survev's skin values like the base does
+        const eligible = status[id] === "original" || id in skins;
+        if (!eligible || !fields || !(id in survev)) continue;
+        for (const field of fields) {
+            const value = survev[id][field];
+            if (value === undefined || deepEqual(value, def[field])) continue;
+            changes.push({ id, field, original: def[field] ?? "absent", survev: clone(value) });
+            def[field] = clone(value);
+        }
+    }
+    return changes;
+}
+
+/** Map-generation fields of a map object (survev map.ts canSpawn / genOnGrass / addBounds read them). */
+const MAP_GEN_FIELDS = ["teamId", "terrain", "mapObstacleBounds"] as const;
+
+/**
+ * Gameplay fields of map objects that take survev's value under option B (policy `survevBalance`): what an obstacle
+ * drops, how it explodes and its health (survev's loot additions and preloaded guns, the Twins puzzle wall's blast).
+ */
+export const SURVEV_MAP_GAMEPLAY_FIELDS: Readonly<Record<string, readonly string[]>> = {
+    obstacle: ["loot", "explosion", "health"],
+};
+
+export interface MapGenFieldChange {
+    id: string;
+    field: (typeof MAP_GEN_FIELDS)[number];
+    original: unknown;
+    survev: unknown;
+}
+
+/**
+ * survev map generation (policy `survevMapGen`): original map objects take survev's map-generation fields where they
+ * differ, the faction side (`teamId`) and the placement rules (`terrain`, e.g. the faction crates' 32-unit spacing).
+ * Mutates `defs`; returns what changed.
+ */
+export function applySurvevMapGenFields(
+    defs: Record<string, any>,
+    status: Readonly<Record<string, MapObjectStatus>>,
+    survev: Readonly<Record<string, any>>,
+): MapGenFieldChange[] {
+    const changes: MapGenFieldChange[] = [];
+    for (const id of Object.keys(defs)) {
+        if (status[id] !== "original" || !(id in survev)) continue;
+        for (const field of MAP_GEN_FIELDS) {
+            const value = survev[id][field];
+            if (value === undefined || JSON.stringify(value) === JSON.stringify(defs[id][field])) continue;
+            changes.push({ id, field, original: defs[id][field] ?? "absent", survev: clone(value) });
+            defs[id][field] = clone(value);
+        }
+    }
+    return changes;
 }
 
 export interface GameConfigPort {
@@ -192,6 +334,13 @@ export function portGameConfig(
         let value = clone(pathGet(survev, keys));
         if (value === undefined) throw new Error(`policy.json survevGameConfig: survev has no ${path}`);
         if (Array.isArray(value) && Array.isArray(original)) value = value.slice(0, original.length);
+        // a whole table (bagSizes): survev's rows, the original's keys first so their order stays the original's
+        if (isPlainObject(value) && isPlainObject(original)) {
+            const ordered: Record<string, unknown> = {};
+            for (const k of Object.keys(original)) if (k in value) ordered[k] = value[k];
+            for (const k of Object.keys(value)) if (!(k in ordered)) ordered[k] = value[k];
+            value = ordered;
+        }
         const holder = pathGet(config, keys.slice(0, -1));
         if (!isPlainObject(holder)) throw new Error(`policy.json survevGameConfig: ${path} has no parent object`);
         holder[keys.at(-1)!] = value;
@@ -208,6 +357,15 @@ export function portGameConfig(
             delete table![key];
             prunes.push({ path: `${path}.${key}`, reason: "item not in the ported game objects" });
         }
+    }
+    // survev-only bag rows (coconut, tomato) have survev's five levels; every row keeps the level count of the
+    // original's rows (four, or survev's five when the policy takes the whole bagSizes table)
+    const firstLive = Object.keys(live.bagSizes ?? {})[0];
+    const levels = firstLive && Array.isArray(config.bagSizes?.[firstLive]) ? config.bagSizes[firstLive].length : 0;
+    for (const [key, row] of Object.entries(config.bagSizes ?? {})) {
+        if (!levels || !Array.isArray(row) || row.length <= levels) continue;
+        config.bagSizes[key] = row.slice(0, levels);
+        prunes.push({ path: `bagSizes.${key}`, reason: `cut to the original's ${levels} backpack levels` });
     }
     return { config, diffs, prunes, survev: taken };
 }

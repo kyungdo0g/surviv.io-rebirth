@@ -55,7 +55,8 @@ export function meleeDamage(ctx: SimContext, player: Player, def: MeleeDef): voi
     const objs = ctx.world.query(box, scratch);
     const obstacles: Obstacle[] = [];
     for (const obj of objs) {
-        if (obj.kind === "obstacle" && collider.intersect(col, obj.collider)) obstacles.push(obj);
+        // melee passes through disguises (survev weaponManager.ts meleeAttack: isSkin)
+        if (obj.kind === "obstacle" && !obj.isSkin && collider.intersect(col, obj.collider)) obstacles.push(obj);
     }
     const hits: MeleeHit[] = [];
     for (const o of obstacles) {

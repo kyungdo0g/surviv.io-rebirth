@@ -16,6 +16,7 @@ import {
     removeAnchoredDecals,
 } from "../world/buildings.ts";
 import type { SimContext } from "../world/context.ts";
+import { disguiseOf } from "../world/disguise.ts";
 import { downPlayer } from "../world/downed.ts";
 import type { Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
@@ -29,6 +30,19 @@ export interface HitRecord {
     gameSourceType: string;
 }
 
+/**
+ * Combat Stimulants: while the shooter's bonus runs, its gun hits on a teammate heal 6 % of the hit and show the heal
+ * effect (survev player.ts:2423-2439).
+ */
+function combatStimsHeal(ctx: SimContext, source: Player, target: Player, params: DamageParams): void {
+    if (source.combatStimsTicker <= 0 || !params.gameSourceType || !hasDef(params.gameSourceType)) return;
+    if (GameObjectDefs[params.gameSourceType].type !== "gun") return;
+    const heal = params.amount * ctx.rules.perks.combatStims.healPercent;
+    if (heal <= 0 || target.dead) return;
+    target.health = Math.min(100, target.health + heal);
+    target.healEffectTicker = 0.5;
+}
+
 export function applyPlayerDamage(ctx: SimContext, target: Player, params: DamageParams): void {
     // Cobalt players in the class menu take no damage (survev damage: perkMode && !role; M7b)
     if (target.dead || target.awaitingClass) return;
@@ -36,9 +50,22 @@ export function applyPlayerDamage(ctx: SimContext, target: Player, params: Damag
     if (target.downed && target.downedDamageTicker > 0) return;
     const source = params.sourceId ? ctx.getPlayer(params.sourceId) : undefined;
     // teammates cannot hurt each other unless the target left; self damage stays (damage-armor.md "Pipeline order" 2)
-    if (source && source !== target && source.teamId === target.teamId && !target.disconnected) return;
+    if (source && source !== target && source.teamId === target.teamId && !target.disconnected) {
+        combatStimsHeal(ctx, source, target, params);
+        return;
+    }
     const headshot = rollHeadshot(params, ctx.rules, ctx.combatRng);
     let damage = computeDamage(params, headshot, target, ctx.rules);
+    // Indomitable Spirit: adrenaline absorbs a fatal hit at 2 per HP, leaving 1 HP (survev player.ts:2493-2510)
+    if (target.health - damage < 0 && target.hasPerk("lifeline")) {
+        const excess = damage - target.health + 1;
+        const rate = ctx.rules.perks.lifeline.conversionRate;
+        if (target.boost / rate >= excess) {
+            target.boost -= excess * rate;
+            damage = target.health - 1;
+            target.lastStandTicker = 1;
+        }
+    }
     // overkill is clamped to the remaining health
     if (target.health - damage < 0) damage = target.health;
     target.damageTaken += damage;
@@ -86,7 +113,7 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
         if (credit !== player && credit.teamId !== player.teamId) {
             credit.kills++;
             // Takedown: health, adrenaline and a speed burst per kill (M7a)
-            onKillCredited(ctx, credit);
+            onKillCredited(ctx, credit, player, params.gameSourceType);
         }
     }
     // Last Breath and Martyrdom (the perk, or the Grenadier / Demo role) (M7a, perks/effects.ts)
@@ -104,13 +131,17 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     }
     // the body slides along the killing hit, before the loot drops (survev player.ts kill addDeadBody) (M9)
     ctx.deadBodies.add(player.pos, player.id, player.layer, params.dir);
+    // an obstacle disguise dies with its wearer, loot and explosion included (survev player.ts kill obstacleOutfit)
+    const disguise = disguiseOf(ctx, player);
+    if (disguise) destroyObstacle(ctx, disguise, params.dir, params);
     dropEverythingOnDeath(ctx, player);
     goreRegionKill(ctx, player);
 }
 
 /** Whether a damage source may hurt a plated obstacle (stone/armour plating needs a piercing melee weapon). */
 export function canDamageObstacle(obstacle: Obstacle, params: DamageParams): boolean {
-    if (obstacle.dead || !obstacle.destructible) return false;
+    // a disguise takes no hits: it dies with its wearer (survev obstacle.ts damage: isSkin)
+    if (obstacle.dead || obstacle.isSkin || !obstacle.destructible) return false;
     if (params.damageType !== DamageType.Player) return true;
     const src = params.gameSourceType && hasDef(params.gameSourceType) ? GameObjectDefs[params.gameSourceType] : null;
     const pierce = (src ?? {}) as { armorPiercing?: boolean; stonePiercing?: boolean };

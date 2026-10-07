@@ -90,6 +90,8 @@ export class MapGenerator {
     private readonly replacements: Readonly<Record<string, string>>;
     private readonly important: ReadonlySet<string>;
     private readonly warned = new Set<string>();
+    /** positions of the obstacles placed so far, by type (minDistanceFromSameType) */
+    private readonly obstaclePositions = new Map<string, Vec2[]>();
 
     constructor(mapName: string, def: MapDef, seed: number, teamMode: 1 | 2 | 4, rng: Rng) {
         this.mapName = mapName;
@@ -235,6 +237,14 @@ export class MapGenerator {
         if (terrain?.beach && !terrain.grass) {
             if (terrainSurfaceAt(this.terrain, pos) === "grass") return false;
         }
+
+        // spacing between obstacles of one type (survev map.ts canSpawn minDistanceFromSameType)
+        const minDist = terrain?.minDistanceFromSameType;
+        if (minDist) {
+            for (const other of this.obstaclePositions.get(type) ?? []) {
+                if (v2.distance(other, pos) <= minDist) return false;
+            }
+        }
         return true;
     }
 
@@ -277,6 +287,11 @@ export class MapGenerator {
     ): GeneratedObject {
         const obj: GeneratedObject = { id: this.nextId++, kind, type, pos: v2.copy(pos), ori, scale, layer, parentId };
         this.objects.push(obj);
+        if (kind === "obstacle") {
+            const list = this.obstaclePositions.get(type);
+            if (list) list.push(obj.pos);
+            else this.obstaclePositions.set(type, [obj.pos]);
+        }
         return obj;
     }
 
@@ -346,10 +361,12 @@ export class MapGenerator {
             if (!partType) continue;
             const partOri = child.inheritOri === false ? child.ori : (child.ori + o) % 4;
             const partPos = math.addAdjust(pos, child.pos, o);
+            // a child may name its own layer (survev map.ts genBuilding: mapObject.layer ?? layer; the Twins bunker's
+            // surface button)
             const part = this.genAuto(
                 partType,
                 partPos,
-                layer,
+                child.layer ?? layer,
                 partOri,
                 child.scale,
                 building.id,

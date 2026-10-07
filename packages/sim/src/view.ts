@@ -344,6 +344,11 @@ export interface ObstacleView extends BaseView {
      * used plays its opening for `button.useDelay` seconds, then dies and its `destroyType` crate appears.
      */
     button?: { onOff: boolean; canUse: boolean; seq: number };
+    /**
+     * An obstacle disguise outfit (`outfit.obstacleType`) worn by this player: drawn over the wearer, following it,
+     * non-collidable (survev isSkin / skinPlayerId).
+     */
+    skinPlayerId?: number;
 }
 
 export interface BuildingView extends BaseView {

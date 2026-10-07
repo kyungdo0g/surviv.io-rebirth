@@ -345,7 +345,11 @@ describe("air drop tier tables", () => {
         for (const name of goldMaps) {
             const def = getMapDef(name);
             // every gold shell the map drops opens into a crate_11 variant that rolls tier_airdrop_rare
-            const golds = def.gameConfig.planes.crates.filter((c) => !Object.hasOwn(AIRDROP_TIER_SPLITS, c.name));
+            // desert's crimson air drop (airdrop_crate_05 -> crate_17, tier_airdrop_crimson; survev content wave stage 3)
+            // is a special crate of its own, neither split nor gold
+            const golds = def.gameConfig.planes.crates.filter(
+                (c) => !Object.hasOwn(AIRDROP_TIER_SPLITS, c.name) && c.name !== "airdrop_crate_05",
+            );
             expect(golds.length, name).toBeGreaterThan(0);
             for (const c of golds) {
                 const inner = getMapObjectDefOfType("obstacle", mapObjects[c.name].destroyType);

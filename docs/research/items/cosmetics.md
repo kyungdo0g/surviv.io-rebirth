@@ -48,6 +48,7 @@
 - Faction tints: in 50v50 every non-ghillie player wears a team arm patch (`player-patch-01.img` / `-02.img`) tinted with `teamColors` red 0xcc0000 / blue 0x007eff, and helmets use their `baseTintRed` / `baseTintBlue`; the fork's Potato vs Tomato mode uses `-01po` / `-02po` patches left untinted (0xffffff) [src:survev/client/src/objects/player.ts:1493-1517] [src:survev/client/src/objects/player.ts:1603-1611] [src:derived/survev@9f64948d:src/gameConfig.ts:167] [H]
 - Fork restriction: outfits with a `teamId` (red 1 / blue 2) cannot be picked up or worn by the other faction in 50v50 (commit 4648cc17, 2026-04-10); the original outfit defs have no `teamId` (fork) [src:survev/server/src/game/objects/player.ts:743-748] [src:survev/server/src/game/objects/player.ts:3898-3903] [src:derived/survev-git-4648cc17] [src:derived/survev@9f64948d:src/defs/outfitDefs.js:1-1060] [H]
 - Obstacle disguises: wearing one spawns a non-collidable copy of the obstacle (scale `baseScale`) that follows the player, shows the player's health as damage, and is destroyed on death; the wearer's own bullets pass through it [src:survev/server/src/game/objects/player.ts:743-756] [src:survev/server/src/game/map.ts:1930-1951] [src:survev/server/src/game/objects/obstacle.ts:170-171] [src:survev/server/src/game/objects/player.ts:647-662] [src:survev/server/src/game/objects/player.ts:2909-2911] [src:survev/server/src/game/weaponManager.ts:945] [H]
+- Disguise details: no bullet, melee or explosion damages it (`damage` returns for `isSkin`; melee skips it), it dies through the ordinary obstacle `kill`, so its loot drops and its explosion goes off (a Barrel Costume wearer's barrel blows up, an Airdrop Costume drops airdrop loot); it is drawn over its wearer (zOrd at least 21, the wearer's zIdx + 262144) and smokes below 30 % health; the original full obstacle record carries `isSkin` + `skinPlayerId` (u16) [src:survev/server/src/game/objects/obstacle.ts:458-459] [src:survev/server/src/game/objects/obstacle.ts:503-660] [src:survev/server/src/game/weaponManager.ts:1064] [src:survev/client/src/objects/obstacle.ts:469-500] [src:survev/shared/net/objectSerializeFns.ts:368-369] [src:derived/survev@8715a605:client/js/app.js:43299-43349] [H]
 - Halloween map `tier_outfits` (survev): the 19 Halloween disguises (Barrel, Wood Barrel, Stone, Tree, Stump, Bush, Leaf Pile, Crate, Table, Soviet, Oven, Fridge, Vending, Pumpkin, Woodpile, Toilet, River Bush, Crab Pot, Stump Axe) at weight 1 each; the original changelog adds "halloween map skins" in 0.6.4 and 0.8.7 [src:survev/shared/defs/maps/halloweenDefs.ts:179-199] [src:changelog/0.6.4] [src:changelog/0.8.7] [H]
 - Role outfits block outfit pickups while the role is held (`noDropOutfit`, e.g. Commander) [src:survev/server/src/game/objects/player.ts:3904-3911] [src:survev/shared/defs/gameObjects/roleDefs.ts:154] [H]
 
@@ -93,6 +94,13 @@
 | `boost_gearshift` | Gearshift | 4 | fork (Pass 2) | [src:survev/shared/defs/gameObjects/healEffectDefs.ts:115] [H] |
 
 - The equipped particles are also used by Mass Medicate's area heal (fandom) [src:fandom/Mass_Medicate] [M]
+
+## In the game (survev content wave, stage 4)
+
+- The port takes survev's 21 survev-only outfits (20 fork + Fragtastic), 25 survev-only emotes and 7 heal / boost effects as survev has them (`tools/port-survev/policy.json`); survev's world loot of them returns with them: `tier_fragtastic`, `tier_egg_outfits` (Barkskin spring), `tier_coconut_outfit`, snow and woods-snow `tier_outfits` (Snowed Over 0.15, Black Ice 0.2), beach `tier_outfits` / `tier_pirate_outfits` / `tier_airdrop_outfits` and the Reserve's gold toilet (Capital Gains) [src:survev/shared/defs/maps/baseDefs.ts:195-202] [src:survev/shared/defs/maps/snowDefs.ts:1] [src:survev/shared/defs/maps/beachDefs.ts:1] [H]
+- survev's `outfitHalloweenTree` is the original `outfitTree` renamed: the port keeps the original id and renames survev's Halloween loot entry back (`lib/maps.ts ITEM_RENAMES`) [src:derived/survev@9f64948d:src/defs/outfitDefs.js:914-922] [src:survev/shared/defs/maps/halloweenDefs.ts:179-199] [H]
+- The Classless role wears `outfitClassless` (noDrop) [src:survev/shared/defs/gameObjects/roleDefs.ts:557-571] [H]
+- Quests and passes stay out (survev meta content) [src:derived/readme-precedence] [H]
 
 ## Death effects
 

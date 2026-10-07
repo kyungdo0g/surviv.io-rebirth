@@ -63,24 +63,25 @@ describe("the strobe (survev master, survev.wiki.gg)", () => {
             3,
             1.5,
         ]);
-        // Bag 2, Pack01-03 3 / 4 / 5 (the wiki's Pack04 6 is survev's level 4 pack, not in v0.8.82)
-        expect(GameConfig.bagSizes.strobe).toEqual([2, 3, 4, 5]);
+        // Bag 2, Pack01-03 3 / 4 / 5, Pack04 6 (survev's level 4 pack: survev content wave stage 2's five-level bags)
+        expect(GameConfig.bagSizes.strobe).toEqual([2, 3, 4, 5, 6]);
         // Pin strobe_click_01 (the explosion sounds are the client's "strobe" effect)
         expect(s.sound.pullPin).toBe("strobe_click_01");
         expect([s.lootImg.sprite, s.worldImg.sprite]).toEqual(["loot-throwable-strobe.img", "proj-strobe-armed.img"]);
     });
 
     it("takes survev's 3 s strike delay over the original client's 2.5 (conflicts.md strobe-strike-delay)", () => {
-        expect(gameObjects.strobe.strikeDelay).toBe(2.5);
+        // survev balance (survev content wave stage 5) already ports survev's 3 s into the generated def
+        expect(gameObjects.strobe.strikeDelay).toBe(3);
         expect(STROBE_STRIKE_DELAY).toBe(3);
         expect(getDefOfType("throwable", "strobe").strikeDelay).toBe(3);
         expect(rebirthDeviations.find((d) => d.id === "strobe")).toMatchObject({
             field: "strikeDelay",
-            original: 2.5,
+            original: gameObjects.strobe.strikeDelay,
             rebirth: 3,
         });
         // nothing else of the strobe changes
-        expect({ ...GameObjectDefs.strobe, strikeDelay: 2.5 }).toEqual(gameObjects.strobe);
+        expect({ ...GameObjectDefs.strobe, strikeDelay: gameObjects.strobe.strikeDelay }).toEqual(gameObjects.strobe);
     });
 
     it("calls 3 normal strikes, 5 with Broken Arrow, 5 u apart (survev weaponManager.ts:1337-1362)", () => {

@@ -31,6 +31,11 @@ export interface BackpackDef extends BaseLootDef {
     level: number;
     playerRad: number;
     tint: number;
+    /** loot perks it holds (survev Experimental Pack 2; default 1) */
+    maxPerks?: number;
+    /** survev: the pickup shows `desc` (Experimental Pack) */
+    hasDesc?: boolean;
+    desc?: string;
 }
 
 export interface HelmetDef extends BaseLootDef {

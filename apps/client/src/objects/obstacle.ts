@@ -4,7 +4,8 @@
 // effects follow survev client/src/objects/obstacle.ts. M5: doors animate towards their new position/orientation and
 // play their sounds (door.ts); the casing stays at the closed door. M9: an explosive obstacle (barrel) below half health
 // smokes (survev obstacle.ts smoke_barrel emitter, drifting up-right) until it blows up. Rebirth: an air drop tier
-// inner crate carries its tier's star marking (crateTierMark.ts).
+// inner crate carries its tier's star marking (crateTierMark.ts). An obstacle disguise (`skinPlayerId`) is drawn over its
+// wearer, at the wearer's interpolated position (world.ts), and smokes below 30 % health.
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
 import type { ObstacleView } from "@rebirth/sim";
@@ -24,6 +25,14 @@ const TALL_Z_ORD = 50;
 /** survev obstacle.ts: explosive obstacles smoke below half health */
 const SMOKE_HEALTH = 0.5;
 const SMOKE_DIR = { x: Math.SQRT1_2, y: Math.SQRT1_2 };
+/** survev obstacle.ts: a disguise smokes below 30 % of its wearer's health */
+const SKIN_SMOKE_HEALTH = 0.3;
+/** survev obstacle.ts: a disguise draws at least at this zOrd, over its wearer (players draw at 18) */
+const SKIN_MIN_Z_ORD = 21;
+/** player zOrd (objects/player.ts), +100 on stairs seen from the same level (survev player.ts updateRenderLayer) */
+const PLAYER_Z_ORD = 18;
+/** a disguise's zIdx is its wearer's id plus this: above every player at the same zOrd (survev renderZIdx + 262144) */
+const SKIN_Z_IDX = 1 << 20;
 
 export class ObstacleRender implements ObjectRender<ObstacleView> {
     readonly id: number;
@@ -97,7 +106,8 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
     private updateSmoke(view: ObstacleView): void {
         const particles = this.deps.particles;
         if (!particles || !this.def.explosion) return;
-        if (!this.smoke?.active && view.healthT < SMOKE_HEALTH && !view.dead) {
+        const limit = view.skinPlayerId === undefined ? SMOKE_HEALTH : SKIN_SMOKE_HEALTH;
+        if (!this.smoke?.active && view.healthT < limit && !view.dead) {
             this.smoke = particles.addEmitter("smoke_barrel", { pos: view.pos, dir: SMOKE_DIR, layer: view.layer });
         }
         if (this.smoke && view.dead) {
@@ -106,7 +116,7 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
         }
         if (this.smoke) {
             this.smoke.pos = { x: view.pos.x, y: view.pos.y };
-            this.smoke.enabled = view.healthT < SMOKE_HEALTH;
+            this.smoke.enabled = view.healthT < limit;
         }
     }
 
@@ -142,12 +152,22 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
 
         let zOrd = view.dead ? DEAD_Z_ORD : this.zOrd;
         let layer = view.layer;
+        let zIdx = this.zIdx;
         if (!view.dead && zOrd >= TALL_Z_ORD && view.layer === 0 && ctx.localLayer === 0) {
             zOrd += 100;
             layer |= 2;
         }
+        if (!view.dead && view.skinPlayerId !== undefined) {
+            // over the wearer; on stairs with the wearer (survev obstacle.ts updateRender: isSkin)
+            zOrd = Math.max(zOrd, SKIN_MIN_Z_ORD);
+            if (view.layer & 2) {
+                layer = view.layer;
+                zOrd = PLAYER_Z_ORD + ((view.layer & 1) === (ctx.localLayer & 1) ? 100 : 0);
+            }
+            zIdx = view.skinPlayerId + SKIN_Z_IDX;
+        }
         const renderer = this.deps.renderer;
-        renderer.add(this.sprite, layer, zOrd, this.zIdx);
+        renderer.add(this.sprite, layer, zOrd, zIdx);
 
         const casingImg = this.def.door?.casingImg;
         if (this.casing && casingImg) {
@@ -156,17 +176,9 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
             this.casing.scale.set(view.scale * casingImg.scale);
             this.casing.rotation = -rot;
             this.casing.visible = !view.dead;
-            renderer.add(this.casing, layer, zOrd + 1, this.zIdx);
+            renderer.add(this.casing, layer, zOrd + 1, zIdx);
         }
-        this.mark?.update(
-            pos,
-            rot - this.imgRot,
-            view.scale,
-            this.sprite.visible && !view.dead,
-            layer,
-            zOrd,
-            this.zIdx,
-        );
+        this.mark?.update(pos, rot - this.imgRot, view.scale, this.sprite.visible && !view.dead, layer, zOrd, zIdx);
     }
 
     /** the obstacle (door panel) sprite, a door's slot casing and a tier crate's stars, as drawn (tests) */

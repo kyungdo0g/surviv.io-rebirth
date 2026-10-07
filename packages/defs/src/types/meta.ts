@@ -1,6 +1,7 @@
 // Perks, roles, outfits, the loosely typed cosmetic/meta kinds, and the GameObjectDef union.
 import type { BaseLoadoutItem, BaseLootDef, MapIndicatorDef } from "./common.ts";
 import type { AmmoDef, BackpackDef, BoostDef, ChestDef, HealDef, HelmetDef, ScopeDef } from "./gear.ts";
+import type { RoleDefaultItems, Weighted } from "./mapDef.ts";
 import type { BulletDef, ExplosionDef, GunDef, MeleeDef, ThrowableDef } from "./weapons.ts";
 
 export interface PerkDef extends BaseLootDef {
@@ -14,8 +15,10 @@ export interface RoleDef {
     killFeed?: { assign?: boolean; dead?: boolean; color?: string };
     sound: { assign?: string; dead?: string };
     mapIcon?: { alive: string; dead: string };
-    /** perk ids granted with the role */
-    perks?: string[];
+    /** perks granted with the role; survev's Lone Survivr rolls two of them (`{ $weighted: [{ type, weight }] }`) */
+    perks?: Array<string | Weighted<{ type: string }>>;
+    /** the role kit (survev defaultItems; survev balance, tools/port-survev SURVEV_GAMEPLAY_FIELDS) */
+    defaultItems?: RoleDefaultItems;
     mapIndicator?: MapIndicatorDef;
     visorImg?: { baseSprite: string; spriteScale: number };
     guiImg?: string;
@@ -26,6 +29,8 @@ export interface OutfitDef extends BaseLootDef, BaseLoadoutItem {
     type: "outfit";
     name: string;
     baseType: string;
+    /** 50v50: only this faction may wear it (1 Red, 2 Blue; survev balance, survev outfitDefs.ts) */
+    teamId?: number;
     skinImg: {
         baseTint: number;
         baseSprite: string;

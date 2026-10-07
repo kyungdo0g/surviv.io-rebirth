@@ -126,9 +126,11 @@ describe("Cobalt class pods", () => {
                 expect(def.loot.some((l) => l.type === melee[cls])).toBe(true);
             }
         }
-        // the mythic pod is the same for everyone: Master Scavenger, Explosive or Splinter Rounds
+        // the mythic pod is the same for everyone: Master Scavenger, Explosive or Splinter Rounds, or survev's
+        // Indomitable Spirit (survev content wave stage 2)
         expect(tables.tier_class_crate_mythic.map((e) => e.name).sort()).toEqual([
             "explosive",
+            "lifeline",
             "scavenger_adv",
             "splinter",
         ]);

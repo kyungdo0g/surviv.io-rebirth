@@ -144,7 +144,9 @@ export class ModeUi {
     /** Ping sound of a player: Commanders and Lone Survivrs use the ping's leader sound (survev emote.ts addPing). */
     pingSound(playerId: number, def: { sound?: string; soundLeader?: string }): string | undefined {
         const role = this.roleOf(playerId);
-        return (role === "leader" || role === "last_man") && def.soundLeader ? def.soundLeader : def.sound;
+        // survev's Captain too (survev client emote.ts:633-640)
+        const leads = role === "leader" || role === "captain" || role === "last_man";
+        return leads && def.soundLeader ? def.soundLeader : def.sound;
     }
 
     /** The followed player's faction outside its group, for the minimap (faction maps only). */

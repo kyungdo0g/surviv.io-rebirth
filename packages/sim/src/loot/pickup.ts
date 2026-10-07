@@ -2,12 +2,13 @@
 // droppable loot perk, swapped on a second pickup; Trick or Treat rolls its perk) and gear granting a perk or a role.
 // Behaviour follows survev server/src/game/objects/player.ts (getClosestLoot, getFreeGunSlot, pickupLoot).
 import { v2 } from "@rebirth/core";
-import { GameConfig, getDef, hasDef, WeaponSlot } from "@rebirth/defs";
+import { GameConfig, getDef, getMapDef, hasDef, WeaponSlot } from "@rebirth/defs";
 import { gearLevel, gearQuality, isBagItem } from "../items/inventory.ts";
 import { addPerk, removePerk } from "../perks/perks.ts";
 import { setHelmet } from "../roles/roles.ts";
 import { gunDef } from "../weapons/weaponManager.ts";
 import type { SimContext } from "../world/context.ts";
+import { setOutfit } from "../world/disguise.ts";
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
 import { dropGun, dropMelee, playerDropLoot, rollLootTier } from "./drops.ts";
@@ -22,6 +23,13 @@ export type PickupResult =
     | "betterItemEquipped"
     | "gunCannotFire"
     | "busy";
+
+/** Whether `player` may wear `outfit`: in 50v50 an outfit with a faction (`teamId`) fits that faction only. */
+export function wearableOutfit(ctx: SimContext, player: Player, outfit: string): boolean {
+    const teamId = (getDef(outfit) as { teamId?: number }).teamId;
+    if (!teamId || !getMapDef(ctx.options.mapName).gameMode.factionMode) return true;
+    return player.teamId === teamId;
+}
 
 /** Seconds between pickups, longer after taking a gun (survev pickupTicker). */
 const PICKUP_COOLDOWN = 0.1;
@@ -192,6 +200,11 @@ export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupR
         }
         case "outfit":
             amountLeft = 1;
+            // 50v50: the other faction's outfits cannot be worn (survev player.ts:3898-3903, outfit `teamId`)
+            if (!wearableOutfit(ctx, player, loot.type)) {
+                result = "betterItemEquipped";
+                break;
+            }
             // the Commander keeps its outfit (survev noDropOutfit; conflicts.md role-commander-outfit-block)
             if (player.noDropOutfit) {
                 result = "betterItemEquipped";
@@ -202,7 +215,7 @@ export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupR
                 break;
             }
             lootToAdd = player.outfit;
-            player.outfit = loot.type;
+            setOutfit(ctx, player, loot.type);
             break;
         case "perk": {
             const taken = pickupPerk(ctx, player, loot.type);
@@ -234,15 +247,18 @@ export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupR
 /**
  * Takes a perk (survev pickupLoot "perk"): Trick or Treat? rolls tier_halloween_mystery_perks and gives that perk
  * (not droppable; halloween_mystery drops in its place on death). A held perk is refused; a held loot perk is swapped
- * (it drops); without one, a player already holding `rules.perks.lootPerkCap` perks is refused. Perks with
+ * (it drops) once the backpack's loot perk slots (`maxPerks`, default 1) are full; without one, a player already holding `rules.perks.lootPerkCap` perks is refused. Perks with
  * `emoteOnPickup` emote (conflicts.md perk-perky-shoot-emote). Returns the result and the perk to put back down.
  */
 function pickupPerk(ctx: SimContext, player: Player, type: string): { result: PickupResult; dropped: string } {
     const mystery = type === "halloween_mystery";
     const perk = mystery ? rollLootTier(ctx, "tier_halloween_mystery_perks") || type : type;
     if (player.hasPerk(perk)) return { result: "alreadyEquipped", dropped: type };
-    const slot = player.perkSources.find((s) => s.droppable || s.replaceOnDeath === "halloween_mystery");
-    if (!slot && player.perks.length >= ctx.rules.perks.lootPerkCap) return { result: "full", dropped: type };
+    const slots = player.perkSources.filter((s) => s.droppable || s.replaceOnDeath === "halloween_mystery");
+    if (!slots.length && player.perks.length >= ctx.rules.perks.lootPerkCap) return { result: "full", dropped: type };
+    // survev's Experimental Pack holds two loot perks (backpack maxPerks, survev player.ts:3954-3975)
+    const pack = player.backpack && hasDef(player.backpack) ? (getDef(player.backpack) as { maxPerks?: number }) : {};
+    const slot = slots.length >= (pack.maxPerks ?? 1) ? slots[0] : undefined;
     let dropped = "";
     if (slot) {
         // a rolled trick-or-treat perk is simply replaced; a loot perk drops

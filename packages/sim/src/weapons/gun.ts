@@ -116,8 +116,11 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     const mouseDistance = clipDistance ? Math.max(player.input.toMouseLen - gunLen, 0) : undefined;
     // bullets of this shot, collected only for a host's observer (anti-cheat telemetry, M8)
     const fired: Bullet[] | null = ctx.observer?.onShotFired ? [] : null;
+    const bonus45 = ctx.rules.perks.bonus45;
     for (let i = 0; i < def.bulletCount; i++) {
-        const deviation = firstShotAccuracy ? 0 : rng.range(-0.5, 0.5) * spread;
+        // .45 in the Chamber: an empowered round flies straight, x1.25 damage, x1.2 speed (survev weaponManager.ts:875-885)
+        const empowered = perks.bonus45 && rng.next() < bonus45.empoweredChance;
+        const deviation = firstShotAccuracy || empowered ? 0 : rng.range(-0.5, 0.5) * spread;
         const shotDir = v2.rotate(dir, math.deg2rad(deviation));
         let start = v2.add(gunPos, v2.mul(dir, gunLen));
         if (i > 0) {
@@ -144,11 +147,12 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
             shotFx: i === 0,
             offHand,
             onHitFx,
-            damageMult: perks.damageMult,
-            speedMult: perks.speedMult,
+            damageMult: perks.damageMult * (empowered ? bonus45.empoweredDamageMult : 1),
+            speedMult: perks.speedMult * (empowered ? bonus45.empoweredSpeedMult : 1),
             distanceMult: perks.distanceMult,
             saturated: perks.saturated,
             thick: perks.thick,
+            apRounds: perks.apRounds,
             clipDistance,
             distance: mouseDistance,
         };

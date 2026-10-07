@@ -50,6 +50,14 @@ export function loadLive(root: string): LiveDefs {
 
 const FACTION_TEAMS = { red: 1, blue: 2 } as const;
 
+function tryCall(f: () => unknown): unknown {
+    try {
+        return f();
+    } catch {
+        return undefined;
+    }
+}
+
 /**
  * Converts survev runtime values to JSON. Team-dependent closures `(teamcolor) => x` become
  * `{ "$byTeam": { red, blue } }`; `util.weightedRandom([...])` calls (patched before import) become
@@ -63,6 +71,14 @@ export function toJson(v: unknown, path: string, notes: string[]): any {
                 out[name] = toJson(v(team), `${path}.${name}`, notes);
             notes.push(`${path}: team-dependent function converted to $byTeam`);
             return { $byTeam: out };
+        }
+        if (v.length === 0) {
+            // `() => util.weightedRandom([...]).type` (role perks): the patched weightedRandom records the choices
+            const r = tryCall(v as () => unknown);
+            if (isPlainObject(r) && "$weighted" in r) {
+                notes.push(`${path}: weighted-random function converted to $weighted`);
+                return toJson(r, path, notes);
+            }
         }
         notes.push(`${path}: function kept as $fn source`);
         return { $fn: v.toString().replace(/\s+/g, " ") };
@@ -109,7 +125,12 @@ export async function loadSurvev(root: string, notes: string[]): Promise<SurvevD
     // Some survev map defs call util.weightedRandom at import time; record the choices instead of rolling dice
     // so the output is deterministic and keeps the full distribution.
     const { util } = await load("utils/util.ts");
-    util.weightedRandom = (items: unknown[]) => ({ $weighted: structuredClone(items) });
+    // `.type` of a call (role perks pick `util.weightedRandom([...]).type`) records the same choices
+    util.weightedRandom = (items: unknown[]) => {
+        const out = { $weighted: structuredClone(items) };
+        Object.defineProperty(out, "type", { get: () => ({ $weighted: structuredClone(items) }), enumerable: false });
+        return out;
+    };
 
     const gameObjects = (await load("defs/gameObjectDefs.ts")).RawGameObjectDefs;
     const mapObjects = (await load("defs/mapObjectDefs.ts")).RawMapObjectDefs;

@@ -40,11 +40,20 @@ this order (0 is the empty type), so every original def keeps the index its posi
 
 0. **`policy.json`** (checked in, echoed into `provenance.policy`) lists the survev-only content the port takes as
    survev has it: `survevOnlyGameObjects` (today the survev-only guns, their bullets, `bullet_invis` and the PMG-134's
-   `potato_lmgshot` with its explosion), `survevSkins` (skin id -> original base: the base's original def plus every
-   field survev's skin changes against survev's base, so `svd_winter`, `sv98_winter` and `awc_winter` keep their
-   base's stats with survev's winter world image) and `survevGameConfig` (GameConfig paths from survev, arrays cut to
-   the original's length: `bagSizes.50AE` 50 / 100 / 150 / 200). Unknown keys are errors; a listed id that is
+   `potato_lmgshot` with its explosion; the melee `iceaxe`, `cutlass`, `cutlass_gold`, the throwables `coconut` and
+   `tomato` with their explosions, and the Gold Cutlass's `pirate` perk), `survevSkins` (skin id -> original base: the
+   base's original def plus every field survev's skin changes against survev's base, so `svd_winter`, `sv98_winter`
+   and `awc_winter` keep their base's stats with survev's winter world image; `naginata_daemon` and
+   `karambit_borealis` likewise) and `survevGameConfig` (GameConfig paths from survev, arrays cut to
+   the original's length; a whole table keeps the original's keys first: today `bagSizes`, survev's five levels). Unknown keys are errors; a listed id that is
    original or not in survev is an error.
+   `survevMapGen` (survev content wave stage 3): map generation as survev has it, so the balance revert skips every
+   `mapSpawns` entry and the map-level `other` entries (cache variants, Cobalt's unlock timing, Potato vs Tomato's
+   air drop weights), `revertForkReskins` is off and the event-map fixes apply only their loot parts; original map
+   objects also take survev's map-generation fields `teamId` and `terrain` (50v50 sides, the faction crates' spacing;
+   logged in `provenance.survevMapGenFields`).
+   `survevMapObjects`: original map object ids whose survev def replaces the original whole (status
+   `survev-override`; `category` renamed back and unported loot dropped as for survev-only objects).
 1. **Game objects** are the original client defs, unchanged, then the policy's survev-only ids in survev order
    (`provenance.gameObjects`: `"original"` or `"survev-only"`). Other survev-only ids are left out
    (`provenance.excluded.gameObjects`). survev fields the original lacks are not merged into original defs.
@@ -82,7 +91,7 @@ this order (0 is the empty type), so every original def keeps the index its posi
    rebuilt (Savannah's pre-fork reconstruction) get survev's entries of the ported items back unless the map's loot
    bans forbid them (`provenance.survevPlacements`).
 5. **Loot tables**: entries whose item is not in the final game objects (survev-only items the policy does not take,
-   such as the iceaxe, cutlass or coconut) are removed, and so are `xp_*` drops (accounts are out of scope). A table left empty gets a single no-drop
+   such as `ap_rounds` or the survev outfits) are removed, and so are `xp_*` drops (accounts are out of scope). A table left empty gets a single no-drop
    entry `{ name: "", count: 1, weight: 1 }`. survev's `tier_barn_melee` is renamed to the original
    `tier_sledgehammer`, which the original barn basement's `loot_tier_sledgehammer` drops. Every change is logged
    in `provenance.lootRemovals` / `provenance.fixups`.
@@ -90,7 +99,9 @@ this order (0 is the empty type), so every original def keeps the index its posi
    present in both, and arrays are replaced whole, so `bagSizes` keeps the original four backpack levels. TypeScript
    enum reverse mappings are dropped. survev's gas stage table (a private const in
    `server/src/game/objects/gas.ts`) is added as `gas.stages`. The policy's `survevGameConfig` paths take survev's
-   value instead. `bagSizes` and `player.defaultItems.inventory` keys for items that don't exist are pruned.
+   value instead. `bagSizes` and `player.defaultItems.inventory` keys for items that don't exist are pruned, and
+   survev-only bag rows are cut to the level count of the original's rows (no-op since the policy takes survev's
+   whole five-level `bagSizes`).
    `provenance.gameConfigDiffs` lists every key that differs, exists on one side only, was pruned or was taken from
    survev by the policy.
 

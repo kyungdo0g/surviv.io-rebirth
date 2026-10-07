@@ -132,7 +132,8 @@ export class EmoteSystem {
             groupId: player.groupId,
             teamId: player.teamId,
             teamOnly,
-            teamPing: event.isPing && player.role === "leader",
+            // survev's Captain pings the whole team like the Commander (survev server client.ts:607-615)
+            teamPing: event.isPing && (player.role === "leader" || player.role === "captain"),
         });
     }
 

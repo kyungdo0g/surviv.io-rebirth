@@ -287,6 +287,25 @@ export function dropEverythingOnDeath(ctx: SimContext, player: Player): void {
     wm.showNextThrowable();
 }
 
+/**
+ * Pirate's Bounty: a melee kill by a holder drops minCount-maxCount rolls of the pirate tier at the victim, plus a
+ * rareChance roll of the rare tier, each pushed 7.5-11 in a random direction (survev player.ts:2727-2765).
+ */
+export function dropPirateBounty(ctx: SimContext, victim: Player): void {
+    const rules = ctx.rules.perks.pirate;
+    const drop = (tier: string): void => {
+        const item = rollTier(lootTables(ctx), tier, ctx.lootRng, warnUnknownTier);
+        if (!item) return;
+        ctx.loot.addLoot(item.name, victim.pos, victim.layer, item.count, {
+            pushSpeed: ctx.lootRng.range(7.5, 11),
+            dir: v2.randomUnit(ctx.lootRng),
+        });
+    };
+    const count = ctx.lootRng.int(rules.minCount, rules.maxCount);
+    for (let i = 0; i < count; i++) drop(rules.tier);
+    if (ctx.lootRng.next() < rules.rareChance) drop(rules.rareTier);
+}
+
 /** One roll of a loot tier of the game's map: the item id, or "" for nothing (Trick or Treat?'s perk roll, M7a). */
 export function rollLootTier(ctx: SimContext, tier: string): string {
     return rollTier(lootTables(ctx), tier, ctx.roleRng, warnUnknownTier)?.name ?? "";

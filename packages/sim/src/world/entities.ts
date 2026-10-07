@@ -120,8 +120,13 @@ export class Obstacle {
     destroyTypeOverride = "";
     /** set by the world to keep the broadphase in sync when the collider shrinks or moves */
     onBoundsChanged?: (obstacle: Obstacle) => void;
+    /**
+     * Disguise of the player `skinPlayerId` (an outfit's `obstacleType`, world/disguise.ts): follows the wearer, shows
+     * their health, never collides and takes no damage (survev obstacle.ts isSkin); 0 for map obstacles.
+     */
+    readonly skinPlayerId: number;
 
-    constructor(spawn: GeneratedObject) {
+    constructor(spawn: GeneratedObject, skinPlayerId = 0) {
         this.id = spawn.id;
         this.type = spawn.type;
         this.def = defOf(spawn.type, "obstacle");
@@ -138,7 +143,8 @@ export class Obstacle {
         this.minScale = spawn.scale * this.def.scale.destroy;
         this.maxHealth = this.def.health;
         this.health = this.def.health;
-        this.collidable = this.def.collidable;
+        this.skinPlayerId = skinPlayerId;
+        this.collidable = this.def.collidable && !this.isSkin;
         this.destructible = this.def.destructible;
         this.isWall = !!this.def.isWall;
         this.isTree = !!this.def.isTree;
@@ -233,6 +239,10 @@ export class Obstacle {
         this.refreshShape();
     }
 
+    get isSkin(): boolean {
+        return this.skinPlayerId !== 0;
+    }
+
     /** Whether this obstacle currently blocks movement (open doors still block where their panel is). */
     get blocking(): boolean {
         return this.collidable && !this.dead;
@@ -258,6 +268,7 @@ export class Obstacle {
         const door = this.door;
         if (door) view.door = { open: door.open, locked: door.locked, canUse: door.canUse, seq: door.seq };
         if (this.button) view.button = { ...this.button };
+        if (this.isSkin) view.skinPlayerId = this.skinPlayerId;
         return view;
     }
 }

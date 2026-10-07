@@ -260,8 +260,9 @@ describe("Lone Survivr and succession", () => {
         expect(red.every((r) => r.role === "")).toBe(true);
     });
 
-    it("rules.roles.commanderSuccession: the Lieutenant takes over a dead Commander, keeping its guns (fork Captain)", () => {
+    it("rules.roles.commanderSuccession: the Lieutenant becomes Captain of a dead Commander's team, keeping its guns", () => {
         const game = factionGame();
+        game.rules.roles.commanderSuccession = false;
         const players = add(game, 8);
         game.step();
         const red = players.filter((p) => p.teamId === 1);
@@ -272,9 +273,9 @@ describe("Lone Survivr and succession", () => {
         finish(game, red[0], blue[0]);
         expect(red[0].dead).toBe(true);
         expect(red[1].role).toBe("lieutenant");
-        game.rules.roles.commanderSuccession = true;
+        // on by default (survev's Captain, survev content wave)
         const g2 = factionGame();
-        g2.rules.roles.commanderSuccession = true;
+        expect(g2.rules.roles.commanderSuccession).toBe(true);
         const p2 = add(g2, 8);
         g2.step();
         const r2 = p2.filter((p) => p.teamId === 1);
@@ -283,9 +284,16 @@ describe("Lone Survivr and succession", () => {
         g2.roles.promote(r2[1], "lieutenant");
         finish(g2, r2[0], b2[0]);
         expect(r2[0].dead).toBe(true);
-        expect(r2[1].role).toBe("leader");
+        expect(r2[1].role).toBe("captain");
         expect(r2[1].weaponManager.weapons[1].type).toBe(gun);
-        expect(r2[1].perks).toEqual(["leadership"]);
+        // survev roleDefs.ts:162-193: Assume Leadership and Firepower (kept from the Lieutenant), the captain kit
+        expect(r2[1].perks).toEqual(["firepower", "assume_leadership"]);
+        expect(r2[1].helmet).toBe("helmet04_captain");
+        expect(r2[1].inv.get("8xscope")).toBe(1);
+        expect(r2[1].inv.get("healthkit")).toBeGreaterThanOrEqual(1);
+        g2.step();
+        expect(r2[1].boost).toBeGreaterThanOrEqual(50);
+        expect(r2[1].scale).toBeCloseTo(1.15, 9);
     });
 });
 

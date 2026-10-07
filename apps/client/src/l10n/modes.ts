@@ -82,6 +82,14 @@ export const koPerkNames: Readonly<Record<string, string>> = {
     treat_762: "블루베리 태피",
     treat_super: "풀사이즈 오카미 바",
     turkey_shoot: "퍼키 슛",
+    // survev-only (l10n-ko.md: survev's ko.json where it has one, else the glossary's proposal)
+    pirate: "해적의 현상금",
+    assume_leadership: "권한대행",
+    ap_rounds: "관통탄",
+    lifeline: "불굴의 의지",
+    combat_stims: "전투 각성제",
+    amped_explosives: "초파편화",
+    high_velocity: "고속탄",
 };
 
 /** Korean perk descriptions ("game-<perk>-desc"; Fabricate, Flak Jacket, Hollow-points and .45 keep the 0.8.82 text). */
@@ -127,12 +135,22 @@ export const koPerkDesc: Readonly<Record<string, string>> = {
     treat_762: "보상입니다! 7.62mm 탄환이 더 어둡고 치명적으로 변합니다.",
     treat_super: "슈퍼 보상입니다! 모든 탄환이 더 어둡고 치명적으로 변합니다.",
     turkey_shoot: "고르륵, 고르륵!",
+    pirate: "칼로 상대를 제압할 시 추가 아이템이 나옵니다. 적은 확률로 상급 아이템이 나올 수 있습니다.",
+    assume_leadership: "아드레날린 항상 50%.</br>약간 커진 크기.",
+    ap_rounds: "갑옷을 입은 적과 장애물에게 총알이 더 효과적.",
+    lifeline: "아드레날린이 천천히 줄어듭니다. 치명상을 입으면 아드레날린을 소모해 버팁니다.",
+    combat_stims: "소모품을 쓰면 잠시 총알 피해가 늘고, 아군을 맞히면 회복시킵니다.",
+    amped_explosives: "투척물이 더 멀리, 더 빠르게 날아갑니다. 파편 폭발물의 파편이 더 강해집니다.",
+    high_velocity: "모든 총알이 매우 빨라지고 멀리 나갑니다.",
 };
 
 /** Korean role names ("game-<role>"). */
 export const koRoleNames: Readonly<Record<string, string>> = {
     leader: "지휘관",
     lieutenant: "부관",
+    // survev-only roles (survev ko.json "대장"; classless proposed)
+    captain: "대장",
+    classless: "무소속",
     medic: "위생병",
     marksman: "명사수",
     recon: "정찰병",

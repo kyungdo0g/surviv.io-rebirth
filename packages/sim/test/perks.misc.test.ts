@@ -26,16 +26,16 @@ function watchEmotes(game: Game): Array<{ id: number; type: string }> {
 }
 
 describe("Gift of the Woods", () => {
-    it("heals at the tier-1 adrenaline rate (0.5 HP/s with survev's table), never while downed (gotw-values)", () => {
+    it("heals 1 HP/s (survev gotw.healthRegen; gotw-values), or the tier-1 adrenaline rate with null", () => {
         const { game, p } = setup();
         addPerk(p, "gotw");
         p.health = 50;
         steps(game, 200);
-        expect(p.health).toBeCloseTo(51, 6);
-        game.rules.boostModel = "wiki";
-        steps(game, 100);
         expect(p.health).toBeCloseTo(52, 6);
-        game.rules.perks.gotwRegenRate = 2;
+        game.rules.perks.gotwRegenRate = null;
+        steps(game, 200);
+        expect(p.health).toBeCloseTo(53, 6);
+        game.rules.boostModel = "wiki";
         steps(game, 100);
         expect(p.health).toBeCloseTo(54, 6);
     });
@@ -189,14 +189,23 @@ describe("Endless Ammo, Rare Potato and Fabricate", () => {
         }
     });
 
-    it("Fabricate fills the pack with frag grenades every 12 s (conflicts.md perk-fabricate-rule)", () => {
+    it("Fabricate: 8 weighted explosives every 10 s, one per 0.08 s, never past the bag (survev; perk-fabricate-rule)", () => {
         const { game, p } = setup();
-        p.backpack = "backpack02";
+        p.backpack = "backpack00";
         addPerk(p, "fabricate");
-        steps(game, 1199);
-        expect(p.inv.get("frag")).toBe(0);
+        const total = () => p.inv.get("frag") + p.inv.get("mirv") + p.inv.get("strobe");
+        steps(game, 999);
+        expect(total()).toBe(0);
         steps(game, 1);
-        expect(p.inv.get("frag")).toBe(p.inv.capacity("frag"));
+        // a level 0 bag has room for 3 frags, 2 MIRVs and 2 strobes
+        expect(p.fabricateQueue.length).toBeLessThanOrEqual(7);
+        const queued = p.fabricateQueue.length;
+        steps(game, 9);
+        expect(total()).toBe(1);
+        steps(game, 8 * queued);
+        expect(total()).toBe(queued);
+        for (const item of ["frag", "mirv", "strobe"])
+            expect(p.inv.get(item)).toBeLessThanOrEqual(p.inv.capacity(item));
     });
 });
 
@@ -221,5 +230,18 @@ describe("Spud Gun", () => {
         expect(target.scale).toBeLessThan(1.11);
         steps(game, 1000);
         expect(target.scale).toBe(1);
+    });
+
+    it("never enlarges the shooter's teammates (survev explosion.ts:209-238, fork 0.2.31)", () => {
+        const { game, p } = setup();
+        const mate = spawnAt(game, v2.add(p.pos, { x: 30, y: 0 }));
+        mate.teamId = p.teamId;
+        game.explosions.add("explosion_potato_smgshot", mate.pos, 0, {
+            damageType: DamageType.Player,
+            sourceId: p.id,
+            gameSourceType: "potato_smg",
+        });
+        game.step();
+        expect(mate.scale).toBe(1);
     });
 });

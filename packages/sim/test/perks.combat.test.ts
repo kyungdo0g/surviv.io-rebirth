@@ -28,7 +28,7 @@ function shooter(gun: string, perks: string[] = [], obstacles = []): { game: Gam
 }
 
 describe("Splinter Rounds", () => {
-    it("fires the main bullet x0.6 and two x0.6x0.45 side bullets (conflicts.md perk-splinter-side-damage)", () => {
+    it("fires the main bullet x0.6 and two x0.6x0.5 side bullets (survev splitsDamageMult; perk-splinter-side-damage)", () => {
         const { fired } = shooter("ak47", ["splinter"]);
         const bullets = fired();
         expect(bullets).toHaveLength(3);
@@ -36,7 +36,7 @@ describe("Splinter Rounds", () => {
         expect(main.damageMult).toBeCloseTo(0.6, 9);
         expect(main.splinter).toBe(false);
         for (const s of sides) {
-            expect(s.damageMult).toBeCloseTo(0.6 * 0.45, 9);
+            expect(s.damageMult).toBeCloseTo(0.6 * 0.5, 9);
             expect(s.splinter).toBe(true);
             expect(s.shotFx).toBe(false);
             // random(0.2, 0.25) x max(spread, 1) degrees: AK-47 shotSpread 2.5 (the centred rng draws 0.225)
@@ -83,13 +83,14 @@ describe("One in the Chamber", () => {
 });
 
 describe("ammo bonuses", () => {
+    // survev: x1.12 per ammo perk (ammoBonusDamageMult), x1.08 Hollow-points / OKAMI Bar (isBulletSaturated)
     const cases: Array<[string, string, number]> = [
-        ["mp5", "treat_9mm", 1.08],
-        ["mp5", "bonus_9mm", 1.08],
-        ["m870", "treat_12g", 1.08],
-        ["mk12", "treat_556", 1.08],
-        ["ak47", "treat_762", 1.08],
-        ["m1911", "bonus_45", 1.08],
+        ["mp5", "treat_9mm", 1.12],
+        ["mp5", "bonus_9mm", 1.12],
+        ["m870", "treat_12g", 1.12],
+        ["mk12", "treat_556", 1.12],
+        ["ak47", "treat_762", 1.12],
+        ["m1911", "bonus_45", 1.12],
         ["ak47", "bonus_assault", 1.08],
         ["ak47", "treat_super", 1.08],
         ["ak47", "treat_9mm", 1],
@@ -97,7 +98,7 @@ describe("ammo bonuses", () => {
         ["mp5", "bonus_45", 1],
     ];
     it.each(cases)(
-        "%s with %s: x%d and a darker tracer when it applies (conflicts.md ammo-perk-mult 1.08)",
+        "%s with %s: x%d and a darker tracer when it applies (conflicts.md ammo-perk-mult: survev 1.12)",
         (gun, perk, mult) => {
             const { fired } = shooter(gun, [perk]);
             const bullets = fired();
@@ -106,23 +107,38 @@ describe("ammo bonuses", () => {
         },
     );
 
-    it("applies at most one 8 % bonus per bullet unless survev's stacking is chosen (ammo-bonus-stacking)", () => {
+    it("survev multiplies Last Breath, Hollow-points and each ammo perk; the original reading applies one 8 % bonus", () => {
         const { game, p, fired } = shooter("mp5", ["treat_9mm", "bonus_assault"]);
         p.lastBreathTicker = 5;
-        expect(fired()[0].damageMult).toBeCloseTo(1.08, 9);
-        game.rules.perks.ammoBonusStacking = true;
+        expect(fired()[0].damageMult).toBeCloseTo(1.08 * 1.08 * 1.12, 9);
+        game.rules.perks.ammoBonusStacking = false;
         steps(game, 20);
-        expect(fired()[0].damageMult).toBeCloseTo(1.08 ** 3, 9);
+        expect(fired()[0].damageMult).toBeCloseTo(1.08, 9);
+    });
+
+    it("Hollow-points bullets fly x1.1 as fast (survev bonus_assault.speedMult)", () => {
+        const plain = shooter("ak47").fired()[0];
+        expect(shooter("ak47", ["bonus_assault"]).fired()[0].speed).toBeCloseTo(plain.speed * 1.1, 9);
+    });
+
+    it(".45 in the Chamber: a 0.166 chance per round of x1.25 damage, x1.2 speed and no spread (survev bonus_45)", () => {
+        const { game, p, fired } = shooter("m1911", ["bonus_45"]);
+        const plain = shooter("m1911").fired()[0];
+        game.combatRng = constantRng(0.1);
+        const b = fired()[0];
+        expect(b.damageMult).toBeCloseTo(1.12 * 1.25, 9);
+        expect(b.speed).toBeCloseTo(plain.speed * 1.2, 9);
+        expect(v2.dot(b.dir, p.dir)).toBeCloseTo(1, 9);
     });
 });
 
 describe("9mm Overpressure", () => {
-    it("9mm bullets fly x1.25 faster and farther (conflicts.md perk-9mm-overpressure-speed)", () => {
+    it("9mm bullets fly x1.2 faster and farther (survev bonus_9mm; perk-9mm-overpressure-speed)", () => {
         const plain = shooter("mp5").fired()[0];
         const { fired } = shooter("mp5", ["bonus_9mm"]);
         const b = fired()[0];
-        expect(b.speed).toBeCloseTo(plain.speed * 1.25, 9);
-        expect(b.distance).toBeCloseTo(plain.distance * 1.25, 9);
+        expect(b.speed).toBeCloseTo(plain.speed * 1.2, 9);
+        expect(b.distance).toBeCloseTo(plain.distance * 1.2, 9);
         // other ammo is untouched
         const ak = shooter("ak47", ["bonus_9mm"]).fired()[0];
         expect(ak.speed).toBeCloseTo(shooter("ak47").fired()[0].speed, 9);

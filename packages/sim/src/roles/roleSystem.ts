@@ -11,7 +11,7 @@ import { type FactionSystem, living } from "../match/faction.ts";
 import type { TrackedIndicator } from "../match/indicators.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
-import { type PromoteOptions, promoteToRole, removeRole } from "./roles.ts";
+import { type PromoteOptions, promoteToRole, removeRole, swapClasslessPerk } from "./roles.ts";
 
 /** What the role system needs from the game. */
 export interface RoleHost extends SimContext {
@@ -148,6 +148,8 @@ export class RoleSystem {
     /** A faction player was knocked down: Lone Survivr may apply (survev down -> checkAndApplyLastMan). */
     onPlayerDowned(victim: Player): void {
         this.checkLastMan(victim.teamId);
+        // survev checks the Captain on knocks too (player.ts:2631-2634)
+        if (this.faction) this.checkSuccession(victim.teamId);
     }
 
     /**
@@ -159,6 +161,7 @@ export class RoleSystem {
             this.host.planes.addPing("ping_woodsking", victim.pos);
         }
         if (victim.role === "the_hunted") removeRole(this.host, victim);
+        if (credit && credit !== victim && credit.role === "classless") swapClasslessPerk(this.host, credit);
         if (!this.faction) return;
         this.checkLastMan(victim.teamId);
         this.checkSuccession(victim.teamId);
@@ -184,7 +187,10 @@ export class RoleSystem {
         team.lastManApplied = true;
     }
 
-    /** rules.roles.commanderSuccession: the first standing Lieutenant takes over a team left without a Commander. */
+    /**
+     * rules.roles.commanderSuccession: once per team, the first standing Lieutenant of a team left without a Commander
+     * becomes its Captain, keeping its weapons (survev group.ts checkAndApplyCaptain, on every knock and kill).
+     */
     private checkSuccession(teamId: number, leaving?: Player): void {
         const team = this.faction?.team(teamId);
         if (!team || !this.rules.commanderSuccession || this.succeeded.has(teamId)) return;
@@ -193,7 +199,7 @@ export class RoleSystem {
         const lt = alive.find((p) => p.role === "lieutenant" && !p.downed);
         if (!lt) return;
         this.succeeded.add(teamId);
-        this.promote(lt, "leader", { keepWeapons: true });
+        this.promote(lt, "captain", { keepWeapons: true });
     }
 
     /**

@@ -1,7 +1,8 @@
 // Roles (M7a): role kits per team (KB kits, map overrides with $byTeam / $weighted rolled by the seeded rng), role
 // perks and role changes, announcements, Lone Survivr's refill, The Hunted, the Woods King's kill ping, Cobalt classes,
 // the Commander's outfit block and flare lock, promotion picks with the AFK filter. Values: docs/research/items/roles.md
-// and conflicts.md (role-*, grenadier-*).
+// and conflicts.md (role-*, grenadier-*); since the survev content wave's stage 5 (survev balance, design option B) the
+// kits and perks are survev's roleDefs.ts defaultItems / perks (healing items, the Bugler's pan, the Grenadier's Saiga).
 import { createRng, v2 } from "@rebirth/core";
 import { DamageType, getMapDef, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
@@ -49,8 +50,8 @@ describe("role kits", () => {
             // fillInv: the gun's ammo fills the Military Pack
             expect(p.inv.get(ammo)).toBe(p.inv.capacity(ammo));
             expect(p.scope).toBe("8xscope");
-            // no healing items on promotion (conflicts.md role-promotion-heals)
-            expect(p.inv.get("bandage") + p.inv.get("healthkit")).toBe(0);
+            // survev's promotion heals: 10 bandages and a med kit (survev roleDefs.ts leader; role-promotion-heals)
+            expect([p.inv.get("bandage"), p.inv.get("healthkit")]).toEqual([10, 1]);
             expect(p.perks).toEqual(["leadership"]);
             expect(p.boost).toBe(0);
             steps(game, 1);
@@ -58,19 +59,20 @@ describe("role kits", () => {
         }
     });
 
-    it("Grenadier: MP220, katana, 12 frags + 8 MIRVs (conflicts.md grenadier-weapon, grenadier-grenades)", () => {
+    it("Grenadier: survev's Saiga-12, katana, 15 frags + 10 MIRVs (survev roleDefs.ts grenadier)", () => {
         const { game, p } = setup();
         game.roles.promote(p, "grenadier");
-        expect(p.weaponManager.weapons.map((w) => w.type)).toEqual(["", "mp220", "katana", "mirv"]);
-        expect([p.inv.get("frag"), p.inv.get("mirv")]).toEqual([12, 8]);
+        expect(p.weaponManager.weapons.map((w) => w.type)).toEqual(["", "saiga", "katana", "mirv"]);
+        // the Military Pack holds 12 frags and 8 MIRVs, Flak Jacket 3 and 2 more (survev getMaxCapacity)
+        expect([p.inv.get("frag"), p.inv.get("mirv")]).toEqual([15, 10]);
         expect(p.perks).toEqual(["flak_jacket"]);
         expect(p.helmet).toBe("helmet03_grenadier");
     });
 
-    it("Bugler: the bugle and no pan (conflicts.md role-bugler-pan); Medic: medical supplies and smoke", () => {
+    it("Bugler: the bugle and survev's pan (role-bugler-pan); Medic: medical supplies and smoke", () => {
         const a = setup();
         a.game.roles.promote(a.p, "bugler");
-        expect(a.p.weaponManager.weapons.map((w) => w.type)).toEqual(["", "bugle", "fists", ""]);
+        expect(a.p.weaponManager.weapons.map((w) => w.type)).toEqual(["", "bugle", "pan", ""]);
         expect(a.p.perks).toEqual(["inspiration", "final_bugle"]);
         const b = setup();
         b.game.roles.promote(b.p, "medic");
@@ -105,7 +107,7 @@ describe("role kits", () => {
         expect(plain.weapons.map((w) => w.type)).toEqual(["", "grozas", "spade_assault", ""]);
     });
 
-    it("Lone Survivr: 100 HP and adrenaline, a 5 s Windwalk, Cast Ironskin + Splinter + one of three (role-lone-survivr-perks)", () => {
+    it("Lone Survivr: 100 HP and adrenaline, a 5 s Windwalk, survev's four perks (role-lone-survivr-perks)", () => {
         const { game, p } = setup();
         p.teamId = 2;
         p.health = 20;
@@ -113,8 +115,11 @@ describe("role kits", () => {
         expect(p.hasPerk("firepower")).toBe(true);
         game.roles.promote(p, "last_man");
         expect([p.health, p.boost, p.haste.type]).toEqual([100, 100, "windwalk"]);
-        expect(p.perks.slice(0, 2)).toEqual(["steelskin", "splinter"]);
-        expect(["takedown", "windwalk", "field_medic"]).toContain(p.perks[2]);
+        // survev roleDefs.ts last_man: Cast Ironskin, AP Rounds or Splinter, Takedown, Windwalk or Field Medic
+        expect(p.perks).toHaveLength(4);
+        expect([p.perks[0], p.perks[2]]).toEqual(["steelskin", "takedown"]);
+        expect(["ap_rounds", "splinter"]).toContain(p.perks[1]);
+        expect(["windwalk", "field_medic"]).toContain(p.perks[3]);
         // the Lieutenant's perk and no-drop helmet left with the old role
         expect(p.hasPerk("firepower")).toBe(false);
         expect([p.helmet, p.chest]).toEqual(["helmet04_last_man_blue", "chest04"]);

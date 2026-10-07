@@ -18,9 +18,17 @@ import {
     renameTiers,
     revertForkReskins,
 } from "./lib/maps.ts";
-import { objectPaths, portGameConfig, portGameObjects, portMapObjects } from "./lib/objects.ts";
+import {
+    applySurvevGameplay,
+    applySurvevMapGenFields,
+    objectPaths,
+    portGameConfig,
+    portGameObjects,
+    portMapObjects,
+    SURVEV_MAP_GAMEPLAY_FIELDS,
+} from "./lib/objects.ts";
 import { loadPolicy, portedSurvevIds } from "./lib/policy.ts";
-import { keepSurvevPlacements, restoreSurvevPlacements } from "./lib/survevLoot.ts";
+import { keepSurvevPlacements, restoreSurvevPlacements, splitMapGenEntries } from "./lib/survevLoot.ts";
 import { stableJson } from "./lib/util.ts";
 import { validate } from "./lib/validate.ts";
 
@@ -44,6 +52,10 @@ const ported = portedSurvevIds(policy);
 
 // 1. game objects: the original client, then the survev-only ids policy.json ports
 const gameObjects = portGameObjects(live.gameObjects, survev.gameObjects, policy);
+// 1b. survev balance (option B): original ids take survev's gameplay fields
+const survevValues = policy.survevBalance
+    ? applySurvevGameplay(gameObjects.defs, gameObjects.status, survev.gameObjects, policy.survevSkins)
+    : [];
 
 // 2. map defs: survev, client-visible parts from the original client
 const maps = portMaps(survev.mapDefs, live.maps, warnings);
@@ -51,7 +63,14 @@ const maps = portMaps(survev.mapDefs, live.maps, warnings);
 // 3. balance reverts on server-only data (before cleanup so reverted spawns/loot are cleaned and closed over)
 let balanceRevert: RevertLog[] = [];
 let balanceRevertNote = "";
-if (existsSync(BALANCE_REVERT)) {
+if (existsSync(BALANCE_REVERT) && policy.survevBalance) {
+    // survev balance (option B): balance-revert.json stays the record of the original values, nothing is applied
+    balanceRevert = (JSON.parse(readFileSync(BALANCE_REVERT, "utf8")) as RevertLog["entry"][]).map((entry) => ({
+        status: "skipped",
+        entry,
+        reason: "survev balance (tools/port-survev/policy.json survevBalance)",
+    }));
+} else if (existsSync(BALANCE_REVERT)) {
     // the ported survev-only items keep survev's placements: their revert entries are skipped (logged as such)
     const kept = keepSurvevPlacements(
         JSON.parse(readFileSync(BALANCE_REVERT, "utf8")),
@@ -59,7 +78,9 @@ if (existsSync(BALANCE_REVERT)) {
         policy.survevSkins,
         Object.keys(maps.maps),
     );
-    const entries = kept.apply;
+    // survev map generation (policy survevMapGen): map-spawn entries and map-level game config entries stay unapplied
+    const mapGen = policy.survevMapGen ? splitMapGenEntries(kept.apply) : { apply: kept.apply, skipped: [] };
+    const entries = mapGen.apply;
     const survevOnlyMapObjects = Object.fromEntries(
         Object.entries(survev.mapObjects).filter(([id]) => !(id in live.mapObjects)),
     );
@@ -72,17 +93,17 @@ if (existsSync(BALANCE_REVERT)) {
         mapObjectStatus: Object.fromEntries(Object.keys(survevOnlyMapObjects).map((id) => [id, "survev-only"])),
         knownMapObjects: new Set([...Object.keys(live.mapObjects), ...Object.keys(survev.mapObjects)]),
     });
-    balanceRevert.push(...kept.skipped);
+    balanceRevert.push(...kept.skipped, ...mapGen.skipped);
 } else {
     balanceRevertNote = `${BALANCE_REVERT_REL} not found: balance reverts skipped (re-run the port once it exists)`;
     console.warn(`warning: ${balanceRevertNote}`);
 }
 
 // 3b. fork reskins (woods/faction/cobalt caches, desert crimson airdrop) back to the original objects
-const reskinReverts = revertForkReskins(maps.maps, live.mapObjects);
+const reskinReverts = policy.survevMapGen ? [] : revertForkReskins(maps.maps, live.mapObjects);
 
 // 3c. event maps whose revert baseline was not the original (Savannah, Turkey, seasonal variants) + loot bans
-const eventMapFixes = applyEventMapFixes(maps.maps);
+const eventMapFixes = applyEventMapFixes(maps.maps, { lootOnly: policy.survevMapGen, noFixes: policy.survevBalance });
 // 3d. survev's placements of the ported survev-only items in tables a fix rebuilt (Savannah), bans permitting
 const survevPlacements = restoreSurvevPlacements(maps.maps, survev.mapDefs, ported, LOOT_BANS);
 
@@ -92,7 +113,44 @@ const lootRemovals = cleanLootTables(maps.maps, gameObjects.defs);
 const roleOverrideRemovals = cleanRoleOverrides(maps.maps, gameObjects.defs);
 
 // 5. map objects: original + survev-only ones the maps need
-const mapObjects = portMapObjects(live.mapObjects, survev.mapObjects, maps.maps, gameObjects.defs);
+const mapObjects = portMapObjects(
+    live.mapObjects,
+    survev.mapObjects,
+    maps.maps,
+    gameObjects.defs,
+    policy.survevMapObjects,
+);
+// survev balance (option B): original map objects take survev's loot, explosions and health (loot of items the port
+// does not take is dropped, as for survev-only map objects)
+const survevMapValues: ReturnType<typeof applySurvevGameplay> = [];
+if (policy.survevBalance) {
+    const changes = applySurvevGameplay(
+        mapObjects.defs,
+        mapObjects.status,
+        survev.mapObjects,
+        {},
+        SURVEV_MAP_GAMEPLAY_FIELDS,
+    );
+    for (const c of changes) {
+        const def = mapObjects.defs[c.id];
+        if (c.field !== "loot" || !Array.isArray(def.loot)) continue;
+        def.loot = def.loot.filter((l: any) => {
+            const bad = typeof l?.type === "string" && l.type !== "" && !(l.type in gameObjects.defs);
+            if (bad)
+                mapObjects.lootRemovals.push({
+                    mapObject: c.id,
+                    item: l.type,
+                    reason: "item not in the ported game objects",
+                });
+            return !bad;
+        });
+    }
+    survevMapValues.push(...changes);
+}
+// survev map generation: the original map objects take survev's faction sides and placement rules
+const mapGenFields = policy.survevMapGen
+    ? applySurvevMapGenFields(mapObjects.defs, mapObjects.status, survev.mapObjects)
+    : [];
 
 // 6. GameConfig: original client wins, survev supplies server constants
 const gameConfig = portGameConfig(live.gameConfig, survev.gameConfig, gameObjects.defs, policy.survevGameConfig);
@@ -119,6 +177,9 @@ const provenance = {
     reskinReverts,
     eventMapFixes,
     survevPlacements,
+    survevMapGenFields: mapGenFields,
+    survevValues,
+    survevMapValues,
     lootRemovals: [...lootRemovals, ...mapObjects.lootRemovals, ...roleOverrideRemovals],
     gameConfigDiffs: [
         ...gameConfig.diffs,

@@ -6,10 +6,18 @@ import gameObjectsJson from "./generated/gameObjects.json" with { type: "json" }
 import mapObjectsJson from "./generated/mapObjects.json" with { type: "json" };
 import mapsJson from "./generated/maps.json" with { type: "json" };
 import { applyRebirthDefs, applyRebirthMaps } from "./rebirth/index.ts";
+import { applySurvevWikiSpecs } from "./survev/wikiSpecs.ts";
 import type { GameObjectDef, MapDef, MapObjectDef } from "./types/index.ts";
 
+// survev.wiki.gg specs of survev-only items where the wiki and survev's source differ (survev/wikiSpecs.ts)
+const survevGameObjects: Record<string, GameObjectDef> = {
+    ...(gameObjectsJson as unknown as Readonly<Record<string, GameObjectDef>>),
+};
+/** fields of survev-only items where the survev.wiki.gg spec replaced survev's source value */
+export const survevWikiSpecs = applySurvevWikiSpecs(survevGameObjects);
+
 const rebirth = applyRebirthDefs(
-    gameObjectsJson as unknown as Readonly<Record<string, GameObjectDef>>,
+    survevGameObjects,
     mapObjectsJson as unknown as Readonly<Record<string, MapObjectDef>>,
 );
 

@@ -1,23 +1,33 @@
 // Spot checks of values only the original v0.8.82 client has (survev's fork changed them), and a full comparison
 // against the extracted client defs when research-cache/live/defs.json is available. The survev-only ids the port
-// takes (tools/port-survev/policy.json) follow the original ones and are checked in survevGuns.test.ts.
+// takes (tools/port-survev/policy.json) follow the original ones and are checked in survevGuns.test.ts. Under survev
+// balance (policy survevBalance, design option B) the original ids keep the original presentation and take survev's
+// gameplay fields, each listed in provenance.survevValues with the original value it replaced.
 import { describe, expect, it } from "vitest";
 import { getDefOfType } from "../src/index.ts";
-import { gameObjects, mapObjects, maps, provenance, readOptionalJson } from "./helpers.ts";
+import { gameObjects, mapObjects, maps, portPolicy, provenance, readOptionalJson } from "./helpers.ts";
 
 const live = readOptionalJson("research-cache/live/defs.json");
 const liveVsSurvev = readOptionalJson("docs/research/data/live-vs-survev.json");
 
+/** survev balance: the original value of a field the port replaced with survev's (provenance survevValues). */
+function originalOf(id: string, field: string): unknown {
+    const c = (provenance.survevValues ?? []).find((v: any) => v.id === id && v.field === field);
+    return c ? c.original : undefined;
+}
+
 describe("original client values", () => {
-    it("AN-94 bullet", () => {
+    it("AN-94 bullet: survev's 20 damage and 120 speed, the original's 17.5 / 110 on record", () => {
         const b = getDefOfType("bullet", "bullet_an94");
-        expect(b.damage).toBe(17.5);
-        expect(b.speed).toBe(110);
+        // survev bulletDefs.ts:67; balance.txt line 6
+        expect([b.damage, b.speed]).toEqual(portPolicy.survevBalance ? [20, 120] : [17.5, 110]);
+        if (portPolicy.survevBalance)
+            expect([originalOf("bullet_an94", "damage"), originalOf("bullet_an94", "speed")]).toEqual([17.5, 110]);
     });
 
-    it("Mosin-Nagant", () => {
+    it("Mosin-Nagant: the original barrel (presentation), survev's headshot x1.25", () => {
         const g = getDefOfType("gun", "mosin");
-        expect(g.headshotMult).toBe(1.5);
+        expect(g.headshotMult).toBe(portPolicy.survevBalance ? 1.25 : 1.5);
         expect(g.barrelLength).toBe(3.75);
     });
 
@@ -49,14 +59,27 @@ describe("original client values", () => {
                 .filter(Boolean)
                 .reduce((a, k) => (a == null ? undefined : a[k]), o);
         let checked = 0;
+        // survev map generation and balance: survev's placement rules, loot, explosions and health (provenance
+        // survevMapGenFields, survevMapValues)
+        const mapGenFields = new Set(
+            [...provenance.survevMapGenFields, ...(provenance.survevMapValues ?? [])].map(
+                (c: any) => `${c.id}.${c.field}`,
+            ),
+        );
+        // survev balance: survev's gameplay fields (provenance survevValues)
+        const gameplay = new Set((provenance.survevValues ?? []).map((c: any) => `${c.id}.${c.field}`));
         for (const [defs, list] of [
             [gameObjects, liveVsSurvev.gameObjects],
             [mapObjects, liveVsSurvev.mapObjects],
         ] as const) {
             for (const entry of list) {
                 if (entry.status !== "both") continue;
+                // structure overrides take survev's whole def (policy.json survevMapObjects, survev content wave)
+                if (defs === mapObjects && provenance.mapObjects[entry.id] === "survev-override") continue;
                 for (const diff of entry.diffs ?? []) {
                     if (diff.live === undefined) continue;
+                    if (defs === mapObjects && mapGenFields.has(`${entry.id}.${diff.field.split(/[.[]/)[0]}`)) continue;
+                    if (defs === gameObjects && gameplay.has(`${entry.id}.${diff.field.split(/[.[]/)[0]}`)) continue;
                     expect(get(defs[entry.id], diff.field), `${entry.id}.${diff.field}`).toEqual(JSON.parse(diff.live));
                     checked++;
                 }
@@ -79,15 +102,39 @@ describe.skipIf(!live)("generated defs equal the original client defs", () => {
         expect(Object.keys(gameObjects).slice(0, ids.length)).toEqual(ids);
         for (const id of Object.keys(gameObjects).slice(ids.length))
             expect(provenance.gameObjects[id], id).toBe("survev-only");
-        for (const [id, def] of Object.entries(live.gameObjects)) {
-            expect(withoutFixups(id, gameObjects[id]), id).toEqual(def);
+        // survev balance: survev's gameplay fields, each logged with the original value it replaced
+        const gameplay = new Map<string, any[]>();
+        for (const c of provenance.survevValues ?? []) gameplay.set(c.id, [...(gameplay.get(c.id) ?? []), c]);
+        for (const [id, def] of Object.entries<any>(live.gameObjects)) {
+            const expected = { ...def };
+            for (const c of gameplay.get(id) ?? []) {
+                expect(expected[c.field] ?? "absent", `${id}.${c.field}`).toEqual(c.original);
+                expected[c.field] = c.survev;
+            }
+            expect(withoutFixups(id, gameObjects[id]), id).toEqual(expected);
         }
     });
 
-    it("map objects: original ids first in client order, same values", () => {
+    it("map objects: original ids first in client order, same values but the policy's structure overrides", () => {
         const ids = Object.keys(live.mapObjects);
         expect(Object.keys(mapObjects).slice(0, ids.length)).toEqual(ids);
-        for (const id of ids) expect(mapObjects[id], id).toEqual(live.mapObjects[id]);
+        const overrides = new Set<string>(portPolicy.survevMapObjects);
+        // survev map generation and balance (provenance survevMapGenFields, survevMapValues), else the original's
+        const mapGen = new Map<string, any[]>();
+        for (const c of [...provenance.survevMapGenFields, ...(provenance.survevMapValues ?? [])])
+            mapGen.set(c.id, [...(mapGen.get(c.id) ?? []), c]);
+        for (const id of ids) {
+            if (overrides.has(id)) {
+                expect(provenance.mapObjects[id], id).toBe("survev-override");
+                continue;
+            }
+            const expected = { ...live.mapObjects[id] };
+            for (const c of mapGen.get(id) ?? []) {
+                expect(expected[c.field] ?? "absent", `${id}.${c.field}`).toEqual(c.original);
+                expected[c.field] = c.survev;
+            }
+            expect(mapObjects[id], id).toEqual(expected);
+        }
     });
 
     it("client-visible map parts come from the original client", () => {

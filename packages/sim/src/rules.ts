@@ -19,7 +19,7 @@ export interface SimRules {
      * See docs/research/mechanics/damage-armor.md (CONFLICT headshot-mult-1-rule).
      */
     headshotNeedsMultAboveOne: boolean;
-    /** Cast Ironskin reduction: 0.5 in 0.8.82, 0.45 in survev (damage-armor.md CONFLICT steelskin-reduction) */
+    /** Cast Ironskin reduction: survev's 0.45 (0.5 in 0.8.82; damage-armor.md CONFLICT steelskin-reduction) */
     steelskinReduction: number;
     /** Flak Jacket reduction against non-explosion hits (survev perkDefs.ts flak_jacket.damageReduction) */
     flakJacketReduction: number;
@@ -119,8 +119,6 @@ export interface SimRules {
     brokenArrowAtPing: boolean;
     /** bullets whose Explosive Rounds use the quieter explosion_rounds_sg (survev bullet useExplosiveRoundsAlt) */
     explosiveRoundsAltBullets: readonly string[];
-    /** Fabricate fills the pack with frag grenades every this many seconds (original rule, fandom Fabricate) */
-    fabricateInterval: number;
     /**
      * Circle and wait overrides of MapDef gameConfig.unlocks timings, by unlocked type (conflicts.md
      * twins-unlock-time: the original twins bunker opened 0:45 into the third waiting phase, circle 2 + 5 s; the ported
@@ -172,7 +170,7 @@ export function defaultRules(): SimRules {
     return {
         headshotChance: GameConfig.player.headshotChance,
         headshotNeedsMultAboveOne: true,
-        steelskinReduction: 0.5,
+        steelskinReduction: 0.45,
         flakJacketReduction: 0.1,
         flakJacketExplosionReduction: 0.9,
         noDistAdjBullets: ["bullet_buckshot", "bullet_flechette", "bullet_frag", "bullet_birdshot"],
@@ -201,8 +199,8 @@ export function defaultRules(): SimRules {
         strobeRandomSide: true,
         brokenArrowAtPing: false,
         explosiveRoundsAltBullets: ["bullet_buckshot", "bullet_flechette", "bullet_frag", "bullet_birdshot"],
-        fabricateInterval: 12,
-        unlockOverrides: { bunker_twins_sublevel_01: { circleIdx: 2, wait: 5 } },
+        // survev balance: the def's survev timing (circle 1 + 30 s) applies (twins-unlock-time; original circle 2 + 5 s)
+        unlockOverrides: {},
         cullOtherFloors: true,
         bleedEscalation: "linear",
         downedDamageBuffer: GameConfig.player.downedDamageBuffer,

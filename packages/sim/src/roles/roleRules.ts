@@ -33,13 +33,22 @@ export interface RoleRules {
     lastManCount: number;
     /** promotion to Lone Survivr: 100 HP, 100 adrenaline and the Windwalk haste for 5 s (survev promoteToRole) */
     lastManHasteDuration: number;
-    /** third Lone Survivr perk, one at random (conflicts.md role-lone-survivr-perks: v0.8.82 1/3 each) */
+    /**
+     * extra Lone Survivr perk, one at random (conflicts.md role-lone-survivr-perks: v0.8.82 1/3 each); empty under
+     * survev balance, whose role def lists four perks, two of them weighted picks (survev roleDefs.ts last_man)
+     */
     lastManExtraPerks: readonly string[];
     /**
-     * When a team's Commander dies (or leaves), its first living, standing Lieutenant becomes the Commander, keeping
-     * its weapons (survev's fork Captain, v0.1.2; not in v0.8.82, so off; the Captain role itself is fork-only data).
+     * When a team's Commander dies (or leaves), its first living, standing Lieutenant becomes its Captain (Assume
+     * Leadership and Firepower, the captain helmet, 8x scope), keeping its weapons (survev's Captain, v0.1.2;
+     * wikigg/Captain). Not in v0.8.82; on since the survev content wave (survev is the gameplay baseline).
      */
     commanderSuccession: boolean;
+    /**
+     * Classless (survev-only Cobalt role from the Augmenting Vat): the class perks it draws from, every Cobalt class
+     * perk but Martyrdom (survev perkDefs.ts:166-182 PerkProperties.classless.perkPool)
+     */
+    classlessPerkPool: readonly string[];
     /** the Commander's flare gun fires itself after 15 s (conflicts.md role-leader-auto-flare: fork 0.1.2, off) */
     leaderAutoFlare: boolean;
     leaderAutoFlareDelay: number;
@@ -89,8 +98,22 @@ export function defaultRoleRules(): RoleRules {
         afkStillTime: 5,
         lastManCount: 2,
         lastManHasteDuration: 5,
-        lastManExtraPerks: ["takedown", "windwalk", "field_medic"],
-        commanderSuccession: false,
+        lastManExtraPerks: [],
+        commanderSuccession: true,
+        classlessPerkPool: [
+            "combat_stims",
+            "field_medic",
+            "steelskin",
+            "endless_ammo",
+            "chambered",
+            "takedown",
+            "small_arms",
+            "tree_climbing",
+            "amped_explosives",
+            "flak_jacket",
+            "firepower",
+            "bonus_assault",
+        ],
         leaderAutoFlare: false,
         leaderAutoFlareDelay: 15,
         leaderFlareLocked: true,

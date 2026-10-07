@@ -4,9 +4,9 @@
         "generator": "node --experimental-transform-types tools/oracle/run.ts",
         "survevCommit": "c6185e31fe25a4a07def77a2bb25b1710bda90ac",
         "defs": {
-            "protocolHash": 646970998,
-            "gameObjectsSha256": "e1592749ad270af02f8aab6262547ff65f08d36861f1f747e8a7315ece8482b7",
-            "gameConfigSha256": "1fb48c5bc4964098bb3a14af7c8e2acb72d1177a0077328f7a8eb0edc1da57b5"
+            "protocolHash": 1227878235,
+            "gameObjectsSha256": "bdf410126fabac6256de9838be51a4436343b5d3b43bd409cc2c147b33aae2a5",
+            "gameConfigSha256": "40c30c04ba997a6e146c6f50691e9273e360a7496c5c699e032cf554b2aca0a2"
         },
         "simulation": {
             "dt": 0.01,
@@ -23,9 +23,9 @@
             "headshotRandom": "GameConfig.player.headshotChance = 0.15 (survev default)"
         },
         "patch": {
-            "replacedIds": 631,
-            "idsWithChangedValues": 234,
-            "gameplayValueChanges": 362,
+            "replacedIds": 706,
+            "idsWithChangedValues": 201,
+            "gameplayValueChanges": 287,
             "addedIds": [
                 "bullet_potato",
                 "bullet_bugle",
@@ -43,44 +43,20 @@
                 "outfitTree"
             ],
             "keptSurvevOnlyFields": { "bullet": ["noDistAdj", "useExplosiveRoundsAlt"] },
-            "gameConfigChanges": [
-                "bagSizes.9mm",
-                "bagSizes.762mm",
-                "bagSizes.556mm",
-                "bagSizes.12gauge",
-                "bagSizes.50AE",
-                "bagSizes.308sub",
-                "bagSizes.flare",
-                "bagSizes.45acp",
-                "bagSizes.frag",
-                "bagSizes.smoke",
-                "bagSizes.strobe",
-                "bagSizes.mirv",
-                "bagSizes.snowball",
-                "bagSizes.potato",
-                "bagSizes.bandage",
-                "bagSizes.healthkit",
-                "bagSizes.soda",
-                "bagSizes.painkiller",
-                "bagSizes.1xscope",
-                "bagSizes.2xscope",
-                "bagSizes.4xscope",
-                "bagSizes.8xscope",
-                "bagSizes.15xscope"
-            ],
+            "gameConfigChanges": [],
             "verification": [
                 {
                     "check": "GameObjectDefs.typeToDef('bullet_an94', 'bullet').damage",
-                    "actual": 17.5,
+                    "actual": 20,
                     "ok": true
                 },
-                { "check": "BulletDefs.bullet_an94.damage", "actual": 17.5, "ok": true },
+                { "check": "BulletDefs.bullet_an94.damage", "actual": 20, "ok": true },
                 {
                     "check": "GameObjectDefs.typeToDef('mosin', 'gun').headshotMult",
-                    "actual": 1.5,
+                    "actual": 1.25,
                     "ok": true
                 },
-                { "check": "GunDefs.mosin.headshotMult", "actual": 1.5, "ok": true },
+                { "check": "GunDefs.mosin.headshotMult", "actual": 1.25, "ok": true },
                 {
                     "check": "ids whose survev def differs from ours after the patch",
                     "actual": 0,
@@ -339,9 +315,9 @@
         "ump9": {
             "def": {
                 "fireMode": "burst",
-                "fireDelay": 0.35,
+                "fireDelay": 0.3,
                 "burstCount": 3,
-                "burstDelay": 0.07,
+                "burstDelay": 0.06,
                 "maxClip": 30,
                 "maxReload": 30,
                 "reloadTime": 1.9,
@@ -356,35 +332,35 @@
                 "shotsPerMag": 30,
                 "pelletsPerShot": [{ "value": 1, "count": 30 }],
                 "shotTimes": [
-                    0, 0.06, 0.14, 0.49, 0.55, 0.63, 0.98, 1.04, 1.12, 1.47, 1.53, 1.61, 1.96, 2.02, 2.1, 2.45, 2.51,
-                    2.59, 2.94, 3, 3.08, 3.43, 3.49, 3.57, 3.92, 3.98, 4.06, 4.41, 4.47, 4.55
+                    0, 0.05, 0.12, 0.42, 0.47, 0.54, 0.84, 0.89, 0.96, 1.26, 1.31, 1.38, 1.68, 1.73, 1.8, 2.1, 2.15,
+                    2.22, 2.52, 2.57, 2.64, 2.94, 2.99, 3.06, 3.36, 3.41, 3.48, 3.78, 3.83, 3.9
                 ],
                 "intervals": [
-                    { "value": 0.06, "count": 10 },
-                    { "value": 0.08, "count": 10 },
-                    { "value": 0.35, "count": 9 }
+                    { "value": 0.05, "count": 10 },
+                    { "value": 0.07, "count": 10 },
+                    { "value": 0.3, "count": 9 }
                 ],
                 "reload": {
                     "actions": [
                         {
                             "action": "Reload",
-                            "start": 0.35,
-                            "end": 2.25,
+                            "start": 0.3,
+                            "end": 2.2,
                             "duration": 1.9,
                             "ammoBefore": 0,
                             "ammoAfter": 30
                         }
                     ],
-                    "fullAfterLastShot": 2.25,
-                    "lastShotToNextMagFirstShot": 2.26
+                    "fullAfterLastShot": 2.2,
+                    "lastShotToNextMagFirstShot": 2.21
                 },
                 "partialReload": {
                     "reserve": null,
                     "actions": [
                         {
                             "action": "Reload",
-                            "start": 0.5,
-                            "end": 2.4,
+                            "start": 0.43,
+                            "end": 2.33,
                             "duration": 1.9,
                             "ammoBefore": 27,
                             "ammoAfter": 30
@@ -397,36 +373,36 @@
                 "shotsPerMag": 30,
                 "pelletsPerShot": [{ "value": 1, "count": 30 }],
                 "shotTimes": [
-                    0, 0.069, 0.139, 0.489, 0.558, 0.628, 0.978, 1.047, 1.117, 1.467, 1.536, 1.606, 1.956, 2.025, 2.095,
-                    2.445, 2.514, 2.584, 2.934, 3.003, 3.073, 3.423, 3.492, 3.562, 3.912, 3.981, 4.051, 4.401, 4.47,
-                    4.54
+                    0, 0.059, 0.119, 0.419, 0.478, 0.538, 0.838, 0.897, 0.957, 1.257, 1.316, 1.376, 1.676, 1.735, 1.795,
+                    2.095, 2.154, 2.214, 2.514, 2.573, 2.633, 2.933, 2.992, 3.052, 3.352, 3.411, 3.471, 3.771, 3.83,
+                    3.89
                 ],
                 "intervals": [
-                    { "value": 0.069, "count": 10 },
-                    { "value": 0.07, "count": 10 },
-                    { "value": 0.35, "count": 9 }
+                    { "value": 0.059, "count": 10 },
+                    { "value": 0.06, "count": 10 },
+                    { "value": 0.3, "count": 9 }
                 ],
                 "reload": {
                     "actions": [
                         {
                             "action": "Reload",
-                            "start": 0.35,
-                            "end": 2.251,
+                            "start": 0.3,
+                            "end": 2.201,
                             "duration": 1.901,
                             "ammoBefore": 0,
                             "ammoAfter": 30
                         }
                     ],
-                    "fullAfterLastShot": 2.251,
-                    "lastShotToNextMagFirstShot": 2.252
+                    "fullAfterLastShot": 2.201,
+                    "lastShotToNextMagFirstShot": 2.202
                 },
                 "partialReload": {
                     "reserve": null,
                     "actions": [
                         {
                             "action": "Reload",
-                            "start": 0.49,
-                            "end": 2.391,
+                            "start": 0.42,
+                            "end": 2.321,
                             "duration": 1.901,
                             "ammoBefore": 27,
                             "ammoAfter": 30
@@ -818,7 +794,7 @@
                 "switchDelay": 0.75,
                 "bulletCount": 1,
                 "bulletType": "bullet_vss",
-                "bulletSpeed": 95,
+                "bulletSpeed": 110,
                 "bulletDistance": 125,
                 "ammo": "9mm"
             },
@@ -901,25 +877,25 @@
                     "pellets": 1,
                     "distance": { "min": 125, "max": 125 },
                     "configuredDistance": { "min": 125, "max": 125 },
-                    "flightSeconds": 1.32,
-                    "speed": 95,
-                    "firstTickDistance": 0.95
+                    "flightSeconds": 1.14,
+                    "speed": 110,
+                    "firstTickDistance": 1.1
                 },
                 "low": {
                     "pellets": 1,
                     "distance": { "min": 124, "max": 124 },
                     "configuredDistance": { "min": 124, "max": 124 },
-                    "flightSeconds": 1.31,
-                    "speed": 95,
-                    "firstTickDistance": 0.95
+                    "flightSeconds": 1.13,
+                    "speed": 110,
+                    "firstTickDistance": 1.1
                 },
                 "high": {
                     "pellets": 1,
                     "distance": { "min": 126, "max": 126 },
                     "configuredDistance": { "min": 126, "max": 126 },
-                    "flightSeconds": 1.33,
-                    "speed": 95,
-                    "firstTickDistance": 0.95
+                    "flightSeconds": 1.15,
+                    "speed": 110,
+                    "firstTickDistance": 1.1
                 }
             }
         },
@@ -928,7 +904,7 @@
                 "fireMode": "burst",
                 "fireDelay": 0.35,
                 "burstCount": 3,
-                "burstDelay": 0.07,
+                "burstDelay": 0.05,
                 "maxClip": 25,
                 "maxReload": 25,
                 "reloadTime": 2.3,
@@ -943,12 +919,12 @@
                 "shotsPerMag": 25,
                 "pelletsPerShot": [{ "value": 1, "count": 25 }],
                 "shotTimes": [
-                    0, 0.06, 0.14, 0.49, 0.55, 0.63, 0.98, 1.04, 1.12, 1.47, 1.53, 1.61, 1.96, 2.02, 2.1, 2.45, 2.51,
-                    2.59, 2.94, 3, 3.08, 3.43, 3.49, 3.57, 3.92
+                    0, 0.04, 0.1, 0.45, 0.49, 0.55, 0.9, 0.94, 1, 1.35, 1.39, 1.45, 1.8, 1.84, 1.9, 2.25, 2.29, 2.35,
+                    2.7, 2.74, 2.8, 3.15, 3.19, 3.25, 3.6
                 ],
                 "intervals": [
+                    { "value": 0.04, "count": 8 },
                     { "value": 0.06, "count": 8 },
-                    { "value": 0.08, "count": 8 },
                     { "value": 0.35, "count": 8 }
                 ],
                 "reload": {
@@ -970,8 +946,8 @@
                     "actions": [
                         {
                             "action": "Reload",
-                            "start": 0.5,
-                            "end": 2.81,
+                            "start": 0.46,
+                            "end": 2.77,
                             "duration": 2.31,
                             "ammoBefore": 22,
                             "ammoAfter": 25
@@ -984,12 +960,12 @@
                 "shotsPerMag": 25,
                 "pelletsPerShot": [{ "value": 1, "count": 25 }],
                 "shotTimes": [
-                    0, 0.069, 0.139, 0.489, 0.558, 0.628, 0.978, 1.047, 1.117, 1.467, 1.536, 1.606, 1.956, 2.025, 2.095,
-                    2.445, 2.514, 2.584, 2.934, 3.003, 3.073, 3.423, 3.492, 3.562, 3.912
+                    0, 0.049, 0.099, 0.449, 0.498, 0.548, 0.898, 0.947, 0.997, 1.347, 1.396, 1.446, 1.796, 1.845, 1.895,
+                    2.245, 2.294, 2.344, 2.694, 2.743, 2.793, 3.143, 3.192, 3.242, 3.592
                 ],
                 "intervals": [
-                    { "value": 0.069, "count": 8 },
-                    { "value": 0.07, "count": 8 },
+                    { "value": 0.049, "count": 8 },
+                    { "value": 0.05, "count": 8 },
                     { "value": 0.35, "count": 8 }
                 ],
                 "reload": {
@@ -1011,8 +987,8 @@
                     "actions": [
                         {
                             "action": "Reload",
-                            "start": 0.49,
-                            "end": 2.791,
+                            "start": 0.45,
+                            "end": 2.751,
                             "duration": 2.301,
                             "ammoBefore": 22,
                             "ammoAfter": 25
@@ -2211,7 +2187,7 @@
                 "switchDelay": 0.75,
                 "bulletCount": 1,
                 "bulletType": "bullet_an94",
-                "bulletSpeed": 110,
+                "bulletSpeed": 120,
                 "bulletDistance": 300,
                 "ammo": "762mm"
             },
@@ -2296,25 +2272,25 @@
                     "pellets": 1,
                     "distance": { "min": 300, "max": 300 },
                     "configuredDistance": { "min": 300, "max": 300 },
-                    "flightSeconds": 2.73,
-                    "speed": 110,
-                    "firstTickDistance": 1.1
+                    "flightSeconds": 2.5,
+                    "speed": 120,
+                    "firstTickDistance": 1.2
                 },
                 "low": {
                     "pellets": 1,
                     "distance": { "min": 299, "max": 299 },
                     "configuredDistance": { "min": 299, "max": 299 },
-                    "flightSeconds": 2.72,
-                    "speed": 110,
-                    "firstTickDistance": 1.1
+                    "flightSeconds": 2.5,
+                    "speed": 120,
+                    "firstTickDistance": 1.2
                 },
                 "high": {
                     "pellets": 1,
                     "distance": { "min": 301, "max": 301 },
                     "configuredDistance": { "min": 301, "max": 301 },
-                    "flightSeconds": 2.74,
-                    "speed": 110,
-                    "firstTickDistance": 1.1
+                    "flightSeconds": 2.51,
+                    "speed": 120,
+                    "firstTickDistance": 1.2
                 }
             }
         },
@@ -3922,8 +3898,8 @@
                 "switchDelay": 0.75,
                 "bulletCount": 1,
                 "bulletType": "bullet_garand",
-                "bulletSpeed": 130,
-                "bulletDistance": 400,
+                "bulletSpeed": 144,
+                "bulletDistance": 444,
                 "ammo": "762mm"
             },
             "tick100Hz": {
@@ -3997,27 +3973,27 @@
             "bullet": {
                 "centered": {
                     "pellets": 1,
-                    "distance": { "min": 400, "max": 400 },
-                    "configuredDistance": { "min": 400, "max": 400 },
-                    "flightSeconds": 3.08,
-                    "speed": 130,
-                    "firstTickDistance": 1.3
+                    "distance": { "min": 444, "max": 444 },
+                    "configuredDistance": { "min": 444, "max": 444 },
+                    "flightSeconds": 3.09,
+                    "speed": 144,
+                    "firstTickDistance": 1.44
                 },
                 "low": {
                     "pellets": 1,
-                    "distance": { "min": 399, "max": 399 },
-                    "configuredDistance": { "min": 399, "max": 399 },
-                    "flightSeconds": 3.07,
-                    "speed": 130,
-                    "firstTickDistance": 1.3
+                    "distance": { "min": 443, "max": 443 },
+                    "configuredDistance": { "min": 443, "max": 443 },
+                    "flightSeconds": 3.08,
+                    "speed": 144,
+                    "firstTickDistance": 1.44
                 },
                 "high": {
                     "pellets": 1,
-                    "distance": { "min": 401, "max": 401 },
-                    "configuredDistance": { "min": 401, "max": 401 },
-                    "flightSeconds": 3.09,
-                    "speed": 130,
-                    "firstTickDistance": 1.3
+                    "distance": { "min": 445, "max": 445 },
+                    "configuredDistance": { "min": 445, "max": 445 },
+                    "flightSeconds": 3.1,
+                    "speed": 144,
+                    "firstTickDistance": 1.44
                 }
             }
         },

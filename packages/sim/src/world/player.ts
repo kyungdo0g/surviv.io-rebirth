@@ -10,7 +10,7 @@ import type { PickupResult } from "../loot/pickup.ts";
 import { updateEmoteThrottle } from "../match/emotes.ts";
 import type { Group } from "../match/teams.ts";
 import { trackActivity, updatePerks } from "../perks/effects.ts";
-import type { PerkSource } from "../perks/perks.ts";
+import { type PerkSource, rulesOf } from "../perks/perks.ts";
 import type { AnimType, HasteName, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
 import { gunDef, TIME_EPS, WeaponManager } from "../weapons/weaponManager.ts";
 import { handleActions } from "./actions.ts";
@@ -66,6 +66,8 @@ export class Player implements InventoryOwner {
     aimLayer = 0;
     /** standing in a building heal region this tick (M5b) */
     healEffect = false;
+    /** seconds the heal effect still shows after a coconut heal (survev player.ts healEffectTicker) */
+    healEffectTicker = 0;
     /** role id ("" for none): faction roles, Lone Survivr, map roles, Cobalt classes (M7a, roles/roles.ts) */
     role = "";
     /** the worn helmet came with the role (it leaves with the role); the role's outfit cannot be swapped (Commander) */
@@ -79,6 +81,8 @@ export class Player implements InventoryOwner {
     readonly weaponManager: WeaponManager;
     readonly inv: Inventory;
     outfit: string = PLAYER.defaultItems.outfit;
+    /** id of the obstacle a disguise outfit puts over the player (world/disguise.ts), 0 for none */
+    disguiseId = 0;
     /** outfit the player joined with: it never drops on death (survev compares with the loadout outfit) */
     readonly loadoutOutfit: string = PLAYER.defaultItems.outfit;
     backpack: string = PLAYER.defaultItems.backpack;
@@ -93,6 +97,10 @@ export class Player implements InventoryOwner {
     readonly haste = { type: "none" as HasteName, ticker: 0, seq: 0 };
     /** seconds of Last Breath left (bonus damage, size, M7a) */
     lastBreathTicker = 0;
+    /** Combat Stimulants (survev-only perk): seconds its bonus still runs after a heal or boost */
+    combatStimsTicker = 0;
+    /** Indomitable Spirit absorbed a fatal hit: seconds its effect still shows (survev lastStandEffectTicker) */
+    lastStandTicker = 0;
     /** Spud Gun hits: extra size, shrinking 2.5 s after the last hit (survev fatModifier / fatTicker, M7a) */
     fat = { mod: 0, ticker: 0 };
     /** snowball / potato hit: slowed for `ticker` s, frozen pose turned by `ori` (M7b, modes/frozen.ts) */
@@ -126,6 +134,9 @@ export class Player implements InventoryOwner {
     private visionRecoveryTicker = 0;
     /** seconds towards the next Fabricate refill */
     fabricateTicker = 0;
+    /** Fabricate: explosives still to hand out, one every rules.perks.fabricate.giveInterval (survev player.ts:1846) */
+    fabricateQueue: string[] = [];
+    fabricateGiveTicker = 0;
     /** the game this player is in (set by Game.addPlayer; throws need it to spawn projectiles) */
     ctx: SimContext | null = null;
     input: PlayerInput = emptyInput();
@@ -314,6 +325,11 @@ export class Player implements InventoryOwner {
         this.animTicker = 0;
     }
 
+    /** Flak Jacket: extra frag and MIRV room (survev inventoryManager.ts getMaxCapacity) */
+    capacityBonus(item: string): number {
+        return this.hasPerk("flak_jacket") ? (rulesOf(this).perks.flakJacketBonuses[item] ?? 0) : 0;
+    }
+
     onItemAdded(item: string): void {
         const def = getDef(item);
         const wm = this.weaponManager;
@@ -441,7 +457,7 @@ export class Player implements InventoryOwner {
 
         // boost heals and decays before the action and movement (survev player.ts update)
         updateBoost(this, ctx.rules, dt);
-        updateFabricate(this, ctx.rules, dt);
+        updateFabricate(ctx, this, dt);
         // haste, Last Breath, bugle, Gift of the Woods, That Sucks, Gabby Ghost (M7a); That Sucks may kill
         updatePerks(ctx, this, dt);
         if (this.dead) return;

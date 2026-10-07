@@ -1058,7 +1058,6 @@
  "map-outhouse-res.img": {"path":"img/original/map-outhouse-res.png","source":"original-0.8.82","size":[400,312]},
  "map-oven-01.img": {"path":"img/original/map-oven-01.png","source":"original-0.8.82","size":[108,94]},
  "map-perch-res-01.img": {"path":"img/original/map-perch-res-01.png","source":"original-0.8.82","size":[256,256]},
- "map-perch-res.img": {"source":"none"},
  "map-piano-01.img": {"path":"img/map/map-piano-01.svg","source":"survev","size":[240,75]},
  "map-pipes-01.img": {"path":"img/original/map-pipes-01.png","source":"original-0.8.82","size":[90,288]},
  "map-pipes-02.img": {"path":"img/original/map-pipes-02.png","source":"original-0.8.82","size":[236,172]},

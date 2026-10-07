@@ -5,8 +5,8 @@
 export interface PerkRules {
     /**
      * Size change per perk, summed and clamped to 0.75..2 (survev recalculateScale; perks.md "Size (scale) and haste").
-     * gotw +0.25 (conflicts.md gotw-values: fandom and survev's first value; fork 0.2), flak_jacket +0.2
-     * (conflicts.md flak-size: survev pre-fork value), steelskin +0.4, leadership +0.25, small_arms -0.25,
+     * Survev's values since the survev content wave's stage 5 (survev balance): gotw +0.2 and flak_jacket +0.1
+     * (conflicts.md gotw-values / flak-size: 0.25 / 0.2 before), steelskin +0.4, leadership +0.25, small_arms -0.25,
      * trick_size +0.25.
      */
     scales: Readonly<Record<string, number>>;
@@ -26,7 +26,7 @@ export interface PerkRules {
     takedownHasteDuration: number;
     /** Splinter Rounds main bullet damage x0.6 (survev splinter.mainDamageMult) */
     splinterMainDamageMult: number;
-    /** side bullets x0.45 of the main bullet: 27 % each (conflicts.md perk-splinter-side-damage; fork 0.5) */
+    /** side bullets x0.5 of the main bullet (survev splitsDamageMult; conflicts.md perk-splinter-side-damage: 0.45) */
     splinterSideDamageMult: number;
     /** side bullets deviate random(0.2, 0.25) x max(spread, 1) degrees to each side (survev fireWeapon) */
     splinterDeviation: readonly [number, number];
@@ -36,11 +36,35 @@ export interface PerkRules {
     chamberedDamageMult: number;
     /** High-Value Targets: bullet damage x1.25 against players holding a perk (survev targeting.damageMult) */
     targetingDamageMult: number;
-    /** ammo perks, Hollow-points, OKAMI Bar and Last Breath: +8 % (conflicts.md ammo-perk-mult: 1.08; fork 1.12) */
+    /** each ammo perk of the bullet's ammo: x1.12 (survev ammoBonusDamageMult; conflicts.md ammo-perk-mult: 1.08) */
     ammoBonusDamageMult: number;
-    /** survev multiplies every matching bonus; the KB applies at most one 8 % bonus per bullet (ammo-bonus-stacking) */
+    /** Hollow-points and OKAMI Bar: x1.08 on every bullet (survev isBulletSaturated) */
+    saturatedDamageMult: number;
+    /**
+     * survev multiplies every matching bonus (Last Breath, Hollow-points / OKAMI Bar, each ammo perk); false applies
+     * one `saturatedDamageMult` bonus per bullet (conflicts.md ammo-bonus-stacking, the v0.8.82 reading)
+     */
     ammoBonusStacking: boolean;
-    /** 9mm Overpressure: spread x1.1, speed and range x1.25 (conflicts.md perk-9mm-overpressure-speed; fork 1.2) */
+    /** Hollow-points: bullets x1.1 as fast (survev bonus_assault.speedMult, weaponManager.ts:868-870) */
+    bonusAssaultSpeedMult: number;
+    /**
+     * .45 in the Chamber: each .45 ACP bullet has a 0.166 chance to be empowered, x1.25 damage, x1.2 speed and no
+     * spread (survev bonus_45, weaponManager.ts:875-885)
+     */
+    bonus45: { empoweredChance: number; empoweredDamageMult: number; empoweredSpeedMult: number };
+    /** Flak Jacket: +3 frags and +2 MIRVs of bag room while held (survev flak_jacket.bonuses) */
+    flakJacketBonuses: Readonly<Record<string, number>>;
+    /**
+     * Fabricate: every 10 s 8 explosives are rolled (frag 60, MIRV 35, strobe 5) and given one every 0.08 s up to the
+     * bag's room (survev perkDefs.ts fabricate, player.ts:1846-1899; the original filled frags every 12 s)
+     */
+    fabricate: {
+        refillInterval: number;
+        giveInterval: number;
+        count: number;
+        weights: Readonly<Record<string, number>>;
+    };
+    /** 9mm Overpressure: spread x1.1, speed and range x1.2 (survev bonus_9mm; conflicts.md perk-9mm-overpressure-speed: 1.25) */
     bonus9mmSpreadMult: number;
     bonus9mmSpeedMult: number;
     bonus9mmDistanceMult: number;
@@ -49,8 +73,8 @@ export interface PerkRules {
     /** One With Nature: +2 speed in water instead of the -3 penalty (survev tree_climbing.waterSpeedBoost) */
     treeClimbingWaterSpeed: number;
     /**
-     * Gift of the Woods regeneration in HP/s; null ties it to the tier-1 adrenaline heal rate of `rules.boostModel`
-     * (conflicts.md gotw-values: 1 HP/s with fandom's boost table, 0.5 with survev's). Never while downed
+     * Gift of the Woods regeneration in HP/s: survev's 1 HP/s (perkDefs.ts gotw.healthRegen); null ties it to the
+     * tier-1 adrenaline heal rate of `rules.boostModel` (conflicts.md gotw-values). Never while downed
      * (conflicts.md gotw-while-downed).
      */
     gotwRegenRate: number | null;
@@ -88,6 +112,44 @@ export interface PerkRules {
     firepowerExcess: "delete" | "inventory";
     /** Scavenger / Master Scavenger extra loot roll per destroyed obstacle (survev perkDefs scavenger lootTableConf) */
     scavengerTiers: Readonly<Record<string, string>>;
+    /**
+     * Pirate's Bounty (survev-only, the Gold Cutlass): a melee kill drops 3-4 rolls of `tier` at the victim, and with
+     * `rareChance` one roll of `rareTier` (survev perkDefs.ts PerkProperties.pirate, player.ts:2727-2765;
+     * wikigg/Pirate's_Bounty)
+     */
+    pirate: {
+        minCount: number;
+        maxCount: number;
+        tier: string;
+        rareChance: number;
+        rareTier: string;
+    };
+    /** AP Rounds: armour reductions x0.8, obstacle damage x1.5 (survev perkDefs.ts:41-44; wikigg/AP_Rounds) */
+    apRounds: { armorPenetration: number; obstacleMult: number };
+    /** High-Velocity Rounds: bullet speed x1.4, range x1.3 (survev perkDefs.ts:141-144; wikigg/High-Velocity_Rounds) */
+    highVelocity: { speedMult: number; distanceMult: number };
+    /**
+     * Hyperfragmentation: throws x2 speed and x1.75 aim range; its explosions' shrapnel x2 count (rounded up), x1.5
+     * damage, x1.4 speed (survev perkDefs.ts:26-32, weaponManager.ts:1236-1247, explosion.ts:146-158;
+     * wikigg/Hyperfragmentation)
+     */
+    ampedExplosives: {
+        throwableRangeMult: number;
+        throwableSpeedMult: number;
+        shrapnelCountMult: number;
+        shrapnelDamageMult: number;
+        shrapnelSpeedMult: number;
+    };
+    /**
+     * Combat Stimulants: for 5 s after the holder uses a heal or boost, its bullets deal x1.15 and its gun hits on
+     * teammates heal them 6 % of the hit (survev perkDefs.ts:97-101, player.ts:1688-1705, 2423-2439)
+     */
+    combatStims: { bonusDamageMult: number; healPercent: number; effectDuration: number };
+    /**
+     * Indomitable Spirit: adrenaline decays x0.75; a fatal hit leaves 1 HP when the adrenaline covers the excess at 2
+     * adrenaline per HP (survev perkDefs.ts:90-93, player.ts:1535-1541, 2493-2510; wikigg/Indomitable_Spirit)
+     */
+    lifeline: { decayMult: number; conversionRate: number };
 }
 
 export function defaultPerkRules(): PerkRules {
@@ -95,12 +157,14 @@ export function defaultPerkRules(): PerkRules {
         scales: {
             leadership: 0.25,
             steelskin: 0.4,
-            flak_jacket: 0.2,
+            flak_jacket: 0.1,
             small_arms: -0.25,
             trick_size: 0.25,
-            gotw: 0.25,
+            gotw: 0.2,
+            // survev-only Assume Leadership (survev perkDefs.ts:9-12)
+            assume_leadership: 0.15,
         },
-        minBoost: { leadership: 100 },
+        minBoost: { leadership: 100, assume_leadership: 50 },
         hasteSpeedBonus: 4.8,
         windwalkTriggerDistance: 5,
         windwalkDuration: 3,
@@ -109,19 +173,24 @@ export function defaultPerkRules(): PerkRules {
         takedownBoost: 25,
         takedownHasteDuration: 3,
         splinterMainDamageMult: 0.6,
-        splinterSideDamageMult: 0.45,
+        splinterSideDamageMult: 0.5,
         splinterDeviation: [0.2, 0.25],
         splinterMainOnNoSplinter: false,
         chamberedDamageMult: 1.25,
         targetingDamageMult: 1.25,
-        ammoBonusDamageMult: 1.08,
-        ammoBonusStacking: false,
+        ammoBonusDamageMult: 1.12,
+        saturatedDamageMult: 1.08,
+        ammoBonusStacking: true,
+        bonusAssaultSpeedMult: 1.1,
+        bonus45: { empoweredChance: 0.166, empoweredDamageMult: 1.25, empoweredSpeedMult: 1.2 },
+        flakJacketBonuses: { frag: 3, mirv: 2 },
+        fabricate: { refillInterval: 10, giveInterval: 0.08, count: 8, weights: { frag: 60, mirv: 35, strobe: 5 } },
         bonus9mmSpreadMult: 1.1,
-        bonus9mmSpeedMult: 1.25,
-        bonus9mmDistanceMult: 1.25,
+        bonus9mmSpeedMult: 1.2,
+        bonus9mmDistanceMult: 1.2,
         smallArmsGunEquipSpeed: 1,
         treeClimbingWaterSpeed: 2,
-        gotwRegenRate: null,
+        gotwRegenRate: 1,
         inspirationRange: 30,
         inspirationHasteDuration: 3,
         bugleRechargeTime: 8,
@@ -139,6 +208,18 @@ export function defaultPerkRules(): PerkRules {
         maxPerks: 8,
         firepowerExcess: "delete",
         scavengerTiers: { scavenger: "tier_world", scavenger_adv: "tier_scavenger_adv" },
+        pirate: { minCount: 3, maxCount: 4, tier: "tier_pirate", rareChance: 0.12, rareTier: "tier_pirate_rare" },
+        apRounds: { armorPenetration: 0.8, obstacleMult: 1.5 },
+        highVelocity: { speedMult: 1.4, distanceMult: 1.3 },
+        ampedExplosives: {
+            throwableRangeMult: 1.75,
+            throwableSpeedMult: 2,
+            shrapnelCountMult: 2,
+            shrapnelDamageMult: 1.5,
+            shrapnelSpeedMult: 1.4,
+        },
+        combatStims: { bonusDamageMult: 1.15, healPercent: 0.06, effectDuration: 5 },
+        lifeline: { decayMult: 0.75, conversionRate: 2 },
     };
 }
 

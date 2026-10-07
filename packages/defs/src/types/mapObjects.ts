@@ -11,6 +11,8 @@ export interface TerrainSpawnDef {
     waterEdge?: { dir: Vec2; distMin: number; distMax: number };
     river?: { centerWeight: number };
     nearbyRiver?: { radMin: number; radMax: number; facingOri: number };
+    /** no obstacle of the same type within this distance (survev: faction crates, Cobalt's class shells) */
+    minDistanceFromSameType?: number;
 }
 
 /** `tierLoot(tier, min, max)` or `autoLoot(type, count)` entry of a map object. */
@@ -98,6 +100,10 @@ export interface ObstacleDef {
         offImg?: string;
         sound: { on: string; off: string };
         destroyOnUse?: boolean;
+        /** survev: the user is promoted to this role (the Augmenting Vat: "classless") */
+        roleToPromote?: string;
+        /** survev: an Augmenting Vat (client presentation) */
+        isVat?: boolean;
         useParticle?: string;
     };
     /** map object spawned when destroyed; with smartLoot it is a prefix completed with `_${role}` */
@@ -140,6 +146,8 @@ export interface BuildingChildDef {
     inheritOri?: boolean;
     ignoreMapSpawnReplacement?: boolean;
     puzzlePiece?: string;
+    /** survev: the child's own layer instead of the building's */
+    layer?: number;
 }
 
 /**

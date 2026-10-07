@@ -16,6 +16,7 @@ import {
     MapId,
     Plane,
     Rarity,
+    STROBE_VARIANT_TYPES,
     TeamMode,
     WeaponSlot,
 } from "../src/index.ts";
@@ -46,16 +47,20 @@ describe("GameConfig", () => {
         }
     });
 
-    it("keeps original client values: protocol 78, 4-level bag sizes", () => {
+    it("keeps the original protocol version 78; bag sizes are survev's five levels (backpack04)", () => {
         expect(GameConfig.protocolVersion).toBe(78);
-        expect(GameConfig.bagSizes["308sub"]).toEqual([10, 20, 40, 80]);
-        for (const [item, sizes] of Object.entries(GameConfig.bagSizes)) expect(sizes, item).toHaveLength(4);
-    });
-
-    it(".50 bag sizes are survev's (wikigg .50 Caliber: 50 / 100 / 150 / 200 / 250), cut to the four packs", () => {
-        // v0.8.82 held 49 / 98 / 147 / 196; survev/shared/gameConfig.ts:420 (fork 0.4.2) adds a fifth level
-        expect(policy.survevGameConfig).toEqual(["bagSizes.50AE"]);
-        expect(GameConfig.bagSizes["50AE"]).toEqual([50, 100, 150, 200]);
+        // survev content wave stage 2: survev/shared/gameConfig.ts:415-441, the original's rows first
+        expect(policy.survevGameConfig).toEqual(["bagSizes"]);
+        for (const [item, sizes] of Object.entries(GameConfig.bagSizes)) expect(sizes, item).toHaveLength(5);
+        // survev's last rows, then the rebirth's variant strobes (rebirth/strobes.ts)
+        const survevRows = Object.keys(GameConfig.bagSizes).filter(
+            (k) => !(STROBE_VARIANT_TYPES as readonly string[]).includes(k),
+        );
+        expect(survevRows.slice(-2)).toEqual(["tomato", "coconut"]);
+        // v0.8.82 10 / 20 / 40 / 80 (wikigg .308 Subsonic rev 7199: 20 / 40 / 55 / 70 / 85)
+        expect(GameConfig.bagSizes["308sub"]).toEqual([20, 40, 55, 70, 85]);
+        // v0.8.82 49 / 98 / 147 / 196 (wikigg .50 Caliber rev 7198)
+        expect(GameConfig.bagSizes["50AE"]).toEqual([50, 100, 150, 200, 250]);
     });
 
     it("carries survev server constants", () => {

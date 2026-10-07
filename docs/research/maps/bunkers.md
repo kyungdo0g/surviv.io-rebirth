@@ -217,6 +217,7 @@
 
 - Fork-only (survev v0.4.2, 24275240): centre object of the large savannah lake, entrance under a brush clump next to a hunting perch, second stair a one-way exit (fork) [src:wikigg/Cloud_Bunker] [src:survev/shared/defs/maps/savannahDefs.ts:201] [src:derived/git-24275240] [H]
 - Loot: 2 gold Initiative crates `crate_02sv`, cloud crate `crate_21`, cloud case `case_10` (Experimental Pack + perk), Fire Axe on the floor, lockers, vending machine; panel `control_panel_07sv` locks the two-way doors for 10 s with a 40 s cooldown (wiki.gg: 30 s) (fork) [src:survev/shared/defs/mapObjects/buildings/bunkerDefs.ts:1596] [src:survev/shared/defs/mapObjects/obstacles/interactableDefs.ts:362] [src:wikigg/Cloud_Bunker] [M]
+- Two partly flooded corridor spots (`water` surfaces inside the corridor `tile` surfaces): the floor test keeps the last matching surface of a building, so they are water (slow, wading) [src:survev/server/src/game/map.ts:2414-2423] [src:survev/shared/defs/mapObjects/buildings/bunkerDefs.ts:1604-1657] [src:wikigg/Cloud_Bunker] [H]
 
 ## Conflicts
 

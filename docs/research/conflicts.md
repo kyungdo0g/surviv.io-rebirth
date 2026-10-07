@@ -110,6 +110,7 @@
 - B: namu.wiki: the Grenadier gets a Saiga-12, katana, frags and MIRVs [src:namu/Surviv.io/이벤트] [M]
 - the original client role def has no loadout (only `perks: ["flak_jacket"]`), so the weapon was server-side [src:derived/survev@9f64948d:src/defs/roleDefs.js:48-54] [H]
 - proposed resolution: MP220 for v0.8.82 (two fandom pages, survev's pre-fork loadout and balance.txt agree; the Saiga-12 pages match the fork's 2025 change), Saiga-12 as a fork flag [src:fandom/Game_Modes] [src:fandom/MP220] [src:balance/180] [M]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's Saiga-12 (the role def's survev `defaultItems`) [src:derived/readme-precedence] [H]
 - note: `items/roles.md` proposed Saiga-12 and should be updated to MP220; `provenance/balance-revert.md` cites namu for MP220, but the namu snippet found for this page says Saiga-12 [src:derived/kb-crossref] [M]
 - files: `items/roles.md` (`role-grenadier-gun`), `provenance/balance-revert.md` (`grenadier-weapon`) [src:derived/kb-crossref] [H]
 
@@ -619,6 +620,7 @@
 - A: side bullets 0.6 × 0.45 = 27 % each in v0.8.82 [src:fandom/Splinter_Rounds] [M]
 - B: survev `splitsDamageMult` 0.5 (30 %) since fork commit e55e094e [src:survev/shared/defs/gameObjects/perkDefs.ts:37-40] [H]
 - proposed resolution: 0.45 for the target era, 0.5 behind a fork flag [src:derived/readme-precedence] [L]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's 0.5 (`rules.perks.splinterSideDamageMult`) [src:derived/readme-precedence] [H]
 - files: `items/perks.md` (`perk-splinter-side-damage`) [src:derived/kb-crossref] [H]
 
 ## steelskin-reduction
@@ -628,6 +630,7 @@
 - C (mechanics/damage-armor.md): 0.45 [src:survev/shared/defs/gameObjects/perkDefs.ts:15] [H]
 - D (mechanics/damage-armor.md): 0.5 in 0.8.8 [src:fandom/Cast_Ironskin] [src:wikigg/Cast_Ironskin] [src:balance/138-141] [M]
 - proposed resolution: 0.5 (fandom, wiki.gg and survev's first value); 0.4 / 0.45 are fork values [src:fandom/Cast_Ironskin] [src:balance/138-141] [H]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's 0.45 (`rules.steelskinReduction`) [src:derived/readme-precedence] [H]
 - files: `items/perks.md` (`perk-steelskin-reduction`), `mechanics/damage-armor.md` (`steelskin-reduction`) [src:derived/kb-crossref] [H]
 
 ## gotw-values
@@ -637,6 +640,7 @@
 - C (mechanics/heal-actions.md): Gift of the Woods regenerates 1 HP/s, a fork value; it was 0.5 HP/s (survev's tier-1 boost rate) until fork v0.2.2 [src:survev/shared/defs/gameObjects/perkDefs.ts:81-84] [src:derived/survev-git-fddf75b8] [src:wikigg/Gift_of_the_Woods] [H]
 - D (mechanics/heal-actions.md): 1 HP/s, "the exact same as 25 % Adrenaline" [src:fandom/Gift_of_the_Woods] [M]
 - proposed resolution: size scale +0.25 (fandom, survev's first value); regen tied to the tier-1 boost heal rate (1 HP/s with fandom's boost table, 0.5 with survev's) behind a knob [src:fandom/Gift_of_the_Woods] [src:derived/survev-git-fddf75b8] [L]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's scale +0.2 and 1 HP/s regeneration (`rules.perks.gotwRegenRate`) [src:derived/readme-precedence] [H]
 - files: `items/perks.md` (`perk-gotw-values`), `mechanics/heal-actions.md` (`gotw-regen`) [src:derived/kb-crossref] [H]
 
 ## flak-size
@@ -647,6 +651,7 @@
 - D (mechanics/damage-armor.md): +20 % in 0.8.8 [src:wikigg/Flak_Jacket] [src:balance/135-136] [M]
 - E (mechanics/damage-armor.md): +10 %, which fandom's history table also gives for 0.8.8 [src:fandom/Player] [src:fandom/Flak_Jacket] [M]
 - proposed resolution: rule 2 after the balance revert: scale +0.2 (survev's pre-fork value, wiki.gg's 0.8.8 note and namu's "about 20 %"), as a knob; fandom's +10 % is logged [src:balance/135-136] [src:wikigg/Flak_Jacket] [L]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's scale +0.1 plus +3 frags and +2 MIRVs of bag room (`rules.perks`) [src:derived/readme-precedence] [H]
 - note: `items/perks.md` proposed 0.1 and `mechanics/damage-armor.md` 0.2; this entry picks 0.2 [src:derived/kb-crossref] [L]
 - files: `items/perks.md` (`perk-flak-scale`), `mechanics/damage-armor.md` (`flak-size`) [src:derived/kb-crossref] [H]
 
@@ -672,6 +677,7 @@
 - C (mechanics/damage-armor.md): ammo perks ×1.12 [src:survev/shared/defs/gameObjects/perkDefs.ts:165] [H]
 - D (mechanics/damage-armor.md): 8 % [src:fandom/Last_Breath] [src:balance/336] [M]
 - proposed resolution: 1.08 (fandom + balance.txt's original value); 1.12 is fork 0.4.2 [src:fandom/Candy_Corn] [src:balance/336] [H]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's x1.12 per ammo perk, x1.08 Hollow-points / OKAMI Bar (`rules.perks`) [src:derived/readme-precedence] [H]
 - files: `items/perks.md` (`perk-ammo-bonus-mult`), `mechanics/damage-armor.md` (`ammo-perk-mult`) [src:derived/kb-crossref] [H]
 
 ## ammo-bonus-stacking
@@ -681,6 +687,7 @@
 - C (mechanics/damage-armor.md): survev multiplies Last Breath's ×1.08 with the ammo-perk bonus and with Hollow-points' ×1.08 [src:survev/server/src/game/weaponManager.ts:692-715] [H]
 - D (mechanics/damage-armor.md): "does not stack with other ammo-specific damage bonuses like Hollow-points or 9mm Overpressure" [src:fandom/Last_Breath] [src:wikigg/Last_Breath] [M]
 - proposed resolution: apply at most one 8 % bonus per bullet (take the larger), survev's multiplication behind a knob [src:fandom/Last_Breath] [src:fandom/Perks] [M]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's multiplication (`rules.perks.ammoBonusStacking` true) [src:derived/readme-precedence] [H]
 - files: `items/perks.md` (`perk-ammo-bonus-stacking`), `mechanics/damage-armor.md` (`last-breath-ammo-stack`) [src:derived/kb-crossref] [H]
 
 ## perk-9mm-overpressure-speed
@@ -688,6 +695,7 @@
 - A: speed and range +25 % [src:fandom/9mm_Overpressure] [M]
 - B: survev × 1.2 since fork 0.4.2 [src:balance/335] [H]
 - proposed resolution: 1.25 [src:derived/readme-precedence] [M]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's 1.2 (`rules.perks.bonus9mm*`) [src:derived/readme-precedence] [H]
 - files: `items/perks.md` (`perk-9mm-overpressure-speed`) [src:derived/kb-crossref] [H]
 
 ## perk-bonus45-empowered
@@ -709,6 +717,7 @@
 - A: max frag grenades every 12 s [src:fandom/Fabricate] [M]
 - B: fork 8 random explosives (frag 60 / MIRV 35 / strobe 5) every 10 s [src:balance/316] [H]
 - proposed resolution: refill frags to capacity every 12 s [src:derived/readme-precedence] [M]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's 8 weighted explosives every 10 s (`rules.perks.fabricate`) [src:derived/readme-precedence] [H]
 - files: `items/perks.md` (`perk-fabricate-rule`) [src:derived/kb-crossref] [H]
 
 ## field-medic-speed
@@ -827,6 +836,7 @@
 - A: v0.8.82 Cast Ironskin + Splinter Rounds + one of Takedown/Windwalk/Combat Medic at 1/3 each [src:derived/survev@9f64948d:src/defs/roleDefs.js:62-68] [src:fandom/Combat_Medic] [H]
 - B: fork Cast Ironskin + AP or Splinter + Takedown + Windwalk or Combat Medic [src:survev/shared/defs/gameObjects/roleDefs.ts:368-381] [H]
 - proposed resolution: v0.8.82 set [src:derived/readme-precedence] [H]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's four perks, two of them weighted picks (`$weighted` role perks) [src:derived/readme-precedence] [H]
 - files: `items/roles.md` (`role-lone-survivr-perks`) [src:derived/kb-crossref] [H]
 
 ## grenadier-grenades
@@ -836,6 +846,7 @@
 - C (provenance/balance-revert.md): balance.txt says the Grenadier gets 12 MIRVs since fork 0.3.01 [src:balance/300] [H]
 - D (provenance/balance-revert.md): `roleDefs.ts` gives 10 MIRVs (8 + Flak Jacket bonus) [src:survev/shared/defs/gameObjects/roleDefs.ts:331] [H]
 - proposed resolution: rule 1 after the balance revert: 12 frags + 8 MIRVs (fandom and survev pre-fork agree); fork 15 + 10 (code) or 15 + 12 (balance.txt) only behind a flag [src:fandom/Grenadier] [src:derived/survev@172a4348:shared/defs/gameObjects/roleDefs.ts:306-328] [H]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's 15 frags + 10 MIRVs, held thanks to Flak Jacket's bag room [src:derived/readme-precedence] [H]
 - files: `items/roles.md` (`role-grenadier-grenades`), `provenance/balance-revert.md` (`grenadier-mirv-count`) [src:derived/kb-crossref] [H]
 
 ## role-promotion-heals
@@ -845,6 +856,7 @@
 - C (provenance/balance-revert.md): balance.txt gives Commander 5 bandages + 1 medkit, Lieutenant 10 bandages + 3 sodas, Bugler 5 bandages + 2 sodas [src:balance/172, balance/173, balance/174] [H]
 - D (provenance/balance-revert.md): the code gives Commander 10 bandages + 1 medkit, Lieutenant 10 bandages + 1 medkit + 2 sodas, Bugler 5 bandages [src:survev/shared/defs/gameObjects/roleDefs.ts:157, survev/shared/defs/gameObjects/roleDefs.ts:220, survev/shared/defs/gameObjects/roleDefs.ts:356] [H]
 - proposed resolution: no healing items on promotion (fork 0.1.2 addition; balance.txt and code also disagree on the amounts) [src:survev/client/public/changelogRec.html:442] [src:fandom/Commander] [H]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's healing items (the role defs' survev `defaultItems`) [src:derived/readme-precedence] [H]
 - files: `items/roles.md` (`role-promotion-heals`), `provenance/balance-revert.md` (`role-healing-amounts`) [src:derived/kb-crossref] [H]
 
 ## role-bugler-pan
@@ -852,6 +864,7 @@
 - A: no melee in v0.8.82 [src:fandom/Bugler] [M]
 - B: fork pan [src:balance/179] [H]
 - proposed resolution: no pan [src:derived/readme-precedence] [M]
+- in the game since the survev content wave's stage 5 (survev balance, design option B): survev's pan (the role def's survev `defaultItems`) [src:derived/readme-precedence] [H]
 - files: `items/roles.md` (`role-bugler-pan`) [src:derived/kb-crossref] [H]
 
 ## role-healer-perks
@@ -913,6 +926,7 @@
 - D (mechanics/airdrop-airstrike.md): 3 s [src:survev/shared/defs/gameObjects/throwableDefs.ts:367] [src:wikigg/Strobe] [H]
 - status: closed (2026-10-07): 3 s. survev master is the gameplay baseline (ADR 0003), and survev.wiki.gg agrees ("three seconds after it is thrown"); the rebirth layer sets `strobe.strikeDelay` 3 over the generated 2.5 (`packages/defs/src/rebirth/strobes.ts`, listed in `rebirth-deviations.md`) [src:survev/shared/defs/gameObjects/throwableDefs.ts:367] [src:wikigg/Strobe] [src:user/2026-10-07-strobes] [H]
 - superseded resolution: rule 1: `strikeDelay` 2.5 s (original client, relaunch and fandom); 3 s is a fork value [src:kong/relaunch-client-defs] [src:derived/survev@9f64948d:src/defs/throwableDefs.js:286-352] [H]
+- the survev content wave's stage 5 (survev balance, design option B) ports survev's 3 s into the generated def too, so the rebirth layer's 3 then matches it [src:derived/readme-precedence] [H]
 - files: `items/throwables.md` (`strobe-delay`), `mechanics/airdrop-airstrike.md` (`strobe-strike-delay`) [src:derived/kb-crossref] [H]
 
 ## strobe-arming
@@ -1124,7 +1138,7 @@
 
 - A: survev assigns `teamId` sides to bank, mansion, police, docks, silo shack [src:survev/shared/defs/mapObjects/buildings/baseBuildingDefs.ts:7] [H]
 - B: no `teamId` in the original client [src:kong/relaunch-client-defs] [H]
-- proposed resolution: keep survev's side rule as a knob, origin unknown [src:derived/readme-precedence] [L]
+- proposed resolution: survev's `teamId` (the port copies it with `survevMapGen`, survev content wave 50v50 stage); fandom already puts the team crates on their own side in the original [src:derived/readme-precedence] [src:fandom/50v50_Map] [M]
 - files: `maps/buildings.md` (`faction-teamid`) [src:derived/kb-crossref] [H]
 
 ## preload-on-ground-crates
@@ -1148,6 +1162,7 @@
 - H (modes/cobalt.md): v0.8.82 doors open at about 0:45 left in the circle-2 wait (wait ≈ 5–6 s) [src:fandom/Twins_Bunker] [src:fandom/Cobalt_Map] [src:namu/Surviv.io/이벤트] [M]
 - I (modes/cobalt.md): fork circle 1 + 30 s [src:survev/shared/defs/maps/cobaltDefs.ts:45-54] [H]
 - proposed resolution: circleIdx 2 with a 5 s wait (survev pre-fork; fandom "0:45 in the third cooldown"), as a knob; survev's circle 1 + 30 s behind a fork flag [src:fandom/Twins_Bunker] [src:derived/git-ae55c9a8] [M]
+- in the game since the survev content wave's stage 5 (survev balance): survev's circle 1 + 30 s (`rules.unlockOverrides` empty; the original timing is one override away) [src:derived/readme-precedence] [H]
 - files: `maps/bunkers.md` (`twins-unlock-time`), `maps/puzzles.md` (`twins-unlock-timing`), `mechanics/doors-layers-ceilings.md` (`twins-bunker-unlock-time`), `modes/cobalt.md` (`cobalt-twins-unlock`) [src:derived/kb-crossref] [H]
 
 ## egg-cobalt-odds
@@ -2393,6 +2408,13 @@
 - B (mechanics/airdrop-airstrike.md): survev draws both snow shells with `map-airdrop-01x.img` [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1183-1208] [H]
 - proposed resolution: rule 1, the original client is authoritative for client-visible values: `map-airdrop-02x.img` (the generated defs carry it), so a snow gold drop shows before it is opened [src:derived/readme-precedence] [H]
 - files: `mechanics/airdrop-airstrike.md` (`snow-gold-shell-sprite`), `rebirth-deviations.md` (air drop tiers, client presentation) [src:derived/kb-crossref] [H]
+
+## survev-throwable-cookable
+
+- A (survev.wiki.gg): the Coconut is cookable, the Tomato is not [src:wikigg/Coconut] [src:wikigg/Tomato_(Throwable)] [M]
+- B (survev source): `coconut` has `cookable: false`, `tomato` `cookable: true` [src:survev/shared/defs/gameObjects/throwableDefs.ts:846] [src:survev/shared/defs/gameObjects/throwableDefs.ts:913] [H]
+- proposed resolution: the wiki wins for survev-only items (ADR 0003 point 4, `user/2026-10-07-survev-guns`); applied in `packages/defs/src/survev/wikiSpecs.ts`, generated JSON keeps survev's value [src:user/2026-10-07-survev-guns] [M]
+- files: `items/throwables.md` [src:derived/kb-crossref] [H]
 
 ## Conflicts
 

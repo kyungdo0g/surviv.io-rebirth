@@ -52,6 +52,8 @@ export interface FireBulletParams {
     saturated?: boolean;
     thick?: boolean;
     splinter?: boolean;
+    /** AP Rounds (survev-only perk): armour reductions x armorPenetration, obstacle damage x obstacleMult */
+    apRounds?: boolean;
     /** the range is min(def.distance x distanceMult, `distance`) (USAS-12 toMouseHit, M9; survev clipDistance) */
     clipDistance?: boolean;
     distance?: number;
@@ -100,6 +102,7 @@ export interface Bullet {
     readonly saturated: boolean;
     readonly thick: boolean;
     readonly splinter: boolean;
+    readonly apRounds: boolean;
     /** the range was clipped (USAS-12 toMouseHit); ricochets keep a clipped range (M9) */
     readonly clipDistance: boolean;
 }
@@ -225,6 +228,7 @@ export class BulletSystem {
             speedMult,
             distanceMult,
             saturated: p.saturated ?? false,
+            apRounds: p.apRounds ?? false,
             thick: p.thick ?? false,
             splinter: p.splinter ?? false,
             clipDistance,
@@ -326,7 +330,9 @@ export class BulletSystem {
             let hit = false;
             if (col.type === "obstacle") {
                 const obstacle = col.obj as Obstacle;
-                this.damages.push({ target: obstacle, params: this.params(b, damage * b.def.obstacleDamage) });
+                // AP Rounds: obstacle damage x1.5 (survev bullet.ts:593-597)
+                const ap = b.apRounds ? this.ctx.rules.perks.apRounds.obstacleMult : 1;
+                this.damages.push({ target: obstacle, params: this.params(b, damage * b.def.obstacleDamage * ap) });
                 if (obstacle.def.reflectBullets) this.reflect(b, col.point, col.normal, obstacle.id);
                 // non-collidable obstacles take the hit but let the bullet pass
                 hit = col.collidable;
@@ -337,6 +343,8 @@ export class BulletSystem {
                     const hvt = !!shooter?.hasPerk("targeting") && target.perks.length > 0;
                     const params = this.params(b, hvt ? damage * this.ctx.rules.perks.targetingDamageMult : damage);
                     params.isExplosion = b.def.shrapnel;
+                    // AP Rounds: armour and damage-reduction perks work at x0.8 (survev bullet.ts:635-637)
+                    if (b.apRounds) params.armorPenetration = this.ctx.rules.perks.apRounds.armorPenetration;
                     this.damages.push({ target: col.obj as Player, params });
                     this.ctx.observer?.onBulletHitPlayer?.(b, target);
                 }
@@ -461,6 +469,7 @@ export class BulletSystem {
             saturated: b.saturated,
             thick: b.thick,
             splinter: b.splinter,
+            apRounds: b.apRounds,
             clipDistance: b.clipDistance,
             distance,
         });

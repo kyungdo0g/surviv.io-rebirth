@@ -98,6 +98,9 @@ export const koItems: Readonly<Record<string, string>> = {
     backpack01: "작은 가방",
     backpack02: "보통 가방",
     backpack03: "군용 가방",
+    // survev-only packs and role helmets (l10n-ko.md proposals; survev's ko.json has none)
+    backpack04: "전술 가방",
+    backpack04_cloud: "실험용 가방",
     chest01: "1레벨 조끼",
     chest02: "2레벨 조끼",
     chest03: "3레벨 조끼",
@@ -113,6 +116,8 @@ export const koItems: Readonly<Record<string, string>> = {
     helmet03_potato: "K-포-테토",
     helmet03_marksman: "명사수 헬멧",
     helmet04_leader: "지휘관 헬멧",
+    helmet04_captain: "대장 헬멧",
+    helmet04_classless: "무소속 헬멧",
     "1xscope": "1배율 스코프",
     "2xscope": "2배율 스코프",
     "4xscope": "4배율 스코프",
@@ -263,6 +268,12 @@ export const koItems: Readonly<Record<string, string>> = {
     katana_demo: "하카이의 카타나",
     spade_assault: "참호용 야전삽",
     warhammer_tank: "팬저해머",
+    // survev-only melee (l10n-ko.md: iceaxe, cutlass and cutlass_gold from survev's ko.json; the skins proposed)
+    iceaxe: "얼음 도끼",
+    cutlass: "커틀러스",
+    cutlass_gold: "황금 커틀러스",
+    naginata_daemon: "데몬 나기나타",
+    karambit_borealis: "보레알리스 카람빗",
     frag: "파편 수류탄",
     smoke: "연막탄",
     mirv: "MIRV 수류탄",
@@ -276,6 +287,9 @@ export const koItems: Readonly<Record<string, string>> = {
     snowball_heavy: "스노우볼",
     potato: "감자",
     potato_heavy: "감자",
+    // survev-only throwables (l10n-ko.md: coconut from survev's ko.json, tomato proposed)
+    coconut: "코코넛",
+    tomato: "토마토",
     potato_lmgshot: "PMG-134",
 };
 
@@ -315,6 +329,9 @@ export const koHudItems: Readonly<Record<string, string>> = {
     katana_demo: "카타나",
     spade_assault: "야전삽",
     warhammer_tank: "워 해머",
+    cutlass_gold: "커틀러스",
+    naginata_daemon: "나기나타",
+    karambit_borealis: "카람빗",
     frag: "수류탄",
     smoke: "연막",
     mirv: "MIRV",
@@ -324,4 +341,6 @@ export const koHudItems: Readonly<Record<string, string>> = {
     strobe_carpet: "대공습",
     snowball: "스노우볼",
     potato: "감자",
+    coconut: "코코넛",
+    tomato: "토마토",
 };
