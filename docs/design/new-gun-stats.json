@@ -1,0 +1,5143 @@
+{
+    "title": "rebirth new-gun stats (final)",
+    "date": "2026-10-07",
+    "status": "decided",
+    "doc": "docs/design/new-gun-stats.md",
+    "supersedes": "docs/design/survev-content-and-new-guns.md 4.1 stat and loot columns, 4.2 weights; SPAS-15 dropped",
+    "conventions": {
+        "units": "game units (u), seconds, u/s",
+        "playerSpeed": "gun.speed.equip",
+        "recoilSpeed": "gun.speed.attack",
+        "carrySpeed": "gun.speed.carry (rebirth, summed over both gun slots)",
+        "presentation": "lootImg / worldImg / particle / sound are the fallback objects that work today; `assets` lists the owner files that replace them (plan 4.4, 5.8)",
+        "armor": "A1/A2/A3 body multiplier 0.694 / 0.546 / 0.459",
+        "headshotRule": "only headshotMult > 1 rolls headshots",
+        "nullMetric": "null in metrics means the gun cannot kill at that distance (out of range or out of shots)"
+    },
+    "newFields": {
+        "gun": [
+            "charges",
+            "discardWhenEmpty",
+            "pumpEvery",
+            "pumpDelay",
+            "goldOnly",
+            "ignoreEndlessAmmo",
+            "speed.carry",
+            "sound.discard"
+        ],
+        "bullet": ["noReflect", "armDistance", "noDistAdj (or rules.noDistAdjBullets)"]
+    },
+    "ammo": {
+        "40mm": {
+            "def": {
+                "name": "40mm",
+                "type": "ammo",
+                "special": true,
+                "minStackSize": 5,
+                "lootImg": {
+                    "sprite": "loot-ammo-box.img",
+                    "scale": 0.2,
+                    "tint": 843179,
+                    "tintDark": 563578
+                },
+                "sound": {
+                    "pickup": "ammo_pickup_01"
+                }
+            },
+            "bagSizes": [10, 20, 30, 40, 50],
+            "tracerColor": {
+                "regular": 10483167,
+                "saturated": 7270607,
+                "chambered": 843179,
+                "apSaturated": 424542,
+                "alphaRate": 0.92,
+                "alphaMin": 0.14
+            },
+            "emote": {
+                "id": "emote_ammo40mm",
+                "img": "ammo-40mm.img (original render via the fandom gap-fill)"
+            },
+            "l10n": {
+                "en": "40mm Grenade",
+                "ko": "40mm 유탄"
+            },
+            "sources": "m79 / gl06 ammoSpawnCount 10, mgl 12; in no ammo table"
+        },
+        "rocket": {
+            "def": {
+                "name": "Rocket",
+                "type": "ammo",
+                "special": true,
+                "minStackSize": 2,
+                "lootImg": {
+                    "sprite": "loot-ammo-box.img",
+                    "scale": 0.2,
+                    "tint": 9127187,
+                    "tintDark": 6041099
+                },
+                "sound": {
+                    "pickup": "ammo_pickup_01"
+                }
+            },
+            "bagSizes": [4, 6, 8, 10, 12],
+            "tracerColor": {
+                "regular": 14267276,
+                "saturated": 13145450,
+                "chambered": 9127187,
+                "apSaturated": 6041099,
+                "alphaRate": 0.92,
+                "alphaMin": 0.2
+            },
+            "emote": {
+                "id": "emote_ammorocket",
+                "img": "ammo-rocket.img (owner art needed; fallback 40mm icon tinted brown)"
+            },
+            "l10n": {
+                "en": "Rocket",
+                "ko": "로켓"
+            },
+            "sources": "rpg7 ammoSpawnCount 4 (two side stacks of 2); in no loot table (integrity test)"
+        },
+        "57mm": {
+            "def": {
+                "name": "5.7×28mm",
+                "type": "ammo",
+                "special": true,
+                "minStackSize": 10,
+                "lootImg": {
+                    "sprite": "loot-ammo-box.img",
+                    "scale": 0.2,
+                    "tint": 16736180,
+                    "tintDark": 12728966
+                },
+                "sound": {
+                    "pickup": "ammo_pickup_01"
+                }
+            },
+            "bagSizes": [100, 200, 300, 400, 500],
+            "tracerColor": {
+                "regular": 16762599,
+                "saturated": 16757725,
+                "chambered": 16727972,
+                "apSaturated": 10687071,
+                "alphaRate": 0.92,
+                "alphaMin": 0.14
+            },
+            "emote": {
+                "id": "emote_ammo57mm",
+                "img": "ammo-57mm.img (owner art; fallback 9mm icon tinted pink)"
+            },
+            "l10n": {
+                "en": "5.7×28mm",
+                "ko": "5.7×28mm 탄"
+            },
+            "sources": "p90 ammoSpawnCount 150 (two side stacks of 75); tier_ammo_crate weight 0.5, count 50 where the P90 can appear (not savannah)"
+        }
+    },
+    "chargeAmmoIds": ["boys_ammo", "panzerfaust_ammo", "m202_ammo"],
+    "gunClasses": {
+        "ak74": "assault",
+        "g36c": "assault",
+        "m16a4": "assault",
+        "sig550": "assault",
+        "g3": "assault",
+        "honeybadger": "assault",
+        "fal": "dmr",
+        "mk14": "dmr",
+        "wa2000": "sniper",
+        "tec9": "pistol",
+        "tec9_dual": "pistol",
+        "vz61": "pistol",
+        "vz61_dual": "pistol",
+        "bizon": "smg",
+        "m1928": "smg",
+        "asval": "smg",
+        "p90": "smg",
+        "dp12": "shotgun",
+        "aa12": "shotgun",
+        "m79": "launcher",
+        "mgl": "launcher",
+        "gl06": "launcher",
+        "rpg7": "launcher",
+        "panzerfaust": "launcher",
+        "m202": "launcher",
+        "m200": "sniper",
+        "hecate": "sniper",
+        "lynx": "sniper",
+        "boys": "sniper",
+        "m60": "lmg",
+        "mg42": "lmg",
+        "dshk": "lmg"
+    },
+    "loot": {
+        "main": {
+            "tier_guns": {
+                "ak74": 1.5,
+                "g36c": 1.2,
+                "m16a4": 0.7,
+                "sig550": 0.1,
+                "g3": 0.2,
+                "honeybadger": 0.02,
+                "fal": 0.1,
+                "tec9": 3,
+                "vz61": 2,
+                "bizon": 3,
+                "asval": 0.05,
+                "p90": 0.02,
+                "m79": 0.02,
+                "gl06": 0.02,
+                "panzerfaust": 0.02,
+                "m60": 0.02,
+                "mg42": 0.005
+            },
+            "tier_shotguns": {
+                "dp12": 0.05
+            },
+            "desert_tier_guns": {
+                "m1928": 0.5
+            },
+            "tier_airdrop_tier1_appended": {
+                "m16a4": 1,
+                "sig550": 1,
+                "g3": 1,
+                "fal": 1,
+                "m1928": 1,
+                "asval": 1.5,
+                "m79": 0.5,
+                "gl06": 0.5,
+                "panzerfaust": 0.5
+            },
+            "tier_airdrop_uncommon_appended": {
+                "honeybadger": 0.75,
+                "mk14": 0.75,
+                "wa2000": 0.5,
+                "p90": 1.5,
+                "dp12": 1,
+                "m79": 1,
+                "m202": 0.2,
+                "m200": 0.25,
+                "boys": 0.75,
+                "m60": 1,
+                "mg42": 0.75,
+                "spas16": 1
+            },
+            "tier_airdrop_rare_appended": {
+                "aa12": 0.5,
+                "mgl": 0.5,
+                "rpg7": 0.5,
+                "m202": 0.25,
+                "m200": 0.5,
+                "hecate": 0.5,
+                "lynx": 0.5,
+                "dshk": 0.08
+            },
+            "tier2RollRule": "after appending tier 1 rows: tier_airdrop_tier2 weight = sum(tier_airdrop_tier1 entries) * 0.1 / 0.9 (main: 2.307)",
+            "tier_ammo_crate": {
+                "57mm": {
+                    "weight": 0.5,
+                    "count": 50
+                }
+            }
+        },
+        "goldOnly": ["rpg7", "mgl", "hecate", "lynx", "dshk"],
+        "mapRules": "plan 4.1 map rules: Woods floor shotguns + LMGs only; Savannah pistols / SMGs (quality 0) / DMRs / snipers; Desert no 9mm; classic and faction no .45; launchers on the floor only on main and desert"
+    },
+    "guns": {
+        "ak74": {
+            "id": "ak74",
+            "gunClass": "assault",
+            "placementMain": {
+                "floor": 1.5
+            },
+            "mapRules": "Floor of every map whose tier_guns hold assault rifles; banned on Woods and Savannah floors.",
+            "gun": {
+                "name": "AK-74",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "556mm",
+                "ammoSpawnCount": 90,
+                "maxClip": 30,
+                "maxReload": 30,
+                "extendedClip": 40,
+                "extendedReload": 40,
+                "reloadTime": 2.3,
+                "fireDelay": 0.09,
+                "switchDelay": 0.75,
+                "barrelLength": 3.25,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 5.5,
+                "shotSpread": 2,
+                "bulletCount": 1,
+                "bulletType": "bullet_ak74",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-ak74.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.455
+                    },
+                    "tint": 3092271,
+                    "leftHandOffset": {
+                        "x": 2.8,
+                        "y": 0
+                    },
+                    "recoil": 1.33
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.45
+                },
+                "sound": {
+                    "shoot": "ak74_01",
+                    "reload": "ak74_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "ak74_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_ak74": {
+                    "type": "bullet",
+                    "damage": 12,
+                    "obstacleDamage": 1,
+                    "falloff": 0.9,
+                    "distance": 200,
+                    "speed": 107,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "556mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.9
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-ak74.png",
+                    "fallback": "loot-weapon-ak.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-ak74-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (plain bar, tint 0x2F2F2F)"
+                },
+                "sounds": {
+                    "ak74_01": "ak47_01",
+                    "ak74_reload_01": "ak47_reload_01",
+                    "ak74_switch_01": "ak47_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Assault rifle",
+                "ammo": "5.56mm (green; 5.45x39 has no ammo of its own)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "30 (ext 40)",
+                "ammoSpawn": 90,
+                "reloadTime": "2.3",
+                "fireDelay": "0.09 (667 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 2,
+                "movingSpread": 5.5,
+                "barrelLength": 3.25,
+                "bullet": {
+                    "damage": "12",
+                    "falloff": 0.9,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 200,
+                    "speed": 107,
+                    "maxDps": "133.3",
+                    "maxObstacleDps": "133.3"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.09,
+                "rpm": 667,
+                "maxDps": 133.3,
+                "maxObstacleDps": 133.3,
+                "sustainedDps": 72,
+                "magazineDamage": 360,
+                "fullReload": 2.3,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [0.82, 1.18, 1.45, 1.72],
+                "stkBody15": [9, 13, 16, 19],
+                "eStand15A2": 1.225,
+                "eStand40A2": 1.485,
+                "eMove40A2": 4.638,
+                "eStand100A2": 3.137
+            }
+        },
+        "g36c": {
+            "id": "g36c",
+            "gunClass": "assault",
+            "placementMain": {
+                "floor": 1.2
+            },
+            "mapRules": "As the AK-74.",
+            "gun": {
+                "name": "G36C",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "556mm",
+                "ammoSpawnCount": 90,
+                "maxClip": 30,
+                "maxReload": 30,
+                "extendedClip": 40,
+                "extendedReload": 40,
+                "reloadTime": 2.1,
+                "fireDelay": 0.08,
+                "switchDelay": 0.75,
+                "barrelLength": 2.6,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 5,
+                "shotSpread": 3,
+                "bulletCount": 1,
+                "bulletType": "bullet_g36c",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-g36c.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-med-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 3815994,
+                    "leftHandOffset": {
+                        "x": 4.2,
+                        "y": 0
+                    },
+                    "recoil": 1.33
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.4
+                },
+                "sound": {
+                    "shoot": "g36c_01",
+                    "reload": "g36c_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "g36c_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_g36c": {
+                    "type": "bullet",
+                    "damage": 11,
+                    "obstacleDamage": 1,
+                    "falloff": 0.8,
+                    "distance": 150,
+                    "speed": 100,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "556mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.9
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-g36c.png",
+                    "fallback": "loot-weapon-hk416.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-g36c-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-med-01.img (plain bar, tint 0x3A3A3A)"
+                },
+                "sounds": {
+                    "g36c_01": "hk416_01",
+                    "g36c_reload_01": "hk416_reload_01",
+                    "g36c_switch_01": "hk416_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Assault rifle (compact carbine)",
+                "ammo": "5.56mm (green)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "30 (ext 40)",
+                "ammoSpawn": 90,
+                "reloadTime": "2.1",
+                "fireDelay": "0.08 (750 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 3,
+                "movingSpread": 5,
+                "barrelLength": 2.6,
+                "bullet": {
+                    "damage": "11",
+                    "falloff": 0.8,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 150,
+                    "speed": 100,
+                    "maxDps": "137.5",
+                    "maxObstacleDps": "137.5"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.08,
+                "rpm": 750,
+                "maxDps": 137.5,
+                "maxObstacleDps": 137.5,
+                "sustainedDps": 73.3,
+                "magazineDamage": 330,
+                "fullReload": 2.1,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [0.834, 1.154, 1.394, 1.714],
+                "stkBody15": [10, 14, 17, 21],
+                "eStand15A2": 1.225,
+                "eStand40A2": 1.52,
+                "eMove40A2": 5.38,
+                "eStand100A2": 6.303
+            }
+        },
+        "m16a4": {
+            "id": "m16a4",
+            "gunClass": "assault",
+            "placementMain": {
+                "floor": 0.7,
+                "t1": 1
+            },
+            "mapRules": "As the AK-74 (assault).",
+            "gun": {
+                "name": "M16A4",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "burst",
+                "caseTiming": "shoot",
+                "ammo": "556mm",
+                "ammoSpawnCount": 90,
+                "maxClip": 30,
+                "maxReload": 30,
+                "extendedClip": 40,
+                "extendedReload": 40,
+                "reloadTime": 2.5,
+                "fireDelay": 0.3,
+                "burstCount": 3,
+                "burstDelay": 0.075,
+                "switchDelay": 0.75,
+                "barrelLength": 3.4,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 2.4,
+                "shotSpread": 1.1,
+                "bulletCount": 1,
+                "bulletType": "bullet_m16a4",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-m16a4.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.475
+                    },
+                    "tint": 1973790,
+                    "leftHandOffset": {
+                        "x": 12,
+                        "y": 0
+                    },
+                    "gunOffset": {
+                        "x": -8,
+                        "y": 0
+                    },
+                    "recoil": 1.33
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.425
+                },
+                "sound": {
+                    "shoot": "m16a4_01",
+                    "reload": "m16a4_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "m16a4_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_m16a4": {
+                    "type": "bullet",
+                    "damage": 17,
+                    "obstacleDamage": 1,
+                    "falloff": 0.92,
+                    "distance": 250,
+                    "speed": 112,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "556mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.9
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-m16a4.png",
+                    "fallback": "loot-weapon-famas.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-m16a4-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (plain bar, tint 0x1E1E1E)"
+                },
+                "sounds": {
+                    "m16a4_01": "famas_01",
+                    "m16a4_reload_01": "famas_reload_01",
+                    "m16a4_switch_01": "famas_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Assault rifle (3-round burst)",
+                "ammo": "5.56mm (green)",
+                "fireMode": "Burst (3)",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "30 (ext 40)",
+                "ammoSpawn": 90,
+                "reloadTime": "2.5",
+                "fireDelay": "0.3 + burst delay 0.075 (800 rpm in a burst, 400 average)",
+                "switchDelay": 0.75,
+                "standingSpread": 1.1,
+                "movingSpread": 2.4,
+                "barrelLength": 3.4,
+                "bullet": {
+                    "damage": "17",
+                    "falloff": 0.92,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 250,
+                    "speed": 112,
+                    "maxDps": "113.3",
+                    "maxObstacleDps": "113.3"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.15,
+                "rpm": 400,
+                "maxDps": 113.3,
+                "maxObstacleDps": 113.3,
+                "sustainedDps": 72.9,
+                "magazineDamage": 510,
+                "fullReload": 2.5,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [0.695, 1.145, 1.52, 1.895],
+                "stkBody15": [6, 9, 11, 13],
+                "eStand15A2": 1.33,
+                "eStand40A2": 1.554,
+                "eMove40A2": 1.717,
+                "eStand100A2": 2.102
+            }
+        },
+        "sig550": {
+            "id": "sig550",
+            "gunClass": "assault",
+            "placementMain": {
+                "floor": 0.1,
+                "t1": 1
+            },
+            "mapRules": "As the AK-74 (assault).",
+            "gun": {
+                "name": "SIG SG 550",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "556mm",
+                "ammoSpawnCount": 90,
+                "maxClip": 30,
+                "maxReload": 30,
+                "extendedClip": 40,
+                "extendedReload": 40,
+                "reloadTime": 2.7,
+                "fireDelay": 0.086,
+                "switchDelay": 0.75,
+                "barrelLength": 3.4,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 6,
+                "shotSpread": 1.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_sig550",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": -0.5
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-sig550.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.475
+                    },
+                    "tint": 3951150,
+                    "leftHandOffset": {
+                        "x": 4.2,
+                        "y": 0
+                    },
+                    "recoil": 1.33
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.4
+                },
+                "sound": {
+                    "shoot": "sig550_01",
+                    "reload": "sig550_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "sig550_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_sig550": {
+                    "type": "bullet",
+                    "damage": 13,
+                    "obstacleDamage": 1,
+                    "falloff": 0.9,
+                    "distance": 220,
+                    "speed": 108,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "556mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.9
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-sig550.png",
+                    "fallback": "loot-weapon-hk416.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-sig550-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (plain bar, tint 0x3C4A2E)"
+                },
+                "sounds": {
+                    "sig550_01": "hk416_01",
+                    "sig550_reload_01": "hk416_reload_01",
+                    "sig550_switch_01": "hk416_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Assault rifle",
+                "ammo": "5.56mm (green)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": -0.5,
+                "magazineCapacity": "30 (ext 40)",
+                "ammoSpawn": 90,
+                "reloadTime": "2.7",
+                "fireDelay": "0.086 (698 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 1.5,
+                "movingSpread": 6,
+                "barrelLength": 3.4,
+                "bullet": {
+                    "damage": "13",
+                    "falloff": 0.9,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 220,
+                    "speed": 108,
+                    "maxDps": "151.2",
+                    "maxObstacleDps": "151.2"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.086,
+                "rpm": 698,
+                "maxDps": 151.2,
+                "maxObstacleDps": 151.2,
+                "sustainedDps": 73.9,
+                "magazineDamage": 390,
+                "fullReload": 2.7,
+                "speedCarriedHeldFiring": [12, 12, 5.75],
+                "ttkBody15": [0.7, 1.044, 1.302, 1.474],
+                "stkBody15": [8, 12, 15, 17],
+                "eStand15A2": 1.078,
+                "eStand40A2": 1.333,
+                "eMove40A2": 4.087,
+                "eStand100A2": 2.225
+            }
+        },
+        "g3": {
+            "id": "g3",
+            "gunClass": "assault",
+            "placementMain": {
+                "floor": 0.2,
+                "t1": 1
+            },
+            "mapRules": "As the AK-74 (assault).",
+            "gun": {
+                "name": "G3",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "762mm",
+                "ammoSpawnCount": 80,
+                "maxClip": 20,
+                "maxReload": 20,
+                "extendedClip": 30,
+                "extendedReload": 30,
+                "reloadTime": 2.8,
+                "fireDelay": 0.115,
+                "switchDelay": 0.75,
+                "barrelLength": 3.45,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 7,
+                "shotSpread": 2,
+                "bulletCount": 1,
+                "bulletType": "bullet_g3",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": -1
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-g3.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.48
+                    },
+                    "tint": 3027750,
+                    "leftHandOffset": {
+                        "x": 2.8,
+                        "y": 0
+                    },
+                    "recoil": 1.33
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.45
+                },
+                "sound": {
+                    "shoot": "g3_01",
+                    "reload": "g3_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "g3_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_g3": {
+                    "type": "bullet",
+                    "damage": 17,
+                    "obstacleDamage": 1,
+                    "falloff": 0.9,
+                    "distance": 225,
+                    "speed": 110,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "762mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.9
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-g3.png",
+                    "fallback": "loot-weapon-scar.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-g3-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (plain bar, tint 0x2E3326)"
+                },
+                "sounds": {
+                    "g3_01": "scar_01",
+                    "g3_reload_01": "scar_reload_01",
+                    "g3_switch_01": "scar_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Battle rifle (assault class)",
+                "ammo": "7.62mm (blue)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": -1,
+                "magazineCapacity": "20 (ext 30)",
+                "ammoSpawn": 80,
+                "reloadTime": "2.8",
+                "fireDelay": "0.115 (522 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 2,
+                "movingSpread": 7,
+                "barrelLength": 3.45,
+                "bullet": {
+                    "damage": "17",
+                    "falloff": 0.9,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 225,
+                    "speed": 110,
+                    "maxDps": "147.8",
+                    "maxObstacleDps": "147.8"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.115,
+                "rpm": 522,
+                "maxDps": 147.8,
+                "maxObstacleDps": 147.8,
+                "sustainedDps": 66.7,
+                "magazineDamage": 340,
+                "fullReload": 2.8,
+                "speedCarriedHeldFiring": [12, 12, 5.5],
+                "ttkBody15": [0.671, 1.016, 1.246, 1.476],
+                "stkBody15": [6, 9, 11, 13],
+                "eStand15A2": 1.094,
+                "eStand40A2": 1.321,
+                "eMove40A2": 5.902,
+                "eStand100A2": 3.29
+            }
+        },
+        "honeybadger": {
+            "id": "honeybadger",
+            "gunClass": "assault",
+            "placementMain": {
+                "floor": 0.02,
+                "t2": 0.75
+            },
+            "mapRules": "Suppressed (tracer and sound fallOff 3, client only). Assault bans as the AK-74.",
+            "gun": {
+                "name": "Honey Badger",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "556mm",
+                "ammoSpawnCount": 90,
+                "maxClip": 30,
+                "maxReload": 30,
+                "extendedClip": 40,
+                "extendedReload": 40,
+                "reloadTime": 2.3,
+                "fireDelay": 0.08,
+                "switchDelay": 0.75,
+                "barrelLength": 2.8,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 4.5,
+                "shotSpread": 2.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_honeybadger",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-honeybadger.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-med-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.54
+                    },
+                    "tint": 10259310,
+                    "leftHandOffset": {
+                        "x": 7.9,
+                        "y": 0
+                    },
+                    "recoil": 1.3
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.4
+                },
+                "sound": {
+                    "shoot": "honeybadger_01",
+                    "reload": "honeybadger_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "honeybadger_switch_01",
+                    "fallOff": 3
+                }
+            },
+            "bullets": {
+                "bullet_honeybadger": {
+                    "type": "bullet",
+                    "damage": 13,
+                    "obstacleDamage": 1,
+                    "falloff": 0.75,
+                    "distance": 120,
+                    "speed": 92,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "suppressed": true,
+                    "tracerColor": "556mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.9
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-honeybadger.png",
+                    "fallback": "loot-weapon-m4a1.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-honeybadger-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-med-01.img (plain bar, tint 0x9C8B6E)"
+                },
+                "sounds": {
+                    "honeybadger_01": "m4a1_01",
+                    "honeybadger_reload_01": "m4a1_reload_01",
+                    "honeybadger_switch_01": "m4a1_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Assault rifle (integrally suppressed)",
+                "ammo": "5.56mm (green; .300 BLK has no ammo of its own)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "30 (ext 40)",
+                "ammoSpawn": 90,
+                "reloadTime": "2.3",
+                "fireDelay": "0.08 (750 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 2.5,
+                "movingSpread": 4.5,
+                "barrelLength": 2.8,
+                "bullet": {
+                    "damage": "13",
+                    "falloff": 0.75,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 120,
+                    "speed": 92,
+                    "maxDps": "162.5",
+                    "maxObstacleDps": "162.5"
+                },
+                "suppressed": true
+            },
+            "metrics": {
+                "shotInterval": 0.08,
+                "rpm": 750,
+                "maxDps": 162.5,
+                "maxObstacleDps": 162.5,
+                "sustainedDps": 83,
+                "magazineDamage": 390,
+                "fullReload": 2.3,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [0.682, 1.002, 1.242, 1.482],
+                "stkBody15": [8, 12, 15, 18],
+                "eStand15A2": 1.079,
+                "eStand40A2": 1.393,
+                "eMove40A2": 3.86,
+                "eStand100A2": 5.082
+            }
+        },
+        "fal": {
+            "id": "fal",
+            "gunClass": "dmr",
+            "placementMain": {
+                "floor": 0.1,
+                "t1": 1
+            },
+            "mapRules": "DMR class: legal on Savannah. The owner's drawing for the dropped SPAS-15 is this gun.",
+            "gun": {
+                "name": "FN FAL",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "762mm",
+                "ammoSpawnCount": 60,
+                "maxClip": 20,
+                "maxReload": 20,
+                "extendedClip": 30,
+                "extendedReload": 30,
+                "reloadTime": 2.6,
+                "fireDelay": 0.18,
+                "switchDelay": 0.75,
+                "barrelLength": 3.55,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 5,
+                "shotSpread": 1.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_fal",
+                "headshotMult": 1.5,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-fal.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.497
+                    },
+                    "tint": 7029795,
+                    "leftHandOffset": {
+                        "x": 2.8,
+                        "y": 0
+                    },
+                    "recoil": 1.66
+                },
+                "particle": {
+                    "shellScale": 1.3,
+                    "shellOffset": 0.575
+                },
+                "sound": {
+                    "shoot": "fal_01",
+                    "reload": "fal_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "fal_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_fal": {
+                    "type": "bullet",
+                    "damage": 26,
+                    "obstacleDamage": 1,
+                    "falloff": 0.9,
+                    "distance": 280,
+                    "speed": 118,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "762mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.9
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-fal.png",
+                    "fallback": "loot-weapon-m39.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-fal-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (plain bar, tint 0x6B4423)"
+                },
+                "sounds": {
+                    "fal_01": "m39_01",
+                    "fal_reload_01": "m39_reload_01",
+                    "fal_switch_01": "m39_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Battle rifle, semi-auto (DMR class)",
+                "ammo": "7.62mm (blue)",
+                "fireMode": "Single",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "20 (ext 30)",
+                "ammoSpawn": 60,
+                "reloadTime": "2.6",
+                "fireDelay": "0.18 (333 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 1.5,
+                "movingSpread": 5,
+                "barrelLength": 3.55,
+                "bullet": {
+                    "damage": "26",
+                    "falloff": 0.9,
+                    "headshotMultiplier": 1.5,
+                    "obstacleMultiplier": "1",
+                    "distance": 280,
+                    "speed": 118,
+                    "maxDps": "144.4",
+                    "maxObstacleDps": "144.4"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.18,
+                "rpm": 333,
+                "maxDps": 144.4,
+                "maxObstacleDps": 144.4,
+                "sustainedDps": 83.9,
+                "magazineDamage": 520,
+                "fullReload": 2.6,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [0.629, 0.989, 1.349, 1.529],
+                "stkBody15": [4, 6, 8, 9],
+                "eStand15A2": 1.186,
+                "eStand40A2": 1.397,
+                "eMove40A2": 3.006,
+                "eStand100A2": 2.241
+            }
+        },
+        "mk14": {
+            "id": "mk14",
+            "gunClass": "dmr",
+            "placementMain": {
+                "t2": 0.75
+            },
+            "mapRules": "DMR class: legal on Savannah. Not in tier_snipers (it would sit beside the SCAR-SSR).",
+            "gun": {
+                "name": "Mk 14 EBR",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "762mm",
+                "ammoSpawnCount": 60,
+                "maxClip": 20,
+                "maxReload": 20,
+                "extendedClip": 30,
+                "extendedReload": 30,
+                "reloadTime": 2.9,
+                "fireDelay": 0.16,
+                "switchDelay": 0.75,
+                "barrelLength": 3.35,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 7,
+                "shotSpread": 1.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_mk14",
+                "headshotMult": 1.5,
+                "speed": {
+                    "equip": 0,
+                    "attack": -1.5
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-mk14.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.47
+                    },
+                    "tint": 10521706,
+                    "leftHandOffset": {
+                        "x": 2.8,
+                        "y": 0
+                    },
+                    "recoil": 1.66
+                },
+                "particle": {
+                    "shellScale": 1.3,
+                    "shellOffset": 0.575
+                },
+                "sound": {
+                    "shoot": "mk14_01",
+                    "reload": "mk14_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "mk14_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_mk14": {
+                    "type": "bullet",
+                    "damage": 25,
+                    "obstacleDamage": 1,
+                    "falloff": 0.9,
+                    "distance": 350,
+                    "speed": 120,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "762mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.9
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-mk14.png",
+                    "fallback": "loot-weapon-m39.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-mk14-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (plain bar, tint 0xA08C6A)"
+                },
+                "sounds": {
+                    "mk14_01": "m39_01",
+                    "mk14_reload_01": "m39_reload_01",
+                    "mk14_switch_01": "m39_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "DMR, full auto",
+                "ammo": "7.62mm (blue)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": -1.5,
+                "magazineCapacity": "20 (ext 30)",
+                "ammoSpawn": 60,
+                "reloadTime": "2.9",
+                "fireDelay": "0.16 (375 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 1.5,
+                "movingSpread": 7,
+                "barrelLength": 3.35,
+                "bullet": {
+                    "damage": "25",
+                    "falloff": 0.9,
+                    "headshotMultiplier": 1.5,
+                    "obstacleMultiplier": "1",
+                    "distance": 350,
+                    "speed": 120,
+                    "maxDps": "156.3",
+                    "maxObstacleDps": "156.3"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.16,
+                "rpm": 375,
+                "maxDps": 156.3,
+                "maxObstacleDps": 156.3,
+                "sustainedDps": 82,
+                "magazineDamage": 500,
+                "fullReload": 2.9,
+                "speedCarriedHeldFiring": [12, 12, 5.25],
+                "ttkBody15": [0.729, 0.889, 1.209, 1.369],
+                "stkBody15": [5, 6, 8, 9],
+                "eStand15A2": 1.092,
+                "eStand40A2": 1.3,
+                "eMove40A2": 4.479,
+                "eStand100A2": 2.109
+            }
+        },
+        "wa2000": {
+            "id": "wa2000",
+            "gunClass": "sniper",
+            "placementMain": {
+                "t2": 0.5
+            },
+            "mapRules": "Sniper class (legal on Savannah). Tier 2 only.",
+            "gun": {
+                "name": "WA2000",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "50AE",
+                "ammoSpawnCount": 25,
+                "maxClip": 5,
+                "maxReload": 5,
+                "extendedClip": 6,
+                "extendedReload": 6,
+                "reloadTime": 3.3,
+                "fireDelay": 1.1,
+                "isBullpup": true,
+                "aimDelay": true,
+                "switchDelay": 1,
+                "barrelLength": 3.6,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 3,
+                "shotSpread": 0.75,
+                "bulletCount": 1,
+                "bulletType": "bullet_wa2000",
+                "headshotMult": 1.25,
+                "speed": {
+                    "equip": -0.5,
+                    "attack": -2
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-wa2000.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 6045747,
+                    "leftHandOffset": {
+                        "x": 2.8,
+                        "y": 0
+                    },
+                    "recoil": 2.33
+                },
+                "particle": {
+                    "shellScale": 1.6,
+                    "shellOffset": 0.6
+                },
+                "sound": {
+                    "shoot": "wa2000_01",
+                    "reload": "wa2000_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "wa2000_switch_01",
+                    "cycle": "wa2000_cycle_01",
+                    "pull": "wa2000_pull_01"
+                }
+            },
+            "bullets": {
+                "bullet_wa2000": {
+                    "type": "bullet",
+                    "damage": 72,
+                    "obstacleDamage": 1.5,
+                    "falloff": 0.95,
+                    "distance": 450,
+                    "speed": 185,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "50AE",
+                    "tracerWidth": 0.2,
+                    "tracerLength": 1
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-wa2000.png",
+                    "fallback": "loot-weapon-sv98.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-wa2000-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (plain bar, tint 0x5C4033)"
+                },
+                "sounds": {
+                    "wa2000_01": "sv98_01",
+                    "wa2000_reload_01": "sv98_reload_01",
+                    "wa2000_switch_01": "sv98_cycle_01",
+                    "wa2000_cycle_01": "sv98_cycle_01",
+                    "wa2000_pull_01": "sv98_pull_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Sniper rifle, semi-auto bullpup",
+                "ammo": ".50 AE (black; shared with the DEagle, S&W 500, ASh-12, Barrett, Hecate, Lynx)",
+                "fireMode": "Single",
+                "playerSpeed": -0.5,
+                "carrySpeed": 0,
+                "recoilSpeed": -2,
+                "magazineCapacity": "5 (ext 6)",
+                "ammoSpawn": 25,
+                "reloadTime": "3.3",
+                "fireDelay": "1.1 (55 rpm)",
+                "switchDelay": 1,
+                "standingSpread": 0.75,
+                "movingSpread": 3,
+                "barrelLength": 3.6,
+                "bullet": {
+                    "damage": "72",
+                    "falloff": 0.95,
+                    "headshotMultiplier": 1.25,
+                    "obstacleMultiplier": "1.5",
+                    "distance": 450,
+                    "speed": 185,
+                    "maxDps": "65.5",
+                    "maxObstacleDps": "98.2"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 1.1,
+                "rpm": 55,
+                "maxDps": 65.5,
+                "maxObstacleDps": 98.2,
+                "sustainedDps": 40.9,
+                "magazineDamage": 360,
+                "fullReload": 3.3,
+                "speedCarriedHeldFiring": [12, 11.5, 4.75],
+                "ttkBody15": [1.156, 2.256, 2.256, 3.356],
+                "stkBody15": [2, 3, 3, 4],
+                "eStand15A2": 2.231,
+                "eStand40A2": 2.367,
+                "eMove40A2": 3.096,
+                "eStand100A2": 2.691
+            }
+        },
+        "tec9": {
+            "id": "tec9",
+            "gunClass": "pistol",
+            "placementMain": {
+                "floor": 3
+            },
+            "mapRules": "Pistol floor of every map that has 9mm; not on the Desert floor (no 9mm) or Woods.",
+            "gun": {
+                "name": "TEC-9",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "9mm",
+                "ammoSpawnCount": 96,
+                "pistol": true,
+                "dualWieldType": "tec9_dual",
+                "maxClip": 32,
+                "maxReload": 32,
+                "extendedClip": 36,
+                "extendedReload": 36,
+                "reloadTime": 2.2,
+                "fireDelay": 0.11,
+                "switchDelay": 0.3,
+                "barrelLength": 2.3,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 6,
+                "shotSpread": 5,
+                "bulletCount": 1,
+                "bulletType": "bullet_tec9",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-tec9.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-short-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.51
+                    },
+                    "tint": 2763306,
+                    "leftHandOffset": {
+                        "x": 0.8,
+                        "y": 0
+                    },
+                    "recoil": 0.5
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.25
+                },
+                "sound": {
+                    "shoot": "tec9_01",
+                    "reload": "tec9_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "tec9_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_tec9": {
+                    "type": "bullet",
+                    "damage": 12,
+                    "obstacleDamage": 1,
+                    "falloff": 0.65,
+                    "distance": 90,
+                    "speed": 80,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "9mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.7
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-tec9.png",
+                    "fallback": "loot-weapon-m93r.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-tec9-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-short-01.img (plain bar, tint 0x2A2A2A)"
+                },
+                "sounds": {
+                    "tec9_01": "m93r_01",
+                    "tec9_reload_01": "m93r_reload_01",
+                    "tec9_switch_01": "m93r_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Pistol (semi-auto, 32-round magazine)",
+                "ammo": "9mm (yellow)",
+                "fireMode": "Single",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "32 (ext 36)",
+                "ammoSpawn": 96,
+                "reloadTime": "2.2",
+                "fireDelay": "0.11 (545 rpm)",
+                "switchDelay": 0.3,
+                "standingSpread": 5,
+                "movingSpread": 6,
+                "barrelLength": 2.3,
+                "bullet": {
+                    "damage": "12",
+                    "falloff": 0.65,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 90,
+                    "speed": 80,
+                    "maxDps": "109.1",
+                    "maxObstacleDps": "109.1"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.11,
+                "rpm": 545,
+                "maxDps": 109.1,
+                "maxObstacleDps": 109.1,
+                "sustainedDps": 67.1,
+                "magazineDamage": 384,
+                "fullReload": 2.2,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [1.026, 1.466, 1.906, 2.236],
+                "stkBody15": [9, 13, 17, 20],
+                "eStand15A2": 1.587,
+                "eStand40A2": 3.379,
+                "eMove40A2": 9.374,
+                "eStand100A2": null
+            }
+        },
+        "tec9_dual": {
+            "id": "tec9_dual",
+            "gunClass": "pistol",
+            "placementMain": {
+                "floorNote": "second TEC-9"
+            },
+            "mapRules": "No weight of its own: a second TEC-9 makes it.",
+            "gun": {
+                "name": "Dual TEC-9",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "9mm",
+                "ammoSpawnCount": 192,
+                "pistol": true,
+                "isDual": true,
+                "dualOffset": 0.6,
+                "maxClip": 64,
+                "maxReload": 64,
+                "extendedClip": 72,
+                "extendedReload": 72,
+                "reloadTime": 4.2,
+                "fireDelay": 0.07,
+                "switchDelay": 0.3,
+                "barrelLength": 2.3,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 5,
+                "shotSpread": 7,
+                "bulletCount": 1,
+                "bulletType": "bullet_tec9",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-tec9-dual.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-short-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.505
+                    },
+                    "tint": 1973790,
+                    "leftHandOffset": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "recoil": 1
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.25
+                },
+                "sound": {
+                    "shoot": "tec9_01",
+                    "reload": "tec9_reload_02",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "tec9_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_tec9": {
+                    "type": "bullet",
+                    "damage": 12,
+                    "obstacleDamage": 1,
+                    "falloff": 0.65,
+                    "distance": 90,
+                    "speed": 80,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "9mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.7
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-tec9-dual.png",
+                    "fallback": "loot-weapon-m9-dual.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-tec9-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-short-01.img (from m9_dual)"
+                },
+                "sounds": {
+                    "tec9_01": "m9_01",
+                    "tec9_reload_02": "m9_reload_02",
+                    "tec9_switch_01": "m9_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Pistol, dual",
+                "ammo": "9mm (yellow)",
+                "fireMode": "Single",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "64 (ext 72)",
+                "ammoSpawn": 192,
+                "reloadTime": "4.2",
+                "fireDelay": "0.07 (857 rpm)",
+                "switchDelay": 0.3,
+                "standingSpread": 7,
+                "movingSpread": 5,
+                "barrelLength": 2.3,
+                "bullet": {
+                    "damage": "12",
+                    "falloff": 0.65,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 90,
+                    "speed": 80,
+                    "maxDps": "171.4",
+                    "maxObstacleDps": "171.4"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.07,
+                "rpm": 857,
+                "maxDps": 171.4,
+                "maxObstacleDps": 171.4,
+                "sustainedDps": 88.5,
+                "magazineDamage": 768,
+                "fullReload": 4.2,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [0.706, 0.986, 1.266, 1.476],
+                "stkBody15": [9, 13, 17, 20],
+                "eStand15A2": 1.378,
+                "eStand40A2": 2.931,
+                "eMove40A2": 6.444,
+                "eStand100A2": null
+            }
+        },
+        "vz61": {
+            "id": "vz61",
+            "gunClass": "pistol",
+            "placementMain": {
+                "floor": 2
+            },
+            "mapRules": "As the TEC-9.",
+            "gun": {
+                "name": "Škorpion vz. 61",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "9mm",
+                "ammoSpawnCount": 60,
+                "pistol": true,
+                "dualWieldType": "vz61_dual",
+                "maxClip": 20,
+                "maxReload": 20,
+                "extendedClip": 30,
+                "extendedReload": 30,
+                "reloadTime": 1.6,
+                "fireDelay": 0.075,
+                "switchDelay": 0.25,
+                "barrelLength": 2.2,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 5,
+                "shotSpread": 6,
+                "bulletCount": 1,
+                "bulletType": "bullet_vz61",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-vz61.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-short-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.49
+                    },
+                    "tint": 1973790,
+                    "leftHandOffset": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "recoil": 1
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.25
+                },
+                "sound": {
+                    "shoot": "vz61_01",
+                    "reload": "vz61_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "vz61_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_vz61": {
+                    "type": "bullet",
+                    "damage": 9,
+                    "obstacleDamage": 1,
+                    "falloff": 0.55,
+                    "distance": 55,
+                    "speed": 72,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "9mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.7
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-vz61.png",
+                    "fallback": "loot-weapon-glock.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-vz61-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-short-01.img (from glock)"
+                },
+                "sounds": {
+                    "vz61_01": "glock_01",
+                    "vz61_reload_01": "glock_reload_01",
+                    "vz61_switch_01": "glock_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Machine pistol (folding stock)",
+                "ammo": "9mm (yellow; .32 ACP has no ammo of its own)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "20 (ext 30)",
+                "ammoSpawn": 60,
+                "reloadTime": "1.6",
+                "fireDelay": "0.075 (800 rpm)",
+                "switchDelay": 0.25,
+                "standingSpread": 6,
+                "movingSpread": 5,
+                "barrelLength": 2.2,
+                "bullet": {
+                    "damage": "9",
+                    "falloff": 0.55,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 55,
+                    "speed": 72,
+                    "maxDps": "120",
+                    "maxObstacleDps": "120"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.075,
+                "rpm": 800,
+                "maxDps": 120,
+                "maxObstacleDps": 120,
+                "sustainedDps": 58.1,
+                "magazineDamage": 180,
+                "fullReload": 1.6,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [1.064, 1.439, 3.414, 3.714],
+                "stkBody15": [13, 18, 23, 27],
+                "eStand15A2": 2.227,
+                "eStand40A2": 7.404,
+                "eMove40A2": 13.861,
+                "eStand100A2": null
+            }
+        },
+        "vz61_dual": {
+            "id": "vz61_dual",
+            "gunClass": "pistol",
+            "placementMain": {
+                "floorNote": "second vz. 61"
+            },
+            "mapRules": "No weight of its own: a second vz. 61 makes it.",
+            "gun": {
+                "name": "Dual Škorpion vz. 61",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "9mm",
+                "ammoSpawnCount": 120,
+                "pistol": true,
+                "isDual": true,
+                "dualOffset": 0.6,
+                "maxClip": 40,
+                "maxReload": 40,
+                "extendedClip": 60,
+                "extendedReload": 60,
+                "reloadTime": 3.3,
+                "fireDelay": 0.04,
+                "switchDelay": 0.25,
+                "barrelLength": 2.2,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 8,
+                "shotSpread": 9,
+                "bulletCount": 1,
+                "bulletType": "bullet_vz61",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-vz61-dual.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-short-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.49
+                    },
+                    "tint": 1973790,
+                    "leftHandOffset": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "recoil": 1
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.25
+                },
+                "sound": {
+                    "shoot": "vz61_01",
+                    "reload": "vz61_reload_02",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "vz61_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_vz61": {
+                    "type": "bullet",
+                    "damage": 9,
+                    "obstacleDamage": 1,
+                    "falloff": 0.55,
+                    "distance": 55,
+                    "speed": 72,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "9mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.7
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-vz61-dual.png",
+                    "fallback": "loot-weapon-glock-dual.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-vz61-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-short-01.img (from glock_dual)"
+                },
+                "sounds": {
+                    "vz61_01": "glock_01",
+                    "vz61_reload_02": "glock_reload_02",
+                    "vz61_switch_01": "glock_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Machine pistol, dual",
+                "ammo": "9mm (yellow)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "40 (ext 60)",
+                "ammoSpawn": 120,
+                "reloadTime": "3.3",
+                "fireDelay": "0.04 (1500 rpm)",
+                "switchDelay": 0.25,
+                "standingSpread": 9,
+                "movingSpread": 8,
+                "barrelLength": 2.2,
+                "bullet": {
+                    "damage": "9",
+                    "falloff": 0.55,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 55,
+                    "speed": 72,
+                    "maxDps": "225",
+                    "maxObstacleDps": "225"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.04,
+                "rpm": 1500,
+                "maxDps": 225,
+                "maxObstacleDps": 225,
+                "sustainedDps": 73.5,
+                "magazineDamage": 360,
+                "fullReload": 3.3,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [0.644, 0.844, 1.044, 1.204],
+                "stkBody15": [13, 18, 23, 27],
+                "eStand15A2": 1.278,
+                "eStand40A2": 7.866,
+                "eMove40A2": 16.205,
+                "eStand100A2": null
+            }
+        },
+        "bizon": {
+            "id": "bizon",
+            "gunClass": "smg",
+            "placementMain": {
+                "floor": 3
+            },
+            "mapRules": "SMG floor of maps with 9mm; not on Desert or Woods floors.",
+            "gun": {
+                "name": "PP-19 Bizon",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "9mm",
+                "ammoSpawnCount": 128,
+                "maxClip": 64,
+                "maxReload": 64,
+                "extendedClip": 80,
+                "extendedReload": 80,
+                "reloadTime": 3,
+                "fireDelay": 0.09,
+                "switchDelay": 0.75,
+                "barrelLength": 2.65,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 4.5,
+                "shotSpread": 3.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_bizon",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-bizon.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-med-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.49
+                    },
+                    "tint": 1184274,
+                    "leftHandOffset": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "recoil": 1
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.375
+                },
+                "sound": {
+                    "shoot": "bizon_01",
+                    "reload": "bizon_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "bizon_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_bizon": {
+                    "type": "bullet",
+                    "damage": 10,
+                    "obstacleDamage": 1,
+                    "falloff": 0.75,
+                    "distance": 90,
+                    "speed": 78,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "9mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.7
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-bizon.png",
+                    "fallback": "loot-weapon-mp5.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-bizon-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-med-01.img (from mp5)"
+                },
+                "sounds": {
+                    "bizon_01": "mp5_01",
+                    "bizon_reload_01": "mp5_reload_01",
+                    "bizon_switch_01": "mp5_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "SMG (64-round helical magazine)",
+                "ammo": "9mm (yellow)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "64 (ext 80)",
+                "ammoSpawn": 128,
+                "reloadTime": "3",
+                "fireDelay": "0.09 (667 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 3.5,
+                "movingSpread": 4.5,
+                "barrelLength": 2.65,
+                "bullet": {
+                    "damage": "10",
+                    "falloff": 0.75,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 90,
+                    "speed": 78,
+                    "maxDps": "111.1",
+                    "maxObstacleDps": "111.1"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.09,
+                "rpm": 667,
+                "maxDps": 111.1,
+                "maxObstacleDps": 111.1,
+                "sustainedDps": 73.1,
+                "magazineDamage": 640,
+                "fullReload": 3,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [1.046, 1.406, 1.766, 2.126],
+                "stkBody15": [11, 15, 19, 23],
+                "eStand15A2": 1.55,
+                "eStand40A2": 2.219,
+                "eMove40A2": 4.723,
+                "eStand100A2": null
+            }
+        },
+        "m1928": {
+            "id": "m1928",
+            "gunClass": "smg",
+            "placementMain": {
+                "floorNote": "desert tier_guns 0.5",
+                "t1": 1
+            },
+            "mapRules": "Floor only on Desert (0.5): classic and faction maps carry no .45.",
+            "gun": {
+                "name": "Thompson M1928",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "45acp",
+                "ammoSpawnCount": 150,
+                "maxClip": 50,
+                "maxReload": 50,
+                "extendedClip": 100,
+                "extendedReload": 100,
+                "reloadTime": 3.6,
+                "fireDelay": 0.087,
+                "switchDelay": 0.75,
+                "barrelLength": 2.85,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 5.5,
+                "shotSpread": 4.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_m1928",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": -0.5,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-m1928.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-med-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.53
+                    },
+                    "tint": 3674112,
+                    "leftHandOffset": {
+                        "x": 5.8,
+                        "y": 0
+                    },
+                    "recoil": 1
+                },
+                "particle": {
+                    "shellScale": 1.2,
+                    "shellOffset": 0.375
+                },
+                "sound": {
+                    "shoot": "m1928_01",
+                    "reload": "m1928_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "m1928_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_m1928": {
+                    "type": "bullet",
+                    "damage": 13,
+                    "obstacleDamage": 1,
+                    "falloff": 0.8,
+                    "distance": 95,
+                    "speed": 82,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "45acp",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.7
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-m1928.png",
+                    "fallback": "loot-weapon-m1a1.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-m1928-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-med-01.img (from m1a1)"
+                },
+                "sounds": {
+                    "m1928_01": "m1a1_01",
+                    "m1928_reload_01": "m1a1_reload_01",
+                    "m1928_switch_01": "m1a1_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "SMG (50-round drum)",
+                "ammo": ".45 ACP (purple)",
+                "fireMode": "Auto",
+                "playerSpeed": -0.5,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "50 (ext 100)",
+                "ammoSpawn": 150,
+                "reloadTime": "3.6",
+                "fireDelay": "0.087 (690 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 4.5,
+                "movingSpread": 5.5,
+                "barrelLength": 2.85,
+                "bullet": {
+                    "damage": "13",
+                    "falloff": 0.8,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 95,
+                    "speed": 82,
+                    "maxDps": "149.4",
+                    "maxObstacleDps": "149.4"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.087,
+                "rpm": 690,
+                "maxDps": 149.4,
+                "maxObstacleDps": 149.4,
+                "sustainedDps": 81.8,
+                "magazineDamage": 650,
+                "fullReload": 3.6,
+                "speedCarriedHeldFiring": [12, 11.5, 5.75],
+                "ttkBody15": [0.745, 1.093, 1.354, 1.615],
+                "stkBody15": [8, 12, 15, 18],
+                "eStand15A2": 1.176,
+                "eStand40A2": 2.067,
+                "eMove40A2": 5.069,
+                "eStand100A2": null
+            }
+        },
+        "asval": {
+            "id": "asval",
+            "gunClass": "smg",
+            "placementMain": {
+                "floor": 0.05,
+                "t1": 1.5
+            },
+            "mapRules": "SMG class (9mm, SMG reach). Banned on Savannah (quality 1 SMG) and Woods; not on the Desert floor.",
+            "gun": {
+                "name": "AS Val",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "9mm",
+                "ammoSpawnCount": 80,
+                "maxClip": 20,
+                "maxReload": 20,
+                "extendedClip": 30,
+                "extendedReload": 30,
+                "reloadTime": 2.3,
+                "fireDelay": 0.08,
+                "switchDelay": 0.75,
+                "barrelLength": 2.85,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 5.5,
+                "shotSpread": 3,
+                "bulletCount": 1,
+                "bulletType": "bullet_asval",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-asval.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-med-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.52
+                    },
+                    "tint": 2829099,
+                    "leftHandOffset": {
+                        "x": 9,
+                        "y": 0
+                    },
+                    "recoil": 1
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.375
+                },
+                "sound": {
+                    "shoot": "asval_01",
+                    "reload": "asval_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "asval_switch_01",
+                    "fallOff": 3
+                }
+            },
+            "bullets": {
+                "bullet_asval": {
+                    "type": "bullet",
+                    "damage": 13.5,
+                    "obstacleDamage": 1,
+                    "falloff": 0.65,
+                    "distance": 90,
+                    "speed": 85,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "suppressed": true,
+                    "tracerColor": "9mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.8
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-asval.png",
+                    "fallback": "loot-weapon-vss.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-asval-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-med-01.img (plain bar, tint 0x2B2B2B)"
+                },
+                "sounds": {
+                    "asval_01": "vss_01",
+                    "asval_reload_01": "vss_reload_01",
+                    "asval_switch_01": "vss_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Suppressed 9x39 automatic (SMG class)",
+                "ammo": "9mm (yellow; the VSS's slot)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "20 (ext 30)",
+                "ammoSpawn": 80,
+                "reloadTime": "2.3",
+                "fireDelay": "0.08 (750 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 3,
+                "movingSpread": 5.5,
+                "barrelLength": 2.85,
+                "bullet": {
+                    "damage": "13.5",
+                    "falloff": 0.65,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 90,
+                    "speed": 85,
+                    "maxDps": "168.8",
+                    "maxObstacleDps": "168.8"
+                },
+                "suppressed": true
+            },
+            "metrics": {
+                "shotInterval": 0.08,
+                "rpm": 750,
+                "maxDps": 168.8,
+                "maxObstacleDps": 168.8,
+                "sustainedDps": 69.2,
+                "magazineDamage": 270,
+                "fullReload": 2.3,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [0.691, 1.011, 1.251, 1.411],
+                "stkBody15": [8, 12, 15, 17],
+                "eStand15A2": 1.065,
+                "eStand40A2": 1.467,
+                "eMove40A2": 6.639,
+                "eStand100A2": null
+            }
+        },
+        "p90": {
+            "id": "p90",
+            "gunClass": "smg",
+            "placementMain": {
+                "floor": 0.02,
+                "t2": 1.5
+            },
+            "mapRules": "Banned on Savannah (quality 1 SMG); not on the Desert floor.",
+            "gun": {
+                "name": "P90",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "57mm",
+                "ammoSpawnCount": 150,
+                "isBullpup": true,
+                "maxClip": 50,
+                "maxReload": 50,
+                "extendedClip": 60,
+                "extendedReload": 60,
+                "reloadTime": 2.9,
+                "fireDelay": 0.06,
+                "switchDelay": 0.75,
+                "barrelLength": 2.4,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 4,
+                "shotSpread": 4,
+                "bulletCount": 1,
+                "bulletType": "bullet_p90",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-p90.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-med-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 9009504,
+                    "leftHandOffset": {
+                        "x": 7,
+                        "y": 0
+                    },
+                    "recoil": 0.89
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.4
+                },
+                "sound": {
+                    "shoot": "p90_01",
+                    "reload": "p90_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "p90_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_p90": {
+                    "type": "bullet",
+                    "damage": 10,
+                    "obstacleDamage": 1,
+                    "falloff": 0.75,
+                    "distance": 110,
+                    "speed": 100,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "57mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.8
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-p90.png",
+                    "fallback": "loot-weapon-vector.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-p90-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-med-01.img (from vector)"
+                },
+                "sounds": {
+                    "p90_01": "vector_01",
+                    "p90_reload_01": "vector_reload_01",
+                    "p90_switch_01": "vector_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "SMG / PDW (bullpup, 50-round magazine)",
+                "ammo": "5.7x28mm (pink, new `57mm`)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "50 (ext 60)",
+                "ammoSpawn": 150,
+                "reloadTime": "2.9",
+                "fireDelay": "0.06 (1000 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 4,
+                "movingSpread": 4,
+                "barrelLength": 2.4,
+                "bullet": {
+                    "damage": "10",
+                    "falloff": 0.75,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1",
+                    "distance": 110,
+                    "speed": 100,
+                    "maxDps": "166.7",
+                    "maxObstacleDps": "166.7"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.06,
+                "rpm": 1000,
+                "maxDps": 166.7,
+                "maxObstacleDps": 166.7,
+                "sustainedDps": 84.7,
+                "magazineDamage": 500,
+                "fullReload": 2.9,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [0.716, 0.956, 1.196, 1.436],
+                "stkBody15": [11, 15, 19, 23],
+                "eStand15A2": 1.052,
+                "eStand40A2": 1.687,
+                "eMove40A2": 3.924,
+                "eStand100A2": 7.839
+            }
+        },
+        "dp12": {
+            "id": "dp12",
+            "gunClass": "shotgun",
+            "placementMain": {
+                "floorNote": "tier_shotguns 0.05",
+                "t2": 1
+            },
+            "mapRules": "Shotgun bans (Savannah). Floor via tier_shotguns 0.05 (Woods floor allows shotguns).",
+            "gun": {
+                "name": "DP-12",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "12gauge",
+                "ammoSpawnCount": 28,
+                "pumpEvery": 2,
+                "pumpDelay": 0.7,
+                "pullDelay": 0.7,
+                "deployGroup": 1,
+                "isBullpup": true,
+                "jitter": 1,
+                "maxClip": 14,
+                "maxReload": 2,
+                "extendedClip": 16,
+                "extendedReload": 2,
+                "reloadTime": 1.2,
+                "fireDelay": 0.2,
+                "switchDelay": 0.9,
+                "barrelLength": 2.8,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 3,
+                "shotSpread": 10,
+                "bulletCount": 9,
+                "bulletType": "bullet_buckshot",
+                "headshotMult": 1.5,
+                "speed": {
+                    "equip": 0,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-dp12.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.435
+                    },
+                    "tint": 3348992,
+                    "leftHandOffset": {
+                        "x": 7,
+                        "y": 0
+                    },
+                    "recoil": 1.33
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.45
+                },
+                "sound": {
+                    "shoot": "dp12_01",
+                    "reload": "dp12_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "dp12_switch_01",
+                    "cycle": "dp12_cycle_01",
+                    "pull": "dp12_pull_01"
+                }
+            },
+            "bullets": {},
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": ["bullet_buckshot"],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-dp12.png",
+                    "fallback": "loot-weapon-m870.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-dp12-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (from m870)"
+                },
+                "sounds": {
+                    "dp12_01": "m870_01",
+                    "dp12_reload_01": "m870_reload_01",
+                    "dp12_switch_01": "m870_cycle_01",
+                    "dp12_cycle_01": "m870_cycle_01",
+                    "dp12_pull_01": "m870_pull_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Shotgun (double-barrel pump, 2 shots per pump)",
+                "ammo": "12 gauge (red), buckshot",
+                "fireMode": "Pump (2 shots per pump)",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "14 (ext 16)",
+                "ammoSpawn": 28,
+                "reloadTime": "1.2 per 2 (full 8.4)",
+                "fireDelay": "0.2 between barrels, pump 0.7 (133 rpm average)",
+                "switchDelay": 0.9,
+                "standingSpread": 10,
+                "movingSpread": 3,
+                "barrelLength": 2.8,
+                "bullet": {
+                    "damage": "12.5 x 9 pellets",
+                    "falloff": 0.3,
+                    "headshotMultiplier": 1.5,
+                    "obstacleMultiplier": "1",
+                    "distance": 27,
+                    "speed": 66,
+                    "maxDps": "250",
+                    "maxObstacleDps": "250"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.45,
+                "rpm": 133,
+                "maxDps": 250,
+                "maxObstacleDps": 250,
+                "sustainedDps": 107.1,
+                "magazineDamage": 1575,
+                "fullReload": 8.4,
+                "speedCarriedHeldFiring": [12, 12, 6],
+                "ttkBody15": [0.37, 0.37, 1.07, 1.07],
+                "stkBody15": [2, 2, 3, 3],
+                "eStand15A2": 1.137,
+                "eStand40A2": null,
+                "eMove40A2": null,
+                "eStand100A2": null
+            }
+        },
+        "aa12": {
+            "id": "aa12",
+            "gunClass": "shotgun",
+            "placementMain": {
+                "gold": 0.5
+            },
+            "mapRules": "Gold only in practice (not goldOnly-flagged); not on Savannah (shotgun ban).",
+            "gun": {
+                "name": "AA-12",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "12gauge",
+                "ammoSpawnCount": 24,
+                "jitter": 0.2,
+                "maxClip": 8,
+                "maxReload": 8,
+                "extendedClip": 10,
+                "extendedReload": 10,
+                "reloadTime": 3.2,
+                "fireDelay": 0.3,
+                "switchDelay": 0.75,
+                "barrelLength": 3.5,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 5,
+                "shotSpread": 5,
+                "bulletCount": 1,
+                "bulletType": "bullet_aa12",
+                "headshotMult": 1.25,
+                "speed": {
+                    "equip": -0.5,
+                    "attack": -0.5
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-aa12.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 3881787,
+                    "leftHandOffset": {
+                        "x": 8,
+                        "y": 0
+                    },
+                    "recoil": 1.33
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.45
+                },
+                "sound": {
+                    "shoot": "aa12_01",
+                    "reload": "aa12_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "aa12_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_aa12": {
+                    "type": "bullet",
+                    "damage": 64,
+                    "obstacleDamage": 1,
+                    "falloff": 0.8,
+                    "distance": 60,
+                    "speed": 115,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "12gauge",
+                    "tracerWidth": 0.2,
+                    "tracerLength": 0.4
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-aa12.png",
+                    "fallback": "loot-weapon-saiga.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-aa12-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (plain bar, tint 0x3B3B3B)"
+                },
+                "sounds": {
+                    "aa12_01": "saiga_01",
+                    "aa12_reload_01": "saiga_reload_01",
+                    "aa12_switch_01": "saiga_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Shotgun (full auto, slugs only)",
+                "ammo": "12 gauge (red), slugs",
+                "fireMode": "Auto",
+                "playerSpeed": -0.5,
+                "carrySpeed": 0,
+                "recoilSpeed": -0.5,
+                "magazineCapacity": "8 (ext 10)",
+                "ammoSpawn": 24,
+                "reloadTime": "3.2",
+                "fireDelay": "0.3 (200 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 5,
+                "movingSpread": 5,
+                "barrelLength": 3.5,
+                "bullet": {
+                    "damage": "64",
+                    "falloff": 0.8,
+                    "headshotMultiplier": 1.25,
+                    "obstacleMultiplier": "1",
+                    "distance": 60,
+                    "speed": 115,
+                    "maxDps": "213.3",
+                    "maxObstacleDps": "213.3"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.3,
+                "rpm": 200,
+                "maxDps": 213.3,
+                "maxObstacleDps": 213.3,
+                "sustainedDps": 91.4,
+                "magazineDamage": 512,
+                "fullReload": 3.2,
+                "speedCarriedHeldFiring": [12, 11.5, 5.5],
+                "ttkBody15": [0.391, 0.691, 0.691, 0.991],
+                "stkBody15": [2, 3, 3, 4],
+                "eStand15A2": 0.691,
+                "eStand40A2": 2.041,
+                "eMove40A2": 6.223,
+                "eStand100A2": null
+            }
+        },
+        "m79": {
+            "id": "m79",
+            "gunClass": "launcher",
+            "placementMain": {
+                "floor": 0.02,
+                "t1": 0.5,
+                "t2": 1
+            },
+            "mapRules": "Launchers: airdrops on every map, floor only on Main and Desert.",
+            "gun": {
+                "name": "M79",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "40mm",
+                "isLauncher": true,
+                "noPotatoSwap": true,
+                "noSplinter": true,
+                "deployGroup": 3,
+                "ammoSpawnCount": 10,
+                "maxClip": 1,
+                "maxReload": 1,
+                "extendedClip": 1,
+                "extendedReload": 1,
+                "reloadTime": 2.3,
+                "fireDelay": 0.3,
+                "switchDelay": 0.9,
+                "barrelLength": 2,
+                "barrelOffset": -1,
+                "recoilTime": 10000000000,
+                "moveSpread": 2,
+                "shotSpread": 1,
+                "bulletCount": 1,
+                "bulletType": "bullet_m79",
+                "projType": "m79_grenade",
+                "headshotMult": 1,
+                "speed": {
+                    "equip": -1,
+                    "attack": 0
+                },
+                "ignoreEndlessAmmo": true,
+                "lootImg": {
+                    "sprite": "loot-weapon-m79.img",
+                    "tint": 843179,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-potato-cannon-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 7,
+                        "y": 2
+                    },
+                    "gunOffset": {
+                        "x": -10,
+                        "y": -4
+                    },
+                    "recoil": 8,
+                    "handsBelow": true
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": -1,
+                    "shellOffsetY": 1
+                },
+                "sound": {
+                    "shoot": "m79_01",
+                    "reload": "m79_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "m79_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_m79": {
+                    "type": "bullet",
+                    "damage": 0,
+                    "obstacleDamage": 1,
+                    "falloff": 1,
+                    "distance": 1,
+                    "speed": 100,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "invis",
+                    "tracerWidth": 0,
+                    "tracerLength": 1.2,
+                    "skipCollision": true
+                }
+            },
+            "explosions": {
+                "explosion_m79": {
+                    "type": "explosion",
+                    "damage": 125,
+                    "obstacleDamage": 1.1,
+                    "rad": {
+                        "min": 5,
+                        "max": 12
+                    },
+                    "shrapnelCount": 12,
+                    "shrapnelType": "shrapnel_frag",
+                    "explosionEffectType": "frag",
+                    "decalType": "decal_frag_explosion"
+                }
+            },
+            "throwables": {
+                "m79_grenade": {
+                    "name": "40mm Grenade",
+                    "type": "throwable",
+                    "quality": 0,
+                    "explosionType": "explosion_m79",
+                    "inventoryOrder": 0,
+                    "noPotatoSwap": true,
+                    "cookable": false,
+                    "forceMaxThrowDistance": true,
+                    "explodeOnImpact": true,
+                    "destroyNonCollidables": false,
+                    "playerCollision": true,
+                    "fuseTime": 1.3,
+                    "aimDistance": 0,
+                    "rad": 1,
+                    "throwPhysics": {
+                        "playerVelMult": 0,
+                        "velZ": 6.8,
+                        "speed": 40,
+                        "spinVel": 3.14,
+                        "spinDrag": 1
+                    },
+                    "speed": {
+                        "equip": 0,
+                        "attack": 0
+                    },
+                    "lootImg": {
+                        "sprite": "loot-throwable-potato.img",
+                        "tint": 65280,
+                        "border": "loot-circle-outer-01.img",
+                        "borderTint": 0,
+                        "scale": 0.2
+                    },
+                    "worldImg": {
+                        "sprite": "proj-frag-nopin-nolever-01.img",
+                        "scale": 0.1,
+                        "tint": 843179
+                    },
+                    "handImg": {},
+                    "useThrowParticles": false,
+                    "sound": {
+                        "pullPin": "",
+                        "throwing": "",
+                        "pickup": "",
+                        "deploy": ""
+                    },
+                    "trail": {
+                        "maxLength": 20,
+                        "width": 1.6,
+                        "alpha": 0.6,
+                        "tint": 11579568
+                    },
+                    "assetNote": "the original 40 mm shell render (shell-40mm, fandom gap-fill) or the owner's proj-40mm replaces worldImg"
+                }
+            },
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-m79.png",
+                    "fallback": "loot-weapon-potato-cannon.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-m79-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-potato-cannon-01.img (from potato_cannon)"
+                },
+                "sounds": {
+                    "m79_01": "potato_cannon_01",
+                    "m79_reload_01": "potato_cannon_reload_01",
+                    "m79_switch_01": "potato_cannon_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Grenade launcher (break action, lobbed 40 mm frag)",
+                "ammo": "40mm (teal, new)",
+                "fireMode": "Single",
+                "playerSpeed": -1,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "1 (ext 1)",
+                "ammoSpawn": 10,
+                "reloadTime": "2.3",
+                "fireDelay": "0.3 (one round, then the reload: 1 shot per 2.6 s)",
+                "switchDelay": 0.9,
+                "standingSpread": 1,
+                "movingSpread": 2,
+                "barrelLength": 2,
+                "bullet": {
+                    "damage": "0 + 125 explosion (rad 5-12) + 12 x 20 shrapnel",
+                    "falloff": "none (explosion)",
+                    "headshotMultiplier": 1,
+                    "obstacleMultiplier": "explosion x1.1",
+                    "distance": 52,
+                    "speed": 40,
+                    "maxDps": "416.7 (per reload cycle 48.1)",
+                    "maxObstacleDps": "458.3"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.3,
+                "rpm": 23.1,
+                "maxDps": 416.7,
+                "maxObstacleDps": 458.3,
+                "sustainedDps": 48.1,
+                "magazineDamage": 125,
+                "fullReload": 2.3,
+                "speedCarriedHeldFiring": [12, 11, 5.5],
+                "ttkBody15": [0.3, 2.9, 2.9, 2.9],
+                "stkBody15": [1, 2, 2, 2],
+                "eStand15A2": 2.9,
+                "eStand40A2": 4.254,
+                "eMove40A2": 6.636,
+                "eStand100A2": null
+            }
+        },
+        "mgl": {
+            "id": "mgl",
+            "gunClass": "launcher",
+            "placementMain": {
+                "gold": 0.5
+            },
+            "mapRules": "goldOnly.",
+            "gun": {
+                "name": "Milkor MGL",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "reload",
+                "ammo": "40mm",
+                "isLauncher": true,
+                "noPotatoSwap": true,
+                "noSplinter": true,
+                "deployGroup": 3,
+                "goldOnly": true,
+                "ignoreEndlessAmmo": true,
+                "ammoSpawnCount": 12,
+                "maxClip": 6,
+                "maxReload": 1,
+                "extendedClip": 6,
+                "extendedReload": 1,
+                "reloadTime": 1,
+                "fireDelay": 0.7,
+                "switchDelay": 1,
+                "barrelLength": 2.1,
+                "barrelOffset": -1,
+                "recoilTime": 10000000000,
+                "moveSpread": 2.5,
+                "shotSpread": 1.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_mgl",
+                "projType": "m79_grenade",
+                "headshotMult": 1,
+                "speed": {
+                    "equip": -1.5,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-mgl.img",
+                    "tint": 843179,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-potato-cannon-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 7,
+                        "y": 2
+                    },
+                    "gunOffset": {
+                        "x": -10,
+                        "y": -4
+                    },
+                    "recoil": 8,
+                    "handsBelow": true
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": -1,
+                    "shellOffsetY": 1
+                },
+                "sound": {
+                    "shoot": "mgl_01",
+                    "reload": "mgl_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "mgl_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_mgl": {
+                    "type": "bullet",
+                    "damage": 0,
+                    "obstacleDamage": 1,
+                    "falloff": 1,
+                    "distance": 1,
+                    "speed": 100,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "invis",
+                    "tracerWidth": 0,
+                    "tracerLength": 1.2,
+                    "skipCollision": true
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": ["m79_grenade", "explosion_m79"],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-mgl.png",
+                    "fallback": "loot-weapon-potato-cannon.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-mgl-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-potato-cannon-01.img (from potato_cannon)"
+                },
+                "sounds": {
+                    "mgl_01": "potato_cannon_01",
+                    "mgl_reload_01": "potato_cannon_reload_01",
+                    "mgl_switch_01": "potato_cannon_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Grenade launcher (6-round revolver)",
+                "ammo": "40mm (teal, new)",
+                "fireMode": "Single",
+                "playerSpeed": -1.5,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "6 (ext 6)",
+                "ammoSpawn": 12,
+                "reloadTime": "1 per 1 (full 6)",
+                "fireDelay": "0.7 (86 rpm)",
+                "switchDelay": 1,
+                "standingSpread": 1.5,
+                "movingSpread": 2.5,
+                "barrelLength": 2.1,
+                "bullet": {
+                    "damage": "0 + 125 explosion (rad 5-12) + 12 x 20 shrapnel",
+                    "falloff": "none (explosion)",
+                    "headshotMultiplier": 1,
+                    "obstacleMultiplier": "explosion x1.1",
+                    "distance": 52,
+                    "speed": 40,
+                    "maxDps": "178.6 (per reload cycle 73.5)",
+                    "maxObstacleDps": "196.4"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.7,
+                "rpm": 86,
+                "maxDps": 178.6,
+                "maxObstacleDps": 196.4,
+                "sustainedDps": 73.5,
+                "magazineDamage": 750,
+                "fullReload": 6,
+                "speedCarriedHeldFiring": [12, 10.5, 5.25],
+                "ttkBody15": [0.298, 0.997, 0.997, 0.997],
+                "stkBody15": [1, 2, 2, 2],
+                "eStand15A2": 0.997,
+                "eStand40A2": 2.09,
+                "eMove40A2": 2.658,
+                "eStand100A2": null
+            }
+        },
+        "gl06": {
+            "id": "gl06",
+            "gunClass": "launcher",
+            "placementMain": {
+                "floor": 0.02,
+                "t1": 0.5
+            },
+            "mapRules": "As the M79.",
+            "gun": {
+                "name": "GL-06",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "reload",
+                "ammo": "40mm",
+                "isLauncher": true,
+                "noPotatoSwap": true,
+                "noSplinter": true,
+                "deployGroup": 3,
+                "toMouseHit": true,
+                "ammoSpawnCount": 10,
+                "maxClip": 1,
+                "maxReload": 1,
+                "extendedClip": 1,
+                "extendedReload": 1,
+                "reloadTime": 2,
+                "fireDelay": 0.3,
+                "switchDelay": 0.6,
+                "barrelLength": 1.9,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 2.5,
+                "shotSpread": 1,
+                "bulletCount": 1,
+                "bulletType": "bullet_gl06",
+                "headshotMult": 1,
+                "speed": {
+                    "equip": -1,
+                    "attack": 0
+                },
+                "ignoreEndlessAmmo": true,
+                "lootImg": {
+                    "sprite": "loot-weapon-gl06.img",
+                    "tint": 843179,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-potato-cannon-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 7,
+                        "y": 2
+                    },
+                    "gunOffset": {
+                        "x": -10,
+                        "y": -4
+                    },
+                    "recoil": 8,
+                    "handsBelow": true
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": -1,
+                    "shellOffsetY": 1
+                },
+                "sound": {
+                    "shoot": "gl06_01",
+                    "reload": "gl06_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "gl06_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_gl06": {
+                    "type": "bullet",
+                    "damage": 10,
+                    "obstacleDamage": 1,
+                    "falloff": 1,
+                    "distance": 60,
+                    "speed": 45,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "40mm",
+                    "tracerWidth": 0.16,
+                    "tracerLength": 0.4,
+                    "onHit": "explosion_gl06",
+                    "noReflect": true,
+                    "noDistAdj": true,
+                    "armDistance": 4
+                }
+            },
+            "explosions": {
+                "explosion_gl06": {
+                    "type": "explosion",
+                    "damage": 100,
+                    "obstacleDamage": 1.1,
+                    "rad": {
+                        "min": 4,
+                        "max": 10
+                    },
+                    "shrapnelCount": 6,
+                    "shrapnelType": "shrapnel_frag",
+                    "explosionEffectType": "frag",
+                    "decalType": "decal_frag_small_explosion"
+                }
+            },
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-gl06.png",
+                    "fallback": "loot-weapon-potato-cannon.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-gl06-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-potato-cannon-01.img (from potato_cannon)"
+                },
+                "sounds": {
+                    "gl06_01": "potato_cannon_01",
+                    "gl06_reload_01": "potato_cannon_reload_01",
+                    "gl06_switch_01": "potato_cannon_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Grenade launcher (single shot, 40 mm airburst at the cursor)",
+                "ammo": "40mm (teal, new)",
+                "fireMode": "Single",
+                "playerSpeed": -1,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "1 (ext 1)",
+                "ammoSpawn": 10,
+                "reloadTime": "2",
+                "fireDelay": "0.3 (one round, then the reload: 1 shot per 2.3 s)",
+                "switchDelay": 0.6,
+                "standingSpread": 1,
+                "movingSpread": 2.5,
+                "barrelLength": 1.9,
+                "bullet": {
+                    "damage": "10 + 100 explosion (rad 4-10) + 6 x 20 shrapnel",
+                    "falloff": 1,
+                    "headshotMultiplier": 1,
+                    "obstacleMultiplier": "bullet x1, explosion x1.1",
+                    "distance": 60,
+                    "speed": 45,
+                    "maxDps": "366.7 (per reload cycle 47.8)",
+                    "maxObstacleDps": "400"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.3,
+                "rpm": 26.1,
+                "maxDps": 366.7,
+                "maxObstacleDps": 400,
+                "sustainedDps": 47.8,
+                "magazineDamage": 110,
+                "fullReload": 2,
+                "speedCarriedHeldFiring": [12, 11, 5.5],
+                "ttkBody15": [0.269, 2.569, 2.569, 2.569],
+                "stkBody15": [1, 2, 2, 2],
+                "eStand15A2": 2.569,
+                "eStand40A2": 3.124,
+                "eMove40A2": 3.877,
+                "eStand100A2": null
+            }
+        },
+        "rpg7": {
+            "id": "rpg7",
+            "gunClass": "launcher",
+            "placementMain": {
+                "gold": 0.5
+            },
+            "mapRules": "goldOnly; rocket ammo in no loot table.",
+            "gun": {
+                "name": "RPG-7",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "rocket",
+                "isLauncher": true,
+                "noPotatoSwap": true,
+                "noSplinter": true,
+                "deployGroup": 3,
+                "goldOnly": true,
+                "ignoreEndlessAmmo": true,
+                "ammoSpawnCount": 4,
+                "maxClip": 1,
+                "maxReload": 1,
+                "extendedClip": 1,
+                "extendedReload": 1,
+                "reloadTime": 3.5,
+                "fireDelay": 0.3,
+                "switchDelay": 1,
+                "barrelLength": 2.3,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 3,
+                "shotSpread": 1,
+                "bulletCount": 1,
+                "bulletType": "bullet_rpg7",
+                "headshotMult": 1,
+                "speed": {
+                    "equip": -2,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-rpg7.img",
+                    "tint": 9127187,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-potato-cannon-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 7,
+                        "y": 2
+                    },
+                    "gunOffset": {
+                        "x": -10,
+                        "y": -4
+                    },
+                    "recoil": 8,
+                    "handsBelow": true
+                },
+                "particle": {
+                    "shellScale": 0,
+                    "shellOffset": 0
+                },
+                "sound": {
+                    "shoot": "rpg7_01",
+                    "reload": "rpg7_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "rpg7_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_rpg7": {
+                    "type": "bullet",
+                    "damage": 60,
+                    "obstacleDamage": 4,
+                    "falloff": 1,
+                    "distance": 120,
+                    "speed": 85,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "rocket",
+                    "tracerWidth": 0.35,
+                    "tracerLength": 0.7,
+                    "onHit": "explosion_rpg7",
+                    "noReflect": true,
+                    "noDistAdj": true,
+                    "armDistance": 5
+                }
+            },
+            "explosions": {
+                "explosion_rpg7": {
+                    "type": "explosion",
+                    "damage": 150,
+                    "obstacleDamage": 0.9,
+                    "rad": {
+                        "min": 6,
+                        "max": 14
+                    },
+                    "shrapnelCount": 12,
+                    "shrapnelType": "shrapnel_frag",
+                    "explosionEffectType": "barrel",
+                    "decalType": "decal_frag_explosion"
+                }
+            },
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-rpg7.png",
+                    "fallback": "loot-weapon-potato-cannon.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-rpg7-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-potato-cannon-01.img (from potato_cannon)"
+                },
+                "sounds": {
+                    "rpg7_01": "potato_cannon_01",
+                    "rpg7_reload_01": "potato_cannon_reload_01",
+                    "rpg7_switch_01": "potato_cannon_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Rocket launcher (reusable)",
+                "ammo": "rocket (brown, new; only with the gun)",
+                "fireMode": "Single",
+                "playerSpeed": -2,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "1 (ext 1)",
+                "ammoSpawn": 4,
+                "reloadTime": "3.5",
+                "fireDelay": "0.3 (one round, then the reload: 1 shot per 3.8 s)",
+                "switchDelay": 1,
+                "standingSpread": 1,
+                "movingSpread": 3,
+                "barrelLength": 2.3,
+                "bullet": {
+                    "damage": "60 + 150 explosion (rad 6-14) + 12 x 20 shrapnel",
+                    "falloff": 1,
+                    "headshotMultiplier": 1,
+                    "obstacleMultiplier": "bullet x4, explosion x0.9",
+                    "distance": 120,
+                    "speed": 85,
+                    "maxDps": "700 (per reload cycle 55.3)",
+                    "maxObstacleDps": "1250"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.3,
+                "rpm": 15.8,
+                "maxDps": 700,
+                "maxObstacleDps": 1250,
+                "sustainedDps": 55.3,
+                "magazineDamage": 210,
+                "fullReload": 3.5,
+                "speedCarriedHeldFiring": [12, 10, 5],
+                "ttkBody15": [0.138, 0.138, 0.138, 3.938],
+                "stkBody15": [1, 1, 1, 2],
+                "eStand15A2": 0.138,
+                "eStand40A2": 0.432,
+                "eMove40A2": 1.632,
+                "eStand100A2": 1.138
+            }
+        },
+        "panzerfaust": {
+            "id": "panzerfaust",
+            "gunClass": "launcher",
+            "placementMain": {
+                "floor": 0.02,
+                "t1": 0.5
+            },
+            "mapRules": "As the M79.",
+            "gun": {
+                "name": "Panzerfaust",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "panzerfaust_ammo",
+                "isLauncher": true,
+                "noPotatoSwap": true,
+                "noSplinter": true,
+                "deployGroup": 3,
+                "charges": 1,
+                "discardWhenEmpty": true,
+                "ignoreEndlessAmmo": true,
+                "ammoSpawnCount": 0,
+                "maxClip": 1,
+                "maxReload": 1,
+                "extendedClip": 1,
+                "extendedReload": 1,
+                "reloadTime": 0,
+                "fireDelay": 0.5,
+                "switchDelay": 1,
+                "barrelLength": 2.4,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 4,
+                "shotSpread": 2,
+                "bulletCount": 1,
+                "bulletType": "bullet_panzerfaust",
+                "headshotMult": 1,
+                "speed": {
+                    "equip": -1.5,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-panzerfaust.img",
+                    "tint": 7035706,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-potato-cannon-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 7,
+                        "y": 2
+                    },
+                    "gunOffset": {
+                        "x": -10,
+                        "y": -4
+                    },
+                    "recoil": 8,
+                    "handsBelow": true
+                },
+                "particle": {
+                    "shellScale": 0,
+                    "shellOffset": 0
+                },
+                "sound": {
+                    "shoot": "panzerfaust_01",
+                    "reload": "",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "panzerfaust_switch_01",
+                    "discard": "panzerfaust_discard_01"
+                }
+            },
+            "bullets": {
+                "bullet_panzerfaust": {
+                    "type": "bullet",
+                    "damage": 80,
+                    "obstacleDamage": 5,
+                    "falloff": 1,
+                    "distance": 40,
+                    "speed": 35,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "rocket",
+                    "tracerWidth": 0.45,
+                    "tracerLength": 0.5,
+                    "onHit": "explosion_panzerfaust",
+                    "noReflect": true,
+                    "noDistAdj": true,
+                    "armDistance": 4
+                }
+            },
+            "explosions": {
+                "explosion_panzerfaust": {
+                    "type": "explosion",
+                    "damage": 140,
+                    "obstacleDamage": 0.9,
+                    "rad": {
+                        "min": 4,
+                        "max": 9
+                    },
+                    "shrapnelCount": 4,
+                    "shrapnelType": "shrapnel_frag",
+                    "explosionEffectType": "barrel",
+                    "decalType": "decal_frag_explosion"
+                }
+            },
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-panzerfaust.png",
+                    "fallback": "loot-weapon-potato-cannon.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-panzerfaust-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-potato-cannon-01.img (from potato_cannon)"
+                },
+                "sounds": {
+                    "panzerfaust_01": "potato_cannon_01",
+                    "panzerfaust_switch_01": "potato_cannon_switch_01",
+                    "panzerfaust_discard_01": "gun_pickup_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Recoilless launcher (single use)",
+                "ammo": "none (1 charge)",
+                "fireMode": "Single",
+                "playerSpeed": -1.5,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "1 charge, no extension",
+                "ammoSpawn": 0,
+                "reloadTime": "none (discarded when empty)",
+                "fireDelay": "0.5 (single use)",
+                "switchDelay": 1,
+                "standingSpread": 2,
+                "movingSpread": 4,
+                "barrelLength": 2.4,
+                "bullet": {
+                    "damage": "80 + 140 explosion (rad 4-9) + 4 x 20 shrapnel",
+                    "falloff": 1,
+                    "headshotMultiplier": 1,
+                    "obstacleMultiplier": "bullet x5, explosion x0.9",
+                    "distance": 40,
+                    "speed": 35,
+                    "maxDps": "440 (single use)",
+                    "maxObstacleDps": "1052"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.5,
+                "rpm": null,
+                "maxDps": 440,
+                "maxObstacleDps": 1052,
+                "sustainedDps": 440,
+                "magazineDamage": 220,
+                "fullReload": null,
+                "speedCarriedHeldFiring": [12, 10.5, 5.25],
+                "ttkBody15": [0.331, 0.331, 0.331, 0.331],
+                "stkBody15": [1, 1, 1, 1],
+                "eStand15A2": 0.331,
+                "eStand40A2": 1.046,
+                "eMove40A2": null,
+                "eStand100A2": null
+            }
+        },
+        "m202": {
+            "id": "m202",
+            "gunClass": "launcher",
+            "placementMain": {
+                "t2": 0.2,
+                "gold": 0.25
+            },
+            "mapRules": "No floor.",
+            "gun": {
+                "name": "M202 FLASH",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "m202_ammo",
+                "isLauncher": true,
+                "noPotatoSwap": true,
+                "noSplinter": true,
+                "deployGroup": 3,
+                "charges": 1,
+                "discardWhenEmpty": true,
+                "ignoreEndlessAmmo": true,
+                "ammoSpawnCount": 0,
+                "maxClip": 1,
+                "maxReload": 1,
+                "extendedClip": 1,
+                "extendedReload": 1,
+                "reloadTime": 0,
+                "fireDelay": 0.5,
+                "switchDelay": 1.1,
+                "barrelLength": 2.2,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 4,
+                "shotSpread": 6,
+                "bulletCount": 4,
+                "jitter": 0.5,
+                "bulletType": "bullet_m202",
+                "headshotMult": 1,
+                "speed": {
+                    "equip": -2.5,
+                    "attack": 0
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-m202.img",
+                    "tint": 4936480,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-potato-cannon-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 7,
+                        "y": 2
+                    },
+                    "gunOffset": {
+                        "x": -10,
+                        "y": -4
+                    },
+                    "recoil": 8,
+                    "handsBelow": true
+                },
+                "particle": {
+                    "shellScale": 0,
+                    "shellOffset": 0
+                },
+                "sound": {
+                    "shoot": "m202_01",
+                    "reload": "",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_01",
+                    "deploy": "m202_switch_01",
+                    "discard": "m202_discard_01"
+                }
+            },
+            "bullets": {
+                "bullet_m202": {
+                    "type": "bullet",
+                    "damage": 25,
+                    "obstacleDamage": 2,
+                    "falloff": 1,
+                    "distance": 75,
+                    "speed": 55,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "rocket",
+                    "tracerWidth": 0.3,
+                    "tracerLength": 0.6,
+                    "onHit": "explosion_m202",
+                    "noReflect": true,
+                    "noDistAdj": true,
+                    "armDistance": 5
+                }
+            },
+            "explosions": {
+                "explosion_m202": {
+                    "type": "explosion",
+                    "damage": 50,
+                    "obstacleDamage": 1.1,
+                    "rad": {
+                        "min": 3.5,
+                        "max": 9
+                    },
+                    "shrapnelCount": 0,
+                    "shrapnelType": "",
+                    "explosionEffectType": "barrel",
+                    "decalType": "decal_frag_small_explosion"
+                }
+            },
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-m202.png",
+                    "fallback": "loot-weapon-potato-cannon.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-m202-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-potato-cannon-01.img (from potato_cannon)"
+                },
+                "sounds": {
+                    "m202_01": "potato_cannon_01",
+                    "m202_switch_01": "potato_cannon_switch_01",
+                    "m202_discard_01": "gun_pickup_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Rocket launcher (4 tubes, one volley, single use)",
+                "ammo": "none (1 charge = 4 rockets)",
+                "fireMode": "Single",
+                "playerSpeed": -2.5,
+                "carrySpeed": 0,
+                "recoilSpeed": 0,
+                "magazineCapacity": "1 charge (4 rockets), no extension",
+                "ammoSpawn": 0,
+                "reloadTime": "none (discarded when empty)",
+                "fireDelay": "0.5 (single use)",
+                "switchDelay": 1.1,
+                "standingSpread": 6,
+                "movingSpread": 4,
+                "barrelLength": 2.2,
+                "bullet": {
+                    "damage": "4 x (25 + 50 explosion (rad 3.5-9))",
+                    "falloff": 1,
+                    "headshotMultiplier": 1,
+                    "obstacleMultiplier": "bullet x2, explosion x1.1",
+                    "distance": 75,
+                    "speed": 55,
+                    "maxDps": "600 (single use)",
+                    "maxObstacleDps": "840"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.5,
+                "rpm": null,
+                "maxDps": 600,
+                "maxObstacleDps": 840,
+                "sustainedDps": 600,
+                "magazineDamage": 300,
+                "fullReload": null,
+                "speedCarriedHeldFiring": [12, 9.5, 4.75],
+                "ttkBody15": [0.215, 0.215, 0.215, 0.215],
+                "stkBody15": [1, 1, 1, 1],
+                "eStand15A2": null,
+                "eStand40A2": null,
+                "eMove40A2": null,
+                "eStand100A2": null
+            }
+        },
+        "m200": {
+            "id": "m200",
+            "gunClass": "sniper",
+            "placementMain": {
+                "t2": 0.25,
+                "gold": 0.5
+            },
+            "mapRules": "Sniper class. Gold 0.5 plus rare tier 2 0.25.",
+            "gun": {
+                "name": "M200 Intervention",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "762mm",
+                "aimDelay": true,
+                "ammoSpawnCount": 21,
+                "maxClip": 7,
+                "maxReload": 7,
+                "extendedClip": 9,
+                "extendedReload": 9,
+                "reloadTime": 3.5,
+                "fireDelay": 1.6,
+                "switchDelay": 1,
+                "pullDelay": 1,
+                "barrelLength": 4,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 4,
+                "shotSpread": 0.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_m200",
+                "headshotMult": 1.25,
+                "speed": {
+                    "equip": -1,
+                    "attack": -2
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-m200.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.4925
+                    },
+                    "tint": 6654279,
+                    "leftHandOffset": {
+                        "x": 2.8,
+                        "y": 0
+                    },
+                    "recoil": 2.33
+                },
+                "particle": {
+                    "shellScale": 1.6,
+                    "shellOffset": 0.6
+                },
+                "sound": {
+                    "shoot": "m200_01",
+                    "reload": "m200_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "m200_switch_01",
+                    "cycle": "m200_cycle_01",
+                    "pull": "m200_pull_01"
+                }
+            },
+            "bullets": {
+                "bullet_m200": {
+                    "type": "bullet",
+                    "damage": 115,
+                    "obstacleDamage": 2,
+                    "falloff": 0.97,
+                    "distance": 550,
+                    "speed": 214,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "762mm",
+                    "tracerWidth": 0.2,
+                    "tracerLength": 1
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-m200.png",
+                    "fallback": "loot-weapon-sv98.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-m200-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (from sv98)"
+                },
+                "sounds": {
+                    "m200_01": "sv98_01",
+                    "m200_reload_01": "sv98_reload_01",
+                    "m200_switch_01": "sv98_cycle_01",
+                    "m200_cycle_01": "sv98_cycle_01",
+                    "m200_pull_01": "sv98_pull_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Sniper rifle (bolt action)",
+                "ammo": "7.62mm (blue)",
+                "fireMode": "Single",
+                "playerSpeed": -1,
+                "carrySpeed": 0,
+                "recoilSpeed": -2,
+                "magazineCapacity": "7 (ext 9)",
+                "ammoSpawn": 21,
+                "reloadTime": "3.5",
+                "fireDelay": "1.6 (38 rpm)",
+                "switchDelay": 1,
+                "standingSpread": 0.5,
+                "movingSpread": 4,
+                "barrelLength": 4,
+                "bullet": {
+                    "damage": "115",
+                    "falloff": 0.97,
+                    "headshotMultiplier": 1.25,
+                    "obstacleMultiplier": "2",
+                    "distance": 550,
+                    "speed": 214,
+                    "maxDps": "71.9",
+                    "maxObstacleDps": "143.8"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 1.6,
+                "rpm": 38,
+                "maxDps": 71.9,
+                "maxObstacleDps": 143.8,
+                "sustainedDps": 54.8,
+                "magazineDamage": 805,
+                "fullReload": 3.5,
+                "speedCarriedHeldFiring": [12, 11, 4.5],
+                "ttkBody15": [0.047, 1.647, 1.647, 1.647],
+                "stkBody15": [1, 2, 2, 2],
+                "eStand15A2": 1.647,
+                "eStand40A2": 1.764,
+                "eMove40A2": 3.098,
+                "eStand100A2": 2.044
+            }
+        },
+        "hecate": {
+            "id": "hecate",
+            "gunClass": "sniper",
+            "placementMain": {
+                "gold": 0.5
+            },
+            "mapRules": "goldOnly. Presentation donor is the Barrett once the survev port lands (AWM-S until then).",
+            "gun": {
+                "name": "Hécate II",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "50AE",
+                "aimDelay": true,
+                "ammoSpawnCount": 21,
+                "maxClip": 7,
+                "maxReload": 7,
+                "extendedClip": 9,
+                "extendedReload": 9,
+                "reloadTime": 4,
+                "fireDelay": 1.75,
+                "switchDelay": 1,
+                "pullDelay": 1.3,
+                "barrelLength": 4.1,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 4.5,
+                "shotSpread": 0.75,
+                "bulletCount": 1,
+                "bulletType": "bullet_hecate",
+                "headshotMult": 1,
+                "speed": {
+                    "equip": -1,
+                    "attack": -3
+                },
+                "goldOnly": true,
+                "noPotatoSwap": true,
+                "lootImg": {
+                    "sprite": "loot-weapon-hecate.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-awc-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 11,
+                        "y": 0
+                    },
+                    "recoil": 2.66
+                },
+                "particle": {
+                    "shellScale": 1.5,
+                    "shellOffset": 0.6
+                },
+                "sound": {
+                    "shoot": "hecate_01",
+                    "reload": "hecate_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "hecate_switch_01",
+                    "cycle": "hecate_cycle_01",
+                    "pull": "hecate_pull_01",
+                    "fallOff": 3
+                }
+            },
+            "bullets": {
+                "bullet_hecate": {
+                    "type": "bullet",
+                    "damage": 160,
+                    "obstacleDamage": 2.5,
+                    "falloff": 0.975,
+                    "distance": 500,
+                    "speed": 207,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "50AE",
+                    "tracerWidth": 0.225,
+                    "tracerLength": 1.2
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-hecate.png",
+                    "fallback": "loot-weapon-awc.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-hecate-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-awc-01.img (from awc)"
+                },
+                "sounds": {
+                    "hecate_01": "awc_01",
+                    "hecate_reload_01": "awc_reload_01",
+                    "hecate_switch_01": "awc_cycle_01",
+                    "hecate_cycle_01": "awc_cycle_01",
+                    "hecate_pull_01": "awc_pull_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Sniper rifle (bolt action, .50)",
+                "ammo": ".50 AE (black)",
+                "fireMode": "Single",
+                "playerSpeed": -1,
+                "carrySpeed": 0,
+                "recoilSpeed": -3,
+                "magazineCapacity": "7 (ext 9)",
+                "ammoSpawn": 21,
+                "reloadTime": "4",
+                "fireDelay": "1.75 (34 rpm)",
+                "switchDelay": 1,
+                "standingSpread": 0.75,
+                "movingSpread": 4.5,
+                "barrelLength": 4.1,
+                "bullet": {
+                    "damage": "160",
+                    "falloff": 0.975,
+                    "headshotMultiplier": 1,
+                    "obstacleMultiplier": "2.5",
+                    "distance": 500,
+                    "speed": 207,
+                    "maxDps": "91.4",
+                    "maxObstacleDps": "228.6"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 1.75,
+                "rpm": 34,
+                "maxDps": 91.4,
+                "maxObstacleDps": 228.6,
+                "sustainedDps": 68.9,
+                "magazineDamage": 1120,
+                "fullReload": 4,
+                "speedCarriedHeldFiring": [12, 11, 4],
+                "ttkBody15": [0.048, 0.048, 1.798, 1.798],
+                "stkBody15": [1, 1, 2, 2],
+                "eStand15A2": 1.798,
+                "eStand40A2": 1.919,
+                "eMove40A2": 4.242,
+                "eStand100A2": 2.208
+            }
+        },
+        "lynx": {
+            "id": "lynx",
+            "gunClass": "sniper",
+            "placementMain": {
+                "gold": 0.5
+            },
+            "mapRules": "goldOnly. Presentation donor is the Barrett once the survev port lands (AWM-S until then).",
+            "gun": {
+                "name": "Lynx",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "50AE",
+                "aimDelay": true,
+                "isBullpup": true,
+                "ammoSpawnCount": 20,
+                "maxClip": 5,
+                "maxReload": 5,
+                "extendedClip": 6,
+                "extendedReload": 6,
+                "reloadTime": 4.2,
+                "fireDelay": 1.2,
+                "switchDelay": 1,
+                "barrelLength": 3.6,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 4.5,
+                "shotSpread": 1.25,
+                "bulletCount": 1,
+                "bulletType": "bullet_lynx",
+                "headshotMult": 1.25,
+                "speed": {
+                    "equip": -0.5,
+                    "attack": -4
+                },
+                "goldOnly": true,
+                "noPotatoSwap": true,
+                "lootImg": {
+                    "sprite": "loot-weapon-lynx.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-awc-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 11,
+                        "y": 0
+                    },
+                    "recoil": 2.66
+                },
+                "particle": {
+                    "shellScale": 1.5,
+                    "shellOffset": 0.6
+                },
+                "sound": {
+                    "shoot": "lynx_01",
+                    "reload": "lynx_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "lynx_switch_01",
+                    "cycle": "lynx_cycle_01",
+                    "pull": "lynx_pull_01",
+                    "fallOff": 3
+                }
+            },
+            "bullets": {
+                "bullet_lynx": {
+                    "type": "bullet",
+                    "damage": 118,
+                    "obstacleDamage": 4,
+                    "falloff": 0.975,
+                    "distance": 400,
+                    "speed": 214,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "50AE",
+                    "tracerWidth": 0.225,
+                    "tracerLength": 1.2
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-lynx.png",
+                    "fallback": "loot-weapon-awc.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-lynx-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-awc-01.img (from awc)"
+                },
+                "sounds": {
+                    "lynx_01": "awc_01",
+                    "lynx_reload_01": "awc_reload_01",
+                    "lynx_switch_01": "awc_cycle_01",
+                    "lynx_cycle_01": "awc_cycle_01",
+                    "lynx_pull_01": "awc_pull_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Anti-materiel rifle (semi-auto bullpup, .50)",
+                "ammo": ".50 AE (black)",
+                "fireMode": "Single",
+                "playerSpeed": -0.5,
+                "carrySpeed": 0,
+                "recoilSpeed": -4,
+                "magazineCapacity": "5 (ext 6)",
+                "ammoSpawn": 20,
+                "reloadTime": "4.2",
+                "fireDelay": "1.2 (50 rpm)",
+                "switchDelay": 1,
+                "standingSpread": 1.25,
+                "movingSpread": 4.5,
+                "barrelLength": 3.6,
+                "bullet": {
+                    "damage": "118",
+                    "falloff": 0.975,
+                    "headshotMultiplier": 1.25,
+                    "obstacleMultiplier": "4",
+                    "distance": 400,
+                    "speed": 214,
+                    "maxDps": "98.3",
+                    "maxObstacleDps": "393.3"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 1.2,
+                "rpm": 50,
+                "maxDps": 98.3,
+                "maxObstacleDps": 393.3,
+                "sustainedDps": 57.8,
+                "magazineDamage": 590,
+                "fullReload": 4.2,
+                "speedCarriedHeldFiring": [12, 11.5, 3.75],
+                "ttkBody15": [0.049, 1.249, 1.249, 1.249],
+                "stkBody15": [1, 2, 2, 2],
+                "eStand15A2": 1.249,
+                "eStand40A2": 1.365,
+                "eMove40A2": 3.93,
+                "eStand100A2": 1.77
+            }
+        },
+        "boys": {
+            "id": "boys",
+            "gunClass": "sniper",
+            "placementMain": {
+                "t2": 0.75
+            },
+            "mapRules": "Sniper class. Tier 2 only.",
+            "gun": {
+                "name": "Boys AT Rifle",
+                "type": "gun",
+                "quality": 0,
+                "fireMode": "single",
+                "caseTiming": "shoot",
+                "ammo": "boys_ammo",
+                "aimDelay": true,
+                "ammoSpawnCount": 0,
+                "charges": 7,
+                "discardWhenEmpty": true,
+                "ignoreEndlessAmmo": true,
+                "noPotatoSwap": true,
+                "maxClip": 7,
+                "maxReload": 7,
+                "extendedClip": 7,
+                "extendedReload": 7,
+                "reloadTime": 0,
+                "fireDelay": 1.5,
+                "switchDelay": 1,
+                "pullDelay": 1.1,
+                "barrelLength": 4.2,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 5,
+                "shotSpread": 1.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_boys",
+                "headshotMult": 1.25,
+                "speed": {
+                    "equip": -1.5,
+                    "attack": -3
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-boys.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-long-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.52
+                    },
+                    "tint": 3348992,
+                    "leftHandOffset": {
+                        "x": 2.8,
+                        "y": 0
+                    },
+                    "recoil": 2.33
+                },
+                "particle": {
+                    "shellScale": 1.6,
+                    "shellOffset": 0.6
+                },
+                "sound": {
+                    "shoot": "boys_01",
+                    "reload": "",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "boys_switch_01",
+                    "cycle": "boys_cycle_01",
+                    "pull": "boys_pull_01",
+                    "discard": "boys_discard_01"
+                }
+            },
+            "bullets": {
+                "bullet_boys": {
+                    "type": "bullet",
+                    "damage": 96,
+                    "obstacleDamage": 4,
+                    "falloff": 0.95,
+                    "distance": 350,
+                    "speed": 165,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "50AE",
+                    "tracerWidth": 0.2,
+                    "tracerLength": 1.1
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-boys.png",
+                    "fallback": "loot-weapon-mosin.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-boys-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-long-01.img (from mosin)"
+                },
+                "sounds": {
+                    "boys_01": "mosin_01",
+                    "boys_switch_01": "mosin_cycle_01",
+                    "boys_cycle_01": "mosin_cycle_01",
+                    "boys_pull_01": "mosin_pull_01",
+                    "boys_discard_01": "gun_pickup_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Anti-tank rifle (bolt action, single use: 7 shots)",
+                "ammo": "none (7 charges)",
+                "fireMode": "Single",
+                "playerSpeed": -1.5,
+                "carrySpeed": 0,
+                "recoilSpeed": -3,
+                "magazineCapacity": "7 charges, no extension",
+                "ammoSpawn": 0,
+                "reloadTime": "none (discarded when empty)",
+                "fireDelay": "1.5 (40 rpm)",
+                "switchDelay": 1,
+                "standingSpread": 1.5,
+                "movingSpread": 5,
+                "barrelLength": 4.2,
+                "bullet": {
+                    "damage": "96",
+                    "falloff": 0.95,
+                    "headshotMultiplier": 1.25,
+                    "obstacleMultiplier": "4",
+                    "distance": 350,
+                    "speed": 165,
+                    "maxDps": "64 (single use)",
+                    "maxObstacleDps": "256"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 1.5,
+                "rpm": 40,
+                "maxDps": 64,
+                "maxObstacleDps": 256,
+                "sustainedDps": 64,
+                "magazineDamage": 672,
+                "fullReload": null,
+                "speedCarriedHeldFiring": [12, 10.5, 3.75],
+                "ttkBody15": [1.559, 1.559, 1.559, 3.059],
+                "stkBody15": [2, 2, 2, 3],
+                "eStand15A2": 1.559,
+                "eStand40A2": 1.711,
+                "eMove40A2": null,
+                "eStand100A2": null
+            }
+        },
+        "m60": {
+            "id": "m60",
+            "gunClass": "lmg",
+            "placementMain": {
+                "floor": 0.02,
+                "t2": 1
+            },
+            "mapRules": "LMG class (Woods floor allows it).",
+            "gun": {
+                "name": "M60",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "762mm",
+                "ammoSpawnCount": 200,
+                "maxClip": 100,
+                "maxReload": 100,
+                "extendedClip": 150,
+                "extendedReload": 150,
+                "reloadTime": 6.5,
+                "fireDelay": 0.11,
+                "switchDelay": 0.75,
+                "barrelLength": 3.8,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 8,
+                "shotSpread": 2.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_m60",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": 0,
+                    "attack": -4
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-m60.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-pkp-top-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 12.5,
+                        "y": 0
+                    },
+                    "recoil": 1.33,
+                    "magImg": {
+                        "sprite": "gun-pkp-bot-01.img",
+                        "pos": {
+                            "x": 0,
+                            "y": -17.5
+                        }
+                    }
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.5875,
+                    "shellReverse": true
+                },
+                "sound": {
+                    "shoot": "m60_01",
+                    "reload": "m60_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "m60_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_m60": {
+                    "type": "bullet",
+                    "damage": 16,
+                    "obstacleDamage": 1.75,
+                    "falloff": 0.9,
+                    "distance": 225,
+                    "speed": 124,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "762mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.9
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-m60.png",
+                    "fallback": "loot-weapon-pkp.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-m60-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-pkp-top-01.img (from pkp)"
+                },
+                "sounds": {
+                    "m60_01": "pkp_01",
+                    "m60_reload_01": "pkp_reload_01",
+                    "m60_switch_01": "pkp_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Light machine gun (belt-fed)",
+                "ammo": "7.62mm (blue)",
+                "fireMode": "Auto",
+                "playerSpeed": 0,
+                "carrySpeed": 0,
+                "recoilSpeed": -4,
+                "magazineCapacity": "100 (ext 150)",
+                "ammoSpawn": 200,
+                "reloadTime": "6.5",
+                "fireDelay": "0.11 (545 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 2.5,
+                "movingSpread": 8,
+                "barrelLength": 3.8,
+                "bullet": {
+                    "damage": "16",
+                    "falloff": 0.9,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1.75",
+                    "distance": 225,
+                    "speed": 124,
+                    "maxDps": "145.5",
+                    "maxObstacleDps": "254.5"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.11,
+                "rpm": 545,
+                "maxDps": 145.5,
+                "maxObstacleDps": 254.5,
+                "sustainedDps": 91.4,
+                "magazineDamage": 1600,
+                "fullReload": 6.5,
+                "speedCarriedHeldFiring": [12, 12, 4],
+                "ttkBody15": [0.742, 1.072, 1.292, 1.512],
+                "stkBody15": [7, 10, 12, 14],
+                "eStand15A2": 1.122,
+                "eStand40A2": 1.333,
+                "eMove40A2": 4.018,
+                "eStand100A2": 3.093
+            }
+        },
+        "mg42": {
+            "id": "mg42",
+            "gunClass": "lmg",
+            "placementMain": {
+                "floor": 0.005,
+                "t2": 0.75
+            },
+            "mapRules": "LMG class. Not in gold.",
+            "gun": {
+                "name": "MG 42",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "762mm",
+                "ammoSpawnCount": 150,
+                "maxClip": 50,
+                "maxReload": 50,
+                "extendedClip": 75,
+                "extendedReload": 75,
+                "reloadTime": 4,
+                "fireDelay": 0.062,
+                "switchDelay": 0.75,
+                "barrelLength": 3.9,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 9,
+                "shotSpread": 3.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_mg42",
+                "headshotMult": 2,
+                "speed": {
+                    "equip": -0.5,
+                    "attack": -5
+                },
+                "lootImg": {
+                    "sprite": "loot-weapon-mg42.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-pkp-top-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 12.5,
+                        "y": 0
+                    },
+                    "recoil": 1.33,
+                    "magImg": {
+                        "sprite": "gun-pkp-bot-01.img",
+                        "pos": {
+                            "x": 0,
+                            "y": -17.5
+                        }
+                    }
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.5875,
+                    "shellReverse": true
+                },
+                "sound": {
+                    "shoot": "mg42_01",
+                    "reload": "mg42_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "mg42_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_mg42": {
+                    "type": "bullet",
+                    "damage": 11,
+                    "obstacleDamage": 1.5,
+                    "falloff": 0.9,
+                    "distance": 200,
+                    "speed": 108,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "762mm",
+                    "tracerWidth": 0.1,
+                    "tracerLength": 0.9
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-mg42.png",
+                    "fallback": "loot-weapon-pkp.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-mg42-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-pkp-top-01.img (from pkp)"
+                },
+                "sounds": {
+                    "mg42_01": "pkp_01",
+                    "mg42_reload_01": "pkp_reload_01",
+                    "mg42_switch_01": "pkp_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Light machine gun (50-round drum)",
+                "ammo": "7.62mm (blue)",
+                "fireMode": "Auto",
+                "playerSpeed": -0.5,
+                "carrySpeed": 0,
+                "recoilSpeed": -5,
+                "magazineCapacity": "50 (ext 75)",
+                "ammoSpawn": 150,
+                "reloadTime": "4",
+                "fireDelay": "0.062 (968 rpm)",
+                "switchDelay": 0.75,
+                "standingSpread": 3.5,
+                "movingSpread": 9,
+                "barrelLength": 3.9,
+                "bullet": {
+                    "damage": "11",
+                    "falloff": 0.9,
+                    "headshotMultiplier": 2,
+                    "obstacleMultiplier": "1.5",
+                    "distance": 200,
+                    "speed": 108,
+                    "maxDps": "177.4",
+                    "maxObstacleDps": "266.1"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.062,
+                "rpm": 968,
+                "maxDps": 177.4,
+                "maxObstacleDps": 266.1,
+                "sustainedDps": 77.5,
+                "magazineDamage": 550,
+                "fullReload": 4,
+                "speedCarriedHeldFiring": [12, 11.5, 3.25],
+                "ttkBody15": [0.652, 0.9, 1.086, 1.272],
+                "stkBody15": [10, 14, 17, 20],
+                "eStand15A2": 0.95,
+                "eStand40A2": 1.28,
+                "eMove40A2": 6.722,
+                "eStand100A2": 4.796
+            }
+        },
+        "dshk": {
+            "id": "dshk",
+            "gunClass": "lmg",
+            "placementMain": {
+                "gold": 0.08
+            },
+            "mapRules": "goldOnly.",
+            "gun": {
+                "name": "DShK",
+                "type": "gun",
+                "quality": 1,
+                "fireMode": "auto",
+                "caseTiming": "shoot",
+                "ammo": "762mm",
+                "ammoSpawnCount": 60,
+                "maxClip": 30,
+                "maxReload": 30,
+                "extendedClip": 30,
+                "extendedReload": 30,
+                "reloadTime": 7.5,
+                "fireDelay": 0.12,
+                "switchDelay": 1,
+                "barrelLength": 4.4,
+                "barrelOffset": 0,
+                "recoilTime": 10000000000,
+                "moveSpread": 10.5,
+                "shotSpread": 3.5,
+                "bulletCount": 1,
+                "bulletType": "bullet_dshk",
+                "headshotMult": 1.5,
+                "speed": {
+                    "carry": -2,
+                    "equip": -1,
+                    "attack": -5
+                },
+                "goldOnly": true,
+                "lootImg": {
+                    "sprite": "loot-weapon-dshk.img",
+                    "tint": 65280,
+                    "border": "loot-circle-outer-01.img",
+                    "borderTint": 0,
+                    "scale": 0.3
+                },
+                "worldImg": {
+                    "sprite": "gun-pkp-top-01.img",
+                    "scale": {
+                        "x": 0.5,
+                        "y": 0.5
+                    },
+                    "tint": 16777215,
+                    "leftHandOffset": {
+                        "x": 12.5,
+                        "y": 0
+                    },
+                    "recoil": 1.33,
+                    "magImg": {
+                        "sprite": "gun-pkp-bot-01.img",
+                        "pos": {
+                            "x": 0,
+                            "y": -17.5
+                        }
+                    }
+                },
+                "particle": {
+                    "shellScale": 1,
+                    "shellOffset": 0.5875,
+                    "shellReverse": true
+                },
+                "sound": {
+                    "shoot": "dshk_01",
+                    "reload": "dshk_reload_01",
+                    "pickup": "gun_pickup_01",
+                    "empty": "empty_fire_02",
+                    "deploy": "dshk_switch_01"
+                }
+            },
+            "bullets": {
+                "bullet_dshk": {
+                    "type": "bullet",
+                    "damage": 34,
+                    "obstacleDamage": 2.5,
+                    "falloff": 0.92,
+                    "distance": 300,
+                    "speed": 125,
+                    "variance": 0,
+                    "shrapnel": false,
+                    "tracerColor": "762mm",
+                    "tracerWidth": 0.16,
+                    "tracerLength": 1.1
+                }
+            },
+            "explosions": {},
+            "throwables": {},
+            "sharedDefs": [],
+            "assets": {
+                "lootImg": {
+                    "file": "assets-user/img/loot/loot-weapon-dshk.png",
+                    "fallback": "loot-weapon-pkp.img"
+                },
+                "worldImg": {
+                    "file": "assets-user/img/guns/gun-dshk-01.png (optional; replaces the fallback)",
+                    "fallback": "gun-pkp-top-01.img (from pkp)"
+                },
+                "sounds": {
+                    "dshk_01": "pkp_01",
+                    "dshk_reload_01": "pkp_reload_01",
+                    "dshk_switch_01": "pkp_switch_01"
+                }
+            },
+            "infobox": {
+                "gunType": "Heavy machine gun (carried, hip-fired)",
+                "ammo": "7.62mm (blue; damage set as a 12.7 mm gun)",
+                "fireMode": "Auto",
+                "playerSpeed": -1,
+                "carrySpeed": -2,
+                "recoilSpeed": -5,
+                "magazineCapacity": "30 (ext 30)",
+                "ammoSpawn": 60,
+                "reloadTime": "7.5",
+                "fireDelay": "0.12 (500 rpm)",
+                "switchDelay": 1,
+                "standingSpread": 3.5,
+                "movingSpread": 10.5,
+                "barrelLength": 4.4,
+                "bullet": {
+                    "damage": "34",
+                    "falloff": 0.92,
+                    "headshotMultiplier": 1.5,
+                    "obstacleMultiplier": "2.5",
+                    "distance": 300,
+                    "speed": 125,
+                    "maxDps": "283.3",
+                    "maxObstacleDps": "708.3"
+                },
+                "suppressed": false
+            },
+            "metrics": {
+                "shotInterval": 0.12,
+                "rpm": 500,
+                "maxDps": 283.3,
+                "maxObstacleDps": 708.3,
+                "sustainedDps": 91.9,
+                "magazineDamage": 1020,
+                "fullReload": 7.5,
+                "speedCarriedHeldFiring": [10, 9, 2],
+                "ttkBody15": [0.317, 0.557, 0.677, 0.797],
+                "stkBody15": [3, 5, 6, 7],
+                "eStand15A2": 0.609,
+                "eStand40A2": 0.865,
+                "eMove40A2": 4.548,
+                "eStand100A2": 2.672
+            }
+        }
+    }
+}
