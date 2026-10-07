@@ -19,7 +19,7 @@ may not touch, the schema number used and open questions.
 | 2 | gear / perks / roles (backpack04, 5-level bags, 6 more perks, captain, classless) | done | see `git log --grep "stage 2"` |
 | 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | done | see `git log --grep "stage 3"` |
 | 3d | 50v50 buildings and structures (added scope from the lead, owner priority) | done | see `git log --grep "50v50"` |
-| 4 | cosmetics (outfits, emotes, heal / boost effects) | planned | |
+| 4 | cosmetics (outfits, emotes, heal / boost effects) | 4a defs + loot done; 4b loadout next | see `git log --grep "stage 4"` |
 | 5 | balance option B (no balance revert for shared gameplay fields) | planned | |
 
 ### Stage 1 details
@@ -80,6 +80,17 @@ may not touch, the schema number used and open questions.
   `game/gasStages.ts` (`noGasStages`), `net/loopback.ts` (`spawnSpots`), `main.ts` (`building` route key). Tests:
   `packages/sim/test/showcase.test.ts`, `tests/e2e/survev-buildings.spec.ts` (`SHOWCASE_ALL=1` screenshots every
   building into `__screens__/survev-buildings/all/`).
+
+### Stage 4 details
+
+- 4a (defs): the port takes survev's 21 survev-only outfits, 25 emotes and 7 heal / boost effects
+  (`policy.json`); their survev world loot comes back (Fragtastic, egg outfits, Coconut Frenzy, snow / beach outfits,
+  the Reserve's gold toilet). survev's `outfitHalloweenTree` is the original `outfitTree` renamed: not ported, the
+  Halloween loot entry is renamed back (`lib/maps.ts ITEM_RENAMES`). Classless now wears `outfitClassless`. Outfit,
+  emote and effect names come from the defs, like the original cosmetics (no `game-<id>` keys, no ko table entries).
+  `NOT_PORTED_IDS` (defs test helpers) now lists survev meta content (quests, passes). Tests:
+  `packages/defs/test/survevContent.test.ts` "survev cosmetics", `tools/port-survev/survevLoot.test.ts` renames,
+  `survevPerksRoles.test.ts` (Classless outfit).
 
 ### Stage 3d details (50v50)
 
@@ -192,6 +203,16 @@ generation. `AIRDROP_TIER_SPLITS` already leaves it unsplit (special crate). Two
 The Cutlass / Gold Cutlass use the existing `cutlass` idle pose and `cut` / `cutReverse` animations
 (`apps/client/src/objects/anims.ts`, unchanged); the held sprite comes from `worldImg` like other melee. Nothing to do
 unless the held-sprite renderer special-cases melee ids.
+
+### 8. Survev heal and boost effects (`apps/client/src/fx/particleDefs*.ts`, `apps/client/src/objects/playerEmitters.ts`)
+
+Stage 4 ports survev's heal effects `heal_diamond`, `heal_ankh`, `heal_menacing` and boost effects `boost_club`,
+`boost_lightning`, `boost_hermes`, `boost_gearshift`. Their emitters and particles are survev
+`client/src/objects/particles.ts` (particles 3004-3300, emitters 3685 heal_diamond, 3694 heal_ankh, 3703
+heal_menacing, 3751 boost_club, 3760 boost_lightning, 3769 boost_hermes, 3778 / 3787 boost_gearshift_01 / _02); the
+sprites are already in the manifest. `apps/client/test/particles.test.ts` allowlists the 8 emitters as pending. The
+player emitters still hard-code `heal_basic` / `boost_basic`; once stage 4b sends each player's loadout effect
+(PlayerInfo heal / boost ids), `playerEmitters.ts` should run that effect's `emitter` instead.
 
 ## Owner requests (2026-10-07, while stage 2 ran)
 

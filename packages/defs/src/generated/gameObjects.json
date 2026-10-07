@@ -14932,6 +14932,315 @@
     "tracerLength": 1.2,
     "skipCollision": true
   },
+  "heal_diamond": {
+    "type": "heal_effect",
+    "name": "Crazy Diamond",
+    "lore": "Dora-ra-ra-ra!",
+    "rarity": 1,
+    "texture": "part-heal-diamond.img",
+    "emitter": "heal_diamond"
+  },
+  "heal_ankh": {
+    "type": "heal_effect",
+    "name": "Ankh Charm",
+    "lore": "Grants immunity to most debuffs.",
+    "rarity": 2,
+    "texture": "part-heal-ankh.img",
+    "emitter": "heal_ankh"
+  },
+  "heal_menacing": {
+    "type": "heal_effect",
+    "name": "Phantom Blood",
+    "lore": "Oh? You're approaching me?",
+    "rarity": 3,
+    "texture": "part-heal-menacing.img",
+    "emitter": "heal_menacing"
+  },
+  "boost_club": {
+    "type": "boost_effect",
+    "name": "Club Cola",
+    "lore": "Copyright 2026, PARMA Institute.",
+    "rarity": 1,
+    "texture": "part-boost-club.img",
+    "emitter": "boost_club"
+  },
+  "boost_hermes": {
+    "type": "boost_effect",
+    "name": "Winged Grace",
+    "lore": "Graced by the mythical holy moly.",
+    "rarity": 2,
+    "texture": "part-boost-hermes.img",
+    "emitter": "boost_hermes"
+  },
+  "boost_lightning": {
+    "type": "boost_effect",
+    "name": "Surged",
+    "lore": "Feel the surge!",
+    "rarity": 3,
+    "texture": "part-boost-lightning.img",
+    "emitter": "boost_lightning"
+  },
+  "boost_gearshift": {
+    "type": "boost_effect",
+    "name": "Gearshift",
+    "lore": "What is the landspeed velocity of an unladen survevr?",
+    "rarity": 4,
+    "texture": "part-boost-gearshift.img",
+    "emitter": [
+      "boost_gearshift_01",
+      "boost_gearshift_02"
+    ]
+  },
+  "emote_boffy": {
+    "type": "emote",
+    "name": "Boffy",
+    "rarity": 1,
+    "texture": "face-boffy.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
+  "emote_sadboffy": {
+    "type": "emote",
+    "name": "Sad Boffy",
+    "rarity": 1,
+    "texture": "face-sadboffy.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
+  "emote_flagbosnia": {
+    "type": "emote",
+    "name": "Flag Bosnia",
+    "rarity": 1,
+    "texture": "flag-bosnia-and-herzegovina.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flaglibya": {
+    "type": "emote",
+    "name": "Flag Libya",
+    "rarity": 1,
+    "texture": "flag-libya.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_tomato": {
+    "type": "emote",
+    "name": "Tomato",
+    "rarity": 1,
+    "texture": "tomato.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 2
+  },
+  "emote_cake": {
+    "type": "emote",
+    "name": "Cake",
+    "rarity": 1,
+    "texture": "cake.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 2
+  },
+  "emote_leaf": {
+    "type": "emote",
+    "name": "Leaf",
+    "rarity": 1,
+    "texture": "leaf.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 5
+  },
+  "emote_flagpalestine": {
+    "type": "emote",
+    "name": "Flag Palestine",
+    "rarity": 1,
+    "texture": "flag-palestine.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagiran": {
+    "type": "emote",
+    "name": "Flag Iran",
+    "rarity": 1,
+    "texture": "flag-iran.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flaglebanon": {
+    "type": "emote",
+    "name": "Flag Lebanon",
+    "rarity": 1,
+    "texture": "flag-lebanon.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagyemen": {
+    "type": "emote",
+    "name": "Flag Yemen",
+    "rarity": 1,
+    "texture": "flag-yemen.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagtransgender": {
+    "type": "emote",
+    "name": "Flag Transgender",
+    "rarity": 1,
+    "texture": "flag-transgender.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagpride": {
+    "type": "emote",
+    "name": "Flag Pride",
+    "rarity": 1,
+    "texture": "flag-pride.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flaglesbian": {
+    "type": "emote",
+    "name": "Flag Lesbian",
+    "rarity": 1,
+    "texture": "flag-lesbian.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flaggay": {
+    "type": "emote",
+    "name": "Flag Gay",
+    "rarity": 1,
+    "texture": "flag-gay.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagasexual": {
+    "type": "emote",
+    "name": "Flag Asexual",
+    "rarity": 1,
+    "texture": "flag-asexual.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagnonbinary": {
+    "type": "emote",
+    "name": "Flag Non-Binary",
+    "rarity": 1,
+    "texture": "flag-nonbinary.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_flagbisexual": {
+    "type": "emote",
+    "name": "Flag Bisexual",
+    "rarity": 1,
+    "texture": "flag-bisexual.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 6
+  },
+  "emote_antisocial": {
+    "type": "emote",
+    "name": "Antisocial",
+    "rarity": 1,
+    "texture": "antisocial.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 5
+  },
+  "emote_timeout": {
+    "type": "emote",
+    "name": "Timeout!",
+    "rarity": 2,
+    "texture": "timeout.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 5
+  },
+  "emote_traumatizedface": {
+    "type": "emote",
+    "name": "Traumatized Face",
+    "rarity": 3,
+    "texture": "face-traumatized.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
+  "emote_bruh": {
+    "type": "emote",
+    "name": "b r u h",
+    "rarity": 2,
+    "texture": "bruh.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 5
+  },
+  "emote_flatteredface": {
+    "type": "emote",
+    "name": "Flattered Face",
+    "rarity": 3,
+    "texture": "face-flattered.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
+  "emote_salutingface": {
+    "type": "emote",
+    "name": "Saluting Face",
+    "rarity": 2,
+    "texture": "face-salute.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
+  "emote_screamingface": {
+    "type": "emote",
+    "name": "Screaming Face",
+    "rarity": 3,
+    "texture": "face-screaming.img",
+    "sound": "emote_01",
+    "channel": "ui",
+    "teamOnly": false,
+    "category": 1
+  },
   "explosion_potato_lmgshot": {
     "type": "explosion",
     "damage": 8.5,
@@ -15948,6 +16257,591 @@
     "baseType": "cutlass",
     "noPotatoSwap": true,
     "perk": "pirate"
+  },
+  "outfitClassless": {
+    "name": "Basic Outfit",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 6579300,
+      "baseSprite": "player-base-02.img",
+      "handTint": 5263440,
+      "handSprite": "player-hands-02.img",
+      "footTint": 5263440,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 3289650,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-02.img",
+      "tint": 6579300,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "noDrop": true
+  },
+  "outfitMaintainer": {
+    "name": "Maintainer Swag",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 9596644,
+      "baseSprite": "player-base-outfitDC.img",
+      "handTint": 9596644,
+      "handSprite": "player-hands-02.img",
+      "footTint": 9596644,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 6441625,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitDC.img",
+      "tint": 9596644,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "noDropOnDeath": true,
+    "rarity": 5,
+    "lore": "// TODO: Come up with something funny"
+  },
+  "outfitGD": {
+    "name": "Game Designr",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 11218992,
+      "baseSprite": "player-base-outfitDC.img",
+      "handTint": 14901087,
+      "handSprite": "player-hands-02.img",
+      "footTint": 14901087,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 7213072,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitDC.img",
+      "tint": 13383993,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "noDropOnDeath": true,
+    "rarity": 4,
+    "lore": "'We agreed on this'",
+    "teamId": 1
+  },
+  "outfitFragtastic": {
+    "name": "Fragtastic",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 6445343,
+      "baseSprite": "player-base-01.img",
+      "handTint": 8352810,
+      "handSprite": "player-hands-01.img",
+      "footTint": 8352810,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 10066329,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 9668146,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1,
+    "lore": "Pin not included. Maybe."
+  },
+  "outfitSnow": {
+    "name": "Snowed Over",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitSnow.img",
+      "handTint": 16777215,
+      "handSprite": "player-hands-outfitSnow.img",
+      "footTint": 11725567,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 7849181,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitSnow.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 2,
+    "lore": "It's shirt weather!!"
+  },
+  "outfitBlackIce": {
+    "name": "Black Ice",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 6843758,
+      "baseSprite": "player-base-02.img",
+      "handTint": 4278099,
+      "handSprite": "player-hands-01.img",
+      "footTint": 3355453,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 6186099,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-02.img",
+      "tint": 6186099,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1
+  },
+  "outfitBeachCamo": {
+    "name": "Beach Shored",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 15583870,
+      "baseSprite": "player-base-01.img",
+      "handTint": 16442806,
+      "handSprite": "player-hands-01.img",
+      "footTint": 16442806,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 8165723,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 15583870,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase"
+  },
+  "outfitCoconut": {
+    "name": "Coconut Frenzy",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 7755830,
+      "baseSprite": "player-base-01.img",
+      "handTint": 3550498,
+      "handSprite": "player-hands-01.img",
+      "footTint": 15330806,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 15330806,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 7755830,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1,
+    "lore": "It's the coco fruit!"
+  },
+  "outfitWave": {
+    "name": "Tidal Wave",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 1153260,
+      "baseSprite": "player-base-02.img",
+      "handTint": 16643569,
+      "handSprite": "player-hands-02.img",
+      "footTint": 16643569,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 2193582,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-02.img",
+      "tint": 1153260,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1,
+    "lore": "Send them to Davy Jones' locker.",
+    "teamId": 2
+  },
+  "outfitParrotfish": {
+    "name": "Parrotfish",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitParrotfish.img",
+      "handTint": 3851974,
+      "handSprite": "player-hands-02.img",
+      "footTint": 3172240,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 3649195,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitParrotfish.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 3,
+    "lore": "Show off your scales around the island. Coral, beware!"
+  },
+  "outfitEvent": {
+    "name": "Event Winnr",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitEvent.img",
+      "handTint": 11369195,
+      "handSprite": "player-hands-01.img",
+      "footTint": 11369195,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 11369195,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitEvent.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 3,
+    "lore": "Shining beacons of the community.",
+    "noDropOnDeath": true
+  },
+  "outfitGold": {
+    "name": "Capital Gains",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitGold.img",
+      "handTint": 16777215,
+      "handSprite": "player-hands-outfitGold.img",
+      "footTint": 16777215,
+      "footSprite": "player-feet-outfitGold.img",
+      "backpackTint": 16777215,
+      "backpackSprite": "player-bag-outfitGold.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitGold.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "lore": "Justice for Chrome"
+  },
+  "outfitRain": {
+    "name": "Rainy Day",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 3365795,
+      "baseSprite": "player-base-01.img",
+      "handTint": 7838164,
+      "handSprite": "player-hands-01.img",
+      "footTint": 2837640,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 9806255,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 4485828,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1,
+    "lore": "Feeling a little blue there?",
+    "noDropOnDeath": true,
+    "teamId": 2
+  },
+  "outfitCowz": {
+    "name": "Cowz Cloak",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitCowz.img",
+      "handTint": 11250603,
+      "handSprite": "player-hands-01.img",
+      "footTint": 11250603,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 8224125,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 11250603,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 1,
+    "lore": "Also play cowz.io!",
+    "noDropOnDeath": true
+  },
+  "outfitChameleon": {
+    "name": "The Chameleon",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 4705222,
+      "baseSprite": "player-base-01.img",
+      "handTint": 9100079,
+      "handSprite": "player-hands-01.img",
+      "footTint": 9100079,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 14721591,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitChameleon.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 2,
+    "lore": "Jack of all trades, master of none.",
+    "noDropOnDeath": true
+  },
+  "outfitPastel": {
+    "name": "Pastel Sky",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitPastel.img",
+      "handTint": 14138866,
+      "handSprite": "player-hands-01.img",
+      "footTint": 8819711,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 8819711,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitPastel.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 2,
+    "lore": "What an artistic phenomenon!",
+    "noDropOnDeath": true,
+    "teamId": 2
+  },
+  "outfitChrys": {
+    "name": "Chrysanthemum Garb",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitChrys.img",
+      "handTint": 11627340,
+      "handSprite": "player-hands-02.img",
+      "footTint": 11627340,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 11627340,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitChrys.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 3,
+    "lore": "Sourced from the luxurious plants of Bunker 16.",
+    "noDropOnDeath": true
+  },
+  "outfitFahrenheit": {
+    "name": "Fahrenheit 5182",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitFahrenheit.img",
+      "handTint": 16777215,
+      "handSprite": "player-hands-outfitFahrenheit.img",
+      "footTint": 12067335,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 8724499,
+      "backpackSprite": "player-circle-base-02.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitFahrenheit.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 3,
+    "lore": "It was a pleasure to boil.",
+    "noDropOnDeath": true,
+    "teamId": 1
+  },
+  "outfitPotatoskin": {
+    "name": "Potatoskin",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitPotatoskin.img",
+      "handTint": 16777215,
+      "handSprite": "player-hands-outfitPotatoskin.img",
+      "footTint": 16777215,
+      "footSprite": "player-feet-outfitPotatoskin.img",
+      "backpackTint": 16777215,
+      "backpackSprite": "player-bag-outfitPotatoskin.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitPotatoskin.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 4,
+    "lore": "Mama didn't raise no spud.",
+    "noDropOnDeath": true
+  },
+  "outfitAurora": {
+    "name": "Auroric Ascension",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16777215,
+      "baseSprite": "player-base-outfitAurora.img",
+      "handTint": 16777215,
+      "handSprite": {
+        "left": "player-hand-left-outfitAurora.img",
+        "right": "player-hand-right-outfitAurora.img"
+      },
+      "footTint": 2305360,
+      "footSprite": "player-feet-02.img",
+      "backpackTint": 16777215,
+      "backpackSprite": "player-bag-outfitAurora.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-outfitAurora.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "rarity": 5,
+    "lore": "As the island is coated with blood, the skies are lit aflame by the borealis.",
+    "noDropOnDeath": true,
+    "teamId": 2
+  },
+  "outfitSpringTree": {
+    "name": "Tree Costume",
+    "type": "outfit",
+    "skinImg": {
+      "baseTint": 16303476,
+      "baseSprite": "player-base-01.img",
+      "handTint": 16303476,
+      "handSprite": {
+        "left": "player-hands-01.img",
+        "right": "player-hands-01.img"
+      },
+      "footTint": 16303476,
+      "footSprite": "player-feet-01.img",
+      "backpackTint": 8480055,
+      "backpackSprite": "player-circle-base-01.img"
+    },
+    "lootImg": {
+      "sprite": "loot-shirt-01.img",
+      "tint": 4599058,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "sound": {
+      "pickup": "clothes_pickup_01"
+    },
+    "baseType": "outfitBase",
+    "obstacleType": "tree_07sp",
+    "baseScale": 1
   },
   "assume_leadership": {
     "name": "Assume Leadership",

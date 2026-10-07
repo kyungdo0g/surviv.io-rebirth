@@ -38,10 +38,10 @@ export const PORTED_SURVEV_IDS: readonly string[] = [
 ];
 
 /**
- * survev-only items the policy does not take yet (later waves: outfits, emotes) and post-0.8.82
- * original guns neither survev nor the owner adds: none may appear anywhere in the ported data.
+ * survev-only items the policy never takes (survev meta content: quests and passes; CLAUDE.md out of scope)
+ * and post-0.8.82 original guns neither survev nor the owner adds: none may appear anywhere in the ported data.
  */
-export const NOT_PORTED_IDS = ["outfitCoconut", "outfitGold", "emote_boffy", "pkm", "m134"];
+export const NOT_PORTED_IDS = ["quest_top_duo", "quest_win_any", "pass_survivr2", "pkm", "m134"];
 
 /** Ammo names of special guns that have no ammo def in the original client either. */
 export const PSEUDO_AMMO = new Set(["9mm_cursed", "bugle_ammo"]);

@@ -24,7 +24,9 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * branch) · 12: survev content wave (tools/port-survev/policy.json): the survev-only melee iceaxe, cutlass,
  * cutlass_gold, naginata_daemon and karambit_borealis, the throwables coconut and tomato with explosion_coconut and
  * explosion_tomato, and the pirate perk take game type ids in survev order among the survev-only ones; the bag gains
- * the coconut and tomato rows (GameConfig.bagSizes order: two more inventory entries in the local player record).
+ * the coconut and tomato rows (GameConfig.bagSizes order: two more inventory entries in the local player record);
+ * later stages of the wave add the level-4 packs, role helmets, six perks and the captain / classless roles, then
+ * survev's outfits, emotes and heal / boost effects (game type ids only, 722 of 1024).
  */
 export const PROTOCOL_SCHEMA_VERSION = 12;
 export const GAME_OBJECT_TYPE_BITS = 10;

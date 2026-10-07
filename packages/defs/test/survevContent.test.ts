@@ -7,13 +7,14 @@ import {
     GameConfig,
     getDefOfType,
     getMapDef,
+    idsOfType,
     SURVEV_MELEE_SKINS,
     SURVEV_ONLY_MELEE,
     SURVEV_ONLY_THROWABLES,
     survevWikiSpecs,
     WIKI_SPEC_OVERRIDES,
 } from "../src/index.ts";
-import { gameObjects, mapObjects, PORTED_SURVEV_IDS, portPolicy } from "./helpers.ts";
+import { gameObjects, mapObjects, PORTED_SURVEV_IDS, portPolicy, provenance } from "./helpers.ts";
 
 /** wikigg Melee infobox (Damage, Obstacle multiplier, Damage timestamps, Cooldown, Switch delay, Radius, X offset) */
 const WIKI_MELEE: Readonly<Record<string, Record<string, unknown>>> = {
@@ -266,5 +267,37 @@ describe("survev-only gear, perks and roles (stage 2)", () => {
         // survev roleDefs.ts:162-193, 557-571
         expect(getDefOfType("role", "captain").perks).toEqual(["assume_leadership", "firepower"]);
         expect(getDefOfType("role", "classless").perks).toEqual([]);
+    });
+});
+
+describe("survev cosmetics (stage 4)", () => {
+    // survev outfitDefs.ts / emoteDefs.ts / healEffectDefs.ts; docs/research/items/cosmetics.md "Counts"
+    it("ports the 21 survev outfits, 25 emotes and 7 heal / boost effects, with survev's loot placements", () => {
+        const ids = (type: string) =>
+            idsOfType(type as never).filter((id) => provenance.gameObjects[id] === "survev-only");
+        expect(ids("outfit")).toHaveLength(21);
+        expect(ids("emote")).toHaveLength(25);
+        expect(ids("heal_effect").sort()).toEqual(["heal_ankh", "heal_diamond", "heal_menacing"]);
+        expect(ids("boost_effect").sort()).toEqual([
+            "boost_club",
+            "boost_gearshift",
+            "boost_hermes",
+            "boost_lightning",
+        ]);
+        // the Classless role outfit never drops (survev outfitDefs.ts:169)
+        expect(getDefOfType("outfit", "outfitClassless")).toMatchObject({ noDrop: true });
+        expect(getDefOfType("heal_effect", "heal_diamond")).toMatchObject({
+            name: "Crazy Diamond",
+            emitter: "heal_diamond",
+        });
+        // survev's world loot: Fragtastic, the Coconut Frenzy, the Reserve's gold toilet, snow and beach outfits
+        const tier = (map: string, t: string) => getMapDef(map).lootTable[t].map((e) => e.name);
+        expect(tier("main", "tier_fragtastic")).toContain("outfitFragtastic");
+        expect(tier("main", "tier_coconut_outfit")).toContain("outfitCoconut");
+        expect(tier("snow", "tier_outfits")).toEqual(expect.arrayContaining(["outfitSnow", "outfitBlackIce"]));
+        expect(tier("beach", "tier_outfits")).toContain("outfitBeachCamo");
+        // survev renamed the original tree costume (tools/port-survev/lib/maps.ts ITEM_RENAMES): Halloween keeps the id
+        expect(tier("halloween", "tier_outfits")).toContain("outfitTree");
+        expect(idsOfType("outfit")).not.toContain("outfitHalloweenTree");
     });
 });

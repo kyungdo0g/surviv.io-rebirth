@@ -94,6 +94,13 @@
 
 - The equipped particles are also used by Mass Medicate's area heal (fandom) [src:fandom/Mass_Medicate] [M]
 
+## In the game (survev content wave, stage 4)
+
+- The port takes survev's 21 survev-only outfits (20 fork + Fragtastic), 25 survev-only emotes and 7 heal / boost effects as survev has them (`tools/port-survev/policy.json`); survev's world loot of them returns with them: `tier_fragtastic`, `tier_egg_outfits` (Barkskin spring), `tier_coconut_outfit`, snow and woods-snow `tier_outfits` (Snowed Over 0.15, Black Ice 0.2), beach `tier_outfits` / `tier_pirate_outfits` / `tier_airdrop_outfits` and the Reserve's gold toilet (Capital Gains) [src:survev/shared/defs/maps/baseDefs.ts:195-202] [src:survev/shared/defs/maps/snowDefs.ts:1] [src:survev/shared/defs/maps/beachDefs.ts:1] [H]
+- survev's `outfitHalloweenTree` is the original `outfitTree` renamed: the port keeps the original id and renames survev's Halloween loot entry back (`lib/maps.ts ITEM_RENAMES`) [src:derived/survev@9f64948d:src/defs/outfitDefs.js:914-922] [src:survev/shared/defs/maps/halloweenDefs.ts:179-199] [H]
+- The Classless role wears `outfitClassless` (noDrop) [src:survev/shared/defs/gameObjects/roleDefs.ts:557-571] [H]
+- Quests and passes stay out (survev meta content) [src:derived/readme-precedence] [H]
+
 ## Death effects
 
 - v0.8.82 has no death-effect loadout: the only death effect is Perky Shoot's (a kill by a holder plays a cluck plus `feather_01` and spawns 30–35 `turkeyFeathersDeath` particles) [src:survev/client/src/objects/player.ts:3011-3041] [src:fandom/Perky_Shoot] [H]

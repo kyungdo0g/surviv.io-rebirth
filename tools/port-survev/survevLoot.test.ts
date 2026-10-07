@@ -1,6 +1,7 @@
 // Unit tests of the port policy (lib/policy.ts), the survev-only game objects and skins (lib/objects.ts) and the
 // survev placements of ported items (lib/survevLoot.ts), on synthetic data.
 import { describe, expect, it } from "vitest";
+import { renameTiers } from "./lib/maps.ts";
 import { portGameConfig, portGameObjects, portMapObjects } from "./lib/objects.ts";
 import { parsePolicy } from "./lib/policy.ts";
 import { keepSurvevPlacements, restoreSurvevPlacements, splitMapGenEntries } from "./lib/survevLoot.ts";
@@ -180,5 +181,23 @@ describe("survev map generation and structure overrides (stage 3)", () => {
         });
         expect(out.defs.safe).toEqual({ type: "obstacle", obstacleType: "safe", loot: [{ type: "kept" }] });
         expect(() => portMapObjects(live, survev, maps, {}, ["vault"])).toThrow(/not in both sources/);
+    });
+});
+
+describe("survev renames (stage 4)", () => {
+    it("loot entries of a survev-renamed item take the original id", () => {
+        const maps = {
+            halloween: { lootTable: { tier_outfits: [{ name: "outfitHalloweenTree", count: 1, weight: 1 }] } },
+        };
+        const log = renameTiers(maps);
+        expect(maps.halloween.lootTable.tier_outfits[0].name).toBe("outfitTree");
+        expect(log).toEqual([
+            {
+                id: "halloween.lootTable.tier_outfits",
+                field: "outfitHalloweenTree",
+                value: "outfitTree",
+                reason: "survev item renamed back to the original id",
+            },
+        ]);
     });
 });

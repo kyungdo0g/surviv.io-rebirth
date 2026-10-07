@@ -63,11 +63,11 @@ export const ROLE_LOADOUTS: Readonly<Record<string, RoleLoadout>> = {
         noDropOutfit: true,
         inventory: { "8xscope": 1, bandage: 10, healthkit: 1, soda: 2 },
     },
-    // survev-only Classless (survev roleDefs.ts:557-571): its helmet, nothing else (outfitClassless comes with the
-    // survev outfits)
+    // survev-only Classless (survev roleDefs.ts:557-571): its outfit and helmet, nothing else
     classless: {
         weapons: [NONE, NONE, NONE, NONE],
         helmet: "helmet04_classless",
+        outfit: "outfitClassless",
         inventory: {},
     },
     lieutenant: {

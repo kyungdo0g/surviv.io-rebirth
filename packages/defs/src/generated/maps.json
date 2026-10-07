@@ -512,6 +512,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -1375,6 +1380,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -1486,6 +1496,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -3631,6 +3646,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -4504,6 +4524,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -4615,6 +4640,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -6808,6 +6838,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -7676,6 +7711,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -7787,6 +7827,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -9975,6 +10020,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -10823,6 +10873,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -10934,6 +10989,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -13212,6 +13272,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -14067,6 +14132,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -14178,6 +14248,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -16670,6 +16745,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -17540,6 +17620,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -17651,6 +17736,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -19838,6 +19928,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -20679,6 +20774,11 @@
           "weight": 1
         },
         {
+          "name": "outfitTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitStump",
           "count": 1,
           "weight": 1
@@ -20767,6 +20867,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -20882,6 +20987,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -23029,6 +23139,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -23772,6 +23887,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -23883,6 +24003,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -26083,6 +26208,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -26831,6 +26961,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -26942,6 +27077,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -29132,6 +29272,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -29978,9 +30123,19 @@
           "weight": 0.3
         },
         {
+          "name": "outfitBlackIce",
+          "count": 1,
+          "weight": 0.2
+        },
+        {
           "name": "outfitCamo",
           "count": 1,
           "weight": 0.1
+        },
+        {
+          "name": "outfitSnow",
+          "count": 1,
+          "weight": 0.15
         },
         {
           "name": "outfitGhillie",
@@ -30001,6 +30156,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -30116,6 +30276,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -32314,6 +32479,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -32992,6 +33162,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -33103,6 +33278,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -35227,6 +35407,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -35898,9 +36083,19 @@
           "weight": 0.1
         },
         {
+          "name": "outfitBlackIce",
+          "count": 1,
+          "weight": 0.2
+        },
+        {
           "name": "outfitCamo",
           "count": 1,
           "weight": 0.1
+        },
+        {
+          "name": "outfitSnow",
+          "count": 1,
+          "weight": 0.15
         },
         {
           "name": "outfitGhillie",
@@ -35926,6 +36121,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -36041,6 +36241,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -38164,6 +38369,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -38857,6 +39067,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -38968,6 +39183,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -41078,6 +41298,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -41766,6 +41991,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -41877,6 +42107,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -43967,6 +44202,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -44640,6 +44880,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -44751,6 +44996,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -47597,6 +47847,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -47708,6 +47963,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -49846,6 +50106,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -50719,6 +50984,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -50830,6 +51100,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -52973,6 +53248,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -53721,6 +54001,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -53832,6 +54117,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -55869,6 +56159,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -56725,6 +57020,11 @@
           "weight": 0.3
         },
         {
+          "name": "outfitBeachCamo",
+          "count": 1,
+          "weight": 0.25
+        },
+        {
           "name": "outfitGhillie",
           "count": 1,
           "weight": 0.01
@@ -56743,6 +57043,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -56802,6 +57107,11 @@
           "name": "outfitRoyalFortune",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitParrotfish",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_islander_outfit": [
@@ -56858,6 +57168,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -57713,6 +58028,11 @@
         },
         {
           "name": "outfitPineapple",
+          "count": 1,
+          "weight": 8
+        },
+        {
+          "name": "outfitWave",
           "count": 1,
           "weight": 8
         },
@@ -59051,6 +59371,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -59924,6 +60249,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -60035,6 +60365,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -62082,6 +62417,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -62955,6 +63295,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -63066,6 +63411,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [

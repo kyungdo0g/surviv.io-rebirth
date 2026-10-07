@@ -37,7 +37,60 @@
       "amped_explosives",
       "high_velocity",
       "captain",
-      "classless"
+      "classless",
+      "heal_diamond",
+      "heal_ankh",
+      "heal_menacing",
+      "boost_club",
+      "boost_hermes",
+      "boost_lightning",
+      "boost_gearshift",
+      "emote_boffy",
+      "emote_sadboffy",
+      "emote_flagbosnia",
+      "emote_flaglibya",
+      "emote_tomato",
+      "emote_cake",
+      "emote_leaf",
+      "emote_flagpalestine",
+      "emote_flagiran",
+      "emote_flaglebanon",
+      "emote_flagyemen",
+      "emote_flagtransgender",
+      "emote_flagpride",
+      "emote_flaglesbian",
+      "emote_flaggay",
+      "emote_flagasexual",
+      "emote_flagnonbinary",
+      "emote_flagbisexual",
+      "emote_antisocial",
+      "emote_timeout",
+      "emote_traumatizedface",
+      "emote_bruh",
+      "emote_flatteredface",
+      "emote_salutingface",
+      "emote_screamingface",
+      "outfitClassless",
+      "outfitMaintainer",
+      "outfitGD",
+      "outfitFragtastic",
+      "outfitSnow",
+      "outfitBlackIce",
+      "outfitBeachCamo",
+      "outfitCoconut",
+      "outfitWave",
+      "outfitParrotfish",
+      "outfitEvent",
+      "outfitGold",
+      "outfitRain",
+      "outfitCowz",
+      "outfitChameleon",
+      "outfitPastel",
+      "outfitChrys",
+      "outfitFahrenheit",
+      "outfitPotatoskin",
+      "outfitAurora",
+      "outfitSpringTree"
     ],
     "survevSkins": {
       "svd_winter": "svd",
@@ -699,6 +752,38 @@
     "bullet_ash12": "survev-only",
     "bullet_imbel": "survev-only",
     "bullet_invis": "survev-only",
+    "heal_diamond": "survev-only",
+    "heal_ankh": "survev-only",
+    "heal_menacing": "survev-only",
+    "boost_club": "survev-only",
+    "boost_hermes": "survev-only",
+    "boost_lightning": "survev-only",
+    "boost_gearshift": "survev-only",
+    "emote_boffy": "survev-only",
+    "emote_sadboffy": "survev-only",
+    "emote_flagbosnia": "survev-only",
+    "emote_flaglibya": "survev-only",
+    "emote_tomato": "survev-only",
+    "emote_cake": "survev-only",
+    "emote_leaf": "survev-only",
+    "emote_flagpalestine": "survev-only",
+    "emote_flagiran": "survev-only",
+    "emote_flaglebanon": "survev-only",
+    "emote_flagyemen": "survev-only",
+    "emote_flagtransgender": "survev-only",
+    "emote_flagpride": "survev-only",
+    "emote_flaglesbian": "survev-only",
+    "emote_flaggay": "survev-only",
+    "emote_flagasexual": "survev-only",
+    "emote_flagnonbinary": "survev-only",
+    "emote_flagbisexual": "survev-only",
+    "emote_antisocial": "survev-only",
+    "emote_timeout": "survev-only",
+    "emote_traumatizedface": "survev-only",
+    "emote_bruh": "survev-only",
+    "emote_flatteredface": "survev-only",
+    "emote_salutingface": "survev-only",
+    "emote_screamingface": "survev-only",
     "explosion_potato_lmgshot": "survev-only",
     "explosion_coconut": "survev-only",
     "explosion_tomato": "survev-only",
@@ -720,6 +805,27 @@
     "karambit_borealis": "survev-only",
     "naginata_daemon": "survev-only",
     "cutlass_gold": "survev-only",
+    "outfitClassless": "survev-only",
+    "outfitMaintainer": "survev-only",
+    "outfitGD": "survev-only",
+    "outfitFragtastic": "survev-only",
+    "outfitSnow": "survev-only",
+    "outfitBlackIce": "survev-only",
+    "outfitBeachCamo": "survev-only",
+    "outfitCoconut": "survev-only",
+    "outfitWave": "survev-only",
+    "outfitParrotfish": "survev-only",
+    "outfitEvent": "survev-only",
+    "outfitGold": "survev-only",
+    "outfitRain": "survev-only",
+    "outfitCowz": "survev-only",
+    "outfitChameleon": "survev-only",
+    "outfitPastel": "survev-only",
+    "outfitChrys": "survev-only",
+    "outfitFahrenheit": "survev-only",
+    "outfitPotatoskin": "survev-only",
+    "outfitAurora": "survev-only",
+    "outfitSpringTree": "survev-only",
     "assume_leadership": "survev-only",
     "ap_rounds": "survev-only",
     "lifeline": "survev-only",
@@ -4669,102 +4775,6 @@
         "balanceValue": "0.1 -> 0.15"
       },
       "reason": "maps.woods_snow.lootTable.tier_outfits.outfitCarbonFiber: already absent"
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "woods_snow.lootTable.tier_outfits[outfitBlackIce]",
-        "field": "weight",
-        "forkValue": 0.2,
-        "originalValue": "absent",
-        "line": 233,
-        "confidence": "H",
-        "note": "current code has 0.2, not balance.txt's 0.15 (later change not logged in balance.txt)",
-        "refs": [
-          "balance/233",
-          "survev/shared/defs/maps/woodsSnowDefs.ts:69",
-          "derived/git-e10300ff",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 0.15"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.woods_snow.lootTable.tier_outfits.outfitBlackIce"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "woods_snow.lootTable.tier_outfits[outfitSnow]",
-        "field": "weight",
-        "forkValue": 0.15,
-        "originalValue": "absent",
-        "line": 233,
-        "confidence": "H",
-        "note": "current code has 0.15, not balance.txt's 0.1 (later change not logged in balance.txt)",
-        "refs": [
-          "balance/233",
-          "survev/shared/defs/maps/woodsSnowDefs.ts:71",
-          "derived/git-e10300ff",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 0.1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.woods_snow.lootTable.tier_outfits.outfitSnow"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "snow.lootTable.tier_outfits[outfitBlackIce]",
-        "field": "weight",
-        "forkValue": 0.2,
-        "originalValue": "absent",
-        "line": 233,
-        "confidence": "H",
-        "note": "",
-        "refs": [
-          "balance/233",
-          "survev/shared/defs/maps/snowDefs.ts:198",
-          "derived/git-e10300ff",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 0.2"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_outfits.outfitBlackIce"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "snow.lootTable.tier_outfits[outfitSnow]",
-        "field": "weight",
-        "forkValue": 0.15,
-        "originalValue": "absent",
-        "line": 233,
-        "confidence": "H",
-        "note": "",
-        "refs": [
-          "balance/233",
-          "survev/shared/defs/maps/snowDefs.ts:200",
-          "derived/git-e10300ff",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 0.15"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_outfits.outfitSnow"
-      ]
     },
     {
       "status": "applied",
@@ -11207,6 +11217,90 @@
       "status": "skipped",
       "entry": {
         "section": "lootTables",
+        "target": "woods_snow.lootTable.tier_outfits[outfitBlackIce]",
+        "field": "weight",
+        "forkValue": 0.2,
+        "originalValue": "absent",
+        "line": 233,
+        "confidence": "H",
+        "note": "current code has 0.2, not balance.txt's 0.15 (later change not logged in balance.txt)",
+        "refs": [
+          "balance/233",
+          "survev/shared/defs/maps/woodsSnowDefs.ts:69",
+          "derived/git-e10300ff",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 0.15"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "woods_snow.lootTable.tier_outfits[outfitSnow]",
+        "field": "weight",
+        "forkValue": 0.15,
+        "originalValue": "absent",
+        "line": 233,
+        "confidence": "H",
+        "note": "current code has 0.15, not balance.txt's 0.1 (later change not logged in balance.txt)",
+        "refs": [
+          "balance/233",
+          "survev/shared/defs/maps/woodsSnowDefs.ts:71",
+          "derived/git-e10300ff",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 0.1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "snow.lootTable.tier_outfits[outfitBlackIce]",
+        "field": "weight",
+        "forkValue": 0.2,
+        "originalValue": "absent",
+        "line": 233,
+        "confidence": "H",
+        "note": "",
+        "refs": [
+          "balance/233",
+          "survev/shared/defs/maps/snowDefs.ts:198",
+          "derived/git-e10300ff",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 0.2"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "snow.lootTable.tier_outfits[outfitSnow]",
+        "field": "weight",
+        "forkValue": 0.15,
+        "originalValue": "absent",
+        "line": 233,
+        "confidence": "H",
+        "note": "",
+        "refs": [
+          "balance/233",
+          "survev/shared/defs/maps/snowDefs.ts:200",
+          "derived/git-e10300ff",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 0.15"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
         "target": "woods_snow.lootTable.tier_airdrop_melee[iceaxe]",
         "field": "weight",
         "forkValue": 3,
@@ -16518,24 +16612,6 @@
   "lootRemovals": [
     {
       "map": "main",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -16617,24 +16693,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "main_spring",
@@ -16722,24 +16780,6 @@
     },
     {
       "map": "main_summer",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -16821,24 +16861,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "desert",
@@ -16926,24 +16948,6 @@
     },
     {
       "map": "faction",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17025,24 +17029,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "faction_potato",
@@ -17130,30 +17116,6 @@
     },
     {
       "map": "halloween",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_outfits",
-      "item": "outfitHalloweenTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17235,24 +17197,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "potato",
@@ -17340,24 +17284,6 @@
     },
     {
       "map": "potato_spring",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17439,24 +17365,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "snow",
@@ -17544,24 +17452,6 @@
     },
     {
       "map": "woods",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17643,24 +17533,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "woods_snow",
@@ -17748,24 +17620,6 @@
     },
     {
       "map": "woods_spring",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17850,24 +17704,6 @@
     },
     {
       "map": "woods_summer",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -17949,24 +17785,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "savannah",
@@ -18054,18 +17872,6 @@
     },
     {
       "map": "cobalt",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "cobalt",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "cobalt",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18147,24 +17953,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "turkey",
@@ -18252,24 +18040,6 @@
     },
     {
       "map": "birthday",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18351,42 +18121,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_outfits",
-      "item": "outfitBeachCamo",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_pirate_outfits",
-      "item": "outfitParrotfish",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_airdrop_outfits",
-      "item": "outfitWave",
-      "reason": "item not in the original client's game objects (fork-only)"
     },
     {
       "map": "beach",
@@ -18474,24 +18208,6 @@
     },
     {
       "map": "test_normal",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18576,24 +18292,6 @@
     },
     {
       "map": "test_faction",
-      "tier": "tier_fragtastic",
-      "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_egg_outfits",
-      "item": "outfitSpringTree",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_coconut_outfit",
-      "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -18675,11 +18373,6 @@
       "tier": "tier_xp_mythic",
       "item": "",
       "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "mapObject": "toilet_05",
-      "item": "outfitGold",
-      "reason": "item not in the original client"
     }
   ],
   "gameConfigDiffs": [
@@ -20119,6 +19812,12 @@
       "reason": "survev tier renamed back to the original name"
     },
     {
+      "id": "halloween.lootTable.tier_outfits",
+      "field": "outfitHalloweenTree",
+      "value": "outfitTree",
+      "reason": "survev item renamed back to the original id"
+    },
+    {
       "id": "potato.lootTable",
       "field": "tier_barn_melee",
       "value": "tier_sledgehammer",
@@ -20206,60 +19905,7 @@
   "excluded": {
     "gameObjects": [
       "shrapnel_cobalt",
-      "heal_diamond",
-      "heal_ankh",
-      "heal_menacing",
-      "boost_club",
-      "boost_hermes",
-      "boost_lightning",
-      "boost_gearshift",
-      "emote_boffy",
-      "emote_sadboffy",
-      "emote_flagbosnia",
-      "emote_flaglibya",
-      "emote_tomato",
-      "emote_cake",
-      "emote_leaf",
-      "emote_flagpalestine",
-      "emote_flagiran",
-      "emote_flaglebanon",
-      "emote_flagyemen",
-      "emote_flagtransgender",
-      "emote_flagpride",
-      "emote_flaglesbian",
-      "emote_flaggay",
-      "emote_flagasexual",
-      "emote_flagnonbinary",
-      "emote_flagbisexual",
-      "emote_antisocial",
-      "emote_timeout",
-      "emote_traumatizedface",
-      "emote_bruh",
-      "emote_flatteredface",
-      "emote_salutingface",
-      "emote_screamingface",
       "explosion_cobalt",
-      "outfitClassless",
-      "outfitMaintainer",
-      "outfitGD",
-      "outfitFragtastic",
-      "outfitSnow",
-      "outfitBlackIce",
-      "outfitBeachCamo",
-      "outfitCoconut",
-      "outfitWave",
-      "outfitParrotfish",
-      "outfitEvent",
-      "outfitGold",
-      "outfitRain",
-      "outfitCowz",
-      "outfitChameleon",
-      "outfitPastel",
-      "outfitChrys",
-      "outfitFahrenheit",
-      "outfitPotatoskin",
-      "outfitAurora",
-      "outfitSpringTree",
       "outfitHalloweenTree",
       "quest_top_duo",
       "quest_win_any",

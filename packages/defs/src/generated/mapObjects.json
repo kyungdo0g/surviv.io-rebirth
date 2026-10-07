@@ -97143,6 +97143,11 @@
         "type": "coconut",
         "count": 5,
         "props": {}
+      },
+      {
+        "type": "outfitGold",
+        "count": 1,
+        "props": {}
       }
     ],
     "map": {

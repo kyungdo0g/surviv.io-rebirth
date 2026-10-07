@@ -206,6 +206,7 @@ describe("Experimental Pack and Classless", () => {
         const pool = game.rules.roles.classlessPerkPool;
         expect(p.role).toBe("classless");
         expect(p.helmet).toBe("helmet04_classless");
+        expect(p.outfit).toBe("outfitClassless");
         expect(p.perks).toHaveLength(1);
         expect(pool).toContain(p.perks[0]);
         const first = p.perks[0];

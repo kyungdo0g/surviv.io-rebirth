@@ -18,6 +18,16 @@ const EMITTER_ALLOWLIST: Readonly<Record<string, string>> = {
     // survev content wave stage 3: the camps' smoke; the emitter belongs in the lead-owned apps/client/src/fx
     // (docs/handoff/survev-content.md "Survev building particles")
     campfire_smoke: "pending (handoff): survev particles.ts:3520 campfire_smoke = cabinSmoke, rate 2-4",
+    // survev content wave stage 4: survev's heal / boost effects, run by the lead-owned player emitters
+    // (docs/handoff/survev-content.md "Survev heal and boost effects")
+    heal_diamond: "pending (handoff): survev particles.ts:3685",
+    heal_ankh: "pending (handoff): survev particles.ts:3694",
+    heal_menacing: "pending (handoff): survev particles.ts:3703",
+    boost_club: "pending (handoff): survev particles.ts:3751",
+    boost_lightning: "pending (handoff): survev particles.ts:3760",
+    boost_hermes: "pending (handoff): survev particles.ts:3769",
+    boost_gearshift_01: "pending (handoff): survev particles.ts:3778",
+    boost_gearshift_02: "pending (handoff): survev particles.ts:3787",
 };
 
 /** Particles survev's buildings name that the lead-owned fx files still lack (docs/handoff/survev-content.md). */
