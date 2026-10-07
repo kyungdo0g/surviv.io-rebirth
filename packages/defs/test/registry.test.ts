@@ -65,8 +65,9 @@ describe("PROTOCOL_HASH", () => {
         // and the air drop tier crates; 10: the survev-only guns' game types before the rebirth-only ones; 11: the
         // rebirth hit feedback's Hits section of the Update message; 12: the rebirth new guns' game types and their
         // three ammo rows in the bag; 13: the variant strobes (their game types and bag items); 14: the survev content
-        // wave; 15: the AP Rounds bullet bit and the Indomitable Spirit player bit; 16: the Join loadout
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(16);
+        // wave; 15: the AP Rounds bullet bit and the Indomitable Spirit player bit; 16: the Join loadout; 17: the
+        // potato-faction gold drop's map types
+        expect(PROTOCOL_SCHEMA_VERSION).toBe(17);
         expect(PROTOCOL_HASH).toBe(
             computeProtocolHash(PROTOCOL_SCHEMA_VERSION, GameObjectRegistry.types, MapObjectRegistry.types),
         );

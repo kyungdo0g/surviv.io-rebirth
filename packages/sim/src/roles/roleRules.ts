@@ -78,6 +78,11 @@ export interface RoleRules {
      */
     helpLosingTeam: boolean;
     helpLosingTeamCrate: string;
+    /**
+     * The gold drop and the comeback drop of a potato faction map (Potato vs Tomato): survev drops airdrop_crate_04po,
+     * whose crate_13po adds 2 tier_airdrop_potato rolls (survev plane.ts:273-278; crateDefs.ts crate_13po)
+     */
+    potatoGoldCrate: string;
     /** seconds between faction status refreshes (original PlayerStatus rate in faction mode, net.ts 0.5 s) */
     factionStatusInterval: number;
     /** Cobalt: a player without a class gets a random one after this many seconds (conflicts.md cobalt-role-timeout) */
@@ -122,6 +127,7 @@ export function defaultRoleRules(): RoleRules {
         factionGoldDrop: { circleIdx: 3, wait: 2, crate: "airdrop_crate_04" },
         helpLosingTeam: false,
         helpLosingTeamCrate: "airdrop_crate_04",
+        potatoGoldCrate: "airdrop_crate_04po",
         factionStatusInterval: 0.5,
         perkModeRoleSelectTime: 20,
     };

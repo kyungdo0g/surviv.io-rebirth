@@ -95650,6 +95650,144 @@
       "enter": "none"
     }
   },
+  "crate_13po": {
+    "type": "obstacle",
+    "obstacleType": "crate",
+    "scale": {
+      "createMin": 1,
+      "createMax": 1,
+      "destroy": 0.75
+    },
+    "collision": {
+      "type": 1,
+      "min": {
+        "x": -3.5,
+        "y": -3.5
+      },
+      "max": {
+        "x": 3.5,
+        "y": 3.5
+      }
+    },
+    "height": 0.5,
+    "collidable": true,
+    "destructible": true,
+    "health": 200,
+    "hitParticle": "woodChip",
+    "explodeParticle": "woodPlank",
+    "reflectBullets": false,
+    "loot": [
+      {
+        "tier": "tier_airdrop_potato",
+        "min": 2,
+        "max": 2,
+        "props": {}
+      },
+      {
+        "tier": "tier_airdrop_mythic",
+        "min": 3,
+        "max": 4,
+        "props": {
+          "preloadGuns": true
+        }
+      },
+      {
+        "tier": "tier_airdrop_rare",
+        "min": 5,
+        "max": 5,
+        "props": {
+          "preloadGuns": true
+        }
+      },
+      {
+        "tier": "tier_airdrop_armor",
+        "min": 6,
+        "max": 8,
+        "props": {}
+      },
+      {
+        "tier": "tier_medical",
+        "min": 12,
+        "max": 15,
+        "props": {}
+      },
+      {
+        "tier": "tier_airdrop_scopes",
+        "min": 7,
+        "max": 8,
+        "props": {}
+      },
+      {
+        "tier": "tier_airdrop_faction_outfits",
+        "min": 1,
+        "max": 2,
+        "props": {}
+      },
+      {
+        "tier": "tier_airdrop_melee",
+        "min": 2,
+        "max": 3,
+        "props": {}
+      },
+      {
+        "tier": "tier_airdrop_faction_melee",
+        "min": 3,
+        "max": 3,
+        "props": {}
+      },
+      {
+        "tier": "tier_airdrop_ammo",
+        "min": 10,
+        "max": 12,
+        "props": {}
+      },
+      {
+        "tier": "tier_airdrop_throwables",
+        "min": 6,
+        "max": 8,
+        "props": {}
+      },
+      {
+        "type": "strobe",
+        "count": 1,
+        "props": {}
+      },
+      {
+        "type": "strobe",
+        "count": 1,
+        "props": {}
+      },
+      {
+        "type": "strobe",
+        "count": 1,
+        "props": {}
+      }
+    ],
+    "map": {
+      "display": false,
+      "color": 6697728,
+      "scale": 0.875
+    },
+    "terrain": {
+      "grass": true,
+      "beach": true,
+      "riverShore": true
+    },
+    "img": {
+      "sprite": "map-crate-13.img",
+      "residue": "map-crate-res-03.img",
+      "scale": 0.5,
+      "alpha": 1,
+      "tint": 16777215,
+      "zIdx": 10
+    },
+    "sound": {
+      "bullet": "wood_crate_bullet",
+      "punch": "wood_crate_bullet",
+      "explode": "crate_break_01",
+      "enter": "none"
+    }
+  },
   "crate_17": {
     "type": "obstacle",
     "obstacleType": "crate",
@@ -95913,6 +96051,88 @@
       }
     },
     "destroyType": "crate_12dev"
+  },
+  "airdrop_crate_04po": {
+    "type": "obstacle",
+    "obstacleType": "airdrop",
+    "scale": {
+      "createMin": 1,
+      "createMax": 1,
+      "destroy": 1
+    },
+    "collision": {
+      "type": 1,
+      "min": {
+        "x": -4,
+        "y": -4
+      },
+      "max": {
+        "x": 4,
+        "y": 4
+      }
+    },
+    "height": 0.5,
+    "collidable": true,
+    "destructible": false,
+    "health": 200,
+    "hitParticle": "barrelChip",
+    "explodeParticle": "airdropCrate04",
+    "reflectBullets": true,
+    "loot": [],
+    "map": {
+      "display": false,
+      "color": 6697728,
+      "scale": 0.875
+    },
+    "terrain": {
+      "grass": true,
+      "beach": true,
+      "riverShore": true
+    },
+    "img": {
+      "sprite": "map-airdrop-03.img",
+      "residue": "none",
+      "scale": 0.5,
+      "alpha": 1,
+      "tint": 16777215,
+      "zIdx": 10
+    },
+    "sound": {
+      "bullet": "wall_bullet",
+      "punch": "metal_punch",
+      "explode": "airdrop_open_02",
+      "enter": "none"
+    },
+    "dropCollision": {
+      "type": 1,
+      "min": {
+        "x": -2.5,
+        "y": -2.5
+      },
+      "max": {
+        "x": 2.5,
+        "y": 2.5
+      }
+    },
+    "airdropCrate": true,
+    "button": {
+      "interactionRad": 1,
+      "interactionText": "game-unlock",
+      "useOnce": true,
+      "destroyOnUse": true,
+      "useDelay": 2.5,
+      "useDir": {
+        "x": -1,
+        "y": 0
+      },
+      "useImg": "map-airdrop-04.img",
+      "useParticle": "airdropCrate03",
+      "sound": {
+        "on": "airdrop_open_01",
+        "off": ""
+      }
+    },
+    "destroyType": "crate_13po"
   },
   "airdrop_crate_05": {
     "type": "obstacle",

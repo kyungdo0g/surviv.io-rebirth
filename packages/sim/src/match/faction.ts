@@ -6,6 +6,7 @@
 // getSmallestTeam, map.ts getSpawnPos (factionModeSplitOri, divideAabb), gameModeManager.ts updateAliveCounts and
 // objects/plane.ts isOneTeamWinning / helpLosingTeam; docs/research/modes/faction.md.
 import { type Bounds, type Vec2, v2 } from "@rebirth/core";
+import { getMapDef } from "@rebirth/defs";
 import type { FactionMemberView } from "../view.ts";
 import type { Player } from "../world/player.ts";
 
@@ -25,6 +26,7 @@ export interface FactionTeam {
 
 /** What the faction system needs from the game. */
 export interface FactionHost {
+    readonly options: { mapName: string };
     readonly mapData: { width: number; height: number; shoreInset: number };
     readonly gas: { readonly circleIdx: number; isInGas(pos: Vec2): boolean };
     readonly rules: {
@@ -33,6 +35,7 @@ export interface FactionHost {
             factionGoldDrop: { circleIdx: number; wait: number; crate: string } | null;
             helpLosingTeam: boolean;
             helpLosingTeamCrate: string;
+            potatoGoldCrate: string;
         };
     };
     readonly planes: {
@@ -122,7 +125,12 @@ export class FactionSystem {
     /** A new gas circle: the scheduled gold military drop (conflicts.md faction-gold-drop). */
     onCircle(circleIdx: number): void {
         const gold = this.host.rules.roles.factionGoldDrop;
-        if (gold && gold.circleIdx === circleIdx) this.host.planes.scheduleCrate(gold.crate, gold.wait);
+        if (gold && gold.circleIdx === circleIdx) this.host.planes.scheduleCrate(this.goldCrate(gold.crate), gold.wait);
+    }
+
+    /** A gold drop crate of this map: potato faction maps drop the potato variant (survev plane.ts:273-278). */
+    private goldCrate(crate: string): string {
+        return getMapDef(this.host.options.mapName).gameMode.potatoMode ? this.host.rules.roles.potatoGoldCrate : crate;
     }
 
     /** Per tick: the faction minimap rows refresh at the original faction PlayerStatus rate. */
@@ -173,7 +181,7 @@ export class FactionSystem {
         for (const p of candidates) if (v2.distance(center, p.pos) > v2.distance(center, far.pos)) far = p;
         const a = this.host.roleRng.range(0, Math.PI * 2);
         const pos = v2.add(far.pos, { x: Math.cos(a) * HELP_DROP_OFFSET, y: Math.sin(a) * HELP_DROP_OFFSET });
-        this.host.planes.addAirdrop(pos, this.host.rules.roles.helpLosingTeamCrate);
+        this.host.planes.addAirdrop(pos, this.goldCrate(this.host.rules.roles.helpLosingTeamCrate));
         this.sentHelp = true;
         const s = HELP_STRIKE;
         const zones = this.host.planes.zones;

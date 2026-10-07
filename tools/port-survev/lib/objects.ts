@@ -111,6 +111,7 @@ export function portMapObjects(
     maps: Record<string, any>,
     gameObjects: Record<string, unknown>,
     survevOverrides: readonly string[] = [],
+    serverSpawned: readonly string[] = [],
 ): MapObjectPort {
     const defs: Record<string, any> = {};
     const status: Record<string, MapObjectStatus> = {};
@@ -142,6 +143,10 @@ export function portMapObjects(
         if (!(id in live) || !(id in survev))
             throw new Error(`policy.json survevMapObjects: ${id} is not in both sources`);
     }
+    for (const id of serverSpawned) {
+        if (id in live || !(id in survev))
+            throw new Error(`policy.json survevServerMapObjects: ${id} is not a survev-only map object`);
+    }
     // structure overrides (policy survevMapObjects) take survev's def in the original's slot (the Reserve's town)
     const overridden = new Set(survevOverrides);
     for (const [id, def] of Object.entries(live)) {
@@ -149,7 +154,8 @@ export function portMapObjects(
         status[id] = overridden.has(id) ? "survev-override" : "original";
     }
     const roles = perkModeRoles(Object.values(maps));
-    const roots: string[] = [];
+    // server-spawned objects (policy survevServerMapObjects) are roots like the maps' spawns
+    const roots: string[] = [...serverSpawned];
     for (const map of Object.values(maps)) roots.push(...mapDefSpawnRefs(map).map((r) => r.id));
     for (const def of Object.values(defs)) roots.push(...mapObjectChildIds(def, roles));
     const reachable = new Set(mapObjectClosure(roots, { ...survev, ...defs }, roles));

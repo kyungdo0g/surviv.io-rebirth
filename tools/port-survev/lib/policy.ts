@@ -18,6 +18,11 @@ export interface PortPolicy {
     /** original map object ids whose survev def replaces the original (structure overrides: the Reserve's town) */
     survevMapObjects: string[];
     /**
+     * survev-only map objects only survev's server code spawns (no map def names them), ported with what they reference:
+     * the potato-faction gold drop airdrop_crate_04po (survev server/src/game/objects/plane.ts:273-278)
+     */
+    survevServerMapObjects: string[];
+    /**
      * survev balance (survev content wave stage 5, design option B): no balance revert and no event-map fixes; the
      * original game objects take survev's gameplay fields (lib/objects.ts SURVEV_GAMEPLAY_FIELDS), presentation stays
      */
@@ -40,6 +45,7 @@ export function parsePolicy(raw: unknown): PortPolicy {
         "survevGameConfig",
         "survevMapGen",
         "survevMapObjects",
+        "survevServerMapObjects",
         "survevBalance",
     ]);
     const unknown = Object.keys(raw).filter((k) => !known.has(k));
@@ -54,6 +60,7 @@ export function parsePolicy(raw: unknown): PortPolicy {
         survevGameConfig: stringList(raw.survevGameConfig ?? [], "survevGameConfig"),
         survevMapGen: raw.survevMapGen === true,
         survevMapObjects: stringList(raw.survevMapObjects ?? [], "survevMapObjects"),
+        survevServerMapObjects: stringList(raw.survevServerMapObjects ?? [], "survevServerMapObjects"),
         survevBalance: raw.survevBalance === true,
     };
     for (const key of ["survevMapGen", "survevBalance"] as const) {

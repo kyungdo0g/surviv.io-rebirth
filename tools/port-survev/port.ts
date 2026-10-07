@@ -119,6 +119,7 @@ const mapObjects = portMapObjects(
     maps.maps,
     gameObjects.defs,
     policy.survevMapObjects,
+    policy.survevServerMapObjects,
 );
 // survev balance (option B): original map objects take survev's loot, explosions and health (loot of items the port
 // does not take is dropped, as for survev-only map objects)

@@ -194,6 +194,16 @@ may not touch, the schema number used and open questions.
 - Visual reference: if the owner has 50v50 gameplay video (River Town, bridges, team-side crates), the lead can ask for
   it; the screenshots in `tests/e2e/__screens__/survev-faction/` are what to compare.
 
+## Survev parity wave (the lead's tasks, 2026-10-07)
+
+- 1. Potato-faction gold drop: done. survev drops `airdrop_crate_04po` (inner `crate_13po`: `crate_13` plus 2
+  tier_airdrop_potato rolls) on potato faction maps (survev plane.ts:273-278). No map def names it, so the port gained
+  `policy.json` `survevServerMapObjects` (roots for objects only survev's server spawns; `lib/policy.ts`,
+  `lib/objects.ts portMapObjects`). The scheduled gold drop and the comeback drop pick `rules.roles.potatoGoldCrate` on
+  potatoMode maps (`match/faction.ts goldCrate`). Schema 17: the two map types take ids in survev order, map ids from
+  `crate_17` (926 -> 927) on move up by one or two. Test: `faction.test.ts` "Potato vs Tomato: the gold drop and the
+  comeback drop are the potato gold crate".
+
 ## Changes needed in the lead's files
 
 All closed: applied by the lead in 2acdac0 (2026-10-07). Two items differ from the patch here: the coconut and tomato
