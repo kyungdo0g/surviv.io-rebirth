@@ -1,8 +1,10 @@
 // Loot valuation: how much a bot wants an item given what it carries. Weapons come first while it has none (namu.md
 // /팁: "grab any weapon first"), then ammo for its guns, armour and backpack upgrades, heals and boosts, scopes and
-// grenades. Values are 0..100; 0 means "leave it".
+// grenades. Values are 0..100; 0 means "leave it". Guns are valued by desire (knowledge/desire.ts: the shared tier
+// list weighed by the bot's persona and skill, bot overhaul LOOT-8); the persona also scales scopes.
 import { GameConfig, GameObjectDefs, hasDef, WeaponSlot } from "@rebirth/defs";
 import type { SelfState } from "../perception/world.ts";
+import { DEFAULT_TASTE, gunPickupValue, slotToReplaceByDesire, type Taste } from "./desire.ts";
 import { type GunInfo, gunInfo } from "./weapons.ts";
 
 const SCOPES = ["1xscope", "2xscope", "4xscope", "8xscope", "15xscope"];
@@ -32,40 +34,14 @@ export function heldGuns(self: SelfState): Array<{ slot: number; info: GunInfo; 
     return out;
 }
 
-function gunValue(self: SelfState, type: string): number {
-    const info = gunInfo(type);
-    if (!info || info.score <= 0) return 0;
-    const guns = heldGuns(self).filter((g) => g.info.score > 0);
-    const ammoBonus = (self.inventory[info.ammo] ?? 0) > 0 ? 8 : 0;
-    if (guns.length === 0) return 95 + ammoBonus * 0.5;
-    if (guns.some((g) => g.info.id === type)) {
-        // the same pistol again becomes its dual version; any other duplicate is worthless
-        const dual = info.def.dualWieldType ? gunInfo(info.def.dualWieldType) : undefined;
-        const gain = dual ? dual.score - info.score : 0;
-        return gain > 5 ? Math.min(60, 25 + gain / 3) : 0;
-    }
-    if (guns.length === 1) {
-        const held = guns[0].info;
-        if (held.id === info.id) return 0;
-        // a second gun of another class completes the loadout (medium range + close range)
-        const closeHeld = held.cls === "shotgun" || held.cls === "smg" || held.cls === "pistol";
-        const closeNew = info.cls === "shotgun" || info.cls === "smg" || info.cls === "pistol";
-        const complement = closeHeld !== closeNew ? 20 : 0;
-        return Math.min(85, 35 + complement + info.score / 6 + ammoBonus);
-    }
-    const worst = guns.reduce((a, b) => (a.info.score <= b.info.score ? a : b));
-    // upgrading a full loadout: replace the weaker gun when the new one is clearly better
-    const gain = info.score - worst.info.score;
-    if (gain < 12) return 0;
-    return Math.min(80, 25 + gain / 3 + ammoBonus);
-}
-
 function ammoValue(self: SelfState, item: string): number {
     const cap = capacityOf(self, item);
     const have = self.inventory[item] ?? 0;
     if (have >= cap) return 0;
     const users = heldGuns(self).filter((g) => g.info.ammo === item && g.info.score > 0);
-    if (users.length === 0) return 3;
+    // spare ammo for the second gun it may find next, while the bag has room (lazy-loot RC6: people take it; 8 clears
+    // the explore value floor of 6; unarmed bots look for a gun first, a full loadout leaves it)
+    if (users.length === 0) return heldGuns(self).filter((g) => g.info.score > 0).length === 1 ? 8 : 3;
     const clip = Math.max(...users.map((g) => g.info.def.maxClip));
     if (have < clip) return 60;
     if (have < clip * 3) return 35;
@@ -78,13 +54,21 @@ function gearValue(self: SelfState, item: string, kind: "helmet" | "chest" | "ba
     return kind === "backpack" ? 38 + diff * 10 : 42 + diff * 14;
 }
 
-/** How much the bot wants `item` (0..100). */
-export function lootValue(self: SelfState, item: string): number {
+/**
+ * How much the bot wants `item` (0..100), for a bot of this taste (persona and skill; default: none, normal).
+ * `ammoKnown` (guns): ammo types known on the ground close by (default unknown; knowledge/desire.ts).
+ */
+export function lootValue(
+    self: SelfState,
+    item: string,
+    taste: Readonly<Taste> = DEFAULT_TASTE,
+    ammoKnown?: ReadonlySet<string>,
+): number {
     if (!hasDef(item)) return 0;
     const def = GameObjectDefs[item];
     switch (def.type) {
         case "gun":
-            return gunValue(self, item);
+            return gunPickupValue(self, item, taste, ammoKnown);
         case "ammo":
             return ammoValue(self, item);
         case "helmet":
@@ -100,7 +84,9 @@ export function lootValue(self: SelfState, item: string): number {
         }
         case "scope": {
             const better = SCOPES.indexOf(item) > SCOPES.indexOf(self.scope);
-            return better && !(self.inventory[item] > 0) ? 18 + 4 * SCOPES.indexOf(item) : 0;
+            return better && !(self.inventory[item] > 0)
+                ? (18 + 4 * SCOPES.indexOf(item)) * taste.persona.scopeAffinity
+                : 0;
         }
         case "throwable": {
             const base = GOOD_THROWABLES[item] ?? 0;
@@ -114,9 +100,16 @@ export function lootValue(self: SelfState, item: string): number {
     }
 }
 
-/** Slot a picked-up gun would replace when both gun slots are full: the weaker gun. */
-export function slotToReplace(self: SelfState): number | null {
-    const guns = heldGuns(self);
-    if (guns.length < 2) return null;
-    return guns.reduce((a, b) => (a.info.score <= b.info.score ? a : b)).slot;
+/**
+ * Slot a picked-up gun (`item`) would replace when both gun slots are full: the swap that raises the loadout's worth
+ * most (knowledge/desire.ts; redundant and empty guns go first, never a higher tier for a lower one), never by the old
+ * DPS score (the M93R outranked the Mosin).
+ */
+export function slotToReplace(
+    self: SelfState,
+    taste: Readonly<Taste> = DEFAULT_TASTE,
+    item = "",
+    ammoKnown?: ReadonlySet<string>,
+): number | null {
+    return slotToReplaceByDesire(self, taste, item, ammoKnown);
 }

@@ -41,6 +41,9 @@ describe("baseline isolation", () => {
             "airdrop",
             "hold",
             "assist",
+            "evade",
+            "search",
+            "evacuate",
         ]);
     });
 });

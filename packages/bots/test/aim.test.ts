@@ -442,7 +442,8 @@ describe("throws with the human motor", () => {
         expect(releaseTime((t) => t > 1.3)).toBeCloseTo(1.3, 1);
     });
 
-    it("releases anyway when the cook is 0.6 s overdue", () => {
-        expect(releaseTime(() => false)).toBeCloseTo(1.6, 1);
+    it("releases anyway when the cook is 0.4 s overdue", () => {
+        // (0.6 s before the evaluation's F2: under the frag metric's 0.5 s "held too long" line now)
+        expect(releaseTime(() => false)).toBeCloseTo(1.4, 1);
     });
 });

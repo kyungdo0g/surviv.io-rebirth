@@ -4,7 +4,7 @@
 import { createRng, type Vec2, v2 } from "@rebirth/core";
 import { getDefOfType, type ObstacleDef } from "@rebirth/defs";
 import type { GasView, MapData, Snapshot } from "@rebirth/sim";
-import { Brain } from "../src/brain/brain.ts";
+import { Brain, type BrainProfile } from "../src/brain/brain.ts";
 import type { BrainCtx } from "../src/brain/context.ts";
 import { BRAIN_PRESETS, type BrainFeature, type BrainFeatures, withFeatures } from "../src/brain/features.ts";
 import { DIFFICULTY_PRESETS, type Difficulty } from "../src/difficulty.ts";
@@ -59,6 +59,7 @@ export function testWorld(map: MapData = game.mapData, at: Vec2 = SPOT): TestWor
         helmet: "",
         chest: "",
         backpack: "backpack02",
+        outfit: "outfitBase",
         action: { type: "none", item: "", time: 0, duration: 0, targetId: 0 },
         cooldowns: [0, 0, 0, 0],
         kills: 0,
@@ -179,18 +180,27 @@ export class FixedBoard implements ThreatBoard {
     ingest(_snap: Snapshot, _model: WorldModel): void {}
 }
 
-/** The Brain of `w` with the baseline plus `features` (or a whole feature set). */
+/**
+ * The Brain of `w` with the baseline plus `features` (or a whole feature set); `profile` sets the persona, the skill
+ * profile and their rng (default: NEUTRAL and the preset's skill, like a bot without them).
+ */
 export function brainOf(
     w: TestWorld,
     features: readonly BrainFeature[] | Readonly<BrainFeatures>,
     difficulty: Difficulty = "normal",
     seed = 1,
+    profile: BrainProfile = {},
 ): Brain {
     const f = Array.isArray(features) ? withFeatures(BRAIN_PRESETS.baseline, features) : (features as BrainFeatures);
-    return new Brain(w.model, DIFFICULTY_PRESETS[difficulty], createRng(seed), f);
+    return new Brain(w.model, DIFFICULTY_PRESETS[difficulty], createRng(seed), f, profile);
 }
 
-/** A BrainCtx of `w` at NOW (the real Brain.context: target selection, assessment). */
-export function ctxOf(w: TestWorld, features: readonly BrainFeature[], difficulty: Difficulty = "normal"): BrainCtx {
-    return brainOf(w, features, difficulty).context(NOW);
+/** A BrainCtx of `w` at NOW (the real Brain.context: target selection, assessment), with an optional profile. */
+export function ctxOf(
+    w: TestWorld,
+    features: readonly BrainFeature[],
+    difficulty: Difficulty = "normal",
+    profile: BrainProfile = {},
+): BrainCtx {
+    return brainOf(w, features, difficulty, 1, profile).context(NOW);
 }

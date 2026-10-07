@@ -4,6 +4,10 @@
 // fire. Measured from the moment the shooter first sees it: time to the first shot, time to the first hit, bullet hit
 // rate and time to kill. Each trial is seeded and independent, so a cell's numbers replay exactly. The shooter plays
 // its normal fight (it strafes, closes in with a shotgun), so the numbers compare aim models under the same brain.
+// A cell's shooter is a difficulty preset or a skill level s (skill.ts skillParams(s, s): the tier calibration). Its
+// view is the snapshot (the legacy cells and fixture: targets may sit in the margin outside the 16:9 screen, timed
+// from the model's first sighting) or the human screen (targets inside the true 16:9 screen, timed from the tick they
+// show on it: perception/sight.ts).
 import { createRng, type Rng, type Vec2, v2 } from "@rebirth/core";
 import { getDefOfType, WeaponSlot } from "@rebirth/defs";
 import {
@@ -19,15 +23,22 @@ import {
     VIEW_ASPECT,
     VIEW_MARGIN,
 } from "@rebirth/sim";
+import { BRAIN_PRESETS, type BrainFeatures, DEFAULT_BRAIN } from "../src/brain/features.ts";
 import { BotController } from "../src/controller.ts";
 import { DIFFICULTY_PRESETS, type Difficulty, type DifficultyParams, type MotorModel } from "../src/difficulty.ts";
+import { onHumanScreen } from "../src/perception/sight.ts";
+import { skillParams } from "../src/skill.ts";
 
 export const BENCH_GUNS = ["ak47", "m9", "mosin", "m870"] as const;
 export const BENCH_DISTANCES = [10, 20, 35] as const;
 export const BENCH_SCOPES = ["1xscope", "4xscope"] as const;
 export const BENCH_PATTERNS = ["stationary", "strafe", "cross"] as const;
+/** The tier calibration's guns (design 4.2: three pistols, an SMG, a rifle, a shotgun, a sniper, a DMR, an LMG). */
+export const TIER_GUNS = ["ot38", "m9", "glock", "mp5", "ak47", "m870", "mosin", "mk12", "m249"] as const;
 
 export type BenchPattern = (typeof BENCH_PATTERNS)[number];
+/** "snapshot": targets anywhere the snapshot reaches (legacy); "screen": inside the 16:9 screen only. */
+export type BenchView = "snapshot" | "screen";
 
 export interface BenchCell {
     difficulty: Difficulty;
@@ -35,6 +46,10 @@ export interface BenchCell {
     distance: number;
     scope: string;
     pattern: BenchPattern;
+    /** skill level s: the shooter is skillParams(s, s) instead of the preset (`difficulty` then only labels it) */
+    skill?: number;
+    /** default "snapshot" */
+    view?: BenchView;
 }
 
 export interface TrialResult {
@@ -47,6 +62,13 @@ export interface TrialResult {
     bullets: number;
     hits: number;
 }
+
+/**
+ * The shooter's brain: the default one without holstering. Alone in the warmup it would holster at once (nothing seen
+ * yet) and every trial would time the draw as well; the bench measures the aim of a player with its gun out (the
+ * first shot of a holstered bot waits for its reaction and then the draw: bot.ts gateReaction).
+ */
+const BENCH_BRAIN: Readonly<BrainFeatures> = Object.freeze({ ...BRAIN_PRESETS[DEFAULT_BRAIN], holster: false });
 
 /** Trial length after the target appears (seconds). */
 export const TRIAL_SECONDS = 8;
@@ -103,20 +125,26 @@ function place(game: Game, name: string, pos: Vec2): Player {
     return p;
 }
 
-/** Half extents of the visible area for a scope (sim viewBounds, desktop zoom radii). */
-function viewHalf(scope: string): Vec2 {
-    const zoom = scope === "4xscope" ? 48 : 28;
-    return { x: zoom + VIEW_MARGIN, y: zoom / VIEW_ASPECT + VIEW_MARGIN };
+/** Zoom radius of a scope (desktop zoom radii). */
+function zoomOf(scope: string): number {
+    return scope === "4xscope" ? 48 : 28;
+}
+
+/** Half extents of the visible area for a scope: the snapshot (sim viewBounds) or the human screen (no margin). */
+function viewHalf(scope: string, view: BenchView = "snapshot"): Vec2 {
+    const zoom = zoomOf(scope);
+    const margin = view === "screen" ? 0 : VIEW_MARGIN;
+    return { x: zoom + margin, y: zoom / VIEW_ASPECT + margin };
 }
 
 /** Whether a target `distance` away can be in view at all with `scope` (inside the view by 1.5 units). */
-export function cellVisible(distance: number, scope: string): boolean {
-    return distance < viewHalf(scope).x - 1.5;
+export function cellVisible(distance: number, scope: string, view: BenchView = "snapshot"): boolean {
+    return distance < viewHalf(scope, view).x - 1.5;
 }
 
 /** A bearing that puts a target `distance` away inside the view with `scope` (rejection sampling). */
-function bearing(rng: Rng, distance: number, scope: string): number {
-    const half = viewHalf(scope);
+function bearing(rng: Rng, distance: number, scope: string, view: BenchView = "snapshot"): number {
+    const half = viewHalf(scope, view);
     for (let i = 0; i < 200; i++) {
         const a = rng.range(0, Math.PI * 2);
         if (Math.abs(Math.cos(a) * distance) < half.x - 1.5 && Math.abs(Math.sin(a) * distance) < half.y - 1.5)
@@ -125,9 +153,9 @@ function bearing(rng: Rng, distance: number, scope: string): number {
     return rng.bool() ? 0 : Math.PI;
 }
 
-/** Shooter parameters: the preset with the motor model overridden (A/B runs). */
-export function benchParams(difficulty: Difficulty, motor?: MotorModel): DifficultyParams {
-    const p = DIFFICULTY_PRESETS[difficulty];
+/** Shooter parameters: the preset (or skill level s, g = s) with the motor model overridden (A/B runs). */
+export function benchParams(difficulty: Difficulty, motor?: MotorModel, skill?: number): DifficultyParams {
+    const p = skill === undefined ? DIFFICULTY_PRESETS[difficulty] : skillParams(skill, skill);
     return motor && motor !== p.motor.model ? { ...p, motor: { ...p.motor, model: motor } } : p;
 }
 
@@ -136,7 +164,8 @@ export type TrialProbe = (bot: BotController, game: Game, target: Player) => voi
 
 export function runTrial(cell: BenchCell, seed: number, motor?: MotorModel, probe?: TrialProbe): TrialResult {
     const out: TrialResult = { seen: false, firstShot: null, firstHit: null, ttk: null, bullets: 0, hits: 0 };
-    if (!cellVisible(cell.distance, cell.scope)) return out;
+    const view = cell.view ?? "snapshot";
+    if (!cellVisible(cell.distance, cell.scope, view)) return out;
     const game = flatGame(seed);
     const spot = arenaSpot(game);
     const rng = createRng(seed ^ 0x6b43a9b5);
@@ -151,13 +180,17 @@ export function runTrial(cell: BenchCell, seed: number, motor?: MotorModel, prob
         shooter.inv.set(cell.scope, 1);
         shooter.scope = cell.scope;
     }
-    const bot = new BotController(game, shooter.id, { seed, difficulty: benchParams(cell.difficulty, motor) });
+    const bot = new BotController(game, shooter.id, {
+        seed,
+        difficulty: benchParams(cell.difficulty, motor, cell.skill),
+        brain: BENCH_BRAIN,
+    });
     for (let i = 0; i < WARMUP_TICKS; i++) {
         bot.update();
         game.step();
     }
 
-    const a = bearing(rng, cell.distance, cell.scope);
+    const a = bearing(rng, cell.distance, cell.scope, view);
     const toTarget = { x: Math.cos(a), y: Math.sin(a) };
     const perp = v2.perp(toTarget);
     let start = v2.add(shooter.pos, v2.mul(toTarget, cell.distance));
@@ -184,6 +217,9 @@ export function runTrial(cell: BenchCell, seed: number, motor?: MotorModel, prob
     const end = game.time + TRIAL_SECONDS + SNAPSHOT_EVERY_TICKS / TICK_HZ;
     let killedAt: number | null = null;
     let seenAt: number | null = null;
+    // human screen: timed from the first tick the target's body shows on the 16:9 screen
+    let exposedAt: number | null = null;
+    const zoom = zoomOf(cell.scope);
     while (game.time < end && killedAt === null && !shooter.dead) {
         // the strafing and crossing target walks with the touch stick: any direction at the base run speed (12 u/s)
         const input = { ...emptyInput(), toMouseDir: v2.neg(toTarget) };
@@ -197,6 +233,7 @@ export function runTrial(cell: BenchCell, seed: number, motor?: MotorModel, prob
             Object.assign(input, { touchMoveActive: true, touchMoveLen: 255, touchMoveDir: perp });
         }
         game.setInput(target.id, input);
+        if (exposedAt === null && onHumanScreen(shooter.pos, zoom, target.pos, 1)) exposedAt = game.time;
         bot.update();
         // the first sighting (the model forgets the contact once it sees it dead)
         if (seenAt === null) seenAt = bot.bot.model.contacts.get(target.id)?.firstSeen ?? null;
@@ -206,6 +243,7 @@ export function runTrial(cell: BenchCell, seed: number, motor?: MotorModel, prob
     }
     if (seenAt === null) return out;
     out.seen = true;
+    if (view === "screen" && exposedAt !== null) seenAt = Math.min(seenAt, exposedAt);
     const after = shots.find((t) => t >= seenAt);
     out.firstShot = after !== undefined ? after - seenAt : null;
     out.firstHit = firstHitAt !== null ? Math.max(0, firstHitAt - seenAt) : null;
@@ -271,8 +309,13 @@ export function summarize(trials: readonly TrialResult[]): CellStats {
     };
 }
 
+/** Label of a cell's shooter: the preset name or "s0.15" for a skill level. */
+export function shooterLabel(c: Pick<BenchCell, "difficulty" | "skill">): string {
+    return c.skill === undefined ? c.difficulty : `s${c.skill}`;
+}
+
 export function cellKey(c: BenchCell): string {
-    return `${c.difficulty}/${c.gun}/${c.distance}/${c.scope.replace("scope", "")}/${c.pattern}`;
+    return `${shooterLabel(c)}/${c.gun}/${c.distance}/${c.scope.replace("scope", "")}/${c.pattern}`;
 }
 
 export function allCells(difficulties: readonly Difficulty[]): BenchCell[] {
@@ -282,6 +325,37 @@ export function allCells(difficulties: readonly Difficulty[]): BenchCell[] {
             for (const distance of BENCH_DISTANCES)
                 for (const scope of BENCH_SCOPES)
                     for (const pattern of BENCH_PATTERNS) out.push({ difficulty, gun, distance, scope, pattern });
+    return out;
+}
+
+/** Options of a custom cell grid (scripts/aimbench.ts --skill / --guns / --patterns / --scope / --view). */
+export interface CellGrid {
+    shooters: ReadonlyArray<{ difficulty: Difficulty; skill?: number }>;
+    guns: readonly string[];
+    distances?: readonly number[];
+    patterns: readonly BenchPattern[];
+    /** "both": 1x and 4x at every distance (the stock grid); "auto": 4x from 30 units on, else 1x (design 4.2) */
+    scopes: "both" | "auto";
+    view: BenchView;
+}
+
+export function gridCells(g: CellGrid): BenchCell[] {
+    const out: BenchCell[] = [];
+    for (const sh of g.shooters)
+        for (const gun of g.guns)
+            for (const distance of g.distances ?? BENCH_DISTANCES) {
+                const scopes = g.scopes === "both" ? BENCH_SCOPES : [distance >= 30 ? "4xscope" : "1xscope"];
+                for (const scope of scopes)
+                    for (const pattern of g.patterns)
+                        out.push({
+                            ...sh,
+                            gun,
+                            distance,
+                            scope,
+                            pattern,
+                            ...(g.view !== "snapshot" ? { view: g.view } : {}),
+                        });
+            }
     return out;
 }
 
@@ -317,7 +391,8 @@ export interface AimBaseline {
     seed: number;
     trialsPerCell: number;
     trialSeconds: number;
-    summary: Partial<Record<Difficulty, AimSummary>>;
+    /** by shooter label: a preset name (the fixture) or "s0.15" */
+    summary: Partial<Record<string, AimSummary>>;
     cells: Record<string, CellStats>;
 }
 
