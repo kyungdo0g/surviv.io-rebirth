@@ -7,13 +7,16 @@
 // Behaviour follows docs/research/mechanics/airdrop-airstrike.md "Air strikes" (survev objects/plane.ts).
 // Rebirth (deliberate deviation requested by the user, docs/research/rebirth-deviations.md): every zone has a variant
 // (defs AIRSTRIKE_VARIANTS): "normal" is the behaviour above, "heavy" drops 5 heavy shells per plane over a larger
-// zone, "carpet" sends 6 planes. Strobe strikes are always normal.
+// zone, "carpet" sends 6 planes that aim inside 1.4x the radius under a marker that covers every blast. Strobe strikes
+// are always normal.
 import { type Rng, type Vec2, v2 } from "@rebirth/core";
 import {
+    AIRSTRIKE_AIM_LEAD,
     AIRSTRIKE_VARIANT_IDS,
     AIRSTRIKE_VARIANTS,
     type AirstrikeVariant,
     type AirstrikeVariantDef,
+    airstrikeAimRad,
     DamageType,
     GameConfig,
     getDefOfType,
@@ -38,12 +41,6 @@ const DEFAULT_PLANES = 3;
 const ZONE_FINISH_BUFFER = 2.5;
 /** Half of the aim points are near a player of the zone: random offset up to bombCount x bombOffset / 4. */
 const AIM_CHANCE = 0.5;
-/**
- * Aim points are shifted back by half the bomb strip plus this lead so the strip centres on them: survev's
- * (bombCount + 1.75) x bombOffset / 2 = (bombCount - 1) x 2 / 2 + 2.75 for the 2 u spacing (the bombs drift ~2.9 u
- * forward while they fall), kept as 2.75 u for the heavy variant's wider spacing.
- */
-const AIM_LEAD = 2.75;
 /** Zone centre: random offset up to 3 u around the chosen player (survev getAirstrikeZonePos). */
 const ZONE_JITTER = 3;
 const MAX_ZONE_ID = 255;
@@ -68,9 +65,9 @@ interface Zone {
     id: number;
     variant: AirstrikeVariant;
     pos: Vec2;
-    /** shown radius: the map's airstrikeZoneRad plus the variant's zoneRadAdd */
+    /** shown radius: the aim radius plus the variant's zoneRadAdd */
     rad: number;
-    /** planes aim inside this radius (the map's airstrikeZoneRad) */
+    /** planes aim inside this radius (the map's airstrikeZoneRad times the variant's aimRadMult) */
     aimRad: number;
     duration: number;
     elapsed: number;
@@ -207,7 +204,7 @@ export class AirstrikeZones {
 
     /**
      * A zone of `variant` at `pos`; the ping marks it on the map (survev addAirstrikeZone). `rad` and `planeCount` are
-     * the map's: the variant may grow the shown radius (planes keep aiming inside `rad`) and fix the plane count.
+     * the map's: the variant may widen the planes' aim radius, grow the shown radius and fix the plane count.
      */
     addZone(
         pos: Vec2,
@@ -219,6 +216,7 @@ export class AirstrikeZones {
     ): void {
         const def = AIRSTRIKE_VARIANTS[variant];
         const planes = def.planeCount ?? planeCount;
+        const aimRad = airstrikeAimRad(variant, rad);
         const duration = wait + AIRSTRIKE_SPAWN_TIME + planes * interval + ZONE_FINISH_BUFFER;
         const id = this.nextId;
         this.nextId = this.nextId >= MAX_ZONE_ID ? 1 : this.nextId + 1;
@@ -226,8 +224,8 @@ export class AirstrikeZones {
             id,
             variant,
             pos: v2.copy(pos),
-            rad: rad + def.zoneRadAdd,
-            aimRad: rad,
+            rad: aimRad + def.zoneRadAdd,
+            aimRad,
             duration,
             elapsed: 0,
             startTicker: wait,
@@ -282,7 +280,8 @@ export class AirstrikeZones {
                 }
             }
         }
-        const back = ((strip.bombCount - 1) * strip.bombOffset) / 2 + AIM_LEAD;
+        // the strip centres on the aim point (defs AIRSTRIKE_AIM_LEAD: the bombs drift ~2.9 u forward while they fall)
+        const back = ((strip.bombCount - 1) * strip.bombOffset) / 2 + AIRSTRIKE_AIM_LEAD;
         return v2.add(pos, v2.mul(zone.planeDir, -back));
     }
 

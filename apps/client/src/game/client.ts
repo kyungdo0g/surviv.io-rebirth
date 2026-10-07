@@ -40,6 +40,7 @@ import { DebugHudBind } from "../input/keybinds.ts";
 import { createTerrainGraphics } from "../map/terrain.ts";
 import { SnapshotInterpolator } from "../net/interp.ts";
 import type { Transport } from "../net/transport.ts";
+import { crateTierMarkSprites } from "../objects/crateTierMark.ts";
 import { FadingSprites } from "../objects/fading.ts";
 import { AirSystem } from "../objects/planes.ts";
 import type { ViewDeps } from "../objects/types.ts";
@@ -331,6 +332,8 @@ export class GameClient {
             mapObjectSprites(crate.name, sprites);
             const destroyType = (MapObjectDefs[crate.name] as { destroyType?: string } | undefined)?.destroyType;
             if (destroyType) mapObjectSprites(destroyType, sprites);
+            // rebirth air drop tiers: the tier crates and their stars, ready when the first shell opens
+            crateTierMarkSprites(crate.name, sprites);
         }
         this.preloaded = this.textures.preload(sprites).then(() => {
             this.texturesReady = true;

@@ -2,10 +2,14 @@
 // @rebirth/defs loads (data.ts), before the id registries are built. Generated JSON is never edited by hand
 // (tools/port-survev regenerates it); everything the rebirth changes or adds lives here, in code, with its reason.
 // docs/research/rebirth-deviations.md is the cited list.
-import type { ExplosionDef, GameObjectDef, MapObjectDef } from "../types/index.ts";
+import type { ExplosionDef, GameObjectDef, LootSpawnDef, MapDef, MapObjectDef } from "../types/index.ts";
+import { applyAirdropTierTables } from "./airdropLoot.ts";
+import { AIRDROP_TIER_SPLITS } from "./airdropTiers.ts";
 import { rebirthOnlyDefs, rebirthOnlyMapObjects } from "./defs.ts";
 import { applyBalanceDeviations, type DefDeviation } from "./deviations.ts";
 
+export * from "./airdropLoot.ts";
+export * from "./airdropTiers.ts";
 export * from "./airstrikeVariants.ts";
 export { type DefDeviation, FRAG_DECAL_TYPE, FRAG_RADIUS_MULT } from "./deviations.ts";
 
@@ -47,4 +51,26 @@ export function applyRebirthDefs(
         if (decal && mapObjects[decal]?.type !== "decal") throw new Error(`${id}: decal "${decal}" is not a decal`);
     }
     return { gameObjects, mapObjects, deviations, addedGameObjects, addedMapObjects };
+}
+
+/**
+ * The generated map defs with the rebirth loot tables (the air drop tier tables, rebirth/airdropLoot.ts) added to
+ * copies of their loot tables. Checks that every tier inner crate a map can drop finds its tiers in that map's table.
+ */
+export function applyRebirthMaps(
+    generatedMaps: Readonly<Record<string, MapDef>>,
+    mapObjects: Readonly<Record<string, MapObjectDef>>,
+): Record<string, MapDef> {
+    const maps = applyAirdropTierTables(generatedMaps);
+    for (const [name, def] of Object.entries(maps)) {
+        for (const crate of def.gameConfig.planes.crates) {
+            const split = Object.hasOwn(AIRDROP_TIER_SPLITS, crate.name) ? AIRDROP_TIER_SPLITS[crate.name] : undefined;
+            for (const inner of Object.values(split ?? {})) {
+                const loot: readonly LootSpawnDef[] = (mapObjects[inner] as { loot?: LootSpawnDef[] })?.loot ?? [];
+                const missing = loot.find((l) => l.tier && !Object.hasOwn(def.lootTable, l.tier));
+                if (missing) throw new Error(`${name}: ${inner} loot tier "${missing.tier}" is not in the loot table`);
+            }
+        }
+    }
+    return maps;
 }

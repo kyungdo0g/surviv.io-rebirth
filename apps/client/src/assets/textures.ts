@@ -96,6 +96,11 @@ export class TextureStore {
         void this.request(key, scale);
     }
 
+    /** Whether the texture for `id` has loaded, so apply() shows it at once (preload checks). */
+    isLoaded(id: string): boolean {
+        return this.textures.has(id);
+    }
+
     /** Loads every `[id, scale]` (largest scale per id wins), `concurrency` at a time. */
     async preload(entries: Iterable<readonly [string, number]>, concurrency = DEFAULT_CONCURRENCY): Promise<void> {
         const scales = new Map<string, number>();

@@ -1,8 +1,8 @@
 // Rebirth air strike variants and blast radii on the client (docs/research/rebirth-deviations.md), against the
 // loopback 50v50 map (?map=faction): a forced heavy-shell zone and a forced carpet zone reach the client with their
-// variant (zone colour, ping tint, announcement), the carpet zone sends 6 planes, the heavy shells burst at the size of
-// their 38 u radius and leave a matching scorch, a normal zone keeps the original yellow marker without an
-// announcement, and the frag burst and scorch follow its x1.3 radius. Zones are forced through the sandbox Game
+// variant (zone colour, ping tint, announcement), the carpet zone is wider and sends 6 planes, the heavy shells burst
+// at the size of their 38 u radius and leave a matching scorch, a normal zone keeps the original yellow marker without
+// an announcement, and the frag burst and scorch follow its x1.3 radius. Zones are forced through the sandbox Game
 // (window.__rebirth.game.planes.zones.addZone, as m5.spec.ts does). Screenshots go to __screens__/airstrike-variants.
 import { expect, type Page, test } from "@playwright/test";
 import { boot, collectErrors } from "./m4-helpers.ts";
@@ -151,7 +151,8 @@ test.describe("50v50 air strike variants", () => {
         await expect
             .poll(async () => (await zoneList(page)).map((z) => z.variant), { timeout: 5_000 })
             .toEqual(["carpet"]);
-        expect((await zoneList(page))[0].rad).toBe(10);
+        // the carpet planes aim inside 1.4x the radius (14 u) and the marker covers every blast (+42 u)
+        expect((await zoneList(page))[0].rad).toBe(10 * 1.4 + 42);
         expect(await page.evaluate(() => (window as any).__rebirth.fx.airstrikeZones[0].color)).toBe(0xe040ff);
         await expect.poll(() => page.evaluate(() => (window as any).__rebirth.match.announcement)).toBe("대공습 경보");
         expect(await page.evaluate(() => (window as any).__rebirth.fx.pingTint)).toBe(0xe040ff);

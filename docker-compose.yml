@@ -21,6 +21,8 @@ services:
             MAP_NAME: "${MAP_NAME:-main}"
             # 50v50 air strike variant weights (normal:60,heavy:25,carpet:15; "normal" turns them off; docs/deploy.md)
             AIRSTRIKE_VARIANTS: "${AIRSTRIKE_VARIANTS:-}"
+            # normal air drops split into tier 1 / tier 2 drops (on; "off" = v0.8.82 drops; docs/deploy.md)
+            AIRDROP_TIERS: "${AIRDROP_TIERS:-}"
             MAX_PLAYERS: "${MAX_PLAYERS:-80}"
             MAX_GAMES: "${MAX_GAMES:-16}"
             MIN_PLAYERS: "${MIN_PLAYERS:-2}"

@@ -1,11 +1,20 @@
 // Rebirth air strike variants on the wire (schema 9, docs/research/rebirth-deviations.md): every AirstrikeZones record
 // carries its variant, a zone without one is sent as normal, the rebirth-only heavy shell and its explosion serialize
-// like every other projectile and explosion through the game type registry, and the rebirth scorch decals like every
-// other decal through the map type registry.
+// like every other projectile and explosion through the game type registry, and the rebirth scorch decals and air drop
+// tier crates like every other decal and obstacle through the map type registry. A carpet zone's 8-bit radius still
+// covers every blast.
 import { BitReader, BitWriter, type Vec2 } from "@rebirth/core";
 import {
+    AIRDROP_TIER_CRATES,
     AIRSTRIKE_VARIANT_IDS,
+    AIRSTRIKE_VARIANTS,
+    airstrikeAimRad,
+    airstrikeBombReach,
+    airstrikeZoneRad,
+    GameConfig,
     GameObjectRegistry,
+    getDefOfType,
+    getMapDef,
     MapObjectRegistry,
     PROTOCOL_SCHEMA_VERSION,
     rebirthOnlyIds,
@@ -105,9 +114,13 @@ describe("air strike variants on the wire", () => {
     });
 
     it("the rebirth scorch decals serialize through the map type registry, after every generated type", () => {
-        expect(rebirthOnlyMapObjectIds).toEqual(["decal_bomb_heavy_explosion", "decal_frag_large_explosion"]);
+        expect(rebirthOnlyMapObjectIds).toEqual([
+            "decal_bomb_heavy_explosion",
+            "decal_frag_large_explosion",
+            ...AIRDROP_TIER_CRATES,
+        ]);
         const first = MapObjectRegistry.typeToId("decal_bomb_heavy_explosion");
-        expect(first).toBe(MapObjectRegistry.size - 2);
+        expect(first).toBe(MapObjectRegistry.size - rebirthOnlyMapObjectIds.length);
         expect(MapObjectRegistry.typeToId("decal_frag_large_explosion")).toBe(first + 1);
         const codec = codecOf("decal");
         for (const type of rebirthOnlyMapObjectIds) {
@@ -122,6 +135,63 @@ describe("air strike variants on the wire", () => {
             const out = codec.build(view.id, readFullFields(r, codec), ctx);
             expect(out).toMatchObject({ kind: "decal", type, layer: 0 });
             near(out.pos, view.pos);
+        }
+    });
+
+    it("the air drop tier crates serialize as obstacles after the rebirth decals", () => {
+        const decals = MapObjectRegistry.typeToId("decal_frag_large_explosion");
+        expect(AIRDROP_TIER_CRATES.map((t) => MapObjectRegistry.typeToId(t))).toEqual([
+            decals + 1,
+            decals + 2,
+            decals + 3,
+            decals + 4,
+        ]);
+        const codec = codecOf("obstacle");
+        for (const type of AIRDROP_TIER_CRATES) {
+            const view = {
+                id: 9,
+                kind: "obstacle",
+                type,
+                pos: { x: 300, y: 320 },
+                ori: 0,
+                scale: 1,
+                layer: 0,
+                healthT: 1,
+                dead: false,
+            } as const;
+            const vals: number[] = [];
+            codec.quantize(view, ctx, vals);
+            const w = new BitWriter();
+            writeFullRecord(w, codec, view.id, vals);
+            const r = new BitReader(w.getBuffer());
+            expect(r.readBits(OBJECT_TYPE_BITS)).toBe(codec.code);
+            expect(r.readUint16()).toBe(view.id);
+            const out = codec.build(view.id, readFullFields(r, codec), ctx);
+            expect(out).toMatchObject({ kind: "obstacle", type, dead: false });
+        }
+    });
+
+    it("a carpet zone's radius, as the client reads it, covers every blast on every 50v50 timing", () => {
+        // a bomb's reach from its aim point, then its blast to a player's body
+        const reach =
+            airstrikeBombReach(AIRSTRIKE_VARIANTS.carpet) +
+            getDefOfType("explosion", "explosion_bomb_iron").rad.max +
+            GameConfig.player.radius;
+        const radii = getMapDef("faction")
+            .gameConfig.planes.timings.map((t) => t.options.airstrikeZoneRad)
+            .filter((r): r is number => !!r);
+        expect(radii).toEqual([60, 55, 50, 45, 40]);
+        for (const mapRad of radii) {
+            const rad = airstrikeZoneRad("carpet", mapRad);
+            const [z] = roundTrip(
+                (w) =>
+                    writeAirstrikeZones(w, ctx, [
+                        { id: 1, variant: "carpet", pos: { x: 1, y: 1 }, rad, duration: 12.5, zoneT: 0 },
+                    ]),
+                (r) => readAirstrikeZones(r, ctx),
+            );
+            expect(z.rad).toBeGreaterThanOrEqual(airstrikeAimRad("carpet", mapRad) + reach);
+            expect(z.rad).toBeLessThan(256);
         }
     });
 });

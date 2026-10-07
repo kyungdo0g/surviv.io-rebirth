@@ -47,6 +47,13 @@ export interface SimRules {
     airdropCrushInstantKill: boolean;
     /** whether helmets and vests reduce the crush damage (open question in the KB; off) */
     airdropCrushArmor: boolean;
+    /**
+     * Rebirth (deliberate deviation requested by the user, docs/research/rebirth-deviations.md): normal air drops are
+     * tier 1 or tier 2 drops whose inner crate shows its tier, early drops mostly tier 1 and late drops mostly tier 2
+     * (defs rebirth/airdropTiers.ts); the gold drop keeps its chance. false restores v0.8.82's crate weights and
+     * crate_10. The server sets it from AIRDROP_TIERS.
+     */
+    airdropTiers: boolean;
     /** seconds after the start during which players may still join (survev game.ts canJoin: startedTime < 60) */
     joinWindowSeconds: number;
     /** kills needed to become kill leader (GameConfig.player.killLeaderMinKills) */
@@ -166,6 +173,7 @@ export function defaultRules(): SimRules {
         airdropCrushDamage: GameConfig.airdrop.crushDamage,
         airdropCrushInstantKill: false,
         airdropCrushArmor: false,
+        airdropTiers: true,
         joinWindowSeconds: 60,
         killLeaderMinKills: GameConfig.player.killLeaderMinKills,
         minActiveTime: GameConfig.player.minActiveTime,

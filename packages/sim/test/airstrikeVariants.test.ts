@@ -1,9 +1,19 @@
 // Rebirth air strike variants (deliberate deviation requested by the user, docs/research/rebirth-deviations.md):
 // scheduled 50v50 zones roll normal / heavy / carpet from rules.roles.factionAirstrikeVariants on their own seeded
 // stream; heavy zones drop 5 heavy shells per plane whose blast reaches 38 u over a zone grown by 24 u, carpet zones
-// send 6 planes; strobes and other maps stay normal, and a zone that rolls normal is the original strike.
+// send 6 planes that aim inside 1.4x the radius under a marker that covers every blast; strobes and other maps stay
+// normal, and a zone that rolls normal is the original strike.
 import { createRng, type Vec2, v2 } from "@rebirth/core";
-import { AIRSTRIKE_VARIANTS, DamageType, GameConfig, getDefOfType, getMapDef, Plane } from "@rebirth/defs";
+import {
+    AIRSTRIKE_AIM_LEAD,
+    AIRSTRIKE_VARIANTS,
+    airstrikeBombReach,
+    DamageType,
+    GameConfig,
+    getDefOfType,
+    getMapDef,
+    Plane,
+} from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { Game, type Player, pickAirstrikeVariant } from "../src/index.ts";
 import { steps } from "./combatHelpers.ts";
@@ -33,26 +43,38 @@ interface StrikeRun {
     planes: number;
     bombTypes: Set<string>;
     zoneTicks: number;
+    /** each strike plane's aim point (its target moved forward by half the strip and the aim lead) */
+    aims: Vec2[];
 }
 
-/** Schedules one circle-1 strike over three players at `origin` and runs it until its zone closes and bombs land. */
-function runStrike(game: Game, origin: Vec2): StrikeRun {
-    const players = [0, 1, 2].map((i) => addAt(game, v2.add(origin, { x: i * 3, y: 0 })));
+/**
+ * Schedules one circle-1 strike over players at `origin` (three in a row, or `spread` around it) and runs it until its
+ * zone closes and the bombs land.
+ */
+function runStrike(game: Game, origin: Vec2, spread: Vec2[] = [0, 1, 2].map((i) => ({ x: i * 3, y: 0 }))): StrikeRun {
+    const players = spread.map((d) => addAt(game, v2.add(origin, d)));
     const log = logExplosions(game);
     game.step();
     game.planes.scheduleAirstrike(CIRCLE1, 0);
     game.step();
     const zone = (game.getSnapshot(players[0].id).airstrikeZones ?? [])[0];
     const planes = new Set<number>();
+    const aims: Vec2[] = [];
     const bombTypes = new Set<string>();
     let zoneTicks = 1;
     for (; zoneTicks < 6000 && game.planes.zones.zones.length > 0; zoneTicks++) {
         game.step();
-        for (const p of game.planes.planes) if (p.type === Plane.Airstrike) planes.add(p.id);
+        for (const p of game.planes.planes) {
+            if (p.type !== Plane.Airstrike || planes.has(p.id)) continue;
+            planes.add(p.id);
+            const strip = AIRSTRIKE_VARIANTS[zone.variant ?? "normal"];
+            const back = ((strip.bombCount - 1) * strip.bombOffset) / 2 + AIRSTRIKE_AIM_LEAD;
+            aims.push(v2.add(p.target, v2.mul(p.dir, back)));
+        }
         for (const p of game.projectiles.projectiles) bombTypes.add(p.type);
     }
     steps(game, 300);
-    return { game, log, zone, planes: planes.size, bombTypes, zoneTicks };
+    return { game, log, zone, planes: planes.size, bombTypes, zoneTicks, aims };
 }
 
 describe("air strike variants (rebirth)", () => {
@@ -103,7 +125,9 @@ describe("air strike variants (rebirth)", () => {
         game.rules.roles.factionAirstrikeVariants = { carpet: 1 };
         const run = runStrike(game, clearSpot(100));
         expect(run.zone.variant).toBe("carpet");
-        expect(run.zone.rad).toBe(60);
+        // planes aim inside 60 x 1.4 = 84 u; the marker adds a bomb's reach, its blast and the body (25.75 + 14 + 1 u,
+        // + 1 u for the wire): 126 u
+        expect(run.zone.rad).toBe(60 * 1.4 + 42);
         expect(run.planes).toBe(6);
         expect(run.zoneTicks * 0.01).toBeCloseTo(12.5, 1);
         expect(run.zone.duration).toBeCloseTo(12.5, 0);
@@ -113,12 +137,49 @@ describe("air strike variants (rebirth)", () => {
         );
     });
 
-    it("forced variants work through addZone too (carpet fixes the plane count)", () => {
+    it("every carpet blast stays inside the marker, and the planes aim over the wider area", () => {
+        // a carpet bomb lands at most 25.75 u from its plane's aim point (half the 38 u strip plus the 2.75 u lead
+        // behind it, or the strip's front plus the ~2.9 u drift, then the 4 u jitter); its blast hurts a player whose
+        // body (1 u) it reaches within rad.max
+        expect(airstrikeBombReach(AIRSTRIKE_VARIANTS.carpet)).toBe(25.75);
+        const blast = getDefOfType("explosion", "explosion_bomb_iron").rad.max + GameConfig.player.radius;
+        let farthestAim = 0;
+        let closestToEdge = Number.POSITIVE_INFINITY;
+        let bombs = 0;
+        for (let seed = 1; seed <= 8; seed++) {
+            const game = flatMapGame("faction", 1000 + seed);
+            game.rules.roles.factionAirstrikeVariants = { carpet: 1 };
+            // players spread over the zone: half the aim points follow a player (up to 10 u off), half are anywhere
+            const ring = [0, 1, 2, 3, 4, 5].map((i) => v2.mul({ x: Math.cos(i), y: Math.sin(i) }, 12 * i));
+            const run = runStrike(game, clearSpot(100), ring);
+            expect(run.zone.variant).toBe("carpet");
+            expect(run.planes).toBe(6);
+            const iron = run.log.filter((e) => e.type === "explosion_bomb_iron");
+            expect(iron).toHaveLength(6 * GameConfig.airstrike.bombCount);
+            bombs += iron.length;
+            for (const e of iron) {
+                const d = v2.distance(e.pos, run.zone.pos) + blast;
+                expect(d).toBeLessThan(run.zone.rad);
+                closestToEdge = Math.min(closestToEdge, run.zone.rad - d);
+            }
+            for (const aim of run.aims) {
+                const d = v2.distance(aim, run.zone.pos);
+                expect(d).toBeLessThanOrEqual(60 * 1.4 + 1e-6);
+                farthestAim = Math.max(farthestAim, d);
+            }
+        }
+        expect(bombs).toBe(8 * 6 * 20);
+        // the planes use the wider aim radius (beyond the map's 60 u); the marker is not much larger than the blasts
+        expect(farthestAim).toBeGreaterThan(60);
+        expect(closestToEdge).toBeLessThan(15);
+    }, 60_000);
+
+    it("forced variants work through addZone too (carpet fixes the plane count and widens the zone)", () => {
         const game = flatMapGame("faction");
         game.planes.zones.addZone({ x: 300, y: 300 }, 50, 3, 1.5, 1, "carpet");
         game.planes.zones.addZone({ x: 300, y: 300 }, 50, 3, 1.5, 1, "heavy");
         expect(game.planes.zoneViews().map((z) => [z.variant, z.rad, z.duration])).toEqual([
-            ["carpet", 50, 1.5 + 2.5 + 6 + 2.5],
+            ["carpet", 50 * 1.4 + 42, 1.5 + 2.5 + 6 + 2.5],
             ["heavy", 74, 1.5 + 2.5 + 3 + 2.5],
         ]);
     });

@@ -60,8 +60,10 @@ fire); tap a weapon slot, the ammo counter or an item to use it, hold an item to
 The server's three play buttons default to Solo, Duo and Squad on `MAP_NAME` (default `main`). `MODES` sets them like
 the original events did, e.g. `MODES=main:1,main:2,desert:4 pnpm server`; `MAP_NAME=faction` runs 50v50 (squads
 inside two factions of `FACTION_MAX_PLAYERS`, default 100). Its scheduled air strikes come in three rebirth variants,
-normal, heavy shells (a much larger blast) and carpet bombing (6 planes), weighted by `AIRSTRIKE_VARIANTS` (default
-`normal:60,heavy:25,carpet:15`; `normal` turns them off). Every variable is listed in
+normal, heavy shells (a much larger blast) and carpet bombing (6 planes over a wider area), weighted by
+`AIRSTRIKE_VARIANTS` (default `normal:60,heavy:25,carpet:15`; `normal` turns them off). Normal air drops are tier 1 or
+tier 2 drops whose opened crate shows its tier (one silver or two blue stars), the gold drop unchanged;
+`AIRDROP_TIERS=off` restores the original drops. Every variable is listed in
 [`docs/deploy.md`](docs/deploy.md#environment-variables).
 
 ## Run a server

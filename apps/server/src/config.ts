@@ -31,6 +31,11 @@ export interface ServerConfig {
      * rules.roles.factionAirstrikeVariants
      */
     airstrikeVariants: Record<AirstrikeVariant, number>;
+    /**
+     * Rebirth: normal air drops are tier 1 or tier 2 drops (AIRDROP_TIERS "on", the default; "off" keeps v0.8.82's
+     * crate weights and inner crate), copied into every game's rules.airdropTiers
+     */
+    airdropTiers: boolean;
     /** games this server runs at most */
     maxGames: number;
     /** map of games created when find_game names none */
@@ -140,6 +145,10 @@ const EnvSchema = z.object({
             }
         })
         .optional(),
+    AIRDROP_TIERS: z
+        .enum(["on", "off"], { message: 'expected "on" or "off"' })
+        .transform((v) => v === "on")
+        .default(true),
     MAX_CONNECTIONS_PER_IP: z.coerce.number().int().min(1).default(5),
     MAX_MSGS_PER_SECOND: z.coerce.number().int().min(1).default(500),
     JOIN_TOKEN_TTL_MS: z.coerce.number().int().min(1).default(10_000),
@@ -218,6 +227,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         maxPlayers: e.MAX_PLAYERS,
         factionMaxPlayers: e.FACTION_MAX_PLAYERS,
         airstrikeVariants: e.AIRSTRIKE_VARIANTS ?? { ...DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS },
+        airdropTiers: e.AIRDROP_TIERS,
         maxGames: e.MAX_GAMES,
         defaultMap: e.MAP_NAME,
         modes: e.MODES ? parseModes(e.MODES) : defaultModes(e.MAP_NAME),

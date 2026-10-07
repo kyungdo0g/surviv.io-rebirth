@@ -14,7 +14,8 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * as the last field of the player table, in the action group · 9: rebirth air strike variants: each AirstrikeZones
  * record ends with the zone's variant (2 bits, index into AIRSTRIKE_VARIANT_IDS); the rebirth-only bomb_heavy and
  * explosion_bomb_heavy game types and the decal_bomb_heavy_explosion and decal_frag_large_explosion map types follow
- * the generated ones.
+ * the generated ones; then (still 9, unreleased) the air drop tier crates crate_10t1, crate_10t2, crate_10svt1 and
+ * crate_10svt2 after those map types (the registry change alters PROTOCOL_HASH).
  */
 export const PROTOCOL_SCHEMA_VERSION = 9;
 export const GAME_OBJECT_TYPE_BITS = 10;

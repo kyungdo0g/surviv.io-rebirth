@@ -3,8 +3,11 @@
 // and the air strike variant table agrees with the defs it names.
 import { describe, expect, it } from "vitest";
 import {
+    AIRDROP_TIER_CRATES,
     AIRSTRIKE_VARIANT_IDS,
     AIRSTRIKE_VARIANTS,
+    airstrikeBombReach,
+    airstrikeZoneRad,
     DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS,
     FRAG_DECAL_TYPE,
     FRAG_RADIUS_MULT,
@@ -77,9 +80,10 @@ describe("rebirth-only defs", () => {
         expect(Object.keys(GameObjectDefs)).toEqual([...generated, ...rebirthOnlyIds]);
         expect(generated.map((id) => GameObjectRegistry.typeToId(id))).toEqual(generated.map((_, i) => i + 1));
         for (const id of rebirthOnlyIds) expect(Object.hasOwn(gameObjects, id)).toBe(false);
-        // the rebirth scorch decals likewise come after every generated map object
+        // the rebirth scorch decals and air drop tier crates likewise come after every generated map object
         const generatedMap = Object.keys(mapObjects);
-        expect(rebirthOnlyMapObjectIds).toEqual([HEAVY_BOMB_DECAL_TYPE, FRAG_DECAL_TYPE]);
+        expect(rebirthOnlyMapObjectIds).toEqual([HEAVY_BOMB_DECAL_TYPE, FRAG_DECAL_TYPE, ...AIRDROP_TIER_CRATES]);
+        expect(AIRDROP_TIER_CRATES).toEqual(["crate_10t1", "crate_10t2", "crate_10svt1", "crate_10svt2"]);
         expect(Object.keys(MapObjectDefs)).toEqual([...generatedMap, ...rebirthOnlyMapObjectIds]);
         expect(generatedMap.map((id) => MapObjectRegistry.typeToId(id))).toEqual(generatedMap.map((_, i) => i + 1));
         for (const id of rebirthOnlyMapObjectIds) expect(Object.hasOwn(mapObjects, id)).toBe(false);
@@ -118,7 +122,7 @@ describe("rebirth-only defs", () => {
 });
 
 describe("air strike variant table", () => {
-    it("normal is v0.8.82's strike, carpet sends 6 planes of normal bombs, heavy drops the heavy shell", () => {
+    it("normal is v0.8.82's strike, carpet sends 6 planes of normal bombs wider, heavy drops the heavy shell", () => {
         expect(AIRSTRIKE_VARIANT_IDS).toEqual(["normal", "heavy", "carpet"]);
         const { normal, heavy, carpet } = AIRSTRIKE_VARIANTS;
         const s = GameConfig.airstrike;
@@ -128,14 +132,25 @@ describe("air strike variant table", () => {
             bombOffset: s.bombOffset,
             bombJitter: s.bombJitter,
             planeCount: null,
+            aimRadMult: 1,
             zoneRadAdd: 0,
         });
-        expect(carpet).toEqual({ ...normal, planeCount: 6 });
+        // carpet: the planes aim inside 1.4x the radius (about twice the area for twice the planes) and the marker
+        // covers every blast: a bomb's reach (half the 38 u strip + the 2.75 u lead + the 4 u jitter = 25.75), the
+        // iron bomb's 14 u blast, the 1 u body, + 1 for the wire
+        expect(carpet).toEqual({ ...normal, planeCount: 6, aimRadMult: 1.4, zoneRadAdd: 42 });
+        expect(airstrikeBombReach(carpet)).toBe(25.75);
+        expect(airstrikeBombReach(normal)).toBe(25.75);
+        expect(carpet.zoneRadAdd).toBe(Math.ceil(25.75 + IRON_BOMB_RAD_MAX + GameConfig.player.radius + 1));
+        expect([60, 40].map((r) => airstrikeZoneRad("carpet", r))).toEqual([126, 98]);
+        expect([60, 40].map((r) => airstrikeZoneRad("normal", r))).toEqual([60, 40]);
         expect(heavy.bombType).toBe("bomb_heavy");
         expect(heavy.bombCount).toBeLessThan(normal.bombCount);
         expect(heavy.bombOffset).toBeGreaterThan(normal.bombOffset);
-        // the marker grows by the heavy shell's extra reach
+        // the marker grows by the heavy shell's extra reach; its planes keep the map's aim radius
         expect(heavy.zoneRadAdd).toBe(HEAVY_BOMB_EXPLOSION.rad.max - IRON_BOMB_RAD_MAX);
+        expect(heavy.aimRadMult).toBe(1);
+        expect(airstrikeZoneRad("heavy", 60)).toBe(84);
         expect(DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS).toEqual({ normal: 60, heavy: 25, carpet: 15 });
     });
 
