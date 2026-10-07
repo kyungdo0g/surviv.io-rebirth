@@ -2,7 +2,7 @@
 // clients: POST /api/find_game, open the WebSocket, send Join, decode every server frame. Uses only the
 // WebSocket/fetch globals that browsers and Node 22 both provide.
 import { PROTOCOL_HASH } from "@rebirth/defs";
-import type { EmoteRequest, MapData, PlayerInput } from "@rebirth/sim";
+import type { EmoteRequest, JoinLoadout, MapData, PlayerInput } from "@rebirth/sim";
 import { type ClientMsg, encodeClientMsg, ProtocolError, type ServerMsg, ServerMsgDecoder } from "./codec.ts";
 import { DisconnectReason, MsgType } from "./constants.ts";
 import type { JoinedMsg } from "./messages.ts";
@@ -36,6 +36,8 @@ export interface GameConnectionOptions {
     useTouch?: boolean;
     isMobile?: boolean;
     bot?: boolean;
+    /** the player's loadout sent in Join (survev content wave stage 4b; the server validates it) */
+    loadout?: Partial<JoinLoadout>;
     /** protocol hash sent in Join (default PROTOCOL_HASH; tests override it) */
     protocol?: number;
     /** time allowed for find_game + connect + join (default 10 s) */
@@ -178,6 +180,7 @@ export class GameConnection {
                 useTouch: this.options.useTouch ?? false,
                 isMobile: this.options.isMobile ?? false,
                 bot: this.options.bot ?? false,
+                loadout: this.options.loadout,
             });
         };
         ws.onmessage = (ev) => this.receive(ev.data);

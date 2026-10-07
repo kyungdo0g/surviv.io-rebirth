@@ -5,10 +5,10 @@
 // block of update, client.ts getUpdateMsg shouldSendEmote; docs/research/ui/hud.md "Pings and emote wheel".
 // M7a: a Commander's pings reach its whole faction (survev client.ts: leader pings to the team; fandom Commander);
 // Cobalt players cannot emote before choosing a class; Gabby Ghost emotes come from perks/effects.ts.
-// TODO(M8): loadouts: the death emote 0.3 s after dying and the win emote 1 s after the game over (slots 4 and 5,
-// empty by default).
+// Loadout slot emotes (survev content wave stage 4b): the death emote 0.3 s after dying and the win emote 1 s after the
+// game over (EmoteSlot.Death / Win, empty by default; survev player.ts update, game.ts:361 sendWinEmoteTicker).
 import { math, type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, getMapDef, hasDef } from "@rebirth/defs";
+import { EmoteSlot, GameConfig, GameObjectDefs, getMapDef, hasDef } from "@rebirth/defs";
 import type { EmoteEvent, EmoteRequest } from "../view.ts";
 import type { Player } from "../world/player.ts";
 import { EventLog } from "./events.ts";
@@ -18,6 +18,10 @@ const PLAYER = GameConfig.player;
 const WHEEL_SLOTS = 4;
 /** survev multiplies both cooldowns by 1.5: the counter decays every 3 s, a full counter blocks emotes for 9 s */
 const COOLDOWN_SCALE = 1.5;
+/** survev player.ts kill: sendDeathEmoteTicker = 0.3 */
+export const DEATH_EMOTE_DELAY = 0.3;
+/** survev game.ts:361: the win emotes go 1 s after the game over */
+const WIN_EMOTE_DELAY = 1;
 
 interface EmoteDefLike {
     type: string;
@@ -66,6 +70,8 @@ export interface EmoteHost {
 export class EmoteSystem {
     private readonly host: EmoteHost;
     private readonly log = new EventLog<Entry>();
+    /** seconds until the win emotes once the game is over; -1 before, 0 once sent */
+    private winTicker = -1;
 
     constructor(host: EmoteHost) {
         this.host = host;
@@ -117,6 +123,30 @@ export class EmoteSystem {
         if (!mode.potatoMode || !this.host.rules.modes.potatoEmotes) return type;
         if (mode.factionMode && player.teamId === 1 && hasDef("emote_tomato")) return "emote_tomato";
         return hasDef("emote_potato") ? "emote_potato" : type;
+    }
+
+    /** The emote of a loadout slot over `player`, if the slot has one (survev emoteFromSlot; potato maps swap it). */
+    fromSlot(player: Player, slot: number): void {
+        const type = player.emoteLoadout[slot];
+        if (type) this.add(player, this.slotEmote(player, type));
+    }
+
+    /** Per tick: due death emotes, and the survivors' win emotes 1 s after the game over. */
+    updateSlotEmotes(dt: number, players: Iterable<Player>, over: boolean): void {
+        if (over && this.winTicker < 0) this.winTicker = WIN_EMOTE_DELAY;
+        const winNow = this.winTicker > 0 && (this.winTicker -= dt) <= 0;
+        if (winNow) this.winTicker = 0;
+        for (const p of players) {
+            if (p.dead && p.deathEmoteTicker > 0) {
+                p.deathEmoteTicker -= dt;
+                if (p.deathEmoteTicker <= 0) {
+                    p.deathEmoteTicker = 0;
+                    this.fromSlot(p, EmoteSlot.Death);
+                }
+            } else if (winNow && !p.dead) {
+                this.fromSlot(p, EmoteSlot.Win);
+            }
+        }
     }
 
     /** An emote over `player` (survev addEmote; the medic's "emote_loot" carries the item). Not throttled. */

@@ -8,7 +8,7 @@ may not touch, the schema number used and open questions.
 
 - The wave shipped as `PROTOCOL_SCHEMA_VERSION` 14 ("survev content wave"; 11 hit feedback, 12 new guns beta, 13
   variant strobes are the lead's). The lead's merge (2acdac0) took the base to **15** (AP Rounds tracer and last-stand
-  bits); further work here bumps to 16.
+  bits); stage 4b (loadouts in Join) is 16.
 - Merged: PR #2 (3b98364) into `claude/relaxed-fermat-hcg1fo` at aa63e93; the lead applied items 1-14 below in 2acdac0.
 
 ## Stages
@@ -19,7 +19,7 @@ may not touch, the schema number used and open questions.
 | 2 | gear / perks / roles (backpack04, 5-level bags, 6 more perks, captain, classless) | done | see `git log --grep "stage 2"` |
 | 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | done | see `git log --grep "stage 3"` |
 | 3d | 50v50 buildings and structures (added scope from the lead, owner priority) | done | see `git log --grep "50v50"` |
-| 4 | cosmetics (outfits, emotes, heal / boost effects) | 4a defs + loot done; 4b loadout on hold (open question) | see `git log --grep "stage 4"` |
+| 4 | cosmetics (outfits, emotes, heal / boost effects) | 4a defs + loot done; 4b loadout done (everything unlocked) | see `git log --grep "stage 4"` |
 | 5 | balance option B (no balance revert for shared gameplay fields) | done (5a port, kits, heavy throwables; 5b perk numbers, faction outfits) | see `git log --grep "stage 5"` |
 
 ### Stage 1 details
@@ -130,6 +130,18 @@ may not touch, the schema number used and open questions.
   `NOT_PORTED_IDS` (defs test helpers) now lists survev meta content (quests, passes). Tests:
   `packages/defs/test/survevContent.test.ts` "survev cosmetics", `tools/port-survev/survevLoot.test.ts` renames,
   `survevPerksRoles.test.ts` (Classless outfit).
+- 4b (loadout; the lead's decision 2026-10-07: everything unlocked, no accounts): the main menu's Loadout button opens
+  `apps/client/src/menu/loadoutMenu.ts` (tabs: outfit, melee skin, emotes with the six slots, heal and boost
+  particles, crosshair with colour / size / stroke). The loadout lives in localStorage `rebirth.loadout`
+  (`menu/loadoutStore.ts`), goes out in Join (survev's layout, schema 16) and is validated again in the sim
+  (`packages/sim/src/match/loadout.ts`: unknown or wrong-type ids take the default; role uniforms, loot melee weapons
+  and `noCustom` emotes are not loadout items). `match/playerLoadout.ts` applies it at join: outfit (worn, never
+  dropped; a faction outfit of the other side falls back to the base outfit; a costume brings its disguise), melee
+  skin, emotes (Joined returns them), heal / boost particles in PlayerInfo. The death emote goes 0.3 s after dying,
+  the win emotes 1 s after the game over (`match/emotes.ts updateSlotEmotes`). The crosshair is the CSS cursor over
+  the game canvas (`menu/crosshair.ts`, set in `game/sandbox.ts`). v0.8.82 has no death-effect loadout: the death
+  slot is the death emote. Tests: `packages/sim/test/loadout.test.ts`, `packages/protocol/test/messages.test.ts`
+  (Join), `apps/client/test/loadout.test.ts`, `tests/e2e/survev-loadout.spec.ts`. Lead patches: section 15.
 
 ### Stage 3d details (50v50)
 
@@ -340,6 +352,22 @@ moved: `bagSizes.strobe` is `[2, 3, 4, 5, 6]` (Pack04 6, the wiki's own value), 
 `packages/defs/src/rebirth/strobes.ts applySurvevStrobe`: return `[]` when `strobe.strikeDelay === STROBE_STRIKE_DELAY`
 (no deviation left), and the test's deviation pin goes.
 
+### 15. Loadout wiring in lead files (open)
+
+- Heal / boost particles: `apps/client/src/game/client.ts` view deps (both places that set `teamOf` / `nameOf`) add
+  `effectsOf: (id) => this.match.effectsOf(id)` (`ViewDeps.effectsOf` exists, `game/match.ts effectsOf` reads
+  PlayerInfo); in `apps/client/src/objects/player.ts`, when the emitters are created or the player view is set up,
+  `const fx = this.deps.effectsOf?.(view.id); if (fx) this.emitters?.setLoadout(fx.heal, fx.boost);`.
+- Left / right hand outfits: survev's `outfitAurora` and `outfitSpringTree` give `skinImg.handSprite` as
+  `{ left, right }`, so `objects/player.ts:331` passes an object to the texture store (console
+  "TypeError: id.endsWith is not a function", no hands). Patch as survev player.ts:1530-1532: apply
+  `typeof hs === "string" ? hs : hs.left` to `handLSprite` and `hs.right` to `handRSprite`, and type
+  `packages/defs/src/types/meta.ts OutfitDef.skinImg.handSprite` as `string | { left: string; right: string }`.
+  The preload (`assets/spriteSets.ts`) already takes both. Both outfits are loot since stage 4a and loadout items now.
+- `docs/research/rebirth-deviations.md`: "Loadout: everything unlocked (no accounts; the original and survev unlock
+  only `unlock_default` for a guest). Role uniforms, loot melee weapons and `noCustom` emotes stay out
+  (packages/sim/src/match/loadout.ts)."
+
 ## Owner requests (2026-10-07, while stage 2 ran)
 
 - Buildings first: stage 3 is top priority. Go through every building of the survev.wiki.gg Buildings navbox
@@ -352,8 +380,8 @@ moved: `bagSizes.strobe` is `[2, 3, 4, 5, 6]` (Pack04 6, the wiki's own value), 
 
 ## Shared hotspots touched (minimal)
 
-- `packages/defs/src/registry.ts`: schema 14 + history line (11 hit feedback, 12 new guns beta and 13 variant strobes are
-  the lead's).
+- `packages/defs/src/registry.ts`: schema 14, then 16 (stage 4b) + history lines (11 hit feedback, 12 new guns beta, 13
+  variant strobes and 15 the AP Rounds / last-stand bits are the lead's).
 - `packages/defs/src/index.ts`, `packages/defs/src/data.ts`: export and apply the survev wiki-spec layer.
 - `packages/defs/src/types/weapons.ts`: `MeleeDef.perk`, `ExplosionDef.healTeam / healAmount / dropRandomLoot`.
 - `packages/defs/test/helpers.ts` (`NOT_PORTED_IDS`), `packages/defs/test/survevGuns.test.ts` (policy pins now
@@ -364,17 +392,16 @@ moved: `bagSizes.strobe` is `[2, 3, 4, 5, 6]` (Pack04 6, the wiki's own value), 
 - Obstacle disguises: `packages/protocol/src/objects.ts` (ObstacleCodec), `packages/sim/src/game.ts` (tick, snapshot,
   removePlayer), `apps/client/src/objects/world.ts` (`anchorOf`), `objects/worldQuery.ts` (`skin`),
   `input/aimLine.ts`.
+- Loadouts (stage 4b): `packages/protocol/src/messages.ts` (Join), `match.ts` (PlayerInfos heal / boost),
+  `connection.ts` (`loadout` option); `apps/server/src/session.ts`, `room.ts` (Join loadout, Joined emotes);
+  `packages/sim/src/game.ts` (applyLoadout, PlayerInfo, slot emotes), `viewTeams.ts` (`AddPlayerOptions.loadout`),
+  `view.ts` (`PlayerInfoView.heal / boost`), `combat/combat.ts` (death emote ticker); `apps/client/src/menu/mainMenu.ts`
+  (Loadout button), `game/sandbox.ts` (Join loadout, cursor), `net/loopback.ts`, `game/match.ts` (`effectsOf`),
+  `objects/types.ts` (`ViewDeps.effectsOf`), `assets/spriteSets.ts` (left / right hands), `l10n/menu.ts`;
+  `packages/sim/test/match.test.ts` (PlayerInfo heal / boost).
 
 ## Open questions
 
-- Loadout (stage 4b, on hold): the original and survev both validate a guest's loadout against `unlock_default`
-  (survev player.ts:4295-4340 `setLoadout(..., useDefaultUnlocks)`), which unlocks only `outfitBase`, `fists`,
-  `heal_basic`, `boost_basic`, 15 crosshairs and the emotes (survev's list adds its 19 new emotes and drops
-  `emote_flagisrael`). With no accounts, a loadout menu would only change emotes; survev's outfits stay world loot and
-  the heal / boost effects stay unused. Options: (a) guest rules as survev: an emote / crosshair picker only (crosshair
-  is the lead's settings UI); (b) rebirth deviation "everything unlocked": a full loadout menu (outfit, melee, heal,
-  boost, emotes) with the Join message's survev loadout fields and per-player heal / boost emitters. Needs the owner's
-  call (rebirth-deviations.md is the lead's).
 - Cookable flags: the plan (section 2.3) proposed survev's source values; ADR 0003 point 4 and this wave's brief say
   the wiki wins, so the wiki's apply. Flip `WIKI_SPEC_OVERRIDES` if the owner prefers the source.
 - English name of `cutlass_gold`: survev's en.json says "Cutlass Gold" (used, the presentation source for survev-only

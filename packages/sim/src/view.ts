@@ -578,6 +578,9 @@ export interface PlayerInfoView {
     groupId: number;
     /** at most 16 UTF-8 bytes on the wire */
     name: string;
+    /** loadout heal / boost particles (heal_effect / boost_effect ids; the original PlayerInfo's heal and boost types) */
+    heal?: string;
+    boost?: string;
 }
 
 /** Terrain polygons derived deterministically from MapData by `buildTerrain(map)` (client and server share it). */

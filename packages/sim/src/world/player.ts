@@ -84,7 +84,10 @@ export class Player implements InventoryOwner {
     /** id of the obstacle a disguise outfit puts over the player (world/disguise.ts), 0 for none */
     disguiseId = 0;
     /** outfit the player joined with: it never drops on death (survev compares with the loadout outfit) */
-    readonly loadoutOutfit: string = PLAYER.defaultItems.outfit;
+    loadoutOutfit: string = PLAYER.defaultItems.outfit;
+    /** loadout heal and boost particles (PlayerInfo; match/playerLoadout.ts) */
+    loadoutHeal = "heal_basic";
+    loadoutBoost = "boost_basic";
     backpack: string = PLAYER.defaultItems.backpack;
     helmet: string = PLAYER.defaultItems.helmet;
     chest: string = PLAYER.defaultItems.chest;
@@ -190,8 +193,10 @@ export class Player implements InventoryOwner {
     emoteCounter = 0;
     emoteSoftTicker = 0;
     emoteHardTicker = 0;
-    /** emote wheel (slots 0-3), win and death emotes (GameConfig.defaultEmoteLoadout; no loadouts yet) */
+    /** emote wheel (slots 0-3), win and death emotes (GameConfig.defaultEmoteLoadout, then the Join loadout) */
     readonly emoteLoadout: string[] = [...GameConfig.defaultEmoteLoadout];
+    /** seconds until the death emote once dead (survev sendDeathEmoteTicker); 0 when sent or alive */
+    deathEmoteTicker = 0;
     /** seconds alive (match stats, start condition) */
     timeAlive = 0;
     /** seconds in the gas since entering it, counted from rules.gasDamageRampFromCircle (escalation rule) */

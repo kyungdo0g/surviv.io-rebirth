@@ -54,6 +54,8 @@ export interface LoopbackExtras {
     isMobile?: boolean;
     /** the local player (re)spawns at the first of these where a player can stand (the building showcase) */
     spawnSpots?: readonly Vec2[];
+    /** the local player's loadout, as Join would carry it (survev content wave stage 4b) */
+    loadout?: AddPlayerOptions["loadout"];
 }
 
 export class LoopbackTransport implements Transport {
@@ -135,7 +137,7 @@ export class LoopbackTransport implements Transport {
 
     /** addPlayer options of the local player: its group, and the touch flag. */
     private localOptions(partySize: number): AddPlayerOptions {
-        const opts = this.localGroup(partySize);
+        const opts: AddPlayerOptions = { ...this.localGroup(partySize), loadout: this.extras.loadout };
         return this.extras.isMobile ? { ...opts, isMobile: true } : opts;
     }
 

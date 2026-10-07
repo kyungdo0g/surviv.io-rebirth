@@ -58,11 +58,23 @@ export {
     pickAirstrikeVariant,
     type StrikeState,
 } from "./match/airstrikes.ts";
-export { EmoteSystem, updateEmoteThrottle } from "./match/emotes.ts";
+export { DEATH_EMOTE_DELAY, EmoteSystem, updateEmoteThrottle } from "./match/emotes.ts";
 export { damageSourceOf, EventLog } from "./match/events.ts";
 export { FactionSystem, type FactionTeam, living } from "./match/faction.ts";
 export { type CircleChoice, Gas, gasCircle, gasTimeLeft } from "./match/gas.ts";
 export { type MapIndicator, MapIndicatorSystem, type TrackedIndicator } from "./match/indicators.ts";
+export {
+    CROSSHAIR_SIZE,
+    CROSSHAIR_STROKE,
+    type Crosshair,
+    defaultLoadout,
+    isLoadoutItem,
+    type JoinLoadout,
+    type Loadout,
+    type LoadoutKind,
+    loadoutChoices,
+    validateLoadout,
+} from "./match/loadout.ts";
 export { KILL_LEADER_ROLE, Match, type MatchOptions, playerStats } from "./match/match.ts";
 export type { CombatObserver } from "./match/observer.ts";
 export { type FallingAirdrop, type PlaneState, PlaneSystem } from "./match/planes.ts";

@@ -25,6 +25,7 @@ import { Gas } from "./match/gas.ts";
 import { Match } from "./match/match.ts";
 import type { CombatObserver } from "./match/observer.ts";
 import { PlaneSystem } from "./match/planes.ts";
+import { applyLoadout } from "./match/playerLoadout.ts";
 import { bulletEventsIn, RecorderLog } from "./match/reports.ts";
 import { canPlayerSpawn } from "./match/spawn.ts";
 import { SpectateSystem } from "./match/spectate.ts";
@@ -77,7 +78,14 @@ export function entityView(entity: Entity): ObjectView {
 }
 
 function playerInfo(p: Player): PlayerInfoView {
-    return { playerId: p.id, teamId: p.teamId, groupId: p.groupId, name: p.name };
+    return {
+        playerId: p.id,
+        teamId: p.teamId,
+        groupId: p.groupId,
+        name: p.name,
+        heal: p.loadoutHeal,
+        boost: p.loadoutBoost,
+    };
 }
 
 export class Game implements GameApi, SimContext {
@@ -272,6 +280,7 @@ export class Game implements GameApi, SimContext {
         player.ctx = this;
         player.inv.sizes = mapBagSizes(this.options.mapName);
         this.teams.add(player, group, !room);
+        applyLoadout(this, player, opts.loadout);
         this.playerMap.set(player.id, player);
         this.world.add(player);
         this.visible.set(player.id, new Set());
@@ -489,6 +498,7 @@ export class Game implements GameApi, SimContext {
         this.match.endTick();
         this.joinLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.leaveLog.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
+        this.emotes.updateSlotEmotes(dt, this.playerMap.values(), this.match.over);
         this.emotes.prune(this.tickCount - PLAYER_EVENT_RETENTION_TICKS);
         this.bullets.pruneReports(this.tickCount - BULLET_REPORT_TICKS);
         this.explosions.pruneReports(this.tickCount - BULLET_REPORT_TICKS);

@@ -4,6 +4,7 @@
 import type { Vec2 } from "@rebirth/core";
 import { DamageType, GameObjectDefs, getMapDef, hasDef } from "@rebirth/defs";
 import { dropEverythingOnDeath, dropObstacleLoot, spawnDestroyType } from "../loot/drops.ts";
+import { DEATH_EMOTE_DELAY } from "../match/emotes.ts";
 import { onKillCredited, onPerkHolderDeath } from "../perks/effects.ts";
 import { clearHaste } from "../perks/perks.ts";
 import { randomWeaponSwap } from "../weapons/potatoSwap.ts";
@@ -131,6 +132,8 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     }
     // the body slides along the killing hit, before the loot drops (survev player.ts kill addDeadBody) (M9)
     ctx.deadBodies.add(player.pos, player.id, player.layer, params.dir);
+    // the loadout's death emote follows 0.3 s later (match/emotes.ts updateSlotEmotes)
+    player.deathEmoteTicker = DEATH_EMOTE_DELAY;
     // an obstacle disguise dies with its wearer, loot and explosion included (survev player.ts kill obstacleOutfit)
     const disguise = disguiseOf(ctx, player);
     if (disguise) destroyObstacle(ctx, disguise, params.dir, params);

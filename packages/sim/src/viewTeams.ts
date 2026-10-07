@@ -1,6 +1,7 @@
 // Contract types added by M6a (teams, downed/revive, emotes and pings). They are re-exported from view.ts, whose
 // header documents how they are used; consumers import them from "@rebirth/sim" like every other view type.
 import type { Vec2 } from "@rebirth/core";
+import type { JoinLoadout } from "./match/loadout.ts";
 
 /**
  * One member of the viewer's group in a team mode (the original PlayerStatus + GroupStatus records). Every member is
@@ -71,4 +72,9 @@ export interface AddPlayerOptions {
      * zoom table, server-side auto loot and auto-opened doors (docs/research/ui/controls.md "Mobile and touch controls").
      */
     isMobile?: boolean;
+    /**
+     * The Join message's loadout (survev content wave stage 4b): outfit, melee skin, heal / boost particles and emotes;
+     * validated against the defs, anything invalid takes the default (match/loadout.ts).
+     */
+    loadout?: Partial<JoinLoadout>;
 }
