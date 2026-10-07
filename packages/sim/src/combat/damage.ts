@@ -56,6 +56,17 @@ export function rollHeadshot(params: DamageParams, rules: SimRules, rng: Rng): b
 }
 
 /**
+ * Whether the target's armour reduced this hit (rebirth hit feedback, user/2026-10-07-hit-feedback): the helmet on a
+ * headshot, the chest armour on a body hit, as `computeDamage` applies them; gas, bleeding and (unless the knob says
+ * otherwise) air drop crushes skip armour. The helmet's 30 % share on body hits does not count.
+ */
+export function armorCovers(params: DamageParams, headshot: boolean, target: ArmorState, rules: SimRules): boolean {
+    if (params.damageType === DamageType.Gas || params.damageType === DamageType.Bleeding) return false;
+    if (params.damageType === DamageType.Airdrop && !rules.airdropCrushArmor) return false;
+    return reductionOf(headshot ? target.helmet : target.chest) > 0;
+}
+
+/**
  * Damage after headshot multiplier and reductions, before clamping to the remaining health. Each reduction is
  * `damage -= damage * mult`, in the order flak_jacket, steelskin, chest (body hits only), helmet (x1 on the head,
  * x0.3 on the body). Gas and bleeding skip all of it.

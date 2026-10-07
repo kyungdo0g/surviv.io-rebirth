@@ -21,6 +21,8 @@ import { NO_INTEL } from "../perception/intel.ts";
 import { ADVANTAGE_BAND, faces } from "./assess.ts";
 import { addCombatLayer, findCoverFrom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent, nearFailedGoal, reachable } from "./context.ts";
+import { burned } from "./stillHit.ts";
+import { underFireNow, zigzagTo } from "./zigzag.ts";
 
 const TRADE_WINDOW = 3;
 const HYSTERESIS = 2;
@@ -228,7 +230,7 @@ function retreatCover(ctx: BrainCtx, threat: Vec2, away: Vec2, hop = HOP): Vec2 
         if (v2.distance(spot, me) > hop) return false;
         if (v2.distance(spot, threat) < myDist + 2) return false;
         const dir = v2.normalizeSafe(v2.sub(spot, me));
-        return v2.dot(dir, away) > -0.2 && reachable(ctx, spot, 1) && !nearFailedGoal(ctx, spot);
+        return v2.dot(dir, away) > -0.2 && reachable(ctx, spot, 1) && !nearFailedGoal(ctx, spot) && !burned(ctx, spot);
     });
 }
 
@@ -247,7 +249,7 @@ export function planDisengage(ctx: BrainCtx): Intent {
     }
     let spot = sm.disengageSpot;
     const far = v2.distance(me, threat) >= FAR;
-    if (!spot || model.lineOfFire(threat, spot) || nearFailedGoal(ctx, spot)) {
+    if (!spot || model.bodyLineOfFire(threat, spot) || nearFailedGoal(ctx, spot) || burned(ctx, spot)) {
         // a new hop when the spot became exposed: a short one while the threat is close (crossing open ground under
         // fire is what loses retreats); reached and still shielded, the bot holds it (reloading and healing there)
         spot = retreatCover(ctx, threat, away, far ? HOP : SHORT_HOP);
@@ -271,6 +273,9 @@ export function planDisengage(ctx: BrainCtx): Intent {
     } else {
         intent.stop = true;
     }
+    // pursuit: shot at in the threat's line of fire on the way: irregular legs (zigzag.ts)
+    if (ctx.features.pursuit && intent.goal && underFireNow(ctx) && model.lineOfFire(threat, me))
+        zigzagTo(ctx, intent, intent.goal);
     // crossing open ground in sight of the threat: smoke between
     const exposed = model.lineOfFire(me, threat) && !!ctx.target?.visible;
     const longRun = !spot || v2.distance(me, spot) > 6;

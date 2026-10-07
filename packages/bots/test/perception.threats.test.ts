@@ -1,6 +1,7 @@
-// The threat board from synthetic snapshots: off-screen gunfire becomes unseen shooters and fading ghost contacts,
-// explosions, the kill feed and teammates' pings warm the area they happened in, air drops are tracked from their map
-// marker to the opened crate, air strikes and falling crates are danger zones, the ring buffer keeps 64 events.
+// The threat board from synthetic snapshots: off-screen gunfire becomes unseen shooters and fading ghost contacts at
+// the fuzzy origin the tracer gives (perception/bulletSight.ts), explosions, the kill feed and teammates' pings warm
+// the area they happened in, air drops are tracked from their map marker to the opened crate, air strikes and falling
+// crates are danger zones, the ring buffer keeps 64 events.
 import { v2 } from "@rebirth/core";
 import { describe, expect, it } from "vitest";
 import { REPORT_LIFE, ThreatTracker } from "../src/perception/threatTracker.ts";
@@ -22,10 +23,15 @@ describe("threat board", () => {
         const origin = v2.add(ORIGIN, { x: 45, y: 3 });
         const b = bullet(50, origin, WEST, { sourceType: "ak47", bulletType: "bullet_ak47" });
         model.observe(snap(10, { bullets: [b] }));
-        expect(board.unseenShooters()).toEqual([{ id: 50, pos: origin, lastShot: 10, shots: 1, weapon: "ak47" }]);
+        // placed where the tracer and the shot sound put it: behind where the tracer enters the screen, not the muzzle
+        const est = model.bullets[0].origin as typeof origin;
+        expect(est).not.toEqual(origin);
+        expect(est.x).toBeGreaterThan(ORIGIN.x + 28);
+        expect(v2.distance(est, origin)).toBeLessThan(12);
+        expect(board.unseenShooters()).toEqual([{ id: 50, pos: est, lastShot: 10, shots: 1, weapon: "ak47" }]);
         const ghost = board.reported().find((r) => r.kind === "gunfire");
-        expect(ghost).toMatchObject({ pos: origin, reporterId: 50, type: "ak47", time: 10, confidence: 1 });
-        expect(board.heat(origin, 10)).toBeGreaterThan(0);
+        expect(ghost).toMatchObject({ pos: est, reporterId: 50, type: "ak47", time: 10, confidence: 1 });
+        expect(board.heat(est, 10)).toBeGreaterThan(0);
         expect(board.heat(v2.add(ORIGIN, { x: -100, y: 0 }), 10)).toBe(0);
         // the same bullet reported again when it hits someone, and an extra pellet, are not new shots
         model.observe(
@@ -40,10 +46,10 @@ describe("threat board", () => {
         model.observe(snap(10.2, { bullets: [bullet(50, origin, WEST, { sourceType: "ak47" })] }));
         expect(board.unseenShooters()[0].shots).toBe(2);
         // the ghost fades over ~6 s, the heat with it
-        const hot = board.heat(origin, 10);
+        const hot = board.heat(est, 10);
         model.observe(snap(10.2 + REPORT_LIFE / 2));
         expect(board.reported()[0].confidence).toBeCloseTo(0.5, 5);
-        expect(board.heat(origin, 10)).toBeLessThan(hot);
+        expect(board.heat(est, 10)).toBeLessThan(hot);
         model.observe(snap(10.3 + REPORT_LIFE));
         expect(board.reported()).toEqual([]);
         // still remembered as a shooter for a while, then forgotten

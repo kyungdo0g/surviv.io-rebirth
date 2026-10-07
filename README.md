@@ -29,10 +29,12 @@ Then open:
 - <http://127.0.0.1:5173/?net=1&name=alice> — straight into a solo game on the server (`&mode=2` or `&mode=4` for duo /
   squad, `&server=http://host:8001` for another server).
 
-Open a second browser tab to have an opponent, or let bots fill the games: `BOT_FILL=20 BOT_DIFFICULTY=mixed pnpm server`
+Open a second browser tab to have an opponent, or let bots fill the games: `BOT_FILL=20 pnpm server`
 (bots join one by one until a game holds 20 players; a human takes a bot's seat when it joins; on Windows see
-[Environment variables on Windows](#environment-variables-on-windows)). A match starts when two players
-(`MIN_PLAYERS`) have been alive for 10 seconds.
+[Environment variables on Windows](#environment-variables-on-windows)). Bots default to `BOT_DIFFICULTY=mixed`: 35%
+beginner, 45% intermediate and 20% expert bots, each with a persona; `BOT_SKILL_MIX`, `BOT_PERSONAS`, the single tiers
+and the legacy `easy`/`normal`/`hard` presets are in docs/deploy.md. A match starts when two players (`MIN_PLAYERS`)
+have been alive for 10 seconds.
 
 Without `pnpm assets` everything works with placeholder graphics and no sound.
 

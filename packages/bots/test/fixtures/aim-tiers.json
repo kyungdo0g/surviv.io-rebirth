@@ -1,0 +1,488 @@
+{
+    "version": 1,
+    "command": "node packages/bots/scripts/aimbench.ts --skill tiers --difficulty all --record-tiers --trials 16 --seed 1",
+    "seed": 1,
+    "trialsPerCell": 16,
+    "summaries": [
+        {
+            "label": "easy",
+            "hit": 0.334,
+            "firstShot": 1.291,
+            "firstShotMedian": 0.97,
+            "kill": 0.595,
+            "trials": 864,
+            "groups": {
+                "stationary/10": 0.676,
+                "strafe/10": 0.249,
+                "stationary/20": 0.548,
+                "strafe/20": 0.219,
+                "stationary/35": 0.468,
+                "strafe/35": 0.193
+            },
+            "guns": {
+                "ot38": {
+                    "kill": 0.51,
+                    "hit": 0.485
+                },
+                "m9": {
+                    "kill": 0.427,
+                    "hit": 0.465
+                },
+                "glock": {
+                    "kill": 0.604,
+                    "hit": 0.397
+                },
+                "mp5": {
+                    "kill": 0.781,
+                    "hit": 0.437
+                },
+                "ak47": {
+                    "kill": 0.667,
+                    "hit": 0.358
+                },
+                "m870": {
+                    "kill": 0.51,
+                    "hit": 0.405
+                },
+                "mosin": {
+                    "kill": 0.323,
+                    "hit": 0.279
+                },
+                "mk12": {
+                    "kill": 0.594,
+                    "hit": 0.343
+                },
+                "m249": {
+                    "kill": 0.938,
+                    "hit": 0.361
+                }
+            },
+            "ot38": {
+                "stationary/10": {
+                    "hit": 0.773,
+                    "kill": 1
+                },
+                "strafe/10": {
+                    "hit": 0.254,
+                    "kill": 0.188
+                },
+                "stationary/20": {
+                    "hit": 0.72,
+                    "kill": 1
+                },
+                "strafe/20": {
+                    "hit": 0.257,
+                    "kill": 0.188
+                },
+                "stationary/35": {
+                    "hit": 0.613,
+                    "kill": 0.563
+                },
+                "strafe/35": {
+                    "hit": 0.293,
+                    "kill": 0.125
+                }
+            }
+        },
+        {
+            "label": "normal",
+            "hit": 0.421,
+            "firstShot": 0.821,
+            "firstShotMedian": 0.55,
+            "kill": 0.819,
+            "trials": 864,
+            "groups": {
+                "stationary/10": 0.799,
+                "strafe/10": 0.411,
+                "stationary/20": 0.688,
+                "strafe/20": 0.342,
+                "stationary/35": 0.522,
+                "strafe/35": 0.236
+            },
+            "guns": {
+                "ot38": {
+                    "kill": 0.823,
+                    "hit": 0.624
+                },
+                "m9": {
+                    "kill": 0.813,
+                    "hit": 0.546
+                },
+                "glock": {
+                    "kill": 0.76,
+                    "hit": 0.444
+                },
+                "mp5": {
+                    "kill": 0.979,
+                    "hit": 0.556
+                },
+                "ak47": {
+                    "kill": 0.885,
+                    "hit": 0.468
+                },
+                "m870": {
+                    "kill": 0.625,
+                    "hit": 0.447
+                },
+                "mosin": {
+                    "kill": 0.646,
+                    "hit": 0.473
+                },
+                "mk12": {
+                    "kill": 0.885,
+                    "hit": 0.474
+                },
+                "m249": {
+                    "kill": 0.958,
+                    "hit": 0.468
+                }
+            },
+            "ot38": {
+                "stationary/10": {
+                    "hit": 0.908,
+                    "kill": 1
+                },
+                "strafe/10": {
+                    "hit": 0.583,
+                    "kill": 1
+                },
+                "stationary/20": {
+                    "hit": 0.784,
+                    "kill": 1
+                },
+                "strafe/20": {
+                    "hit": 0.444,
+                    "kill": 0.813
+                },
+                "stationary/35": {
+                    "hit": 0.684,
+                    "kill": 0.813
+                },
+                "strafe/35": {
+                    "hit": 0.34,
+                    "kill": 0.313
+                }
+            }
+        },
+        {
+            "label": "hard",
+            "hit": 0.431,
+            "firstShot": 0.438,
+            "firstShotMedian": 0.32,
+            "kill": 0.863,
+            "trials": 864,
+            "groups": {
+                "stationary/10": 0.843,
+                "strafe/10": 0.517,
+                "stationary/20": 0.761,
+                "strafe/20": 0.386,
+                "stationary/35": 0.65,
+                "strafe/35": 0.24
+            },
+            "guns": {
+                "ot38": {
+                    "kill": 0.927,
+                    "hit": 0.724
+                },
+                "m9": {
+                    "kill": 0.906,
+                    "hit": 0.545
+                },
+                "glock": {
+                    "kill": 0.875,
+                    "hit": 0.425
+                },
+                "mp5": {
+                    "kill": 0.865,
+                    "hit": 0.564
+                },
+                "ak47": {
+                    "kill": 0.844,
+                    "hit": 0.525
+                },
+                "m870": {
+                    "kill": 0.635,
+                    "hit": 0.483
+                },
+                "mosin": {
+                    "kill": 0.875,
+                    "hit": 0.651
+                },
+                "mk12": {
+                    "kill": 0.906,
+                    "hit": 0.608
+                },
+                "m249": {
+                    "kill": 0.938,
+                    "hit": 0.569
+                }
+            },
+            "ot38": {
+                "stationary/10": {
+                    "hit": 0.894,
+                    "kill": 1
+                },
+                "strafe/10": {
+                    "hit": 0.696,
+                    "kill": 1
+                },
+                "stationary/20": {
+                    "hit": 0.913,
+                    "kill": 1
+                },
+                "strafe/20": {
+                    "hit": 0.552,
+                    "kill": 0.938
+                },
+                "stationary/35": {
+                    "hit": 0.901,
+                    "kill": 1
+                },
+                "strafe/35": {
+                    "hit": 0.386,
+                    "kill": 0.625
+                }
+            }
+        },
+        {
+            "label": "s0.15",
+            "hit": 0.26,
+            "firstShot": 1.366,
+            "firstShotMedian": 1.06,
+            "kill": 0.429,
+            "trials": 864,
+            "groups": {
+                "stationary/10": 0.414,
+                "strafe/10": 0.197,
+                "stationary/20": 0.342,
+                "strafe/20": 0.171,
+                "stationary/35": 0.317,
+                "strafe/35": 0.207
+            },
+            "guns": {
+                "ot38": {
+                    "kill": 0.281,
+                    "hit": 0.306
+                },
+                "m9": {
+                    "kill": 0.167,
+                    "hit": 0.328
+                },
+                "glock": {
+                    "kill": 0.552,
+                    "hit": 0.303
+                },
+                "mp5": {
+                    "kill": 0.802,
+                    "hit": 0.307
+                },
+                "ak47": {
+                    "kill": 0.521,
+                    "hit": 0.249
+                },
+                "m870": {
+                    "kill": 0.448,
+                    "hit": 0.374
+                },
+                "mosin": {
+                    "kill": 0.188,
+                    "hit": 0.193
+                },
+                "mk12": {
+                    "kill": 0.104,
+                    "hit": 0.178
+                },
+                "m249": {
+                    "kill": 0.802,
+                    "hit": 0.235
+                }
+            },
+            "ot38": {
+                "stationary/10": {
+                    "hit": 0.425,
+                    "kill": 0.563
+                },
+                "strafe/10": {
+                    "hit": 0.19,
+                    "kill": 0.063
+                },
+                "stationary/20": {
+                    "hit": 0.429,
+                    "kill": 0.625
+                },
+                "strafe/20": {
+                    "hit": 0.186,
+                    "kill": 0.063
+                },
+                "stationary/35": {
+                    "hit": 0.366,
+                    "kill": 0.313
+                },
+                "strafe/35": {
+                    "hit": 0.241,
+                    "kill": 0.063
+                }
+            }
+        },
+        {
+            "label": "s0.5",
+            "hit": 0.334,
+            "firstShot": 0.853,
+            "firstShotMedian": 0.59,
+            "kill": 0.698,
+            "trials": 864,
+            "groups": {
+                "stationary/10": 0.649,
+                "strafe/10": 0.297,
+                "stationary/20": 0.507,
+                "strafe/20": 0.245,
+                "stationary/35": 0.394,
+                "strafe/35": 0.206
+            },
+            "guns": {
+                "ot38": {
+                    "kill": 0.615,
+                    "hit": 0.487
+                },
+                "m9": {
+                    "kill": 0.531,
+                    "hit": 0.436
+                },
+                "glock": {
+                    "kill": 0.688,
+                    "hit": 0.386
+                },
+                "mp5": {
+                    "kill": 0.875,
+                    "hit": 0.401
+                },
+                "ak47": {
+                    "kill": 0.771,
+                    "hit": 0.337
+                },
+                "m870": {
+                    "kill": 0.615,
+                    "hit": 0.408
+                },
+                "mosin": {
+                    "kill": 0.458,
+                    "hit": 0.317
+                },
+                "mk12": {
+                    "kill": 0.75,
+                    "hit": 0.324
+                },
+                "m249": {
+                    "kill": 0.979,
+                    "hit": 0.352
+                }
+            },
+            "ot38": {
+                "stationary/10": {
+                    "hit": 0.764,
+                    "kill": 1
+                },
+                "strafe/10": {
+                    "hit": 0.433,
+                    "kill": 0.625
+                },
+                "stationary/20": {
+                    "hit": 0.674,
+                    "kill": 1
+                },
+                "strafe/20": {
+                    "hit": 0.267,
+                    "kill": 0.25
+                },
+                "stationary/35": {
+                    "hit": 0.521,
+                    "kill": 0.625
+                },
+                "strafe/35": {
+                    "hit": 0.262,
+                    "kill": 0.188
+                }
+            }
+        },
+        {
+            "label": "s0.825",
+            "hit": 0.413,
+            "firstShot": 0.521,
+            "firstShotMedian": 0.39,
+            "kill": 0.853,
+            "trials": 864,
+            "groups": {
+                "stationary/10": 0.805,
+                "strafe/10": 0.449,
+                "stationary/20": 0.66,
+                "strafe/20": 0.352,
+                "stationary/35": 0.502,
+                "strafe/35": 0.252
+            },
+            "guns": {
+                "ot38": {
+                    "kill": 0.896,
+                    "hit": 0.626
+                },
+                "m9": {
+                    "kill": 0.875,
+                    "hit": 0.526
+                },
+                "glock": {
+                    "kill": 0.917,
+                    "hit": 0.436
+                },
+                "mp5": {
+                    "kill": 0.938,
+                    "hit": 0.532
+                },
+                "ak47": {
+                    "kill": 0.844,
+                    "hit": 0.47
+                },
+                "m870": {
+                    "kill": 0.646,
+                    "hit": 0.475
+                },
+                "mosin": {
+                    "kill": 0.729,
+                    "hit": 0.479
+                },
+                "mk12": {
+                    "kill": 0.875,
+                    "hit": 0.51
+                },
+                "m249": {
+                    "kill": 0.958,
+                    "hit": 0.476
+                }
+            },
+            "ot38": {
+                "stationary/10": {
+                    "hit": 0.881,
+                    "kill": 1
+                },
+                "strafe/10": {
+                    "hit": 0.611,
+                    "kill": 1
+                },
+                "stationary/20": {
+                    "hit": 0.8,
+                    "kill": 1
+                },
+                "strafe/20": {
+                    "hit": 0.431,
+                    "kill": 0.875
+                },
+                "stationary/35": {
+                    "hit": 0.726,
+                    "kill": 1
+                },
+                "strafe/35": {
+                    "hit": 0.31,
+                    "kill": 0.5
+                }
+            }
+        }
+    ]
+}
