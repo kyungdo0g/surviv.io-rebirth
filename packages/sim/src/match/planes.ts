@@ -4,7 +4,8 @@
 // it and lands as an airdrop_crate_* obstacle that players open with Interact. Each release puts an air drop
 // marker on the minimap (MapIndicatorView "ping_airdrop" for the ping's mapLife). Air strike planes (strobes and the
 // 50v50 scheduled zones) fly over their target and drop iron bombs (match/airstrikes.ts); on faction maps each
-// scheduled zone rolls a rebirth variant (normal / heavy / carpet) from rules.roles.factionAirstrikeVariants.
+// scheduled zone rolls a rebirth variant (normal / heavy / carpet) from rules.roles.factionAirstrikeVariants, and the
+// rebirth variant strobes call heavy or carpet strike lines (combat/projectiles.ts).
 // Rebirth air drop tiers (rules.airdropTiers, docs/research/rebirth-deviations.md): a normal drop picked by the map's
 // crate weights is a tier 1 or a tier 2 drop (defs tieredAirdropCrates, by the gas circle); the shell stays the normal
 // one and opens into the tier's inner crate (Obstacle.destroyTypeOverride, kept server-side until it is opened).
@@ -255,9 +256,15 @@ export class PlaneSystem {
     /**
      * An air strike plane: it spawns 2.5 s of flight behind `target`, flies along `dir` and bombs a strip starting at
      * `target` (survev PlaneBarn.addAirStrike) with the bombs of `variant`. `ownerId` is credited with the bombs
-     * (strobe thrower, 0 for the game).
+     * (strobe thrower, 0 for the game); `sourceType` is the strobe that called the plane ("strobe" for the zones).
      */
-    addAirstrike(target: Vec2, dir: Vec2, ownerId: number, variant: AirstrikeVariant = "normal"): void {
+    addAirstrike(
+        target: Vec2,
+        dir: Vec2,
+        ownerId: number,
+        variant: AirstrikeVariant = "normal",
+        sourceType = "strobe",
+    ): void {
         const id = this.allocPlaneId();
         if (id === 0) return;
         const d = v2.normalizeSafe(dir, { x: 1, y: 0 });
@@ -281,6 +288,7 @@ export class PlaneSystem {
                 dropCounter: 2,
                 bombType: strip.bombType,
                 ownerId,
+                sourceType,
             },
         });
     }

@@ -280,6 +280,9 @@ export const koItems: Readonly<Record<string, string>> = {
     mirv_mini: "MIRV 수류탄",
     martyr_nade: "순교자의 고통",
     strobe: "스트로브",
+    // rebirth variant strobes (named after their strike: "고폭탄 공습 경보" / "대공습 경보")
+    strobe_heavy: "고폭탄 스트로브",
+    strobe_carpet: "대공습 스트로브",
     snowball: "스노우볼",
     snowball_heavy: "스노우볼",
     potato: "감자",
@@ -333,6 +336,9 @@ export const koHudItems: Readonly<Record<string, string>> = {
     smoke: "연막",
     mirv: "MIRV",
     strobe: "스트로브",
+    // rebirth variant strobes: short like the others, the slot shows the count beside the name
+    strobe_heavy: "고폭탄",
+    strobe_carpet: "대공습",
     snowball: "스노우볼",
     potato: "감자",
     coconut: "코코넛",

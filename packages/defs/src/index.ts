@@ -3,6 +3,7 @@
 import { gameObjectsData, mapObjectsData, mapsData } from "./data.ts";
 import gameConfigJson from "./generated/gameConfig.json" with { type: "json" };
 import { gunBetaGuns, gunBetaLootTables } from "./rebirth/gunBeta.ts";
+import { applyRebirthGameConfig } from "./rebirth/index.ts";
 import { applyNewAmmoConfig } from "./rebirth/newGuns.ts";
 import type {
     GameConfigDef,
@@ -31,10 +32,11 @@ export const MapObjectDefs: Readonly<Record<string, MapObjectDef>> = mapObjectsD
 /** generated map defs with the rebirth loot tables (air drop tiers) added */
 export const MapDefs: Readonly<Record<string, MapDef>> = mapsData;
 /**
- * gameConfig.json (passed without a cast: tsc checks it against GameConfigDef) with the rebirth's new ammo rows
- * (bag sizes after .45 ACP, tracer colours; rebirth/newGuns.ts)
+ * gameConfig.json (passed without a cast: tsc checks it against GameConfigDef) with the rebirth's new ammo rows (bag
+ * sizes after .45 ACP, tracer colours; rebirth/newGuns.ts), then the rebirth bag items (the variant strobes) after
+ * every other one
  */
-export const GameConfig: GameConfigDef = applyNewAmmoConfig(gameConfigJson);
+export const GameConfig: GameConfigDef = applyRebirthGameConfig(applyNewAmmoConfig(gameConfigJson));
 
 export function hasDef(id: string): boolean {
     return Object.hasOwn(GameObjectDefs, id);

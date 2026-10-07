@@ -16,6 +16,7 @@ import {
     MapId,
     Plane,
     Rarity,
+    STROBE_VARIANT_TYPES,
     TeamMode,
     WeaponSlot,
 } from "../src/index.ts";
@@ -51,7 +52,11 @@ describe("GameConfig", () => {
         // survev content wave stage 2: survev/shared/gameConfig.ts:415-441, the original's rows first
         expect(policy.survevGameConfig).toEqual(["bagSizes"]);
         for (const [item, sizes] of Object.entries(GameConfig.bagSizes)) expect(sizes, item).toHaveLength(5);
-        expect(Object.keys(GameConfig.bagSizes).slice(-2)).toEqual(["tomato", "coconut"]);
+        // survev's last rows, then the rebirth's variant strobes (rebirth/strobes.ts)
+        const survevRows = Object.keys(GameConfig.bagSizes).filter(
+            (k) => !(STROBE_VARIANT_TYPES as readonly string[]).includes(k),
+        );
+        expect(survevRows.slice(-2)).toEqual(["tomato", "coconut"]);
         // v0.8.82 10 / 20 / 40 / 80 (wikigg .308 Subsonic rev 7199: 20 / 40 / 55 / 70 / 85)
         expect(GameConfig.bagSizes["308sub"]).toEqual([20, 40, 55, 70, 85]);
         // v0.8.82 49 / 98 / 147 / 196 (wikigg .50 Caliber rev 7198)

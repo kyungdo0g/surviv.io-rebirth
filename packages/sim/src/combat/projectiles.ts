@@ -2,11 +2,22 @@
 // ground plane with drag while it lies on the ground (or on a low obstacle), flies over obstacles lower than its
 // height and bounces off taller ones (each touched obstacle takes 1 damage), explodes when its fuse runs out, on
 // impact (`explodeOnImpact`) or when it touches another player (`playerCollision`). MIRVs split into `numSplit`
-// sub-grenades, a thrown strobe calls in air strikes `strikeDelay` seconds after the throw.
+// sub-grenades, a thrown strobe calls in air strikes `strikeDelay` seconds after the throw (survev's pattern: the first
+// line in front of the strobe, the next ones beside it on alternating sides; the rebirth variant strobes call heavy
+// shell and carpet strikes, defs STROBE_STRIKES).
 // Behaviour follows survev server/src/game/objects/projectile.ts and docs/research/items/throwables.md
 // "Throwing, cooking and flight rules" (gravity and drag are survev reconstructions from recorded packets).
 import { type Bounds, collider, math, type Vec2, v2 } from "@rebirth/core";
-import { DamageType, GameConfig, getDefOfType, isAirstrikeBomb, type ThrowableDef } from "@rebirth/defs";
+import {
+    DamageType,
+    GameConfig,
+    getDefOfType,
+    isAirstrikeBomb,
+    STROBE_STRIKES,
+    type StrobeStrikeDef,
+    strobeStrikeOf,
+    type ThrowableDef,
+} from "@rebirth/defs";
 import { randomPointInCircle } from "../mapgen/random.ts";
 import type { ProjectileView } from "../view.ts";
 import type { SimContext } from "../world/context.ts";
@@ -29,17 +40,20 @@ const DESTROY_NON_COLLIDABLE_DAMAGE = 999;
 const SPLIT_VEL_MULT = 0.6;
 const SPLIT_MAX_VEL = 4;
 const SPLIT_HEIGHT = 1;
-/** Strobe: first strike 1 s after the ping, all strikes within 3 s, 3 strikes (+2 with Broken Arrow). */
+/**
+ * Strobe: first strike 1 s after the ping, all strikes within 3 s (survev weaponManager.ts:1337-1362 duration 3,
+ * projectile.ts:173-211); the strike count is the strobe's (defs STROBE_STRIKES: 3, +2 with Broken Arrow).
+ */
 const STROBE_FIRST_STRIKE = 1;
 const STROBE_STRIKE_WINDOW = 3;
-const STROBE_STRIKES = 3;
-const BROKEN_ARROW_BONUS = 2;
 const TIME_EPS = 1e-9;
 const MAX_ID = 0xffff;
 /** Projectiles test stairs with a tiny circle at their centre (survev projectile.ts checkStairs(objs, 0.01)). */
 const STAIRS_PROBE_RAD = 0.01;
 
 interface StrobeState {
+    /** the strobe's strike: variant, line count, spacing and ping */
+    strike: StrobeStrikeDef;
     timeToPing: number;
     pinged: boolean;
     total: number;
@@ -158,14 +172,16 @@ export class ProjectileSystem {
     }
 
     /**
-     * Arms a thrown strobe: `strikeDelay` s later an air strike ping appears at the strobe, then 3 strikes (5 with
-     * Broken Arrow) fly along the throw direction within 3 s (survev weaponManager.ts throwThrowable).
+     * Arms a thrown strobe: `strikeDelay` s later its air strike ping appears at the strobe, then its strikes (3, 5
+     * with Broken Arrow; the carpet strobe 6 / 8) fly along the throw direction within 3 s (survev weaponManager.ts
+     * throwThrowable). Broken Arrow is counted now unless rules.brokenArrowAtPing.
      */
     armStrobe(proj: Projectile, strikeDelay: number): void {
         const rules = this.host.rules;
         let rotAngle = -Math.PI / 2;
         if (rules.strobeRandomSide && this.host.fxRng.next() < 0.5) rotAngle = -rotAngle;
         proj.strobe = {
+            strike: strobeStrikeOf(proj.type) ?? STROBE_STRIKES.strobe,
             timeToPing: strikeDelay,
             pinged: false,
             total: 0,
@@ -181,7 +197,7 @@ export class ProjectileSystem {
         const s = proj.strobe;
         if (!s) return;
         const owner = this.host.getPlayer(proj.ownerId);
-        s.total = STROBE_STRIKES + (owner?.hasPerk("broken_arrow") ? BROKEN_ARROW_BONUS : 0);
+        s.total = s.strike.strikes + (owner?.hasPerk("broken_arrow") ? s.strike.brokenArrowBonus : 0);
         s.left = s.total;
         s.delay = STROBE_STRIKE_WINDOW / s.total;
     }
@@ -200,18 +216,21 @@ export class ProjectileSystem {
             if (s.timeToPing > TIME_EPS) return;
             s.pinged = true;
             if (this.host.rules.brokenArrowAtPing) this.countStrikes(p);
-            this.host.planes.addPing("ping_airstrike", p.pos);
+            this.host.planes.addPing(s.strike.ping, p.pos);
             s.ticker = STROBE_FIRST_STRIKE;
             return;
         }
         if (s.left <= 0) return;
         s.ticker -= dt;
         if (s.ticker > TIME_EPS) return;
-        // strike k is offset sideways by ceil(k / 2) x offset on alternating sides (0 with the default knob)
+        // strike k flies ceil(k / 2) x offset beside the strobe on alternating sides: 0 / 5 / 5 / 10 / 10 (survev
+        // projectile.ts:194-206), the carpet strobe's lines 1.4x as far apart
         const rot = s.left % 2 ? -s.rotAngle : s.rotAngle;
-        const offset = Math.ceil((s.total - s.left) / 2) * this.host.rules.strobeAirstrikeOffset;
+        const step = this.host.rules.strobeAirstrikeOffset * s.strike.offsetMult;
+        const offset = Math.ceil((s.total - s.left) / 2) * step;
         const pos = v2.add(p.pos, v2.mul(v2.rotate(p.throwDir, rot), offset));
-        this.host.planes.addAirstrike(pos, p.throwDir, p.ownerId);
+        // the bombs remember the strobe that called them (kill feed of the variant strobes, explode below)
+        this.host.planes.addAirstrike(pos, p.throwDir, p.ownerId, s.strike.variant, p.type);
         s.left--;
         s.ticker = s.delay;
     }
@@ -320,7 +339,7 @@ export class ProjectileSystem {
         if (isAirstrikeBomb(p.type) && !this.canBombExplode(p)) return;
         if (!def.explosionType) return;
         this.host.explosions.add(def.explosionType, p.pos, p.layer, {
-            gameSourceType: p.type,
+            gameSourceType: killSourceOf(p),
             damageType: p.damageType,
             sourceId: p.ownerId,
         });
@@ -345,4 +364,14 @@ export class ProjectileSystem {
         out.sort((a, b) => a.id - b.id);
         return out.length > max ? out.slice(0, max) : out;
     }
+}
+
+/**
+ * Item a projectile's explosion is credited with (the kill feed's itemSourceType): its own type, except the bombs of
+ * a rebirth variant strobe, credited to that strobe so the kill feed can name its strike ("with a heavy shell
+ * strike"); the bombs of the original strobe and of the 50v50 zones stay bomb_iron as in v0.8.82.
+ */
+function killSourceOf(p: Projectile): string {
+    const strike = isAirstrikeBomb(p.type) ? strobeStrikeOf(p.sourceType) : undefined;
+    return strike && strike.variant !== "normal" ? p.sourceType : p.type;
 }

@@ -1,11 +1,12 @@
 // How the client tells the rebirth air strike variants apart (deliberate rebirth addition requested by the user,
 // docs/research/rebirth-deviations.md "Client presentation"; defs AIRSTRIKE_VARIANTS): the zone marker on the map and
 // on the ground, the "ping_airstrike" map marker and edge indicator, and the HUD announcement when a heavy or carpet
-// zone appears (a normal zone stays silent, as in v0.8.82).
+// zone appears (a normal zone stays silent, as in v0.8.82). The variant strobes' pings (ping_airstrike_heavy /
+// ping_airstrike_carpet) carry these colours in their defs, and so do the strobes themselves (defs rebirth/strobes.ts).
 // `normal` keeps the original look (survev client/src/objects/plane.ts AirstrikeZone: 0xeaff00, 1.5 px outline, 20 %
 // fill on the map); `heavy` is red with a thicker outline and an inner ring at the planes' aim radius (the outer ring
 // is the heavy shells' reach); `carpet` is magenta with a double outline that blinks, for its longer six-plane run.
-import { AIRSTRIKE_VARIANTS, type AirstrikeVariant, isAirstrikeVariant } from "@rebirth/defs";
+import { AIRSTRIKE_VARIANT_COLORS, AIRSTRIKE_VARIANTS, type AirstrikeVariant, isAirstrikeVariant } from "@rebirth/defs";
 import { t } from "../l10n/index.ts";
 
 export interface AirstrikeZoneStyle {
@@ -23,10 +24,13 @@ export interface AirstrikeZoneStyle {
     blink: number;
 }
 
-/** original (normal) zone colour, also ping_airstrike's tint (0xeaff00) */
-export const NORMAL_ZONE_COLOR = 0xeaff00;
-export const HEAVY_ZONE_COLOR = 0xff3c1e;
-export const CARPET_ZONE_COLOR = 0xe040ff;
+/**
+ * original (normal) zone colour, also ping_airstrike's tint (0xeaff00); heavy and carpet are the colours of their
+ * zones, pings and strobes (defs AIRSTRIKE_VARIANT_COLORS)
+ */
+export const NORMAL_ZONE_COLOR = AIRSTRIKE_VARIANT_COLORS.normal;
+export const HEAVY_ZONE_COLOR = AIRSTRIKE_VARIANT_COLORS.heavy;
+export const CARPET_ZONE_COLOR = AIRSTRIKE_VARIANT_COLORS.carpet;
 
 export const AIRSTRIKE_ZONE_STYLES: Readonly<Record<AirstrikeVariant, AirstrikeZoneStyle>> = {
     normal: {

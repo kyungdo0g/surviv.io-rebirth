@@ -122,10 +122,11 @@
 ## Strobe (player-called air strike)
 
 - `strobe` ("IR Strobe"): throw speed 25, velZ 5, not cookable, does not explode on impact, fuse 13.5 s ending in `explosion_strobe` (1 dmg, ×5 vs obstacles, radius 1.5–2.5, 3 × `shrapnel_strobe` at 3 dmg, range 3) [src:survev/shared/defs/gameObjects/throwableDefs.ts:357-375] [src:survev/shared/defs/gameObjects/explosionsDefs.ts:51-60] [src:kong/relaunch-client-defs] [src:fandom/Strobe] [H]
-- `strikeDelay`: 2.5 s in the original (relaunch defs, fandom). survev changed it to 3 ("Changed this from 2.5 to 3"), and wiki.gg documents 3 s [src:kong/relaunch-client-defs] [src:fandom/Strobe] [src:survev/shared/defs/gameObjects/throwableDefs.ts:367] [src:wikigg/Strobe] [H]
+- `strikeDelay`: 2.5 s in the original (relaunch defs, fandom). survev changed it to 3 ("Changed this from 2.5 to 3"), and wiki.gg documents 3 s; the rebirth uses 3 s, survev being its gameplay baseline (conflicts.md `strobe-strike-delay`) [src:kong/relaunch-client-defs] [src:fandom/Strobe] [src:survev/shared/defs/gameObjects/throwableDefs.ts:367] [src:wikigg/Strobe] [H]
 - Sequence: `strikeDelay` s after the throw, `ping_airstrike` at the strobe's current position. 1 s later the first plane, then the rest every `3 / n` s (n = 3, or 5 with Broken Arrow) [src:survev/server/src/game/weaponManager.ts:1337-1362] [src:survev/server/src/game/objects/projectile.ts:174-209] [M]
 - Strike lines: all planes fly in the throw direction. Line k is offset sideways by `ceil(k/2) × 5` u, alternating sides: 0, +5, −5, +10, −10 [src:survev/server/src/game/objects/projectile.ts:194-206] [src:wikigg/Airstrike_Bomb] [M]
 - survev randomises which side gets the first offset, a choice its source flags as "was not in surviv" [src:survev/server/src/game/weaponManager.ts:1343-1347] [M]
+- The rebirth plays survev's pattern (conflicts.md `strobe-airstrike-offset`); its variant strobes call heavy shell and carpet strike lines (`rebirth-deviations.md` "Variant strobes") [src:survev/server/src/game/objects/projectile.ts:194-206] [src:user/2026-10-07-strobes] [H]
 - Strobe bombs belong to the thrower: teammates take no damage and kills credit the thrower [src:survev/server/src/game/objects/player.ts:2422-2424] [src:fandom/Air_Strike] [src:fandom/Strobe] [H]
 - Broken Arrow (`broken_arrow`, desert only, added 0.8.5): +2 strikes (`bonusAirstrikes: 2`), giving 5 [src:survev/shared/defs/gameObjects/perkDefs.ts:64-66] [src:fandom/Broken_Arrow] [src:wikigg/Broken_Arrow] [H]
 - Fandom: the perk check happens when the ping appears, not at throw time; survev checks at throw time [src:fandom/Broken_Arrow] [src:survev/server/src/game/weaponManager.ts:1349-1351] [L]
@@ -158,7 +159,7 @@
 
 ## Conflicts
 
-- CONFLICT strobe-strike-delay: strobe `strikeDelay` 2.5 s [src:kong/relaunch-client-defs] [src:fandom/Strobe] vs 3 s [src:survev/shared/defs/gameObjects/throwableDefs.ts:367] [src:wikigg/Strobe]; proposed: 2.5 s (client-visible original value) [H]
+- CONFLICT strobe-strike-delay: strobe `strikeDelay` 2.5 s [src:kong/relaunch-client-defs] [src:fandom/Strobe] vs 3 s [src:survev/shared/defs/gameObjects/throwableDefs.ts:367] [src:wikigg/Strobe]; resolved: 3 s, survev being the baseline (conflicts.md) [H]
 - CONFLICT airstrike-plane-count: natural strikes use 3–5 planes (weights per circle) [src:survev/shared/defs/maps/factionDefs.ts:107-187] [src:wikigg/50v50_mode] vs "can range from 2 to 5" [src:fandom/Air_Strike]; proposed: keep 3–5 [L]
 - CONFLICT faction-airstrike-2-time: 50v50 air strike #2 at circleIdx 2 wait 30 s (timer 0:20) [src:survev/shared/defs/maps/factionDefs.ts:127-128] vs timer 0:26 (wait 24 s) [src:fandom/50v50_Map] [src:fandom/50v50_Last_Sacrifice_Map]; proposed: 24 s, since every other fandom 50v50 timing matches survev to the second [M]
 - CONFLICT faction-airstrike-4-time: air strike #4 at circleIdx 4 wait 21 s (timer 0:09) [src:survev/shared/defs/maps/factionDefs.ts:162-163] vs timer 0:12 (wait 18 s) [src:fandom/50v50_Map] [src:fandom/50v50_Last_Sacrifice_Map]; proposed: 18 s [M]
@@ -168,7 +169,7 @@
 - CONFLICT military-shell-hp: fandom infobox gives the military shell 500 HP [src:fandom/Military_Air_Drop] vs shell health 200 and indestructible, with 500 HP on the inner `crate_12` [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:741]; proposed: client defs [H]
 - CONFLICT gold-military-crate-hp: gold military loot crate `crate_13` has 200 HP [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:813] vs 500 HP in the fandom infobox [src:fandom/Meteor_Crate]; proposed: 200 (client def) [H]
 - CONFLICT flare-gun-hut: flare gun refused inside any intact roofed building, huts included [src:survev/server/src/game/objects/player.ts:2166-2186] [src:survev/server/src/game/weaponManager.ts:731-736] vs fandom saying it can be fired inside a hut [src:fandom/Flare_Gun]; proposed: keep survev's rule, expose "destructible roofs count as outside" as a knob (it would match air drops being allowed to land on such roofs) [L]
-- CONFLICT broken-arrow-check-time: survev applies Broken Arrow at throw time [src:survev/server/src/game/weaponManager.ts:1349-1351] vs fandom saying it is applied when the strike warning appears [src:fandom/Broken_Arrow]; proposed: check at ping time (wiki observation of original) [L]
+- CONFLICT broken-arrow-check-time: survev applies Broken Arrow at throw time [src:survev/server/src/game/weaponManager.ts:1349-1351] vs fandom saying it is applied when the strike warning appears [src:fandom/Broken_Arrow]; resolved: at the throw, survev being the baseline (conflicts.md) [M]
 
 ## Open questions
 

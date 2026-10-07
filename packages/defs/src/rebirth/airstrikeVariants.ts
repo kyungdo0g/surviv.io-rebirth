@@ -1,7 +1,8 @@
 // Rebirth-only air strike variants (deliberate rebirth deviation requested by the user, 2026-10-07; not in v0.8.82):
 // the 50v50 scheduled air strike zones roll one of these from `rules.roles.factionAirstrikeVariants` (server env
-// AIRSTRIKE_VARIANTS); strobe-called strikes and survev's comeback strike stay normal. This is the one table the sim,
-// the client and the bots read. docs/research/rebirth-deviations.md lists it with the original values.
+// AIRSTRIKE_VARIANTS); the original strobe's strikes and survev's comeback strike stay normal (the rebirth variant
+// strobes call heavy and carpet strike lines: rebirth/strobes.ts). This is the one table the sim, the client and the
+// bots read. docs/research/rebirth-deviations.md lists it with the original values.
 import gameConfigJson from "../generated/gameConfig.json" with { type: "json" };
 
 /** Variant ids in wire order (protocol AirstrikeZones: 2-bit index into this list). */
@@ -159,6 +160,17 @@ export const AIRSTRIKE_VARIANTS: Readonly<Record<AirstrikeVariant, AirstrikeVari
         aimRadMult: CARPET_AIM_RAD_MULT,
         zoneRadAdd: CARPET_ZONE_RAD_ADD,
     },
+};
+
+/**
+ * Colour of each variant: its zone marker, its map ping and its strobe (rebirth/strobes.ts). `normal` is the original
+ * ping_airstrike tint and zone colour 0xeaff00 (survev client/src/objects/plane.ts AirstrikeZone); heavy is orange-red,
+ * carpet magenta. The client's zone styles (apps/client ui/airstrikeVariantStyle.ts) read them from here.
+ */
+export const AIRSTRIKE_VARIANT_COLORS: Readonly<Record<AirstrikeVariant, number>> = {
+    normal: 0xeaff00,
+    heavy: 0xff3c1e,
+    carpet: 0xe040ff,
 };
 
 /** Default roll weights of the 50v50 scheduled zones (the user's brief: normal 60 / heavy 25 / carpet 15). */

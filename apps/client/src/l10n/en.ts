@@ -83,20 +83,29 @@ export const en: Readonly<Record<string, string>> = {
 };
 
 /**
- * English names of the rebirth's new guns and ammo (beta; not in the original bundle): the defs' names, the ammo as
- * docs/design/new-gun-stats.json `ammo.*.l10n` names it, and the M79 / MGL's 40 mm grenade, which an explosion kill
- * names in the kill feed (as the original names the potato cannon's cannonball)
+ * English names of the rebirth-only items (not in the original bundle): the new guns and ammo (beta) with the defs'
+ * names, the ammo as docs/design/new-gun-stats.json `ammo.*.l10n` names it, and the M79 / MGL's 40 mm grenade, which an
+ * explosion kill names in the kill feed (as the original names the potato cannon's cannonball); the variant strobes
+ * (defs rebirth/strobes.ts), named after the strike they call (the 50v50 announcements "Heavy shell strike incoming" /
+ * "Carpet bombing incoming").
  */
 const REBIRTH_ITEMS: Readonly<Record<string, string>> = {
     ...Object.fromEntries(NEW_GUN_IDS.map((id) => [id, (getDef(id) as { name: string }).name])),
     ...Object.fromEntries(NEW_AMMO_IDS.map((id) => [id, (getDef(id) as { name: string }).name])),
     "40mm": "40mm Grenade",
     m79_grenade: "40mm Grenade",
+    strobe_heavy: "Heavy Shell Strobe",
+    strobe_carpet: "Carpet Bombing Strobe",
+};
+/** weapon slot names: short like the original throwables' ("Strobe"), as the slot shows the count beside the name */
+const rebirthHudItems: Readonly<Record<string, string>> = {
+    strobe_heavy: "Heavy",
+    strobe_carpet: "Carpet",
 };
 
 /** "game-<id>" item names */
 export const enItems: Readonly<Record<string, string>> = { ...items.names, ...REBIRTH_ITEMS };
 /** "game-hud-<id>" short names shown in the weapon slots (dual guns, melee skins, throwables) */
-export const enHudItems: Readonly<Record<string, string>> = items.hud;
+export const enHudItems: Readonly<Record<string, string>> = { ...items.hud, ...rebirthHudItems };
 /** "game-<perk>-desc" perk descriptions (M7) */
 export const enPerkDesc: Readonly<Record<string, string>> = items.desc;

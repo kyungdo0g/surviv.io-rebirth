@@ -12,7 +12,7 @@
 // updateAnimationWidth); Hide UI hides the whole HUD (`setHidden`). The pie timer moved to pieTimer.ts.
 import { GameConfig, GameObjectDefs, type GunDef, Input } from "@rebirth/defs";
 import { type LocalPlayerState, mapBagSizes } from "@rebirth/sim";
-import { lootImageUrl } from "../assets/hudImages.ts";
+import { lootImageUrl, preloadLootTints, setLootImage } from "../assets/hudImages.ts";
 import { hudItemName, itemName, t } from "../l10n/index.ts";
 import "./hud.css";
 import "./hudSm.css";
@@ -143,6 +143,8 @@ export class Hud {
 
     constructor(parent: HTMLElement, cb: HudCallbacks) {
         this.cb = cb;
+        // rebirth: draw the tinted weapon slot icons (the variant strobes) before they are first shown
+        preloadLootTints();
         this.root = el("div", { id: "ui-game" });
         this.root.append(
             this.buildScopes(),
@@ -453,7 +455,8 @@ export class Hud {
                 slot.image.hidden = !def;
                 const img = (def as { lootImg?: { rot?: number; mirror?: boolean } } | undefined)?.lootImg;
                 if (img) {
-                    slot.image.src = lootImageUrl(type);
+                    // rebirth: the variant strobes' icons take their colour (lootImg.hudTint)
+                    setLootImage(slot.image, type);
                     slot.image.style.transform = `rotate(${img.rot ?? 0}rad) scaleX(${img.mirror ? -1 : 1})`;
                 }
                 slot.div.classList.toggle("ui-weapon-empty", !def);

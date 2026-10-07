@@ -19,6 +19,9 @@ export const enModes: Readonly<Record<string, string>> = {
     /** rebirth: announcement when a heavy or carpet 50v50 air strike zone appears (ui/airstrikeVariantStyle.ts) */
     "game-airstrike-heavy-incoming": "Heavy shell strike incoming",
     "game-airstrike-carpet-incoming": "Carpet bombing incoming",
+    /** rebirth: what a variant strobe's kill was dealt "with" (ui/killFeed.ts airstrikeName; else "an air strike") */
+    "game-a-heavy-shell-strike": "a heavy shell strike",
+    "game-a-carpet-bombing": "carpet bombing",
 };
 
 export const koModes: Readonly<Record<string, string>> = {
@@ -32,6 +35,8 @@ export const koModes: Readonly<Record<string, string>> = {
     "game-turkey": "위너위너 터키 디너!",
     "game-airstrike-heavy-incoming": "고폭탄 공습 경보",
     "game-airstrike-carpet-incoming": "대공습 경보",
+    "game-a-heavy-shell-strike": "고폭탄 공습",
+    "game-a-carpet-bombing": "대공습",
 };
 
 /** Korean perk names ("game-<perk>"). */
