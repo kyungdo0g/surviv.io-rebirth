@@ -1,6 +1,7 @@
 // Entry point: `node apps/server/src/index.ts` (env: PORT, HOST, MAX_PLAYERS, MAP_NAME, BOT_FILL, BOT_DIFFICULTY,
 // ADMIN_TOKEN... see config.ts and docs/deploy.md).
 import { loadConfig } from "./config.ts";
+import { startConsole } from "./console.ts";
 import { startServer } from "./server.ts";
 
 const config = loadConfig();
@@ -19,10 +20,13 @@ console.log(
     ].join(", "),
 );
 
+const stopConsole = startConsole(server);
+
 let stopping = false;
 const shutdown = (signal: string) => {
     if (stopping) return;
     stopping = true;
+    stopConsole();
     console.log(`${signal}: shutting down`);
     server.close().then(
         () => process.exit(0),
