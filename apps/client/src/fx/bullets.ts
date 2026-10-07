@@ -14,6 +14,8 @@
 // sound, Cast Ironskin bodies chip too), the first player hit ends the player pass; blood is parented to the hit
 // player at the impact offset (rotation 1 rad) and neither blood nor the hit sound play while the shooter is dead or
 // downed. Flare rounds (`addFlare`) are drawn by fx/flare.ts.
+// Rebirth (user/2026-10-07-hit-feedback): after the original effects of a player hit, `hitListener` (fx/hitFeedback.ts)
+// hears of it with the bullet's nominal damage, for the Enhanced hit effects.
 import { type Collider, collider, math, type Vec2 } from "@rebirth/core";
 import {
     type BulletDef,
@@ -33,6 +35,8 @@ import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { type Renderer, toLocal } from "../render/renderer.ts";
 import { hasActivePan, panHit, sameAudioLayer, sameLayer, tracerTint, tracerWidth } from "./bulletHits.ts";
 import { type FlareScene, FlareSystem } from "./flare.ts";
+import type { PlayerHitListener } from "./hitFeedback.ts";
+import { nominalBulletDamage } from "./hitFeedbackMath.ts";
 import type { ParticleSystem } from "./particles.ts";
 
 const TRAIL_SPRITE = "player-bullet-trail-02.img";
@@ -53,6 +57,7 @@ interface Tracer {
     container: Container;
     sprite: Sprite;
     shooterId: number;
+    bulletType: string;
     startPos: Vec2;
     pos: Vec2;
     dir: Vec2;
@@ -141,6 +146,8 @@ export class BulletSystem {
     readonly variants = { saturated: 0, thick: 0, splinter: 0 };
     /** hit effects shown since boot (tests, M9): blood on players, pan chips, player hit sounds */
     readonly hits = { blood: 0, pan: 0, sounds: 0, stairs: 0 };
+    /** rebirth Enhanced hit effects: told about every player hit after its original effects */
+    hitListener: PlayerHitListener | null = null;
 
     constructor(renderer: Renderer, textures: TextureStore, audio: AudioEngine, particles: ParticleSystem) {
         this.renderer = renderer;
@@ -211,6 +218,7 @@ export class BulletSystem {
         const shooter = scene.playerById(e.shooterId);
         t.id = e.id;
         t.shooterId = e.shooterId;
+        t.bulletType = e.bulletType;
         t.startPos = { x: e.pos.x, y: e.pos.y };
         t.pos = { x: e.pos.x, y: e.pos.y };
         t.dir = { x: e.dir.x, y: e.dir.y };
@@ -425,6 +433,12 @@ export class BulletSystem {
             this.hits.blood++;
         }
         this.playerHitSound(target);
+        const def = GameObjectDefs[t.bulletType] as BulletDef | undefined;
+        if (this.hitListener && def?.type === "bullet") {
+            const travelled = Math.hypot(point.x - t.startPos.x, point.y - t.startPos.y);
+            const nominal = nominalBulletDamage(def, t.reflectCount, travelled);
+            this.hitListener.onPlayerHit(target, point, t.dir, nominal, t.shooterId);
+        }
     }
 
     /** survev bullet.ts createBulletHit: the muffled flesh hit at the player (also played by the kill frame). */

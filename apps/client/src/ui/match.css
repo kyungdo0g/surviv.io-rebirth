@@ -421,3 +421,19 @@
     opacity: 0;
     background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0) 45%, rgba(255, 0, 0, 0.55) 100%);
 }
+
+/* rebirth addition: damage vignette of the Enhanced hit effects (ui/hitVignette.ts, user/2026-10-07-hit-feedback) */
+#ui-hit-vignette {
+    display: none;
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(150, 0, 0, 0) 58%,
+        rgba(150, 0, 0, 0.35) 80%,
+        rgba(175, 0, 0, 0.9) 100%
+    );
+}

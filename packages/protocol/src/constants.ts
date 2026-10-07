@@ -95,8 +95,8 @@ export const UpdateFlag = {
 
 /**
  * Extended Update section flags (u16 after the ack byte when UpdateFlag.Extended is set). Sections follow the
- * DeletePlayerIds section in bit order (M5a: bits 0-3, M5b: bit 4, M6a: bits 5-7, M7a: bit 8). Bits 9-15 are reserved
- * for the sections still to come; a decoder rejects them until they are defined.
+ * DeletePlayerIds section in bit order (M5a: bits 0-3, M5b: bit 4, M6a: bits 5-7, M7a: bit 8, rebirth hit feedback:
+ * bit 9). Bits 10-15 are reserved for the sections still to come; a decoder rejects them until they are defined.
  */
 export const UpdateExtFlag = {
     /** explosions since the previous update (original Explosions) */
@@ -117,8 +117,10 @@ export const UpdateExtFlag = {
     Emotes: 1 << 7,
     /** 50v50: the viewer's faction on the minimap, when it changed (original faction PlayerStatus, M7a) */
     FactionStatus: 1 << 8,
+    /** rebirth: hits the active player dealt or took since the previous update (Snapshot.hits, schema 11) */
+    Hits: 1 << 9,
     /** not defined yet */
-    Reserved: 0xfe00,
+    Reserved: 0xfc00,
 } as const;
 
 /** Reasons carried by the Disconnect message (and the WebSocket close frame). */

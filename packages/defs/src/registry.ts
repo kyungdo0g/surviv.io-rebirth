@@ -20,9 +20,11 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * (tools/port-survev/policy.json): bullet_barrett, bullet_sw500, bullet_ash12, bullet_imbel, bullet_invis,
  * explosion_potato_lmgshot, imbel, spas16, barrett, sw500, ash12, potato_lmg, svd_winter, sv98_winter, awc_winter and
  * potato_lmgshot take game type ids after the original ones and before the rebirth-only ones (bomb_heavy and
- * explosion_bomb_heavy move up by 16); every original id keeps its index. No record layout changed.
+ * explosion_bomb_heavy move up by 16); every original id keeps its index. No record layout changed · 11: rebirth hit
+ * feedback: the Update message's extended flag bit 9 announces a Hits section after FactionStatus (protocol hits.ts:
+ * the hits the active player dealt or took, with amount, headshot, armour and the direction of hits taken).
  */
-export const PROTOCOL_SCHEMA_VERSION = 10;
+export const PROTOCOL_SCHEMA_VERSION = 11;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

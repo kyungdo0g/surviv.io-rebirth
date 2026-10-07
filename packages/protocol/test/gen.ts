@@ -589,6 +589,10 @@ export function netTolerances(maxExtent = 1024): TolFn {
         posZ: 5 / 1023 / 2 + 1e-9,
         "projectiles.dir.x": 0.012,
         "projectiles.dir.y": 0.012,
+        // rebirth hit feedback (schema 11): 8-bit amounts over 0..100, 8-bit angles (half a step: pi / 256 rad)
+        "hits.amount": 100 / 255 / 2 + 1e-9,
+        "hits.dir.x": 0.0125,
+        "hits.dir.y": 0.0125,
         "smokes.rad": 10 / 255 / 2 + 1e-9,
         "airstrikeZones.rad": 256 / 255 / 2 + 1e-9,
         "airstrikeZones.duration": 60 / 255 / 2 + 1e-9,
