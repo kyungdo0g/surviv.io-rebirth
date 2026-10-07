@@ -15,7 +15,7 @@ may not touch, the schema number used and open questions.
 
 | stage | content | state | commit |
 |---|---|---|---|
-| 1 | melee `iceaxe`, `cutlass`, `cutlass_gold`, skins `naginata_daemon`, `karambit_borealis`; throwables `coconut`, `tomato` + explosions; `pirate` perk | done | see `git log --grep "survev content wave, stage 1"` |
+| 1 | melee `iceaxe`, `cutlass`, `cutlass_gold`, skins `naginata_daemon`, `karambit_borealis`; throwables `coconut`, `tomato` + explosions; `pirate` perk | done | be03cb6 |
 | 2 | gear / perks / roles (backpack04, 5-level bags, 6 more perks, captain, classless) | next | |
 | 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) | planned | |
 | 4 | cosmetics (outfits, emotes, heal / boost effects) | planned | |
