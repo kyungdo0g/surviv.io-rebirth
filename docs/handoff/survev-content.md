@@ -17,7 +17,7 @@ may not touch, the schema number used and open questions.
 |---|---|---|---|
 | 1 | melee `iceaxe`, `cutlass`, `cutlass_gold`, skins `naginata_daemon`, `karambit_borealis`; throwables `coconut`, `tomato` + explosions; `pirate` perk | done | be03cb6 |
 | 2 | gear / perks / roles (backpack04, 5-level bags, 6 more perks, captain, classless) | done | see `git log --grep "stage 2"` |
-| 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | port + sim done; test map next | see `git log --grep "stage 3"` |
+| 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | done | see `git log --grep "stage 3"` |
 | 4 | cosmetics (outfits, emotes, heal / boost effects) | planned | |
 | 5 | balance option B (no balance revert for shared gameplay fields) | planned | |
 
@@ -69,6 +69,16 @@ may not touch, the schema number used and open questions.
   generation.
 - Client: `apps/client/scripts/sound-defs.ts` also collects map-object sounds and survev-only groups (Reserve music,
   egg and tomato breaks).
+- Building showcase (owner request): `/?building=<type>` (or `building=1` for the first) boots the loopback sandbox
+  on a map holding only that building or structure (and its children), on the first map that spawns it, with its lake
+  (Oasis, tea pavilion, Cloud bunker), river (bridges, river shacks, cabins) or beach (huts, docks, waterfront
+  warehouse) and no gas; the player stands beside it. `[` / `]` or the bar at the top step through all 139 buildings
+  and structures the maps spawn at the top level (grouped by map); other query keys stay (`&zoom=`, `&give=`,
+  `&loot=0`, `&lang=ko`). Sim `packages/sim/src/mapgen/showcase.ts` (`generateShowcase`, `showcaseEntries`,
+  `showcaseSpawnSpots`), client `apps/client/src/dev/showcase.ts`, `game/sandbox.ts` (`building`),
+  `game/gasStages.ts` (`noGasStages`), `net/loopback.ts` (`spawnSpots`), `main.ts` (`building` route key). Tests:
+  `packages/sim/test/showcase.test.ts`, `tests/e2e/survev-buildings.spec.ts` (`SHOWCASE_ALL=1` screenshots every
+  building into `__screens__/survev-buildings/all/`).
 
 ## Changes needed in the lead's files
 
@@ -158,7 +168,8 @@ unless the held-sprite renderer special-cases melee ids.
   Alt.Layout, Basement, Basement Layout, ...) and its picture against our buildings. A loot icon on a layout picture
   (a pill on the Hunting Perch) is only the loot spawner's position (`loot_tier_*`), not a fixed item; fixed items are
   what the page's "Special loot" lists.
-- When the buildings are done: a building test mode, a map with only buildings that can be cycled through.
+- When the buildings are done: a building test mode, a map with only buildings that can be cycled through. Done:
+  the building showcase (stage 3 details).
 
 ## Shared hotspots touched (minimal)
 
@@ -167,7 +178,9 @@ unless the held-sprite renderer special-cases melee ids.
 - `packages/defs/src/types/weapons.ts`: `MeleeDef.perk`, `ExplosionDef.healTeam / healAmount / dropRandomLoot`.
 - `packages/defs/test/helpers.ts` (`NOT_PORTED_IDS`), `packages/defs/test/survevGuns.test.ts` (policy pins now
   `arrayContaining`), `packages/sim/test/perks.core.test.ts` (perk count: 41 original + survev-only).
-- `apps/client/src/net/loopback.ts`: `give=` melee.
+- `apps/client/src/net/loopback.ts`: `give=` melee, `spawnSpots` (showcase).
+- `apps/client/src/main.ts` (`building` route key), `apps/client/src/game/sandbox.ts` (`building` option),
+  `apps/client/src/game/gasStages.ts` (`noGasStages`), `packages/sim/src/index.ts` (showcase exports).
 
 ## Open questions
 

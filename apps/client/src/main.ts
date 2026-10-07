@@ -13,6 +13,8 @@
 //   players alive for 10 s start it, the last one alive wins); &gas=fast uses a shortened red-zone stage table.
 //   Teams (M6): &team=2|4 makes the loopback a duo / squad game with &teammates=<n> idle teammates in the local
 //   player's group (behind it) and the dummies as enemies.
+//   Building showcase: &building=<type> (or 1 for the first) plays on a map holding only that building or structure,
+//   without gas; [ and ] (or the bar at the top) step through every building the maps spawn (dev/showcase.ts).
 // - Dev pages: /?gallery=<filter>&page=<n> sprite gallery; /?fixture=1 renderer fixture.
 // - Any route: &touch=1 forces the touch controls on, &touch=0 off (else phones, tablets and coarse pointers, M8).
 import "@fontsource/roboto-condensed/400.css";
@@ -53,6 +55,7 @@ const SANDBOX_KEYS = [
     "fixture",
     "zoom",
     "debug",
+    "building",
 ] as const;
 
 function isSandboxRoute(route: URLSearchParams): boolean {
@@ -122,6 +125,7 @@ async function main() {
         gas: route.get("gas") ?? undefined,
         teamMode: teamModeOf(route.get("team")),
         teammates: Math.max(0, Math.min(3, Math.floor(Number(route.get("teammates") ?? 0) || 0))),
+        building: route.get("building") ?? undefined,
         net,
     });
 }

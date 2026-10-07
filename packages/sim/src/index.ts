@@ -32,6 +32,14 @@ export { closestLoot, freeGunSlot, type PickupResult, pickupLoot } from "./loot/
 export { getBoundingCollider } from "./mapgen/bounds.ts";
 export { type GenerateMapResult, generateMap, type SpawnSource, type SpawnStat } from "./mapgen/generate.ts";
 export type { GeneratedObject, LootSpawn } from "./mapgen/generator.ts";
+export {
+    generateShowcase,
+    type ShowcaseEntry,
+    type ShowcaseResult,
+    showcaseEntries,
+    showcaseMapOf,
+    showcaseSpawnSpots,
+} from "./mapgen/showcase.ts";
 export { buildTerrain, createTerrain, type River, type Terrain, terrainToShape } from "./mapgen/terrain.ts";
 export { isTerrainWater, type TerrainSurface, terrainSurfaceAt } from "./mapgen/terrainQuery.ts";
 export {

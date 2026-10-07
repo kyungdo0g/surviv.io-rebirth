@@ -27,6 +27,11 @@ export function fastGasStages(): GasStage[] {
     });
 }
 
+/** A red zone that never starts (the building showcase): one inactive stage, no damage. */
+export function noGasStages(): GasStage[] {
+    return [{ ...GameConfig.gas.stages[0], mode: GasMode.Inactive, duration: 0, rad: 1, damage: 0 }];
+}
+
 /** Gas stage table for the `gas` URL parameter: "fast", or undefined for the original table. */
 export function gasStagesFor(param: string | null | undefined): GasStage[] | undefined {
     return param === "fast" ? fastGasStages() : undefined;

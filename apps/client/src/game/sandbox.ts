@@ -9,11 +9,13 @@
 // address gets the banned text.
 import type { Vec2 } from "@rebirth/core";
 import { DisconnectReason, type ReportResponse, submitReport } from "@rebirth/protocol";
+import { generateShowcase, showcaseSpawnSpots } from "@rebirth/sim";
 import { type Application, UPDATE_PRIORITY } from "pixi.js";
 import { TextureStore } from "../assets/textures.ts";
 import type { AudioEngine } from "../audio/audio.ts";
 import { sharedAudio } from "../audio/shared.ts";
 import { FixtureTransport } from "../dev/fixtures.ts";
+import { mountShowcaseBar, resolveShowcase } from "../dev/showcase.ts";
 import { debugGlobals } from "../globals.ts";
 import { isTouchMode } from "../input/device.ts";
 import { t } from "../l10n/index.ts";
@@ -28,7 +30,7 @@ import { GameClient } from "./client.ts";
 import { exposeM7 } from "./debugM7.ts";
 import { exposeM8 } from "./debugM8.ts";
 import { exposeM9 } from "./debugM9.ts";
-import { gasStagesFor } from "./gasStages.ts";
+import { gasStagesFor, noGasStages } from "./gasStages.ts";
 
 export interface SandboxOptions {
     mapName: string;
@@ -52,6 +54,8 @@ export interface SandboxOptions {
     gas?: string;
     /** loopback team mode: 2 duo, 4 squad (M6) */
     teamMode?: 1 | 2 | 4;
+    /** building showcase: a map holding only this building or structure, on its home map, no gas (dev/showcase.ts) */
+    building?: string;
     /** loopback team modes: idle teammates in the local player's group (M6) */
     teammates?: number;
     /** play on a game server instead of the loopback simulation */
@@ -153,21 +157,26 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
         ws = conn;
         transport = ws;
     } else {
+        const entry = opts.building !== undefined ? resolveShowcase(opts.building) : null;
+        const show = entry ? generateShowcase(entry.type, opts.seed, entry.mapName) : null;
         loopback = new LoopbackTransport(
-            { mapName: opts.mapName, seed: opts.seed, teamMode: opts.teamMode ?? 1 },
+            { mapName: show?.mapName ?? opts.mapName, seed: opts.seed, teamMode: opts.teamMode ?? 1 },
             {
                 init: {
+                    generation: show?.generation,
                     spawnLoot: opts.loot ?? true,
                     sandbox: opts.sandbox ?? true,
-                    gasStages: gasStagesFor(opts.gas),
+                    gasStages: show ? noGasStages() : gasStagesFor(opts.gas),
                 },
                 dummies: opts.dummies,
                 teammates: opts.teammates,
                 give: opts.give,
                 isMobile: touch,
+                spawnSpots: show ? showcaseSpawnSpots(show) : undefined,
             },
         );
         transport = loopback;
+        if (entry && !document.getElementById("showcase-bar")) mountShowcaseBar(entry);
     }
     const lb = loopback;
     const playAgain = (): void => {

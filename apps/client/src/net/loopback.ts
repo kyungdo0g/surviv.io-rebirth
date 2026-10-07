@@ -7,7 +7,7 @@
 // party key with no auto fill), next to each other; the dummies are enemies, one group each. Emotes go to Game.emote.
 // M7: Cobalt class choices go to Game.selectRole and HUD drops to Game.dropItem.
 // M8: on touch devices the local player joins as a mobile player (AddPlayerOptions.isMobile).
-import { v2 } from "@rebirth/core";
+import { type Vec2, v2 } from "@rebirth/core";
 import { GameObjectDefs, WeaponSlot } from "@rebirth/defs";
 import {
     type AddPlayerOptions,
@@ -52,6 +52,8 @@ export interface LoopbackExtras {
     give?: string;
     /** the local player plays with the touch controls (M8; mobile zoom, loot radius and auto loot in the sim) */
     isMobile?: boolean;
+    /** the local player (re)spawns at the first of these where a player can stand (the building showcase) */
+    spawnSpots?: readonly Vec2[];
 }
 
 export class LoopbackTransport implements Transport {
@@ -157,6 +159,8 @@ export class LoopbackTransport implements Transport {
     }
 
     private setupLocal(): void {
+        const spot = this.extras.spawnSpots?.find((p) => this.game.canPlayerSpawn(p));
+        if (spot) this.game.teleportPlayer(this.playerId, spot);
         const items = (this.extras.give ?? "").split(",").filter(Boolean);
         const player = this.game.getPlayer(this.playerId);
         if (!items.length || !player) return;
