@@ -81,6 +81,8 @@ export class Player implements InventoryOwner {
     readonly weaponManager: WeaponManager;
     readonly inv: Inventory;
     outfit: string = PLAYER.defaultItems.outfit;
+    /** id of the obstacle a disguise outfit puts over the player (world/disguise.ts), 0 for none */
+    disguiseId = 0;
     /** outfit the player joined with: it never drops on death (survev compares with the loadout outfit) */
     readonly loadoutOutfit: string = PLAYER.defaultItems.outfit;
     backpack: string = PLAYER.defaultItems.backpack;

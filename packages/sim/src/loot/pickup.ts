@@ -8,6 +8,7 @@ import { addPerk, removePerk } from "../perks/perks.ts";
 import { setHelmet } from "../roles/roles.ts";
 import { gunDef } from "../weapons/weaponManager.ts";
 import type { SimContext } from "../world/context.ts";
+import { setOutfit } from "../world/disguise.ts";
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
 import { dropGun, dropMelee, playerDropLoot, rollLootTier } from "./drops.ts";
@@ -213,7 +214,7 @@ export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupR
                 break;
             }
             lootToAdd = player.outfit;
-            player.outfit = loot.type;
+            setOutfit(ctx, player, loot.type);
             break;
         case "perk": {
             const taken = pickupPerk(ctx, player, loot.type);

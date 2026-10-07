@@ -157,6 +157,15 @@ may not touch, the schema number used and open questions.
 - Cloud Bunker flooded spots: `world.ts isOnWater` kept the first matching floor surface, survev the last; both
   water patches of `bunker_cloud_sublevel_01` lie inside corridor tiles, so the sim saw tile (no slow) while the
   client drew wading. Last match wins now; test "the Cloud bunker's flooded corridor spots are water".
+- Obstacle disguises (Junkyard audit: Spoopy Barkskin, every Halloween costume): wearing an outfit with an
+  `obstacleType` only changed the tint. Now `packages/sim/src/world/disguise.ts` (`setOutfit`, used by pickups and role
+  kits) puts a non-collidable copy of the obstacle over the wearer (`Obstacle.skinPlayerId`): it follows them, shows
+  their health, takes no hits (`canDamageObstacle`, melee skip) and dies with them through the obstacle kill (loot and
+  explosion: the Barrel Costume's barrel blows up). Snapshots show it exactly when its wearer is seen. Wire: the
+  obstacle record gains the original's static `isSkin` + `skinPlayerId` u16 (schema still 12, unreleased). Client:
+  drawn over the wearer at the wearer's interpolated position (`objects/world.ts anchorOf`, `objects/obstacle.ts`),
+  no sight or aim-line blocking. Tests: `packages/sim/test/disguise.test.ts`, `packages/protocol/test/disguise.test.ts`,
+  `tests/e2e/survev-disguise.spec.ts`. Lead patch: section 11.
 - Showcase: `river_town_01` added (faction, on a 20-wide river); 140 entries. Spawn spots now start at the object's
   bounds (front first), so wide buildings are on screen.
 - Checked and left as is: River Town's `goreRegion` (survev uses it only for quests: out of scope); faction crates'
@@ -280,6 +289,14 @@ after the edit, remove the `closed` handling there. Also `rebirth-deviations.md`
 survev's Medic class perks are Field Medic + Combat Stimulants (survev roleDefs.ts healer; Windwalk before), so
 `m7-modes.spec.ts:213` (korean) should expect `["전투 의무병", "전투 각성제"]`. Every other m7 / m7-modes test passes.
 
+### 11. Obstacle disguises pass bullets and melee on the client (`apps/client/src/fx/bullets.ts`, `fx/effects.ts`)
+
+The sim lets everything through a disguise (survev client obstacle.ts: `collidable = def.collidable && !isSkin`), but
+the client's predicted bullets and melee hits still stop at it and chip it (a barrel costume eats tracers):
+- `fx/bullets.ts` obstacle collection (~line 280): `if (view.dead || view.skinPlayerId !== undefined || ...) return;`
+- `fx/effects.ts firstBlocker` and the melee obstacle list: skip `o.view.skinPlayerId !== undefined` (survev
+  client player.ts:2353 `if (obstacle.dead || obstacle.isSkin) continue;`).
+
 ## Owner requests (2026-10-07, while stage 2 ran)
 
 - Buildings first: stage 3 is top priority. Go through every building of the survev.wiki.gg Buildings navbox
@@ -300,6 +317,9 @@ survev's Medic class perks are Field Medic + Combat Stimulants (survev roleDefs.
 - `apps/client/src/net/loopback.ts`: `give=` melee, `spawnSpots` (showcase).
 - `apps/client/src/main.ts` (`building` route key), `apps/client/src/game/sandbox.ts` (`building` option),
   `apps/client/src/game/gasStages.ts` (`noGasStages`), `packages/sim/src/index.ts` (showcase exports).
+- Obstacle disguises: `packages/protocol/src/objects.ts` (ObstacleCodec), `packages/sim/src/game.ts` (tick, snapshot,
+  removePlayer), `apps/client/src/objects/world.ts` (`anchorOf`), `objects/worldQuery.ts` (`skin`),
+  `input/aimLine.ts`.
 
 ## Open questions
 

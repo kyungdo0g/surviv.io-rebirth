@@ -35,6 +35,8 @@ export interface GroundSurface {
 export interface QueryObstacle {
     id: number;
     def: ObstacleDef;
+    /** a player's disguise (`skinPlayerId`): never collides (survev obstacle.ts isSkin) */
+    skin: boolean;
     layer: number;
     dead: boolean;
     col: Collider;
@@ -202,7 +204,18 @@ export class WorldQuery {
                 const def = MapObjectDefs[o.type] as ObstacleDef | undefined;
                 if (!def?.collision) return;
                 const col = collider.transform(def.collision, o.pos, math.oriToRad(o.ori), o.scale);
-                entry = { id: o.id, def, layer: o.layer, dead: o.dead, col, box: collider.toAabb(col), view: o, frame };
+                const skin = o.skinPlayerId !== undefined;
+                entry = {
+                    id: o.id,
+                    def,
+                    skin,
+                    layer: o.layer,
+                    dead: o.dead,
+                    col,
+                    box: collider.toAabb(col),
+                    view: o,
+                    frame,
+                };
                 this.obstacleCache.set(o.id, entry);
             }
             const e = entry!;
@@ -353,7 +366,7 @@ export class WorldQuery {
         let dist = len;
         const end = v2.add(pos, v2.mul(dir, len));
         for (const o of list) {
-            if (o.dead || !o.def.collidable || o.def.isWindow || o.def.height < height) continue;
+            if (o.dead || o.skin || !o.def.collidable || o.def.isWindow || o.def.height < height) continue;
             if (!sameLayer(o.layer, layer) || (hackStairs && layer & 2 && o.layer === 0)) continue;
             const hit = collider.intersectSegment(o.col, pos, end);
             if (hit) dist = Math.min(dist, v2.length(v2.sub(hit.point, pos)));

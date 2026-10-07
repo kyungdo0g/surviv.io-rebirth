@@ -236,9 +236,11 @@ function perksOf(v: readonly number[]): PerkView[] {
 }
 
 /**
- * Obstacle. Static: type, pos, ori, layer, isDoor, isButton. Groups: 0 scale, 1 health (healthT, dead), 2 door
- * state (open, locked, canUse, seq mod 2^16 (M5b)), 3 button state (onOff, canUse, seq mod 2^16; M4). A door that
- * opens or closes moves or turns, which changes static fields: it is sent as a full record (like survev's setDirty).
+ * Obstacle. Static: type, pos, ori, layer, isDoor, isButton, isSkin [+ skinPlayerId u16] (the original full record's
+ * disguise bit and wearer id; survev content wave). Groups: 0 scale, 1 health (healthT, dead), 2 door state (open,
+ * locked, canUse, seq mod 2^16 (M5b)), 3 button state (onOff, canUse, seq mod 2^16; M4). A door that opens or closes
+ * and a disguise that follows its wearer move, which changes static fields: they are sent as a full record (like
+ * survev's setDirty).
  */
 export const ObstacleCodec: ObjectCodec<ObstacleView> = {
     kind: "obstacle",
@@ -252,6 +254,7 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
         f(1, S),
         f(1, 3, 12), f(1, 3, 12), f(SEQ_BITS, 3, 12),
         f(SEQ_BITS, 2, 5),
+        f(1, S), f(16, S, 17),
     ],
     groupCount: 4,
     quantize(v, ctx, out) {
@@ -272,6 +275,8 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
         out[14] = b(v.button?.canUse);
         out[15] = (v.button?.seq ?? 0) & SEQ_MASK;
         out[16] = (v.door?.seq ?? 0) & SEQ_MASK;
+        out[17] = b(v.skinPlayerId !== undefined);
+        out[18] = (v.skinPlayerId ?? 0) & 0xffff;
     },
     build(id, v, ctx) {
         const view: ObstacleView = {
@@ -287,6 +292,7 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
         };
         if (v[5] === 1) view.door = { open: v[9] === 1, locked: v[10] === 1, canUse: v[11] === 1, seq: v[16] };
         if (v[12] === 1) view.button = { onOff: v[13] === 1, canUse: v[14] === 1, seq: v[15] };
+        if (v[17] === 1) view.skinPlayerId = v[18];
         return view;
     },
 };

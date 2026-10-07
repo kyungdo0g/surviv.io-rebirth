@@ -43,6 +43,7 @@ import type {
 } from "./view.ts";
 import type { SimContext } from "./world/context.ts";
 import { DeadBodySystem } from "./world/deadBodies.ts";
+import { removeDisguise, updateDisguise, wearerOf } from "./world/disguise.ts";
 import { checkDoorLayer } from "./world/doors.ts";
 import { dropItem } from "./world/dropItem.ts";
 import type { Building, Obstacle } from "./world/entities.ts";
@@ -310,6 +311,7 @@ export class Game implements GameApi, SimContext {
         this.lastEventSeq.delete(id);
         this.newViewers.delete(id);
         this.world.remove(player);
+        removeDisguise(this, player);
         this.spectators.remove(id);
         this.roles.onPlayerRemoved(player);
         // a revive in progress ends with the player
@@ -466,6 +468,7 @@ export class Game implements GameApi, SimContext {
         }
         for (const player of this.playerMap.values()) {
             player.update(this, dt);
+            updateDisguise(this, player);
         }
         this.loot.update(dt);
         this.bullets.update(dt);
@@ -538,8 +541,9 @@ export class Game implements GameApi, SimContext {
         const objects: ObjectView[] = [];
         const view = viewBounds(player.pos, player.zoom);
         for (const obj of this.world.query(view, this.scratch)) {
-            if (obj.kind === "player" && this.hiddenInSmoke(player, obj)) continue;
-            if (obj !== player && this.otherFloor(player, obj)) continue;
+            const subject = wearerOf(this, obj) ?? obj;
+            if (subject.kind === "player" && this.hiddenInSmoke(player, subject)) continue;
+            if (subject !== player && this.otherFloor(player, subject)) continue;
             next.add(obj.id);
         }
         // the active player is always included

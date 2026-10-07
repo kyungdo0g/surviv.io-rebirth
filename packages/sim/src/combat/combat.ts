@@ -16,6 +16,7 @@ import {
     removeAnchoredDecals,
 } from "../world/buildings.ts";
 import type { SimContext } from "../world/context.ts";
+import { disguiseOf } from "../world/disguise.ts";
 import { downPlayer } from "../world/downed.ts";
 import type { Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
@@ -127,13 +128,17 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     }
     // the body slides along the killing hit, before the loot drops (survev player.ts kill addDeadBody) (M9)
     ctx.deadBodies.add(player.pos, player.id, player.layer, params.dir);
+    // an obstacle disguise dies with its wearer, loot and explosion included (survev player.ts kill obstacleOutfit)
+    const disguise = disguiseOf(ctx, player);
+    if (disguise) destroyObstacle(ctx, disguise, params.dir, params);
     dropEverythingOnDeath(ctx, player);
     goreRegionKill(ctx, player);
 }
 
 /** Whether a damage source may hurt a plated obstacle (stone/armour plating needs a piercing melee weapon). */
 export function canDamageObstacle(obstacle: Obstacle, params: DamageParams): boolean {
-    if (obstacle.dead || !obstacle.destructible) return false;
+    // a disguise takes no hits: it dies with its wearer (survev obstacle.ts damage: isSkin)
+    if (obstacle.dead || obstacle.isSkin || !obstacle.destructible) return false;
     if (params.damageType !== DamageType.Player) return true;
     const src = params.gameSourceType && hasDef(params.gameSourceType) ? GameObjectDefs[params.gameSourceType] : null;
     const pierce = (src ?? {}) as { armorPiercing?: boolean; stonePiercing?: boolean };

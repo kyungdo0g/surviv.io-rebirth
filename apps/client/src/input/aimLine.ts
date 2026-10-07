@@ -69,7 +69,8 @@ export class AimLine {
         const start = frame.pos;
         const end = v2.add(start, v2.mul(frame.dir, range));
         world?.forEachView("obstacle", (o) => {
-            if (o.dead || !sameLayer(o.layer, frame.layer)) return;
+            // disguises never collide (survev obstacle.ts isSkin)
+            if (o.dead || o.skinPlayerId !== undefined || !sameLayer(o.layer, frame.layer)) return;
             const od = MapObjectDefs[o.type] as ObstacleDef | undefined;
             if (!od?.collidable || od.isWindow || od.height < GameConfig.bullet.height) return;
             if (def?.type === "throwable" && od.height <= GameConfig.projectile.maxHeight) return;

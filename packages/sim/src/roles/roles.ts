@@ -9,6 +9,7 @@ import { dropGun, playerDropLoot } from "../loot/drops.ts";
 import { addPerk, giveHaste, removePerk, removePerksWhere } from "../perks/perks.ts";
 import { gunDef } from "../weapons/weaponManager.ts";
 import type { SimContext } from "../world/context.ts";
+import { setOutfit } from "../world/disguise.ts";
 import type { Player } from "../world/player.ts";
 import { type ResolvedLoadout, resolveLoadout, resolveRolePerks, roleLoadout } from "./loadouts.ts";
 
@@ -114,7 +115,7 @@ function applyLoadout(ctx: SimContext, player: Player, kit: ResolvedLoadout, opt
         if (!old.noDrop && !old.noDropOnDeath && player.outfit !== player.loadoutOutfit) {
             playerDropLoot(ctx, player, player.outfit);
         }
-        player.outfit = kit.outfit;
+        setOutfit(ctx, player, kit.outfit);
     }
     if (kit.helmet) {
         if (player.helmet && !player.hasRoleHelmet) {
