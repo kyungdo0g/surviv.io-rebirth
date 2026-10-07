@@ -33,7 +33,10 @@ export interface RoleRules {
     lastManCount: number;
     /** promotion to Lone Survivr: 100 HP, 100 adrenaline and the Windwalk haste for 5 s (survev promoteToRole) */
     lastManHasteDuration: number;
-    /** third Lone Survivr perk, one at random (conflicts.md role-lone-survivr-perks: v0.8.82 1/3 each) */
+    /**
+     * extra Lone Survivr perk, one at random (conflicts.md role-lone-survivr-perks: v0.8.82 1/3 each); empty under
+     * survev balance, whose role def lists four perks, two of them weighted picks (survev roleDefs.ts last_man)
+     */
     lastManExtraPerks: readonly string[];
     /**
      * When a team's Commander dies (or leaves), its first living, standing Lieutenant becomes its Captain (Assume
@@ -95,7 +98,7 @@ export function defaultRoleRules(): RoleRules {
         afkStillTime: 5,
         lastManCount: 2,
         lastManHasteDuration: 5,
-        lastManExtraPerks: ["takedown", "windwalk", "field_medic"],
+        lastManExtraPerks: [],
         commanderSuccession: true,
         classlessPerkPool: [
             "combat_stims",

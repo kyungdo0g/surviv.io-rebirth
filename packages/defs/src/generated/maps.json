@@ -537,7 +537,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -547,12 +547,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -692,6 +687,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -777,9 +777,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -884,12 +889,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -971,6 +976,11 @@
           "name": "dp28",
           "count": 1,
           "weight": 0.55
+        },
+        {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.27
         },
         {
           "name": "mosin",
@@ -1088,6 +1098,11 @@
           "weight": 0.4
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.25
+        },
+        {
           "name": "mp220",
           "count": 1,
           "weight": 0.15
@@ -1106,11 +1121,6 @@
           "name": "m9",
           "count": 1,
           "weight": 0.01
-        },
-        {
-          "name": "hk416",
-          "count": 1,
-          "weight": 0.25
         }
       ],
       "tier_lmgs": [
@@ -1340,7 +1350,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -1355,7 +1365,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -1534,7 +1544,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -1696,12 +1706,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -1735,7 +1745,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -2165,6 +2175,11 @@
           "weight": 0.75
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "mosin",
           "count": 1,
           "weight": 1.5
@@ -2283,10 +2298,15 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.5
+          "weight": 1
         },
         {
           "name": "scarssr",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sv98",
           "count": 1,
           "weight": 1
         },
@@ -2298,12 +2318,12 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 0.3
+          "weight": 1
         },
         {
           "name": "m249",
           "count": 1,
-          "weight": 0.3
+          "weight": 1
         },
         {
           "name": "barrett",
@@ -2313,7 +2333,7 @@
         {
           "name": "awc",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.75
         }
       ],
       "tier_airdrop_ammo": [
@@ -3671,7 +3691,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -3681,12 +3701,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -3831,6 +3846,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -3916,9 +3936,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -4023,12 +4048,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -4484,7 +4509,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -4499,7 +4524,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -4678,7 +4703,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -4840,12 +4865,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -4879,7 +4904,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -6863,7 +6888,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -6873,12 +6898,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -7018,6 +7038,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -7103,9 +7128,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -7210,12 +7240,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -7671,7 +7701,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -7686,7 +7716,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -7865,7 +7895,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -8027,12 +8057,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -8066,7 +8096,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -10045,7 +10075,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -10055,12 +10085,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -10205,6 +10230,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -10297,7 +10327,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -10377,7 +10407,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
+        },
+        {
+          "name": "mkg45",
+          "count": 1,
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -10833,7 +10868,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -10848,7 +10883,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -11027,7 +11062,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -11189,12 +11224,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -11228,7 +11263,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -11716,6 +11751,11 @@
           "name": "colt45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "mkg45",
+          "count": 1,
+          "weight": 2.5
         }
       ],
       "tier_airdrop_rare": [
@@ -11732,7 +11772,7 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 3
+          "weight": 0.08
         },
         {
           "name": "m249",
@@ -11960,6 +12000,11 @@
           "name": "mkg45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "tier_airdrop_crimson",
+          "count": 1,
+          "weight": 0.22
         }
       ],
       "tier_cattle_crate": [
@@ -11986,7 +12031,7 @@
         {
           "name": "outfitDesertCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.3
         }
       ],
       "tier_cloud_02": [
@@ -12161,6 +12206,11 @@
         },
         {
           "name": "amped_explosives",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "explosive",
           "count": 1,
           "weight": 1
         }
@@ -13297,7 +13347,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -13307,12 +13357,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -13452,6 +13497,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -13537,9 +13587,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -13641,7 +13696,7 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
@@ -13728,6 +13783,11 @@
           "name": "dp28",
           "count": 1,
           "weight": 0.55
+        },
+        {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.27
         },
         {
           "name": "mosin",
@@ -14092,7 +14152,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -14107,7 +14167,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -14286,7 +14346,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -14448,12 +14508,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -14487,7 +14547,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -14909,47 +14969,67 @@
         {
           "name": "vector",
           "count": 1,
-          "weight": 1
+          "weight": 2
+        },
+        {
+          "name": "vss",
+          "count": 1,
+          "weight": 2
         },
         {
           "name": "m39",
           "count": 1,
-          "weight": 2.5
+          "weight": 2
         },
         {
           "name": "mk12",
           "count": 1,
-          "weight": 2.5
+          "weight": 2
         },
         {
           "name": "saiga",
           "count": 1,
-          "weight": 1
+          "weight": 2
         },
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 1.5
+          "weight": 2
+        },
+        {
+          "name": "bar",
+          "count": 1,
+          "weight": 2
         },
         {
           "name": "scar",
           "count": 1,
-          "weight": 0.75
+          "weight": 1.5
         },
         {
           "name": "mosin",
           "count": 1,
-          "weight": 2.5
+          "weight": 1
         },
         {
           "name": "qbb97",
           "count": 1,
-          "weight": 1.5
+          "weight": 1
         },
         {
           "name": "deagle",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ots38_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "garand",
+          "count": 1,
+          "weight": 0.5
         },
         {
           "name": "sv98",
@@ -14966,30 +15046,40 @@
         {
           "name": "scorpion",
           "count": 1,
-          "weight": 5
+          "weight": 3
         },
         {
           "name": "m4a1",
           "count": 1,
-          "weight": 4
+          "weight": 3
         },
         {
-          "name": "awc",
+          "name": "grozas",
           "count": 1,
           "weight": 3
         },
         {
+          "name": "awc",
+          "count": 1,
+          "weight": 2.25
+        },
+        {
           "name": "garand",
           "count": 1,
-          "weight": 6
+          "weight": 2
         },
         {
           "name": "ots38_dual",
           "count": 1,
-          "weight": 4.5
+          "weight": 2
         },
         {
           "name": "spas16",
+          "count": 1,
+          "weight": 2
+        },
+        {
+          "name": "sv98",
           "count": 1,
           "weight": 2
         },
@@ -15004,9 +15094,19 @@
           "weight": 0.5
         },
         {
+          "name": "p30l_dual",
+          "count": 1,
+          "weight": 0.3
+        },
+        {
+          "name": "deagle_dual",
+          "count": 1,
+          "weight": 0.3
+        },
+        {
           "name": "pkp",
           "count": 1,
-          "weight": 0.08
+          "weight": 0.1
         },
         {
           "name": "m249",
@@ -15133,12 +15233,32 @@
         {
           "name": "",
           "count": 1,
-          "weight": 19
+          "weight": 2
+        },
+        {
+          "name": "tier_katanas",
+          "count": 1,
+          "weight": 3
+        },
+        {
+          "name": "naginata",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "fireaxe",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sledgehammer",
+          "count": 1,
+          "weight": 1
         },
         {
           "name": "pan",
           "count": 1,
-          "weight": 1
+          "weight": 0.5
         }
       ],
       "tier_airdrop_armor": [
@@ -15162,7 +15282,7 @@
         {
           "name": "",
           "count": 1,
-          "weight": 24
+          "weight": 12
         },
         {
           "name": "4xscope",
@@ -15177,7 +15297,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.02
+          "weight": 0.01
         }
       ],
       "tier_katanas": [
@@ -19953,7 +20073,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -19963,12 +20083,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -20108,6 +20223,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -20193,9 +20313,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -20300,12 +20425,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -21025,7 +21150,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -21187,12 +21312,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -21226,7 +21351,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -23164,7 +23289,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -23174,12 +23299,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -23317,6 +23437,11 @@
           "name": "m249",
           "count": 1,
           "weight": 0.2
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
         },
         {
           "name": "awc",
@@ -23605,19 +23730,14 @@
           "weight": 0.1
         },
         {
-          "name": "vector",
+          "name": "potato_cannon",
           "count": 1,
-          "weight": 0.4
+          "weight": 0.1
         },
         {
-          "name": "mp220",
+          "name": "potato_smg",
           "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "m9",
-          "count": 1,
-          "weight": 0.01
+          "weight": 0.1
         }
       ],
       "tier_lmgs": [
@@ -23847,7 +23967,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -23862,7 +23982,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -24041,7 +24161,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -24203,12 +24323,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -24242,7 +24362,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -24741,7 +24861,7 @@
         {
           "name": "potato_smg",
           "count": 1,
-          "weight": 0.1
+          "weight": 1
         },
         {
           "name": "potato_lmg",
@@ -26233,7 +26353,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -26243,12 +26363,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -26391,6 +26506,11 @@
           "name": "m249",
           "count": 1,
           "weight": 0.2
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
         },
         {
           "name": "awc",
@@ -26679,19 +26799,14 @@
           "weight": 0.1
         },
         {
-          "name": "vector",
+          "name": "potato_cannon",
           "count": 1,
-          "weight": 0.4
+          "weight": 0.1
         },
         {
-          "name": "mp220",
+          "name": "potato_smg",
           "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "m9",
-          "count": 1,
-          "weight": 0.01
+          "weight": 0.1
         }
       ],
       "tier_lmgs": [
@@ -26921,7 +27036,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -26936,7 +27051,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -27115,7 +27230,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -27277,12 +27392,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -27316,7 +27431,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -27815,7 +27930,7 @@
         {
           "name": "potato_smg",
           "count": 1,
-          "weight": 0.1
+          "weight": 1
         },
         {
           "name": "potato_lmg",
@@ -29297,7 +29412,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -29307,12 +29422,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -29372,15 +29482,30 @@
         {
           "name": "ots38_dual",
           "count": 1,
-          "weight": 1
+          "weight": 1.5
         },
         {
           "name": "flare_gun",
           "count": 1,
-          "weight": 1
+          "weight": 1.5
         },
         {
           "name": "svd_winter",
+          "count": 1,
+          "weight": 1.5
+        },
+        {
+          "name": "762mm",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "snowball",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "scar",
           "count": 1,
           "weight": 1.5
         },
@@ -29397,32 +29522,7 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "colt45",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "45acp",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "painkiller",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m4a1",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 1
+          "weight": 0.75
         }
       ],
       "tier_eye_stone": [
@@ -29465,6 +29565,11 @@
           "name": "m249",
           "count": 1,
           "weight": 0.2
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
         },
         {
           "name": "awc",
@@ -29552,9 +29657,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -29659,12 +29769,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -29746,6 +29856,11 @@
           "name": "dp28",
           "count": 1,
           "weight": 0.55
+        },
+        {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.27
         },
         {
           "name": "mosin",
@@ -30115,7 +30230,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitWoodland",
@@ -30130,7 +30245,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "outfitSnow",
@@ -30314,7 +30429,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -30476,12 +30591,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -30515,7 +30630,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -31161,7 +31276,7 @@
         {
           "name": "",
           "count": 1,
-          "weight": 19
+          "weight": 18
         },
         {
           "name": "iceaxe",
@@ -32255,7 +32370,7 @@
         {
           "name": "tier_medical",
           "count": 1,
-          "weight": 0.6
+          "weight": 0.75
         },
         {
           "name": "tier_throwables",
@@ -32265,7 +32380,7 @@
         {
           "name": "tier_outfits",
           "count": 1,
-          "weight": 0.025
+          "weight": 0.05
         }
       ],
       "tier_scopes": [
@@ -32294,12 +32409,12 @@
         {
           "name": "helmet01",
           "count": 1,
-          "weight": 3
+          "weight": 2.5
         },
         {
           "name": "helmet02",
           "count": 1,
-          "weight": 2
+          "weight": 2.5
         },
         {
           "name": "helmet03",
@@ -32309,12 +32424,12 @@
         {
           "name": "chest01",
           "count": 1,
-          "weight": 3
+          "weight": 2.5
         },
         {
           "name": "chest02",
           "count": 1,
-          "weight": 2
+          "weight": 2.5
         },
         {
           "name": "chest03",
@@ -32326,12 +32441,12 @@
         {
           "name": "backpack01",
           "count": 1,
-          "weight": 3
+          "weight": 2
         },
         {
           "name": "backpack02",
           "count": 1,
-          "weight": 2
+          "weight": 3
         },
         {
           "name": "backpack03",
@@ -32504,7 +32619,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -32514,12 +32629,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -32659,6 +32769,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -32706,17 +32821,22 @@
         {
           "name": "dp28",
           "count": 1,
-          "weight": 3.5
+          "weight": 2.75
         },
         {
           "name": "bar",
           "count": 1,
-          "weight": 3
+          "weight": 2.75
         },
         {
           "name": "imbel",
           "count": 1,
           "weight": 2.75
+        },
+        {
+          "name": "m870",
+          "count": 1,
+          "weight": 2.5
         },
         {
           "name": "m1100",
@@ -32726,27 +32846,32 @@
         {
           "name": "mp220",
           "count": 1,
-          "weight": 1.5
+          "weight": 2
         },
         {
           "name": "saiga",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "spas12",
           "count": 1,
-          "weight": 3
+          "weight": 2.5
         },
         {
           "name": "qbb97",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.125
         },
         {
           "name": "pkp",
           "count": 1,
-          "weight": 0.005
+          "weight": 0.007
+        },
+        {
+          "name": "m249",
+          "count": 1,
+          "weight": 0.011
         }
       ],
       "tier_police": [
@@ -32843,6 +32968,11 @@
           "name": "pkp",
           "count": 1,
           "weight": 0.05
+        },
+        {
+          "name": "m249",
+          "count": 1,
+          "weight": 0.05
         }
       ],
       "tier_conch": [
@@ -32887,12 +33017,12 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 0.08
+          "weight": 0.25
         },
         {
           "name": "m249",
           "count": 1,
-          "weight": 1
+          "weight": 0.75
         }
       ],
       "tier_lmgs": [
@@ -33122,7 +33252,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -33137,7 +33267,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -33316,7 +33446,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -33478,12 +33608,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -33517,7 +33647,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -33959,19 +34089,19 @@
         {
           "name": "qbb97",
           "count": 1,
-          "weight": 2
+          "weight": 1
         }
       ],
       "tier_airdrop_rare": [
         {
           "name": "usas",
           "count": 1,
-          "weight": 2
+          "weight": 1.5
         },
         {
           "name": "pkp",
           "count": 1,
-          "weight": 0.08
+          "weight": 0.75
         },
         {
           "name": "m249",
@@ -34108,12 +34238,12 @@
         {
           "name": "",
           "count": 1,
-          "weight": 19
+          "weight": 13
         },
         {
           "name": "stonehammer",
           "count": 1,
-          "weight": 1
+          "weight": 3
         },
         {
           "name": "pan",
@@ -35303,12 +35433,17 @@
         {
           "name": "smoke",
           "count": 1,
-          "weight": 1
+          "weight": 0.75
         },
         {
           "name": "snowball",
           "count": 5,
           "weight": 0.5
+        },
+        {
+          "name": "strobe",
+          "count": 1,
+          "weight": 0.2
         }
       ],
       "tier_ammo": [
@@ -35432,7 +35567,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -35442,12 +35577,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -35502,15 +35632,30 @@
         {
           "name": "ots38_dual",
           "count": 1,
-          "weight": 1
+          "weight": 1.5
         },
         {
           "name": "flare_gun",
           "count": 1,
-          "weight": 1
+          "weight": 1.5
         },
         {
           "name": "svd_winter",
+          "count": 1,
+          "weight": 1.5
+        },
+        {
+          "name": "762mm",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "snowball",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "scar",
           "count": 1,
           "weight": 1.5
         },
@@ -35527,32 +35672,7 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "colt45",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "45acp",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "painkiller",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m4a1",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 1
+          "weight": 0.75
         }
       ],
       "tier_eye_stone": [
@@ -35595,6 +35715,11 @@
           "name": "m249",
           "count": 1,
           "weight": 0.2
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
         },
         {
           "name": "awc",
@@ -35669,7 +35794,7 @@
         {
           "name": "mp220",
           "count": 1,
-          "weight": 1.5
+          "weight": 2
         },
         {
           "name": "saiga",
@@ -35789,6 +35914,11 @@
         },
         {
           "name": "pkp",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
+          "name": "m249",
           "count": 1,
           "weight": 0.05
         }
@@ -35989,11 +36119,6 @@
           "name": "iceaxe",
           "count": 1,
           "weight": 1
-        },
-        {
-          "name": "stonehammer",
-          "count": 1,
-          "weight": 1
         }
       ],
       "tier_fireaxe": [
@@ -36075,12 +36200,12 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitWoodland",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.3
         },
         {
           "name": "outfitBlackIce",
@@ -36090,7 +36215,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "outfitSnow",
@@ -36101,11 +36226,6 @@
           "name": "outfitGhillie",
           "count": 1,
           "weight": 0.01
-        },
-        {
-          "name": "outfitKeyLime",
-          "count": 1,
-          "weight": 0.15
         }
       ],
       "tier_egg_outfits": [
@@ -36279,7 +36399,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -36441,12 +36561,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -36480,7 +36600,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -37032,7 +37152,12 @@
         {
           "name": "",
           "count": 1,
-          "weight": 20
+          "weight": 16
+        },
+        {
+          "name": "outfitSpetsnaz",
+          "count": 1,
+          "weight": 5
         },
         {
           "name": "outfitMeteor",
@@ -37043,11 +37168,6 @@
           "name": "outfitGhillie",
           "count": 1,
           "weight": 0.5
-        },
-        {
-          "name": "outfitHeaven",
-          "count": 1,
-          "weight": 1
         }
       ],
       "tier_airdrop_throwables": [
@@ -37055,6 +37175,11 @@
           "name": "mirv",
           "count": 2,
           "weight": 1
+        },
+        {
+          "name": "strobe",
+          "count": 1,
+          "weight": 0.5
         },
         {
           "name": "snowball",
@@ -38394,7 +38519,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -38404,12 +38529,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -38554,6 +38674,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -38626,7 +38751,7 @@
         {
           "name": "mp220",
           "count": 1,
-          "weight": 1.5
+          "weight": 2
         },
         {
           "name": "saiga",
@@ -38746,6 +38871,11 @@
         },
         {
           "name": "pkp",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
+          "name": "m249",
           "count": 1,
           "weight": 0.05
         }
@@ -39027,7 +39157,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -39042,7 +39172,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -39221,7 +39351,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -39383,12 +39513,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -39422,7 +39552,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -41323,7 +41453,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -41333,12 +41463,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -41478,6 +41603,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -41550,7 +41680,7 @@
         {
           "name": "mp220",
           "count": 1,
-          "weight": 1.5
+          "weight": 2
         },
         {
           "name": "saiga",
@@ -41670,6 +41800,11 @@
         },
         {
           "name": "pkp",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
+          "name": "m249",
           "count": 1,
           "weight": 0.05
         }
@@ -41951,7 +42086,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -41966,7 +42101,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -42145,7 +42280,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -42307,12 +42442,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -42346,7 +42481,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -43997,12 +44132,12 @@
         {
           "name": "helmet01",
           "count": 1,
-          "weight": 9
+          "weight": 4
         },
         {
           "name": "helmet02",
           "count": 1,
-          "weight": 6
+          "weight": 4
         },
         {
           "name": "helmet03",
@@ -44012,12 +44147,12 @@
         {
           "name": "chest01",
           "count": 1,
-          "weight": 15
+          "weight": 6
         },
         {
           "name": "chest02",
           "count": 1,
-          "weight": 6
+          "weight": 4
         },
         {
           "name": "chest03",
@@ -44227,7 +44362,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -44237,7 +44372,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -44350,6 +44485,11 @@
           "name": "painkiller",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
         },
         {
           "name": "awc",
@@ -44507,21 +44647,6 @@
           "weight": 0.45
         },
         {
-          "name": "scarssr",
-          "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "awc",
-          "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "sv98",
-          "count": 1,
-          "weight": 0.1
-        },
-        {
           "name": "sw500",
           "count": 1,
           "weight": 0.09
@@ -44530,6 +44655,21 @@
           "name": "barrett",
           "count": 1,
           "weight": 0.06
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.06
+        },
+        {
+          "name": "awc",
+          "count": 1,
+          "weight": 0.06
+        },
+        {
+          "name": "sv98",
+          "count": 1,
+          "weight": 0.09
         }
       ],
       "tier_police": [
@@ -44840,7 +44980,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -44855,7 +44995,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -45034,7 +45174,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -45121,12 +45261,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -45480,11 +45620,6 @@
           "weight": 2.5
         },
         {
-          "name": "sv98",
-          "count": 1,
-          "weight": 0.5
-        },
-        {
           "name": "m9",
           "count": 1,
           "weight": 0.01
@@ -45515,16 +45650,6 @@
           "weight": 0.75
         },
         {
-          "name": "scarssr",
-          "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "awc",
-          "count": 1,
-          "weight": 0.15
-        },
-        {
           "name": "sw500",
           "count": 1,
           "weight": 0.25
@@ -45533,6 +45658,21 @@
           "name": "barrett",
           "count": 1,
           "weight": 0.075
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.075
+        },
+        {
+          "name": "awc",
+          "count": 1,
+          "weight": 0.075
+        },
+        {
+          "name": "sv98",
+          "count": 1,
+          "weight": 0.2
         }
       ],
       "tier_airdrop_rare": [
@@ -45542,14 +45682,24 @@
           "weight": 6
         },
         {
+          "name": "sw500",
+          "count": 1,
+          "weight": 2
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1.5
+        },
+        {
           "name": "awc",
           "count": 1,
-          "weight": 3
+          "weight": 1.5
         },
         {
           "name": "scarssr",
           "count": 1,
-          "weight": 3
+          "weight": 1.5
         },
         {
           "name": "sv98",
@@ -45565,16 +45715,6 @@
           "name": "ots38_dual",
           "count": 1,
           "weight": 4.5
-        },
-        {
-          "name": "sw500",
-          "count": 1,
-          "weight": 2
-        },
-        {
-          "name": "barrett",
-          "count": 1,
-          "weight": 1.5
         }
       ],
       "tier_airdrop_crimson": [
@@ -46008,6 +46148,11 @@
         },
         {
           "name": "bonus_9mm",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "bonus_45",
           "count": 1,
           "weight": 1
         },
@@ -47014,7 +47159,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -47024,12 +47169,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -47169,6 +47309,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -47261,7 +47406,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -47366,12 +47511,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -47980,6 +48125,16 @@
           "name": "ot38_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "m93r_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "deagle",
+          "count": 1,
+          "weight": 0.3
         }
       ],
       "tier_guns_common_sniper": [
@@ -47991,7 +48146,12 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
+        },
+        {
+          "name": "scout_elite",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_healer": [
@@ -48004,6 +48164,11 @@
           "name": "m39",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "vss",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_demo": [
@@ -48014,6 +48179,11 @@
         },
         {
           "name": "spas12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "mp220",
           "count": 1,
           "weight": 0.5
         }
@@ -48038,6 +48208,11 @@
           "name": "famas",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "scar",
+          "count": 1,
+          "weight": 0.4
         }
       ],
       "tier_guns_common_tank": [
@@ -48054,7 +48229,12 @@
         {
           "name": "qbb97",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.25
+        },
+        {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_guns_common_classless": [
@@ -48128,12 +48308,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -48145,12 +48325,12 @@
         {
           "name": "sv98",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "awc",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_guns_rare_demo": [
@@ -48167,12 +48347,12 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
-          "name": "mp220",
+          "name": "m1014",
           "count": 1,
-          "weight": 1
+          "weight": 0.15
         }
       ],
       "tier_guns_rare_healer": [
@@ -48189,7 +48369,12 @@
         {
           "name": "garand",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.44
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.2
         }
       ],
       "tier_guns_rare_assault": [
@@ -48211,7 +48396,7 @@
         {
           "name": "an94",
           "count": 1,
-          "weight": 0.5
+          "weight": 1
         }
       ],
       "tier_guns_rare_tank": [
@@ -48228,7 +48413,7 @@
         {
           "name": "m249",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.2
         }
       ],
       "tier_guns_rare_classless": [
@@ -48332,6 +48517,11 @@
           "name": "bandage",
           "count": 5,
           "weight": 4
+        },
+        {
+          "name": "healthkit",
+          "count": 1,
+          "weight": 6
         }
       ],
       "tier_scavenger_adv": [
@@ -50131,7 +50321,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -50141,12 +50331,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -50286,6 +50471,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -50378,7 +50568,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -50483,12 +50673,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -50944,7 +51134,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -50959,7 +51149,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -51138,7 +51328,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -51300,12 +51490,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -51339,7 +51529,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",

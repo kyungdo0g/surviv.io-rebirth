@@ -347,6 +347,7 @@ describe("survev-only guns: stats", () => {
         expect(Object.keys(SKIN_WIKI).sort()).toEqual(Object.keys(SURVEV_GUN_SKINS).sort());
         const gaps = new Map(SKIN_WIKI_GAPS.map((g) => [`${g.id}.${g.field}`, g]));
         const seen = new Set<string>();
+        const closed = new Set<string>();
         for (const [skin, w] of Object.entries(SKIN_WIKI)) {
             const gun = getDefOfType("gun", skin);
             const base = getDefOfType("gun", SURVEV_GUN_SKINS[skin]);
@@ -374,13 +375,25 @@ describe("survev-only guns: stats", () => {
                     continue;
                 }
                 seen.add(key);
-                // a listed gap: ours is the base's 0.8.82 value; the entry fails once option B closes it
+                expect(gap.wikiRef, key).toContain(w.page.split(" rev ")[0]);
+                // option B (policy survevBalance) gives the base survev's value: the gap is closed
+                // (docs/handoff/survev-content.md: the lead drops these SKIN_WIKI_GAPS entries)
+                if (survevBalanced(SURVEV_GUN_SKINS[skin], field, base)) {
+                    closed.add(key);
+                    expect(ours, key).toEqual(wiki);
+                    continue;
+                }
+                // a listed gap: ours is the base's 0.8.82 value
                 expect([gap.wiki, gap.rebirth], key).toEqual([wiki, ours]);
                 expect(ours, key).not.toEqual(wiki);
-                expect(gap.wikiRef, key).toContain(w.page.split(" rev ")[0]);
             }
         }
         expect([...seen].sort()).toEqual([...gaps.keys()].sort());
+        expect([...closed].sort()).toEqual(
+            portPolicy.survevBalance
+                ? ["sv98_winter.headshotMult", "svd_winter.bullet.damage", "svd_winter.headshotMult"]
+                : [],
+        );
         expect(SKIN_WIKI_GAPS.map((g) => `${g.id}.${g.field}`)).toEqual([
             "svd_winter.barrelLength",
             "svd_winter.headshotMult",
@@ -393,7 +406,7 @@ describe("survev-only guns: stats", () => {
         // lines 61, 62, 93): the revert record holds the wiki's number as survev's
         const revert: Array<{ target: string; forkValue: unknown; originalValue: unknown }> =
             readOptionalJson("docs/research/provenance/balance-revert.json") ?? [];
-        for (const g of SKIN_WIKI_GAPS.filter((x) => x.field !== "barrelLength")) {
+        for (const g of SKIN_WIKI_GAPS.filter((x) => x.field !== "barrelLength" && !closed.has(`${x.id}.${x.field}`))) {
             const base = getDefOfType("gun", SURVEV_GUN_SKINS[g.id]);
             const target = g.field.startsWith("bullet.")
                 ? `${base.bulletType}.${g.field.slice("bullet.".length)}`
@@ -405,6 +418,12 @@ describe("survev-only guns: stats", () => {
         }
     });
 });
+
+/** Whether the port gave a base gun's field (or its bullet's) survev's value (provenance survevValues, option B). */
+function survevBalanced(baseId: string, field: string, base: { bulletType: string }): boolean {
+    const [id, f] = field.startsWith("bullet.") ? [base.bulletType, field.slice("bullet.".length)] : [baseId, field];
+    return (provenance.survevValues ?? []).some((c: { id: string; field: string }) => c.id === id && c.field === f);
+}
 
 describe("survev-only guns: ammo, ids", () => {
     // wikigg .50 Caliber rev 7198: 50 / 100 / 150 / 200 / 250

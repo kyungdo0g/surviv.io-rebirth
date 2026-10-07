@@ -25,7 +25,7 @@ function onMap(mapName: string): { game: Game; p: Player } {
 const items = (mapName: string, tier: string) => getMapDef(mapName).lootTable[tier].map((e) => e.name);
 
 describe("event map corrections in the ported data (tools/port-survev/lib/eventMaps.ts)", () => {
-    it("savannah: survev's Savannah map generation (Cloud bunker lake, Oasis, brush clumps) with the reconstruction's loot", () => {
+    it("savannah: survev's Savannah map generation (Cloud bunker lake, Oasis, brush clumps) and loot", () => {
         const def = getMapDef("savannah");
         const fixed = def.mapGen.fixedSpawns[0];
         expect(fixed.club_complex_01).toBeUndefined();
@@ -39,7 +39,7 @@ describe("event map corrections in the ported data (tools/port-survev/lib/eventM
             ["crate_02sv_lake", 200],
             ["crate_02sv_lake", 200],
         ]);
-        // loot stays the reconstruction's until the loot stage: ground ammo stacks of 30 including .45 ACP; strobes
+        // survev's Savannah loot (stage 5, survev balance): ground ammo stacks of 30 including .45 ACP; strobes
         expect(def.lootTable.tier_ammo.map((e) => `${e.name}x${e.count}`)).toEqual([
             "9mmx30",
             "45acpx30",
@@ -71,7 +71,7 @@ describe("event map corrections in the ported data (tools/port-survev/lib/eventM
         }
     });
 
-    it("map generation is survev's (survev content wave stage 3); only the loot parts of the event-map fixes apply", () => {
+    it("map generation and loot are survev's (survev content wave stages 3 and 5): no event-map fix applies", () => {
         // survev/shared/defs/maps/turkeyDefs.ts: 25 green and 12 orange squashes, the normal gold drop
         expect(getMapDef("turkey").mapGen.densitySpawns[0]).toMatchObject({ squash_01: 25, squash_02: 12 });
         const desert = getMapDef("desert");
@@ -79,8 +79,8 @@ describe("event map corrections in the ported data (tools/port-survev/lib/eventM
         expect(desert.mapGen.map.rivers.lakes.map((l) => l.centerObj)).toEqual(["oasis_01"]);
         expect(desert.mapGen.fixedSpawns[0].barn_02d).toBe(1);
         expect(desert.gameConfig.planes.crates.map((c) => c.name)).toContain("airdrop_crate_05");
-        // the desert fix's loot part still applies (desert.md CONFLICT desert-pkp-airdrop-rare)
-        expect(desert.lootTable.tier_airdrop_rare.find((e) => e.name === "pkp")?.weight).toBe(3);
+        // survev's PKP weight in rare air drops (desert.md CONFLICT desert-pkp-airdrop-rare; survev baseDefs.ts:612)
+        expect(desert.lootTable.tier_airdrop_rare.find((e) => e.name === "pkp")?.weight).toBe(0.08);
         expect(getMapDef("snow").mapGen.fixedSpawns[0].stone_04x).toBe(3);
         expect(getMapDef("main_spring").mapGen.fixedSpawns[0]).toMatchObject({ warehouse_03: 1 });
         expect(getMapDef("woods").mapGen.fixedSpawns[0]).toMatchObject({ cache_01w: 1, workshop_complex_01: 1 });

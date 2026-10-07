@@ -17,6 +17,11 @@ export interface PortPolicy {
     survevMapGen: boolean;
     /** original map object ids whose survev def replaces the original (structure overrides: the Reserve's town) */
     survevMapObjects: string[];
+    /**
+     * survev balance (survev content wave stage 5, design option B): no balance revert and no event-map fixes; the
+     * original game objects take survev's gameplay fields (lib/objects.ts SURVEV_GAMEPLAY_FIELDS), presentation stays
+     */
+    survevBalance: boolean;
 }
 
 const stringList = (v: unknown, what: string): string[] => {
@@ -35,6 +40,7 @@ export function parsePolicy(raw: unknown): PortPolicy {
         "survevGameConfig",
         "survevMapGen",
         "survevMapObjects",
+        "survevBalance",
     ]);
     const unknown = Object.keys(raw).filter((k) => !known.has(k));
     if (unknown.length) throw new Error(`policy.json: unknown keys ${unknown.join(", ")}`);
@@ -48,9 +54,12 @@ export function parsePolicy(raw: unknown): PortPolicy {
         survevGameConfig: stringList(raw.survevGameConfig ?? [], "survevGameConfig"),
         survevMapGen: raw.survevMapGen === true,
         survevMapObjects: stringList(raw.survevMapObjects ?? [], "survevMapObjects"),
+        survevBalance: raw.survevBalance === true,
     };
-    if (raw.survevMapGen !== undefined && typeof raw.survevMapGen !== "boolean") {
-        throw new Error("policy.json: survevMapGen must be a boolean");
+    for (const key of ["survevMapGen", "survevBalance"] as const) {
+        if (raw[key] !== undefined && typeof raw[key] !== "boolean") {
+            throw new Error(`policy.json: ${key} must be a boolean`);
+        }
     }
     const twice = policy.survevOnlyGameObjects.filter((id) => id in policy.survevSkins);
     if (twice.length) throw new Error(`policy.json: ${twice.join(", ")} listed both as survev-only and as skins`);

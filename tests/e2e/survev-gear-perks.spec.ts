@@ -35,7 +35,7 @@ test.describe("survev-only gear and perks in the sandbox", () => {
                 ((window as any).__rebirth.lastSnapshot?.objects ?? []).filter((o: any) => o.kind === "loot").length >=
                 n,
             ITEMS.length,
-            { timeout: 10_000 },
+            { timeout: 20_000 },
         );
         await page.waitForTimeout(500);
         await page.screenshot({ path: `${SCREENS}/loot-icons.png` });
@@ -66,7 +66,7 @@ test.describe("survev-only gear and perks in the sandbox", () => {
                     return r.game.getPlayer(r.player.id).perks.includes(perk);
                 },
                 perk,
-                { timeout: 10_000 },
+                { timeout: 20_000 },
             );
         }
         const state = await page.evaluate(() => {

@@ -28,6 +28,7 @@ export const portPolicy: {
     survevSkins: Record<string, string>;
     survevGameConfig: string[];
     survevMapGen?: boolean;
+    survevBalance?: boolean;
     survevMapObjects: string[];
 } = JSON.parse(readFileSync(`${REPO_ROOT}tools/port-survev/policy.json`, "utf8"));
 

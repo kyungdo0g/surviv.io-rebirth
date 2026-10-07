@@ -10,7 +10,7 @@ import { addPerk, giveHaste, removePerk, removePerksWhere } from "../perks/perks
 import { gunDef } from "../weapons/weaponManager.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
-import { type ResolvedLoadout, resolveLoadout, roleLoadout } from "./loadouts.ts";
+import { type ResolvedLoadout, resolveLoadout, resolveRolePerks, roleLoadout } from "./loadouts.ts";
 
 const MAX_STAT = 100;
 
@@ -59,7 +59,7 @@ export function promoteToRole(ctx: SimContext, player: Player, role: string, opt
         player.boost = MAX_STAT;
         giveHaste(player, "windwalk", rules.lastManHasteDuration);
     }
-    const newPerks = new Set(def.perks ?? []);
+    const newPerks = new Set(resolveRolePerks(def.perks ?? [], ctx.roleRng));
     if (role === "last_man" && rules.lastManExtraPerks.length > 0)
         newPerks.add(ctx.roleRng.pick(rules.lastManExtraPerks));
     // Classless: one random class perk it does not hold; earlier role perks stay (survev player.ts:935-972)

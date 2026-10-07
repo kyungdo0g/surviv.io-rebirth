@@ -28,16 +28,21 @@ export interface RoleWeapon {
 
 export type RoleWeaponSpec = RoleWeapon | Weighted<RoleWeapon> | ByTeam<RoleWeapon | Weighted<RoleWeapon>>;
 
+/** A role kit (survev roleDefs defaultItems): a role def's own, or a map's partial override. */
+export interface RoleDefaultItems {
+    weapons?: RoleWeaponSpec[];
+    backpack?: string;
+    helmet?: string | ByTeam<string>;
+    chest?: string;
+    outfit?: string | ByTeam<string>;
+    /** the role's outfit cannot be swapped for a looted one (the Commander, the Captain) */
+    noDropOutfit?: boolean;
+    inventory?: Record<string, number>;
+}
+
 /** Partial role loadout applied by a map (survev server data). */
 export interface RoleOverride {
-    defaultItems?: {
-        weapons?: RoleWeaponSpec[];
-        backpack?: string;
-        helmet?: string | ByTeam<string>;
-        chest?: string;
-        outfit?: string | ByTeam<string>;
-        inventory?: Record<string, number>;
-    };
+    defaultItems?: RoleDefaultItems;
     [key: string]: unknown;
 }
 

@@ -2,7 +2,7 @@
 // flight with bounces, dropping at the feet, inventory and slot cycling, smoke, MIRV splits, strobe air strikes,
 // snowball impacts and the potato guns' projectiles.
 import { createRng, v2 } from "@rebirth/core";
-import { DamageType, GameConfig, Input, WeaponSlot } from "@rebirth/defs";
+import { DamageType, GameConfig, getDefOfType, Input, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { emptyInput, Game } from "../src/index.ts";
 import { giveGun, send, steps } from "./combatHelpers.ts";
@@ -213,8 +213,9 @@ describe("other throwables", () => {
                     }
                 }
             }
-            // strikeDelay 2.5 s (conflicts.md strobe-strike-delay), first plane 1 s later, all within 3 s
-            expect((pingTick - thrown) * 0.01).toBeCloseTo(2.5, 6);
+            // strikeDelay (survev 3 s since stage 5's survev balance; conflicts.md strobe-strike-delay), first plane
+            // 1 s later, all within 3 s
+            expect((pingTick - thrown) * 0.01).toBeCloseTo(getDefOfType("throwable", "strobe").strikeDelay!, 6);
             const n = brokenArrow ? 5 : 3;
             expect(planeTicks).toHaveLength(n);
             expect((planeTicks[0] - pingTick) * 0.01).toBeCloseTo(1, 6);
@@ -238,7 +239,21 @@ describe("other throwables", () => {
         cookAndThrow(game, p, 10);
         untilExplosions(game, 1, 200);
         expect(log[0].type).toBe("explosion_snowball");
-        expect(100 - target.health).toBeCloseTo(2, 9);
+        expect(100 - target.health).toBeCloseTo(getDefOfType("explosion", "explosion_snowball").damage, 9);
+    });
+
+    it("a snowball held 1 s leaves as a heavy snowball; the bag loses a plain one (survev weaponManager.ts:1229)", () => {
+        const origin = clearSpot();
+        const { game, p } = fxGame(origin);
+        const target = game.getPlayer(game.addPlayer("t"))!;
+        game.teleportPlayer(target.id, { x: origin.x + 10, y: origin.y });
+        holdThrowable(p, "snowball", 3);
+        const log = logExplosions(game);
+        cookAndThrow(game, p, 110);
+        untilExplosions(game, 1, 400);
+        expect(log[0].type).toBe("explosion_snowball_heavy");
+        expect(p.inv.get("snowball")).toBe(2);
+        expect(100 - target.health).toBeCloseTo(getDefOfType("explosion", "explosion_snowball_heavy").damage, 9);
     });
 });
 

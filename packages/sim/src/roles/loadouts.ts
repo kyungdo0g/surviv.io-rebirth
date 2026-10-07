@@ -5,7 +5,17 @@
 // no healing items on promotion (conflicts.md role-promotion-heals), no Bugler pan (role-bugler-pan), the Grenadier's
 // MP220 with 12 frags + 8 MIRVs (grenadier-weapon, grenadier-grenades), the Lone Survivr's M249 / PKP 50/50.
 import type { Rng } from "@rebirth/core";
-import type { ByTeam, MapDef, RoleOverride, RoleWeapon, RoleWeaponSpec, Weighted } from "@rebirth/defs";
+import {
+    type ByTeam,
+    getDef,
+    hasDef,
+    type MapDef,
+    type RoleDefaultItems,
+    type RoleOverride,
+    type RoleWeapon,
+    type RoleWeaponSpec,
+    type Weighted,
+} from "@rebirth/defs";
 
 type TeamValue<T> = T | ByTeam<T>;
 
@@ -182,9 +192,13 @@ export function resolveWeapon(spec: RoleWeaponSpec, teamId: number, rng: Rng): R
     return pickWeighted<RoleWeapon>(pickTeam<RoleWeapon | Weighted<RoleWeapon>>(spec, teamId), rng);
 }
 
-/** The kit of `role` with the map's override merged in (survev promoteToRole mergeDeep), or null for none. */
+/**
+ * The kit of `role` with the map's override merged in (survev promoteToRole mergeDeep), or null for none. The role
+ * def's own kit (survev defaultItems, survev balance) wins over the kits above.
+ */
 export function roleLoadout(role: string, map: MapDef): RoleLoadout | null {
-    const base = ROLE_LOADOUTS[role];
+    const own = hasDef(role) ? (getDef(role) as { defaultItems?: RoleDefaultItems }).defaultItems : undefined;
+    const base = own ? kitOf(own) : ROLE_LOADOUTS[role];
     const override: RoleOverride | undefined = map.gameConfig.roles?.roleOverrides?.[role];
     const items = override?.defaultItems;
     if (!items) return base ?? null;
@@ -196,6 +210,24 @@ export function roleLoadout(role: string, map: MapDef): RoleLoadout | null {
     if (items.outfit !== undefined) merged.outfit = items.outfit;
     if (items.inventory) merged.inventory = { ...(base?.inventory ?? {}), ...items.inventory };
     return merged;
+}
+
+/** A role def's survev kit as a RoleLoadout (survev lists every bag item, zeros included: those give nothing). */
+function kitOf(items: RoleDefaultItems): RoleLoadout {
+    return {
+        weapons: items.weapons ?? [NONE, NONE, NONE, NONE],
+        backpack: items.backpack || undefined,
+        helmet: items.helmet || undefined,
+        chest: items.chest || undefined,
+        outfit: items.outfit || undefined,
+        noDropOutfit: items.noDropOutfit,
+        inventory: Object.fromEntries(Object.entries(items.inventory ?? {}).filter(([, n]) => n > 0)),
+    };
+}
+
+/** Rolls a role's perk list: survev's weighted entries pick one perk each (the Lone Survivr's second and fourth). */
+export function resolveRolePerks(perks: ReadonlyArray<string | Weighted<{ type: string }>>, rng: Rng): string[] {
+    return perks.map((p) => (typeof p === "string" ? p : pickWeighted(p, rng).type));
 }
 
 /** Picks the team values and rolls the weighted choices of a kit for a player of `teamId`. */

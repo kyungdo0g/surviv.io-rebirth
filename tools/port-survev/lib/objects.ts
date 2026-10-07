@@ -164,6 +164,93 @@ export function portMapObjects(
     return { defs, status, fixups, lootRemovals, excluded, missing };
 }
 
+/**
+ * Gameplay fields per game object type that take survev's value under option B (policy `survevBalance`;
+ * docs/design/survev-content-and-new-guns.md sections 1.2 and 3). Everything else (sprites, sounds, names, lore,
+ * `barrelLength`, `dualOffset`, animations) stays the original client's. Only fields survev defines are taken.
+ */
+export const SURVEV_GAMEPLAY_FIELDS: Readonly<Record<string, readonly string[]>> = {
+    bullet: [
+        "damage",
+        "obstacleDamage",
+        "falloff",
+        "distance",
+        "speed",
+        "variance",
+        "noDistAdj",
+        "useExplosiveRoundsAlt",
+    ],
+    gun: [
+        "ammo",
+        "maxClip",
+        "maxReload",
+        "extendedClip",
+        "extendedReload",
+        "reloadTime",
+        "reloadTimeAlt",
+        "fireDelay",
+        "switchDelay",
+        "shotSpread",
+        "moveSpread",
+        "headshotMult",
+        "fireMode",
+        "burstCount",
+        "burstDelay",
+        "ammoSpawnCount",
+        "quality",
+        "bulletCount",
+        "jitter",
+        "recoilTime",
+    ],
+    melee: ["damage", "obstacleDamage", "attack", "speed", "noPotatoSwap", "armorPiercing", "stonePiercing", "cleave"],
+    throwable: [
+        "fuseTime",
+        "strikeDelay",
+        "throwPhysics",
+        "heavyType",
+        "changeTime",
+        "forceMaxThrowDistance",
+        "cookable",
+    ],
+    explosion: ["damage", "obstacleDamage", "rad", "freezeDuration", "freezeAmount", "dropRandomLoot", "shrapnelCount"],
+    role: ["perks", "defaultItems"],
+    outfit: ["teamId"],
+};
+
+export interface GameplayChange {
+    id: string;
+    field: string;
+    original: unknown;
+    survev: unknown;
+}
+
+/**
+ * Option B (policy `survevBalance`): original game objects (and the survev skins built from them) take survev's
+ * gameplay fields where survev defines them and they differ. Mutates `defs`; returns what changed (provenance
+ * `survevValues`).
+ */
+export function applySurvevGameplay(
+    defs: Record<string, any>,
+    status: Readonly<Record<string, string>>,
+    survev: Readonly<Record<string, any>>,
+    skins: Readonly<Record<string, string>> = {},
+): GameplayChange[] {
+    const changes: GameplayChange[] = [];
+    for (const [id, def] of Object.entries(defs)) {
+        const fields = SURVEV_GAMEPLAY_FIELDS[def.type];
+        // a skin was built from its base's original def: it takes survev's skin values like the base does
+        const eligible = status[id] === "original" || id in skins;
+        if (!eligible || !fields || !(id in survev)) continue;
+        for (const field of fields) {
+            const value = survev[id][field];
+            if (value === undefined || deepEqual(value, def[field])) continue;
+            changes.push({ id, field, original: def[field] ?? "absent", survev: clone(value) });
+            def[field] = clone(value);
+        }
+    }
+    return changes;
+}
+
 /** Map-generation fields of a map object (survev map.ts canSpawn / genOnGrass read them). */
 const MAP_GEN_FIELDS = ["teamId", "terrain"] as const;
 

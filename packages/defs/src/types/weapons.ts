@@ -193,6 +193,8 @@ export interface ThrowableDef extends BaseWeaponDef {
     strikeDelay?: number;
     freezeOnImpact?: boolean;
     heavyType?: string;
+    /** held this long (s) the throwable leaves as its `heavyType` (survev weaponManager.ts:1229-1234) */
+    changeTime?: number;
     forceMaxThrowDistance?: boolean;
     emoteId?: number;
     destroyNonCollidables?: boolean;

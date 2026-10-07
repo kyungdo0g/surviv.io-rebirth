@@ -50,9 +50,18 @@ export function throwThrowable(ctx: SimContext | null, player: Player, noSpeed =
     const wm = player.weaponManager;
     if (!wm.cooking || wm.cookTicker < PLAYER.cookTime - TIME_EPS) return;
     const item = wm.weapons[WeaponSlot.Throwable].type;
-    const def = throwableDef(item);
+    let def = throwableDef(item);
     if (!def || player.inv.get(item) <= 0) return;
-    // TODO(M8): heavy snowballs/potatoes (heavyType) need the original cook time, unknown (throwables.md)
+    // held `changeTime` (1 s) a snowball or potato leaves as its heavy variant; the bag still loses the plain one
+    // (survev weaponManager.ts:1225-1234)
+    let thrown = item;
+    if (def.heavyType && def.changeTime !== undefined && wm.cookTicker >= def.changeTime - TIME_EPS) {
+        const heavy = throwableDef(def.heavyType);
+        if (heavy) {
+            thrown = def.heavyType;
+            def = heavy;
+        }
+    }
     // Hyperfragmentation: x1.75 aim range and x2 throw speed (survev weaponManager.ts:1236-1247)
     const amped = player.hasPerk("amped_explosives") ? rulesOf(player).perks.ampedExplosives : undefined;
     const maxDist = PLAYER.throwableMaxMouseDist * (amped?.throwableRangeMult ?? 1);
@@ -93,16 +102,16 @@ export function throwThrowable(ctx: SimContext | null, player: Player, noSpeed =
     if (ctx) {
         const proj = ctx.projectiles.add({
             ownerId: player.id,
-            type: item,
+            type: thrown,
             pos: spawnPos,
             posZ: SPAWN_HEIGHT,
             layer: player.layer,
             vel,
             fuse,
             throwDir: dir,
-            sourceType: item,
+            sourceType: thrown,
         });
-        if (item === "strobe" && def.strikeDelay) ctx.projectiles.armStrobe(proj, def.strikeDelay);
+        if (thrown === "strobe" && def.strikeDelay) ctx.projectiles.armStrobe(proj, def.strikeDelay);
     }
     player.playAnim("throw", THROW_ANIM_EXTRA + PLAYER.throwTime);
     wm.throwableCooldown = PLAYER.throwTime;

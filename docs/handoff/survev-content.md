@@ -20,7 +20,7 @@ may not touch, the schema number used and open questions.
 | 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | done | see `git log --grep "stage 3"` |
 | 3d | 50v50 buildings and structures (added scope from the lead, owner priority) | done | see `git log --grep "50v50"` |
 | 4 | cosmetics (outfits, emotes, heal / boost effects) | 4a defs + loot done; 4b loadout on hold (open question) | see `git log --grep "stage 4"` |
-| 5 | balance option B (no balance revert for shared gameplay fields) | planned | |
+| 5 | balance option B (no balance revert for shared gameplay fields) | 5a port + role kits + heavy throwables done; 5b perk numbers next | see `git log --grep "stage 5"` |
 
 ### Stage 1 details
 
@@ -80,6 +80,29 @@ may not touch, the schema number used and open questions.
   `game/gasStages.ts` (`noGasStages`), `net/loopback.ts` (`spawnSpots`), `main.ts` (`building` route key). Tests:
   `packages/sim/test/showcase.test.ts`, `tests/e2e/survev-buildings.spec.ts` (`SHOWCASE_ALL=1` screenshots every
   building into `__screens__/survev-buildings/all/`).
+
+### Stage 5 details (survev balance, design option B)
+
+- Port (`policy.json` `survevBalance: true`): `balance-revert.json` is no longer applied (all 625 entries logged as
+  skipped) and the event-map fixes are gone with it (design risk 5); `LOOT_BANS` stay. Original game objects take
+  survev's gameplay fields per type (`lib/objects.ts SURVEV_GAMEPLAY_FIELDS`, 122 values in `provenance.survevValues`:
+  bullets' damage / speed / falloff / range, guns' fire and burst delays, spreads, headshot multipliers, quality,
+  dual ammo; melee obstacle damage and attack; throwables' strike delay, snowball speed, heavy variants; explosions'
+  damage / freeze / drops; role perks and kits; outfit faction sides). Presentation stays original (sprites, sounds,
+  names, `barrelLength`, `dualOffset`, `bulletType` of the potato guns and the bugle). The winter sniper skins take
+  survev's values like their bases. survev's `() => util.weightedRandom([...]).type` role perks become `$weighted`
+  (`lib/inputs.ts`).
+- Sim: role kits come from the role def's survev `defaultItems` (healing items on promotion, the Bugler's pan, the
+  Grenadier's Saiga-12 with 15 frags / 10 MIRVs, the excess dropped), role perks resolve `$weighted` (the Lone
+  Survivr's four perks; `lastManExtraPerks` now empty); a snowball or potato held 1 s (`changeTime`) leaves as its heavy
+  variant (survev weaponManager.ts:1229).
+- Client: the role menu and HUD show a role's fixed perks only (`perks` may hold weighted entries).
+- Oracle fixtures regenerated with the new defs (`tools/oracle`); main golden unchanged.
+- Tests changed: `original-values.test.ts` (original presentation + survev gameplay, each survev value checked against
+  the original it replaced), `integrity.test.ts` (weighted role perks, role kits), `survevGuns.test.ts` (defs: winter
+  gaps closed by option B; sim: chi-square critical values up to 14 degrees of freedom for survev's larger 50v50 gold
+  drop table), `roles.test.ts` (survev kits and Lone Survivr perks), `throwables.test.ts` (strike delay and snowball
+  damage from the defs, heavy snowball), `modes.rules.test.ts` (no event-map fix), `tools/oracle/oracle.test.ts`.
 
 ### Stage 4 details
 
@@ -218,6 +241,18 @@ heal_menacing, 3751 boost_club, 3760 boost_lightning, 3769 boost_hermes, 3778 / 
 sprites are already in the manifest. `apps/client/test/particles.test.ts` allowlists the 8 emitters as pending. The
 player emitters still hard-code `heal_basic` / `boost_basic`; once stage 4b sends each player's loadout effect
 (PlayerInfo heal / boost ids), `playerEmitters.ts` should run that effect's `emitter` instead.
+
+### 9. Winter sniper gaps closed by survev balance (`packages/defs/src/rebirth/survevGuns.ts`)
+
+Under `survevBalance` the bases take survev's numbers, so three `SKIN_WIKI_GAPS` entries are closed: drop
+`svd_winter.headshotMult`, `svd_winter.bullet.damage` and `sv98_winter.headshotMult` (keep the three `barrelLength`
+gaps: presentation stays original). `packages/defs/test/survevGuns.test.ts` accepts closed gaps today (it lists them);
+after the edit, remove the `closed` handling there. Also `rebirth-deviations.md` rows for these three gaps.
+
+### 10. e2e expectations moved by survev balance (`tests/e2e/m7-modes.spec.ts`, lead's spec)
+
+survev's Medic class perks are Field Medic + Combat Stimulants (survev roleDefs.ts healer; Windwalk before), so
+`m7-modes.spec.ts:213` (korean) should expect `["전투 의무병", "전투 각성제"]`. Every other m7 / m7-modes test passes.
 
 ## Owner requests (2026-10-07, while stage 2 ran)
 
