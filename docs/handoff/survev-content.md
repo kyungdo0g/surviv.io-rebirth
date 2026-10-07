@@ -352,7 +352,11 @@ moved: `bagSizes.strobe` is `[2, 3, 4, 5, 6]` (Pack04 6, the wiki's own value), 
 `packages/defs/src/rebirth/strobes.ts applySurvevStrobe`: return `[]` when `strobe.strikeDelay === STROBE_STRIKE_DELAY`
 (no deviation left), and the test's deviation pin goes.
 
-### 15. Loadout wiring in lead files (open)
+### 15. Loadout wiring in lead files (closed: applied by the lead in 23c1936)
+
+The lead wired `effectsOf` (`setLoadout` runs whenever a player's heal / boost changes, so a late PlayerInfo still
+applies), draws both hands of the per-hand outfits (`OutfitDef.skinImg.handSprite` is `string | { left, right }`),
+added the deviation entry and an e2e join in `outfitAurora`. The patch notes below stay as the record.
 
 - Heal / boost particles: `apps/client/src/game/client.ts` view deps (both places that set `teamOf` / `nameOf`) add
   `effectsOf: (id) => this.match.effectsOf(id)` (`ViewDeps.effectsOf` exists, `game/match.ts effectsOf` reads
@@ -381,7 +385,7 @@ moved: `bagSizes.strobe` is `[2, 3, 4, 5, 6]` (Pack04 6, the wiki's own value), 
 ## Shared hotspots touched (minimal)
 
 - `packages/defs/src/registry.ts`: schema 14, then 16 (stage 4b) + history lines (11 hit feedback, 12 new guns beta, 13
-  variant strobes and 15 the AP Rounds / last-stand bits are the lead's).
+  variant strobes and 15 the AP Rounds / last-stand bits are the lead's); the next bump is 17.
 - `packages/defs/src/index.ts`, `packages/defs/src/data.ts`: export and apply the survev wiki-spec layer.
 - `packages/defs/src/types/weapons.ts`: `MeleeDef.perk`, `ExplosionDef.healTeam / healAmount / dropRandomLoot`.
 - `packages/defs/test/helpers.ts` (`NOT_PORTED_IDS`), `packages/defs/test/survevGuns.test.ts` (policy pins now
