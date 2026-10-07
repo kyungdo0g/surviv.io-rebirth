@@ -73,9 +73,11 @@ const SMART_LOOT_OWNER_RANGE = 8;
 /**
  * Type of the object a destroyed obstacle turns into: its `destroyType`, completed with `_<role>` of the player who
  * opened a `smartLoot` shell (Cobalt class pods: class_crate_common_<class>); "" for none (survev obstacle.ts kill).
+ * A tiered air drop shell turns into its tier's inner crate (rebirth, Obstacle.destroyTypeOverride).
  */
 export function destroyTypeOf(obstacle: Obstacle, opener: Player | undefined): string {
     const def = obstacle.def;
+    if (obstacle.destroyTypeOverride) return obstacle.destroyTypeOverride;
     if (!def.destroyType) return "";
     // Cobalt class pods follow the opener's class (M7a roles); without one no class crate exists (as in survev)
     if (def.smartLoot && opener) return `${def.destroyType}_${opener.role}`;

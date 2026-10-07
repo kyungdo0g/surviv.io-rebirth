@@ -4,9 +4,32 @@ import { MapDefs } from "@rebirth/defs";
 import { HeadlessClient } from "@rebirth/protocol";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { loadConfig, makeConfig } from "../src/config.ts";
+import { GameHost } from "../src/host.ts";
 import { defaultModes, defaultTeamMode, parseModes, resolveFindGame } from "../src/modes.ts";
 import { type RunningServer, startServer } from "../src/server.ts";
 import { roomOf, until } from "./helpers.ts";
+
+describe("air drop tiers (rebirth AIRDROP_TIERS)", () => {
+    it("on by default, off restores the v0.8.82 drops; anything else is refused", () => {
+        expect(loadConfig({}).airdropTiers).toBe(true);
+        expect(loadConfig({ AIRDROP_TIERS: "on" }).airdropTiers).toBe(true);
+        expect(loadConfig({ AIRDROP_TIERS: "off" }).airdropTiers).toBe(false);
+        // docker compose passes "" for an unset variable: the default
+        expect(loadConfig({ AIRDROP_TIERS: "" }).airdropTiers).toBe(true);
+        for (const text of ["0", "1", "true", "OFF", "yes", "tier2"]) {
+            expect(() => loadConfig({ AIRDROP_TIERS: text }), text).toThrow(/AIRDROP_TIERS/);
+        }
+    });
+
+    it("is copied into the rules of every game", () => {
+        for (const airdropTiers of [true, false]) {
+            const host = new GameHost(makeConfig({ log: false, botFill: 0, factionBotFill: 0, airdropTiers }));
+            expect(host.findRoom("main", 1)!.game.rules.airdropTiers).toBe(airdropTiers);
+            expect(host.findRoom("snow", 2)!.game.rules.airdropTiers).toBe(airdropTiers);
+            host.stop();
+        }
+    });
+});
 
 describe("modes (unit)", () => {
     it("MODES lists up to three buttons; a missing team mode is the map's event queue", () => {

@@ -15,8 +15,10 @@
 //   distances (shotguns 5-10 u, SMGs and pistols 5-20, rifles and LMGs 10-35, DMRs and snipers 20-50), shooter moving
 //   half the time, level 1 armour, magazine and reloads included. Lower F = more skill-sensitive. Guns the critique did
 //   not measure (marked "est.") carry an estimate from their class and stats.
-// - Fork-only guns (barrett, ash12, sw500, imbel, spas16, potato_lmg) and post-0.8.82 guns (PKM, M134, M79) are not in
-//   the defs and not in this table.
+// - survev-only guns (ADR 0003; barrett, ash12, sw500, imbel, spas16 at their survev.wiki.gg stats, the winter skins at
+//   their base gun's tier) carry estimated F values from their class and stats; the PMG-134 (potato_lmg) is a potato
+//   gun ("special", useless to bots like the other potato guns). Post-0.8.82 guns that are still not ported (PKM, M134,
+//   M79) are not in the defs and not in this table.
 import { GameObjectDefs, type GunDef, gunClass, hasDef } from "@rebirth/defs";
 import type { WeaponClass } from "./weapons.ts";
 
@@ -100,6 +102,12 @@ const ROWS: readonly Row[] = [
     ["glock_dual", "C", 0.72, true], ["colt45", "C", 0.55, true], ["colt45_dual", "C+", 0.5, true], // dual est.
     ["ot38", "D", 0.58, true], ["m9", "D", 0.66, true], ["glock", "D", 0.7, true],
     ["ots38", "C+", 0.5, false], ["m1911_dual", "C", 0.6, false], ["m1911", "D", 0.65, false], // est.
+    // survev-only guns (est.): the Barrett one-shots like the AWM-S family and drops from the classic map's gold drop;
+    // the ASh-12 (31 dmg auto .50) out-trades the SCAR-H up close; the SPAS-16 is a full-auto SPAS-12; the IMD-2 a
+    // light LMG; the S&W 500 a slow .50 revolver
+    ["barrett", "S-aim", 0.16, true], ["ash12", "A+", 0.42, false], ["spas16", "A", 0.66, false],
+    ["imbel", "A-", 0.5, false], ["sw500", "B+", 0.45, false],
+    ["svd_winter", "A", 0.3, false], ["sv98_winter", "A+", 0.28, false], ["awc_winter", "S-aim", 0.14, false],
 ];
 
 const TIERS = new Map<string, GunTierInfo>();

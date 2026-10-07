@@ -99,7 +99,8 @@ function chased(frags: number, dist = 16, closing = 9): { w: TestWorld; e: Retur
 
 describe("frags thrown back on the run (user report 29)", () => {
     it("at a closing chaser's path: uncooked, on the run, behind the bot and in front of the chaser", () => {
-        const { w, e } = chased(3);
+        // 21 u: outside the frag's own no-throw distance (rebirth frag radius x1.3: fragMinDist ~17 u)
+        const { w, e } = chased(3, 21);
         const b = brain(w, HARD);
         const plan = escapeFrag(b.context(NOW), flight(w), 100);
         expect(plan?.item).toBe("frag");
@@ -468,11 +469,13 @@ describe("grenade craft and judgement by skill (user report 30)", () => {
     });
 
     it("beginners throw short and wide, experts tight", () => {
+        const TARGET = 24;
         const spread = (params: DifficultyParams) => {
             const w = world();
             const b = brain(w, params, 3);
             const ctx = b.context(NOW);
-            const target = v2.add(w.spot, { x: 20, y: 0 });
+            // 24 u: beyond the frag's no-throw distance (~17 u with the rebirth radius), so short throws are not clamped
+            const target = v2.add(w.spot, { x: TARGET, y: 0 });
             const d: number[] = [];
             const side: number[] = [];
             for (let k = 0; k < 300; k++) {
@@ -486,10 +489,10 @@ describe("grenade craft and judgement by skill (user report 30)", () => {
         };
         const easy = spread(EASY);
         const hard = spread(HARD);
-        expect(easy.mean).toBeLessThan(19.2);
-        expect(easy.mean).toBeGreaterThan(17);
+        expect(easy.mean).toBeLessThan(TARGET - 0.8);
+        expect(easy.mean).toBeGreaterThan(TARGET - 3.6);
         expect(easy.sd).toBeGreaterThan(1.6);
-        expect(Math.abs(hard.mean - 20)).toBeLessThan(0.3);
+        expect(Math.abs(hard.mean - TARGET)).toBeLessThan(0.3);
         expect(hard.sd).toBeLessThan(1);
         expect(easy.side).toBeGreaterThan(2 * hard.side);
         // the baseline brain's frags go where they are aimed

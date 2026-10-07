@@ -2374,6 +2374,14 @@
 - proposed resolution: survev approach (the original site_info also carried per-mode map info) [src:derived/readme-precedence] [L]
 - files: `ui/menus.md` (`mode-buttons`) [src:derived/kb-crossref] [H]
 
+## snow-gold-airdrop-sprite
+
+- status: closed: `map-airdrop-02x.img` [src:kong/relaunch-client-defs] [H]
+- A (mechanics/airdrop-airstrike.md): the original client draws snow's gold shell `airdrop_crate_02x` with `map-airdrop-02x.img`, unlike the normal `airdrop_crate_01x` (`map-airdrop-01x.img`) [src:kong/relaunch-client-defs] [H]
+- B (mechanics/airdrop-airstrike.md): survev draws both snow shells with `map-airdrop-01x.img` [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1183-1208] [H]
+- proposed resolution: rule 1, the original client is authoritative for client-visible values: `map-airdrop-02x.img` (the generated defs carry it), so a snow gold drop shows before it is opened [src:derived/readme-precedence] [H]
+- files: `mechanics/airdrop-airstrike.md` (`snow-gold-shell-sprite`), `rebirth-deviations.md` (air drop tiers, client presentation) [src:derived/kb-crossref] [H]
+
 ## Conflicts
 
 - none beyond the entries above; where KB files proposed different resolutions, the entry's `note:` line says which proposal this page follows [src:derived/kb-crossref] [L]

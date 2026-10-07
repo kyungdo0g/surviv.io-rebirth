@@ -52,7 +52,7 @@ const PLANE_MEMORY = 30;
 /** An air drop is forgotten this long after it landed unless its crate was seen (then until it is opened). */
 const AIRDROP_MEMORY = 180;
 /** Projectiles that explode (brain/brain.ts DANGEROUS), with their explosion radius. */
-const GRENADES = ["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron"] as const;
+const GRENADES = ["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron", "bomb_heavy"] as const;
 const KIND_WEIGHT: Readonly<Record<ThreatKind, number>> = {
     gunfire: 1,
     explosion: 2,

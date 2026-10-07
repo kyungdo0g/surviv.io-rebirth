@@ -812,6 +812,102 @@
    "stow_weapon_01": {
     "path": "audio/ui/stow_weapon_01.mp3",
     "volume": 1
+   },
+   "ash12_01": {
+    "path": "audio/guns/ash12_01.mp3",
+    "volume": 1,
+    "source": "survev",
+    "maxInstances": 5
+   },
+   "ash12_reload_01": {
+    "path": "audio/guns/ash12_reload_01.mp3",
+    "volume": 1.25,
+    "source": "survev"
+   },
+   "ash12_switch_01": {
+    "path": "audio/guns/ash12_switch_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
+   "barrett_01": {
+    "path": "audio/guns/barrett_01.mp3",
+    "volume": 1,
+    "source": "survev",
+    "maxInstances": 5
+   },
+   "barrett_reload_01": {
+    "path": "audio/guns/barrett_reload_01.mp3",
+    "volume": 1.25,
+    "source": "survev"
+   },
+   "barrett_switch_01": {
+    "path": "audio/guns/barrett_switch_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
+   "imbel_01": {
+    "path": "audio/guns/imbel_01.mp3",
+    "volume": 1,
+    "source": "survev",
+    "maxInstances": 5
+   },
+   "imbel_reload_01": {
+    "path": "audio/guns/imbel_reload_01.mp3",
+    "volume": 1.25,
+    "source": "survev"
+   },
+   "imbel_switch_01": {
+    "path": "audio/guns/imbel_switch_01.mp3",
+    "volume": 1.25,
+    "source": "survev"
+   },
+   "potato_lmg_01": {
+    "path": "audio/guns/potato_lmg_01.mp3",
+    "volume": 1,
+    "source": "survev",
+    "maxInstances": 8
+   },
+   "potato_lmg_reload_01": {
+    "path": "audio/guns/potato_lmg_reload_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
+   "potato_lmg_switch_01": {
+    "path": "audio/guns/potato_lmg_switch_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
+   "spas16_01": {
+    "path": "audio/guns/spas16_01.mp3",
+    "volume": 1,
+    "source": "survev",
+    "maxInstances": 5
+   },
+   "spas16_reload_01": {
+    "path": "audio/guns/spas16_reload_01.mp3",
+    "volume": 1.25,
+    "source": "survev"
+   },
+   "spas16_switch_01": {
+    "path": "audio/guns/spas16_switch_01.mp3",
+    "volume": 1.25,
+    "source": "survev"
+   },
+   "sw500_01": {
+    "path": "audio/guns/sw500_01.mp3",
+    "volume": 1,
+    "source": "survev",
+    "maxInstances": 5
+   },
+   "sw500_reload_01": {
+    "path": "audio/guns/sw500_reload_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
+   "sw500_switch_01": {
+    "path": "audio/guns/sw500_switch_01.mp3",
+    "volume": 1,
+    "source": "survev"
    }
   },
   "hits": {

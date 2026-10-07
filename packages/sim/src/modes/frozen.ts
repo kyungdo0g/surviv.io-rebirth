@@ -1,7 +1,8 @@
 // Snowball and potato hits (M7b): besides the explosion damage, a hit on an enemy slows it for a while, shows the
 // frozen pose turned towards the hit, and makes it drop a random item (survev explosion.ts explode -> player.freeze /
 // dropRandomLoot; docs/research/items/throwables.md "Snowball", modes/snow.md, modes/potato.md). Durations and drop
-// counts are rules.modes.throwableHits.
+// counts are rules.modes.throwableHits. survev's PMG-134 shots also shrink the target's view for a while
+// (rules.modes.viewShrink; survev explosion.ts -> player.decrementViewDistance).
 import { math, type Vec2 } from "@rebirth/core";
 import type { SimContext } from "../world/context.ts";
 import { dropRandomLoot } from "../world/dropItem.ts";
@@ -36,4 +37,9 @@ export function applyThrowableHit(
         target.frozen.ori = frozenOri(target.dir, hitDir);
     }
     for (let i = 0; i < rule.dropRandomLoot; i++) dropRandomLoot(ctx, target);
+    if (rule.viewShrink) {
+        const { max, duration } = ctx.rules.modes.viewShrink;
+        target.viewShrink.amount = Math.min(target.viewShrink.amount + rule.viewShrink, max);
+        target.viewShrink.ticker = duration;
+    }
 }

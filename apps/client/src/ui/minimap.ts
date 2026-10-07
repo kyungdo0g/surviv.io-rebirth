@@ -31,8 +31,9 @@ import type { GasTracker } from "../fx/gas.ts";
 import { drawTerrain } from "../map/terrain.ts";
 import { buildingLocalBounds } from "../objects/building.ts";
 import type { Camera } from "../render/camera.ts";
+import { zoneStyle } from "./airstrikeVariantStyle.ts";
 import { AirstrikeZones } from "./airstrikeZones.ts";
-import { MapIndicators, MinimapGas, type PingFields } from "./mapMarkers.ts";
+import { type AppearedPing, MapIndicators, MinimapGas, type PingFields } from "./mapMarkers.ts";
 import { MinimapFaction, type MinimapFactionFrame } from "./minimapFaction.ts";
 import { MinimapTeam, type MinimapTeamFrame, memberDot, memberTint } from "./minimapTeam.ts";
 import { SM_HUD_SCALE, uiScale } from "./uiLayout.ts";
@@ -206,8 +207,22 @@ export class Minimap {
     }
 
     /** Applies a snapshot's map indicators; returns the pings that just appeared (sounds, edge indicators). */
-    applyIndicators(list: readonly MapIndicatorView[]): Array<{ def: PingFields; pos: Vec2 }> {
+    applyIndicators(list: readonly MapIndicatorView[]): AppearedPing[] {
         return this.indicators.apply(list);
+    }
+
+    /**
+     * The fields a ping that just appeared plays and shows with: a ping_airstrike marking a heavy or carpet zone is
+     * re-tinted in the zone's variant colour (rebirth, airstrikeVariantStyle.ts), on the map and for the edge
+     * indicator.
+     */
+    styledPing(ping: AppearedPing): PingFields {
+        if (ping.type !== "ping_airstrike") return ping.def;
+        const variant = this.airstrikeZones.variantNear(ping.pos);
+        if (!variant || variant === "normal") return ping.def;
+        const tint = zoneStyle(variant).color;
+        this.indicators.tint(ping.id, tint);
+        return { ...ping.def, tint };
     }
 
     /**

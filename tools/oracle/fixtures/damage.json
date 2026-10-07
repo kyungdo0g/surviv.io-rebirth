@@ -4,9 +4,9 @@
         "generator": "node --experimental-transform-types tools/oracle/run.ts",
         "survevCommit": "c6185e31fe25a4a07def77a2bb25b1710bda90ac",
         "defs": {
-            "protocolHash": 2525058706,
-            "gameObjectsSha256": "dd1f0919eb7aad005ff5bcf51f84528d7851094ee75d8917fa0d872956b7eb4e",
-            "gameConfigSha256": "22020fb3c453fc41011e966a31dc6fcc65fdbb30108154405fe323f04558fc2b"
+            "protocolHash": 646970998,
+            "gameObjectsSha256": "e1592749ad270af02f8aab6262547ff65f08d36861f1f747e8a7315ece8482b7",
+            "gameConfigSha256": "1fb48c5bc4964098bb3a14af7c8e2acb72d1177a0077328f7a8eb0edc1da57b5"
         },
         "simulation": {
             "dt": 0.01,
@@ -23,9 +23,9 @@
             "headshotRandom": "GameConfig.player.headshotChance = 0.15 (survev default)"
         },
         "patch": {
-            "replacedIds": 615,
-            "idsWithChangedValues": 231,
-            "gameplayValueChanges": 357,
+            "replacedIds": 631,
+            "idsWithChangedValues": 234,
+            "gameplayValueChanges": 362,
             "addedIds": [
                 "bullet_potato",
                 "bullet_bugle",

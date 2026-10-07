@@ -15,6 +15,9 @@ sh tools/port-survev/fetch.sh            # clone .survev at the pinned commit (o
 cd .survev && pnpm install --frozen-lockfile --ignore-scripts --filter survev --filter @survev/shared && cd ..
 ```
 
+A `.survev` that is a symlink (a worktree sharing the main checkout's clone) works: `lib/paths.ts` resolves it to
+its real path, which is the path Node loads survev's modules by, so the module hooks below still match them.
+
 Only the root and `shared` workspaces are installed (`hjson`, `zod`). The `server` workspace is skipped on
 purpose: it depends on `uWebSockets.js` from a GitHub tarball (fails behind the proxy) and the in-process `Game`
 does not need sockets. The two server imports that are still reachable are handled by module hooks

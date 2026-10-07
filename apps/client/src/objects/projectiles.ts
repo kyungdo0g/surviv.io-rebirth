@@ -8,7 +8,7 @@
 // Rebirth addition: a soft ground shadow under every projectile that drifts away and fades as it rises, so the
 // throw arc reads at a glance (the original conveys the height by the sprite scale alone).
 import type { Vec2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, type ThrowableDef } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, isAirstrikeBomb, type ThrowableDef } from "@rebirth/defs";
 import type { ProjectileView } from "@rebirth/sim";
 import { Container, ImageSource, type Sprite, Texture } from "pixi.js";
 import type { TextureStore } from "../assets/textures.ts";
@@ -181,7 +181,8 @@ export class ProjectileSystem {
         const shadow = pool.acquire();
         shadow.texture = softShadow();
         const rotVel = def.throwPhysics.spinVel * (def.throwPhysics.randomizeSpinDir && Math.random() < 0.5 ? -1 : 1);
-        const alwaysOnTop = data.type === "bomb_iron";
+        // air strike bombs (iron and the rebirth heavy shell) draw over everything
+        const alwaysOnTop = isAirstrikeBomb(data.type);
         const p: Proj = {
             id: data.id,
             type: data.type,

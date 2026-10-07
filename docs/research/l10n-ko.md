@@ -100,13 +100,13 @@
 - FIX domain-strings: 모바일 안내(`index-mobile-tooltip`)는 survev.io를, 도움말(`index-tips-1-desc`·`index-tips-2-desc`) 한국어는 원작 이름 "Surviv.io"를 쓴다; 리버스는 자기 도메인·이름으로 바꾼다 [src:l10n/ko:index-mobile-tooltip, l10n/ko:index-tips-1-desc, l10n/en:index-tips-1-desc] [H]
 - FIX pass-name: 패스 이름이 2026-04 survev 수정으로 "Survev 패스 1"이 되었다 (원본 "Surviv 패스 1", 영어 원본 "Survivr Pass 1"); 0.8.82 기준 이름은 "Survivr 패스 1" [src:l10n/ko:pass_survivr1, l10n/en:pass_survivr1, derived/git-b57acc92, changelog/0.8.6] [H]
 - FIX moderator-outfit: 영어는 fork에서 "Game Moderatr"로 바뀌었지만 ko는 원본 "Discord Moderatr"를 따른 "Discord 관리자"다; 0.8.82 기준이 맞으므로 "디스코드 관리자"로 유지 [src:l10n/en:game-outfitMod, l10n/ko:game-outfitMod, derived/git-a14ab228] [H]
-- FIX 50ae-label: 영어는 fork에서 ".50 Caliber"(fork 총 3종 포함)로 바뀌었지만 ko는 원본 ".50 AE"와 "데저트이글 50의 탄약"을 유지하고 있다; 0.8.82 기준이므로 ko 유지 [src:l10n/en:game-50AE, l10n/ko:game-50AE, l10n/ko:game-50AE-tooltip, derived/git-a14ab228] [H]
+- FIX 50ae-label: 영어는 fork에서 ".50 Caliber"(fork 총 3종 포함)로 바뀌었지만 ko는 원본 ".50 AE"와 "데저트이글 50의 탄약"을 유지하고 있다; 0.8.82 기준으로는 ko 유지였으나, survev를 기준으로 삼은 뒤(ADR 0003, 2026-10-07) 리버스는 survev 영어 이름을 따라 ".50 구경"을 쓴다 [src:l10n/en:game-50AE, l10n/ko:game-50AE, l10n/ko:game-50AE-tooltip, derived/git-a14ab228, user/2026-10-07-survev-baseline] [H]
 - FIX fork-perk-desc: Fabricate·Flak Jacket·Hollow-Points·.45 in the Chamber의 영어 설명은 fork 밸런스 변경 문구다; 리버스는 ko.json(원본 영어 기준) 설명을 쓴다 [src:balance/299, balance/316, balance/325, balance/334, l10n/ko:game-fabricate-desc] [H]
 
 ### 누락 키 처리
 
 - 0.8.82 콘텐츠 중 ko에 없는 것: 이모트 이름 148개 전부, 조준선 이름, 치유·부스트 효과 이름, 기본 근접 무기 이름(`game-knuckles` 등 9개), `game-max-perks`, 퀘스트 다수 — 표의 "리버스 표기" 열에 제안 번역을 넣었다 [src:l10n/en:game-emote_happyface, l10n/en:game-heal_basic, l10n/en:game-knuckles, l10n/en:game-max-perks] [H]
-- fork 전용 키(예: S&W 500, Barrett M107, ASh-12, IMD-2, 보호구역 퀘스트, Survevr 패스 2, Tactical Pack)는 제안 번역 앞에 `(fork)`를 붙였고 리버스 0.8.82 범위 밖이다 [src:l10n/en:game-sw500, l10n/en:game-barrett, l10n/en:game-ash12, l10n/en:quest_reserve_kills, l10n/en:pass_survivr2, derived/fork-vs-original-json] [H]
+- fork 전용 키(예: S&W 500, Barrett M107, ASh-12, IMD-2, 보호구역 퀘스트, Survevr 패스 2, Tactical Pack)는 제안 번역 앞에 `(fork)`를 붙였다; survev 기준(ADR 0003) 이후 포트가 가져온 항목(survev 전용 총 6종, 겨울 스킨 3종, PMG-134 탄)은 `(fork)` 없이 리버스 표기를 쓴다 (`apps/client/src/l10n/ko.ts`) [src:l10n/en:game-sw500, l10n/en:game-barrett, l10n/en:game-ash12, l10n/en:quest_reserve_kills, l10n/en:pass_survivr2, derived/fork-vs-original-json, user/2026-10-07-survev-guns] [H]
 
 ## 전체 용어표
 
@@ -398,7 +398,7 @@
 | `12gauge` | 12 gauge / 툴팁: Ammo for M870, M1100, MP220, SPAS-12, SPAS-16, Saiga-12, Super 90 and… (원본: Ammo for M870, M1100, SPAS-12, Saiga-12, USAS-12, Super 90 and MP220.) | 12게이지 / M870, M1100, MP220, SPAS-12, SPAS-16, Saiga-12, Super 90, USAS-12의 탄약… (원본: M870, M1100, SPAS-12, Saiga-12, USAS-12, Super90, MP220의 탄약…) | = | [src:l10n/en:game-12gauge, l10n/ko:game-12gauge, l10n/en:game-12gauge-tooltip, l10n/ko:game-12gauge-tooltip] [H] |
 | `762mm` | 7.62mm / 툴팁: Ammo for OT-38, AK-47, Groza, DP-28, BAR, SCAR-H, M39, BLR, Mosin, M1… (원본: Ammo for AK-47, SCAR-H, M39, Mosin, SV-98, M1, BAR, AN-94, PKP, Groza…) | 7.62mm / OT-38, AK-47, Groza, DP-28, BAR, SCAR-H, M39, BLR, Mosin, M1 Garand, … (원본: AK-47, SCAR-H, M39, Mosin, SV-98, M1, BAR, AN-94, PKP, Groz…) | = | [src:l10n/en:game-762mm, l10n/ko:game-762mm, l10n/en:game-762mm-tooltip, l10n/ko:game-762mm-tooltip] [H] |
 | `556mm` | 5.56mm / 툴팁: Ammo for M416, FAMAS, Mk 12 SPR, L86A2, Scout Elite, IMD-2, QBB-97, M… (원본: Ammo for FAMAS, M416, M4A1-S, QBB-97, Mk 12, Scout Elite, and M249.) | 5.56mm / M416, FAMAS, Mk 12 SPR, L86A2, Scout Elite, IMD-2, QBB-97, M4A1-S, M2… (원본: FAMAS, M416, M4A1-S, QBB-97, Mk 12, Scout Elite, M249의 탄약입니…) | = | [src:l10n/en:game-556mm, l10n/ko:game-556mm, l10n/en:game-556mm-tooltip, l10n/ko:game-556mm-tooltip] [H] |
-| `50AE` | .50 Caliber (원본: .50 AE) / 툴팁: Ammo for DEagle 50, S&W 500, Barrett M107 and ASh-12. (원본: Ammo for DEagle 50.) | .50 AE / 데저트이글 50 의 탄약입니다. (원본: 데저트이글 50 탄약입니다.) | .50 AE | [src:l10n/en:game-50AE, l10n/ko:game-50AE, l10n/en:game-50AE-tooltip, l10n/ko:game-50AE-tooltip] [H] |
+| `50AE` | .50 Caliber (원본: .50 AE) / 툴팁: Ammo for DEagle 50, S&W 500, Barrett M107 and ASh-12. (원본: Ammo for DEagle 50.) | .50 AE / 데저트이글 50 의 탄약입니다. (원본: 데저트이글 50 탄약입니다.) | .50 구경 | [src:l10n/en:game-50AE, l10n/ko:game-50AE, l10n/en:game-50AE-tooltip, l10n/ko:game-50AE-tooltip] [H] |
 | `308sub` | .308 Subsonic / 툴팁: Ammo for AWM-S and Mk 20 SSR. (원본: Ammo for AWM-S.) | .308 아음속탄 / AWM-S, Mk 20 SSR의 탄약입니다. (원본: AWM-S 탄약입니다.) | = | [src:l10n/en:game-308sub, l10n/ko:game-308sub, l10n/en:game-308sub-tooltip, l10n/ko:game-308sub-tooltip] [H] |
 | `flare` | Flare / 툴팁: Ammo for Flare Gun. | 섬광탄 / 섬광탄 총의 탄약입니다. | 신호탄 | [src:l10n/en:game-flare, l10n/ko:game-flare, l10n/en:game-flare-tooltip, l10n/ko:game-flare-tooltip] [H] |
 | `45acp` | .45 ACP / 툴팁: Ammo for M1911, M1A1, Peacemaker, Model 94, Vector and Mk45G. (원본: Ammo for M1911, M1A1, Model 94, Vector and Peacemaker.) | .45 ACP / M1911, M1A1, Peacemaker, Model 94, Vector, Mk45G의 탄약입니다. (원본: M1911, M1A1, Model 94, Vector, Peacemaker의 탄약입니다.) | = | [src:l10n/en:game-45acp, l10n/ko:game-45acp, l10n/en:game-45acp-tooltip, l10n/ko:game-45acp-tooltip] [H] |
@@ -489,9 +489,9 @@
 | `ots38_dual` | Dual OTs-38 / HUD: OTs-38 | 듀얼 OTs-38 / OTs-38 | = | [src:l10n/en:game-ots38_dual, l10n/ko:game-ots38_dual, l10n/en:game-hud-ots38_dual, l10n/ko:game-hud-ots38_dual] [H] |
 | `deagle` | DEagle 50 | 데저트이글 50 | = | [src:l10n/en:game-deagle, l10n/ko:game-deagle] [H] |
 | `deagle_dual` | Dual DEagle 50 / HUD: DEagle 50 | 듀얼 데저트이글 50 / 데저트이글 50 | = | [src:l10n/en:game-deagle_dual, l10n/ko:game-deagle_dual, l10n/en:game-hud-deagle_dual, l10n/ko:game-hud-deagle_dual] [H] |
-| `sw500` | S&W 500 (fork) | — (누락) | (fork) S&W 500 | [src:l10n/en:game-sw500] [H] |
-| `barrett` | Barrett M107 (fork) | — (누락) | (fork) 바렛 M107 | [src:l10n/en:game-barrett] [H] |
-| `ash12` | ASh-12 (fork) | — (누락) | (fork) ASh-12 | [src:l10n/en:game-ash12] [H] |
+| `sw500` | S&W 500 (fork) | — (누락) | S&W 500 | [src:l10n/en:game-sw500] [H] |
+| `barrett` | Barrett M107 (fork) | — (누락) | 바렛 M107 | [src:l10n/en:game-barrett] [H] |
+| `ash12` | ASh-12 (fork) | — (누락) | ASh-12 | [src:l10n/en:game-ash12] [H] |
 | `flare_gun` | Flare Gun | 섬광탄 총 | 신호탄 총 | [src:l10n/en:game-flare_gun, l10n/ko:game-flare_gun] [H] |
 | `flare_gun_dual` | Dual Flare Gun / HUD: Flare Gun | 듀얼 섬광탄 총 / 섬광탄 총 | 듀얼 신호탄 총 | [src:l10n/en:game-flare_gun_dual, l10n/ko:game-flare_gun_dual, l10n/en:game-hud-flare_gun_dual, l10n/ko:game-hud-flare_gun_dual] [H] |
 | `famas` | FAMAS | FAMAS | = | [src:l10n/en:game-famas, l10n/ko:game-famas] [H] |
@@ -516,7 +516,7 @@
 | `imbel` | IMD-2 (fork) | IMD-2 † | = | [src:l10n/en:game-imbel, l10n/ko:game-imbel] [H] |
 | `pkp` | PKP Pecheneg | PKP 페체네그 | = | [src:l10n/en:game-pkp, l10n/ko:game-pkp] [H] |
 | `potato_cannon` | Potato Cannon | 포테이토 캐논 | = | [src:l10n/en:game-potato_cannon, l10n/ko:game-potato_cannon] [H] |
-| `potato_lmg` | PMG-134 (fork) | — (누락) | (fork) PMG-134 | [src:l10n/en:game-potato_lmg] [H] |
+| `potato_lmg` | PMG-134 (fork) | — (누락) | PMG-134 | [src:l10n/en:game-potato_lmg] [H] |
 | `potato_smg` | Spud Gun | 감자총 | = | [src:l10n/en:game-potato_smg, l10n/ko:game-potato_smg] [H] |
 | `bugle` | Bugle | 나팔 | = | [src:l10n/en:game-bugle, l10n/ko:game-bugle] [H] |
 
@@ -589,7 +589,7 @@
 | `potato` | Potato / HUD: Potato | 감자 (원본: 포테이토) / 감자 (원본: 포테이토) | = | [src:l10n/en:game-potato, l10n/ko:game-potato, l10n/en:game-hud-potato, l10n/ko:game-hud-potato] [H] |
 | `potato_heavy` | Potato | 감자 (원본: 포테이토) | = | [src:l10n/en:game-potato_heavy, l10n/ko:game-potato_heavy] [H] |
 | `potato_cannonball` | Potato Cannon | 포테이토 캐논 | = | [src:l10n/en:game-potato_cannonball, l10n/ko:game-potato_cannonball] [H] |
-| `potato_lmgshot` | PMG-134 (fork) | — (누락) | (미정) | [src:l10n/en:game-potato_lmgshot] [H] |
+| `potato_lmgshot` | PMG-134 (fork) | — (누락) | PMG-134 (킬 피드에 무기 이름으로 나온다) | [src:l10n/en:game-potato_lmgshot] [H] |
 | `potato_smgshot` | Spud Gun | 감자총 | = | [src:l10n/en:game-potato_smgshot, l10n/ko:game-potato_smgshot] [H] |
 
 ### 특전 (perk)

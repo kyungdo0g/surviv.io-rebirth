@@ -2,7 +2,33 @@
   "generatedFrom": {
     "survevCommit": "c6185e31fe25a4a07def77a2bb25b1710bda90ac",
     "liveBundle": "app.e5465b46.js",
-    "balanceRevert": "docs/research/provenance/balance-revert.json"
+    "balanceRevert": "docs/research/provenance/balance-revert.json",
+    "policy": "tools/port-survev/policy.json"
+  },
+  "policy": {
+    "survevOnlyGameObjects": [
+      "bullet_barrett",
+      "bullet_sw500",
+      "bullet_ash12",
+      "bullet_imbel",
+      "bullet_invis",
+      "explosion_potato_lmgshot",
+      "imbel",
+      "spas16",
+      "barrett",
+      "sw500",
+      "ash12",
+      "potato_lmg",
+      "potato_lmgshot"
+    ],
+    "survevSkins": {
+      "svd_winter": "svd",
+      "sv98_winter": "sv98",
+      "awc_winter": "awc"
+    },
+    "survevGameConfig": [
+      "bagSizes.50AE"
+    ]
   },
   "gameObjects": {
     "bullet_mp5": "original",
@@ -633,7 +659,23 @@
     "xp_compass": "original",
     "xp_stump": "original",
     "xp_bone": "original",
-    "xp_donut": "original"
+    "xp_donut": "original",
+    "bullet_barrett": "survev-only",
+    "bullet_sw500": "survev-only",
+    "bullet_ash12": "survev-only",
+    "bullet_imbel": "survev-only",
+    "bullet_invis": "survev-only",
+    "explosion_potato_lmgshot": "survev-only",
+    "imbel": "survev-only",
+    "spas16": "survev-only",
+    "barrett": "survev-only",
+    "sw500": "survev-only",
+    "ash12": "survev-only",
+    "potato_lmg": "survev-only",
+    "svd_winter": "survev-only",
+    "sv98_winter": "survev-only",
+    "awc_winter": "survev-only",
+    "potato_lmgshot": "survev-only"
   },
   "mapObjects": {
     "barrel_01": "original",
@@ -4060,30 +4102,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "snow.lootTable.tier_eye_block[svd_winter]",
-        "field": "weight",
-        "forkValue": 1.5,
-        "originalValue": "absent",
-        "line": 203,
-        "confidence": "H",
-        "note": "SVD-63 added as its fork winter skin svd_winter",
-        "refs": [
-          "balance/203",
-          "survev/shared/defs/maps/snowDefs.ts:183",
-          "derived/git-78af45bc",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1.5"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_eye_block.svd_winter"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "snow.lootTable.tier_eye_block[762mm]",
         "field": "weight",
         "forkValue": 1,
@@ -4156,30 +4174,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "snow.lootTable.tier_eye_block[sv98_winter]",
-        "field": "weight",
-        "forkValue": 1,
-        "originalValue": "absent",
-        "line": 203,
-        "confidence": "H",
-        "note": "SV-98 added as its fork winter skin sv98_winter",
-        "refs": [
-          "balance/203",
-          "survev/shared/defs/maps/snowDefs.ts:187",
-          "derived/git-78af45bc",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_eye_block.sv98_winter"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "snow.lootTable.tier_eye_block[ots38_dual]",
         "field": "weight",
         "forkValue": 1.5,
@@ -4222,54 +4216,6 @@
       "reason": "reverted to originalValue",
       "targets": [
         "maps.snow.lootTable.tier_eye_block.flare_gun"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "snow.lootTable.tier_eye_block[awc]",
-        "field": "weight",
-        "forkValue": "absent",
-        "originalValue": 1,
-        "line": 204,
-        "confidence": "H",
-        "note": "AWM-S 1 -> 0.75 is implemented by swapping awc for the fork skin awc_winter",
-        "refs": [
-          "balance/204",
-          "survev/shared/defs/maps/snowDefs.ts:179",
-          "derived/git-78af45bc",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "1 -> absent"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_eye_block.awc"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "snow.lootTable.tier_eye_block[awc_winter]",
-        "field": "weight",
-        "forkValue": 0.75,
-        "originalValue": "absent",
-        "line": 204,
-        "confidence": "H",
-        "note": "",
-        "refs": [
-          "balance/204",
-          "survev/shared/defs/maps/snowDefs.ts:188",
-          "derived/git-78af45bc",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 0.75"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_eye_block.awc_winter"
       ]
     },
     {
@@ -5237,30 +5183,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "woods.lootTable.tier_guns[imbel]",
-        "field": "weight",
-        "forkValue": 2.75,
-        "originalValue": "absent",
-        "line": 237,
-        "confidence": "H",
-        "note": "",
-        "refs": [
-          "balance/237",
-          "survev/shared/defs/maps/woodsDefs.ts:76",
-          "derived/git-e10300ff",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 2.75"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.woods.lootTable.tier_guns.imbel"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "woods.lootTable.tier_guns[m870]",
         "field": "weight",
         "forkValue": 2.5,
@@ -5615,30 +5537,6 @@
       "reason": "reverted to originalValue",
       "targets": [
         "maps.woods.lootTable.tier_packs.backpack02"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "woods.lootTable.tier_airdrop_uncommon[spas16]",
-        "field": "weight",
-        "forkValue": 1,
-        "originalValue": "absent",
-        "line": 241,
-        "confidence": "H",
-        "note": "",
-        "refs": [
-          "balance/241",
-          "survev/shared/defs/maps/woodsDefs.ts:137",
-          "derived/git-e10300ff",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.woods.lootTable.tier_airdrop_uncommon.spas16"
       ]
     },
     {
@@ -6025,30 +5923,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "woods_snow.lootTable.tier_eye_block[svd_winter]",
-        "field": "weight",
-        "forkValue": 1.5,
-        "originalValue": "absent",
-        "line": 253,
-        "confidence": "H",
-        "note": "Winter Woods eye block copied from the Winter map (see lines 202-204)",
-        "refs": [
-          "balance/253",
-          "survev/shared/defs/maps/woodsSnowDefs.ts:83",
-          "derived/git-76c43533",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1.5"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.woods_snow.lootTable.tier_eye_block.svd_winter"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "woods_snow.lootTable.tier_eye_block[762mm]",
         "field": "weight",
         "forkValue": 1,
@@ -6121,30 +5995,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "woods_snow.lootTable.tier_eye_block[sv98_winter]",
-        "field": "weight",
-        "forkValue": 1,
-        "originalValue": "absent",
-        "line": 253,
-        "confidence": "H",
-        "note": "Winter Woods eye block copied from the Winter map (see lines 202-204)",
-        "refs": [
-          "balance/253",
-          "survev/shared/defs/maps/woodsSnowDefs.ts:87",
-          "derived/git-76c43533",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.woods_snow.lootTable.tier_eye_block.sv98_winter"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "woods_snow.lootTable.tier_eye_block[ots38_dual]",
         "field": "weight",
         "forkValue": 1.5,
@@ -6187,54 +6037,6 @@
       "reason": "reverted to originalValue",
       "targets": [
         "maps.woods_snow.lootTable.tier_eye_block.flare_gun"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "woods_snow.lootTable.tier_eye_block[awc]",
-        "field": "weight",
-        "forkValue": "absent",
-        "originalValue": 1,
-        "line": 253,
-        "confidence": "H",
-        "note": "Winter Woods eye block copied from the Winter map (see lines 202-204)",
-        "refs": [
-          "balance/253",
-          "survev/shared/defs/maps/woodsSnowDefs.ts:79",
-          "derived/git-76c43533",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "1 -> absent"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.woods_snow.lootTable.tier_eye_block.awc"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "woods_snow.lootTable.tier_eye_block[awc_winter]",
-        "field": "weight",
-        "forkValue": 0.75,
-        "originalValue": "absent",
-        "line": 253,
-        "confidence": "H",
-        "note": "Winter Woods eye block copied from the Winter map (see lines 202-204)",
-        "refs": [
-          "balance/253",
-          "survev/shared/defs/maps/woodsSnowDefs.ts:88",
-          "derived/git-76c43533",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 0.75"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.woods_snow.lootTable.tier_eye_block.awc_winter"
       ]
     },
     {
@@ -6811,30 +6613,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "faction.lootTable.tier_airdrop_rare[spas16]",
-        "field": "weight",
-        "forkValue": 2,
-        "originalValue": "absent",
-        "line": 281,
-        "confidence": "H",
-        "note": "",
-        "refs": [
-          "balance/281",
-          "survev/shared/defs/maps/factionDefs.ts:350",
-          "derived/git-3cc25eac",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 2"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.faction.lootTable.tier_airdrop_rare.spas16"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "faction.lootTable.tier_airdrop_rare[sv98]",
         "field": "weight",
         "forkValue": 2,
@@ -7216,30 +6994,6 @@
       ]
     },
     {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "cobalt.lootTable.tier_guns_common_tank[imbel]",
-        "field": "weight",
-        "forkValue": 0.5,
-        "originalValue": "absent",
-        "line": 287,
-        "confidence": "H",
-        "note": "balance.txt writes IMD-2 as \"IMD-2\" (id imbel)",
-        "refs": [
-          "balance/287",
-          "survev/shared/defs/maps/baseDefs.ts:464",
-          "derived/git-939023c5",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 0.5"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.cobalt.lootTable.tier_guns_common_tank.imbel"
-      ]
-    },
-    {
       "status": "skipped",
       "entry": {
         "section": "lootTables",
@@ -7259,30 +7013,6 @@
         "balanceValue": "0.2 -> 0.25"
       },
       "reason": "maps.cobalt.lootTable.tier_guns_common_tank.qbb97: already the original value"
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "cobalt.lootTable.tier_guns_rare_demo[spas16]",
-        "field": "weight",
-        "forkValue": 0.4,
-        "originalValue": "absent",
-        "line": 289,
-        "confidence": "H",
-        "note": "current code has 0.4, not balance.txt's 0.2 (later change not logged in balance.txt)",
-        "refs": [
-          "balance/289",
-          "survev/shared/defs/maps/baseDefs.ts:494",
-          "derived/git-939023c5",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 0.2"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.cobalt.lootTable.tier_guns_rare_demo.spas16"
-      ]
     },
     {
       "status": "skipped",
@@ -8124,78 +7854,6 @@
       "reason": "section \"stats\" is client data: original client wins"
     },
     {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "faction.lootTable.tier_airdrop_rare[barrett]",
-        "field": "weight",
-        "forkValue": 0.5,
-        "originalValue": "absent",
-        "line": 329,
-        "confidence": "H",
-        "note": "",
-        "refs": [
-          "balance/329",
-          "survev/shared/defs/maps/factionDefs.ts:352",
-          "derived/git-660ab62e",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 0.5"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.faction.lootTable.tier_airdrop_rare.barrett"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "faction.lootTable.tier_airdrop_rare[ash12]",
-        "field": "weight",
-        "forkValue": 0.5,
-        "originalValue": "absent",
-        "line": 329,
-        "confidence": "H",
-        "note": "",
-        "refs": [
-          "balance/329",
-          "survev/shared/defs/maps/factionDefs.ts:353",
-          "derived/git-660ab62e",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 0.5"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.faction.lootTable.tier_airdrop_rare.ash12"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "main.lootTable.tier_airdrop_mythic[barrett]",
-        "field": "weight",
-        "forkValue": 1,
-        "originalValue": "absent",
-        "line": 330,
-        "confidence": "H",
-        "note": "base tier: gold airdrops on every map",
-        "refs": [
-          "balance/330",
-          "survev/shared/defs/maps/baseDefs.ts:634",
-          "derived/git-660ab62e",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.main.lootTable.tier_airdrop_mythic.barrett"
-      ]
-    },
-    {
       "status": "skipped",
       "entry": {
         "section": "other",
@@ -8290,75 +7948,6 @@
         ]
       },
       "reason": "target not resolvable in the ported data"
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "savannah.lootTable.tier_guns[barrett]",
-        "field": "weight",
-        "forkValue": 0.06,
-        "originalValue": "absent",
-        "line": 338,
-        "confidence": "H",
-        "note": "survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
-        "refs": [
-          "balance/338",
-          "survev/shared/defs/maps/savannahDefs.ts:75",
-          "derived/git-51d35177"
-        ],
-        "balanceValue": "absent -> 0.06"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.savannah.lootTable.tier_guns.barrett"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "savannah.lootTable.tier_airdrop_uncommon[barrett]",
-        "field": "weight",
-        "forkValue": 0.075,
-        "originalValue": "absent",
-        "line": 338,
-        "confidence": "H",
-        "note": "balance.txt gives 1.5 for tier_airdrop_uncommon; code has 0.075; current code has 0.075, not balance.txt's 1.5 (later change not logged in balance.txt); survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
-        "refs": [
-          "balance/338",
-          "survev/shared/defs/maps/savannahDefs.ts:100",
-          "derived/git-51d35177"
-        ],
-        "balanceValue": "absent -> 1.5"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.savannah.lootTable.tier_airdrop_uncommon.barrett"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "savannah.lootTable.tier_airdrop_rare[barrett]",
-        "field": "weight",
-        "forkValue": 1.5,
-        "originalValue": "absent",
-        "line": 338,
-        "confidence": "H",
-        "note": "survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
-        "refs": [
-          "balance/338",
-          "survev/shared/defs/maps/savannahDefs.ts:108",
-          "derived/git-51d35177"
-        ],
-        "balanceValue": "absent -> 1.5"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.savannah.lootTable.tier_airdrop_rare.barrett"
-      ]
     },
     {
       "status": "skipped",
@@ -8644,75 +8233,6 @@
         ]
       },
       "reason": "originalValue is not concrete"
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "savannah.lootTable.tier_guns[sw500]",
-        "field": "weight",
-        "forkValue": 0.09,
-        "originalValue": "absent",
-        "line": 346,
-        "confidence": "H",
-        "note": "survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
-        "refs": [
-          "balance/346",
-          "survev/shared/defs/maps/savannahDefs.ts:74",
-          "derived/git-b31fd75d"
-        ],
-        "balanceValue": "absent -> 0.09"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.savannah.lootTable.tier_guns.sw500"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "savannah.lootTable.tier_airdrop_uncommon[sw500]",
-        "field": "weight",
-        "forkValue": 0.25,
-        "originalValue": "absent",
-        "line": 346,
-        "confidence": "H",
-        "note": "survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
-        "refs": [
-          "balance/346",
-          "survev/shared/defs/maps/savannahDefs.ts:99",
-          "derived/git-b31fd75d"
-        ],
-        "balanceValue": "absent -> 0.25"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.savannah.lootTable.tier_airdrop_uncommon.sw500"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "savannah.lootTable.tier_airdrop_rare[sw500]",
-        "field": "weight",
-        "forkValue": 2,
-        "originalValue": "absent",
-        "line": 346,
-        "confidence": "H",
-        "note": "survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
-        "refs": [
-          "balance/346",
-          "survev/shared/defs/maps/savannahDefs.ts:107",
-          "derived/git-b31fd75d"
-        ],
-        "balanceValue": "absent -> 2"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.savannah.lootTable.tier_airdrop_rare.sw500"
-      ]
     },
     {
       "status": "skipped",
@@ -9874,61 +9394,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "lootTable.tier_scavenger_adv[spas16]",
-        "field": "weight",
-        "forkValue": "1",
-        "originalValue": "absent",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/baseDefs.ts:548",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "main",
-          "desert",
-          "faction",
-          "halloween",
-          "potato",
-          "snow",
-          "woods",
-          "savannah",
-          "cobalt",
-          "turkey",
-          "main_spring",
-          "main_summer",
-          "potato_spring",
-          "woods_snow",
-          "woods_spring",
-          "woods_summer"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.main.lootTable.tier_scavenger_adv.spas16",
-        "maps.desert.lootTable.tier_scavenger_adv.spas16",
-        "maps.faction.lootTable.tier_scavenger_adv.spas16",
-        "maps.halloween.lootTable.tier_scavenger_adv.spas16",
-        "maps.potato.lootTable.tier_scavenger_adv.spas16",
-        "maps.snow.lootTable.tier_scavenger_adv.spas16",
-        "maps.woods.lootTable.tier_scavenger_adv.spas16",
-        "maps.savannah.lootTable.tier_scavenger_adv.spas16",
-        "maps.cobalt.lootTable.tier_scavenger_adv.spas16",
-        "maps.turkey.lootTable.tier_scavenger_adv.spas16",
-        "maps.main_spring.lootTable.tier_scavenger_adv.spas16",
-        "maps.main_summer.lootTable.tier_scavenger_adv.spas16",
-        "maps.potato_spring.lootTable.tier_scavenger_adv.spas16",
-        "maps.woods_snow.lootTable.tier_scavenger_adv.spas16",
-        "maps.woods_spring.lootTable.tier_scavenger_adv.spas16",
-        "maps.woods_summer.lootTable.tier_scavenger_adv.spas16"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "lootTable.tier_perks[high_velocity]",
         "field": "weight",
         "forkValue": "1",
@@ -10542,33 +10007,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "lootTable.tier_ring_case[potato_lmg]",
-        "field": "weight",
-        "forkValue": "0.2",
-        "originalValue": "absent",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/potatoDefs.ts:155",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "potato",
-          "potato_spring"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.potato.lootTable.tier_ring_case.potato_lmg",
-        "maps.potato_spring.lootTable.tier_ring_case.potato_lmg"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "lootTable.tier_hatchet[vector]",
         "field": "weight",
         "forkValue": "absent",
@@ -10656,33 +10094,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "lootTable.tier_hatchet[potato_lmg]",
-        "field": "weight",
-        "forkValue": "0.1",
-        "originalValue": "absent",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/potatoDefs.ts:148",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "potato",
-          "potato_spring"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.potato.lootTable.tier_hatchet.potato_lmg",
-        "maps.potato_spring.lootTable.tier_hatchet.potato_lmg"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "lootTable.tier_hatchet[potato_cannon]",
         "field": "weight",
         "forkValue": "0.1",
@@ -10763,33 +10174,6 @@
     {
       "status": "applied",
       "entry": {
-        "section": "lootTables",
-        "target": "lootTable.tier_airdrop_rare[potato_lmg]",
-        "field": "weight",
-        "forkValue": "1",
-        "originalValue": "absent",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/potatoDefs.ts:160",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "potato",
-          "potato_spring"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.potato.lootTable.tier_airdrop_rare.potato_lmg",
-        "maps.potato_spring.lootTable.tier_airdrop_rare.potato_lmg"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
         "section": "mapSpawns",
         "target": "mapGen.fixedSpawns.shilo_01",
         "field": "count",
@@ -10818,131 +10202,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "lootTable.tier_sv98[sv98]",
-        "field": "weight",
-        "forkValue": "absent",
-        "originalValue": "1",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/snowDefs.ts:83",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "snow"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_sv98.sv98"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "lootTable.tier_sv98[sv98_winter]",
-        "field": "weight",
-        "forkValue": "1",
-        "originalValue": "absent",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/snowDefs.ts:109",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "snow"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_sv98.sv98_winter"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "lootTable.tier_guns[sv98_winter]",
-        "field": "weight",
-        "forkValue": "0.01",
-        "originalValue": "absent",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/snowDefs.ts:109",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "snow"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_guns.sv98_winter"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "lootTable.tier_chest[sv98]",
-        "field": "weight",
-        "forkValue": "absent",
-        "originalValue": "0.1",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/snowDefs.ts:118",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "snow"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_chest.sv98"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "lootTable.tier_chest[sv98_winter]",
-        "field": "weight",
-        "forkValue": "0.1",
-        "originalValue": "absent",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/snowDefs.ts:133",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "snow"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_chest.sv98_winter"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "lootTable.tier_outfits[outfitCamo]",
         "field": "weight",
         "forkValue": "0.15",
@@ -10964,56 +10223,6 @@
       "targets": [
         "maps.snow.lootTable.tier_outfits.outfitCamo",
         "maps.woods_snow.lootTable.tier_outfits.outfitCamo"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "lootTable.tier_airdrop_uncommon[sv98_winter]",
-        "field": "weight",
-        "forkValue": "0.5",
-        "originalValue": "absent",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/snowDefs.ts:158",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "snow"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_airdrop_uncommon.sv98_winter"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "lootTable.tier_airdrop_rare[awc_winter]",
-        "field": "weight",
-        "forkValue": "3",
-        "originalValue": "absent",
-        "line": null,
-        "confidence": "L",
-        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
-        "refs": [
-          "survev/shared/defs/maps/snowDefs.ts:167",
-          "derived/git-ae55c9a8"
-        ],
-        "maps": [
-          "snow"
-        ],
-        "unlisted": true
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_airdrop_rare.awc_winter"
       ]
     },
     {
@@ -16790,6 +15999,722 @@
         "unlisted": true
       },
       "reason": "target not resolvable in the ported data"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "snow.lootTable.tier_eye_block[svd_winter]",
+        "field": "weight",
+        "forkValue": 1.5,
+        "originalValue": "absent",
+        "line": 203,
+        "confidence": "H",
+        "note": "SVD-63 added as its fork winter skin svd_winter",
+        "refs": [
+          "balance/203",
+          "survev/shared/defs/maps/snowDefs.ts:183",
+          "derived/git-78af45bc",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1.5"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "snow.lootTable.tier_eye_block[sv98_winter]",
+        "field": "weight",
+        "forkValue": 1,
+        "originalValue": "absent",
+        "line": 203,
+        "confidence": "H",
+        "note": "SV-98 added as its fork winter skin sv98_winter",
+        "refs": [
+          "balance/203",
+          "survev/shared/defs/maps/snowDefs.ts:187",
+          "derived/git-78af45bc",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "snow.lootTable.tier_eye_block[awc_winter]",
+        "field": "weight",
+        "forkValue": 0.75,
+        "originalValue": "absent",
+        "line": 204,
+        "confidence": "H",
+        "note": "",
+        "refs": [
+          "balance/204",
+          "survev/shared/defs/maps/snowDefs.ts:188",
+          "derived/git-78af45bc",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 0.75"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "woods.lootTable.tier_guns[imbel]",
+        "field": "weight",
+        "forkValue": 2.75,
+        "originalValue": "absent",
+        "line": 237,
+        "confidence": "H",
+        "note": "",
+        "refs": [
+          "balance/237",
+          "survev/shared/defs/maps/woodsDefs.ts:76",
+          "derived/git-e10300ff",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 2.75"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "woods.lootTable.tier_airdrop_uncommon[spas16]",
+        "field": "weight",
+        "forkValue": 1,
+        "originalValue": "absent",
+        "line": 241,
+        "confidence": "H",
+        "note": "",
+        "refs": [
+          "balance/241",
+          "survev/shared/defs/maps/woodsDefs.ts:137",
+          "derived/git-e10300ff",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "woods_snow.lootTable.tier_eye_block[svd_winter]",
+        "field": "weight",
+        "forkValue": 1.5,
+        "originalValue": "absent",
+        "line": 253,
+        "confidence": "H",
+        "note": "Winter Woods eye block copied from the Winter map (see lines 202-204)",
+        "refs": [
+          "balance/253",
+          "survev/shared/defs/maps/woodsSnowDefs.ts:83",
+          "derived/git-76c43533",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1.5"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "woods_snow.lootTable.tier_eye_block[sv98_winter]",
+        "field": "weight",
+        "forkValue": 1,
+        "originalValue": "absent",
+        "line": 253,
+        "confidence": "H",
+        "note": "Winter Woods eye block copied from the Winter map (see lines 202-204)",
+        "refs": [
+          "balance/253",
+          "survev/shared/defs/maps/woodsSnowDefs.ts:87",
+          "derived/git-76c43533",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "woods_snow.lootTable.tier_eye_block[awc_winter]",
+        "field": "weight",
+        "forkValue": 0.75,
+        "originalValue": "absent",
+        "line": 253,
+        "confidence": "H",
+        "note": "Winter Woods eye block copied from the Winter map (see lines 202-204)",
+        "refs": [
+          "balance/253",
+          "survev/shared/defs/maps/woodsSnowDefs.ts:88",
+          "derived/git-76c43533",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 0.75"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "faction.lootTable.tier_airdrop_rare[spas16]",
+        "field": "weight",
+        "forkValue": 2,
+        "originalValue": "absent",
+        "line": 281,
+        "confidence": "H",
+        "note": "",
+        "refs": [
+          "balance/281",
+          "survev/shared/defs/maps/factionDefs.ts:350",
+          "derived/git-3cc25eac",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 2"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "cobalt.lootTable.tier_guns_common_tank[imbel]",
+        "field": "weight",
+        "forkValue": 0.5,
+        "originalValue": "absent",
+        "line": 287,
+        "confidence": "H",
+        "note": "balance.txt writes IMD-2 as \"IMD-2\" (id imbel)",
+        "refs": [
+          "balance/287",
+          "survev/shared/defs/maps/baseDefs.ts:464",
+          "derived/git-939023c5",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 0.5"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "cobalt.lootTable.tier_guns_rare_demo[spas16]",
+        "field": "weight",
+        "forkValue": 0.4,
+        "originalValue": "absent",
+        "line": 289,
+        "confidence": "H",
+        "note": "current code has 0.4, not balance.txt's 0.2 (later change not logged in balance.txt)",
+        "refs": [
+          "balance/289",
+          "survev/shared/defs/maps/baseDefs.ts:494",
+          "derived/git-939023c5",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 0.2"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "faction.lootTable.tier_airdrop_rare[barrett]",
+        "field": "weight",
+        "forkValue": 0.5,
+        "originalValue": "absent",
+        "line": 329,
+        "confidence": "H",
+        "note": "",
+        "refs": [
+          "balance/329",
+          "survev/shared/defs/maps/factionDefs.ts:352",
+          "derived/git-660ab62e",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 0.5"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "faction.lootTable.tier_airdrop_rare[ash12]",
+        "field": "weight",
+        "forkValue": 0.5,
+        "originalValue": "absent",
+        "line": 329,
+        "confidence": "H",
+        "note": "",
+        "refs": [
+          "balance/329",
+          "survev/shared/defs/maps/factionDefs.ts:353",
+          "derived/git-660ab62e",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 0.5"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "main.lootTable.tier_airdrop_mythic[barrett]",
+        "field": "weight",
+        "forkValue": 1,
+        "originalValue": "absent",
+        "line": 330,
+        "confidence": "H",
+        "note": "base tier: gold airdrops on every map",
+        "refs": [
+          "balance/330",
+          "survev/shared/defs/maps/baseDefs.ts:634",
+          "derived/git-660ab62e",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "savannah.lootTable.tier_guns[barrett]",
+        "field": "weight",
+        "forkValue": 0.06,
+        "originalValue": "absent",
+        "line": 338,
+        "confidence": "H",
+        "note": "survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
+        "refs": [
+          "balance/338",
+          "survev/shared/defs/maps/savannahDefs.ts:75",
+          "derived/git-51d35177"
+        ],
+        "balanceValue": "absent -> 0.06"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "savannah.lootTable.tier_airdrop_uncommon[barrett]",
+        "field": "weight",
+        "forkValue": 0.075,
+        "originalValue": "absent",
+        "line": 338,
+        "confidence": "H",
+        "note": "balance.txt gives 1.5 for tier_airdrop_uncommon; code has 0.075; current code has 0.075, not balance.txt's 1.5 (later change not logged in balance.txt); survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
+        "refs": [
+          "balance/338",
+          "survev/shared/defs/maps/savannahDefs.ts:100",
+          "derived/git-51d35177"
+        ],
+        "balanceValue": "absent -> 1.5"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "savannah.lootTable.tier_airdrop_rare[barrett]",
+        "field": "weight",
+        "forkValue": 1.5,
+        "originalValue": "absent",
+        "line": 338,
+        "confidence": "H",
+        "note": "survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
+        "refs": [
+          "balance/338",
+          "survev/shared/defs/maps/savannahDefs.ts:108",
+          "derived/git-51d35177"
+        ],
+        "balanceValue": "absent -> 1.5"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "savannah.lootTable.tier_guns[sw500]",
+        "field": "weight",
+        "forkValue": 0.09,
+        "originalValue": "absent",
+        "line": 346,
+        "confidence": "H",
+        "note": "survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
+        "refs": [
+          "balance/346",
+          "survev/shared/defs/maps/savannahDefs.ts:74",
+          "derived/git-b31fd75d"
+        ],
+        "balanceValue": "absent -> 0.09"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "savannah.lootTable.tier_airdrop_uncommon[sw500]",
+        "field": "weight",
+        "forkValue": 0.25,
+        "originalValue": "absent",
+        "line": 346,
+        "confidence": "H",
+        "note": "survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
+        "refs": [
+          "balance/346",
+          "survev/shared/defs/maps/savannahDefs.ts:99",
+          "derived/git-b31fd75d"
+        ],
+        "balanceValue": "absent -> 0.25"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "savannah.lootTable.tier_airdrop_rare[sw500]",
+        "field": "weight",
+        "forkValue": 2,
+        "originalValue": "absent",
+        "line": 346,
+        "confidence": "H",
+        "note": "survev had no own Savannah loot table before 2025-08 (367a7b3d), so the left value is survev's first Savannah table, not a verified original",
+        "refs": [
+          "balance/346",
+          "survev/shared/defs/maps/savannahDefs.ts:107",
+          "derived/git-b31fd75d"
+        ],
+        "balanceValue": "absent -> 2"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_scavenger_adv[spas16]",
+        "field": "weight",
+        "forkValue": "1",
+        "originalValue": "absent",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/baseDefs.ts:548",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "main",
+          "desert",
+          "faction",
+          "halloween",
+          "potato",
+          "snow",
+          "woods",
+          "savannah",
+          "cobalt",
+          "turkey",
+          "main_spring",
+          "main_summer",
+          "potato_spring",
+          "woods_snow",
+          "woods_spring",
+          "woods_summer"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_ring_case[potato_lmg]",
+        "field": "weight",
+        "forkValue": "0.2",
+        "originalValue": "absent",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/potatoDefs.ts:155",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "potato",
+          "potato_spring"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_hatchet[potato_lmg]",
+        "field": "weight",
+        "forkValue": "0.1",
+        "originalValue": "absent",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/potatoDefs.ts:148",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "potato",
+          "potato_spring"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_airdrop_rare[potato_lmg]",
+        "field": "weight",
+        "forkValue": "1",
+        "originalValue": "absent",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/potatoDefs.ts:160",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "potato",
+          "potato_spring"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_sv98[sv98_winter]",
+        "field": "weight",
+        "forkValue": "1",
+        "originalValue": "absent",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/snowDefs.ts:109",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "snow"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_guns[sv98_winter]",
+        "field": "weight",
+        "forkValue": "0.01",
+        "originalValue": "absent",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/snowDefs.ts:109",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "snow"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_chest[sv98_winter]",
+        "field": "weight",
+        "forkValue": "0.1",
+        "originalValue": "absent",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/snowDefs.ts:133",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "snow"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_airdrop_uncommon[sv98_winter]",
+        "field": "weight",
+        "forkValue": "0.5",
+        "originalValue": "absent",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/snowDefs.ts:158",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "snow"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_airdrop_rare[awc_winter]",
+        "field": "weight",
+        "forkValue": "3",
+        "originalValue": "absent",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/snowDefs.ts:167",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "snow"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "snow.lootTable.tier_eye_block[awc]",
+        "field": "weight",
+        "forkValue": "absent",
+        "originalValue": 1,
+        "line": 204,
+        "confidence": "H",
+        "note": "AWM-S 1 -> 0.75 is implemented by swapping awc for the fork skin awc_winter",
+        "refs": [
+          "balance/204",
+          "survev/shared/defs/maps/snowDefs.ts:179",
+          "derived/git-78af45bc",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "1 -> absent"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "woods_snow.lootTable.tier_eye_block[awc]",
+        "field": "weight",
+        "forkValue": "absent",
+        "originalValue": 1,
+        "line": 253,
+        "confidence": "H",
+        "note": "Winter Woods eye block copied from the Winter map (see lines 202-204)",
+        "refs": [
+          "balance/253",
+          "survev/shared/defs/maps/woodsSnowDefs.ts:79",
+          "derived/git-76c43533",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "1 -> absent"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_sv98[sv98]",
+        "field": "weight",
+        "forkValue": "absent",
+        "originalValue": "1",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/snowDefs.ts:83",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "snow"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "lootTable.tier_chest[sv98]",
+        "field": "weight",
+        "forkValue": "absent",
+        "originalValue": "0.1",
+        "line": null,
+        "confidence": "L",
+        "note": "not in balance.txt; differs between survev's pre-fork baseline (2025-07-01) and HEAD (a later fork balance change or a survev fix)",
+        "refs": [
+          "survev/shared/defs/maps/snowDefs.ts:118",
+          "derived/git-ae55c9a8"
+        ],
+        "maps": [
+          "snow"
+        ],
+        "unlisted": true
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
     }
   ],
   "reskinReverts": [
@@ -16903,7 +16828,51 @@
     },
     {
       "map": "savannah",
-      "reason": "loot bans: m870, m1100, mp220, saiga, spas12, m1014, usas, dp28, bar, m249, qbb97, pkp, ak47, an94, groza, grozas, famas, hk416, m4a1, vector, vector45, 2xscope"
+      "reason": "loot bans: m870, m1100, mp220, saiga, spas12, m1014, usas, spas16, dp28, bar, m249, qbb97, pkp, imbel, ak47, an94, groza, grozas, famas, hk416, m4a1, ash12, vector, vector45, 2xscope"
+    }
+  ],
+  "survevPlacements": [
+    {
+      "map": "savannah",
+      "tier": "tier_guns",
+      "item": "sw500",
+      "weight": 0.09,
+      "reason": "survev placement restored"
+    },
+    {
+      "map": "savannah",
+      "tier": "tier_guns",
+      "item": "barrett",
+      "weight": 0.06,
+      "reason": "survev placement restored"
+    },
+    {
+      "map": "savannah",
+      "tier": "tier_airdrop_uncommon",
+      "item": "sw500",
+      "weight": 0.25,
+      "reason": "survev placement restored"
+    },
+    {
+      "map": "savannah",
+      "tier": "tier_airdrop_uncommon",
+      "item": "barrett",
+      "weight": 0.075,
+      "reason": "survev placement restored"
+    },
+    {
+      "map": "savannah",
+      "tier": "tier_airdrop_rare",
+      "item": "sw500",
+      "weight": 2,
+      "reason": "survev placement restored"
+    },
+    {
+      "map": "savannah",
+      "tier": "tier_airdrop_rare",
+      "item": "barrett",
+      "weight": 1.5,
+      "reason": "survev placement restored"
     }
   ],
   "lootRemovals": [
@@ -16927,50 +16896,8 @@
     },
     {
       "map": "main",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17061,18 +16988,6 @@
       "map": "main",
       "tier": "tier_crimson_perks",
       "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main",
-      "tier": "tier_revolvers",
-      "item": "sw500",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17095,56 +17010,8 @@
     },
     {
       "map": "main_spring",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17235,18 +17102,6 @@
       "map": "main_spring",
       "tier": "tier_crimson_perks",
       "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_spring",
-      "tier": "tier_revolvers",
-      "item": "sw500",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17269,56 +17124,8 @@
     },
     {
       "map": "main_summer",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17409,18 +17216,6 @@
       "map": "main_summer",
       "tier": "tier_crimson_perks",
       "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "main_summer",
-      "tier": "tier_revolvers",
-      "item": "sw500",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17443,74 +17238,8 @@
     },
     {
       "map": "desert",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_pirate_rare",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_pirate_rare",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_pirate_rare",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17601,18 +17330,6 @@
       "map": "desert",
       "tier": "tier_crimson_perks",
       "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "desert",
-      "tier": "tier_revolvers",
-      "item": "sw500",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17635,56 +17352,8 @@
     },
     {
       "map": "faction",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17775,18 +17444,6 @@
       "map": "faction",
       "tier": "tier_crimson_perks",
       "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction",
-      "tier": "tier_revolvers",
-      "item": "sw500",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17815,68 +17472,8 @@
     },
     {
       "map": "faction_potato",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_scavenger_adv",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_airdrop_rare",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17982,18 +17579,6 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "faction_potato",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "halloween",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
@@ -18019,56 +17604,8 @@
     },
     {
       "map": "halloween",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -18159,18 +17696,6 @@
       "map": "halloween",
       "tier": "tier_crimson_perks",
       "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "halloween",
-      "tier": "tier_revolvers",
-      "item": "sw500",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -18193,56 +17718,8 @@
     },
     {
       "map": "potato",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -18333,18 +17810,6 @@
       "map": "potato",
       "tier": "tier_crimson_perks",
       "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato",
-      "tier": "tier_revolvers",
-      "item": "sw500",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -18367,56 +17832,8 @@
     },
     {
       "map": "potato_spring",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -18507,18 +17924,6 @@
       "map": "potato_spring",
       "tier": "tier_crimson_perks",
       "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "potato_spring",
-      "tier": "tier_revolvers",
-      "item": "sw500",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -18547,56 +17952,8 @@
     },
     {
       "map": "snow",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -18690,18 +18047,6 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "snow",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "woods",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
@@ -18721,56 +18066,8 @@
     },
     {
       "map": "woods",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -18864,27 +18161,9 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "woods",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "woods_snow",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_guns",
-      "item": "imbel",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -18901,62 +18180,8 @@
     },
     {
       "map": "woods_snow",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_airdrop_uncommon",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19050,27 +18275,9 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "woods_snow",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_snow",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "woods_spring",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_guns",
-      "item": "imbel",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19087,62 +18294,8 @@
     },
     {
       "map": "woods_spring",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_airdrop_uncommon",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19236,27 +18389,9 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "woods_spring",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_spring",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "woods_summer",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_guns",
-      "item": "imbel",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19273,62 +18408,8 @@
     },
     {
       "map": "woods_summer",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_airdrop_uncommon",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19422,18 +18503,6 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "woods_summer",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "woods_summer",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "savannah",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
@@ -19453,68 +18522,8 @@
     },
     {
       "map": "savannah",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_guns_common_tank",
-      "item": "",
-      "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_guns_rare_demo",
-      "item": "",
-      "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19614,18 +18623,6 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "savannah",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "savannah",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "cobalt",
       "tier": "tier_egg_outfits",
       "item": "outfitSpringTree",
@@ -19635,42 +18632,6 @@
       "map": "cobalt",
       "tier": "tier_coconut_outfit",
       "item": "outfitCoconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "cobalt",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "cobalt",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "cobalt",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "cobalt",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "cobalt",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "cobalt",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19764,18 +18725,6 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "cobalt",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "cobalt",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "turkey",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
@@ -19795,56 +18744,8 @@
     },
     {
       "map": "turkey",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19938,18 +18839,6 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "turkey",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "turkey",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "birthday",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
@@ -19969,62 +18858,8 @@
     },
     {
       "map": "birthday",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_scavenger_adv",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -20124,18 +18959,6 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "birthday",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "birthday",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "beach",
       "tier": "tier_throwables",
       "item": "coconut",
@@ -20179,62 +19002,8 @@
     },
     {
       "map": "beach",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_scavenger_adv",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -20358,18 +19127,6 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "beach",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "test_normal",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
@@ -20389,62 +19146,8 @@
     },
     {
       "map": "test_normal",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_scavenger_adv",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -20544,18 +19247,6 @@
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
-      "map": "test_normal",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_normal",
-      "tier": "tier_revolvers",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
       "map": "test_faction",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
@@ -20575,62 +19266,8 @@
     },
     {
       "map": "test_faction",
-      "tier": "tier_guns_common_tank",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_guns_common_classless",
-      "item": "imbel",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_guns_rare_demo",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_guns_rare_classless",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_scavenger_adv",
-      "item": "spas16",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_airdrop_crimson",
-      "item": "ash12",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_airdrop_crimson",
-      "item": "sw500",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_airdrop_crimson",
-      "item": "barrett",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_airdrop_mythic",
-      "item": "barrett",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -20727,18 +19364,6 @@
       "map": "test_faction",
       "tier": "tier_crimson_perks",
       "item": "ap_rounds",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_airdrop_potato",
-      "item": "potato_lmg",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "test_faction",
-      "tier": "tier_revolvers",
-      "item": "sw500",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -20769,18 +19394,6 @@
     {
       "mapObject": "tree_14",
       "item": "coconut",
-      "reason": "item not in the original client"
-    },
-    {
-      "map": "faction_potato",
-      "where": "gameConfig.roles.roleOverrides.last_man.defaultItems.weapons.1.$byTeam.red",
-      "item": "potato_lmg",
-      "reason": "item not in the original client"
-    },
-    {
-      "map": "faction_potato",
-      "where": "gameConfig.roles.roleOverrides.last_man.defaultItems.weapons.1.$byTeam.blue",
-      "item": "potato_lmg",
       "reason": "item not in the original client"
     }
   ],
@@ -21629,23 +20242,39 @@
     },
     {
       "path": "bagSizes.tomato",
-      "reason": "item not in the original client's game objects",
+      "reason": "item not in the ported game objects",
       "kind": "pruned"
     },
     {
       "path": "bagSizes.coconut",
-      "reason": "item not in the original client's game objects",
+      "reason": "item not in the ported game objects",
       "kind": "pruned"
     },
     {
       "path": "player.defaultItems.inventory.tomato",
-      "reason": "item not in the original client's game objects",
+      "reason": "item not in the ported game objects",
       "kind": "pruned"
     },
     {
       "path": "player.defaultItems.inventory.coconut",
-      "reason": "item not in the original client's game objects",
+      "reason": "item not in the ported game objects",
       "kind": "pruned"
+    },
+    {
+      "path": "bagSizes.50AE",
+      "original": [
+        49,
+        98,
+        147,
+        196
+      ],
+      "survev": [
+        50,
+        100,
+        150,
+        200
+      ],
+      "kind": "survev (policy.json)"
     }
   ],
   "fixups": [
@@ -21892,11 +20521,6 @@
   ],
   "excluded": {
     "gameObjects": [
-      "bullet_barrett",
-      "bullet_sw500",
-      "bullet_ash12",
-      "bullet_imbel",
-      "bullet_invis",
       "shrapnel_cobalt",
       "heal_diamond",
       "heal_ankh",
@@ -21930,7 +20554,6 @@
       "emote_flatteredface",
       "emote_salutingface",
       "emote_screamingface",
-      "explosion_potato_lmgshot",
       "explosion_coconut",
       "explosion_tomato",
       "explosion_cobalt",
@@ -21938,15 +20561,6 @@
       "helmet04_captain",
       "helmet04_classless",
       "backpack04_cloud",
-      "imbel",
-      "spas16",
-      "barrett",
-      "sw500",
-      "ash12",
-      "potato_lmg",
-      "svd_winter",
-      "sv98_winter",
-      "awc_winter",
       "iceaxe",
       "cutlass",
       "karambit_borealis",
@@ -22030,7 +20644,6 @@
       "pass_survivr2",
       "captain",
       "classless",
-      "potato_lmgshot",
       "coconut",
       "tomato"
     ],

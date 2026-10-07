@@ -93,11 +93,16 @@ describe("gun tiers", () => {
             expect(reachable.has(id), id).toBe(true);
     }, 60_000);
 
-    it("lists no fork-only or post-0.8.82 gun; every other gun def is classed", () => {
-        for (const id of ["pkm", "barrett", "ash12", "sw500", "imbel", "spas16", "potato_lmg", "m134", "m79"]) {
+    it("lists the ported survev-only guns, no unported post-0.8.82 gun; every other gun def is classed", () => {
+        for (const id of ["pkm", "m134", "m79"]) {
             expect(gunTier(id)).toBeUndefined();
             expect(hasDef(id)).toBe(false);
         }
+        for (const id of ["barrett", "ash12", "sw500", "imbel", "spas16", "svd_winter", "sv98_winter", "awc_winter"]) {
+            expect(hasDef(id), id).toBe(true);
+            expect(gunTier(id), id).toBeDefined();
+        }
+        expect(gunClassOf("potato_lmg")).toBe("useless");
         for (const [id, def] of Object.entries(GameObjectDefs)) {
             if (def.type !== "gun") continue;
             const cls = gunClassOf(id);

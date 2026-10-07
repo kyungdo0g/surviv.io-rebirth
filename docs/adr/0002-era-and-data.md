@@ -1,6 +1,7 @@
 # ADR 0002: Target era and data sources
 
-Status: accepted (2026-10-05)
+Status: accepted (2026-10-05); superseded in part by ADR 0003 (2026-10-07: survev master is the gameplay baseline,
+the original client stays the presentation source; points 2-4 below change accordingly, in stages)
 
 ## Decision
 

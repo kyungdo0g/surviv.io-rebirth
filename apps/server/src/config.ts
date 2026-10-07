@@ -4,7 +4,14 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DEFAULT_SKILL_MIX, parseSkillMix, type SkillTierName } from "@rebirth/bots";
-import { getMapDef, MapDefs } from "@rebirth/defs";
+import {
+    AIRSTRIKE_VARIANT_IDS,
+    type AirstrikeVariant,
+    DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS,
+    getMapDef,
+    isAirstrikeVariant,
+    MapDefs,
+} from "@rebirth/defs";
 import { z } from "zod";
 import { type AntiCheatThresholds, loadThresholds } from "./anticheat/thresholds.ts";
 import type { BotDifficultySetting } from "./bots.ts";
@@ -19,6 +26,17 @@ export interface ServerConfig {
     maxPlayers: number;
     /** players per 50v50 game (the faction map's maxPlayers, 100; M7a) */
     factionMaxPlayers: number;
+    /**
+     * Rebirth: roll weights of the 50v50 scheduled air strike variants (AIRSTRIKE_VARIANTS
+     * "normal:60,heavy:25,carpet:15"; "normal" turns the variants off), copied into every game's
+     * rules.roles.factionAirstrikeVariants
+     */
+    airstrikeVariants: Record<AirstrikeVariant, number>;
+    /**
+     * Rebirth: normal air drops are tier 1 or tier 2 drops (AIRDROP_TIERS "on", the default; "off" keeps v0.8.82's
+     * crate weights and inner crate), copied into every game's rules.airdropTiers
+     */
+    airdropTiers: boolean;
     /** games this server runs at most */
     maxGames: number;
     /** map of games created when find_game names none */
@@ -124,6 +142,22 @@ const EnvSchema = z.object({
         .refine((m) => Object.hasOwn(MapDefs, m), { message: "unknown map" })
         .default("main"),
     MODES: z.string().max(200).optional(),
+    AIRSTRIKE_VARIANTS: z
+        .string()
+        .max(200)
+        .transform((text, ctx) => {
+            try {
+                return parseAirstrikeVariants(text);
+            } catch (err) {
+                ctx.addIssue({ code: "custom", message: (err as Error).message });
+                return z.NEVER;
+            }
+        })
+        .optional(),
+    AIRDROP_TIERS: z
+        .enum(["on", "off"], { message: 'expected "on" or "off"' })
+        .transform((v) => v === "on")
+        .default(true),
     MAX_CONNECTIONS_PER_IP: z.coerce.number().int().min(1).default(5),
     MAX_MSGS_PER_SECOND: z.coerce.number().int().min(1).default(500),
     JOIN_TOKEN_TTL_MS: z.coerce.number().int().min(1).default(10_000),
@@ -217,6 +251,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         host: e.HOST,
         maxPlayers: e.MAX_PLAYERS,
         factionMaxPlayers: e.FACTION_MAX_PLAYERS,
+        airstrikeVariants: e.AIRSTRIKE_VARIANTS ?? { ...DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS },
+        airdropTiers: e.AIRDROP_TIERS,
         maxGames: e.MAX_GAMES,
         defaultMap: e.MAP_NAME,
         modes: e.MODES ? parseModes(e.MODES) : defaultModes(e.MAP_NAME),
@@ -258,6 +294,42 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         region: e.REGION,
         regionServers: e.REGION_SERVERS ?? {},
     };
+}
+
+/** Largest AIRSTRIKE_VARIANTS weight: keeps the sum finite in rng.weighted (1e308 + 1e308 always picks the last). */
+export const MAX_AIRSTRIKE_VARIANT_WEIGHT = 1_000_000;
+/** A plain decimal weight ("25", "2.5"); hex, exponents, signs and "Infinity" are refused, not read by Number(). */
+const DECIMAL_WEIGHT = /^\d+(\.\d+)?$/;
+
+/**
+ * Parses AIRSTRIKE_VARIANTS: comma-separated `variant[:weight]` (normal, heavy, carpet; weight a plain decimal from 0
+ * to MAX_AIRSTRIKE_VARIANT_WEIGHT, 1 when left out), e.g. "normal:60,heavy:25,carpet:15", or "normal" to turn the
+ * rebirth variants off. Variants not listed get 0; at least one weight must be positive. Throws on unknown or repeated
+ * variants and bad weights.
+ */
+export function parseAirstrikeVariants(text: string): Record<AirstrikeVariant, number> {
+    const out = Object.fromEntries(AIRSTRIKE_VARIANT_IDS.map((id) => [id, 0])) as Record<AirstrikeVariant, number>;
+    const seen = new Set<string>();
+    for (const part of text.split(",")) {
+        const entry = part.trim();
+        if (!entry) continue;
+        const [name, weightText, ...rest] = entry.split(":").map((t) => t.trim());
+        if (!isAirstrikeVariant(name)) {
+            throw new Error(`unknown variant "${name}" (expected ${AIRSTRIKE_VARIANT_IDS.join(", ")})`);
+        }
+        if (seen.has(name)) throw new Error(`variant "${name}" listed twice`);
+        seen.add(name);
+        const weight = weightText === undefined ? 1 : Number(weightText);
+        const plain = weightText === undefined || DECIMAL_WEIGHT.test(weightText);
+        if (rest.length > 0 || !plain || !(weight <= MAX_AIRSTRIKE_VARIANT_WEIGHT)) {
+            throw new Error(
+                `bad weight in "${entry}" (expected variant:number, number 0-${MAX_AIRSTRIKE_VARIANT_WEIGHT})`,
+            );
+        }
+        out[name] = weight;
+    }
+    if (!AIRSTRIKE_VARIANT_IDS.some((id) => out[id] > 0)) throw new Error("at least one variant needs a weight > 0");
+    return out;
 }
 
 /** Defaults (no environment) with overrides, for tests and scripts (the buttons follow an overridden defaultMap). */

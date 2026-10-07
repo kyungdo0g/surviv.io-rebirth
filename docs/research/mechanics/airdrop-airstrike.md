@@ -49,6 +49,11 @@
 
 ## Crate types
 
+> The rebirth splits the plain normal drop (`airdrop_crate_01`, `_01x`, `_01sv`) into tier 1 and tier 2 drops that open into their own crates, at the owner's request; see `rebirth-deviations.md` "Air drop tiers".
+
+- The gold shell looks like the normal one: `airdrop_crate_01` and `airdrop_crate_02` both draw `map-airdrop-01.img` (opened: `map-airdrop-02.img`), as do the desert, savannah and turkey gold shells (`_02de`, `_02sv`, `_02tr`), so a gold drop shows only once its loot crate `crate_11` (gold corners) appears [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1008-1033] [H]
+- Snow is the exception: the original client draws its gold shell `airdrop_crate_02x` with its own `map-airdrop-02x.img` against the normal `airdrop_crate_01x`'s `map-airdrop-01x.img` (both open into `map-crate-13x.img`), so a snow gold drop shows before it is opened; survev draws both with `map-airdrop-01x.img` [src:kong/relaunch-client-defs] [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1183-1208] [H]
+
 | shell id | → loot crate | where used | status | sources |
 |---|---|---|---|---|
 | `airdrop_crate_01` | `crate_10` (regular "meteor crate") | main, desert, woods, potato, halloween, beach (fork) | original | [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:1008] [src:kong/relaunch-client-defs] [src:fandom/Air_Drop] [H] |
@@ -128,6 +133,8 @@
 - Strobe sources: meteor case `case_05` (flare gun + 4 strobes), gold military crate `crate_13` (3 strobes), `tier_eye_stone` (w1), desert/savannah/woods `tier_throwables` (w0.2, "rare" in grenade crates) and `tier_airdrop_throwables`, and potato-mode weapon swaps [src:fandom/Strobe] [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:218] [src:survev/shared/defs/mapObjects/obstacles/crateDefs.ts:813-842] [src:survev/shared/defs/maps/baseDefs.ts:233-245] [src:survev/shared/defs/maps/desertDefs.ts:194-198] [src:kong/relaunch-client-defs] [H]
 
 ## Air strike zones (50v50 scheduled strikes)
+
+> The rebirth rolls a variant for every scheduled zone (normal as below, heavy shells, carpet bombing with 6 planes over a wider area) at the owner's request; see `rebirth-deviations.md`.
 
 - Timing options per entry: `airstrikeZoneRad` (60, 55, 50, 45, 40 for circles 1–5), `wait` 1.5 s before the first plane, `delay` 1 s between planes [src:survev/shared/defs/maps/factionDefs.ts:104-193] [M]
 - Plane-count weights: circle 1 {3: 5, 4: 1, 5: 0.1}; circle 2 {3: 4, 4: 1, 5: 0.1}; circle 3 {3: 3, …}; circle 4 {3: 2, …}; circle 5 {3: 1, 4: 1, 5: 0.1}; default 3 [src:survev/shared/defs/maps/factionDefs.ts:107-187] [src:survev/server/src/game/objects/plane.ts:109-111] [M]

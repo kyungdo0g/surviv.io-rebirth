@@ -94,8 +94,9 @@ describe("cover stand-off", () => {
     it("never stands still behind cover: frag once the gates hold, else round it", () => {
         const w = testWorld();
         w.model.self.inventory.frag = 2;
-        addObstacle(w, { x: 12, y: 0 });
-        const e = addEnemy(w, 2, { x: 15, y: 0 });
+        // enemy 20 u away behind cover at 17: outside the frag's no-throw distance (rebirth frag radius x1.3)
+        addObstacle(w, { x: 17, y: 0 });
+        const e = addEnemy(w, 2, { x: 20, y: 0 });
         const brain = brainOf(w, [], "hard");
         // covered just now: no frag yet (a second of cover first), but moving
         const a = planFight(brain.context(NOW));

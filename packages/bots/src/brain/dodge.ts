@@ -14,7 +14,7 @@ import type { BrainCtx, Intent } from "./context.ts";
 import { fragBlast } from "./fragMath.ts";
 
 /** Projectiles worth running from. */
-const DANGEROUS = new Set(["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron"]);
+const DANGEROUS = new Set(["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron", "bomb_heavy"]);
 const dodgeRadii = new Map<string, number>();
 /** Its own frag counts as a danger this long after it showed (leaving the hand it is next to the thrower). */
 const OWN_GRACE = 0.5;

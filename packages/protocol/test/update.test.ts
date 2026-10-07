@@ -430,7 +430,9 @@ describe("Update message", () => {
             explosions: [{ type: "explosion_frag", pos: { x: 100, y: 200 }, layer: 0 }],
             projectiles: [{ id: 7, type: "frag", pos: { x: 101, y: 201 }, posZ: 1.5, dir: { x: 0, y: 1 }, layer: 0 }],
             smokes: [{ id: 3, pos: { x: 90, y: 210 }, rad: 6.2, layer: 0, interior: true }],
-            airstrikeZones: [{ id: 1, pos: { x: 300, y: 300 }, rad: 60, duration: 10.5, zoneT: 0.25 }],
+            airstrikeZones: [
+                { id: 1, variant: "normal" as const, pos: { x: 300, y: 300 }, rad: 60, duration: 10.5, zoneT: 0.25 },
+            ],
         };
         const bytes = encoder.encode(effects, 0);
         // type, tick, flags, ack, ext flags

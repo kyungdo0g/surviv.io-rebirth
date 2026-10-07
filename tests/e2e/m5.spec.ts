@@ -69,12 +69,15 @@ test.describe("M5 throwables, explosions, smoke and heals", () => {
             return { health: p?.health ?? 0, dead: p?.dead ?? true };
         }, dummy);
         expect(hit.dead || hit.health < 100).toBe(true);
-        // the scorch mark decal appears and the camera shook
+        // the scorch mark decal appears (the rebirth frag's x1.3 decal, docs/research/rebirth-deviations.md) and the
+        // camera shook
         await page.waitForTimeout(300);
         expect(await page.evaluate(() => (window as any).__rebirth.maxShake)).toBeGreaterThan(0);
         expect(
             await page.evaluate(() =>
-                (window as any).__rebirth.lastSnapshot.objects.some((o: any) => o.type === "decal_frag_explosion"),
+                (window as any).__rebirth.lastSnapshot.objects.some(
+                    (o: any) => o.type === "decal_frag_large_explosion",
+                ),
             ),
         ).toBe(true);
         await page.screenshot({ path: `${SCREENS}/explosion-after.png` });

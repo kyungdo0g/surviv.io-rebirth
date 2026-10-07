@@ -3,7 +3,7 @@
 // up during them. Containers are watched by wrapping Game.damageObstacle (it calls the original first and changes
 // nothing), the rest by sampling the world. Read-only.
 import type { Bounds, Vec2 } from "@rebirth/core";
-import { MapObjectDefs } from "@rebirth/defs";
+import { AIRDROP_TIER_BASE_CRATES, MapObjectDefs } from "@rebirth/defs";
 import { canDamageObstacle, type DamageParams, type Game } from "@rebirth/sim";
 import { pointInBounds } from "../geom.ts";
 import { livingBots, type MetricsCtx, SAMPLE } from "./context.ts";
@@ -15,14 +15,16 @@ const LOOTING = new Set(["break", "sweep", "loot", "airdrop"]);
 const ABANDON_AFTER = 10;
 /**
  * Inner crates of an opened air drop: the destroyType of every airdrop_crate* obstacle (crate_10..13 and the event
- * variants: crate_11de on desert, crate_10sv on savannah, ...).
+ * variants: crate_11de on desert, crate_10sv on savannah, ...) and the rebirth air drop tier crates the server swaps
+ * in when a normal drop opens (crate_10t1 / crate_10t2 / crate_10svt1 / crate_10svt2, @rebirth/defs airdropTiers).
  */
-const INNER = new Set(
-    Object.entries(MapObjectDefs).flatMap(([id, d]) => {
+const INNER = new Set([
+    ...Object.entries(MapObjectDefs).flatMap(([id, d]) => {
         const inner = (d as { destroyType?: string }).destroyType;
         return id.startsWith("airdrop_crate") && inner ? [inner] : [];
     }),
-);
+    ...Object.keys(AIRDROP_TIER_BASE_CRATES),
+]);
 /** A building visit: inside a zoomIn region for at least VISIT_MIN s; it ends after VISIT_GAP s outside. */
 const VISIT_MIN = 1;
 const VISIT_GAP = 2;

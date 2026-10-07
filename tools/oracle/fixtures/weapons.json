@@ -4,9 +4,9 @@
         "generator": "node --experimental-transform-types tools/oracle/run.ts",
         "survevCommit": "c6185e31fe25a4a07def77a2bb25b1710bda90ac",
         "defs": {
-            "protocolHash": 2525058706,
-            "gameObjectsSha256": "dd1f0919eb7aad005ff5bcf51f84528d7851094ee75d8917fa0d872956b7eb4e",
-            "gameConfigSha256": "22020fb3c453fc41011e966a31dc6fcc65fdbb30108154405fe323f04558fc2b"
+            "protocolHash": 646970998,
+            "gameObjectsSha256": "e1592749ad270af02f8aab6262547ff65f08d36861f1f747e8a7315ece8482b7",
+            "gameConfigSha256": "1fb48c5bc4964098bb3a14af7c8e2acb72d1177a0077328f7a8eb0edc1da57b5"
         },
         "simulation": {
             "dt": 0.01,
@@ -23,9 +23,9 @@
             "headshotRandom": "GameConfig.player.headshotChance = 0.15 (survev default)"
         },
         "patch": {
-            "replacedIds": 615,
-            "idsWithChangedValues": 231,
-            "gameplayValueChanges": 357,
+            "replacedIds": 631,
+            "idsWithChangedValues": 234,
+            "gameplayValueChanges": 362,
             "addedIds": [
                 "bullet_potato",
                 "bullet_bugle",
@@ -7905,6 +7905,1015 @@
                     "firstTickDistance": 1
                 }
             }
+        },
+        "imbel": {
+            "def": {
+                "fireMode": "auto",
+                "fireDelay": 0.092,
+                "maxClip": 40,
+                "maxReload": 40,
+                "reloadTime": 2.1,
+                "switchDelay": 0.75,
+                "bulletCount": 1,
+                "bulletType": "bullet_imbel",
+                "bulletSpeed": 92,
+                "bulletDistance": 200,
+                "ammo": "556mm"
+            },
+            "tick100Hz": {
+                "shotsPerMag": 40,
+                "pelletsPerShot": [{ "value": 1, "count": 40 }],
+                "shotTimes": [
+                    0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2,
+                    2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9
+                ],
+                "intervals": [{ "value": 0.1, "count": 39 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.1,
+                            "end": 2.21,
+                            "duration": 2.11,
+                            "ammoBefore": 0,
+                            "ammoAfter": 40
+                        }
+                    ],
+                    "fullAfterLastShot": 2.21,
+                    "lastShotToNextMagFirstShot": 2.22
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.11,
+                            "end": 2.22,
+                            "duration": 2.11,
+                            "ammoBefore": 39,
+                            "ammoAfter": 40
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.75, "pickupIntoActiveSlot": 0.75 }
+            },
+            "tick1000Hz": {
+                "shotsPerMag": 40,
+                "pelletsPerShot": [{ "value": 1, "count": 40 }],
+                "shotTimes": [
+                    0, 0.092, 0.184, 0.276, 0.368, 0.46, 0.552, 0.644, 0.736, 0.828, 0.92, 1.012, 1.104, 1.196, 1.288,
+                    1.38, 1.472, 1.564, 1.656, 1.748, 1.84, 1.932, 2.024, 2.116, 2.208, 2.3, 2.392, 2.484, 2.576, 2.668,
+                    2.76, 2.852, 2.944, 3.036, 3.128, 3.22, 3.312, 3.404, 3.496, 3.588
+                ],
+                "intervals": [{ "value": 0.092, "count": 39 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.092,
+                            "end": 2.193,
+                            "duration": 2.101,
+                            "ammoBefore": 0,
+                            "ammoAfter": 40
+                        }
+                    ],
+                    "fullAfterLastShot": 2.193,
+                    "lastShotToNextMagFirstShot": 2.194
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.093,
+                            "end": 2.194,
+                            "duration": 2.101,
+                            "ammoBefore": 39,
+                            "ammoAfter": 40
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.75, "pickupIntoActiveSlot": 0.75 }
+            },
+            "bullet": {
+                "centered": {
+                    "pellets": 1,
+                    "distance": { "min": 200, "max": 200 },
+                    "configuredDistance": { "min": 200, "max": 200 },
+                    "flightSeconds": 2.18,
+                    "speed": 92,
+                    "firstTickDistance": 0.92
+                },
+                "low": {
+                    "pellets": 1,
+                    "distance": { "min": 199, "max": 199 },
+                    "configuredDistance": { "min": 199, "max": 199 },
+                    "flightSeconds": 2.17,
+                    "speed": 92,
+                    "firstTickDistance": 0.92
+                },
+                "high": {
+                    "pellets": 1,
+                    "distance": { "min": 201, "max": 201 },
+                    "configuredDistance": { "min": 201, "max": 201 },
+                    "flightSeconds": 2.19,
+                    "speed": 92,
+                    "firstTickDistance": 0.92
+                }
+            }
+        },
+        "spas16": {
+            "def": {
+                "fireMode": "auto",
+                "fireDelay": 0.35,
+                "maxClip": 6,
+                "maxReload": 6,
+                "reloadTime": 2.9,
+                "switchDelay": 0.75,
+                "deployGroup": 1,
+                "bulletCount": 9,
+                "bulletType": "bullet_flechette",
+                "bulletSpeed": 88,
+                "bulletDistance": 45,
+                "ammo": "12gauge"
+            },
+            "tick100Hz": {
+                "shotsPerMag": 6,
+                "pelletsPerShot": [{ "value": 9, "count": 6 }],
+                "shotTimes": [0, 0.35, 0.7, 1.05, 1.4, 1.75],
+                "intervals": [{ "value": 0.35, "count": 5 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.35,
+                            "end": 3.26,
+                            "duration": 2.91,
+                            "ammoBefore": 0,
+                            "ammoAfter": 6
+                        }
+                    ],
+                    "fullAfterLastShot": 3.26,
+                    "lastShotToNextMagFirstShot": 3.27
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.36,
+                            "end": 3.27,
+                            "duration": 2.91,
+                            "ammoBefore": 5,
+                            "ammoAfter": 6
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.75, "pickupIntoActiveSlot": 0.75 }
+            },
+            "tick1000Hz": {
+                "shotsPerMag": 6,
+                "pelletsPerShot": [{ "value": 9, "count": 6 }],
+                "shotTimes": [0, 0.35, 0.7, 1.05, 1.4, 1.75],
+                "intervals": [{ "value": 0.35, "count": 5 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.35,
+                            "end": 3.251,
+                            "duration": 2.901,
+                            "ammoBefore": 0,
+                            "ammoAfter": 6
+                        }
+                    ],
+                    "fullAfterLastShot": 3.251,
+                    "lastShotToNextMagFirstShot": 3.252
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.351,
+                            "end": 3.252,
+                            "duration": 2.901,
+                            "ammoBefore": 5,
+                            "ammoAfter": 6
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.75, "pickupIntoActiveSlot": 0.75 }
+            },
+            "bullet": {
+                "centered": {
+                    "pellets": 9,
+                    "distance": { "min": 45, "max": 45 },
+                    "configuredDistance": { "min": 45, "max": 45 },
+                    "flightSeconds": 0.52,
+                    "speed": 88,
+                    "firstTickDistance": 0.88
+                },
+                "low": {
+                    "pellets": 9,
+                    "distance": { "min": 45, "max": 45 },
+                    "configuredDistance": { "min": 45, "max": 45 },
+                    "flightSeconds": 0.52,
+                    "speed": 88,
+                    "firstTickDistance": 0.88
+                },
+                "high": {
+                    "pellets": 9,
+                    "distance": { "min": 45, "max": 45 },
+                    "configuredDistance": { "min": 45, "max": 45 },
+                    "flightSeconds": 0.52,
+                    "speed": 88,
+                    "firstTickDistance": 0.88
+                }
+            }
+        },
+        "barrett": {
+            "def": {
+                "fireMode": "single",
+                "fireDelay": 0.925,
+                "maxClip": 10,
+                "maxReload": 10,
+                "reloadTime": 3.75,
+                "switchDelay": 1,
+                "bulletCount": 1,
+                "bulletType": "bullet_barrett",
+                "bulletSpeed": 214,
+                "bulletDistance": 400,
+                "ammo": "50AE"
+            },
+            "tick100Hz": {
+                "shotsPerMag": 10,
+                "pelletsPerShot": [{ "value": 1, "count": 10 }],
+                "shotTimes": [0, 0.93, 1.86, 2.79, 3.72, 4.65, 5.58, 6.51, 7.44, 8.37],
+                "intervals": [{ "value": 0.93, "count": 9 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.93,
+                            "end": 4.69,
+                            "duration": 3.76,
+                            "ammoBefore": 0,
+                            "ammoAfter": 10
+                        }
+                    ],
+                    "fullAfterLastShot": 4.69,
+                    "lastShotToNextMagFirstShot": 4.7
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.94,
+                            "end": 4.7,
+                            "duration": 3.76,
+                            "ammoBefore": 9,
+                            "ammoAfter": 10
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 1, "pickupIntoActiveSlot": 1 }
+            },
+            "tick1000Hz": {
+                "shotsPerMag": 10,
+                "pelletsPerShot": [{ "value": 1, "count": 10 }],
+                "shotTimes": [0, 0.925, 1.85, 2.775, 3.7, 4.625, 5.55, 6.475, 7.4, 8.325],
+                "intervals": [{ "value": 0.925, "count": 9 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.925,
+                            "end": 4.676,
+                            "duration": 3.751,
+                            "ammoBefore": 0,
+                            "ammoAfter": 10
+                        }
+                    ],
+                    "fullAfterLastShot": 4.676,
+                    "lastShotToNextMagFirstShot": 4.677
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.926,
+                            "end": 4.677,
+                            "duration": 3.751,
+                            "ammoBefore": 9,
+                            "ammoAfter": 10
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 1, "pickupIntoActiveSlot": 1 }
+            },
+            "bullet": {
+                "centered": {
+                    "pellets": 1,
+                    "distance": { "min": 400, "max": 400 },
+                    "configuredDistance": { "min": 400, "max": 400 },
+                    "flightSeconds": 1.87,
+                    "speed": 214,
+                    "firstTickDistance": 2.14
+                },
+                "low": {
+                    "pellets": 1,
+                    "distance": { "min": 399, "max": 399 },
+                    "configuredDistance": { "min": 399, "max": 399 },
+                    "flightSeconds": 1.87,
+                    "speed": 214,
+                    "firstTickDistance": 2.14
+                },
+                "high": {
+                    "pellets": 1,
+                    "distance": { "min": 401, "max": 401 },
+                    "configuredDistance": { "min": 401, "max": 401 },
+                    "flightSeconds": 1.88,
+                    "speed": 214,
+                    "firstTickDistance": 2.14
+                }
+            }
+        },
+        "sw500": {
+            "def": {
+                "fireMode": "single",
+                "fireDelay": 0.65,
+                "maxClip": 5,
+                "maxReload": 5,
+                "reloadTime": 2.7,
+                "switchDelay": 0.3,
+                "bulletCount": 1,
+                "bulletType": "bullet_sw500",
+                "bulletSpeed": 150,
+                "bulletDistance": 160,
+                "ammo": "50AE"
+            },
+            "tick100Hz": {
+                "shotsPerMag": 5,
+                "pelletsPerShot": [{ "value": 1, "count": 5 }],
+                "shotTimes": [0, 0.65, 1.3, 1.95, 2.6],
+                "intervals": [{ "value": 0.65, "count": 4 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.65,
+                            "end": 3.36,
+                            "duration": 2.71,
+                            "ammoBefore": 0,
+                            "ammoAfter": 5
+                        }
+                    ],
+                    "fullAfterLastShot": 3.36,
+                    "lastShotToNextMagFirstShot": 3.37
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.66,
+                            "end": 3.37,
+                            "duration": 2.71,
+                            "ammoBefore": 4,
+                            "ammoAfter": 5
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.3, "pickupIntoActiveSlot": 0.3 }
+            },
+            "tick1000Hz": {
+                "shotsPerMag": 5,
+                "pelletsPerShot": [{ "value": 1, "count": 5 }],
+                "shotTimes": [0, 0.65, 1.3, 1.95, 2.6],
+                "intervals": [{ "value": 0.65, "count": 4 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.65,
+                            "end": 3.351,
+                            "duration": 2.701,
+                            "ammoBefore": 0,
+                            "ammoAfter": 5
+                        }
+                    ],
+                    "fullAfterLastShot": 3.351,
+                    "lastShotToNextMagFirstShot": 3.352
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.651,
+                            "end": 3.352,
+                            "duration": 2.701,
+                            "ammoBefore": 4,
+                            "ammoAfter": 5
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.3, "pickupIntoActiveSlot": 0.3 }
+            },
+            "bullet": {
+                "centered": {
+                    "pellets": 1,
+                    "distance": { "min": 160, "max": 160 },
+                    "configuredDistance": { "min": 160, "max": 160 },
+                    "flightSeconds": 1.07,
+                    "speed": 150,
+                    "firstTickDistance": 1.5
+                },
+                "low": {
+                    "pellets": 1,
+                    "distance": { "min": 159, "max": 159 },
+                    "configuredDistance": { "min": 159, "max": 159 },
+                    "flightSeconds": 1.06,
+                    "speed": 150,
+                    "firstTickDistance": 1.5
+                },
+                "high": {
+                    "pellets": 1,
+                    "distance": { "min": 161, "max": 161 },
+                    "configuredDistance": { "min": 161, "max": 161 },
+                    "flightSeconds": 1.08,
+                    "speed": 150,
+                    "firstTickDistance": 1.5
+                }
+            }
+        },
+        "ash12": {
+            "def": {
+                "fireMode": "auto",
+                "fireDelay": 0.1,
+                "maxClip": 10,
+                "maxReload": 10,
+                "reloadTime": 3.1,
+                "switchDelay": 0.75,
+                "bulletCount": 1,
+                "bulletType": "bullet_ash12",
+                "bulletSpeed": 85,
+                "bulletDistance": 70,
+                "ammo": "50AE"
+            },
+            "tick100Hz": {
+                "shotsPerMag": 10,
+                "pelletsPerShot": [{ "value": 1, "count": 10 }],
+                "shotTimes": [0, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88, 0.99],
+                "intervals": [{ "value": 0.11, "count": 9 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.11,
+                            "end": 3.22,
+                            "duration": 3.11,
+                            "ammoBefore": 0,
+                            "ammoAfter": 10
+                        }
+                    ],
+                    "fullAfterLastShot": 3.22,
+                    "lastShotToNextMagFirstShot": 3.23
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.12,
+                            "end": 3.23,
+                            "duration": 3.11,
+                            "ammoBefore": 9,
+                            "ammoAfter": 10
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.75, "pickupIntoActiveSlot": 0.75 }
+            },
+            "tick1000Hz": {
+                "shotsPerMag": 10,
+                "pelletsPerShot": [{ "value": 1, "count": 10 }],
+                "shotTimes": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
+                "intervals": [{ "value": 0.1, "count": 9 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.1,
+                            "end": 3.201,
+                            "duration": 3.101,
+                            "ammoBefore": 0,
+                            "ammoAfter": 10
+                        }
+                    ],
+                    "fullAfterLastShot": 3.201,
+                    "lastShotToNextMagFirstShot": 3.202
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.101,
+                            "end": 3.202,
+                            "duration": 3.101,
+                            "ammoBefore": 9,
+                            "ammoAfter": 10
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.75, "pickupIntoActiveSlot": 0.75 }
+            },
+            "bullet": {
+                "centered": {
+                    "pellets": 1,
+                    "distance": { "min": 70, "max": 70 },
+                    "configuredDistance": { "min": 70, "max": 70 },
+                    "flightSeconds": 0.83,
+                    "speed": 85,
+                    "firstTickDistance": 0.85
+                },
+                "low": {
+                    "pellets": 1,
+                    "distance": { "min": 69, "max": 69 },
+                    "configuredDistance": { "min": 69, "max": 69 },
+                    "flightSeconds": 0.82,
+                    "speed": 85,
+                    "firstTickDistance": 0.85
+                },
+                "high": {
+                    "pellets": 1,
+                    "distance": { "min": 71, "max": 71 },
+                    "configuredDistance": { "min": 71, "max": 71 },
+                    "flightSeconds": 0.84,
+                    "speed": 85,
+                    "firstTickDistance": 0.85
+                }
+            }
+        },
+        "potato_lmg": {
+            "def": {
+                "fireMode": "auto",
+                "fireDelay": 0.07,
+                "maxClip": 150,
+                "maxReload": 150,
+                "reloadTime": 5.8,
+                "switchDelay": 0.75,
+                "bulletCount": 2,
+                "bulletType": "bullet_invis",
+                "bulletSpeed": 100,
+                "bulletDistance": 1,
+                "ammo": "potato_ammo"
+            },
+            "tick100Hz": {
+                "shotsPerMag": 150,
+                "pelletsPerShot": [{ "value": 2, "count": 150 }],
+                "shotTimes": [
+                    0, 0.07, 0.14, 0.21, 0.28, 0.35, 0.42, 0.49, 0.56, 0.63, 0.7, 0.77, 0.84, 0.91, 0.98, 1.05, 1.12,
+                    1.19, 1.26, 1.33, 1.4, 1.47, 1.54, 1.61, 1.68, 1.75, 1.82, 1.89, 1.96, 2.03, 2.1, 2.17, 2.24, 2.31,
+                    2.38, 2.45, 2.52, 2.59, 2.66, 2.73, 2.8, 2.87, 2.94, 3.01, 3.08, 3.15, 3.22, 3.29, 3.36, 3.43, 3.5,
+                    3.57, 3.64, 3.71, 3.78, 3.85, 3.92, 3.99, 4.06, 4.13, 4.2, 4.27, 4.34, 4.41, 4.48, 4.55, 4.62, 4.69,
+                    4.76, 4.83, 4.9, 4.97, 5.04, 5.11, 5.18, 5.25, 5.32, 5.39, 5.46, 5.53, 5.6, 5.67, 5.74, 5.81, 5.88,
+                    5.95, 6.02, 6.09, 6.16, 6.23, 6.3, 6.37, 6.44, 6.51, 6.58, 6.65, 6.72, 6.79, 6.86, 6.93, 7, 7.07,
+                    7.14, 7.21, 7.28, 7.35, 7.42, 7.49, 7.56, 7.63, 7.7, 7.77, 7.84, 7.91, 7.98, 8.05, 8.12, 8.19, 8.26,
+                    8.33, 8.4, 8.47, 8.54, 8.61, 8.68, 8.75, 8.82, 8.89, 8.96, 9.03, 9.1, 9.17, 9.24, 9.31, 9.38, 9.45,
+                    9.52, 9.59, 9.66, 9.73, 9.8, 9.87, 9.94, 10.01, 10.08, 10.15, 10.22, 10.29, 10.36, 10.43
+                ],
+                "intervals": [{ "value": 0.07, "count": 149 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.07,
+                            "end": 5.88,
+                            "duration": 5.81,
+                            "ammoBefore": 0,
+                            "ammoAfter": 150
+                        }
+                    ],
+                    "fullAfterLastShot": 5.88,
+                    "lastShotToNextMagFirstShot": 5.89
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.08,
+                            "end": 5.89,
+                            "duration": 5.81,
+                            "ammoBefore": 149,
+                            "ammoAfter": 150
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.75, "pickupIntoActiveSlot": 0.75 }
+            },
+            "tick1000Hz": {
+                "shotsPerMag": 150,
+                "pelletsPerShot": [{ "value": 2, "count": 150 }],
+                "shotTimes": [
+                    0, 0.07, 0.14, 0.21, 0.28, 0.35, 0.42, 0.49, 0.56, 0.63, 0.7, 0.77, 0.84, 0.91, 0.98, 1.05, 1.12,
+                    1.19, 1.26, 1.33, 1.4, 1.47, 1.54, 1.61, 1.68, 1.75, 1.82, 1.89, 1.96, 2.03, 2.1, 2.17, 2.24, 2.31,
+                    2.38, 2.45, 2.52, 2.59, 2.66, 2.73, 2.8, 2.87, 2.94, 3.01, 3.08, 3.15, 3.22, 3.29, 3.36, 3.43, 3.5,
+                    3.57, 3.64, 3.71, 3.78, 3.85, 3.92, 3.99, 4.06, 4.13, 4.2, 4.27, 4.34, 4.41, 4.48, 4.55, 4.62, 4.69,
+                    4.76, 4.83, 4.9, 4.97, 5.04, 5.11, 5.18, 5.25, 5.32, 5.39, 5.46, 5.53, 5.6, 5.67, 5.74, 5.81, 5.88,
+                    5.95, 6.02, 6.09, 6.16, 6.23, 6.3, 6.37, 6.44, 6.51, 6.58, 6.65, 6.72, 6.79, 6.86, 6.93, 7, 7.07,
+                    7.14, 7.21, 7.28, 7.35, 7.42, 7.49, 7.56, 7.63, 7.7, 7.77, 7.84, 7.91, 7.98, 8.05, 8.12, 8.19, 8.26,
+                    8.33, 8.4, 8.47, 8.54, 8.61, 8.68, 8.75, 8.82, 8.89, 8.96, 9.03, 9.1, 9.17, 9.24, 9.31, 9.38, 9.45,
+                    9.52, 9.59, 9.66, 9.73, 9.8, 9.87, 9.94, 10.01, 10.08, 10.15, 10.22, 10.29, 10.36, 10.43
+                ],
+                "intervals": [{ "value": 0.07, "count": 149 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.07,
+                            "end": 5.87,
+                            "duration": 5.8,
+                            "ammoBefore": 0,
+                            "ammoAfter": 150
+                        }
+                    ],
+                    "fullAfterLastShot": 5.87,
+                    "lastShotToNextMagFirstShot": 5.871
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.071,
+                            "end": 5.871,
+                            "duration": 5.8,
+                            "ammoBefore": 149,
+                            "ammoAfter": 150
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.75, "pickupIntoActiveSlot": 0.75 }
+            },
+            "bullet": {
+                "centered": {
+                    "pellets": 2,
+                    "distance": { "min": 1, "max": 1 },
+                    "configuredDistance": { "min": 1, "max": 1 },
+                    "flightSeconds": 0.01,
+                    "speed": 100,
+                    "firstTickDistance": 1
+                },
+                "low": {
+                    "pellets": 2,
+                    "distance": { "min": 0, "max": 0 },
+                    "configuredDistance": { "min": 0, "max": 0 },
+                    "flightSeconds": 0.01,
+                    "speed": 100,
+                    "firstTickDistance": 0
+                },
+                "high": {
+                    "pellets": 2,
+                    "distance": { "min": 2, "max": 2 },
+                    "configuredDistance": { "min": 2, "max": 2 },
+                    "flightSeconds": 0.02,
+                    "speed": 100,
+                    "firstTickDistance": 1
+                }
+            }
+        },
+        "svd_winter": {
+            "def": {
+                "fireMode": "single",
+                "fireDelay": 0.25,
+                "maxClip": 10,
+                "maxReload": 10,
+                "reloadTime": 2.5,
+                "switchDelay": 0.75,
+                "bulletCount": 1,
+                "bulletType": "bullet_svd",
+                "bulletSpeed": 127,
+                "bulletDistance": 425,
+                "ammo": "762mm"
+            },
+            "tick100Hz": {
+                "shotsPerMag": 10,
+                "pelletsPerShot": [{ "value": 1, "count": 10 }],
+                "shotTimes": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25],
+                "intervals": [{ "value": 0.25, "count": 9 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.25,
+                            "end": 2.76,
+                            "duration": 2.51,
+                            "ammoBefore": 0,
+                            "ammoAfter": 10
+                        }
+                    ],
+                    "fullAfterLastShot": 2.76,
+                    "lastShotToNextMagFirstShot": 2.77
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.26,
+                            "end": 2.77,
+                            "duration": 2.51,
+                            "ammoBefore": 9,
+                            "ammoAfter": 10
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.75, "pickupIntoActiveSlot": 0.75 }
+            },
+            "tick1000Hz": {
+                "shotsPerMag": 10,
+                "pelletsPerShot": [{ "value": 1, "count": 10 }],
+                "shotTimes": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25],
+                "intervals": [{ "value": 0.25, "count": 9 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.25,
+                            "end": 2.751,
+                            "duration": 2.501,
+                            "ammoBefore": 0,
+                            "ammoAfter": 10
+                        }
+                    ],
+                    "fullAfterLastShot": 2.751,
+                    "lastShotToNextMagFirstShot": 2.752
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 0.251,
+                            "end": 2.752,
+                            "duration": 2.501,
+                            "ammoBefore": 9,
+                            "ammoAfter": 10
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 0.75, "pickupIntoActiveSlot": 0.75 }
+            },
+            "bullet": {
+                "centered": {
+                    "pellets": 1,
+                    "distance": { "min": 425, "max": 425 },
+                    "configuredDistance": { "min": 425, "max": 425 },
+                    "flightSeconds": 3.35,
+                    "speed": 127,
+                    "firstTickDistance": 1.27
+                },
+                "low": {
+                    "pellets": 1,
+                    "distance": { "min": 424, "max": 424 },
+                    "configuredDistance": { "min": 424, "max": 424 },
+                    "flightSeconds": 3.34,
+                    "speed": 127,
+                    "firstTickDistance": 1.27
+                },
+                "high": {
+                    "pellets": 1,
+                    "distance": { "min": 426, "max": 426 },
+                    "configuredDistance": { "min": 426, "max": 426 },
+                    "flightSeconds": 3.36,
+                    "speed": 127,
+                    "firstTickDistance": 1.27
+                }
+            }
+        },
+        "sv98_winter": {
+            "def": {
+                "fireMode": "single",
+                "fireDelay": 1.5,
+                "maxClip": 10,
+                "maxReload": 10,
+                "reloadTime": 2.7,
+                "switchDelay": 1,
+                "bulletCount": 1,
+                "bulletType": "bullet_sv98",
+                "bulletSpeed": 182,
+                "bulletDistance": 520,
+                "ammo": "762mm"
+            },
+            "tick100Hz": {
+                "shotsPerMag": 10,
+                "pelletsPerShot": [{ "value": 1, "count": 10 }],
+                "shotTimes": [0, 1.5, 3, 4.5, 6, 7.5, 9, 10.5, 12, 13.5],
+                "intervals": [{ "value": 1.5, "count": 9 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 1.5,
+                            "end": 4.21,
+                            "duration": 2.71,
+                            "ammoBefore": 0,
+                            "ammoAfter": 10
+                        }
+                    ],
+                    "fullAfterLastShot": 4.21,
+                    "lastShotToNextMagFirstShot": 4.22
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 1.51,
+                            "end": 4.22,
+                            "duration": 2.71,
+                            "ammoBefore": 9,
+                            "ammoAfter": 10
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 1, "pickupIntoActiveSlot": 1 }
+            },
+            "tick1000Hz": {
+                "shotsPerMag": 10,
+                "pelletsPerShot": [{ "value": 1, "count": 10 }],
+                "shotTimes": [0, 1.501, 3.002, 4.503, 6.004, 7.505, 9.006, 10.507, 12.008, 13.509],
+                "intervals": [{ "value": 1.501, "count": 9 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 1.501,
+                            "end": 4.202,
+                            "duration": 2.701,
+                            "ammoBefore": 0,
+                            "ammoAfter": 10
+                        }
+                    ],
+                    "fullAfterLastShot": 4.202,
+                    "lastShotToNextMagFirstShot": 4.203
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 1.502,
+                            "end": 4.203,
+                            "duration": 2.701,
+                            "ammoBefore": 9,
+                            "ammoAfter": 10
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 1, "pickupIntoActiveSlot": 1 }
+            },
+            "bullet": {
+                "centered": {
+                    "pellets": 1,
+                    "distance": { "min": 520, "max": 520 },
+                    "configuredDistance": { "min": 520, "max": 520 },
+                    "flightSeconds": 2.86,
+                    "speed": 182,
+                    "firstTickDistance": 1.82
+                },
+                "low": {
+                    "pellets": 1,
+                    "distance": { "min": 519, "max": 519 },
+                    "configuredDistance": { "min": 519, "max": 519 },
+                    "flightSeconds": 2.86,
+                    "speed": 182,
+                    "firstTickDistance": 1.82
+                },
+                "high": {
+                    "pellets": 1,
+                    "distance": { "min": 521, "max": 521 },
+                    "configuredDistance": { "min": 521, "max": 521 },
+                    "flightSeconds": 2.87,
+                    "speed": 182,
+                    "firstTickDistance": 1.82
+                }
+            }
+        },
+        "awc_winter": {
+            "def": {
+                "fireMode": "single",
+                "fireDelay": 1.5,
+                "maxClip": 5,
+                "maxReload": 5,
+                "reloadTime": 3.6,
+                "switchDelay": 1,
+                "bulletCount": 1,
+                "bulletType": "bullet_awc",
+                "bulletSpeed": 136,
+                "bulletDistance": 300,
+                "ammo": "308sub"
+            },
+            "tick100Hz": {
+                "shotsPerMag": 5,
+                "pelletsPerShot": [{ "value": 1, "count": 5 }],
+                "shotTimes": [0, 1.5, 3, 4.5, 6],
+                "intervals": [{ "value": 1.5, "count": 4 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 1.5,
+                            "end": 5.11,
+                            "duration": 3.61,
+                            "ammoBefore": 0,
+                            "ammoAfter": 5
+                        }
+                    ],
+                    "fullAfterLastShot": 5.11,
+                    "lastShotToNextMagFirstShot": 5.12
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 1.51,
+                            "end": 5.12,
+                            "duration": 3.61,
+                            "ammoBefore": 4,
+                            "ammoAfter": 5
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 1, "pickupIntoActiveSlot": 1 }
+            },
+            "tick1000Hz": {
+                "shotsPerMag": 5,
+                "pelletsPerShot": [{ "value": 1, "count": 5 }],
+                "shotTimes": [0, 1.501, 3.002, 4.503, 6.004],
+                "intervals": [{ "value": 1.501, "count": 4 }],
+                "reload": {
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 1.501,
+                            "end": 5.102,
+                            "duration": 3.601,
+                            "ammoBefore": 0,
+                            "ammoAfter": 5
+                        }
+                    ],
+                    "fullAfterLastShot": 5.102,
+                    "lastShotToNextMagFirstShot": 5.103
+                },
+                "partialReload": {
+                    "reserve": null,
+                    "actions": [
+                        {
+                            "action": "Reload",
+                            "start": 1.502,
+                            "end": 5.103,
+                            "duration": 3.601,
+                            "ammoBefore": 4,
+                            "ammoAfter": 5
+                        }
+                    ]
+                },
+                "switch": { "freeSwitch": 0.25, "rapidSwitch": 1, "pickupIntoActiveSlot": 1 }
+            },
+            "bullet": {
+                "centered": {
+                    "pellets": 1,
+                    "distance": { "min": 300, "max": 300 },
+                    "configuredDistance": { "min": 300, "max": 300 },
+                    "flightSeconds": 2.21,
+                    "speed": 136,
+                    "firstTickDistance": 1.36
+                },
+                "low": {
+                    "pellets": 1,
+                    "distance": { "min": 299, "max": 299 },
+                    "configuredDistance": { "min": 299, "max": 299 },
+                    "flightSeconds": 2.2,
+                    "speed": 136,
+                    "firstTickDistance": 1.36
+                },
+                "high": {
+                    "pellets": 1,
+                    "distance": { "min": 301, "max": 301 },
+                    "configuredDistance": { "min": 301, "max": 301 },
+                    "flightSeconds": 2.22,
+                    "speed": 136,
+                    "firstTickDistance": 1.36
+                }
+            }
         }
     },
     "skipped": {},
@@ -8031,6 +9040,15 @@
         "flare_gun_dual": 1,
         "potato_cannon": 1,
         "potato_smg": 1,
-        "bugle": 1
+        "bugle": 1,
+        "imbel": 1,
+        "spas16": 9,
+        "barrett": 1,
+        "sw500": 1,
+        "ash12": 1,
+        "potato_lmg": 2,
+        "svd_winter": 1,
+        "sv98_winter": 1,
+        "awc_winter": 1
     }
 }

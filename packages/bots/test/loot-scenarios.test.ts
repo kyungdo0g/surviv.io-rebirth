@@ -86,7 +86,7 @@ describe("air drops", () => {
             [bot],
             () => {
                 inner ??= [...game.world.objects.values()].find(
-                    (o) => o.kind === "obstacle" && /^crate_1[0-3]$/.test(o.type) && !o.dead,
+                    (o) => o.kind === "obstacle" && /^crate_1[0-3](t[12])?$/.test(o.type) && !o.dead,
                 ) as Obstacle | undefined;
                 return !!inner?.dead;
             },

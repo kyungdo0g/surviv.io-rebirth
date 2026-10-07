@@ -4,6 +4,7 @@
 > `balance-revert.json` is an array of `{section, target, field, forkValue, originalValue, line, confidence, note, refs, maps?, balanceValue?, unlisted?}`;
 > `line` is the `balance.txt` line number (`null` for unlisted entries) and `balanceValue` is the change as `balance.txt` words it.
 > To get v0.8.82 behaviour, set each target to `originalValue`. Entries whose original is `absent` mean "remove"; fork-only content goes away with the ids marked `fork` in `fork-vs-original.md`.
+> Since ADR 0003 (2026-10-07) this list is history ("what survev changed"): the game follows survev in stages. The port skips the entries of the survev-only items `tools/port-survev/policy.json` takes (the survev guns and, where survev swapped a base gun for its winter skin, that base's entry), logged as skipped in `packages/defs/src/generated/provenance.json`.
 
 ## Method
 

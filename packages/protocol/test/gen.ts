@@ -1,7 +1,7 @@
 // Random value generators for the round-trip property tests (seeded, so failures reproduce) and the quantization
 // tolerances of every field.
 import type { Rng, Vec2 } from "@rebirth/core";
-import { GameObjectRegistry, MapObjectRegistry } from "@rebirth/defs";
+import { AIRSTRIKE_VARIANT_IDS, GameObjectRegistry, MapObjectRegistry } from "@rebirth/defs";
 import {
     type AirdropView,
     type AirstrikeZoneView,
@@ -445,6 +445,8 @@ export function randSmokes(rng: Rng, ctx: NetCtx): SmokeView[] {
 export function randZones(rng: Rng, ctx: NetCtx): AirstrikeZoneView[] {
     return Array.from({ length: rng.bool(0.8) ? 0 : rng.int(1, 3) }, () => ({
         id: rng.int(1, 255),
+        // rebirth air strike variant (schema 9)
+        variant: rng.pick(AIRSTRIKE_VARIANT_IDS),
         pos: randPos(rng, ctx),
         rad: rng.range(0, 256),
         duration: rng.range(0, 60),

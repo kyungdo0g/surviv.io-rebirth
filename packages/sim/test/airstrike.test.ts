@@ -25,6 +25,8 @@ describe("scheduled air strikes (50v50)", () => {
     it("open a zone over the players, ping it, bomb it with 3-5 planes and close it after its duration", () => {
         const origin = clearSpot();
         const game = flatMapGame("faction");
+        // the v0.8.82 strike: the rebirth variants (heavy, carpet) are covered by airstrikeVariants.test.ts
+        game.rules.roles.factionAirstrikeVariants = { normal: 1 };
         const players = [0, 1, 2].map((i) => addAt(game, v2.add(origin, { x: i * 3, y: 0 })));
         const log = logExplosions(game);
         game.step();

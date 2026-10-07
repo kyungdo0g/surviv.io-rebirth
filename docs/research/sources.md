@@ -14,6 +14,7 @@
 | `kong` | 2026 relaunch of the original game at https://surviv.io (also on Kongregate). Its changelog (`/changelog.html`) is v0.8.82 (Dec 30 2019) followed only by 0.9.0 (Mar 26 2026) – 0.9.3 (Sep 19 2026) fixes. `kong/relaunch-client-defs` = game object and map object definitions extracted from its client bundle (`app.e5465b46.js`) by `tools/research/extract-live-defs.ts`; `kong/relaunch-changelog` = its changelog | HTTPS fetch of the public client bundle | 2026-10-05 | H |
 | `web` | any other URL | WebSearch / WebFetch | — | M, never H alone |
 | `derived` | arithmetic or inference from other cited facts | — | — | inherits |
+| `user` | the project owner's request for a deliberate rebirth deviation from v0.8.82 (`user/<yyyy-mm-dd>-<topic>`); used only in `rebirth-deviations.md`, never for facts about the original game | the request in the working session | date in the id | H (for "the rebirth deliberately changes X") |
 
 Regenerate the dumps with:
 

@@ -118,5 +118,6 @@ describe("round 3 metrics: a real match", () => {
         expect(s.conceal.open.d).toBeGreaterThan(0);
         expect(s.cover.samples).toBeGreaterThan(0);
         expect(s.lost.episodes).toBeGreaterThan(0);
-    }, 60_000);
+        // a 24-bot match runs ~40 s alone and over 60 s when the machine is shared
+    }, 180_000);
 });

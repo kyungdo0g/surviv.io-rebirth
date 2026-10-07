@@ -119,6 +119,8 @@ export const PARTICLE_DEFS: Readonly<Record<string, ParticleDef>> = {
     "556mm": shell("part-shell-04.img", [0.75, 1], [1.5, 2.5], PI * 2.5, 0.075, 0.045, 0.925),
     "12gauge": shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
     "50AE": shell("part-shell-01.img", [0.5, 0.75], [3, 4], PI * 3, 0.0625, 0.0325, 0.95),
+    // survev's .50 BMG casing of the Barrett and the ASh-12 (GunDef particle.casing; survev particles.ts:1953)
+    "50cal": shell("part-shell-06.img", [0.5, 0.75], [3, 4], PI * 3, 0.0625, 0.0325, 0.95),
     "308sub": shell("part-shell-05.img", [0.5, 0.75], [3, 4], PI * 3, 0.0625, 0.0325, 0.95),
     flare: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
     "45acp": shell("part-shell-01.img", [0.5, 0.75], [3, 4], PI * 3, 0.07, 0.04, 0.95),
