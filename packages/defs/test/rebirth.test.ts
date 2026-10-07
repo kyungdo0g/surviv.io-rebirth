@@ -38,7 +38,7 @@ describe("rebirth balance deviations", () => {
         // only the radius and its scorch decal change
         const original = gameObjects.explosion_frag;
         expect({ ...frag, rad: original.rad, decalType: original.decalType }).toEqual(original);
-        expect(rebirthDeviations).toEqual([
+        expect(rebirthDeviations.filter((d) => d.id === "explosion_frag")).toEqual([
             expect.objectContaining({
                 id: "explosion_frag",
                 field: "rad",
@@ -51,6 +51,11 @@ describe("rebirth balance deviations", () => {
                 original: "decal_frag_explosion",
                 rebirth: FRAG_DECAL_TYPE,
             }),
+        ]);
+        // the other deviations are the survev guns' wiki stats (survevGuns.test.ts)
+        expect(rebirthDeviations.filter((d) => d.id !== "explosion_frag").map((d) => `${d.id}.${d.field}`)).toEqual([
+            "potato_lmg.barrelLength",
+            "potato_lmgshot.throwPhysics.velZ",
         ]);
     });
 
@@ -74,7 +79,7 @@ describe("rebirth balance deviations", () => {
 });
 
 describe("rebirth-only defs", () => {
-    it("come after every generated id, which keep their original wire ids", () => {
+    it("come after every generated id (original, then survev-only), which keep their wire ids", () => {
         const generated = Object.keys(gameObjects);
         expect(rebirthOnlyIds).toEqual(["bomb_heavy", "explosion_bomb_heavy"]);
         expect(Object.keys(GameObjectDefs)).toEqual([...generated, ...rebirthOnlyIds]);

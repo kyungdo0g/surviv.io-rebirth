@@ -1595,6 +1595,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -1657,6 +1662,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -1701,6 +1711,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -1801,6 +1816,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -1890,6 +1910,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -2217,6 +2242,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -2244,6 +2284,11 @@
           "name": "m249",
           "count": 1,
           "weight": 0.3
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         },
         {
           "name": "awc",
@@ -2701,6 +2746,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -2787,6 +2837,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -4649,6 +4704,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -4711,6 +4771,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -4755,6 +4820,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -4855,6 +4925,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -4944,6 +5019,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -5276,6 +5356,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -5306,6 +5401,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -5765,6 +5865,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -5851,6 +5956,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -7747,6 +7857,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -7809,6 +7924,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -7853,6 +7973,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -7953,6 +8078,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -8042,6 +8172,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -8374,6 +8509,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -8404,6 +8554,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -8863,6 +9018,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -8949,6 +9109,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -10816,6 +10981,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -10878,6 +11048,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -10922,6 +11097,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -11022,6 +11202,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -11111,6 +11296,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -11294,9 +11484,19 @@
           "weight": 1
         },
         {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "saiga",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 0.5
         },
         {
           "name": "deagle_dual",
@@ -11305,6 +11505,11 @@
         },
         {
           "name": "sv98",
+          "count": 1,
+          "weight": 0.3
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 0.3
         },
@@ -11423,6 +11628,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -11453,6 +11673,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -11857,6 +12082,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -11943,6 +12173,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -13958,6 +14193,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -14020,6 +14260,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -14064,6 +14309,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -14164,6 +14414,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -14253,6 +14508,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -14555,6 +14815,21 @@
           "weight": 4.5
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 2
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "pkp",
           "count": 1,
           "weight": 0.08
@@ -14568,6 +14843,21 @@
       "tier_airdrop_crimson": [
         {
           "name": "deagle_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         }
@@ -14600,6 +14890,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -15054,6 +15349,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -15140,6 +15440,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -15771,6 +16076,12 @@
                           "ammo": 200,
                           "fillInv": true,
                           "weight": 0.3
+                        },
+                        {
+                          "type": "potato_lmg",
+                          "ammo": 150,
+                          "fillInv": false,
+                          "weight": 0.4
                         }
                       ]
                     },
@@ -15787,6 +16098,12 @@
                           "ammo": 200,
                           "fillInv": true,
                           "weight": 0.3
+                        },
+                        {
+                          "type": "potato_lmg",
+                          "ammo": 150,
+                          "fillInv": false,
+                          "weight": 0.4
                         }
                       ]
                     }
@@ -17330,6 +17647,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -17392,6 +17714,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -17436,6 +17763,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -17536,6 +17868,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -17625,6 +17962,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -17957,6 +18299,11 @@
           "weight": 2
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 2
+        },
+        {
           "name": "sv98",
           "count": 1,
           "weight": 2
@@ -17985,6 +18332,21 @@
       "tier_airdrop_crimson": [
         {
           "name": "deagle_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         }
@@ -18017,6 +18379,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -18506,6 +18873,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -18592,6 +18964,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -20481,6 +20858,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -20543,6 +20925,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -20587,6 +20974,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -20687,6 +21079,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -20776,6 +21173,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -21108,6 +21510,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -21138,6 +21555,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -21577,6 +21999,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -21663,6 +22090,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -22735,6 +23167,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 0.1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 0.2
         }
       ],
       "tier_chest": [
@@ -22888,6 +23325,11 @@
         }
       ],
       "tier_hatchet": [
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 0.1
+        },
         {
           "name": "vector",
           "count": 1,
@@ -23391,6 +23833,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -23453,6 +23900,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -23497,6 +23949,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -23597,6 +24054,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -23686,6 +24148,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -23986,11 +24453,31 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 0.1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_crimson": [
         {
           "name": "deagle_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         }
@@ -24023,6 +24510,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -24497,6 +24989,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -24583,6 +25080,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -25710,6 +26212,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 0.1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 0.2
         }
       ],
       "tier_chest": [
@@ -25863,6 +26370,11 @@
         }
       ],
       "tier_hatchet": [
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 0.1
+        },
         {
           "name": "vector",
           "count": 1,
@@ -26366,6 +26878,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -26428,6 +26945,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -26472,6 +26994,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -26572,6 +27099,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -26661,6 +27193,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -26961,11 +27498,31 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 0.1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_crimson": [
         {
           "name": "deagle_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         }
@@ -26998,6 +27555,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -27462,6 +28024,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -27548,6 +28115,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -28320,7 +28892,7 @@
       ],
       "tier_sv98": [
         {
-          "name": "sv98",
+          "name": "sv98_winter",
           "count": 1,
           "weight": 1
         }
@@ -28466,6 +29038,21 @@
           "weight": 1
         },
         {
+          "name": "svd_winter",
+          "count": 1,
+          "weight": 1.5
+        },
+        {
+          "name": "sv98_winter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "awc_winter",
+          "count": 1,
+          "weight": 0.75
+        },
+        {
           "name": "pkp",
           "count": 1,
           "weight": 1
@@ -28492,11 +29079,6 @@
         },
         {
           "name": "m249",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "awc",
           "count": 1,
           "weight": 1
         }
@@ -28697,6 +29279,11 @@
           "weight": 0.01
         },
         {
+          "name": "sv98_winter",
+          "count": 1,
+          "weight": 0.01
+        },
+        {
           "name": "spas12",
           "count": 1,
           "weight": 1
@@ -28843,6 +29430,11 @@
           "weight": 0.1
         },
         {
+          "name": "sv98_winter",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "spas12",
           "count": 1,
           "weight": 1
@@ -28881,11 +29473,6 @@
           "name": "8xscope",
           "count": 1,
           "weight": 0.25
-        },
-        {
-          "name": "sv98",
-          "count": 1,
-          "weight": 0.1
         }
       ],
       "tier_conch": [
@@ -29435,6 +30022,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -29497,6 +30089,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -29541,6 +30138,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -29641,6 +30243,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -29730,6 +30337,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -29990,6 +30602,11 @@
           "weight": 1
         },
         {
+          "name": "sv98_winter",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 1.5
@@ -30022,6 +30639,11 @@
           "weight": 6
         },
         {
+          "name": "awc_winter",
+          "count": 1,
+          "weight": 3
+        },
+        {
           "name": "pkp",
           "count": 1,
           "weight": 0.08
@@ -30050,6 +30672,21 @@
       "tier_airdrop_crimson": [
         {
           "name": "deagle_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         }
@@ -30082,6 +30719,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -30536,6 +31178,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -30622,6 +31269,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -31659,6 +32311,11 @@
           "weight": 3
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 2.75
+        },
+        {
           "name": "m1100",
           "count": 1,
           "weight": 3
@@ -32322,6 +32979,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -32384,6 +33046,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -32428,6 +33095,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -32528,6 +33200,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -32617,6 +33294,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -32852,6 +33534,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 2
@@ -32884,6 +33571,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -32914,6 +33616,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -33378,6 +34085,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -33464,6 +34176,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -34351,6 +35068,21 @@
           "weight": 1
         },
         {
+          "name": "svd_winter",
+          "count": 1,
+          "weight": 1.5
+        },
+        {
+          "name": "sv98_winter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "awc_winter",
+          "count": 1,
+          "weight": 0.75
+        },
+        {
           "name": "pkp",
           "count": 1,
           "weight": 1
@@ -34377,11 +35109,6 @@
         },
         {
           "name": "m249",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "awc",
           "count": 1,
           "weight": 1
         }
@@ -34479,6 +35206,11 @@
         },
         {
           "name": "bar",
+          "count": 1,
+          "weight": 2.75
+        },
+        {
+          "name": "imbel",
           "count": 1,
           "weight": 2.75
         },
@@ -35156,6 +35888,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -35218,6 +35955,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -35262,6 +36004,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -35362,6 +36109,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -35451,6 +36203,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -35686,6 +36443,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 1
@@ -35718,6 +36480,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -35748,6 +36525,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -36202,6 +36984,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -36288,6 +37075,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -37319,6 +38111,11 @@
           "weight": 2.75
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 2.75
+        },
+        {
           "name": "m870",
           "count": 1,
           "weight": 2.5
@@ -37992,6 +38789,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -38054,6 +38856,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -38098,6 +38905,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -38198,6 +39010,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -38287,6 +39104,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -38522,6 +39344,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 1
@@ -38554,6 +39381,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -38584,6 +39426,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -39048,6 +39895,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -39134,6 +39986,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -40148,6 +41005,11 @@
           "weight": 2.75
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 2.75
+        },
+        {
           "name": "m870",
           "count": 1,
           "weight": 2.5
@@ -40821,6 +41683,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -40883,6 +41750,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -40927,6 +41799,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -41027,6 +41904,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -41116,6 +41998,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -41351,6 +42238,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 1
@@ -41383,6 +42275,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -41413,6 +42320,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -41877,6 +42789,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -41963,6 +42880,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -43030,6 +43952,16 @@
           "name": "sv98",
           "count": 1,
           "weight": 0.1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.09
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 0.06
         }
       ],
       "tier_police": [
@@ -44008,6 +44940,16 @@
           "name": "awc",
           "count": 1,
           "weight": 0.15
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.25
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 0.075
         }
       ],
       "tier_airdrop_rare": [
@@ -44040,11 +44982,31 @@
           "name": "ots38_dual",
           "count": 1,
           "weight": 4.5
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 2
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1.5
         }
       ],
       "tier_airdrop_crimson": [
         {
           "name": "deagle_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         }
@@ -44062,6 +45024,11 @@
         },
         {
           "name": "p30l_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -44511,6 +45478,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -44592,6 +45564,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -46434,6 +47411,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.1
@@ -46491,6 +47473,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -46535,6 +47522,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -46630,6 +47622,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -46714,6 +47711,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -47046,6 +48048,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -47076,6 +48093,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -47520,6 +48542,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -47606,6 +48633,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -49512,6 +50544,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -49574,6 +50611,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -49618,6 +50660,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -49718,6 +50765,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -49807,6 +50859,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -50139,6 +51196,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -50169,6 +51241,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -50628,6 +51705,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -50714,6 +51796,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -52436,6 +53523,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -52498,6 +53590,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -52542,6 +53639,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -52642,6 +53744,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -52731,6 +53838,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -53063,6 +54175,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -53093,6 +54220,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -53552,6 +54684,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -53638,6 +54775,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -55382,6 +56524,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -55444,6 +56591,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -55488,6 +56640,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -55588,6 +56745,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -55677,6 +56839,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -56009,6 +57176,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -56039,6 +57221,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -56488,6 +57675,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -56574,6 +57766,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -58484,6 +59681,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -58546,6 +59748,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -58590,6 +59797,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -58690,6 +59902,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -58779,6 +59996,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -59111,6 +60333,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -59141,6 +60378,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -59600,6 +60842,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -59686,6 +60933,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [
@@ -61445,6 +62697,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 0.5
+        },
+        {
           "name": "qbb97",
           "count": 1,
           "weight": 0.25
@@ -61507,6 +62764,11 @@
           "weight": 1
         },
         {
+          "name": "imbel",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "bar",
           "count": 1,
           "weight": 1
@@ -61551,6 +62813,11 @@
           "name": "saiga",
           "count": 1,
           "weight": 0.5
+        },
+        {
+          "name": "spas16",
+          "count": 1,
+          "weight": 0.4
         },
         {
           "name": "usas",
@@ -61651,6 +62918,11 @@
           "weight": 1
         },
         {
+          "name": "spas16",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "l86",
           "count": 1,
           "weight": 1
@@ -61740,6 +63012,11 @@
         },
         {
           "name": "saiga",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "spas16",
           "count": 1,
           "weight": 1
         },
@@ -62072,6 +63349,21 @@
           "name": "deagle_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ash12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_airdrop_mythic": [
@@ -62102,6 +63394,11 @@
         },
         {
           "name": "m249",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "barrett",
           "count": 1,
           "weight": 1
         },
@@ -62561,6 +63858,11 @@
           "name": "potato_smg",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "potato_lmg",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_dev_guns": [
@@ -62647,6 +63949,11 @@
           "name": "ots38",
           "count": 1,
           "weight": 2
+        },
+        {
+          "name": "sw500",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_toilet_gold": [

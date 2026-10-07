@@ -1,5 +1,6 @@
-// The game object, map object and map records every consumer reads: the generated v0.8.82 defs (tools/port-survev)
-// with the rebirth layer applied (rebirth/index.ts: user-requested deviations, rebirth-only defs and loot tables).
+// The game object, map object and map records every consumer reads: the generated defs (tools/port-survev: v0.8.82
+// plus the survev-only content of its policy.json) with the rebirth layer applied (rebirth/index.ts: user-requested
+// deviations, rebirth-only defs and loot tables).
 // index.ts exposes them typed and registry.ts numbers the objects for the wire, so both always agree.
 import gameObjectsJson from "./generated/gameObjects.json" with { type: "json" };
 import mapObjectsJson from "./generated/mapObjects.json" with { type: "json" };

@@ -4,7 +4,7 @@
   "762mm": "7.62mm",
   "556mm": "5.56mm",
   "12gauge": "12 gauge",
-  "50AE": ".50 AE",
+  "50AE": ".50 Caliber",
   "308sub": ".308 Subsonic",
   "flare": "Flare",
   "45acp": ".45 ACP",
@@ -203,7 +203,17 @@
   "potato": "Potato",
   "potato_heavy": "Potato",
   "potato_cannonball": "Potato Cannon",
-  "potato_smgshot": "Spud Gun"
+  "potato_smgshot": "Spud Gun",
+  "imbel": "IMD-2",
+  "spas16": "SPAS-16",
+  "barrett": "Barrett M107",
+  "sw500": "S&W 500",
+  "ash12": "ASh-12",
+  "potato_lmg": "PMG-134",
+  "svd_winter": "SVD-63",
+  "sv98_winter": "SV-98",
+  "awc_winter": "AWM-S",
+  "potato_lmgshot": "PMG-134"
  },
  "hud": {
   "m9_dual": "M9",

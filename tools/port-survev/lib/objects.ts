@@ -6,7 +6,8 @@ import {
     mapObjectClosure,
     perkModeRoles,
 } from "../../../packages/defs/src/refs.ts";
-import { clone, diffKeys, isPlainObject, type KeyDiff, mergeWinner } from "./util.ts";
+import { type PortPolicy, portedSurvevIds } from "./policy.ts";
+import { clone, deepEqual, diffKeys, isPlainObject, type KeyDiff, mergeWinner } from "./util.ts";
 
 export interface Fixup {
     id: string;
@@ -15,12 +16,39 @@ export interface Fixup {
     reason: string;
 }
 
-/** Every original client game object, in client order. Untyped explosions get `type: "explosion"` (from survev). */
+export type GameObjectStatus = "original" | "survev-only";
+
+export interface GameObjectPort {
+    defs: Record<string, any>;
+    status: Record<string, GameObjectStatus>;
+    fixups: Fixup[];
+    excluded: string[];
+}
+
+/**
+ * A survev reskin of an original def: the original def of `base` with every top-level field survev's skin changes
+ * against survev's own base (its world image, `baseType`, `noPotatoSwap`), so the skin keeps the base's stats.
+ */
+function skinDef(id: string, base: string, live: Record<string, any>, survev: Record<string, any>): any {
+    const skin = survev[id];
+    if (!skin || !survev[base] || !live[base])
+        throw new Error(`policy.json: skin ${id} of ${base} not in both sources`);
+    const out = clone(live[base]);
+    for (const k of Object.keys(skin)) if (!deepEqual(skin[k], survev[base][k])) out[k] = clone(skin[k]);
+    return out;
+}
+
+/**
+ * Every original client game object, in client order (untyped explosions get `type: "explosion"` from survev), then
+ * the survev-only ids the policy ports, in survev order: listed ids as survev has them, skins via skinDef.
+ */
 export function portGameObjects(
     live: Record<string, any>,
     survev: Record<string, any>,
-): { defs: Record<string, any>; fixups: Fixup[]; excluded: string[] } {
+    policy: PortPolicy,
+): GameObjectPort {
     const defs: Record<string, any> = {};
+    const status: Record<string, GameObjectStatus> = {};
     const fixups: Fixup[] = [];
     for (const [id, def] of Object.entries(live)) {
         let out = clone(def);
@@ -36,9 +64,21 @@ export function portGameObjects(
             });
         }
         defs[id] = out;
+        status[id] = "original";
     }
-    const excluded = Object.keys(survev).filter((id) => !(id in live));
-    return { defs, fixups, excluded };
+    const ported = portedSurvevIds(policy);
+    for (const id of ported) {
+        if (id in live) throw new Error(`policy.json: ${id} is an original id, not survev-only`);
+        if (!(id in survev)) throw new Error(`policy.json: ${id} is not a survev game object`);
+    }
+    for (const id of Object.keys(survev)) {
+        if (!ported.has(id)) continue;
+        const base = policy.survevSkins[id];
+        defs[id] = base ? skinDef(id, base, live, survev) : clone(survev[id]);
+        status[id] = "survev-only";
+    }
+    const excluded = Object.keys(survev).filter((id) => !(id in defs));
+    return { defs, status, fixups, excluded };
 }
 
 export interface MapObjectPort {
@@ -115,6 +155,8 @@ export interface GameConfigPort {
     config: Record<string, any>;
     diffs: KeyDiff[];
     prunes: Array<{ path: string; reason: string }>;
+    /** policy paths whose survev value replaced the original one */
+    survev: Array<{ path: string; original: unknown; survev: unknown }>;
 }
 
 /** All dot paths (objects only; arrays are leaves) of an object. */
@@ -128,14 +170,33 @@ export function objectPaths(v: unknown, prefix = "", out = new Set<string>()): S
     return out;
 }
 
-/** survev GameConfig deep-merged under the original client GameConfig; item-keyed tables pruned to known items. */
+const pathGet = (o: any, path: string[]): any => path.reduce((a, k) => (isPlainObject(a) ? a[k] : undefined), o);
+
+/**
+ * survev GameConfig deep-merged under the original client GameConfig, except the `survevPaths` (policy.json
+ * survevGameConfig), which take survev's value; an array is cut to the original's length (bags keep the original's
+ * four levels). Item-keyed tables are pruned to known items.
+ */
 export function portGameConfig(
     live: Record<string, any>,
     survev: Record<string, any>,
     gameObjects: Record<string, unknown>,
+    survevPaths: readonly string[] = [],
 ): GameConfigPort {
     const config = mergeWinner(live, survev);
     const diffs = diffKeys(live, survev);
+    const taken: GameConfigPort["survev"] = [];
+    for (const path of survevPaths) {
+        const keys = path.split(".");
+        const original = pathGet(live, keys);
+        let value = clone(pathGet(survev, keys));
+        if (value === undefined) throw new Error(`policy.json survevGameConfig: survev has no ${path}`);
+        if (Array.isArray(value) && Array.isArray(original)) value = value.slice(0, original.length);
+        const holder = pathGet(config, keys.slice(0, -1));
+        if (!isPlainObject(holder)) throw new Error(`policy.json survevGameConfig: ${path} has no parent object`);
+        holder[keys.at(-1)!] = value;
+        taken.push({ path, original, survev: value });
+    }
     const prunes: GameConfigPort["prunes"] = [];
     const itemTables: Array<[string, Record<string, unknown> | undefined]> = [
         ["bagSizes", config.bagSizes],
@@ -145,8 +206,8 @@ export function portGameConfig(
         for (const key of Object.keys(table ?? {})) {
             if (key in gameObjects) continue;
             delete table![key];
-            prunes.push({ path: `${path}.${key}`, reason: "item not in the original client's game objects" });
+            prunes.push({ path: `${path}.${key}`, reason: "item not in the ported game objects" });
         }
     }
-    return { config, diffs, prunes };
+    return { config, diffs, prunes, survev: taken };
 }

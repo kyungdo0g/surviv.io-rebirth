@@ -2,11 +2,12 @@
 import { describe, expect, it } from "vitest";
 import {
     type Defs,
-    FORK_ONLY_GUNS,
     gameConfig,
     gameObjects,
     mapObjects,
     maps,
+    NOT_PORTED_IDS,
+    PORTED_SURVEV_IDS,
     PSEUDO_AMMO,
     provenance,
     readGeneratedText,
@@ -88,7 +89,14 @@ describe("ids", () => {
 
     it("provenance covers every id", () => {
         expect(Object.keys(provenance.gameObjects)).toEqual(Object.keys(gameObjects));
-        expect(new Set(Object.values(provenance.gameObjects))).toEqual(new Set(["original"]));
+        expect(new Set(Object.values(provenance.gameObjects))).toEqual(new Set(["original", "survev-only"]));
+        // the survev-only ids are exactly the policy's, after every original id
+        const survevOnly = Object.keys(provenance.gameObjects).filter(
+            (id) => provenance.gameObjects[id] !== "original",
+        );
+        expect([...survevOnly].sort()).toEqual([...PORTED_SURVEV_IDS].sort());
+        const first = Object.keys(gameObjects).indexOf(survevOnly[0]);
+        expect(Object.keys(gameObjects).slice(first)).toEqual(survevOnly);
         expect(Object.keys(provenance.mapObjects)).toEqual(Object.keys(mapObjects));
         expect(Object.keys(provenance.maps)).toEqual(Object.keys(maps));
         const original = Object.entries(provenance.maps).filter(([, p]: any) => p.inOriginalClient);
@@ -225,13 +233,13 @@ describe("loot tables", () => {
     });
 });
 
-describe("fork-only content", () => {
+describe("survev-only content", () => {
     it.each(["gameObjects.json", "mapObjects.json", "maps.json", "gameConfig.json"])(
-        "%s has no fork-only guns",
+        "%s has no survev-only item the policy leaves out",
         (f) => {
             const found: string[] = [];
             JSON.parse(readGeneratedText(f), (key, value) => {
-                if (FORK_ONLY_GUNS.includes(key) || FORK_ONLY_GUNS.includes(value)) found.push(key || value);
+                if (NOT_PORTED_IDS.includes(key) || NOT_PORTED_IDS.includes(value)) found.push(key || value);
                 return value;
             });
             expect(found).toEqual([]);

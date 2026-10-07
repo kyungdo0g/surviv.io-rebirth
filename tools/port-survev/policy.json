@@ -1,0 +1,24 @@
+{
+    "$comment": "Port policy (docs/adr/0003-survev-baseline.md, docs/design/survev-content-and-new-guns.md section 5.1). survevOnlyGameObjects: survev-only game objects ported as survev has them, appended after every original id in survev order (the owner, 2026-10-07: add what only survev.io has, the guns first). survevSkins: survev-only reskins built from the original def of their base plus the fields survev's skin changes against survev's base (same stats as the base). survevGameConfig: GameConfig paths taken from survev instead of the original (arrays cut to the original's length, so bags keep 4 levels). Later waves extend these lists.",
+    "survevOnlyGameObjects": [
+        "bullet_barrett",
+        "bullet_sw500",
+        "bullet_ash12",
+        "bullet_imbel",
+        "bullet_invis",
+        "explosion_potato_lmgshot",
+        "imbel",
+        "spas16",
+        "barrett",
+        "sw500",
+        "ash12",
+        "potato_lmg",
+        "potato_lmgshot"
+    ],
+    "survevSkins": {
+        "svd_winter": "svd",
+        "sv98_winter": "sv98",
+        "awc_winter": "awc"
+    },
+    "survevGameConfig": ["bagSizes.50AE"]
+}

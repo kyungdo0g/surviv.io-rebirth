@@ -7,7 +7,8 @@ Builds the data of `@rebirth/defs` (`packages/defs/src/generated/*.json`) from t
   which is v0.8.82 plus the 2026 bug fixes. This source is authoritative.
 - **survev** (`.survev` at commit `c6185e31`, GPL-3.0): an open-source recreation. Only survev has the
   server-only data the client never shipped: map generation, loot tables, plane and role timings, gas stages
-  and the server constants in `GameConfig`.
+  and the server constants in `GameConfig`. Since ADR 0003 (`docs/adr/0003-survev-baseline.md`) survev is the
+  gameplay baseline too; the port takes survev-only content in stages, as `policy.json` lists it.
 
 ## Running it
 
@@ -31,14 +32,22 @@ running it twice on the same inputs gives byte-identical output.
 | `gameConfig.json` | `GameConfig` |
 | `provenance.json` | where each value came from, and every change the port made (see below) |
 
-Key order follows the original client for game and map objects; survev-only map objects come after them, in
-survev order. Maps follow survev's order. The id registries in `packages/defs/src/registry.ts` number defs in
+Key order follows the original client for game and map objects; the survev-only game objects of `policy.json` and
+the survev-only map objects come after them, in survev order. Maps follow survev's order. The id registries in `packages/defs/src/registry.ts` number defs in
 this order (0 is the empty type), so every original def keeps the index its position in the client gives it.
 
 ## Policy
 
-1. **Game objects** are the original client defs, unchanged. survev-only ids are fork or post-0.8.82 content and
-   are left out (`provenance.excluded.gameObjects`). survev fields the original lacks are not merged in either.
+0. **`policy.json`** (checked in, echoed into `provenance.policy`) lists the survev-only content the port takes as
+   survev has it: `survevOnlyGameObjects` (today the survev-only guns, their bullets, `bullet_invis` and the PMG-134's
+   `potato_lmgshot` with its explosion), `survevSkins` (skin id -> original base: the base's original def plus every
+   field survev's skin changes against survev's base, so `svd_winter`, `sv98_winter` and `awc_winter` keep their
+   base's stats with survev's winter world image) and `survevGameConfig` (GameConfig paths from survev, arrays cut to
+   the original's length: `bagSizes.50AE` 50 / 100 / 150 / 200). Unknown keys are errors; a listed id that is
+   original or not in survev is an error.
+1. **Game objects** are the original client defs, unchanged, then the policy's survev-only ids in survev order
+   (`provenance.gameObjects`: `"original"` or `"survev-only"`). Other survev-only ids are left out
+   (`provenance.excluded.gameObjects`). survev fields the original lacks are not merged into original defs.
    One fixup: `explosion_rounds` and `explosion_rounds_sg` have no `type` in the client, so they get
    `type: "explosion"` (`provenance.fixups`).
 2. **Map objects** are the original client defs, unchanged. survev-only map objects are kept only when a ported
@@ -66,18 +75,24 @@ this order (0 is the empty type), so every original def keeps the index its posi
    loot entry. Numeric and JSON-encoded strings are parsed. Any other text is a description and is not concrete.
    A map spawn revert that names a map object neither source defines is rejected. Every entry is logged as
    `{ status: "applied" | "skipped", entry, reason, targets? }` in `provenance.balanceRevert`. If the file is
-   missing, the port prints a warning and skips this step.
-5. **Loot tables**: entries whose item is not in the final game objects (fork items such as barrett, ash12, sw500,
-   imbel) are removed, and so are `xp_*` drops (accounts are out of scope). A table left empty gets a single no-drop
+   missing, the port prints a warning and skips this step. Entries that would undo the loot placement of a ported
+   survev-only item are skipped (reason "survev-only item ported as survev places it"), and so is the entry that
+   would put a skin's base back where survev swapped the base for the skin (snow's eye block: AWM-S for the winter
+   AWM-S), so those tables stay as survev has them (`lib/survevLoot.ts`). After the event-map fixes, tables a fix
+   rebuilt (Savannah's pre-fork reconstruction) get survev's entries of the ported items back unless the map's loot
+   bans forbid them (`provenance.survevPlacements`).
+5. **Loot tables**: entries whose item is not in the final game objects (survev-only items the policy does not take,
+   such as the iceaxe, cutlass or coconut) are removed, and so are `xp_*` drops (accounts are out of scope). A table left empty gets a single no-drop
    entry `{ name: "", count: 1, weight: 1 }`. survev's `tier_barn_melee` is renamed to the original
    `tier_sledgehammer`, which the original barn basement's `loot_tier_sledgehammer` drops. Every change is logged
    in `provenance.lootRemovals` / `provenance.fixups`.
 6. **GameConfig**: survev's `GameConfig` deep-merged under the original client's. The original wins for every key
    present in both, and arrays are replaced whole, so `bagSizes` keeps the original four backpack levels. TypeScript
    enum reverse mappings are dropped. survev's gas stage table (a private const in
-   `server/src/game/objects/gas.ts`) is added as `gas.stages`. `bagSizes` and
-   `player.defaultItems.inventory` keys for items that don't exist are pruned. `provenance.gameConfigDiffs` lists
-   every key that differs, exists on one side only, or was pruned.
+   `server/src/game/objects/gas.ts`) is added as `gas.stages`. The policy's `survevGameConfig` paths take survev's
+   value instead. `bagSizes` and `player.defaultItems.inventory` keys for items that don't exist are pruned.
+   `provenance.gameConfigDiffs` lists every key that differs, exists on one side only, was pruned or was taken from
+   survev by the policy.
 
 The port ends with a reference check (`provenance.problems`, expected to be empty). `provenance.deadRefs` lists
 broken references in original defs that no map can spawn: the original client keeps three unused loot spawners
@@ -90,6 +105,10 @@ whose tiers no loot table defines.
 - `lib/maps.ts`: map defs and loot table cleanup
 - `lib/objects.ts`: game objects, map objects (with the survev-only closure) and GameConfig
 - `lib/balance.ts`: the balance-revert resolver
+- `lib/policy.ts`: loads and checks `policy.json`
+- `lib/survevLoot.ts`: survev placements of the ported survev-only items (balance-revert skips, restores)
+- `policy.json`: which survev-only content the port takes (ADR 0003)
 - `lib/validate.ts`: the reference check
 - `balance.test.ts`: unit tests of the balance-revert resolver
+- `survevLoot.test.ts`: unit tests of the policy, the survev-only ids and skins, and the survev placements
 - `fetch.sh`: fetches the inputs

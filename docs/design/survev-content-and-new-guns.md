@@ -1,6 +1,8 @@
 # survev.io content and new rebirth guns
 
-Status: **proposed** (2026-10-07). This is a plan. Nothing in it is implemented yet.
+Status: **in progress** (2026-10-07). Implemented: the survev-only guns of section 2.1 with survev's `.50` bag sizes
+(section 2.4) and the scoped port policy of section 5.1 (`tools/port-survev/policy.json`); the owner accepted the survev
+baseline (`docs/adr/0003-survev-baseline.md`). Everything else is still a plan.
 
 It covers two user decisions from 2026-10-07 (KB source ids proposed: `user/2026-10-07-survev-baseline`,
 `user/2026-10-07-new-guns`). The user wrote in Korean; paraphrased:
@@ -71,6 +73,12 @@ representation diffs, so it is rejected.
 
 ### 1.4 Documents that must change (describe only; nobody edits them before the user agrees)
 
+Done on 2026-10-07 with the survev guns: `docs/adr/0003-survev-baseline.md` (new), the status of ADR 0002, the
+precedence in `docs/research/README.md`, `tools/port-survev/README.md` (the scoped `policy.json`), the header of
+`docs/research/provenance/balance-revert.md`, `assets/PROVENANCE.md` and the guns' rows in
+`docs/research/rebirth-deviations.md`. `CLAUDE.md` still needs the owner's own edit (the text below; agents do not
+edit it).
+
 | document | change |
 |---|---|
 | `CLAUDE.md`, "Data sources and precedence" and the line "Fork-only survev content (barrett, ash12, sw500, imbel, reserve_* buildings, ...) is excluded." | Replace with the text below. **Agents must not edit CLAUDE.md on their own**; this text is a proposal for the user. |
@@ -82,19 +90,22 @@ representation diffs, so it is rejected.
 | `assets/PROVENANCE.md` | New counts (defs then reference about 400 survev sprites instead of 18) and the new `rebirth-user` source row. |
 | `docs/research/rebirth-deviations.md` | One row per new gun and new mechanic, with the user source. |
 
-Proposed `CLAUDE.md` text:
+Proposed `CLAUDE.md` text (the current version is in `docs/adr/0003-survev-baseline.md`, Consequences):
 
 ```md
 ## Data sources and precedence
 
-1. survev (`.survev`, GPL-3.0, master commit `c6185e31`, 2026-09-29) is the gameplay baseline: all gameplay values and all
+1. survev (`.survev`, GPL-3.0, master commit `c6185e31`, 2026-09-29) is the gameplay baseline: gameplay values and
    survev content (survev-only guns, perks, buildings and maps included), loot tables, map generation, gas and roles.
-   We write our own code; we port data, not code. Port policy: `tools/port-survev/policy.json`.
+   The switch is staged (`docs/adr/0003-survev-baseline.md`): the port takes what `tools/port-survev/policy.json`
+   lists as survev has it; everything else keeps the reverted 0.8.82 values until its stage lands. We write our own
+   code; we port data, not code.
 2. Original client definitions extracted from the 2026 relaunch bundle (`research-cache/live/defs.json`) are the
    presentation source (sprites, sounds, UI, names) and fix the wire order of the original ids.
 3. Rebirth additions requested by the user live in `packages/defs/src/rebirth` and are listed in
    `docs/research/rebirth-deviations.md`.
-4. Wikis for qualitative facts. See `docs/research/README.md`.
+4. Wikis for qualitative facts, and survev.wiki.gg for the specs of survev-only items where it differs from the source.
+   See `docs/research/README.md`.
 
 Out of scope: survev accounts and meta content (quests, passes, XP items) and unmerged survev branches.
 User-supplied art and sound live only in the gitignored `assets-user/`.
@@ -126,12 +137,36 @@ The ids appear in `docs/research/provenance/live-vs-survev.md`, and today in `pr
 | `svd_winter`, `sv98_winter`, `awc_winter` | winter world-image skins, same stats | `gunDefs.ts` | `gun-svd-02`, `gun-sv98-02`, `gun-awc-02` | snow maps | S |
 | `bullet_invis`, `shrapnel_cobalt` | survev's invisible carrier bullet; Cobalt shrapnel | `bulletDefs.ts` | - | `explosion_cobalt` | S |
 
+**Implemented (2026-10-07).** The port takes these guns, their bullets, `bullet_invis`, `potato_lmgshot` with
+`explosion_potato_lmgshot` and the three winter skins from survev (`tools/port-survev/policy.json`; the skins are the
+original base def plus survev's winter world image, so they keep their base's stats) and keeps survev's loot placements
+on the maps we have (the balance revert skips their entries, `tools/port-survev/lib/survevLoot.ts`). The owner asked
+that the specs follow survev.wiki.gg: every stat is pinned to its infobox (`packages/defs/test/survevGuns.test.ts`); the
+two fields where the wiki and the source differ take the wiki's value in the rebirth layer
+(`packages/defs/src/rebirth/survevGuns.ts`: PMG-134 barrel 4.5, source 5; Petite Potato velZ 3, source 5; the Petite
+Potato page's explosion radius 1.7 is contradicted by the newer PMG-134 page and the source, 1.75, so 1.75 stays). The
+PMG-134's hits slow for 0.25 s and shrink the view (1.5 a hit, at most 32, back 2.5 s after the last hit;
+`rules.modes.viewShrink`). Wire: `PROTOCOL_SCHEMA_VERSION` 10. Placements live today: Barrett in the gold drop of
+main, spring, summer and snow (rebirth, below), 50v50 military crates (Barrett, ASh-12, SPAS-16), Savannah (Barrett,
+S&W 500), woods maps (IMD-2 on the ground, SPAS-16 in the normal drop), Cobalt (IMD-2 Tank pods, SPAS-16 Demo pods and
+Master Scavenger), potato maps and Potato vs Tomato (PMG-134, also Lone Survivr's 40 % loadout), snow (the winter
+skins). The winter skins keep their base gun's stats, so six fields differ from the wiki (SVD barrel, headshot and
+damage, SV-98 barrel and headshot, AWM-S barrel; `SKIN_WIKI_GAPS`, `docs/research/rebirth-deviations.md`) until
+option B (section 1.2) moves the base guns. They become live with later waves: the crimson air drop and the Reserve's
+Gold Crimson Case (`tier_airdrop_crimson`: ASh-12, S&W 500, Barrett), the Reserve's wine racks (`tier_revolvers`:
+S&W 500), desert Pirate's Bounty kills (`tier_pirate_rare`), Cobalt's Classless crates (IMD-2, SPAS-16), the
+Workshop's SPAS-16 mount (`gun_mount_07`) and 50v50's gold military crate (`tier_airdrop_mythic`: Barrett)
+(`packages/defs/test/survevGunLoot.test.ts` pins both lists).
+
 **Where the Barrett spawns.** On survev master it spawns from `tier_airdrop_crimson` (only the desert crimson airdrop
 `airdrop_crate_05` → `crate_17` and the Reserve's `case_07de` use it), from `tier_airdrop_mythic` (only the 50v50 gold
 military crates), from faction `tier_airdrop_rare` 0.5, savannah tables, and desert `tier_pirate_rare` 0.3. **It never
 spawns on the classic main map.** Because the user asked for the Barrett by name, add a rebirth loot overlay (a
-deviation): Barrett in the gold drop `tier_airdrop_rare` of main and its seasonal copies, weight 1 (survev main
-`tier_airdrop_rare` totals 22.68). The ASh-12 and S&W 500 keep survev's placement.
+deviation): Barrett in the gold drop `tier_airdrop_rare` of main and its seasonal copies (`main_spring`, `main_summer`
+and `snow`, which survev builds from Main and which keep its "Normal" name), weight 1 (survev main `tier_airdrop_rare`
+totals 22.68; snow's has `awc_winter` for `awc`, same total). The event maps (Halloween, Turkey, Birthday, Beach,
+Cobalt) share main's gold table but are left out on purpose, as modes of their own. The ASh-12 and S&W 500 keep
+survev's placement.
 
 ### 2.2 Melee
 
@@ -289,9 +324,13 @@ gameplay fields". Under option B survev's own simulation becomes a closer oracle
 ## 4. The user's guns
 
 The first list has 26 names. One of them, the Glock 18, is already in the game, which leaves **25 new guns**. Six names
-came later: Honey Badger, DBS, M202 and MG42 are new; Abakan and Tommy gun already exist. That makes **29 new gun ids**
+came later: Honey Badger, DBS, M202 and MG42 are new; Abakan and Tommy gun already exist. That made **29 new gun ids**
 (the M79 included), plus `tec9_dual` and `vz61_dual`, plus an optional `m1928`. None of them is in survev master, in
 `feat/winter-factions`, or on the wiki.
+
+**Owner update (2026-10-07):** the SPAS-15 is dropped, because survev's SPAS-16 ("the full-auto SPAS-15",
+`wikigg:SPAS-16@5932`), now ported, covers it; the M200 Intervention was added (section 8). Row 5 below stays struck
+for the record; its asset checklist row (4.4) is removed.
 
 Conventions:
 - Every gun gets a `bullet_<id>`. Launchers also get a projectile or explosion def.
@@ -312,7 +351,7 @@ Conventions:
 | 2 | `wa2000` | Walther WA 2000 (.300 Win Mag) | DMR, semi, bullpup | `762mm` | 6 (8) | ref SVD: dmg 48 (x1.33), fireDelay 0.33, reload 2.9, range 450, speed 150, headshot 1.75; DPS 145 | - | - / - / 1.5 / 0.5 | A 0.28 |
 | 3 | `hecate` | PGM Hécate II (.50 BMG) | sniper, bolt | `50AE` | 7 (9) | ref Barrett / AWM-S: dmg 165 (between the Barrett 99 and the AWM-S 180, which also has fireDelay 1.5 and is gold; at 130 the AWM-S strictly beat it), obstacle 2.5, fireDelay 1.5, reload 4.0, range 500, speed 200, headshot 1.25, equip -1 / attack -4 | `50cal` casing, bolt cycle sound | **Gold only** 1.0 | S-aim 0.16 |
 | 4 | `lynx` | "링스": PUBG's Lynx AMR = the Hungarian **SERO/Gepárd GM6 Lynx**, a semi-auto bullpup .50 BMG (**flag**) | anti-materiel, semi | `50AE` | 5 (6) | ref Barrett: dmg 118, **obstacle 6** (breaks cover), fireDelay 1.1, reload 4.2, equip -1.5 / attack -5 | optional `speed.carry -0.5` | **Gold only** 0.75 | S-aim 0.18 |
-| 5 | `spas15` | Franchi SPAS-15 | shotgun, semi | `12gauge` buckshot | 6 (8) | ref Saiga-12: fireDelay 0.3, spread 8 (x0.8), box reload 2.6 | distinct from survev `spas16` (auto flechette) | shotguns 0.1 / 1.5 / 1.0 / - | A 0.7 |
+| 5 | ~~`spas15`~~ | ~~Franchi SPAS-15~~ **dropped** (owner, 2026-10-07: survev's `spas16` covers it) | - | - | - | - | - | - | - |
 | 6 | `m60` | M60 GPMG | LMG, auto | `762mm` | 100 (150) | ref PKP: dmg 16, fireDelay 0.105, reload 5.5, obstacle 2, attack -4; DPS 152 (below M249 175 / PKP 180, so **not gold**) | - | 0.02 / - / 1.0 / - | A- 0.52 |
 | 7 | `mk14` | Mk 14 EBR (the existing `m39` is its USMC variant) | DMR, **auto** | `762mm` | 20 (30) | ref M39: dmg 24, fireDelay 0.14, spread 2.5/5, reload 2.8; DPS 171 | full auto keeps it distinct from `m39` | - / - / 1.5 / 0.5 | A+ 0.33 |
 | 8 | `dshk` | DShK, carried and hip-fired | heavy MG, auto | `50AE` | **30** (30; the user asked for a 30-round box, so Firepower does not extend it) | ref PKP / ASh-12: dmg 34, obstacle 3, fireDelay 0.115, **reload 7.5**, range 300, `ammoSpawnCount` 30; DPS 296 | **`speed.carry -1`**, equip -2, attack -5: 11 / 9 / 2 u/s carried / held / firing | - / - / 0.2 / 0.5 | A+ 0.5 |
@@ -366,7 +405,7 @@ classic floor feel must stay. Decide in the wave-5 balance pass using bot matche
 | Boys "II" | **Boys Mk II**, the shortened airborne .55 Boys | - | confirm; 10 shots, then discarded |
 | Panzerfaust | the WWII **single-use** Panzerfaust 60/100 | the reloadable Panzerfaust 3 (then like the RPG, with `rocket` ammo) | confirm |
 | Mk 14 EBR | full-auto DMR, distinct from `m39` (which is the USMC Mk 14) | - | none |
-| SPAS-15 | semi-auto buckshot, distinct from survev's `spas16` (auto flechette) | skip it, since `spas16` arrives with the port | confirm |
+| SPAS-15 | **resolved: dropped** (owner, 2026-10-07); survev's `spas16` is ported instead | - | - |
 | FN FAL | 7.62 semi DMR, distinct from survev's `imbel` (5.56 FAL-derived LMG) | - | none |
 | Glock 18 / Abakan / Tommy gun | existing `glock`, `an94`, `m1a1` | variants: a 33-round `glock18`, `m1928` (drum) | "이미 있는 총이에요. 그대로 둘까요, 변형을 추가할까요?" |
 | .50 ammo (Hecate, Lynx, DShK) | survev's convention: everything .50 uses `50AE` ".50 Caliber" | a new `50bmg` ammo (bag 20/40/60/80/100), one more HUD slot and wire row | confirm |
@@ -395,7 +434,6 @@ Rules for every gun:
 | wa2000 | `loot-weapon-wa2000` | `gun-wa2000-01` | `wa2000_01`, `wa2000_reload_01`, (`_switch_01`) | |
 | hecate | `loot-weapon-hecate` | `gun-hecate-01` (long, about 70x250) | `hecate_01`, `hecate_reload_01`, `hecate_cycle_01`, (`_switch_01`) | |
 | lynx | `loot-weapon-lynx` | `gun-lynx-01` | `lynx_01`, `lynx_reload_01`, (`_switch_01`) | |
-| spas15 | `loot-weapon-spas15` | `gun-spas15-01` | `spas15_01`, `spas15_reload_01`, (`_switch_01`) | |
 | m60 | `loot-weapon-m60` | `gun-m60-top-01` + optional magazine layer `gun-m60-bot-01` (LMG convention, as `gun-m249-top-01` / `gun-m249-bot-01`), or bar | `m60_01`, `m60_reload_01`, (`_switch_01`) | |
 | mk14 | `loot-weapon-mk14` | `gun-mk14-01` | `mk14_01`, `mk14_reload_01`, (`_switch_01`) | |
 | dshk | `loot-weapon-dshk` | `gun-dshk-top-01` (big, about 70x260) + optional box layer `gun-dshk-bot-01` | `dshk_01`, `dshk_reload_01` (long), (`_switch_01`, `_cycle_01`) | |
@@ -680,7 +718,7 @@ The defs go in `packages/defs/src/rebirth/guns/<class>.ts` files, each under 600
 | W2-RIFLES | `rebirth/guns/rifles.ts` | ak74, m16a4, g36c, sig550, g3, asval, honeybadger |
 | W2-SMG | `rebirth/guns/smgPistols.ts` | tec9 (+dual), vz61 (+dual), bizon, p90, m1928 (if wanted) |
 | W2-MARKSMAN | `rebirth/guns/marksman.ts` | wa2000, mk14, fal, hecate, lynx |
-| W2-HEAVY | `rebirth/guns/shotgunsLmgs.ts` | aa12, spas15, m60, mg42 |
+| W2-HEAVY | `rebirth/guns/shotgunsLmgs.ts` | aa12, m60, mg42 (the SPAS-15 is dropped) |
 | W2-INTEGRATE (one owner) | `rebirth/index.ts` registration, `gunClasses.ts`, `rebirth/mapDefs.ts` (floor, T1, T2, Gold, in the 5.8 order for all 21 maps), `rebirth-assets.json` entries, `ko.ts` rows, the minimal `gunTiers.ts` rows with each merge (coordinated with the bot workflows) | merges each package's exported `defs`, `loot` and `assets` lists |
 
 Tests:
@@ -760,8 +798,11 @@ Tests:
     sounds, l10n, goldens, the oracle. KB `survev/...:line` refs (10,378 of them) are checked for path only, so their line
     numbers drift.
 13. **Wiki versus source.** The wiki has a few known errors: the Coconut and Tomato `cookable` flags are inverted, PMG-134
-    and Petite Potato numbers differ, and the Barrett page's armour example is wrong (54.45, not 45.5). The source wins;
-    each case goes to `docs/research/conflicts.md`.
+    and Petite Potato numbers differ, and the Barrett page's armour example is wrong (54.45, not 45.5). For the specs of
+    survev-only items the owner decided that the wiki wins (2026-10-07, ADR 0003 point 4: PMG-134 barrel 4.5, Petite
+    Potato velZ 3, applied in `packages/defs/src/rebirth/survevGuns.ts` citing both); where the wiki contradicts itself
+    (Petite Potato explosion radius 1.7 against the PMG-134 page's 1.75) or the slip is not a stat (the armour example),
+    the source's value stays. Other cases go to `docs/research/conflicts.md`.
 
 ## 8. Owner decisions, 2026-10-07 (supersede the defaults above where they differ)
 
@@ -793,7 +834,6 @@ Ammo colours follow the game's convention: yellow 9mm, blue 7.62mm, green 5.56mm
 | AK-74 | `ak74` | 5.56mm (green) | 5.45×39 has no own ammo |
 | G36C | `g36c` | 5.56mm (green) | |
 | Škorpion vz. 61 | `vz61` | 9mm (yellow) | |
-| SPAS-15 | `spas15` | 12 gauge (red) | |
 | AA-12 | `aa12` | 12 gauge (red) | slugs only |
 | WA2000 | `wa2000` | .50 AE (black) | |
 | Hécate II | `hecate` | .50 AE (black) | |
@@ -803,4 +843,5 @@ Ammo colours follow the game's convention: yellow 9mm, blue 7.62mm, green 5.56mm
 
 Art received: five sheets of side-view line drawings, one per gun (stored in the gitignored `assets-user/source/`), usable
 as loot icons after cutting, label removal and transparency; held (top-down) sprites still fall back to the bar shape.
-The FN FAL and SPAS-15 drawings are the same picture.
+The FN FAL and SPAS-15 drawings were the same picture; the owner redrew the sheet as the FN FAL (2026-10-07), and the
+SPAS-15 is dropped: survev's SPAS-16 covers it and is now in the game (section 2.1).

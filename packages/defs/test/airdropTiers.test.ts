@@ -28,15 +28,19 @@ import { mapObjects, maps } from "./helpers.ts";
 /**
  * Tier ranks of the guns in the air drop tables, D 0 .. S 10: a copy of the bots' shared tier list
  * (packages/bots/src/knowledge/gunTiers.ts ROWS, TIER_ORDER; "est." rows included), which @rebirth/defs cannot import.
+ * The survev-only guns (tools/port-survev/policy.json) are not on that list yet: their ranks below are estimates from
+ * their wiki stats (Barrett S-aim like the AWM-S, ASh-12 A+, SPAS-16 A like the Saiga-12, IMD-2 A- like the BAR,
+ * S&W 500 B+), and the winter skins rank as their base guns.
  */
 // biome-ignore format: one tier per line
 const RANK: Readonly<Record<string, number>> = {
     m249: 10, pkp: 10, // S
-    awc: 9, // S-aim
-    qbb97: 8, sv98: 8, usas: 8, // A+
+    awc: 9, awc_winter: 9, barrett: 9, // S-aim
+    qbb97: 8, sv98: 8, sv98_winter: 8, usas: 8, ash12: 8, // A+
     mk12: 7, m39: 7, garand: 7, scar: 7, m4a1: 7, saiga: 7, spas12: 7, p30l_dual: 7, svd: 7, scarssr: 7, // A
-    dp28: 6, bar: 6, famas: 6, grozas: 6, m870: 6, mp220: 6, vector: 6, scorpion: 6, ots38_dual: 6, // A-
-    mkg45: 5, l86: 5, deagle_dual: 5, // B+
+    spas16: 7, svd_winter: 7, // A (survev-only)
+    dp28: 6, bar: 6, imbel: 6, famas: 6, grozas: 6, m870: 6, mp220: 6, vector: 6, scorpion: 6, ots38_dual: 6, // A-
+    mkg45: 5, l86: 5, deagle_dual: 5, sw500: 5, // B+
     mosin: 4, scout_elite: 4, vss: 4, model94: 4, deagle: 4, ak47: 4, groza: 4, // B
     colt45: 1, // C
     m9: 0, // D
@@ -319,7 +323,7 @@ describe("air drop tier tables", () => {
             }
             const tier2 = flat(def.lootTable, AIRDROP_TIER2_TABLE);
             const gold = flat(def.lootTable, "tier_airdrop_rare");
-            // snow has the smallest lead (0.7: its gold table has no AWM-S)
+            // snow's gold table has survev's winter AWM-S (awc_winter) instead of the AWM-S
             expect(meanRank(tier2) + 0.5, name).toBeLessThan(meanRank(gold));
             // the top (S: M249, PKP; S-aim: AWM-S) is gold's: tier 2 has at most savannah's AWM-S 0.15
             expect(shareAtLeast(tier2, S_AIM), name).toBeLessThan(shareAtLeast(gold, S_AIM) / 4);
@@ -327,9 +331,10 @@ describe("air drop tier tables", () => {
             const level = shareAtLeast(gold, A) > 0.99 ? A_PLUS : A;
             expect(shareAtLeast(tier2, level), name).toBeLessThan(shareAtLeast(gold, level));
         }
-        // snow's gold drop has no AWM-S: it leads tier 2 by its M4A1, Garand and the rare M249 / PKP
+        // snow's gold drop has survev's winter AWM-S skin, not the AWM-S (survev/shared/defs/maps/snowDefs.ts:167)
         const snow = getMapDef("snow").lootTable;
         expect(snow.tier_airdrop_rare.map((e) => e.name)).not.toContain("awc");
+        expect(snow.tier_airdrop_rare.find((e) => e.name === "awc_winter")?.weight).toBe(3);
     });
 
     it("every gun of the tables has a rank, so the comparisons cover them all", () => {
@@ -337,7 +342,7 @@ describe("air drop tier tables", () => {
             const t = getMapDef(name).lootTable;
             for (const tier of [AIRDROP_TIER1_TABLE, AIRDROP_TIER2_TABLE, "tier_airdrop_rare"]) {
                 for (const e of core(t[tier])) {
-                    const unranked = ["flare_gun", "potato_cannon", "potato_smg"].includes(e.name);
+                    const unranked = ["flare_gun", "potato_cannon", "potato_smg", "potato_lmg"].includes(e.name);
                     if (gunClass(e.name) && !unranked) expect(RANK[e.name], `${name} ${e.name}`).toBeDefined();
                 }
             }
@@ -350,9 +355,10 @@ describe("air drop tier tables", () => {
             const tier1 = core(t[AIRDROP_TIER1_TABLE]);
             const classes = new Set(tier1.filter((e) => gunClass(e.name)).map((e) => gunClass(e.name)));
             expect([name, [...classes].sort()]).toEqual([name, ["lmg", "shotgun"]]);
-            // the MIRV and strobe of woods' normal drop move to tier 1: a tier 2 crate always holds a gun
+            // the MIRV and strobe of woods' normal drop move to tier 1: a tier 2 crate always holds a gun (survev's
+            // SPAS-16 sits in woods' normal drop, survev/shared/defs/maps/woodsDefs.ts:137)
             expect(tier1.filter((e) => !gunClass(e.name)).map((e) => e.name)).toEqual(["mirv", "strobe"]);
-            expect(t[AIRDROP_TIER2_TABLE].map((e) => e.name)).toEqual(["saiga", "qbb97"]);
+            expect(t[AIRDROP_TIER2_TABLE].map((e) => e.name)).toEqual(["saiga", "spas16", "qbb97"]);
         }
         const sv = getMapDef("savannah").lootTable;
         expect(core(sv[AIRDROP_TIER1_TABLE]).map((e) => e.name)).toEqual(["mk12", "m39", "m9", "mkg45", "vss", "l86"]);

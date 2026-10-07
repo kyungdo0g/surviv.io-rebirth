@@ -332,7 +332,8 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
             shellPos = { x: shellPos.x + shellDir.x * p.shellOffsetY, y: shellPos.y + shellDir.y * p.shellOffsetY };
         }
         if (p.shellReverse) vel = { x: -vel.x, y: -vel.y };
-        this.particles.add(def.ammo, player.layer, shellPos, vel, {
+        // a gun's own casing (survev particle.casing: the .50 guns' "50cal"), else its ammo's
+        this.particles.add(p.casing ?? def.ammo, player.layer, shellPos, vel, {
             scale: p.shellScale,
             rot: -Math.atan2(shellDir.y, shellDir.x),
             zOrd: PLAYER_FX_Z_ORD,

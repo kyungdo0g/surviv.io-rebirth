@@ -1,5 +1,6 @@
 // Korean HUD strings. Values follow the "리버스 표기" (proposed) column of docs/research/l10n-ko.md: the official
-// ko.json value where it is marked "=", otherwise the KB's proposed fix. Fork-only items are left out.
+// ko.json value where it is marked "=", otherwise the KB's proposed fix. survev-only items are in only once the port
+// takes them (tools/port-survev/policy.json): survev's ko.json value where it has one, else the glossary's proposal.
 export const ko: Readonly<Record<string, string>> = {
     "word-order": "SOV",
     "game-reloading": "재장전",
@@ -88,7 +89,8 @@ export const koItems: Readonly<Record<string, string>> = {
     "12gauge": "12게이지",
     "762mm": "7.62mm",
     "556mm": "5.56mm",
-    "50AE": ".50 AE",
+    // survev renamed .50 AE ".50 Caliber" (en.json; its ko.json keeps ".50 AE"): l10n-ko.md FIX 50ae-label
+    "50AE": ".50 구경",
     "308sub": ".308 아음속탄",
     flare: "신호탄",
     "45acp": ".45 ACP",
@@ -181,6 +183,16 @@ export const koItems: Readonly<Record<string, string>> = {
     potato_cannon: "포테이토 캐논",
     potato_smg: "감자총",
     bugle: "나팔",
+    // survev-only guns (l10n-ko.md: imbel, spas16 and the winter skins from survev's ko.json; the rest proposed)
+    barrett: "바렛 M107",
+    ash12: "ASh-12",
+    sw500: "S&W 500",
+    imbel: "IMD-2",
+    spas16: "SPAS-16",
+    potato_lmg: "PMG-134",
+    svd_winter: "SVD-63",
+    sv98_winter: "SV-98",
+    awc_winter: "AWM-S",
     fists: "주먹",
     knuckles_rusted: "녹슨 너클즈",
     knuckles_heroic: "영웅의 너클즈",
@@ -224,6 +236,7 @@ export const koItems: Readonly<Record<string, string>> = {
     snowball_heavy: "스노우볼",
     potato: "감자",
     potato_heavy: "감자",
+    potato_lmgshot: "PMG-134",
 };
 
 /** "game-hud-<id>" short weapon slot names */

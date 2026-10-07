@@ -20,7 +20,7 @@ frame's sourceSize divided by its atlas scale). Sources, as of the original bund
 | Source | Sprites | What |
 |---|---:|---|
 | `original-0.8.82` | 1145 | the original atlas frame, for every sprite the original atlases hold, except below |
-| `survev` | 493 | 110 kept over an original frame (`tools/assets/keep-survev.json`, with a reason each); 383 the original atlases do not hold: survev or fork content, of which the definitions reference 18 (fork objects such as `tomato_01`, and `map-door-06`, `map-plane-01x`, `map-tree-01x`, `map-tree-13`, named by the original client but packed in none of its atlases) |
+| `survev` | 493 | 110 kept over an original frame (`tools/assets/keep-survev.json`, with a reason each); 383 the original atlases do not hold: survev or fork content, of which the definitions reference 33: the survev-only guns' loot icons and held sprites and the PMG-134's potato (`proj-potato-03`; `tools/port-survev/policy.json`, ADR 0003), fork objects such as `tomato_01`, and `map-door-06`, `map-plane-01x`, `map-tree-01x`, `map-tree-13`, named by the original client but packed in none of its atlases |
 | `fandom` | 0 | wiki PNG gap fills (`assets/fandom-gapfill.json`); the 16 earlier ones are now original frames |
 | `none` | 5 | named by the original client too, but in none of its atlases, so it drew nothing: `map-bathhouse-column-02`, `map-crate-13x`, `map-perch-res`, `map-tire-01`, `map-wall-glass-18` |
 

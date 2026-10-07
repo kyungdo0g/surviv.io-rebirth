@@ -1,6 +1,7 @@
 // Id <-> small integer mapping used to serialize definition ids on the wire, as in the original protocol:
-// id 0 is the empty type "", definitions follow in JSON key order, then the rebirth-only defs (data.ts), so every
-// original type keeps its original id. Game objects use 10 bits, map objects 12.
+// id 0 is the empty type "", definitions follow in JSON key order (the original client's, then the survev-only ones
+// the port takes), then the rebirth-only defs (data.ts), so every original type keeps its original id. Game objects
+// use 10 bits, map objects 12.
 import { gameObjectsData, mapObjectsData } from "./data.ts";
 
 /**
@@ -15,9 +16,13 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * record ends with the zone's variant (2 bits, index into AIRSTRIKE_VARIANT_IDS); the rebirth-only bomb_heavy and
  * explosion_bomb_heavy game types and the decal_bomb_heavy_explosion and decal_frag_large_explosion map types follow
  * the generated ones; then (still 9, unreleased) the air drop tier crates crate_10t1, crate_10t2, crate_10svt1 and
- * crate_10svt2 after those map types (the registry change alters PROTOCOL_HASH).
+ * crate_10svt2 after those map types (the registry change alters PROTOCOL_HASH) · 10: the survev-only guns
+ * (tools/port-survev/policy.json): bullet_barrett, bullet_sw500, bullet_ash12, bullet_imbel, bullet_invis,
+ * explosion_potato_lmgshot, imbel, spas16, barrett, sw500, ash12, potato_lmg, svd_winter, sv98_winter, awc_winter and
+ * potato_lmgshot take game type ids after the original ones and before the rebirth-only ones (bomb_heavy and
+ * explosion_bomb_heavy move up by 16); every original id keeps its index. No record layout changed.
  */
-export const PROTOCOL_SCHEMA_VERSION = 9;
+export const PROTOCOL_SCHEMA_VERSION = 10;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

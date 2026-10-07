@@ -69,7 +69,7 @@ function fx(
 
 const scatter = (particle: string, count: number) => ({ particle, count, speed: [5, 25] as const });
 
-/** survev explosion.ts ExplosionEffectDefs (same values as the 0.8.82 client) */
+/** survev explosion.ts ExplosionEffectDefs (same values as the 0.8.82 client; potato_lmgshot is survev-only) */
 const EFFECTS: Readonly<Record<string, EffectDef>> = {
     frag: fx("explosionBurst", 1, "explosion_01", "explosion_02", 10, [0.2, 0.35], 2),
     smoke: fx("explosionBurst", 0, "explosion_smoke_01", "explosion_smoke_01", 10, [0, 0], 6),
@@ -94,6 +94,12 @@ const EFFECTS: Readonly<Record<string, EffectDef>> = {
         detune: 250,
         volume: 0.5,
         scatter: scatter("potato_smg_impact", 2),
+    }),
+    // survev's PMG-134 shot (survev client explosion.ts:634-655): a small potato splat, quieter and higher
+    potato_lmgshot: fx("", 0.1, "potato_01", "potato_02", 1, [0, 0], 0.3, {
+        detune: 400,
+        volume: 0.5,
+        scatter: { particle: "potato_smg_impact", count: 1, speed: [5, 20] as const },
     }),
     bomb_iron: fx("explosionBomb", 2, "explosion_01", "explosion_02", 12, [0.25, 0.4], 2),
     /**

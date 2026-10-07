@@ -5,7 +5,8 @@ Facts about surviv.io gathered from wikis, the original changelog and the survev
 ## Target era
 
 **surviv.io v0.8.82 (December 2019)** — the build survev reconstructs and the one Kongregate relaunched in March 2026.
-Content added after 0.8.82 is documented but marked `optional`. Content that only exists in the survev fork is marked `fork`.
+Content added after 0.8.82 is documented but marked `optional`. Content that only exists in the survev fork is marked `fork`;
+since ADR 0003 (2026-10-07) the game takes survev's content too, in stages (the survev-only guns first).
 
 ## Line format (enforced by `node tools/kb/kb-check.ts`)
 
@@ -22,11 +23,20 @@ Source prefixes (see `sources.md`): `survev/<path>:<line>`, `fandom/<Page_Title>
 
 ## Precedence when sources disagree
 
-1. Client-visible numbers in survev `shared/defs`, after reverting fork changes listed in `balance.txt`.
-2. survev server logic; parts the survev authors mark as estimates are overridden by wiki evidence rated `[H]`/`[M]`.
-3. Wikis win on qualitative questions: what existed, names, event rules.
-4. Dates need two independent sources, otherwise `[L]`.
-5. Undecidable: keep the survev value, expose it as a config knob, and log it in `open-questions.md`.
+Since `docs/adr/0003-survev-baseline.md` (2026-10-07) the game follows survev master for gameplay; the facts below
+about v0.8.82 stay the record of the original game.
+
+1. Gameplay numbers: survev `shared/defs` at the pinned commit, as survev ships them (balance.txt changes are kept, not
+   reverted; the original value stays in `provenance/balance-revert.json`). The switch is staged: content the port
+   policy (`tools/port-survev/policy.json`) does not take yet still carries the reverted original values.
+2. Presentation (sprites, sounds, names, UI): the original client.
+3. Specs of survev-only items: survev.wiki.gg where it differs from survev's source (the owner's decision,
+   `user/2026-10-07-survev-guns`), applied in `packages/defs/src/rebirth/` with both sources cited. Reskins such as
+   the winter snipers share their base gun's stats, so they follow the base (gaps listed in `rebirth-deviations.md`).
+4. survev server logic; parts the survev authors mark as estimates are overridden by wiki evidence rated `[H]`/`[M]`.
+5. Wikis win on qualitative questions: what existed, names, event rules.
+6. Dates need two independent sources, otherwise `[L]`.
+7. Undecidable: keep the survev value, expose it as a config knob, and log it in `open-questions.md`.
 
 Every disagreement goes to `conflicts.md`.
 
@@ -37,7 +47,7 @@ Every disagreement goes to `conflicts.md`.
 | `README.md` | this file: scope, era target, line format, precedence, layout |
 | `sources.md` | source registry (prefixes, snapshots, maximum confidence) |
 | `conflicts.md` | every disagreement, merged and deduplicated: one `## <id>` entry with sides, proposed resolution and the files that raise it |
-| `rebirth-deviations.md` | deliberate deviations from v0.8.82 the project owner asked for (frag radius, 50v50 air strike variants, air drop tiers), applied by `packages/defs/src/rebirth/` |
+| `rebirth-deviations.md` | deliberate deviations from v0.8.82 the project owner asked for (frag radius, 50v50 air strike variants, air drop tiers, the survev guns' wiki stats and the classic gold-drop Barrett), applied by `packages/defs/src/rebirth/` |
 | `open-questions.md` | every unresolved question, merged and deduplicated: one `## <id>` entry with proposed handling, related conflicts and files |
 | `history.md` | timeline from 2017 development to the 2026 Kongregate relaunch and the survev revival |
 | `community-ko.md` | Korean community: servers, clans, creators, DC Inside gallery |

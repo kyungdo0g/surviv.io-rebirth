@@ -7,11 +7,13 @@ import { applyAirdropTierTables } from "./airdropLoot.ts";
 import { AIRDROP_TIER_SPLITS } from "./airdropTiers.ts";
 import { rebirthOnlyDefs, rebirthOnlyMapObjects } from "./defs.ts";
 import { applyBalanceDeviations, type DefDeviation } from "./deviations.ts";
+import { applyRebirthGoldGuns, applyWikiStatOverrides } from "./survevGuns.ts";
 
 export * from "./airdropLoot.ts";
 export * from "./airdropTiers.ts";
 export * from "./airstrikeVariants.ts";
 export { type DefDeviation, FRAG_DECAL_TYPE, FRAG_RADIUS_MULT } from "./deviations.ts";
+export * from "./survevGuns.ts";
 
 export interface RebirthDefs {
     /** generated game objects with the deviations applied, then the rebirth-only ones (in registry order) */
@@ -42,7 +44,7 @@ export function applyRebirthDefs(
 ): RebirthDefs {
     const gameObjects: Record<string, GameObjectDef> = { ...generatedGameObjects };
     const mapObjects: Record<string, MapObjectDef> = { ...generatedMapObjects };
-    const deviations = applyBalanceDeviations(gameObjects);
+    const deviations = [...applyBalanceDeviations(gameObjects), ...applyWikiStatOverrides(gameObjects)];
     const addedGameObjects = append(gameObjects, rebirthOnlyDefs(generatedGameObjects));
     const addedMapObjects = append(mapObjects, rebirthOnlyMapObjects(generatedMapObjects));
     // every scorch decal an explosion leaves must exist (the rebirth ones point at the rebirth decals)
@@ -55,13 +57,14 @@ export function applyRebirthDefs(
 
 /**
  * The generated map defs with the rebirth loot tables (the air drop tier tables, rebirth/airdropLoot.ts) added to
- * copies of their loot tables. Checks that every tier inner crate a map can drop finds its tiers in that map's table.
+ * copies of their loot tables, and the rebirth gold guns (the Barrett, rebirth/survevGuns.ts) in the gold drop of main
+ * and its seasonal copies. Checks that every tier inner crate a map can drop finds its tiers in that map's table.
  */
 export function applyRebirthMaps(
     generatedMaps: Readonly<Record<string, MapDef>>,
     mapObjects: Readonly<Record<string, MapObjectDef>>,
 ): Record<string, MapDef> {
-    const maps = applyAirdropTierTables(generatedMaps);
+    const maps = applyRebirthGoldGuns(applyAirdropTierTables(generatedMaps));
     for (const [name, def] of Object.entries(maps)) {
         for (const crate of def.gameConfig.planes.crates) {
             const split = Object.hasOwn(AIRDROP_TIER_SPLITS, crate.name) ? AIRDROP_TIER_SPLITS[crate.name] : undefined;

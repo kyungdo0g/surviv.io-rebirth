@@ -74,3 +74,40 @@
 - Before opening, tier 1 and tier 2 drops look the same (the same shell type). So does the gold drop on main and every map whose gold shell draws `map-airdrop-01.img` like its normal shell (`airdrop_crate_02`, `_02de`, `_02tr`, `_02sv`), where only the opened crate shows gold (`crate_11`'s gold corners). Snow is the exception: its gold shell `airdrop_crate_02x` draws its own `map-airdrop-02x.img` against the normal `map-airdrop-01x.img`, so a snow gold drop shows before opening [src:kong/relaunch-client-defs] [src:user/2026-10-07-airdrop-tiers] [H]
 - The star images are preloaded with the map's crates, so the first tier crate of a match shows its mark as it appears [src:user/2026-10-07-airdrop-tiers] [H]
 - Once opened, the inner crate shows its tier with stars from the original client's own atlas stamped over `crate_10`'s lid: tier 1 one silver star (`star.img`, 3 u across), tier 2 two blue stars (`star-blue.img`, 2.5 u, 2.15 u apart), each over a black silhouette of itself so it stands out from the wood, stripe and emblem; the count reads at a glance and the colours follow a silver / blue / gold ladder up to the gold crate, which keeps its corners and no mark (`apps/client/src/objects/crateTierMark.ts`) [src:user/2026-10-07-airdrop-tiers] [H]
+
+## survev-only guns
+
+> Since ADR 0003 (`docs/adr/0003-survev-baseline.md`) survev master is the gameplay baseline, so the survev-only guns themselves are survev content, ported as survev ships them (`tools/port-survev/policy.json`): `barrett`, `ash12`, `sw500`, `imbel`, `spas16`, `potato_lmg` with their bullets, `bullet_invis`, `potato_lmgshot` with `explosion_potato_lmgshot`, and the winter skins `svd_winter`, `sv98_winter`, `awc_winter`. This section lists only what the rebirth layer changes on top (`packages/defs/src/rebirth/survevGuns.ts`), and the owner's rules behind it.
+
+| def | field | survev source | rebirth (survev.wiki.gg) | sources |
+|---|---|---|---|---|
+| `potato_lmg` | `barrelLength` | 5 | 4.5 | [src:user/2026-10-07-survev-guns] [src:wikigg/PMG-134] [src:survev/shared/defs/gameObjects/gunDefs.ts:3543] [H] |
+| `potato_lmgshot` | `throwPhysics.velZ` | 5 | 3 | [src:user/2026-10-07-survev-guns] [src:wikigg/Petite_Potato] [src:survev/shared/defs/gameObjects/throwableDefs.ts:762] [H] |
+
+- The owner asked for every gun only survev.io has, with the specs of the wiki ("스펙도 위키 따라서"); where the wiki and survev's source differ the wiki's value applies, citing both [src:user/2026-10-07-survev-guns] [H]
+- Every other infobox value of the six guns equals survev's source: magazine, extended magazine, spawn ammo, reload, fire delay, switch delay, spreads, barrel, player and recoil speed, headshot multiplier, quality, and the bullets' damage, falloff, obstacle multiplier, range and speed (`packages/defs/test/survevGuns.test.ts` pins them all) [src:wikigg/Barrett_M107] [src:wikigg/ASh-12] [src:wikigg/S&W_500] [src:wikigg/IMD-2] [src:wikigg/SPAS-16] [src:wikigg/PMG-134] [src:survev/shared/defs/gameObjects/gunDefs.ts:1212] [src:survev/shared/defs/gameObjects/bulletDefs.ts:441-480] [H]
+- The Petite Potato page gives the PMG-134 shot's explosion a max radius of 1.7, while the newer PMG-134 page and survev's source give 1.75; the wiki disagrees with itself, so the explosion keeps 1.75 [src:wikigg/Petite_Potato] [src:wikigg/PMG-134] [src:survev/shared/defs/gameObjects/explosionsDefs.ts:219-230] [M]
+- A PMG-134 hit slows the target for 0.25 s and takes 1.5 off its view radius per hit, at most 32, never below the 1x view, until 2.5 s pass without a hit (`rules.modes.throwableHits.explosion_potato_lmgshot`, `rules.modes.viewShrink`) [src:wikigg/PMG-134] [src:survev/server/src/game/objects/explosion.ts:222-242] [src:survev/server/src/game/objects/player.ts:4592-4597] [H]
+- The winter skins are the base gun's own definition with survev's winter world image (`gun-<base>-02`), so they hit like the base; the wiki's SVD-63, SV-98 and AWM-S pages describe survev's rebalanced base guns, which the game takes only with the shared-gun stage of ADR 0003 (option B) [src:survev/shared/defs/gameObjects/gunDefs.ts:3643-3663] [src:wikigg/SVD-63] [H]
+- So the skins differ from their wiki infobox in six fields, listed below and in `SKIN_WIKI_GAPS` (`packages/defs/src/rebirth/survevGuns.ts`); `packages/defs/test/survevGuns.test.ts` pins every other infobox value and fails when a gap closes or a new one appears. They are kept because the snow maps spawn the base guns too (`tier_snipers`, `tier_eye_stone`, `tier_toilet_gold`), with the same loot icon, and the SVD's damage is in `bullet_svd`, which the base shares; option B moves the base guns and closes them all [src:wikigg/SVD-63] [src:wikigg/SV-98] [src:wikigg/AWM-S] [src:survev/shared/defs/maps/snowDefs.ts:109-188] [H]
+
+| skin | field | survev.wiki.gg (= survev source) | rebirth (the base's 0.8.82 value) | sources |
+|---|---|---|---|---|
+| `svd_winter` | `barrelLength` | 4.2 | 4 | [src:wikigg/SVD-63] [src:survev/shared/defs/gameObjects/gunDefs.ts:1681] [src:kong/relaunch-client-defs] [H] |
+| `svd_winter` | `headshotMult` | 1.5 | 2 | [src:wikigg/SVD-63] [src:survev/shared/defs/gameObjects/gunDefs.ts:1688] [src:balance/62] [H] |
+| `svd_winter` | `bullet_svd.damage` | 37 | 36 | [src:wikigg/SVD-63] [src:survev/shared/defs/gameObjects/bulletDefs.ts:200] [src:balance/61] [H] |
+| `sv98_winter` | `barrelLength` | 4.1 | 3.5 | [src:wikigg/SV-98] [src:survev/shared/defs/gameObjects/gunDefs.ts:1533] [src:kong/relaunch-client-defs] [H] |
+| `sv98_winter` | `headshotMult` | 1.25 | 1.5 | [src:wikigg/SV-98] [src:survev/shared/defs/gameObjects/gunDefs.ts:1540] [src:balance/93] [H] |
+| `awc_winter` | `barrelLength` | 4 | 3.8 | [src:wikigg/AWM-S] [src:survev/shared/defs/gameObjects/gunDefs.ts:1584] [src:kong/relaunch-client-defs] [H] |
+
+- survev's `.50` ammo is ".50 Caliber" (Korean ".50 구경") with bags of 50 / 100 / 150 / 200 for the four packs (survev's fifth level, 250, has no pack in the game yet); v0.8.82 had ".50 AE" and 49 / 98 / 147 / 196 [src:l10n/en:game-50AE] [src:survev/shared/gameConfig.ts:420] [src:user/2026-10-07-survev-baseline] [H]
+
+| rebirth loot | maps | weight | sources |
+|---|---|---|---|
+| `barrett` in the gold drop (`tier_airdrop_rare`, `airdrop_crate_02` / snow's `airdrop_crate_02x` → `crate_11`) | `main`, `main_spring`, `main_summer`, `snow` | 1 against survev's 22.68 (1 gold roll in 23.68) | [src:user/2026-10-07-survev-baseline] [src:survev/shared/defs/maps/baseDefs.ts:612] [H] |
+
+- survev never spawns the Barrett on the classic map (only its crimson air drop, 50v50's gold military crate, Savannah and the desert pirate table); the owner named it, so the classic gold drop gets it as a rebirth deviation (`REBIRTH_GOLD_GUNS`) [src:user/2026-10-07-survev-baseline] [src:survev/shared/defs/maps/baseDefs.ts:612] [src:survev/shared/defs/maps/factionDefs.ts:343-353] [H]
+- The maps are the classic map and its seasonal copies: spring, summer and snow (the winter one, whose gold drop has `awc_winter` for the AWM-S). survev builds all three from Main and they keep its "Normal" name. The event maps (Halloween, Turkey, Birthday, Beach, Cobalt) share main's gold drop but are left out on purpose: each is a mode with its own name [src:survev/shared/defs/maps/mainSpringDefs.ts:102] [src:survev/shared/defs/maps/mainSummerDefs.ts:99] [src:survev/shared/defs/maps/snowDefs.ts:298] [src:user/2026-10-07-survev-baseline] [H]
+- Everywhere else the guns spawn where survev places them on the maps we have, and placements in tables nothing reaches yet wait for later survev content (crimson air drop, the Reserve, Pirate's Bounty, Classless crates, the Workshop mount, 50v50's gold military crate); `packages/defs/test/survevGunLoot.test.ts` pins both lists [src:survev/shared/defs/maps/baseDefs.ts:464-548] [src:survev/shared/defs/maps/woodsDefs.ts:76] [src:survev/shared/defs/maps/savannahDefs.ts:74-107] [H]
+- The guns take game type ids after the original ones and before the rebirth-only ones (protocol schema 10) [src:user/2026-10-07-survev-guns] [H]
+

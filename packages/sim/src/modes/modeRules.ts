@@ -7,6 +7,16 @@ export interface ThrowableHitRule {
     freeze: number;
     /** random items the target drops (survev dropRandomLoot: a bag item, gun, melee, droppable perk or armour) */
     dropRandomLoot: number;
+    /** zoom radius each hit takes off the target's view, summed up to `viewShrink.max` (survev PMG-134 shots) */
+    viewShrink?: number;
+}
+
+/** How the PMG-134's view shrink adds up and wears off (survev server player.ts decrementViewDistance). */
+export interface ViewShrinkRule {
+    /** largest summed shrink */
+    max: number;
+    /** seconds after the last hit until the full view comes back at once */
+    duration: number;
 }
 
 export interface ModeRules {
@@ -17,6 +27,11 @@ export interface ModeRules {
      * heavy snowball to 2 s and the heavy potato to 2 items); Spud Gun shots slow for 1 s without a drop.
      */
     throwableHits: Readonly<Record<string, ThrowableHitRule>>;
+    /**
+     * PMG-134 view shrink: 1.5 per hit up to 32, gone 2.5 s after the last hit (survev player.ts:4592-4597,
+     * 1911-1918)
+     */
+    viewShrink: ViewShrinkRule;
     /**
      * Potato maps replace every wheel, death and win emote with emote_potato (survev emoteFromSlot; potato.md "Core rule":
      * pings and team-only emotes still work)
@@ -38,7 +53,11 @@ export function defaultModeRules(): ModeRules {
             explosion_potato: { freeze: 0.5, dropRandomLoot: 1 },
             explosion_potato_heavy: { freeze: 1, dropRandomLoot: 1 },
             explosion_potato_smgshot: { freeze: 1, dropRandomLoot: 0 },
+            // PMG-134 shot (survev-only): slows 0.25 s (wikigg/Petite_Potato "Slowdown duration = 0.25"; survev
+            // explosionsDefs.ts:229 freezeDuration 0.25) and shrinks the view (survev explosion.ts:240-242)
+            explosion_potato_lmgshot: { freeze: 0.25, dropRandomLoot: 0, viewShrink: 1.5 },
         },
+        viewShrink: { max: 32, duration: 2.5 },
         potatoEmotes: true,
         cobaltWaitingRoom: true,
     };

@@ -4,9 +4,9 @@
         "generator": "node --experimental-transform-types tools/oracle/run.ts",
         "survevCommit": "c6185e31fe25a4a07def77a2bb25b1710bda90ac",
         "defs": {
-            "protocolHash": 2525058706,
-            "gameObjectsSha256": "dd1f0919eb7aad005ff5bcf51f84528d7851094ee75d8917fa0d872956b7eb4e",
-            "gameConfigSha256": "22020fb3c453fc41011e966a31dc6fcc65fdbb30108154405fe323f04558fc2b"
+            "protocolHash": 646970998,
+            "gameObjectsSha256": "e1592749ad270af02f8aab6262547ff65f08d36861f1f747e8a7315ece8482b7",
+            "gameConfigSha256": "1fb48c5bc4964098bb3a14af7c8e2acb72d1177a0077328f7a8eb0edc1da57b5"
         },
         "simulation": {
             "dt": 0.01,
@@ -23,9 +23,9 @@
             "headshotRandom": "GameConfig.player.headshotChance = 0.15 (survev default)"
         },
         "patch": {
-            "replacedIds": 615,
-            "idsWithChangedValues": 231,
-            "gameplayValueChanges": 357,
+            "replacedIds": 631,
+            "idsWithChangedValues": 234,
+            "gameplayValueChanges": 362,
             "addedIds": [
                 "bullet_potato",
                 "bullet_bugle",
@@ -93,8 +93,8 @@
             "gameplayTypes": "gun, bullet, melee, throwable, explosion, helmet, chest, heal, boost"
         }
     },
-    "replacedIds": 615,
-    "idsWithChangedValues": 231,
+    "replacedIds": 631,
+    "idsWithChangedValues": 234,
     "addedIds": [
         "bullet_potato",
         "bullet_bugle",
@@ -124,7 +124,7 @@
         "bullet": { "changed": 19 },
         "explosion": { "changed": 5, "survevOnly": 14 },
         "chest": { "changed": 1 },
-        "gun": { "oursOnly": 20, "changed": 159, "survevOnly": 3 },
+        "gun": { "oursOnly": 20, "changed": 164, "survevOnly": 3 },
         "melee": { "survevOnly": 61, "oursOnly": 49, "changed": 13 },
         "throwable": { "changed": 4, "survevOnly": 4, "oursOnly": 5 }
     },
@@ -1456,7 +1456,24 @@
             "kind": "survevOnly",
             "survev": false
         },
-        { "id": "bomb_iron", "path": "handImg", "kind": "oursOnly", "ours": {} }
+        { "id": "bomb_iron", "path": "handImg", "kind": "oursOnly", "ours": {} },
+        { "id": "svd_winter", "path": "barrelLength", "kind": "changed", "survev": 4.2, "ours": 4 },
+        { "id": "svd_winter", "path": "headshotMult", "kind": "changed", "survev": 1.5, "ours": 2 },
+        {
+            "id": "sv98_winter",
+            "path": "barrelLength",
+            "kind": "changed",
+            "survev": 4.1,
+            "ours": 3.5
+        },
+        {
+            "id": "sv98_winter",
+            "path": "headshotMult",
+            "kind": "changed",
+            "survev": 1.25,
+            "ours": 1.5
+        },
+        { "id": "awc_winter", "path": "barrelLength", "kind": "changed", "survev": 4, "ours": 3.8 }
     ],
     "gameConfigChanges": [
         {
@@ -1492,7 +1509,7 @@
             "path": "bagSizes.50AE",
             "kind": "changed",
             "survev": [50, 100, 150, 200, 250],
-            "ours": [49, 98, 147, 196]
+            "ours": [50, 100, 150, 200]
         },
         {
             "id": "GameConfig",

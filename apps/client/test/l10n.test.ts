@@ -1,8 +1,11 @@
 // l10n coverage (M8): every English UI string has a Korean one (an identical value only for the allowlisted keys), and
 // every string key the client source passes literally to t("…") / tryT("…") or as a `l10n: "…"` / `dataset.l10n = "…"`
 // element key exists in the English tables.
+import { GameObjectDefs, SURVEV_GUN_SKINS, SURVEV_ONLY_GUNS } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { EN_UI, KO_UI } from "../src/l10n/index.ts";
+import { enItems } from "../src/l10n/en.ts";
+import { EN_UI, hudItemName, itemName, KO_UI, setLang } from "../src/l10n/index.ts";
+import { koItems } from "../src/l10n/ko.ts";
 
 /** Korean values that are intentionally the same as the English ones, with the reason. */
 const SAME_IN_KOREAN: Readonly<Record<string, string>> = {
@@ -57,5 +60,52 @@ describe("l10n tables", () => {
         expect(keys.size).toBeGreaterThan(50);
         const undefinedKeys = [...keys].filter(([key]) => !(key in EN_UI)).map(([key, file]) => `${key} (${file})`);
         expect(undefinedKeys).toEqual([]);
+    });
+});
+
+describe("item names", () => {
+    it("names every gun in English and in Korean, the survev-only guns included", () => {
+        const guns = Object.keys(GameObjectDefs).filter((id) => GameObjectDefs[id].type === "gun");
+        expect(guns.filter((id) => !enItems[id])).toEqual([]);
+        expect(guns.filter((id) => !koItems[id])).toEqual([]);
+    });
+
+    it("the survev-only guns take survev's English names (en.json) and the KB's Korean ones (l10n-ko.md)", () => {
+        const ids = [...SURVEV_ONLY_GUNS, ...Object.keys(SURVEV_GUN_SKINS), "potato_lmgshot", "50AE"];
+        const names = (lang: "en" | "ko") => {
+            setLang(lang);
+            return Object.fromEntries(ids.map((id) => [id, itemName(id)]));
+        };
+        try {
+            expect(names("en")).toEqual({
+                imbel: "IMD-2",
+                spas16: "SPAS-16",
+                barrett: "Barrett M107",
+                sw500: "S&W 500",
+                ash12: "ASh-12",
+                potato_lmg: "PMG-134",
+                svd_winter: "SVD-63",
+                sv98_winter: "SV-98",
+                awc_winter: "AWM-S",
+                potato_lmgshot: "PMG-134",
+                "50AE": ".50 Caliber",
+            });
+            expect(names("ko")).toEqual({
+                imbel: "IMD-2",
+                spas16: "SPAS-16",
+                barrett: "바렛 M107",
+                sw500: "S&W 500",
+                ash12: "ASh-12",
+                potato_lmg: "PMG-134",
+                svd_winter: "SVD-63",
+                sv98_winter: "SV-98",
+                awc_winter: "AWM-S",
+                potato_lmgshot: "PMG-134",
+                "50AE": ".50 구경",
+            });
+            expect(hudItemName("barrett")).toBe("바렛 M107");
+        } finally {
+            setLang("en");
+        }
     });
 });

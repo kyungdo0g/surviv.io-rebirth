@@ -62,8 +62,8 @@ describe("PROTOCOL_HASH", () => {
         expect(PROTOCOL_HASH).toBeGreaterThanOrEqual(0);
         expect(PROTOCOL_HASH).toBeLessThan(2 ** 32);
         // 9: rebirth air strike variants (zone variant bits, the heavy shell's game types, the rebirth scorch decals)
-        // and the air drop tier crates
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(9);
+        // and the air drop tier crates; 10: the survev-only guns' game types before the rebirth-only ones
+        expect(PROTOCOL_SCHEMA_VERSION).toBe(10);
         expect(PROTOCOL_HASH).toBe(
             computeProtocolHash(PROTOCOL_SCHEMA_VERSION, GameObjectRegistry.types, MapObjectRegistry.types),
         );
@@ -90,7 +90,7 @@ describe("typed getters", () => {
         expect(getDefOfType("gun", "ak47").bulletType).toBe("bullet_ak47");
         expect(getDef("frag").type).toBe("throwable");
         expect(() => getDefOfType("melee", "ak47")).toThrow(/is a gun/);
-        expect(() => getDef("barrett")).toThrow(/unknown/);
+        expect(() => getDef("pkm")).toThrow(/unknown/);
         expect(getMapObjectDefOfType("building", "warehouse_01").mapObjects.length).toBeGreaterThan(0);
         expect(() => getMapObjectDefOfType("obstacle", "warehouse_01")).toThrow();
     });
