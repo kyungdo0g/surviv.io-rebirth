@@ -2413,7 +2413,7 @@
 
 - A (survev.wiki.gg): the Coconut is cookable, the Tomato is not [src:wikigg/Coconut] [src:wikigg/Tomato_(Throwable)] [M]
 - B (survev source): `coconut` has `cookable: false`, `tomato` `cookable: true` [src:survev/shared/defs/gameObjects/throwableDefs.ts:846] [src:survev/shared/defs/gameObjects/throwableDefs.ts:913] [H]
-- proposed resolution: the wiki wins for survev-only items (ADR 0003 point 4, `user/2026-10-07-survev-guns`); applied in `packages/defs/src/survev/wikiSpecs.ts`, generated JSON keeps survev's value [src:user/2026-10-07-survev-guns] [M]
+- resolution: the owner says both cook: the Coconut takes the wiki's true, the Tomato keeps survev's true; applied in `packages/defs/src/survev/wikiSpecs.ts`, generated JSON keeps survev's value [src:user/2026-10-07-cookable] [H]
 - files: `items/throwables.md` [src:derived/kb-crossref] [H]
 
 ## Conflicts

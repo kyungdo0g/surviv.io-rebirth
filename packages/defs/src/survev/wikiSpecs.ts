@@ -29,6 +29,8 @@ export interface WikiSpecOverride {
     survevRef: string;
 }
 
+// The owner: the Coconut and the Tomato both cook (user/2026-10-07-cookable). The Coconut takes the wiki's true; the Tomato keeps
+// survev's true (its wiki page says False).
 export const WIKI_SPEC_OVERRIDES: readonly WikiSpecOverride[] = [
     {
         id: "coconut",
@@ -37,14 +39,6 @@ export const WIKI_SPEC_OVERRIDES: readonly WikiSpecOverride[] = [
         wiki: true,
         wikiRef: "wikigg/Coconut (rev 7413): Cookable = True",
         survevRef: "survev/shared/defs/gameObjects/throwableDefs.ts:846",
-    },
-    {
-        id: "tomato",
-        field: "cookable",
-        survev: true,
-        wiki: false,
-        wikiRef: "wikigg/Tomato_(Throwable) (rev 7178): Cookable = False",
-        survevRef: "survev/shared/defs/gameObjects/throwableDefs.ts:913",
     },
 ];
 

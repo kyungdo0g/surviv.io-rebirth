@@ -112,10 +112,10 @@ const WIKI_THROWABLE: Readonly<
         },
         bag: [3, 6, 9, 12, 15],
     },
-    // wikigg/Tomato_(Throwable) rev 7178 (Cookable False: the wiki wins over the source's true)
+    // wikigg/Tomato_(Throwable) rev 7178; its Cookable False is overruled by the owner (both cook, survev's true)
     tomato: {
         item: {
-            cookable: false,
+            cookable: true,
             fuseTime: 9999,
             rad: 1,
             explodeOnImpact: true,
@@ -195,9 +195,12 @@ describe("survev-only melee and throwables: specs", () => {
         expect(GameConfig.bagSizes[id]).toEqual(w.bag);
     });
 
-    it("only the cookable flags differ between the wiki and survev's source; the wiki's apply", () => {
+    it("the Coconut and the Tomato both cook (the owner): only the Coconut's cookable changes survev's source, to the wiki's", () => {
         expect(survevWikiSpecs).toBe(WIKI_SPEC_OVERRIDES);
-        expect(WIKI_SPEC_OVERRIDES.map((o) => `${o.id}.${o.field}`)).toEqual(["coconut.cookable", "tomato.cookable"]);
+        expect(WIKI_SPEC_OVERRIDES.map((o) => `${o.id}.${o.field}`)).toEqual(["coconut.cookable"]);
+        for (const id of Object.keys(SURVEV_ONLY_THROWABLES)) {
+            expect((getDefOfType("throwable", id) as any).cookable, id).toBe(true);
+        }
         for (const o of WIKI_SPEC_OVERRIDES) {
             expect(gameObjects[o.id][o.field], "generated JSON keeps survev's value").toBe(o.survev);
             expect((getDefOfType("throwable", o.id) as any)[o.field]).toBe(o.wiki);
