@@ -91750,6 +91750,11 @@
         "min": 1,
         "max": 1,
         "props": {}
+      },
+      {
+        "type": "coconut",
+        "count": 4,
+        "props": {}
       }
     ],
     "map": {
@@ -91802,7 +91807,13 @@
     "hitParticle": "woodChip",
     "explodeParticle": "woodPlank",
     "reflectBullets": false,
-    "loot": [],
+    "loot": [
+      {
+        "type": "cutlass_gold",
+        "count": 1,
+        "props": {}
+      }
+    ],
     "lootSpawn": {
       "offset": {
         "x": 0,
@@ -91863,6 +91874,21 @@
         "tier": "tier_surviv",
         "min": 1,
         "max": 2,
+        "props": {}
+      },
+      {
+        "type": "coconut",
+        "count": 4,
+        "props": {}
+      },
+      {
+        "type": "coconut",
+        "count": 4,
+        "props": {}
+      },
+      {
+        "type": "coconut",
+        "count": 4,
         "props": {}
       },
       {
@@ -93020,6 +93046,11 @@
         "tier": "tier_coconut_outfit",
         "min": 1,
         "max": 1,
+        "props": {}
+      },
+      {
+        "type": "coconut",
+        "count": 3,
         "props": {}
       }
     ],

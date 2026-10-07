@@ -329,7 +329,7 @@ describe("survev-only guns: stats", () => {
     });
 
     it("the winter sniper skins are their base with survev's winter world image", () => {
-        expect(SURVEV_GUN_SKINS).toEqual(portPolicy.survevSkins);
+        expect(portPolicy.survevSkins).toMatchObject(SURVEV_GUN_SKINS);
         for (const [skin, base] of Object.entries(SURVEV_GUN_SKINS)) {
             const s = getDefOfType("gun", skin);
             const b = getDefOfType("gun", base);
@@ -416,8 +416,8 @@ describe("survev-only guns: ammo, ids", () => {
     });
 
     it("take wire ids after every original id and before the rebirth-only ones", () => {
-        expect([...PORTED_SURVEV_IDS].sort()).toEqual(
-            [
+        expect(PORTED_SURVEV_IDS).toEqual(
+            expect.arrayContaining([
                 ...SURVEV_ONLY_GUNS,
                 ...Object.keys(SURVEV_GUN_SKINS),
                 "bullet_barrett",
@@ -427,7 +427,7 @@ describe("survev-only guns: ammo, ids", () => {
                 "bullet_invis",
                 "potato_lmgshot",
                 "explosion_potato_lmgshot",
-            ].sort(),
+            ]),
         );
         const ids = Object.keys(GameObjectDefs);
         const firstSurvev = Math.min(...PORTED_SURVEV_IDS.map((id) => ids.indexOf(id)));

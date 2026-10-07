@@ -24,9 +24,10 @@ function pick(game: Game, p: Player, type: string) {
 }
 
 describe("perk coverage", () => {
-    it("every perk def of the v0.8.82 defs has an implemented effect (perks/coverage.ts)", () => {
+    it("every perk def of the v0.8.82 defs and the ported survev perks has an implemented effect (perks/coverage.ts)", () => {
         const ids = idsOfType("perk");
-        expect(ids).toHaveLength(41);
+        // 41 original perks, then the survev-only ones of tools/port-survev/policy.json
+        expect(ids.slice(41)).toEqual(["pirate"]);
         expect(ids.filter((id) => !PERK_EFFECTS[id])).toEqual([]);
         expect(Object.keys(PERK_EFFECTS).sort()).toEqual([...ids].sort());
     });

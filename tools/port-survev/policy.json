@@ -13,12 +13,22 @@
         "sw500",
         "ash12",
         "potato_lmg",
-        "potato_lmgshot"
+        "potato_lmgshot",
+        "iceaxe",
+        "cutlass",
+        "cutlass_gold",
+        "coconut",
+        "tomato",
+        "explosion_coconut",
+        "explosion_tomato",
+        "pirate"
     ],
     "survevSkins": {
         "svd_winter": "svd",
         "sv98_winter": "sv98",
-        "awc_winter": "awc"
+        "awc_winter": "awc",
+        "naginata_daemon": "naginata",
+        "karambit_borealis": "karambit"
     },
     "survevGameConfig": ["bagSizes.50AE"]
 }

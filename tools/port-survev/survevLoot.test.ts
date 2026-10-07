@@ -59,6 +59,17 @@ describe("port policy", () => {
             { path: "bagSizes.50AE", original: [49, 98, 147, 196], survev: [50, 100, 150, 200] },
         ]);
     });
+
+    it("cuts survev-only bag rows to the original's levels and prunes rows of items not ported", () => {
+        const live = { bagSizes: { "9mm": [120, 240, 330, 420] } };
+        const survev = { bagSizes: { coconut: [3, 6, 9, 12, 15], tomato: [10, 20, 30, 40, 50] } };
+        const out = portGameConfig(live, survev, { "9mm": {}, coconut: {} });
+        expect(out.config.bagSizes).toEqual({ "9mm": [120, 240, 330, 420], coconut: [3, 6, 9, 12] });
+        expect(out.prunes).toEqual([
+            { path: "bagSizes.tomato", reason: "item not in the ported game objects" },
+            { path: "bagSizes.coconut", reason: "cut to the original's 4 backpack levels" },
+        ]);
+    });
 });
 
 describe("survev placements of ported items", () => {

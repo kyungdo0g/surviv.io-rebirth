@@ -1,4 +1,4 @@
-// Every perk of the v0.8.82 defs (41 ids) with the effect the simulation gives it and where it lives (M7a). A test
+// Every perk of the v0.8.82 defs (41 ids) and the survev-only perks the port takes with the effect the simulation gives it and where it lives (M7a). A test
 // checks that this table covers every perk def, so a new perk id cannot slip in without an effect.
 // Sources: docs/research/items/perks.md "Mechanics per perk" and survev PerkProperties; values in perks/perkRules.ts.
 
@@ -43,5 +43,6 @@ export const PERK_EFFECTS: Readonly<Record<string, string>> = {
     treat_556: "5.56mm bullets +8 %, darker tracer (shotPerks.ts)",
     treat_762: "7.62mm bullets +8 %, darker tracer (shotPerks.ts)",
     treat_super: "every bullet +8 %, darker tracer (shotPerks.ts)",
+    pirate: "melee kills drop 3-4 tier_pirate rolls and 12 % a tier_pirate_rare roll (effects.ts, drops.ts)",
     turkey_shoot: "cosmetic: emotes a turkey on pickup; clients burst victims into feathers (pickup.ts)",
 };

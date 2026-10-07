@@ -18,6 +18,8 @@ import { createMapEntity, type Decal, type Obstacle } from "../world/entities.ts
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
 
+/** Seconds a coconut heal shows the heal effect (survev explosion.ts healEffectTicker). */
+const HEAL_EFFECT_TIME = 0.5;
 /** Largest angular step between two rays (survev: min(acos(1 - (0.75 / rad)^2 / 2), 0.3)). */
 const MAX_RAY_STEP = 0.3;
 /** Rays are at most this far apart at the rim. */
@@ -235,6 +237,12 @@ export class ExplosionSystem {
         // snowball / potato hits slow enemies and make them drop an item before the damage (M7b, modes/frozen.ts)
         if (obj.kind === "player") {
             const source = e.source.sourceId ? this.host.getPlayer(e.source.sourceId) : undefined;
+            // coconuts heal the thrower's side instead of hurting it (survev explosion.ts:214-220, healAmount 7)
+            if (e.def.healTeam && source && source.teamId === obj.teamId) {
+                if (!obj.dead) obj.health = Math.min(obj.health + (e.def.healAmount ?? 5), 100);
+                obj.healEffectTicker = HEAL_EFFECT_TIME;
+                return;
+            }
             applyThrowableHit(this.host, obj, e.type, dir, source);
         }
         const params = {

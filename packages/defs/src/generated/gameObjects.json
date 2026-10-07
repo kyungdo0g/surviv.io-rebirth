@@ -14952,6 +14952,48 @@
       "player-mash-03.img"
     ]
   },
+  "explosion_coconut": {
+    "type": "explosion",
+    "damage": 22,
+    "obstacleDamage": 1,
+    "teamDamage": false,
+    "freezeDuration": 1,
+    "frozenSprites": [
+      "player-mash-01.img",
+      "player-mash-02.img",
+      "player-mash-03.img"
+    ],
+    "rad": {
+      "min": 1.34,
+      "max": 1.35
+    },
+    "shrapnelCount": 0,
+    "shrapnelType": "",
+    "explosionEffectType": "coconut",
+    "decalType": "",
+    "healTeam": true,
+    "healAmount": 7
+  },
+  "explosion_tomato": {
+    "type": "explosion",
+    "damage": 11,
+    "obstacleDamage": 1,
+    "teamDamage": false,
+    "rad": {
+      "min": 1.29,
+      "max": 1.3
+    },
+    "shrapnelCount": 0,
+    "shrapnelType": "",
+    "explosionEffectType": "tomato",
+    "decalType": "",
+    "freezeDuration": 0.5,
+    "frozenSprites": [
+      "player-mash-04.img",
+      "player-mash-05.img"
+    ],
+    "dropRandomLoot": 1
+  },
   "imbel": {
     "name": "IMD-2",
     "type": "gun",
@@ -15512,6 +15554,325 @@
     "baseType": "awc",
     "noPotatoSwap": true
   },
+  "iceaxe": {
+    "name": "Ice Axe",
+    "type": "melee",
+    "quality": 1,
+    "armorPiercing": true,
+    "stonePiercing": true,
+    "autoAttack": false,
+    "switchDelay": 0.25,
+    "damage": 44,
+    "obstacleDamage": 2.4,
+    "attack": {
+      "offset": {
+        "x": 1.4,
+        "y": 0
+      },
+      "rad": 1.3,
+      "damageTimes": [
+        0.21
+      ],
+      "cooldownTime": 0.4
+    },
+    "speed": {
+      "equip": 1
+    },
+    "lootImg": {
+      "sprite": "loot-melee-ice_pick.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-02.img",
+      "borderTint": 16777215,
+      "scale": 0.3,
+      "mirror": true,
+      "rot": 2.35619
+    },
+    "worldImg": {
+      "sprite": "loot-melee-ice_pick.img",
+      "pos": {
+        "x": -12.5,
+        "y": -10
+      },
+      "rot": 1.2,
+      "scale": {
+        "x": 0.4,
+        "y": 0.4
+      },
+      "tint": 16777215,
+      "leftHandOntop": true
+    },
+    "anim": {
+      "idlePose": "meleeTwoHanded",
+      "attackAnims": [
+        "axeSwing"
+      ]
+    },
+    "sound": {
+      "pickup": "heavy_pickup_01",
+      "swing": "medium_swing_01",
+      "deploy": "stow_weapon_01",
+      "playerHit": "knife_hit_01"
+    }
+  },
+  "cutlass": {
+    "name": "Cutlass",
+    "type": "melee",
+    "quality": 1,
+    "cleave": true,
+    "autoAttack": false,
+    "switchDelay": 0.25,
+    "damage": 30,
+    "obstacleDamage": 1,
+    "attack": {
+      "offset": {
+        "x": 2.25,
+        "y": 0
+      },
+      "rad": 1.75,
+      "damageTimes": [
+        0.1
+      ],
+      "cooldownTime": 0.225
+    },
+    "speed": {
+      "equip": 1
+    },
+    "anim": {
+      "idlePose": "cutlass",
+      "attackAnims": [
+        "cut",
+        "cutReverse"
+      ]
+    },
+    "sound": {
+      "pickup": "frag_pickup_01",
+      "swing": "knife_swing_01",
+      "deploy": "knife_deploy_01",
+      "playerHit": "knife_hit_01"
+    },
+    "lootImg": {
+      "sprite": "loot-melee-cutlass.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-02.img",
+      "borderTint": 16777215,
+      "scale": 0.3,
+      "rot": 0.9
+    },
+    "worldImg": {
+      "sprite": "loot-melee-cutlass.img",
+      "pos": {
+        "x": 2.5,
+        "y": -75
+      },
+      "rot": 1.885,
+      "scale": {
+        "x": 0.325,
+        "y": 0.325
+      },
+      "tint": 16777215
+    }
+  },
+  "karambit_borealis": {
+    "name": "Karambit Borealis",
+    "type": "melee",
+    "quality": 0,
+    "autoAttack": false,
+    "switchDelay": 0.25,
+    "damage": 24,
+    "obstacleDamage": 1,
+    "headshotMult": 1,
+    "noPotatoSwap": false,
+    "noDropOnDeath": true,
+    "attack": {
+      "offset": {
+        "x": 1.35,
+        "y": 0
+      },
+      "rad": 0.9,
+      "damageTimes": [
+        0.1
+      ],
+      "cooldownTime": 0.25
+    },
+    "speed": {
+      "equip": 1
+    },
+    "anim": {
+      "idlePose": "slash",
+      "attackAnims": [
+        "slash",
+        "fists"
+      ]
+    },
+    "sound": {
+      "pickup": "frag_pickup_01",
+      "swing": "knife_swing_01",
+      "deploy": "knife_deploy_01",
+      "playerHit": "knife_hit_01"
+    },
+    "lootImg": {
+      "sprite": "loot-melee-karambit-borealis.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-02.img",
+      "borderTint": 16777215,
+      "scale": 0.3,
+      "mirror": true,
+      "rot": 2.35619
+    },
+    "worldImg": {
+      "sprite": "loot-melee-karambit-borealis.img",
+      "pos": {
+        "x": 15.5,
+        "y": -5
+      },
+      "rot": 1.5707963267948966,
+      "scale": {
+        "x": 0.35,
+        "y": 0.35
+      },
+      "tint": 16777215
+    },
+    "baseType": "karambit",
+    "rarity": 4,
+    "lore": "Rend the skies asunder."
+  },
+  "naginata_daemon": {
+    "name": "Naginata Daemon",
+    "type": "melee",
+    "quality": 1,
+    "armorPiercing": true,
+    "cleave": true,
+    "autoAttack": false,
+    "switchDelay": 0.25,
+    "damage": 56,
+    "obstacleDamage": 1.92,
+    "headshotMult": 1,
+    "attack": {
+      "offset": {
+        "x": 3.5,
+        "y": 0
+      },
+      "rad": 2,
+      "damageTimes": [
+        0.27
+      ],
+      "cooldownTime": 0.54
+    },
+    "speed": {
+      "equip": 1
+    },
+    "anim": {
+      "idlePose": "meleeNaginata",
+      "attackAnims": [
+        "naginataSwing"
+      ]
+    },
+    "sound": {
+      "pickup": "heavy_pickup_01",
+      "swing": "heavy_swing_01",
+      "deploy": "stow_weapon_01",
+      "playerHit": "axe_hit_01"
+    },
+    "lootImg": {
+      "sprite": "loot-melee-naginata-daemon.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-02.img",
+      "borderTint": 16777215,
+      "scale": 0.3,
+      "mirror": true,
+      "rot": 2.35619
+    },
+    "worldImg": {
+      "sprite": "loot-melee-naginata-daemon.img",
+      "pos": {
+        "x": 42.5,
+        "y": -3
+      },
+      "rot": 1.9,
+      "scale": {
+        "x": 0.35,
+        "y": 0.35
+      },
+      "tint": 16777215,
+      "leftHandOntop": true
+    },
+    "baseType": "naginata"
+  },
+  "cutlass_gold": {
+    "name": "Gold Cutlass",
+    "type": "melee",
+    "quality": 1,
+    "cleave": true,
+    "autoAttack": false,
+    "switchDelay": 0.25,
+    "damage": 35,
+    "obstacleDamage": 1,
+    "attack": {
+      "offset": {
+        "x": 2.25,
+        "y": 0
+      },
+      "rad": 1.75,
+      "damageTimes": [
+        0.1
+      ],
+      "cooldownTime": 0.225
+    },
+    "speed": {
+      "equip": 1
+    },
+    "anim": {
+      "idlePose": "cutlass",
+      "attackAnims": [
+        "cut",
+        "cutReverse"
+      ]
+    },
+    "sound": {
+      "pickup": "frag_pickup_01",
+      "swing": "knife_swing_01",
+      "deploy": "knife_deploy_01",
+      "playerHit": "knife_hit_01"
+    },
+    "lootImg": {
+      "sprite": "loot-melee-cutlass-gold.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-02.img",
+      "borderTint": 16777215,
+      "scale": 0.3,
+      "rot": 0.9
+    },
+    "worldImg": {
+      "sprite": "loot-melee-cutlass-gold.img",
+      "pos": {
+        "x": 2.5,
+        "y": -75
+      },
+      "rot": 1.885,
+      "scale": {
+        "x": 0.325,
+        "y": 0.325
+      },
+      "tint": 16777215
+    },
+    "baseType": "cutlass",
+    "noPotatoSwap": true,
+    "perk": "pirate"
+  },
+  "pirate": {
+    "name": "Pirate's Bounty",
+    "type": "perk",
+    "lootImg": {
+      "sprite": "loot-perk-pirate.img",
+      "tint": 16777215,
+      "border": "loot-circle-outer-03.img",
+      "borderTint": 16777215,
+      "scale": 0.275
+    },
+    "sound": {
+      "pickup": "perk_pickup_01"
+    }
+  },
   "potato_lmgshot": {
     "name": "PMG-134",
     "type": "throwable",
@@ -15564,5 +15925,173 @@
       "alpha": 1,
       "tint": 11365669
     }
+  },
+  "coconut": {
+    "name": "Coconut",
+    "type": "throwable",
+    "quality": 0,
+    "explosionType": "explosion_coconut",
+    "freezeOnImpact": true,
+    "changeTime": 1,
+    "inventoryOrder": 0,
+    "cookable": false,
+    "noPotatoSwap": true,
+    "forceMaxThrowDistance": true,
+    "explodeOnImpact": true,
+    "playerCollision": true,
+    "fuseTime": 9999,
+    "aimDistance": 32,
+    "rad": 1.15,
+    "throwPhysics": {
+      "playerVelMult": 0,
+      "velZ": 3.35,
+      "speed": 45,
+      "spinVel": 31.41592653589793,
+      "spinDrag": 1,
+      "fixedCollisionHeight": 0.25
+    },
+    "speed": {
+      "equip": 0,
+      "attack": 0
+    },
+    "lootImg": {
+      "sprite": "loot-throwable-coconut.img",
+      "tint": 65280,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "worldImg": {
+      "sprite": "proj-coconut-01.img",
+      "scale": 0.15,
+      "tint": 16777215
+    },
+    "handImg": {
+      "equip": {
+        "right": {
+          "sprite": "proj-coconut-01.img",
+          "pos": {
+            "x": 3,
+            "y": 4.2
+          },
+          "scale": 0.15
+        },
+        "left": {
+          "sprite": "none"
+        }
+      },
+      "cook": {
+        "right": {
+          "sprite": "proj-coconut-01.img",
+          "pos": {
+            "x": 3,
+            "y": 4.2
+          },
+          "scale": 0.15
+        },
+        "left": {
+          "sprite": "none"
+        }
+      },
+      "throwing": {
+        "right": {
+          "sprite": "none"
+        },
+        "left": {
+          "sprite": "none"
+        }
+      }
+    },
+    "useThrowParticles": false,
+    "sound": {
+      "pullPin": "",
+      "throwing": "frag_throw_01",
+      "pickup": "potato_pickup_01",
+      "deploy": "frag_deploy_01"
+    }
+  },
+  "tomato": {
+    "name": "Tomato",
+    "type": "throwable",
+    "quality": 0,
+    "explosionType": "explosion_tomato",
+    "freezeOnImpact": true,
+    "changeTime": 1,
+    "inventoryOrder": 0,
+    "cookable": true,
+    "forceMaxThrowDistance": true,
+    "explodeOnImpact": true,
+    "playerCollision": true,
+    "fuseTime": 9999,
+    "aimDistance": 32,
+    "rad": 1,
+    "throwPhysics": {
+      "playerVelMult": 0,
+      "velZ": 3.35,
+      "speed": 55,
+      "spinVel": 31.41592653589793,
+      "spinDrag": 1,
+      "fixedCollisionHeight": 0.25
+    },
+    "speed": {
+      "equip": 0,
+      "attack": 0
+    },
+    "lootImg": {
+      "sprite": "loot-throwable-tomato.img",
+      "tint": 65280,
+      "border": "loot-circle-outer-01.img",
+      "borderTint": 0,
+      "scale": 0.2
+    },
+    "worldImg": {
+      "sprite": "proj-tomato-01.img",
+      "scale": 0.12,
+      "tint": 16777215
+    },
+    "handImg": {
+      "equip": {
+        "right": {
+          "sprite": "proj-tomato-01.img",
+          "pos": {
+            "x": 3,
+            "y": 4.2
+          },
+          "scale": 0.14
+        },
+        "left": {
+          "sprite": "none"
+        }
+      },
+      "cook": {
+        "right": {
+          "sprite": "proj-tomato-01.img",
+          "pos": {
+            "x": 3,
+            "y": 4.2
+          },
+          "scale": 0.14
+        },
+        "left": {
+          "sprite": "none"
+        }
+      },
+      "throwing": {
+        "right": {
+          "sprite": "none"
+        },
+        "left": {
+          "sprite": "none"
+        }
+      }
+    },
+    "useThrowParticles": false,
+    "sound": {
+      "pullPin": "",
+      "throwing": "frag_throw_01",
+      "pickup": "potato_pickup_01",
+      "deploy": "frag_deploy_01"
+    },
+    "emoteId": 210
   }
 }

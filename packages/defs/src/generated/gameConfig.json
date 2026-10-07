@@ -202,6 +202,8 @@
         "mirv": 0,
         "snowball": 0,
         "potato": 0,
+        "tomato": 0,
+        "coconut": 0,
         "bandage": 0,
         "healthkit": 0,
         "soda": 0,
@@ -510,6 +512,18 @@
       1,
       1,
       1
+    ],
+    "tomato": [
+      10,
+      20,
+      30,
+      40
+    ],
+    "coconut": [
+      3,
+      6,
+      9,
+      12
     ]
   },
   "lootRadius": {

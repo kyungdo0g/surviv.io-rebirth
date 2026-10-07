@@ -55,7 +55,7 @@ const desc: Record<string, string> = {};
 const fromSurvev: string[] = [];
 for (const [id, def] of Object.entries(defs)) {
     if (!ITEM_TYPES.has(def.type)) continue;
-    for (const key of [`game-${id}`, `game-hud-${id}`]) {
+    for (const key of [`game-${id}`, `game-hud-${id}`, `game-${id}-desc`]) {
         if (status[id] === "survev-only" && !strings.has(key) && survevEn[key]) {
             strings.set(key, survevEn[key]);
             fromSurvev.push(key);

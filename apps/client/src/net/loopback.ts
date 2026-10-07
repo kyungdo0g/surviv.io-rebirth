@@ -47,7 +47,7 @@ export interface LoopbackExtras {
     /**
      * Comma-separated items for the local player: guns go to the primary (then secondary) slot with a full magazine and
      * reserve, bag items (throwables, heals, boosts, scopes) are filled to capacity; the first gun or throwable listed
-     * is equipped (M5: `give=frag`, `give=smoke,4xscope`, `give=bandage`).
+     * is equipped (M5: `give=frag`, `give=smoke,4xscope`, `give=bandage`; a melee weapon takes the melee slot).
      */
     give?: string;
     /** the local player plays with the touch controls (M8; mobile zoom, loot radius and auto loot in the sim) */
@@ -170,6 +170,9 @@ export class LoopbackTransport implements Transport {
                 if (BAG_ITEMS.includes(def.ammo)) player.inv.give(def.ammo, player.inv.capacity(def.ammo));
                 if (equip < 0) equip = gunSlot;
                 gunSlot = WeaponSlot.Secondary;
+            } else if (def?.type === "melee") {
+                wm.setWeapon(WeaponSlot.Melee, item, 0);
+                if (equip < 0) equip = WeaponSlot.Melee;
             } else if (def && BAG_ITEMS.includes(item)) {
                 player.inv.give(item, player.inv.capacity(item));
                 if (def.type === "throwable" && equip < 0) {

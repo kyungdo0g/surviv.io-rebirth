@@ -77,6 +77,8 @@ export const koPerkNames: Readonly<Record<string, string>> = {
     treat_762: "블루베리 태피",
     treat_super: "풀사이즈 오카미 바",
     turkey_shoot: "퍼키 슛",
+    // survev-only (l10n-ko.md: survev's ko.json)
+    pirate: "해적의 현상금",
 };
 
 /** Korean perk descriptions ("game-<perk>-desc"; Fabricate, Flak Jacket, Hollow-points and .45 keep the 0.8.82 text). */
@@ -122,6 +124,7 @@ export const koPerkDesc: Readonly<Record<string, string>> = {
     treat_762: "보상입니다! 7.62mm 탄환이 더 어둡고 치명적으로 변합니다.",
     treat_super: "슈퍼 보상입니다! 모든 탄환이 더 어둡고 치명적으로 변합니다.",
     turkey_shoot: "고르륵, 고르륵!",
+    pirate: "칼로 상대를 제압할 시 추가 아이템이 나옵니다. 적은 확률로 상급 아이템이 나올 수 있습니다.",
 };
 
 /** Korean role names ("game-<role>"). */

@@ -50,7 +50,7 @@ const near = (a: Vec2, b: Vec2) => expect(Math.hypot(a.x - b.x, a.y - b.y)).toBe
 
 describe("air strike variants on the wire", () => {
     it("schema 9 (10 since the survev guns) carries the variant of every zone", () => {
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(10);
+        expect(PROTOCOL_SCHEMA_VERSION).toBe(12);
         const zones: AirstrikeZoneView[] = AIRSTRIKE_VARIANT_IDS.map((variant, i) => ({
             id: i + 1,
             variant,

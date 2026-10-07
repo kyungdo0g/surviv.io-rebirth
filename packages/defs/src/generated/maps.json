@@ -16429,6 +16429,11 @@
           "name": "potato",
           "count": 10,
           "weight": 1
+        },
+        {
+          "name": "tomato",
+          "count": 10,
+          "weight": 1
         }
       ],
       "tier_ammo": [
@@ -18450,6 +18455,11 @@
         },
         {
           "name": "potato",
+          "count": 30,
+          "weight": 0.5
+        },
+        {
+          "name": "tomato",
           "count": 30,
           "weight": 0.5
         }
@@ -29000,6 +29010,11 @@
           "name": "crowbar",
           "count": 1,
           "weight": 3
+        },
+        {
+          "name": "iceaxe",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crow_case_skin": [
@@ -29135,7 +29150,13 @@
           "weight": 0.1
         }
       ],
-      "tier_sledgehammer": [],
+      "tier_sledgehammer": [
+        {
+          "name": "iceaxe",
+          "count": 1,
+          "weight": 1
+        }
+      ],
       "tier_chest_04": [
         {
           "name": "p30l",
@@ -30789,6 +30810,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "iceaxe",
+          "count": 1,
+          "weight": 1
         },
         {
           "name": "pan",
@@ -35544,6 +35570,11 @@
           "weight": 3
         },
         {
+          "name": "iceaxe",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "stonehammer",
           "count": 1,
           "weight": 1
@@ -36595,6 +36626,11 @@
           "name": "",
           "count": 1,
           "weight": 13
+        },
+        {
+          "name": "iceaxe",
+          "count": 1,
+          "weight": 3
         },
         {
           "name": "pan",
@@ -55308,6 +55344,11 @@
           "name": "mirv",
           "count": 2,
           "weight": 0.05
+        },
+        {
+          "name": "coconut",
+          "count": 3,
+          "weight": 0.4
         }
       ],
       "tier_ammo": [
@@ -56008,6 +56049,11 @@
           "name": "hook",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "cutlass",
+          "count": 1,
+          "weight": 2
         }
       ],
       "tier_hatchet": [
@@ -57276,8 +57322,8 @@
       ],
       "tier_airdrop_throwables": [
         {
-          "name": "",
-          "count": 1,
+          "name": "coconut",
+          "count": 4,
           "weight": 1
         }
       ],
@@ -57286,6 +57332,11 @@
           "name": "",
           "count": 1,
           "weight": 15
+        },
+        {
+          "name": "cutlass",
+          "count": 1,
+          "weight": 4
         },
         {
           "name": "pan",

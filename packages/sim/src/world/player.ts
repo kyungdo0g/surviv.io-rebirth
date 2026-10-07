@@ -66,6 +66,8 @@ export class Player implements InventoryOwner {
     aimLayer = 0;
     /** standing in a building heal region this tick (M5b) */
     healEffect = false;
+    /** seconds the heal effect still shows after a coconut heal (survev player.ts healEffectTicker) */
+    healEffectTicker = 0;
     /** role id ("" for none): faction roles, Lone Survivr, map roles, Cobalt classes (M7a, roles/roles.ts) */
     role = "";
     /** the worn helmet came with the role (it leaves with the role); the role's outfit cannot be swapped (Commander) */

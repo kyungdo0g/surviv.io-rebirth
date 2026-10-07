@@ -2382,6 +2382,13 @@
 - proposed resolution: rule 1, the original client is authoritative for client-visible values: `map-airdrop-02x.img` (the generated defs carry it), so a snow gold drop shows before it is opened [src:derived/readme-precedence] [H]
 - files: `mechanics/airdrop-airstrike.md` (`snow-gold-shell-sprite`), `rebirth-deviations.md` (air drop tiers, client presentation) [src:derived/kb-crossref] [H]
 
+## survev-throwable-cookable
+
+- A (survev.wiki.gg): the Coconut is cookable, the Tomato is not [src:wikigg/Coconut] [src:wikigg/Tomato_(Throwable)] [M]
+- B (survev source): `coconut` has `cookable: false`, `tomato` `cookable: true` [src:survev/shared/defs/gameObjects/throwableDefs.ts:846] [src:survev/shared/defs/gameObjects/throwableDefs.ts:913] [H]
+- proposed resolution: the wiki wins for survev-only items (ADR 0003 point 4, `user/2026-10-07-survev-guns`); applied in `packages/defs/src/survev/wikiSpecs.ts`, generated JSON keeps survev's value [src:user/2026-10-07-survev-guns] [M]
+- files: `items/throwables.md` [src:derived/kb-crossref] [H]
+
 ## Conflicts
 
 - none beyond the entries above; where KB files proposed different resolutions, the entry's `note:` line says which proposal this page follows [src:derived/kb-crossref] [L]

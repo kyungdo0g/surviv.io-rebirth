@@ -133,6 +133,8 @@ export interface MeleeDef extends BaseWeaponDef, BaseLoadoutItem {
     cleave?: boolean;
     armorPiercing?: boolean;
     stonePiercing?: boolean;
+    /** perk the holder has while the weapon is in its slot (survev Gold Cutlass: pirate; weaponManager.ts setWeapon) */
+    perk?: string;
     attack: {
         offset: Vec2;
         rad: number;
@@ -215,4 +217,9 @@ export interface ExplosionDef {
     freezeDuration?: number;
     /** survev: sprites drawn over a slowed player (the client draws the map's biome.frozenSprites) */
     frozenSprites?: string[];
+    /** survev coconut: hits on the source's side heal `healAmount` (default 5) and deal no damage */
+    healTeam?: boolean;
+    healAmount?: number;
+    /** survev: random items a hit enemy drops (the simulation reads rules.modes.throwableHits instead) */
+    dropRandomLoot?: number;
 }

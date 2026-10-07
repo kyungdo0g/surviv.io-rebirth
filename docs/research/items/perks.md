@@ -230,6 +230,11 @@
 - Fandom per-perk sources: Endless Ammo desert → Savannah and Potato; Takedown and One With Nature also from potatoes; Martyrdom one of the rare Savannah perks; Fabricate also on Savannah and in desert golden airdrops [src:fandom/Endless_Ammo] [src:fandom/Takedown] [src:fandom/One_With_Nature] [src:fandom/Martyrdom] [src:fandom/Fabricate] [M]
 - Post-0.8.82 perks on fandom that are absent from survev: Cupid, Closer, Leprechaun, Snow Fox, Polar Bear, Phoenix, Pyro (post-0.8.82) [src:fandom/Perks] [M]
 
+## In the game (survev content wave, stage 1)
+
+- The port takes `pirate` (needed by the Gold Cutlass); the simulation drops `randomInt(3, 4)` rolls of `tier_pirate` at the victim, plus one `tier_pirate_rare` roll with chance 0.12, each pushed 7.5-11 in a random direction, when the final hit of a credited kill is a melee weapon (`perks/effects.ts onKillCredited`, `loot/drops.ts dropPirateBounty`, `rules.perks.pirate`) [src:survev/shared/defs/gameObjects/perkDefs.ts:121-127] [src:survev/server/src/game/objects/player.ts:2727-2763] [src:wikigg/Pirate's_Bounty] [H]
+- The other six survev perks (`assume_leadership`, `ap_rounds`, `lifeline`, `combat_stims`, `amped_explosives`, `high_velocity`) come with stage 2 [src:derived/tools/port-survev/policy.json] [H]
+
 ## Conflicts
 
 - CONFLICT perk-splinter-side-damage: side bullets 0.6 × 0.45 = 27 % each in v0.8.82 [src:fandom/Splinter_Rounds] vs survev `splitsDamageMult` 0.5 (30 %) since fork commit e55e094e [src:survev/shared/defs/gameObjects/perkDefs.ts:37-40]; proposed: 0.45 for the target era, 0.5 behind a fork flag [L]

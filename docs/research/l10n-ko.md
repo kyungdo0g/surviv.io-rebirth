@@ -106,7 +106,7 @@
 ### 누락 키 처리
 
 - 0.8.82 콘텐츠 중 ko에 없는 것: 이모트 이름 148개 전부, 조준선 이름, 치유·부스트 효과 이름, 기본 근접 무기 이름(`game-knuckles` 등 9개), `game-max-perks`, 퀘스트 다수 — 표의 "리버스 표기" 열에 제안 번역을 넣었다 [src:l10n/en:game-emote_happyface, l10n/en:game-heal_basic, l10n/en:game-knuckles, l10n/en:game-max-perks] [H]
-- fork 전용 키(예: S&W 500, Barrett M107, ASh-12, IMD-2, 보호구역 퀘스트, Survevr 패스 2, Tactical Pack)는 제안 번역 앞에 `(fork)`를 붙였다; survev 기준(ADR 0003) 이후 포트가 가져온 항목(survev 전용 총 6종, 겨울 스킨 3종, PMG-134 탄)은 `(fork)` 없이 리버스 표기를 쓴다 (`apps/client/src/l10n/ko.ts`) [src:l10n/en:game-sw500, l10n/en:game-barrett, l10n/en:game-ash12, l10n/en:quest_reserve_kills, l10n/en:pass_survivr2, derived/fork-vs-original-json, user/2026-10-07-survev-guns] [H]
+- fork 전용 키(예: S&W 500, Barrett M107, ASh-12, IMD-2, 보호구역 퀘스트, Survevr 패스 2, Tactical Pack)는 제안 번역 앞에 `(fork)`를 붙였다; survev 기준(ADR 0003) 이후 포트가 가져온 항목(survev 전용 총 6종, 겨울 스킨 3종, PMG-134 탄, 근접 무기 5종, 코코넛·토마토, 해적의 현상금)은 `(fork)` 없이 리버스 표기를 쓴다 (`apps/client/src/l10n/ko.ts`) [src:l10n/en:game-sw500, l10n/en:game-barrett, l10n/en:game-ash12, l10n/en:quest_reserve_kills, l10n/en:pass_survivr2, derived/fork-vs-original-json, user/2026-10-07-survev-guns] [H]
 
 ## 전체 용어표
 
@@ -529,7 +529,7 @@
 | `knuckles_heroic` | Knuckles Heroic / HUD: Knuckles | 영웅의 너클즈 (원본: 영웅의 주먹) / 너클즈 (원본: 주먹) | = | [src:l10n/en:game-knuckles_heroic, l10n/ko:game-knuckles_heroic, l10n/en:game-hud-knuckles_heroic, l10n/ko:game-hud-knuckles_heroic] [H] |
 | `karambit_rugged` | Karambit Rugged / HUD: Karambit | 단단한 카람빗 / 카람빗 | = | [src:l10n/en:game-karambit_rugged, l10n/ko:game-karambit_rugged, l10n/en:game-hud-karambit_rugged, l10n/ko:game-hud-karambit_rugged] [H] |
 | `karambit_prismatic` | Karambit Prismatic / HUD: Karambit | 프리즘 카람빗 / 카람빗 | = | [src:l10n/en:game-karambit_prismatic, l10n/ko:game-karambit_prismatic, l10n/en:game-hud-karambit_prismatic, l10n/ko:game-hud-karambit_prismatic] [H] |
-| `karambit_borealis` | Karambit Borealis (fork) / HUD: Karambit | — (누락) / — | (fork) 보레알리스 카람빗 | [src:l10n/en:game-karambit_borealis, l10n/en:game-hud-karambit_borealis] [H] |
+| `karambit_borealis` | Karambit Borealis (fork) / HUD: Karambit | — (누락) / — | 보레알리스 카람빗 | [src:l10n/en:game-karambit_borealis, l10n/en:game-hud-karambit_borealis] [H] |
 | `karambit_drowned` | Karambit Drowned / HUD: Karambit | 젖은 카람빗 / 카람빗 | = | [src:l10n/en:game-karambit_drowned, l10n/ko:game-karambit_drowned, l10n/en:game-hud-karambit_drowned, l10n/ko:game-hud-karambit_drowned] [H] |
 | `bayonet_rugged` | Bayonet Rugged / HUD: Bayonet | 튼튼한 총검 / 총검 | = | [src:l10n/en:game-bayonet_rugged, l10n/ko:game-bayonet_rugged, l10n/en:game-hud-bayonet_rugged, l10n/ko:game-hud-bayonet_rugged] [H] |
 | `bayonet_woodland` | Bayonet Woodland / HUD: Bayonet | 우드랜드 총검 / 총검 | = | [src:l10n/en:game-bayonet_woodland, l10n/ko:game-bayonet_woodland, l10n/en:game-hud-bayonet_woodland, l10n/ko:game-hud-bayonet_woodland] [H] |
@@ -544,7 +544,7 @@
 | `katana_rusted` | Katana Rusted / HUD: Katana | 녹슨 카타나 / 카타나 | = | [src:l10n/en:game-katana_rusted, l10n/ko:game-katana_rusted, l10n/en:game-hud-katana_rusted, l10n/ko:game-hud-katana_rusted] [H] |
 | `katana_orchid` | Katana Orchid / HUD: Katana | 오키드 카타나 / 카타나 | = | [src:l10n/en:game-katana_orchid, l10n/ko:game-katana_orchid, l10n/en:game-hud-katana_orchid, l10n/ko:game-hud-katana_orchid] [H] |
 | `naginata` | Naginata / HUD: Naginata | 나기나타 / 나기나타 | = | [src:l10n/en:game-naginata, l10n/ko:game-naginata, l10n/en:game-hud-naginata, l10n/ko:game-hud-naginata] [H] |
-| `naginata_daemon` | Naginata Daemon (fork) / HUD: Naginata | — (누락) / — | (fork) 데몬 나기나타 | [src:l10n/en:game-naginata_daemon, l10n/en:game-hud-naginata_daemon] [H] |
+| `naginata_daemon` | Naginata Daemon (fork) / HUD: Naginata | — (누락) / — | 데몬 나기나타 | [src:l10n/en:game-naginata_daemon, l10n/en:game-hud-naginata_daemon] [H] |
 | `machete_taiga` | Machete Taiga / HUD: Machete | 타이가 마체테 / 마체테 | = | [src:l10n/en:game-machete_taiga, l10n/ko:game-machete_taiga, l10n/en:game-hud-machete_taiga, l10n/ko:game-hud-machete_taiga] [H] |
 | `kukri_trad` | Tallow's Kukri / HUD: Kukri | 탈로우의 쿠크리 / 쿠크리 | = | [src:l10n/en:game-kukri_trad, l10n/ko:game-kukri_trad, l10n/en:game-hud-kukri_trad, l10n/ko:game-hud-kukri_trad] [H] |
 | `bonesaw_rusted` | Bonesaw Rusted / HUD: Bonesaw | 녹슨 톱 / 톱 | = | [src:l10n/en:game-bonesaw_rusted, l10n/ko:game-bonesaw_rusted, l10n/en:game-hud-bonesaw_rusted, l10n/ko:game-hud-bonesaw_rusted] [H] |
@@ -585,7 +585,7 @@
 | `snowball` | Snowball / HUD: Snowball | 스노우볼 / 스노우볼 | = | [src:l10n/en:game-snowball, l10n/ko:game-snowball, l10n/en:game-hud-snowball, l10n/ko:game-hud-snowball] [H] |
 | `snowball_heavy` | Snowball | 스노우볼 | = | [src:l10n/en:game-snowball_heavy, l10n/ko:game-snowball_heavy] [H] |
 | `coconut` | Coconut (fork) / HUD: Coconut | 코코넛 † / 코코넛 | = | [src:l10n/en:game-coconut, l10n/ko:game-coconut, l10n/en:game-hud-coconut, l10n/ko:game-hud-coconut] [H] |
-| `tomato` | Tomato (fork) / HUD: Tomato | — (누락) / — | (fork) 토마토 | [src:l10n/en:game-tomato, l10n/en:game-hud-tomato] [H] |
+| `tomato` | Tomato (fork) / HUD: Tomato | — (누락) / — | 토마토 | [src:l10n/en:game-tomato, l10n/en:game-hud-tomato] [H] |
 | `potato` | Potato / HUD: Potato | 감자 (원본: 포테이토) / 감자 (원본: 포테이토) | = | [src:l10n/en:game-potato, l10n/ko:game-potato, l10n/en:game-hud-potato, l10n/ko:game-hud-potato] [H] |
 | `potato_heavy` | Potato | 감자 (원본: 포테이토) | = | [src:l10n/en:game-potato_heavy, l10n/ko:game-potato_heavy] [H] |
 | `potato_cannonball` | Potato Cannon | 포테이토 캐논 | = | [src:l10n/en:game-potato_cannonball, l10n/ko:game-potato_cannonball] [H] |

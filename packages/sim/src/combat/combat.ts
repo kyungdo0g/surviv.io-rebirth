@@ -83,7 +83,7 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
         if (credit !== player && credit.teamId !== player.teamId) {
             credit.kills++;
             // Takedown: health, adrenaline and a speed burst per kill (M7a)
-            onKillCredited(ctx, credit);
+            onKillCredited(ctx, credit, player, params.gameSourceType);
         }
     }
     // Last Breath and Martyrdom (the perk, or the Grenadier / Demo role) (M7a, perks/effects.ts)

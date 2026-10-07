@@ -209,5 +209,12 @@ export function portGameConfig(
             prunes.push({ path: `${path}.${key}`, reason: "item not in the ported game objects" });
         }
     }
+    // survev-only bag rows (coconut, tomato) have survev's five levels; every row keeps the original's level count
+    const levels = Object.values(live.bagSizes ?? {}).find(Array.isArray)?.length;
+    for (const [key, row] of Object.entries(config.bagSizes ?? {})) {
+        if (!levels || !Array.isArray(row) || row.length <= levels) continue;
+        config.bagSizes[key] = row.slice(0, levels);
+        prunes.push({ path: `bagSizes.${key}`, reason: `cut to the original's ${levels} backpack levels` });
+    }
     return { config, diffs, prunes, survev: taken };
 }

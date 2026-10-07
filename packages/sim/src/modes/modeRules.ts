@@ -56,6 +56,11 @@ export function defaultModeRules(): ModeRules {
             // PMG-134 shot (survev-only): slows 0.25 s (wikigg/Petite_Potato "Slowdown duration = 0.25"; survev
             // explosionsDefs.ts:229 freezeDuration 0.25) and shrinks the view (survev explosion.ts:240-242)
             explosion_potato_lmgshot: { freeze: 0.25, dropRandomLoot: 0, viewShrink: 1.5 },
+            // survev-only throwables: the coconut slows 1 s (wikigg/Coconut rev 7413 "Slowdown duration = 1"; survev
+            // explosionsDefs.ts:247), the tomato 0.5 s and drops an item (wikigg/Tomato_(Throwable) rev 7178;
+            // explosionsDefs.ts:268-270)
+            explosion_coconut: { freeze: 1, dropRandomLoot: 0 },
+            explosion_tomato: { freeze: 0.5, dropRandomLoot: 1 },
         },
         viewShrink: { max: 32, duration: 2.5 },
         potatoEmotes: true,

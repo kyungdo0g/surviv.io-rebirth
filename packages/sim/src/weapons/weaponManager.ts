@@ -3,6 +3,7 @@
 // tryReload, reload) and docs/research/items/guns.md "Shared firing, switching and reload rules".
 import { GameConfig, GameObjectDefs, type GunDef, getDef, hasDef, type MeleeDef, WeaponSlot } from "@rebirth/defs";
 import { isBagItem, THROWABLE_LIST } from "../items/inventory.ts";
+import { addPerk, removePerksWhere } from "../perks/perks.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
 import { fireGun } from "./gun.ts";
@@ -19,6 +20,12 @@ export const TIME_EPS = 1e-9;
 export function readyCarry(cooldown: number, dt: number): number | null {
     if (cooldown > TIME_EPS) return null;
     return cooldown > -dt + TIME_EPS ? Math.min(cooldown, 0) : 0;
+}
+
+/** The perk a weapon gives while carried, "" for none. */
+function weaponPerk(type: string): string {
+    const def = getDef(type);
+    return (def.type === "melee" && (def as MeleeDef).perk) || "";
 }
 
 export interface WeaponSlotState {
@@ -158,6 +165,11 @@ export class WeaponManager {
         if (this.weapons[idx].type === "pan") player.wearingPan = false;
         if (type === "pan" && this.curWeapIdx !== WeaponSlot.Melee) player.wearingPan = true;
         const slot = this.weapons[idx];
+        // a weapon's perk is held while the weapon is carried (survev weaponManager.ts setWeapon: the Gold Cutlass)
+        const oldPerk = slot.type && hasDef(slot.type) ? weaponPerk(slot.type) : "";
+        const newPerk = type && hasDef(type) ? weaponPerk(type) : "";
+        if (oldPerk && oldPerk !== newPerk) removePerksWhere(player, (s) => s.fromGear && s.type === oldPerk);
+        if (newPerk && newPerk !== oldPerk) addPerk(player, newPerk, { fromGear: true });
         slot.type = type;
         slot.ammo = ammo;
         slot.cooldown = def?.type === "gun" || def?.type === "melee" ? def.switchDelay : 0;

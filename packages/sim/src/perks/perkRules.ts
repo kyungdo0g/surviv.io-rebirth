@@ -88,6 +88,18 @@ export interface PerkRules {
     firepowerExcess: "delete" | "inventory";
     /** Scavenger / Master Scavenger extra loot roll per destroyed obstacle (survev perkDefs scavenger lootTableConf) */
     scavengerTiers: Readonly<Record<string, string>>;
+    /**
+     * Pirate's Bounty (survev-only, the Gold Cutlass): a melee kill drops 3-4 rolls of `tier` at the victim, and with
+     * `rareChance` one roll of `rareTier` (survev perkDefs.ts PerkProperties.pirate, player.ts:2727-2765;
+     * wikigg/Pirate's_Bounty)
+     */
+    pirate: {
+        minCount: number;
+        maxCount: number;
+        tier: string;
+        rareChance: number;
+        rareTier: string;
+    };
 }
 
 export function defaultPerkRules(): PerkRules {
@@ -139,6 +151,7 @@ export function defaultPerkRules(): PerkRules {
         maxPerks: 8,
         firepowerExcess: "delete",
         scavengerTiers: { scavenger: "tier_world", scavenger_adv: "tier_scavenger_adv" },
+        pirate: { minCount: 3, maxCount: 4, tier: "tier_pirate", rareChance: 0.12, rareTier: "tier_pirate_rare" },
     };
 }
 

@@ -19,12 +19,22 @@
       "sw500",
       "ash12",
       "potato_lmg",
-      "potato_lmgshot"
+      "potato_lmgshot",
+      "iceaxe",
+      "cutlass",
+      "cutlass_gold",
+      "coconut",
+      "tomato",
+      "explosion_coconut",
+      "explosion_tomato",
+      "pirate"
     ],
     "survevSkins": {
       "svd_winter": "svd",
       "sv98_winter": "sv98",
-      "awc_winter": "awc"
+      "awc_winter": "awc",
+      "naginata_daemon": "naginata",
+      "karambit_borealis": "karambit"
     },
     "survevGameConfig": [
       "bagSizes.50AE"
@@ -666,6 +676,8 @@
     "bullet_imbel": "survev-only",
     "bullet_invis": "survev-only",
     "explosion_potato_lmgshot": "survev-only",
+    "explosion_coconut": "survev-only",
+    "explosion_tomato": "survev-only",
     "imbel": "survev-only",
     "spas16": "survev-only",
     "barrett": "survev-only",
@@ -675,7 +687,15 @@
     "svd_winter": "survev-only",
     "sv98_winter": "survev-only",
     "awc_winter": "survev-only",
-    "potato_lmgshot": "survev-only"
+    "iceaxe": "survev-only",
+    "cutlass": "survev-only",
+    "karambit_borealis": "survev-only",
+    "naginata_daemon": "survev-only",
+    "cutlass_gold": "survev-only",
+    "pirate": "survev-only",
+    "potato_lmgshot": "survev-only",
+    "coconut": "survev-only",
+    "tomato": "survev-only"
   },
   "mapObjects": {
     "barrel_01": "original",
@@ -4246,54 +4266,6 @@
       "status": "applied",
       "entry": {
         "section": "lootTables",
-        "target": "snow.lootTable.tier_barn_melee[iceaxe]",
-        "field": "weight",
-        "forkValue": 1,
-        "originalValue": "absent",
-        "line": 205,
-        "confidence": "H",
-        "note": "replaces the original tier_sledgehammer [sledgehammer 1]; tier_barn_melee is a fork tier",
-        "refs": [
-          "balance/205",
-          "survev/shared/defs/maps/snowDefs.ts:146",
-          "derived/git-78af45bc",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_barn_melee.iceaxe"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "snow.lootTable.tier_airdrop_melee[iceaxe]",
-        "field": "weight",
-        "forkValue": 1,
-        "originalValue": "absent",
-        "line": 206,
-        "confidence": "H",
-        "note": "",
-        "refs": [
-          "balance/206",
-          "survev/shared/defs/maps/snowDefs.ts:146",
-          "derived/git-78af45bc",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.snow.lootTable.tier_airdrop_melee.iceaxe"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
         "target": "snow.lootTable.tier_airdrop_melee[\"\"]",
         "field": "weight",
         "forkValue": 18,
@@ -5039,54 +5011,6 @@
       "reason": "reverted to originalValue",
       "targets": [
         "maps.woods.lootTable.tier_toilet.tier_outfits"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "woods_snow.lootTable.tier_airdrop_melee[iceaxe]",
-        "field": "weight",
-        "forkValue": 3,
-        "originalValue": "absent",
-        "line": 235,
-        "confidence": "H",
-        "note": "Stone Hammer replaced by the fork Ice Axe on Winter Woods; current code has 3, not balance.txt's 1 (later change not logged in balance.txt)",
-        "refs": [
-          "balance/235",
-          "survev/shared/defs/maps/woodsSnowDefs.ts:57",
-          "derived/git-e10300ff",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.woods_snow.lootTable.tier_airdrop_melee.iceaxe"
-      ]
-    },
-    {
-      "status": "applied",
-      "entry": {
-        "section": "lootTables",
-        "target": "woods_snow.lootTable.tier_hatchet_melee[iceaxe]",
-        "field": "weight",
-        "forkValue": 1,
-        "originalValue": "absent",
-        "line": 235,
-        "confidence": "H",
-        "note": "",
-        "refs": [
-          "balance/235",
-          "survev/shared/defs/maps/woodsSnowDefs.ts:77",
-          "derived/git-e10300ff",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "absent -> 1"
-      },
-      "reason": "reverted to originalValue",
-      "targets": [
-        "maps.woods_snow.lootTable.tier_hatchet_melee.iceaxe"
       ]
     },
     {
@@ -6128,27 +6052,6 @@
       "targets": [
         "maps.woods.lootTable.tier_airdrop_melee.stonehammer"
       ]
-    },
-    {
-      "status": "skipped",
-      "entry": {
-        "section": "lootTables",
-        "target": "woods_snow.lootTable.tier_airdrop_melee[iceaxe]",
-        "field": "weight",
-        "forkValue": 3,
-        "originalValue": "absent",
-        "line": 257,
-        "confidence": "H",
-        "note": "applies to the Ice Axe on Winter Woods; current code has 3, not balance.txt's 6 (later change not logged in balance.txt); pre-fork baseline (survev 2025-07-01, ae55c9a8) has absent; balance.txt's left value is an intermediate fork value",
-        "refs": [
-          "balance/257",
-          "survev/shared/defs/maps/woodsSnowDefs.ts:57",
-          "derived/git-ec443605",
-          "derived/git-ae55c9a8"
-        ],
-        "balanceValue": "1 -> 6"
-      },
-      "reason": "maps.woods_snow.lootTable.tier_airdrop_melee.iceaxe: already absent"
     },
     {
       "status": "skipped",
@@ -16067,6 +15970,90 @@
       "status": "skipped",
       "entry": {
         "section": "lootTables",
+        "target": "snow.lootTable.tier_barn_melee[iceaxe]",
+        "field": "weight",
+        "forkValue": 1,
+        "originalValue": "absent",
+        "line": 205,
+        "confidence": "H",
+        "note": "replaces the original tier_sledgehammer [sledgehammer 1]; tier_barn_melee is a fork tier",
+        "refs": [
+          "balance/205",
+          "survev/shared/defs/maps/snowDefs.ts:146",
+          "derived/git-78af45bc",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "snow.lootTable.tier_airdrop_melee[iceaxe]",
+        "field": "weight",
+        "forkValue": 1,
+        "originalValue": "absent",
+        "line": 206,
+        "confidence": "H",
+        "note": "",
+        "refs": [
+          "balance/206",
+          "survev/shared/defs/maps/snowDefs.ts:146",
+          "derived/git-78af45bc",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "woods_snow.lootTable.tier_airdrop_melee[iceaxe]",
+        "field": "weight",
+        "forkValue": 3,
+        "originalValue": "absent",
+        "line": 235,
+        "confidence": "H",
+        "note": "Stone Hammer replaced by the fork Ice Axe on Winter Woods; current code has 3, not balance.txt's 1 (later change not logged in balance.txt)",
+        "refs": [
+          "balance/235",
+          "survev/shared/defs/maps/woodsSnowDefs.ts:57",
+          "derived/git-e10300ff",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "woods_snow.lootTable.tier_hatchet_melee[iceaxe]",
+        "field": "weight",
+        "forkValue": 1,
+        "originalValue": "absent",
+        "line": 235,
+        "confidence": "H",
+        "note": "",
+        "refs": [
+          "balance/235",
+          "survev/shared/defs/maps/woodsSnowDefs.ts:77",
+          "derived/git-e10300ff",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "absent -> 1"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
         "target": "woods.lootTable.tier_guns[imbel]",
         "field": "weight",
         "forkValue": 2.75,
@@ -16165,6 +16152,27 @@
           "derived/git-ae55c9a8"
         ],
         "balanceValue": "absent -> 0.75"
+      },
+      "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
+    },
+    {
+      "status": "skipped",
+      "entry": {
+        "section": "lootTables",
+        "target": "woods_snow.lootTable.tier_airdrop_melee[iceaxe]",
+        "field": "weight",
+        "forkValue": 3,
+        "originalValue": "absent",
+        "line": 257,
+        "confidence": "H",
+        "note": "applies to the Ice Axe on Winter Woods; current code has 3, not balance.txt's 6 (later change not logged in balance.txt); pre-fork baseline (survev 2025-07-01, ae55c9a8) has absent; balance.txt's left value is an intermediate fork value",
+        "refs": [
+          "balance/257",
+          "survev/shared/defs/maps/woodsSnowDefs.ts:57",
+          "derived/git-ec443605",
+          "derived/git-ae55c9a8"
+        ],
+        "balanceValue": "1 -> 6"
       },
       "reason": "survev-only item ported as survev places it (tools/port-survev/policy.json)"
     },
@@ -17448,12 +17456,6 @@
     },
     {
       "map": "faction_potato",
-      "tier": "tier_throwables",
-      "item": "tomato",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
       "reason": "item not in the original client's game objects (fork-only)"
@@ -17474,12 +17476,6 @@
       "map": "faction_potato",
       "tier": "tier_class_crate_mythic",
       "item": "lifeline",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "faction_potato",
-      "tier": "tier_airdrop_throwables",
-      "item": "tomato",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -17930,12 +17926,6 @@
       "map": "snow",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "snow",
-      "tier": "tier_crow_case_melee",
-      "item": "iceaxe",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -18960,20 +18950,8 @@
     },
     {
       "map": "beach",
-      "tier": "tier_throwables",
-      "item": "coconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
       "tier": "tier_fragtastic",
       "item": "outfitFragtastic",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_pirate_melee",
-      "item": "cutlass",
       "reason": "item not in the original client's game objects (fork-only)"
     },
     {
@@ -19014,24 +18992,6 @@
     },
     {
       "map": "beach",
-      "tier": "tier_airdrop_throwables",
-      "item": "coconut",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_airdrop_throwables",
-      "item": "",
-      "reason": "table emptied: replaced with a single no-drop entry"
-    },
-    {
-      "map": "beach",
-      "tier": "tier_airdrop_melee",
-      "item": "cutlass",
-      "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "map": "beach",
       "tier": "tier_xp_uncommon",
       "item": "xp_book_tallow",
       "reason": "xp drop (accounts are out of scope)"
@@ -19365,36 +19325,6 @@
       "tier": "tier_crimson_perks",
       "item": "ap_rounds",
       "reason": "item not in the original client's game objects (fork-only)"
-    },
-    {
-      "mapObject": "barrel_05",
-      "item": "coconut",
-      "reason": "item not in the original client"
-    },
-    {
-      "mapObject": "gun_mount_06",
-      "item": "cutlass_gold",
-      "reason": "item not in the original client"
-    },
-    {
-      "mapObject": "barrel_01bh",
-      "item": "coconut",
-      "reason": "item not in the original client"
-    },
-    {
-      "mapObject": "barrel_01bh",
-      "item": "coconut",
-      "reason": "item not in the original client"
-    },
-    {
-      "mapObject": "barrel_01bh",
-      "item": "coconut",
-      "reason": "item not in the original client"
-    },
-    {
-      "mapObject": "tree_14",
-      "item": "coconut",
-      "reason": "item not in the original client"
     }
   ],
   "gameConfigDiffs": [
@@ -20242,22 +20172,12 @@
     },
     {
       "path": "bagSizes.tomato",
-      "reason": "item not in the ported game objects",
+      "reason": "cut to the original's 4 backpack levels",
       "kind": "pruned"
     },
     {
       "path": "bagSizes.coconut",
-      "reason": "item not in the ported game objects",
-      "kind": "pruned"
-    },
-    {
-      "path": "player.defaultItems.inventory.tomato",
-      "reason": "item not in the ported game objects",
-      "kind": "pruned"
-    },
-    {
-      "path": "player.defaultItems.inventory.coconut",
-      "reason": "item not in the ported game objects",
+      "reason": "cut to the original's 4 backpack levels",
       "kind": "pruned"
     },
     {
@@ -20554,18 +20474,11 @@
       "emote_flatteredface",
       "emote_salutingface",
       "emote_screamingface",
-      "explosion_coconut",
-      "explosion_tomato",
       "explosion_cobalt",
       "backpack04",
       "helmet04_captain",
       "helmet04_classless",
       "backpack04_cloud",
-      "iceaxe",
-      "cutlass",
-      "karambit_borealis",
-      "naginata_daemon",
-      "cutlass_gold",
       "outfitClassless",
       "outfitMaintainer",
       "outfitGD",
@@ -20638,14 +20551,11 @@
       "ap_rounds",
       "lifeline",
       "combat_stims",
-      "pirate",
       "amped_explosives",
       "high_velocity",
       "pass_survivr2",
       "captain",
-      "classless",
-      "coconut",
-      "tomato"
+      "classless"
     ],
     "mapObjects": [
       "vault_door_reserve",

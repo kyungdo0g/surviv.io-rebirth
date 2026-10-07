@@ -226,6 +226,12 @@ export const koItems: Readonly<Record<string, string>> = {
     katana_demo: "하카이의 카타나",
     spade_assault: "참호용 야전삽",
     warhammer_tank: "팬저해머",
+    // survev-only melee (l10n-ko.md: iceaxe, cutlass and cutlass_gold from survev's ko.json; the skins proposed)
+    iceaxe: "얼음 도끼",
+    cutlass: "커틀러스",
+    cutlass_gold: "황금 커틀러스",
+    naginata_daemon: "데몬 나기나타",
+    karambit_borealis: "보레알리스 카람빗",
     frag: "파편 수류탄",
     smoke: "연막탄",
     mirv: "MIRV 수류탄",
@@ -236,6 +242,9 @@ export const koItems: Readonly<Record<string, string>> = {
     snowball_heavy: "스노우볼",
     potato: "감자",
     potato_heavy: "감자",
+    // survev-only throwables (l10n-ko.md: coconut from survev's ko.json, tomato proposed)
+    coconut: "코코넛",
+    tomato: "토마토",
     potato_lmgshot: "PMG-134",
 };
 
@@ -275,10 +284,15 @@ export const koHudItems: Readonly<Record<string, string>> = {
     katana_demo: "카타나",
     spade_assault: "야전삽",
     warhammer_tank: "워 해머",
+    cutlass_gold: "커틀러스",
+    naginata_daemon: "나기나타",
+    karambit_borealis: "카람빗",
     frag: "수류탄",
     smoke: "연막",
     mirv: "MIRV",
     strobe: "스트로브",
     snowball: "스노우볼",
     potato: "감자",
+    coconut: "코코넛",
+    tomato: "토마토",
 };
