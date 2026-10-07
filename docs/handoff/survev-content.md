@@ -302,7 +302,7 @@ survev's Medic class perks are Field Medic + Combat Stimulants (survev roleDefs.
 
 The sim lets everything through a disguise (survev client obstacle.ts: `collidable = def.collidable && !isSkin`), but
 the client's predicted bullets and melee hits still stop at it and chip it (a barrel costume eats tracers):
-- `fx/bullets.ts` obstacle collection (~line 280): `if (view.dead || view.skinPlayerId !== undefined || ...) return;`
+- `fx/bullets.ts` obstacle collection (~line 290): `if (view.dead || view.skinPlayerId !== undefined || ...) return;`
 - `fx/effects.ts firstBlocker` and the melee obstacle list: skip `o.view.skinPlayerId !== undefined` (survev
   client player.ts:2353 `if (obstacle.dead || obstacle.isSkin) continue;`).
 
