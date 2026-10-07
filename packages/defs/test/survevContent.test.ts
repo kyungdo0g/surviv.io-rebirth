@@ -7,6 +7,7 @@ import {
     GameConfig,
     getDefOfType,
     getMapDef,
+    getMapObjectDefOfType,
     idsOfType,
     SURVEV_MELEE_SKINS,
     SURVEV_ONLY_MELEE,
@@ -302,5 +303,18 @@ describe("survev cosmetics (stage 4)", () => {
         // survev renamed the original tree costume (tools/port-survev/lib/maps.ts ITEM_RENAMES): Halloween keeps the id
         expect(tier("halloween", "tier_outfits")).toContain("outfitTree");
         expect(idsOfType("outfit")).not.toContain("outfitHalloweenTree");
+    });
+});
+
+describe("snow air drops (policy survevSpriteFixes)", () => {
+    // the original opens both on map-crate-13x, which no client ships; survev crateDefs.ts opens them on
+    // map-airdrop-02x. The closed images stay the original's (the gold one shows map-airdrop-02x).
+    it("open on map-airdrop-02x; the closed images stay the original's", () => {
+        for (const id of ["airdrop_crate_01x", "airdrop_crate_02x"]) {
+            expect(getMapObjectDefOfType("obstacle", id).button?.useImg, id).toBe("map-airdrop-02x.img");
+        }
+        expect(getMapObjectDefOfType("obstacle", "airdrop_crate_01x").img.sprite).toBe("map-airdrop-01x.img");
+        expect(getMapObjectDefOfType("obstacle", "airdrop_crate_02x").img.sprite).toBe("map-airdrop-02x.img");
+        expect(provenance.survevSpriteFixes).toHaveLength(2);
     });
 });

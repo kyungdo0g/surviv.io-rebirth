@@ -1,8 +1,9 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
     chooseSprites,
+    collectNames,
     formatManifest,
     type OriginalFrame,
     posixRelative,
@@ -109,5 +110,34 @@ describe("sprite sources", () => {
             '{\n "a.img": {"path":"img/a.svg","source":"survev","size":[1,2]},\n "z.img": {"source":"none"}\n}\n',
         );
         expect(JSON.parse(text)["a.img"].size).toEqual([1, 2]);
+    });
+});
+
+describe("unspawned defs (tools/assets/unspawned-defs.json)", () => {
+    const listed = Object.keys(JSON.parse(readFileSync("tools/assets/unspawned-defs.json", "utf8"))).filter(
+        (k) => k !== "$comment",
+    );
+    const defs = (name: string) => JSON.parse(readFileSync(`packages/defs/src/generated/${name}`, "utf8"));
+
+    it("lists defs that no map, map object or game object names", () => {
+        const mapObjects = defs("mapObjects.json") as Record<string, unknown>;
+        const named = new Set<string>();
+        collectNames(defs("maps.json"), named);
+        collectNames(defs("gameObjects.json"), named);
+        for (const [id, def] of Object.entries(mapObjects)) if (!listed.includes(id)) collectNames(def, named);
+        expect(listed.length).toBeGreaterThan(0);
+        for (const id of listed) {
+            expect(mapObjects[id], id).toBeDefined();
+            expect(named.has(id), id).toBe(false);
+        }
+    });
+
+    it("and that no simulation, server or rebirth defs source spawns", () => {
+        const sources = ["packages/sim/src", "apps/server/src", "packages/defs/src/rebirth"].flatMap((dir) =>
+            readdirSync(dir, { recursive: true, encoding: "utf8" })
+                .filter((f) => f.endsWith(".ts"))
+                .map((f) => readFileSync(path.join(dir, f), "utf8")),
+        );
+        for (const id of listed) for (const text of sources) expect(text.includes(`"${id}"`), id).toBe(false);
     });
 });

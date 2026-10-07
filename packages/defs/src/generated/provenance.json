@@ -126,6 +126,14 @@
     "survevServerMapObjects": [
       "airdrop_crate_04po"
     ],
+    "survevSpriteFixes": {
+      "airdrop_crate_01x": [
+        "button.useImg"
+      ],
+      "airdrop_crate_02x": [
+        "button.useImg"
+      ]
+    },
     "survevBalance": true
   },
   "gameObjects": {
@@ -19174,6 +19182,20 @@
           }
         }
       ]
+    }
+  ],
+  "survevSpriteFixes": [
+    {
+      "id": "airdrop_crate_01x",
+      "path": "button.useImg",
+      "original": "map-crate-13x.img",
+      "survev": "map-airdrop-02x.img"
+    },
+    {
+      "id": "airdrop_crate_02x",
+      "path": "button.useImg",
+      "original": "map-crate-13x.img",
+      "survev": "map-airdrop-02x.img"
     }
   ],
   "survevValues": [

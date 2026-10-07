@@ -68,6 +68,8 @@ describe("original client values", () => {
         );
         // survev balance: survev's gameplay fields (provenance survevValues)
         const gameplay = new Set((provenance.survevValues ?? []).map((c: any) => `${c.id}.${c.field}`));
+        // images the original names without art take survev's (provenance survevSpriteFixes)
+        const spriteFixes = new Set((provenance.survevSpriteFixes ?? []).map((c: any) => `${c.id}.${c.path}`));
         for (const [defs, list] of [
             [gameObjects, liveVsSurvev.gameObjects],
             [mapObjects, liveVsSurvev.mapObjects],
@@ -80,6 +82,7 @@ describe("original client values", () => {
                     if (diff.live === undefined) continue;
                     if (defs === mapObjects && mapGenFields.has(`${entry.id}.${diff.field.split(/[.[]/)[0]}`)) continue;
                     if (defs === gameObjects && gameplay.has(`${entry.id}.${diff.field.split(/[.[]/)[0]}`)) continue;
+                    if (defs === mapObjects && spriteFixes.has(`${entry.id}.${diff.field}`)) continue;
                     expect(get(defs[entry.id], diff.field), `${entry.id}.${diff.field}`).toEqual(JSON.parse(diff.live));
                     checked++;
                 }
@@ -133,7 +136,15 @@ describe.skipIf(!live)("generated defs equal the original client defs", () => {
                 expect(expected[c.field] ?? "absent", `${id}.${c.field}`).toEqual(c.original);
                 expected[c.field] = c.survev;
             }
-            expect(mapObjects[id], id).toEqual(expected);
+            // image fields the original names without art (provenance survevSpriteFixes)
+            const fixed = structuredClone(expected);
+            for (const c of (provenance.survevSpriteFixes ?? []).filter((f: any) => f.id === id)) {
+                const keys: string[] = c.path.split(".");
+                const parent = keys.slice(0, -1).reduce((o: any, k: string) => o[k], fixed);
+                expect(parent[keys[keys.length - 1]], `${id}.${c.path}`).toEqual(c.original);
+                parent[keys[keys.length - 1]] = c.survev;
+            }
+            expect(mapObjects[id], id).toEqual(fixed);
         }
     });
 

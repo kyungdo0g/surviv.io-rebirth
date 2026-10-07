@@ -203,6 +203,13 @@ may not touch, the schema number used and open questions.
   potatoMode maps (`match/faction.ts goldCrate`). Schema 17: the two map types take ids in survev order, map ids from
   `crate_17` (926 -> 927) on move up by one or two. Test: `faction.test.ts` "Potato vs Tomato: the gold drop and the
   comeback drop are the potato gold crate".
+- 3. Missing sprites: done; `pnpm assets` reports none. `map-crate-13x` (the snow air drops' opened image): neither
+  client ships it; survev opens them on `map-airdrop-02x`, which they now take for `button.useImg` only (new policy key
+  `survevSpriteFixes`, provenance `survevSpriteFixes`; the closed images stay the original's). `map-tire-01`,
+  `map-wall-glass-18`, `map-bathhouse-column-02`: their defs (`tire_01`, `glass_wall_18`, `bathhouse_column_2`) are never
+  spawned (no map, building, game object, sim or server code names them) and neither client has the image, so
+  `tools/assets/unspawned-defs.json` lists them and the import records them as drawing nothing without a warning;
+  `tools/assets/sources.test.ts` checks the list stays true.
 
 ## Changes needed in the lead's files
 

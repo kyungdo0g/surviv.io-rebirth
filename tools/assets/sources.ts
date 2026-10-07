@@ -106,6 +106,20 @@ export function collectSpriteRefs(value: unknown, out: Set<string>): void {
     }
 }
 
+/** Every string and object key under `value` (ids a def names: spawns, children, weights, outfit obstacle types). */
+export function collectNames(value: unknown, out: Set<string>): void {
+    if (typeof value === "string") {
+        out.add(value);
+    } else if (Array.isArray(value)) {
+        for (const v of value) collectNames(v, out);
+    } else if (value && typeof value === "object") {
+        for (const [k, v] of Object.entries(value)) {
+            out.add(k);
+            collectNames(v, out);
+        }
+    }
+}
+
 /** Number from an SVG length ("144", "144px", "38.1pt"); undefined for relative units. */
 function svgLength(v: string | undefined): number | undefined {
     const m = v && /^\s*([\d.]+)\s*(px|pt)?\s*$/.exec(v);

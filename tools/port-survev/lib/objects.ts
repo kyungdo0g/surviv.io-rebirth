@@ -299,6 +299,43 @@ export function applySurvevMapGenFields(
     return changes;
 }
 
+export interface SpriteFix {
+    id: string;
+    path: string;
+    original: unknown;
+    survev: unknown;
+}
+
+/**
+ * Policy `survevSpriteFixes`: listed image fields of original map objects take survev's value (the original names an
+ * image neither client ships; survev's same def names the art it draws). Presentation otherwise stays the original's.
+ */
+export function applySurvevSpriteFixes(
+    defs: Record<string, any>,
+    status: Readonly<Record<string, MapObjectStatus>>,
+    survev: Readonly<Record<string, any>>,
+    fixes: Readonly<Record<string, readonly string[]>>,
+): SpriteFix[] {
+    const out: SpriteFix[] = [];
+    const at = (o: any, keys: string[]) => keys.reduce((v, k) => (v == null ? undefined : v[k]), o);
+    for (const [id, paths] of Object.entries(fixes)) {
+        if (status[id] !== "original" || !(id in survev))
+            throw new Error(`policy.json survevSpriteFixes: ${id} is not an original map object survev defines`);
+        for (const path of paths) {
+            const keys = path.split(".");
+            const value = at(survev[id], keys);
+            const original = at(defs[id], keys);
+            if (typeof value !== "string" || !value.endsWith(".img") || value === original)
+                throw new Error(`policy.json survevSpriteFixes: ${id}.${path} is not a different survev image`);
+            const parent = at(defs[id], keys.slice(0, -1));
+            if (!isPlainObject(parent)) throw new Error(`policy.json survevSpriteFixes: ${id}.${path} has no parent`);
+            parent[keys[keys.length - 1]] = value;
+            out.push({ id, path, original: original ?? "absent", survev: value });
+        }
+    }
+    return out;
+}
+
 export interface GameConfigPort {
     config: Record<string, any>;
     diffs: KeyDiff[];

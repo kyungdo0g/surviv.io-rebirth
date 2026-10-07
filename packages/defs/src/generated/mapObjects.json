@@ -7340,7 +7340,7 @@
         "x": -1,
         "y": 0
       },
-      "useImg": "map-crate-13x.img",
+      "useImg": "map-airdrop-02x.img",
       "useParticle": "airdropCrate01x",
       "sound": {
         "on": "airdrop_open_01",
@@ -7424,7 +7424,7 @@
         "x": -1,
         "y": 0
       },
-      "useImg": "map-crate-13x.img",
+      "useImg": "map-airdrop-02x.img",
       "useParticle": "airdropCrate01x",
       "sound": {
         "on": "airdrop_open_01",

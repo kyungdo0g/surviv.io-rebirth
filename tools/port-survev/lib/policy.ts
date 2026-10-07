@@ -23,6 +23,11 @@ export interface PortPolicy {
      */
     survevServerMapObjects: string[];
     /**
+     * original map object id -> dot paths of image fields that take survev's value: the original names an image no
+     * client ships and survev's same def names the art it draws (the snow air drops' opened image)
+     */
+    survevSpriteFixes: Record<string, string[]>;
+    /**
      * survev balance (survev content wave stage 5, design option B): no balance revert and no event-map fixes; the
      * original game objects take survev's gameplay fields (lib/objects.ts SURVEV_GAMEPLAY_FIELDS), presentation stays
      */
@@ -33,6 +38,13 @@ const stringList = (v: unknown, what: string): string[] => {
     if (!Array.isArray(v) || !v.every((x) => typeof x === "string"))
         throw new Error(`policy.json: ${what} must list strings`);
     return v;
+};
+
+const spriteFixes = (v: unknown): Record<string, string[]> => {
+    if (!isPlainObject(v)) throw new Error("policy.json: survevSpriteFixes must map ids to path lists");
+    return Object.fromEntries(
+        Object.entries(v).map(([id, paths]) => [id, stringList(paths, `survevSpriteFixes.${id}`)]),
+    );
 };
 
 /** Parses and checks a policy object (unknown keys other than `$comment` are errors, so typos never pass). */
@@ -46,6 +58,7 @@ export function parsePolicy(raw: unknown): PortPolicy {
         "survevMapGen",
         "survevMapObjects",
         "survevServerMapObjects",
+        "survevSpriteFixes",
         "survevBalance",
     ]);
     const unknown = Object.keys(raw).filter((k) => !known.has(k));
@@ -61,6 +74,7 @@ export function parsePolicy(raw: unknown): PortPolicy {
         survevMapGen: raw.survevMapGen === true,
         survevMapObjects: stringList(raw.survevMapObjects ?? [], "survevMapObjects"),
         survevServerMapObjects: stringList(raw.survevServerMapObjects ?? [], "survevServerMapObjects"),
+        survevSpriteFixes: spriteFixes(raw.survevSpriteFixes ?? {}),
         survevBalance: raw.survevBalance === true,
     };
     for (const key of ["survevMapGen", "survevBalance"] as const) {

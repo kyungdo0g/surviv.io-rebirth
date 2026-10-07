@@ -21,6 +21,7 @@ import {
 import {
     applySurvevGameplay,
     applySurvevMapGenFields,
+    applySurvevSpriteFixes,
     objectPaths,
     portGameConfig,
     portGameObjects,
@@ -153,6 +154,14 @@ const mapGenFields = policy.survevMapGen
     ? applySurvevMapGenFields(mapObjects.defs, mapObjects.status, survev.mapObjects)
     : [];
 
+// image fields the original names without art: survev's image (policy survevSpriteFixes)
+const spriteFixes = applySurvevSpriteFixes(
+    mapObjects.defs,
+    mapObjects.status,
+    survev.mapObjects,
+    policy.survevSpriteFixes,
+);
+
 // 6. GameConfig: original client wins, survev supplies server constants
 const gameConfig = portGameConfig(live.gameConfig, survev.gameConfig, gameObjects.defs, policy.survevGameConfig);
 
@@ -179,6 +188,7 @@ const provenance = {
     eventMapFixes,
     survevPlacements,
     survevMapGenFields: mapGenFields,
+    survevSpriteFixes: spriteFixes,
     survevValues,
     survevMapValues,
     lootRemovals: [...lootRemovals, ...mapObjects.lootRemovals, ...roleOverrideRemovals],
