@@ -7,15 +7,20 @@
 // against an enemy rushing in, and not in a brawl. When the target drops out of sight it holds the last-seen angle
 // from cover for a few seconds instead of walking into it, and with no line of fire it flanks around the obstacle
 // instead of walking at the target. Every state has a hard cap (hide 7 s, peek 4 s, one cover session 20 s, holding an
-// angle 3 s) so the bot never camps.
+// angle 3 s) so the bot never camps. Round 3 (user report 19: "use trees/stones/walls/crates as cover in fights: hide,
+// peek, return"): in an exchange at range with cover a few steps away the bot also trades from it when the trade is
+// even (the difficulty's coverChance roll of the engagement, never a rusher), with shorter hides (0.35-0.8 s: just
+// long enough to break the enemy's aim) so the time spent hidden costs little damage output.
 import { type Vec2, v2 } from "@rebirth/core";
 import { Input } from "@rebirth/defs";
 import { fightSlot, type HeldGun } from "../knowledge/arsenal.ts";
 import type { Contact } from "../perception/world.ts";
 import { ADVANTAGE_BAND, faces, pushAdvantageOf } from "./assess.ts";
-import { findCover, findCoverFrom } from "./combat.ts";
+import { findCover, findCoverFrom, heldSlot, returningFire } from "./combat.ts";
 import { type BrainCtx, type Intent, nearFailedGoal, reachable } from "./context.ts";
+import { lostAim } from "./lostTarget.ts";
 import type { SmartMemory } from "./smartMemory.ts";
+import { burned } from "./stillHit.ts";
 import { healItem } from "./survival.ts";
 
 /** Cover spots this close are worth taking before the shooting starts... */
@@ -24,6 +29,8 @@ const COVER_DIST = 10;
 const ENGAGED_COVER = 4;
 const HIDE_MIN = 0.6;
 const HIDE_MAX = 1.5;
+/** Hides of an even trade from cover (round 3). */
+const HIDE_TRADE: [number, number] = [0.35, 0.8];
 const HIDE_CAP = 7;
 const BURST_MIN = 0.9;
 const BURST_MAX = 1.8;
@@ -55,6 +62,21 @@ function enter(sm: SmartMemory, state: "hide" | "peek", now: number, until: numb
     sm.cover = state;
     sm.coverStateSince = now;
     sm.coverStateUntil = until;
+}
+
+/** A hide's length: short in an even trade from cover, else HIDE_MIN..HIDE_MAX. */
+function hideFor(ctx: BrainCtx): number {
+    const [lo, hi] = ctx.mem.fight.tradeSession ? HIDE_TRADE : [HIDE_MIN, HIDE_MAX];
+    return ctx.rng.range(lo, hi);
+}
+
+/**
+ * An even trade worth fighting from cover (round 3 item 19): an exchange is on with the target, the engagement rolled
+ * for cover (DifficultyParams.coverChance) and the bot is no rusher. The session itself still needs cover within a few
+ * steps (ENGAGED_COVER) and an enemy that is not close or rushing in.
+ */
+function coverTrade(ctx: BrainCtx, t: Contact): boolean {
+    return ctx.mem.useCover && ctx.persona.name !== "rusher" && returningFire(ctx, t);
 }
 
 /**
@@ -109,7 +131,8 @@ export function planCoverPeek(ctx: BrainCtx, intent: Intent, gun: HeldGun): bool
     // peeking pays only in a trade the bot loses in the open (duels against the baseline: in an even one the time
     // spent hidden costs more damage than the cover saves); reloading and healing always go behind cover
     const losing = adv < -ADVANTAGE_BAND;
-    if (now < sm.coverCooldown || t.downed || !inReach || (!losing && !needReload && !needHeal)) {
+    const trade = !losing && coverTrade(ctx, t);
+    if (now < sm.coverCooldown || t.downed || !inReach || (!losing && !trade && !needReload && !needHeal)) {
         endCover(sm);
         return false;
     }
@@ -125,14 +148,16 @@ export function planCoverPeek(ctx: BrainCtx, intent: Intent, gun: HeldGun): bool
             me,
             t.pos,
             reach + 4,
-            (p) => v2.distance(p, me) <= reach && reachable(ctx, p, 1) && !nearFailedGoal(ctx, p),
+            (p) => v2.distance(p, me) <= reach && reachable(ctx, p, 1) && !nearFailedGoal(ctx, p) && !burned(ctx, p),
         );
         if (!spot) return false;
         sm.coverTarget = t.id;
         sm.coverSince = now;
         sm.coverSpot = spot;
         sm.peekSpot = null;
-        enter(sm, "hide", now, now + rng.range(HIDE_MIN, HIDE_MAX));
+        mem.fight.tradeSession = trade && !needReload && !needHeal;
+        if (mem.fight.tradeSession) mem.fight.trace.add(now, "cover", `trade ${t.id} d ${d.toFixed(0)}`);
+        enter(sm, "hide", now, now + hideFor(ctx));
     }
     if (now - sm.coverSince > SESSION_CAP) {
         sm.coverCooldown = now + COOLDOWN;
@@ -140,13 +165,13 @@ export function planCoverPeek(ctx: BrainCtx, intent: Intent, gun: HeldGun): bool
         return false;
     }
     // the spot must still shield from where the target stands now
-    if (!sm.coverSpot || model.lineOfFire(t.pos, sm.coverSpot)) {
+    if (!sm.coverSpot || model.bodyLineOfFire(t.pos, sm.coverSpot) || burned(ctx, sm.coverSpot)) {
         const spot = findCoverFrom(
             model,
             me,
             t.pos,
             ENGAGED_COVER + 4,
-            (p) => v2.distance(p, me) <= ENGAGED_COVER && reachable(ctx, p, 1),
+            (p) => v2.distance(p, me) <= ENGAGED_COVER && reachable(ctx, p, 1) && !burned(ctx, p),
         );
         if (!spot) {
             endCover(sm);
@@ -167,7 +192,8 @@ export function planCoverPeek(ctx: BrainCtx, intent: Intent, gun: HeldGun): bool
             intent.arriveDist = 0.5;
         }
         // hidden from an enemy closing in: have the gun for where it will show up in hand
-        if (!intent.fire && d < 18 && closing > 1) intent.slot = fightSlot(self, ctx.guns, Math.max(3, d * 0.5));
+        if (!intent.fire && d < 18 && closing > 1)
+            intent.slot = heldSlot(ctx, fightSlot(self, ctx.guns, Math.max(3, d * 0.5)));
         if (arrived && !model.lineOfFire(t.pos, me) && self.action.type === "none") {
             if (gun.mag < maxClip && gun.reserve > 0 && now - mem.lastReloadRequest > 1) {
                 mem.lastReloadRequest = now;
@@ -195,10 +221,14 @@ export function planCoverPeek(ctx: BrainCtx, intent: Intent, gun: HeldGun): bool
         enter(sm, "peek", now, Number.POSITIVE_INFINITY);
     }
     const peek = sm.peekSpot ?? spot;
-    const atPeek = v2.distance(me, peek) < 0.8;
+    // (standing short of the spot can leave the stone between: on it means a line of fire from where it stands)
+    const atPeek = v2.distance(me, peek) < 0.8 && (model.lineOfFire(me, t.pos) || v2.distance(me, peek) < 0.25);
     if (atPeek) {
         intent.stop = true;
         if (!Number.isFinite(sm.coverStateUntil)) sm.coverStateUntil = now + rng.range(BURST_MIN, BURST_MAX);
+    } else if (v2.distance(me, peek) < 0.8) {
+        // the last step straight onto the spot (the path follower counts a step this short as arrived)
+        intent.moveDir = v2.normalizeSafe(v2.sub(peek, me));
     } else {
         intent.goal = v2.copy(peek);
         intent.arriveDist = 0.4;
@@ -216,7 +246,7 @@ export function planCoverPeek(ctx: BrainCtx, intent: Intent, gun: HeldGun): bool
     const hurt = model.lastHurt > sm.coverStateSince + 0.15 && self.health < sm.peekHealth - PEEK_HURT;
     const aimedAt = faces(t, me, 10) && now - t.lastShotAt < 0.5 && stateTime > BURST_MIN;
     if (now >= sm.coverStateUntil || hurt || aimedAt || gun.mag <= 0 || stateTime > PEEK_CAP) {
-        enter(sm, "hide", now, now + rng.range(HIDE_MIN, HIDE_MAX));
+        enter(sm, "hide", now, now + hideFor(ctx));
     }
     return true;
 }
@@ -278,7 +308,7 @@ export function holdLostAngle(ctx: BrainCtx, intent: Intent, t: Contact): boolea
     }
     if (now - sm.holdAngleSince > HOLD_ANGLE_CAP) return false;
     const me = ctx.self.pos;
-    const keep = sm.coverSpot && v2.distance(sm.coverSpot, me) < 3 && !model.lineOfFire(t.pos, sm.coverSpot);
+    const keep = sm.coverSpot && v2.distance(sm.coverSpot, me) < 3 && !model.bodyLineOfFire(t.pos, sm.coverSpot);
     const spot = keep ? sm.coverSpot : findCover(model, t.pos, 6);
     if (spot && v2.distance(spot, me) > 0.6) {
         intent.goal = v2.copy(spot);
@@ -286,8 +316,10 @@ export function holdLostAngle(ctx: BrainCtx, intent: Intent, t: Contact): boolea
     } else {
         intent.stop = true;
     }
-    intent.aim = v2.copy(t.pos);
-    intent.lookAt = v2.copy(t.pos);
+    // the spot it vanished at (a door, a bush, the screen edge: lostTarget.ts), not a point behind it
+    const vanished = lostAim(ctx, t);
+    intent.aim = vanished;
+    intent.lookAt = v2.copy(vanished);
     intent.fire = false;
     return true;
 }

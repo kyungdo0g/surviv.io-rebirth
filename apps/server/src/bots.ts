@@ -4,12 +4,34 @@
 // window is open. Bots are ordinary players (names from a Korean/English list, auto-fill groups in team modes), driven
 // by @rebirth/bots through their own snapshots with a seeded random stream. They never hold a game open: rooms count
 // only human seats, so a game whose humans all left closes as usual, and the match ends by the normal rules.
-import { BotController, DIFFICULTIES, type Difficulty, pickBotName } from "@rebirth/bots";
+//
+// Population (bot overhaul POPULATION-5): BOT_DIFFICULTY "mixed" (the default) draws each bot's skill tier from a
+// shuffle bag of 20 in the BOT_SKILL_MIX proportions (35 / 45 / 20 beginner / intermediate / expert: 7 / 9 / 4), and
+// with BOT_PERSONAS on its persona from a bag of 50 in the persona mix, so small lobbies get the mix too. Each bot then
+// draws its own skill inside the tier band from its own seed. A tier name puts every bot in that tier; the legacy
+// presets easy / normal / hard keep their fixed parameters. The bags use their own rng: bot names and seeds stay as
+// before.
+import {
+    BotController,
+    DEFAULT_SKILL_MIX,
+    type DifficultySetting,
+    isSkillTier,
+    PERSONA_MIX,
+    type PersonaName,
+    pickBotName,
+    type SkillTierName,
+    shuffleBag,
+} from "@rebirth/bots";
 import { createRng, type Rng } from "@rebirth/core";
 import { getMapDef } from "@rebirth/defs";
 import type { Game } from "@rebirth/sim";
 
-export type BotDifficultySetting = Difficulty | "mixed";
+/** BOT_DIFFICULTY: a legacy preset, a skill tier, or "mixed" (the tier mix of BOT_SKILL_MIX). */
+export type BotDifficultySetting = DifficultySetting | "mixed";
+
+/** Shuffle bag sizes: 20 tiers (35/45/20 is exactly 7/9/4), 50 personas (22/30/14/10/14/10 is 11/15/7/5/7/5). */
+export const SKILL_BAG = 20;
+export const PERSONA_BAG = 50;
 
 export interface BotFillOptions {
     /** players the game should hold (humans + bots) */
@@ -19,6 +41,10 @@ export interface BotFillOptions {
     joinIntervalTicks: number;
     /** seed of the bots' names and random streams */
     seed: number;
+    /** tier weights of "mixed" (default DEFAULT_SKILL_MIX: 35 / 45 / 20) */
+    skillMix?: Readonly<Record<SkillTierName, number>>;
+    /** give fill bots personas (default true; false: every bot is the neutral persona) */
+    personas?: boolean;
     /** called once when a bot throws (its control is dropped; the player idles) */
     onError?: (err: unknown) => void;
 }
@@ -32,6 +58,10 @@ export class BotFill {
     private readonly botIds = new Set<number>();
     private readonly names = new Set<string>();
     private readonly rng: Rng;
+    /** the population bags' own stream (tiers and personas), apart from the names */
+    private readonly bagRng: Rng;
+    private skillBag: SkillTierName[] = [];
+    private personaBag: PersonaName[] = [];
     private readonly modeMaxPlayers: number;
     private nextJoinTick = 0;
     private added = 0;
@@ -42,6 +72,7 @@ export class BotFill {
         this.game = game;
         this.options = options;
         this.rng = createRng(options.seed ^ 0x2c1b3c6d);
+        this.bagRng = createRng(options.seed ^ 0x1b873593);
         this.modeMaxPlayers = getMapDef(game.options.mapName).gameMode.maxPlayers;
         for (const p of game.players()) this.names.add(p.name);
     }
@@ -59,6 +90,11 @@ export class BotFill {
 
     isBot(playerId: number): boolean {
         return this.botIds.has(playerId);
+    }
+
+    /** The controller of a bot still controlled (its Bot carries the skill profile and persona), else undefined. */
+    controller(playerId: number): BotController | undefined {
+        return this.controllers.get(playerId);
     }
 
     /** Players in the game: humans and bots, alive, dead or disconnected (removed players excluded). */
@@ -96,13 +132,29 @@ export class BotFill {
         this.nextJoinTick = game.tick + this.options.joinIntervalTicks;
     }
 
+    /** The next tier of the "mixed" population (a refilled shuffle bag). */
+    private nextTier(): SkillTierName {
+        if (this.skillBag.length === 0)
+            this.skillBag = shuffleBag(this.bagRng, SKILL_BAG, this.options.skillMix ?? DEFAULT_SKILL_MIX);
+        return this.skillBag.pop() ?? "intermediate";
+    }
+
+    /** The next persona (a refilled shuffle bag). */
+    private nextPersona(): PersonaName {
+        if (this.personaBag.length === 0) this.personaBag = shuffleBag(this.bagRng, PERSONA_BAG, PERSONA_MIX);
+        return this.personaBag.pop() ?? "neutral";
+    }
+
     private addBot(): void {
         const { difficulty, seed } = this.options;
-        const d = difficulty === "mixed" ? DIFFICULTIES[this.added % DIFFICULTIES.length] : difficulty;
         const teamMode = this.game.options.teamMode ?? 1;
+        const legacy = difficulty !== "mixed" && !isSkillTier(difficulty) ? difficulty : undefined;
+        const skill = difficulty === "mixed" ? this.nextTier() : isSkillTier(difficulty) ? difficulty : undefined;
+        const persona = this.options.personas !== false ? this.nextPersona() : undefined;
         const bot = BotController.spawn(this.game, {
             name: pickBotName(this.rng, this.names),
-            difficulty: d,
+            ...(legacy !== undefined ? { difficulty: legacy } : { skill }),
+            ...(persona !== undefined ? { persona } : {}),
             seed: (seed + this.added * 7919) >>> 0,
             addOptions: teamMode > 1 ? { autoFill: true, partySize: 1 } : undefined,
         });

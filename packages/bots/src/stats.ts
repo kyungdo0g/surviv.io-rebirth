@@ -106,6 +106,29 @@ export class MatchStats implements CombatObserver {
     }
 }
 
+/**
+ * One observer that notifies each of `observers` in order (the host's own and the read-only metrics probes of a
+ * match); null when there are none, the observer itself when there is one.
+ */
+export function fanOut(observers: ReadonlyArray<CombatObserver | null | undefined>): CombatObserver | null {
+    const list = observers.filter((o): o is CombatObserver => !!o);
+    if (list.length <= 1) return list[0] ?? null;
+    return {
+        onShotFired: (shooter, weaponType, bullets) => {
+            for (const o of list) o.onShotFired?.(shooter, weaponType, bullets);
+        },
+        onBulletHitPlayer: (bullet, target) => {
+            for (const o of list) o.onBulletHitPlayer?.(bullet, target);
+        },
+        onPlayerDamaged: (target, params, amount, headshot) => {
+            for (const o of list) o.onPlayerDamaged?.(target, params, amount, headshot);
+        },
+        onPlayerKilled: (victim, params, credit) => {
+            for (const o of list) o.onPlayerKilled?.(victim, params, credit);
+        },
+    };
+}
+
 export interface Finish {
     /** 1 for the last one standing; players dying on the same tick share a place, the living all share 1 */
     placement: number;

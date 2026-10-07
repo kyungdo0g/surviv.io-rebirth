@@ -130,6 +130,8 @@ export class GameRoom {
                 ? new BotFill(this.game, {
                       target: botTarget,
                       difficulty: config.botDifficulty,
+                      skillMix: config.botSkillMix,
+                      personas: config.botPersonas,
                       joinIntervalTicks: Math.round((config.botFillIntervalMs / 1000) * TICK_HZ),
                       seed: seed >>> 0,
                       onError: (err) => {
