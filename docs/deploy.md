@@ -33,6 +33,14 @@ buttons and the party lobby).
 `pnpm survev:fetch` clones survev at the pinned commit into `.survev` and extracts the original client definitions
 into `research-cache/` (needs git and network access to github.com and surviv.io).
 
+The owner's art and sound for the new guns (beta) live in the gitignored `assets-user/`: the line-art sheets in
+`assets-user/source/2026-10-07-sheets/` and the recorded clips in `assets-user/audio/guns/` (see its `MANIFEST.md`).
+`pnpm assets` installs them last (`tools/assets/newGuns.ts`): it cuts each gun's loot icon out of the sheets (label
+removed, white background made transparent, fitted like the original icons; reading the WebP sheets needs `ffmpeg` and
+`ffprobe` on the PATH) and copies the clips; whatever is missing falls back to an original gun's icon or sound, so the
+game never shows a placeholder for them. After adding or changing files there, `node tools/assets/newGuns.ts`
+reinstalls just those. The guns are held as plain bars until top-down sprites (`gun-<id>-01`) exist.
+
 ## Docker
 
 ```sh
@@ -56,7 +64,8 @@ a volume for reports, bans and flags).
 
 The original art is **never** copied from the build context (`.dockerignore` excludes `apps/client/public/assets`, so
 a developer checkout with art still produces an image without it). `WITH_ORIGINAL_ASSETS=1` fetches it inside the
-build; mind that the original art is not redistributable, so do not push such an image to a public registry.
+build (and installs `ffmpeg` there, so the new guns' loot icons are cut from `assets-user/` when the build context has
+it); mind that the original art is not redistributable, so do not push such an image to a public registry.
 
 Behind a TLS-intercepting proxy, build a base image that trusts your CA and pass it in:
 `docker build --build-arg NODE_IMAGE=my-node-with-ca:22 .` (the image must be Node 22.18+ on Debian; set
@@ -88,6 +97,7 @@ directory (`/app` in the image).
 | `FACTION_MAX_PLAYERS` | `100` | players per 50v50 game |
 | `AIRSTRIKE_VARIANTS` | `normal:60,heavy:25,carpet:15` | rebirth: roll weights of each scheduled 50v50 air strike zone's variant, `variant[:weight],...` (`normal` the v0.8.82 strike; `heavy` 5 heavy shells per plane with a 14-38 u blast over a zone 24 u larger; `carpet` 6 planes instead of 3-5, aiming over 1.4x the radius under a marker that covers every blast). Weights are plain decimals from 0 to 1000000; unlisted variants get 0, a variant without a weight gets 1; `normal` turns the variants off. Strobe strikes are always normal (docs/research/rebirth-deviations.md) |
 | `AIRDROP_TIERS` | `on` | rebirth: `on` makes every normal air drop a tier 1 or a tier 2 drop (the same grey shell; once opened its crate shows one silver star or two blue stars), early drops mostly tier 1 and late drops mostly tier 2, the gold drop as rare as in v0.8.82; `off` restores the v0.8.82 drops. Snow and savannah split their normal shells too; 50v50, Cobalt and every gold or special crate are unchanged (docs/research/rebirth-deviations.md "Air drop tiers") |
+| `GUN_BETA` | `off` | rebirth: `on` (or `1` / `true`, in any case) makes the owner's new guns (beta: AK-74 ... DShK, launchers included) and survev's Barrett M107, ASh-12, S&W 500, IMD-2 and SPAS-16 common floor loot on every map, so they can be found and tried: every gun the map allows lies on its floor at least twice, and they also take half of the floor gun rolls; the map's loot bans still hold (Savannah: no shotguns, LMGs or assault rifles; Woods: only shotguns, LMGs and launchers). The new guns' own placements (air drop tiers, gold drop) apply either way. Read when a game is created. In the dev sandbox the same is `/?beta=1`, and `/?give=<gun id>` gives any gun (docs/research/rebirth-deviations.md "New guns (beta)") |
 | `MAX_GAMES` | `16` | games this process runs at once (find_game answers 503 `full` beyond) |
 | `MIN_PLAYERS` | `2` | living players (groups in team modes) a game needs to start |
 | `GAME_OVER_GRACE_MS` | `1800` | a finished game closes this long after the winner is decided |

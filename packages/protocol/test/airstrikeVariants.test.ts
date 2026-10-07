@@ -94,7 +94,8 @@ describe("air strike variants on the wire", () => {
     });
 
     it("the heavy shell and its explosion serialize through the registry, after every generated type", () => {
-        expect(rebirthOnlyIds).toEqual(["bomb_heavy", "explosion_bomb_heavy"]);
+        // the shell and its explosion first; the rebirth's new guns follow them (newGuns.test.ts)
+        expect(rebirthOnlyIds.slice(0, 2)).toEqual(["bomb_heavy", "explosion_bomb_heavy"]);
         const firstRebirthId = GameObjectRegistry.typeToId("bomb_heavy");
         expect(GameObjectRegistry.idToType(firstRebirthId - 1)).not.toBe("explosion_bomb_heavy");
         expect(GameObjectRegistry.typeToId("explosion_bomb_heavy")).toBe(firstRebirthId + 1);

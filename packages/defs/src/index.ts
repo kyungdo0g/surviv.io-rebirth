@@ -2,11 +2,14 @@
 // the rebirth layer (rebirth/: user-requested deviations and rebirth-only defs, applied in data.ts).
 import { gameObjectsData, mapObjectsData, mapsData } from "./data.ts";
 import gameConfigJson from "./generated/gameConfig.json" with { type: "json" };
+import { gunBetaGuns, gunBetaLootTables } from "./rebirth/gunBeta.ts";
+import { applyNewAmmoConfig } from "./rebirth/newGuns.ts";
 import type {
     GameConfigDef,
     GameObjectDef,
     GameObjectDefOfType,
     GameObjectType,
+    LootTableEntry,
     MapDef,
     MapObjectDef,
     MapObjectDefOfType,
@@ -27,8 +30,11 @@ export const GameObjectDefs: Readonly<Record<string, GameObjectDef>> = gameObjec
 export const MapObjectDefs: Readonly<Record<string, MapObjectDef>> = mapObjectsData;
 /** generated map defs with the rebirth loot tables (air drop tiers) added */
 export const MapDefs: Readonly<Record<string, MapDef>> = mapsData;
-/** assigned without a cast: tsc checks gameConfig.json against GameConfigDef */
-export const GameConfig: GameConfigDef = gameConfigJson;
+/**
+ * gameConfig.json (passed without a cast: tsc checks it against GameConfigDef) with the rebirth's new ammo rows
+ * (bag sizes after .45 ACP, tracer colours; rebirth/newGuns.ts)
+ */
+export const GameConfig: GameConfigDef = applyNewAmmoConfig(gameConfigJson);
 
 export function hasDef(id: string): boolean {
     return Object.hasOwn(GameObjectDefs, id);
@@ -76,4 +82,39 @@ export function getMapDef(name: string): MapDef {
     const def = Object.hasOwn(MapDefs, name) ? MapDefs[name] : undefined;
     if (!def) throw new Error(`unknown map "${name}"`);
     return def;
+}
+
+/** Ammo of a gun id; undefined for anything that is not a gun. */
+export function gunAmmo(id: string): string | undefined {
+    const def = Object.hasOwn(GameObjectDefs, id) ? GameObjectDefs[id] : undefined;
+    return def?.type === "gun" ? def.ammo : undefined;
+}
+
+interface GunBetaMap {
+    tables: Readonly<Record<string, readonly LootTableEntry[]>>;
+    guns: readonly string[];
+}
+const betaMaps = new Map<string, GunBetaMap>();
+
+function gunBetaMap(mapName: string): GunBetaMap {
+    let beta = betaMaps.get(mapName);
+    if (!beta) {
+        const tables = getMapDef(mapName).lootTable;
+        beta = { tables: gunBetaLootTables(mapName, tables, gunAmmo), guns: gunBetaGuns(mapName, tables, gunAmmo) };
+        betaMaps.set(mapName, beta);
+    }
+    return beta;
+}
+
+/**
+ * A map's loot tables with the new-gun beta's floor rows (server GUN_BETA, SimRules.gunBeta; rebirth/gunBeta.ts),
+ * built once per map; throws for unknown names.
+ */
+export function getGunBetaLootTables(mapName: string): Readonly<Record<string, readonly LootTableEntry[]>> {
+    return gunBetaMap(mapName).tables;
+}
+
+/** The new-gun beta's guns a map allows, each laid GUN_BETA_FLOOR_COPIES times on its floor (rebirth/gunBeta.ts). */
+export function getGunBetaGuns(mapName: string): readonly string[] {
+    return gunBetaMap(mapName).guns;
 }

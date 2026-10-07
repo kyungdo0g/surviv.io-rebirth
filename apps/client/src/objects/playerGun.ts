@@ -1,10 +1,12 @@
 // A gun held in one hand: barrel sprite from GunDef.worldImg (anchored at its butt, pointing forward) plus the
 // optional magazine sprite drawn under or over it, offset from the hand like the original client
 // (survev client/src/objects/player.ts class Gun: hand offset (-4.25, -1.75), dual guns (-5.95, 0), + gunOffset).
+// The rebirth's beta new guns without top-down art hold a plain bar sized by their barrel length (heldGun.ts).
 import type { GunDef } from "@rebirth/defs";
 import { Container, type Sprite } from "pixi.js";
 import type { TextureStore } from "../assets/textures.ts";
 import type { SpritePool } from "../render/pool.ts";
+import { heldGunImage } from "./heldGun.ts";
 
 const HAND_OFFSET = { x: -4.25, y: -1.75 };
 const DUAL_HAND_OFFSET = { x: -5.95, y: 0 };
@@ -32,7 +34,7 @@ export class GunSprites {
 
     /** Shows `def`'s world image; `bodyScale` undoes the body container's scale so guns keep their size. */
     setType(def: GunDef, bodyScale: number, textures: TextureStore): void {
-        const img = def.worldImg;
+        const img = heldGunImage(def);
         const sx = (img.scale.x * 0.5) / bodyScale;
         const sy = (img.scale.y * 0.5) / bodyScale;
         textures.apply(this.barrel, img.sprite, Math.max(sx, sy));

@@ -23,6 +23,7 @@ import {
     isAirstrikeBomb,
     MapObjectDefs,
     MapObjectRegistry,
+    newGunDefs,
     rebirthDeviations,
     rebirthOnlyIds,
     rebirthOnlyMapObjectIds,
@@ -81,7 +82,8 @@ describe("rebirth balance deviations", () => {
 describe("rebirth-only defs", () => {
     it("come after every generated id (original, then survev-only), which keep their wire ids", () => {
         const generated = Object.keys(gameObjects);
-        expect(rebirthOnlyIds).toEqual(["bomb_heavy", "explosion_bomb_heavy"]);
+        // the air strike shell first, then the new guns with their ammo, bullets and explosions (rebirth/newGuns.ts)
+        expect(rebirthOnlyIds).toEqual(["bomb_heavy", "explosion_bomb_heavy", ...Object.keys(newGunDefs())]);
         expect(Object.keys(GameObjectDefs)).toEqual([...generated, ...rebirthOnlyIds]);
         expect(generated.map((id) => GameObjectRegistry.typeToId(id))).toEqual(generated.map((_, i) => i + 1));
         for (const id of rebirthOnlyIds) expect(Object.hasOwn(gameObjects, id)).toBe(false);

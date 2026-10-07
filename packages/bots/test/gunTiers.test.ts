@@ -94,7 +94,9 @@ describe("gun tiers", () => {
     }, 60_000);
 
     it("lists the ported survev-only guns, no unported post-0.8.82 gun; every other gun def is classed", () => {
-        for (const id of ["pkm", "m134", "m79"]) {
+        // the M79 arrived with the rebirth beta guns (a launcher: useless to bots for now)
+        expect(gunClassOf("m79")).toBe("useless");
+        for (const id of ["pkm", "m134"]) {
             expect(gunTier(id)).toBeUndefined();
             expect(hasDef(id)).toBe(false);
         }

@@ -160,10 +160,11 @@ export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupR
                     if (wm.weapons[idx].ammo <= 0) wm.scheduledReload = true;
                 }
             }
-            let newAmmo = 0;
+            // a single-use gun (rebirth `charges`) comes with the shots it has left (new-gun-stats.md 4.2)
+            let newAmmo = def.charges ? (loot.charges ?? def.charges) : 0;
             if (oldDef) {
                 // the magazine is kept only when a single pistol becomes its dual version
-                newAmmo = oldDef.dualWieldType === gunType ? wm.weapons[idx].ammo : 0;
+                if (oldDef.dualWieldType === gunType) newAmmo = wm.weapons[idx].ammo;
                 const becomesDual = !!oldDef.dualWieldType && wm.weapons[idx].type === loot.type;
                 if (!becomesDual) dropGun(ctx, player, idx);
             }

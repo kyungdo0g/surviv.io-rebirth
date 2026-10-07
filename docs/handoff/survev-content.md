@@ -162,7 +162,7 @@ may not touch, the schema number used and open questions.
   kits) puts a non-collidable copy of the obstacle over the wearer (`Obstacle.skinPlayerId`): it follows them, shows
   their health, takes no hits (`canDamageObstacle`, melee skip) and dies with them through the obstacle kill (loot and
   explosion: the Barrel Costume's barrel blows up). Snapshots show it exactly when its wearer is seen. Wire: the
-  obstacle record gains the original's static `isSkin` + `skinPlayerId` u16 (schema still 12, unreleased). Client:
+  obstacle record gains the original's static `isSkin` + `skinPlayerId` u16 (schema 13 since the merge of the base at 62930da). Client:
   drawn over the wearer at the wearer's interpolated position (`objects/world.ts anchorOf`, `objects/obstacle.ts`),
   no sight or aim-line blocking. Tests: `packages/sim/test/disguise.test.ts`, `packages/protocol/test/disguise.test.ts`,
   `tests/e2e/survev-disguise.spec.ts`. Lead patch: section 11.
@@ -306,6 +306,24 @@ the client's predicted bullets and melee hits still stop at it and chip it (a ba
 - `fx/effects.ts firstBlocker` and the melee obstacle list: skip `o.view.skinPlayerId !== undefined` (survev
   client player.ts:2353 `if (obstacle.dead || obstacle.isSkin) continue;`).
 
+### 12. New ammo bag rows need survev's fifth level (`packages/defs/src/rebirth/newGuns.json`, lead-owned)
+
+This branch takes survev's five-level `bagSizes` (stage 2, backpack04), but `newGuns.json` cuts the sheet's rows to
+four, so `packages/defs/test/gameConfig.test.ts` "bag sizes are survev's five levels" fails on `40mm` and a level-4
+pack holds only the level-3 amount (`Inventory.capacity` clamps to the last entry). Patch, the sheet's own five values
+(docs/design/new-gun-stats.md section 4.5):
+- `newGuns.json` `bagSizes`: `"40mm": [10, 20, 30, 40, 50]`, `"rocket": [4, 6, 8, 10, 12]`, `"57mm": [100, 200, 300,
+  400, 500]`; and the `newGuns.ts:32` comment ("cut to the game's four") becomes "the sheet's five pack sizes".
+
+### 13. Id shifts from the merge of the base at 62930da (schema 13)
+
+Every id keeps its relative order (original, then survev-only in survev order, then rebirth-only); the survev content
+wave's survev-only ids sit among the existing survev-only ones in survev order, so:
+- Game types: original ids 1-633 unchanged; the survev-only guns move (e.g. `explosion_potato_lmgshot` 634 -> 667,
+  11 ids in all); the rebirth-only ids move up by 77 (`bomb_heavy` 646 -> 723, the new guns beta after it); 798 of 1024.
+- Map types: original ids unchanged; 49 survev-only ids move (first `hut_wall_int_7` 837 -> 842); the rebirth-only ids
+  move up by 179 (`crate_10t1` 889 -> 1068); 1072 of 4096.
+
 ## Owner requests (2026-10-07, while stage 2 ran)
 
 - Buildings first: stage 3 is top priority. Go through every building of the survev.wiki.gg Buildings navbox
@@ -318,7 +336,7 @@ the client's predicted bullets and melee hits still stop at it and chip it (a ba
 
 ## Shared hotspots touched (minimal)
 
-- `packages/defs/src/registry.ts`: schema 12 + history line.
+- `packages/defs/src/registry.ts`: schema 13 + history line (11 hit feedback and 12 new guns beta are the lead's).
 - `packages/defs/src/index.ts`, `packages/defs/src/data.ts`: export and apply the survev wiki-spec layer.
 - `packages/defs/src/types/weapons.ts`: `MeleeDef.perk`, `ExplosionDef.healTeam / healAmount / dropRandomLoot`.
 - `packages/defs/test/helpers.ts` (`NOT_PORTED_IDS`), `packages/defs/test/survevGuns.test.ts` (policy pins now

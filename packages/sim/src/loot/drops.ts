@@ -5,6 +5,7 @@ import { math, type Vec2, v2 } from "@rebirth/core";
 import {
     GameObjectDefs,
     getDef,
+    getGunBetaLootTables,
     getMapDef,
     getMapObjectDef,
     hasMapObjectDef,
@@ -18,6 +19,7 @@ import type { SimContext } from "../world/context.ts";
 import { createMapEntity, type Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
+import { spawnGunBetaCopies } from "./gunBeta.ts";
 import { type RolledItem, rollLootList, rollTier } from "./lootTable.ts";
 
 /** Push speed of obstacle loot, divided by the item count when several drop (survev obstacle.ts kill). */
@@ -36,11 +38,16 @@ export function unknownLootTiers(): string[] {
     return [...warned].sort();
 }
 
+/** The map's loot tables, or their new-gun beta variant with rules.gunBeta (defs rebirth/gunBeta.ts). */
 function lootTables(ctx: SimContext): Readonly<Record<string, readonly LootTableEntry[]>> {
-    return getMapDef(ctx.world.mapData.mapName).lootTable;
+    const name = ctx.world.mapData.mapName;
+    return ctx.rules.gunBeta ? getGunBetaLootTables(name) : getMapDef(name).lootTable;
 }
 
-/** Rolls every map loot spawner once (survev map.ts genAuto loot_spawner: one roll per tier entry, no push). */
+/**
+ * Rolls every map loot spawner once (survev map.ts genAuto loot_spawner: one roll per tier entry, no push); the new-gun
+ * beta then lays its floor copies (loot/gunBeta.ts).
+ */
 export function spawnMapLoot(ctx: SimContext, spawns: readonly LootSpawn[]): void {
     const tables = lootTables(ctx);
     for (const spawn of spawns) {
@@ -65,6 +72,7 @@ export function spawnMapLoot(ctx: SimContext, spawns: readonly LootSpawn[]): voi
             });
         }
     }
+    if (ctx.rules.gunBeta) spawnGunBetaCopies(ctx, spawns, tables);
 }
 
 /** Loot of a smartLoot crate goes to the player who opened its shell if alive within this range (survev kill). */
@@ -178,6 +186,7 @@ export function playerDropLoot(
     type: string,
     count = 1,
     useCountForAmmo = false,
+    charges?: number,
 ): void {
     player.mobileDropTicker = MOBILE_DROP_PAUSE;
     ctx.loot.addLoot(type, player.pos, player.layer, count, {
@@ -185,17 +194,23 @@ export function playerDropLoot(
         pushSpeed: ctx.lootRng.range(7.5, 11),
         dir: v2.neg(player.dir),
         source: "player",
+        charges,
     });
 }
 
 /**
  * Drops the gun of a slot without clearing it: the magazine goes back into the bag, whatever does not fit drops
- * as the gun's side stacks; a dual gun drops as two singles (survev weaponManager.ts _dropGun).
+ * as the gun's side stacks; a dual gun drops as two singles (survev weaponManager.ts _dropGun). A single-use gun
+ * (rebirth `charges`) keeps its shots on the loot; a spent one drops nothing.
  */
 export function dropGunLoot(ctx: SimContext, player: Player, idx: number): void {
     const weapon = player.weaponManager.weapons[idx];
     const def = weapon.type ? getDef(weapon.type) : undefined;
     if (def?.type !== "gun" || def.noDrop) return;
+    if (def.charges) {
+        if (weapon.ammo > 0) playerDropLoot(ctx, player, weapon.type, 0, true, weapon.ammo);
+        return;
+    }
     let overflow = 0;
     if (!player.weaponManager.isInfinite(def) && isBagItem(def.ammo)) {
         overflow = player.inv.give(def.ammo, weapon.ammo).remaining;

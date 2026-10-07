@@ -1,5 +1,5 @@
-// Construction options of Game (tests, tools and the client's loopback) and the default start condition, kept apart
-// from game.ts so the simulation class stays readable. game.ts re-exports both.
+// Construction options of a Game (tests, tools, the client's loopback and the server's rooms) and the default start
+// condition, kept apart from game.ts so the simulation class stays readable; index.ts exports both.
 import type { GasStage } from "@rebirth/defs";
 import type { GenerateMapResult } from "./mapgen/generate.ts";
 
@@ -22,6 +22,8 @@ export interface GameInit {
     minPlayers?: number;
     /** gas stage table (default GameConfig.gas.stages; tools and tests use shorter ones) */
     gasStages?: readonly GasStage[];
+    /** rebirth new-gun beta (rules.gunBeta, server GUN_BETA): set before the map loot spawns (default false) */
+    gunBeta?: boolean;
 }
 
 /** Default start condition: two players (survev gameModeManager isGameStarted: cantDespawnAliveCount > 1). */

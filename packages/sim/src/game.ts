@@ -80,8 +80,6 @@ function playerInfo(p: Player): PlayerInfoView {
     return { playerId: p.id, teamId: p.teamId, groupId: p.groupId, name: p.name };
 }
 
-export { DEFAULT_MIN_PLAYERS, type GameInit };
-
 export class Game implements GameApi, SimContext {
     readonly options: GameOptions;
     readonly mapData: MapData;
@@ -200,6 +198,7 @@ export class Game implements GameApi, SimContext {
             minPlayers: init.minPlayers ?? DEFAULT_MIN_PLAYERS,
         });
         this.spectators = new SpectateSystem(this);
+        this.rules.gunBeta = init.gunBeta ?? false;
         if (init.spawnLoot ?? true) spawnMapLoot(this, this.generation.lootSpawns);
     }
 

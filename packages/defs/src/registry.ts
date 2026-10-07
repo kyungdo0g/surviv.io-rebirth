@@ -22,16 +22,18 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * potato_lmgshot take game type ids after the original ones and before the rebirth-only ones (bomb_heavy and
  * explosion_bomb_heavy move up by 16); every original id keeps its index. No record layout changed · 11: rebirth hit
  * feedback: the Update message's extended flag bit 9 announces a Hits section after FactionStatus (protocol hits.ts:
- * the hits the active player dealt or took, with amount, headshot, armour and the direction of hits taken) · 12: survev
- * content wave (tools/port-survev/policy.json): the survev-only melee iceaxe, cutlass, cutlass_gold, naginata_daemon
- * and karambit_borealis, the throwables coconut and tomato with explosion_coconut and explosion_tomato, and the pirate
- * perk take game type ids in survev order among the survev-only ones; the bag gains the coconut and tomato rows
+ * the hits the active player dealt or took, with amount, headshot, armour and the direction of hits taken) · 12: the
+ * rebirth new guns (beta, rebirth/newGuns.ts): the 40mm, rocket and 57mm ammo, the guns' bullets, explosions and the
+ * 40 mm grenade, then the 32 guns take game type ids after explosion_bomb_heavy; the three ammo join the bag after
+ * 45acp, so the inventory section (5) carries three more rows. No record layout changed otherwise · 13: survev content
+ * wave (tools/port-survev/policy.json): the survev-only melee iceaxe, cutlass, cutlass_gold, naginata_daemon and
+ * karambit_borealis, the throwables coconut and tomato with explosion_coconut and explosion_tomato, and the pirate perk
+ * take game type ids in survev order among the survev-only ones; the bag gains the coconut and tomato rows
  * (GameConfig.bagSizes order: two more inventory entries in the local player record); later stages of the wave add the
  * level-4 packs, role helmets, six perks and the captain / classless roles, then survev's outfits, emotes and heal /
- * boost effects (game type ids only, 722 of 1024); (still 12, unreleased) the obstacle record gains the original's
- * static isSkin bit + skinPlayerId u16 (obstacle disguises).
+ * boost effects; the obstacle record gains the original's static isSkin bit + skinPlayerId u16 (obstacle disguises).
  */
-export const PROTOCOL_SCHEMA_VERSION = 12;
+export const PROTOCOL_SCHEMA_VERSION = 13;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

@@ -1,6 +1,9 @@
 // Weapon slots, switching, fire modes, reloads and melee scheduling of one player.
 // Behaviour follows survev server/src/game/weaponManager.ts (setCurWeapIndex, setWeapon, gunUpdate, meleeUpdate,
 // tryReload, reload) and docs/research/items/guns.md "Shared firing, switching and reload rules".
+// Rebirth new guns (docs/design/new-gun-stats.md 4.2-4.3): single-use guns (`charges`) are never reloaded and leave
+// their slot fireDelay after the last shot (`discardWhenEmpty`); the DP-12 waits `pumpDelay` after every `pumpEvery`
+// shots.
 import { GameConfig, GameObjectDefs, type GunDef, getDef, hasDef, type MeleeDef, WeaponSlot } from "@rebirth/defs";
 import { isBagItem, THROWABLE_LIST } from "../items/inventory.ts";
 import { addPerk, removePerksWhere } from "../perks/perks.ts";
@@ -36,6 +39,8 @@ export interface WeaponSlotState {
     cooldown: number;
     /** first-shot accuracy timer: the next shot has no deviation once it reaches 0 */
     recoilTime: number;
+    /** rebirth pump guns (DP-12): shots since the last pump or reload (absent: 0) */
+    pumpShots?: number;
 }
 
 export function gunDef(type: string): GunDef | undefined {
@@ -88,8 +93,12 @@ export class WeaponManager {
         return this.player.animType === "cook";
     }
 
-    /** Equips a slot with the switch delay rules (survev setCurWeapIndex). */
-    setCurWeapIndex(idx: number, forceSwitch = false): void {
+    /**
+     * Equips a slot with the switch delay rules (survev setCurWeapIndex). `keepAction` (a switch the player did not
+     * ask for: a spent single-use gun leaving the slot) keeps the running action and its animation (heal, boost,
+     * revive), which a manual switch cancels.
+     */
+    setCurWeapIndex(idx: number, forceSwitch = false, keepAction = false): void {
         const player = this.player;
         if (!this.activeWeapon && !this.weapons[idx].type) {
             idx = WeaponSlot.Melee;
@@ -106,7 +115,7 @@ export class WeaponManager {
         // switching away while cooking drops the throwable at the feet (survev setCurWeapIndex)
         if (this.cooking && idx !== WeaponSlot.Throwable) throwThrowable(player.ctx, player, true);
 
-        player.cancelAnim();
+        if (!keepAction) player.cancelAnim();
         player.shotSlowdownTimer = 0;
         this.bursts.length = 0;
         this.meleeAttacks.length = 0;
@@ -142,7 +151,7 @@ export class WeaponManager {
 
         this.lastWeaponIdx = this.curWeapIdx;
         this.curWeapIdx = idx;
-        player.cancelAction();
+        if (!keepAction) player.cancelAction();
         player.wearingPan = this.weapons[WeaponSlot.Melee].type === "pan" && this.activeWeapon !== "pan";
         if (GameConfig.WeaponType[idx] === "gun" && this.weapons[idx].ammo <= 0) this.scheduledReload = true;
         if (GameConfig.WeaponType[idx] === "gun") this.offHand = false;
@@ -172,6 +181,7 @@ export class WeaponManager {
         if (newPerk && newPerk !== oldPerk) addPerk(player, newPerk, { fromGear: true });
         slot.type = type;
         slot.ammo = ammo;
+        if (slot.pumpShots) slot.pumpShots = 0;
         slot.cooldown = def?.type === "gun" || def?.type === "melee" ? def.switchDelay : 0;
         if (def?.type === "gun") slot.recoilTime = def.recoilTime;
         if (idx === this.curWeapIdx) this.bursts.length = 0;
@@ -216,6 +226,7 @@ export class WeaponManager {
         }
         for (let i = 0; i < this.bursts.length; i++) this.bursts[i] -= dt;
         for (let i = 0; i < this.meleeAttacks.length; i++) this.meleeAttacks[i] -= dt;
+        this.discardSpent();
         const def = getDef(this.activeWeapon || "fists");
         if (def.type === "gun") this.gunUpdate(ctx, def, dt);
         else if (def.type === "melee") this.meleeUpdate(ctx, def, dt);
@@ -239,14 +250,14 @@ export class WeaponManager {
         switch (def.fireMode) {
             case "auto":
                 if (player.shootHold && carry !== null) {
-                    fireGun(ctx, player, this.offHand, def.fireDelay + carry);
+                    if (fireGun(ctx, player, this.offHand, def.fireDelay + carry)) this.pump(def, weapon, carry);
                     this.offHand = !this.offHand;
                 }
                 break;
             case "single":
                 // one shot per click
                 if (player.shootStart && carry !== null) {
-                    fireGun(ctx, player, this.offHand, def.fireDelay + carry);
+                    if (fireGun(ctx, player, this.offHand, def.fireDelay + carry)) this.pump(def, weapon, carry);
                     this.offHand = !this.offHand;
                 }
                 break;
@@ -268,6 +279,35 @@ export class WeaponManager {
                 }
                 break;
             }
+        }
+    }
+
+    /**
+     * Rebirth pump guns (DP-12, new-gun-stats.md 4.3): after every `pumpEvery`-th shot the next one waits `pumpDelay`
+     * (0.2 s between the barrels, 0.7 s pump: two shots per 0.9 s). Switching away keeps the count; a reload resets it.
+     */
+    private pump(def: GunDef, weapon: WeaponSlotState, carry: number): void {
+        if (!def.pumpEvery) return;
+        weapon.pumpShots = (weapon.pumpShots ?? 0) + 1;
+        if (weapon.pumpShots < def.pumpEvery) return;
+        weapon.pumpShots = 0;
+        weapon.cooldown = (def.pumpDelay ?? def.fireDelay) + carry;
+    }
+
+    /**
+     * Rebirth single-use guns (Boys, Panzerfaust, M202; new-gun-stats.md 4.2): an empty `discardWhenEmpty` gun leaves
+     * its slot once its cooldown (the last shot's fireDelay, or a switch delay) has run out; nothing drops. The player
+     * then holds the other gun, or the melee weapon, without losing a heal, boost or revive started after the shot.
+     */
+    private discardSpent(): void {
+        for (const idx of [WeaponSlot.Primary, WeaponSlot.Secondary]) {
+            const slot = this.weapons[idx];
+            if (slot.ammo > 0 || slot.cooldown > TIME_EPS || !gunDef(slot.type)?.discardWhenEmpty) continue;
+            if (idx === this.curWeapIdx) {
+                const other = idx === WeaponSlot.Primary ? WeaponSlot.Secondary : WeaponSlot.Primary;
+                this.setCurWeapIndex(this.weapons[other].type ? other : WeaponSlot.Melee, true, true);
+            }
+            this.setWeapon(idx, "", 0);
         }
     }
 
@@ -305,7 +345,8 @@ export class WeaponManager {
         if (player.action.type !== "none") return false;
         if (this.curWeapIdx === WeaponSlot.Melee || this.curWeapIdx === WeaponSlot.Throwable) return false;
         const def = gunDef(this.activeWeapon);
-        if (!def) return false;
+        // rebirth single-use guns carry their shots and are never reloaded (new-gun-stats.md 4.2)
+        if (!def || def.charges) return false;
         let invAmmo = Number.POSITIVE_INFINITY;
         if (!this.isInfinite(def)) {
             // pseudo ammo outside the bag (9mm_cursed, bugle_ammo) is never reloaded from the inventory
@@ -349,6 +390,8 @@ export class WeaponManager {
         }
         weapon.ammo += amount;
         this.bursts.length = 0;
+        // a pump gun's reload leaves it ready for a fresh pair (new-gun-stats.md 4.3)
+        if (weapon.pumpShots) weapon.pumpShots = 0;
         return weapon.ammo < stats.maxClip && (infinite || player.inv.has(def.ammo));
     }
 }

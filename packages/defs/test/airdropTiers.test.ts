@@ -20,6 +20,10 @@ import {
     LOOT_BANS,
     type LootTableEntry,
     MapDefs,
+    NEW_GUN_TIER1,
+    NEW_GUN_TIER2,
+    SPAS16_TIER2_WEIGHT,
+    TIER1_ADDED_GUNS,
     TIER1_TIER2_SHARE,
     tieredAirdropCrates,
 } from "../src/index.ts";
@@ -30,7 +34,9 @@ import { mapObjects, maps } from "./helpers.ts";
  * (packages/bots/src/knowledge/gunTiers.ts ROWS, TIER_ORDER; "est." rows included), which @rebirth/defs cannot import.
  * The survev-only guns (tools/port-survev/policy.json) are not on that list yet: their ranks below are estimates from
  * their wiki stats (Barrett S-aim like the AWM-S, ASh-12 A+, SPAS-16 A like the Saiga-12, IMD-2 A- like the BAR,
- * S&W 500 B+), and the winter skins rank as their base guns.
+ * S&W 500 B+), and the winter skins rank as their base guns. The rebirth's new guns (rebirth/newGuns.ts) rank as the
+ * bot column of docs/design/survev-content-and-new-guns.md 4.1 estimates them (C+ 2, B- 3); the M200, added later,
+ * as the AWM-S it is balanced against (new-gun-stats.md 2.6).
  */
 // biome-ignore format: one tier per line
 const RANK: Readonly<Record<string, number>> = {
@@ -44,6 +50,16 @@ const RANK: Readonly<Record<string, number>> = {
     mosin: 4, scout_elite: 4, vss: 4, model94: 4, deagle: 4, ak47: 4, groza: 4, // B
     colt45: 1, // C
     m9: 0, // D
+    // the rebirth's new guns
+    rpg7: 10, mgl: 10, // S
+    hecate: 9, lynx: 9, m200: 9, // S-aim
+    aa12: 8, mk14: 8, dshk: 8, dp12: 8, m202: 8, mg42: 8, // A+
+    wa2000: 7, m79: 7, boys: 7, // A
+    m60: 6, asval: 6, m16a4: 6, fal: 6, sig550: 6, p90: 6, gl06: 6, honeybadger: 6, // A-
+    panzerfaust: 5, g3: 5, m1928: 5, // B+
+    ak74: 4, g36c: 4, bizon: 4, // B
+    tec9_dual: 3, vz61_dual: 3, // B-
+    tec9: 2, vz61: 2, // C+
 };
 const A = 7;
 const A_PLUS = 8;
@@ -213,14 +229,21 @@ describe("air drop tier tables", () => {
     it("main: tier 2 is today's normal drop without the MK12 / M39, tier 1 those DMRs, the low end and a few ground guns", () => {
         const t = getMapDef("main").lootTable;
         const names = (tier: string) => t[tier].map((e) => `${e.name}:${e.weight}`);
+        // the normal drop gets the new guns' tier 2 rows and the SPAS-16 first (rebirth/newGunLoot.ts)
+        const newTier2 = [
+            ...Object.entries(NEW_GUN_TIER2).map(([name, weight]) => ({ name, count: 1, weight })),
+            { name: "spas16", count: 1, weight: SPAS16_TIER2_WEIGHT },
+        ];
+        expect(t.tier_airdrop_uncommon).toEqual([...maps.main.lootTable.tier_airdrop_uncommon, ...newTier2]);
         // tier 2 is the v0.8.82 normal drop (the user: "today's normal drop is roughly tier 2") without the low-tier
         // DMRs the user named as tier 1 examples
         expect(t[AIRDROP_TIER2_TABLE]).toEqual(
-            maps.main.lootTable.tier_airdrop_uncommon.filter(
+            t.tier_airdrop_uncommon.filter(
                 (e: LootTableEntry) =>
                     !AIRDROP_TIER1_ONLY_GUNS.includes(e.name) && !AIRDROP_LOW_END_GUNS.includes(e.name),
             ),
         );
+        // the new guns' tier 1 rows join after the derivation, and the tier 2 roll is weighed again: (12.76 + 8) / 9
         expect(names(AIRDROP_TIER1_TABLE)).toEqual([
             "mk12:1.25",
             "m39:1.25",
@@ -233,12 +256,17 @@ describe("air drop tier tables", () => {
             "grozas:1",
             "dp28:0.75",
             "m870:0.5",
-            `${AIRDROP_TIER2_TABLE}:1.417778`,
+            ...Object.entries(NEW_GUN_TIER1).map(([name, weight]) => `${name}:${weight}`),
+            `${AIRDROP_TIER2_TABLE}:2.306667`,
         ]);
-        // the additions weigh less than the low end, so most tier 1 rolls are a low-end gun
-        const inUncommon = (e: LootTableEntry) => t.tier_airdrop_uncommon.some((u) => u.name === e.name);
-        const lowEnd = core(t[AIRDROP_TIER1_TABLE]).filter(inUncommon);
-        expect(total(lowEnd)).toBeGreaterThan(total(core(t[AIRDROP_TIER1_TABLE])) / 2);
+        // the ground guns added by the derivation weigh less than the low end (the new guns' rows come on top: the
+        // sheet's tier 1 band, 8 of 20.76)
+        const inUncommon = (e: LootTableEntry) =>
+            maps.main.lootTable.tier_airdrop_uncommon.some((u: LootTableEntry) => u.name === e.name);
+        const derived = core(t[AIRDROP_TIER1_TABLE]).filter((e) => !Object.hasOwn(NEW_GUN_TIER1, e.name));
+        const lowEnd = derived.filter(inUncommon);
+        expect(total(lowEnd)).toBeGreaterThan(total(derived) / 2);
+        expect(total(derived.filter((e) => Object.hasOwn(TIER1_ADDED_GUNS, e.name)))).toBeLessThan(total(lowEnd));
         // 10 % of tier 1 rolls roll tier 2 instead
         expect(t[AIRDROP_TIER1_TABLE].at(-1)!.weight / total(t[AIRDROP_TIER1_TABLE])).toBeCloseTo(TIER1_TIER2_SHARE, 6);
         // tier 1 armour: level 2, level 3 one time in three
@@ -252,7 +280,7 @@ describe("air drop tier tables", () => {
         ]);
         // the generated tables are untouched
         expect(maps.main.lootTable[AIRDROP_TIER1_TABLE]).toBeUndefined();
-        expect(t.tier_airdrop_uncommon).toEqual(maps.main.lootTable.tier_airdrop_uncommon);
+        expect(maps.main.lootTable.tier_airdrop_uncommon.map((e: LootTableEntry) => e.name)).not.toContain("m79");
     });
 
     it("every tiered map: tier 2 is its normal drop's guns without the tier 1 DMRs, and tier 1 is below tier 2", () => {
@@ -285,8 +313,10 @@ describe("air drop tier tables", () => {
             // tier 1 vs tier 2 follows the user's examples ("low-tier DMRs, SPAS-12, a bit above AK / Groza" vs
             // "SCAR-H, Vector"), not the bots' list, which ranks the MK12 / M39 A like the SCAR-H: tier 2's own guns
             // (all but its low-end filler) reach tier 1 only through its 10 % tier 2 roll
+            // (the sheet puts the M79 in both tiers: tier 1 0.5, tier 2 1; new-gun-stats.md section 5)
+            const bothTiers = (g: string) => Object.hasOwn(NEW_GUN_TIER1, g) && Object.hasOwn(NEW_GUN_TIER2, g);
             const tier2Own = t[AIRDROP_TIER2_TABLE].filter(
-                (e) => gunClass(e.name) && !AIRDROP_LOW_END_GUNS.includes(e.name),
+                (e) => gunClass(e.name) && !AIRDROP_LOW_END_GUNS.includes(e.name) && !bothTiers(e.name),
             );
             const tier1Core = new Set(core(t[AIRDROP_TIER1_TABLE]).map((e) => e.name));
             for (const e of tier2Own) expect(tier1Core.has(e.name), `${name} ${e.name}`).toBe(false);
@@ -331,8 +361,10 @@ describe("air drop tier tables", () => {
             expect(meanRank(tier2) + 0.5, name).toBeLessThan(meanRank(gold));
             // the top (S: M249, PKP; S-aim: AWM-S) is gold's: tier 2 has at most savannah's AWM-S 0.15
             expect(shareAtLeast(tier2, S_AIM), name).toBeLessThan(shareAtLeast(gold, S_AIM) / 4);
-            // the A-or-better share, or A+ where every gold gun is A or better (woods: USAS-12, M249, PKP)
-            const level = shareAtLeast(gold, A) > 0.99 ? A_PLUS : A;
+            // the A-or-better share, or A+ where every gold gun is A or better (woods: USAS-12, M249, PKP), and on
+            // savannah, whose sniper drop gains the new guns' A-rank snipers and launchers in tier 2 (MK14, WA2000,
+            // Boys, M79: new-gun-stats.md section 5), so its gold leads on the S-aim snipers and the gold launchers
+            const level = shareAtLeast(gold, A) > 0.99 || name === "savannah" ? A_PLUS : A;
             expect(shareAtLeast(tier2, level), name).toBeLessThan(shareAtLeast(gold, level));
         }
         // snow's gold drop has survev's winter AWM-S skin, not the AWM-S (survev/shared/defs/maps/snowDefs.ts:167)
@@ -358,14 +390,35 @@ describe("air drop tier tables", () => {
             const t = getMapDef(name).lootTable;
             const tier1 = core(t[AIRDROP_TIER1_TABLE]);
             const classes = new Set(tier1.filter((e) => gunClass(e.name)).map((e) => gunClass(e.name)));
-            expect([name, [...classes].sort()]).toEqual([name, ["lmg", "shotgun"]]);
+            // the new guns' launchers come out of air drops on every map (new-gun-stats.md section 5)
+            expect([name, [...classes].sort()]).toEqual([name, ["launcher", "lmg", "shotgun"]]);
             // the MIRV and strobe of woods' normal drop move to tier 1: a tier 2 crate always holds a gun (survev's
             // SPAS-16 sits in woods' normal drop, survev/shared/defs/maps/woodsDefs.ts:137)
             expect(tier1.filter((e) => !gunClass(e.name)).map((e) => e.name)).toEqual(["mirv", "strobe"]);
-            expect(t[AIRDROP_TIER2_TABLE].map((e) => e.name)).toEqual(["saiga", "spas16", "qbb97"]);
+            expect(t[AIRDROP_TIER2_TABLE].map((e) => e.name)).toEqual([
+                "saiga",
+                "spas16",
+                "qbb97",
+                "dp12",
+                "m79",
+                "m202",
+                "m60",
+                "mg42",
+            ]);
         }
         const sv = getMapDef("savannah").lootTable;
-        expect(core(sv[AIRDROP_TIER1_TABLE]).map((e) => e.name)).toEqual(["mk12", "m39", "m9", "mkg45", "vss", "l86"]);
+        expect(core(sv[AIRDROP_TIER1_TABLE]).map((e) => e.name)).toEqual([
+            "mk12",
+            "m39",
+            "m9",
+            "mkg45",
+            "vss",
+            "l86",
+            "fal",
+            "m79",
+            "gl06",
+            "panzerfaust",
+        ]);
         expect(sv[AIRDROP_TIER2_TABLE].map((e) => e.name)).toContain("scar");
         const desert = core(getMapDef("desert").lootTable[AIRDROP_TIER1_TABLE]).map((e) => e.name);
         expect(desert).toEqual(expect.arrayContaining(["model94", "colt45", "scout_elite"]));
@@ -381,6 +434,11 @@ describe("air drop tier tables", () => {
             "vss",
             "spas12",
             "m870",
+            "m1928",
+            "asval",
+            "m79",
+            "gl06",
+            "panzerfaust",
         ]);
     });
 });

@@ -15607,7 +15607,7 @@
   "eventMapFixes": [
     {
       "map": "savannah",
-      "reason": "loot bans: m870, m1100, mp220, saiga, spas12, m1014, usas, spas16, dp28, bar, m249, qbb97, pkp, imbel, ak47, an94, groza, grozas, famas, hk416, m4a1, ash12, vector, vector45, 2xscope"
+      "reason": "loot bans: m870, m1100, mp220, saiga, spas12, m1014, usas, spas16, dp12, aa12, dp28, bar, m249, qbb97, pkp, imbel, m60, mg42, dshk, ak47, an94, groza, grozas, famas, hk416, m4a1, ash12, ak74, g36c, m16a4, sig550, g3, honeybadger, vector, vector45, asval, p90, m1928, 2xscope"
     }
   ],
   "survevPlacements": [],

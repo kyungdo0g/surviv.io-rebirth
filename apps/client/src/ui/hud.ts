@@ -19,6 +19,7 @@ import "./hudSm.css";
 import "./hudSmBottom.css";
 import "./hudSmPortrait.css";
 import "./tooltip.css";
+import { AMMO_COLORS, EXTRA_AMMO_ROWS, syncExtraAmmoRow } from "./hudAmmo.ts";
 import { healthBarColor } from "./hudColors.ts";
 import { el, Patcher } from "./hudDom.ts";
 import { bindDrop, type DropRequest } from "./hudDrop.ts";
@@ -76,17 +77,6 @@ const MEDICAL_INPUT: Record<string, number> = {
     healthkit: Input.UseHealthKit,
     soda: Input.UseSoda,
     painkiller: Input.UsePainkiller,
-};
-/** ammo overlay colours of the original index.html (column order: uiLayout.ts ammoOrder) */
-const AMMO_COLORS: Readonly<Record<string, string>> = {
-    "50AE": "rgba(30, 30, 30, 0.75)",
-    "9mm": "rgba(255, 153, 0, 0.75)",
-    "308sub": "rgba(49, 56, 0, 0.75)",
-    "12gauge": "rgba(255, 0, 0, 0.75)",
-    flare: "rgba(255, 85, 0, 0.75)",
-    "762mm": "rgba(0, 102, 255, 0.75)",
-    "45acp": "rgba(121, 0, 255, 0.75)",
-    "556mm": "rgba(3, 123, 0, 0.75)",
 };
 const SCOPES = ["1xscope", "2xscope", "4xscope", "8xscope", "15xscope"] as const;
 const SLOT_INPUTS = [Input.EquipPrimary, Input.EquipSecondary, Input.EquipMelee, Input.EquipThrowable];
@@ -212,6 +202,10 @@ export class Hud {
             const item = this.items.get(type);
             if (item) this.ammoColumn.append(item.div);
         }
+        for (const type of EXTRA_AMMO_ROWS) {
+            const item = this.items.get(type);
+            if (item) syncExtraAmmoRow(this.ammoColumn, item.div, item.lastCount, true);
+        }
     }
 
     /** Hide UI: hides the whole HUD until shown again (survev ui.ts cycleHud). */
@@ -281,7 +275,7 @@ export class Hud {
             medical.append(div);
         }
         const ammo = this.ammoColumn;
-        for (const item of AMMO_ORDER_LANDSCAPE) {
+        for (const item of [...AMMO_ORDER_LANDSCAPE, ...EXTRA_AMMO_ROWS]) {
             const color = AMMO_COLORS[item];
             const count = el("div", { cls: "ui-loot-count" }, "0");
             const img = el("img", { cls: "ui-loot-image" });
@@ -296,7 +290,8 @@ export class Hud {
                 (r) => this.drop(r),
             );
             this.items.set(item, { div, count, pop: [img, overlay], lastCount: 0, ticker: 1 });
-            ammo.append(div);
+            // the rebirth's new ammo gets its row while carried (hudAmmo.ts)
+            if (!EXTRA_AMMO_ROWS.includes(item)) ammo.append(div);
         }
         return el("div", { id: "ui-right-center" }, medical, ammo);
     }
@@ -513,6 +508,9 @@ export class Hud {
             // the image pops when the count goes up (survev ui2.ts: not in the first frames, not on mobile)
             if (count > dom.lastCount) dom.ticker = 0;
             if (this.frames < 2) dom.ticker = 1;
+            if (count !== dom.lastCount && EXTRA_AMMO_ROWS.includes(item)) {
+                syncExtraAmmoRow(this.ammoColumn, dom.div, count);
+            }
             dom.lastCount = count;
             dom.ticker += dt;
             const pop = itemPopScale(dom.ticker, this.layout.mobile);
