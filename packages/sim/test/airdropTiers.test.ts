@@ -204,8 +204,14 @@ describe("air drop tiers (rebirth)", () => {
         expect(kinds("savannah", 1)).toEqual(
             new Set(["airdrop_crate_01sv:crate_10svt1", "airdrop_crate_01sv:crate_10svt2", "airdrop_crate_02sv:"]),
         );
+        // desert's crimson air drop (survev content wave stage 3) is a special crate: never split
         expect(kinds("desert", 1)).toEqual(
-            new Set(["airdrop_crate_01:crate_10t1", "airdrop_crate_01:crate_10t2", "airdrop_crate_02de:"]),
+            new Set([
+                "airdrop_crate_01:crate_10t1",
+                "airdrop_crate_01:crate_10t2",
+                "airdrop_crate_02de:",
+                "airdrop_crate_05:",
+            ]),
         );
         expect(kinds("faction", 2)).toEqual(new Set(["airdrop_crate_03:"]));
         expect(kinds("cobalt", 1)).toEqual(new Set(["class_shell_02:", "class_shell_03:"]));

@@ -52,17 +52,22 @@ function chooseTwo(g: GenerateMapResult): string[] {
     return n === 2 ? [] : [`random rotation spawned ${n} of mansion / police / bank (expected 2)`];
 }
 
-/** Every lake has its centre object exactly at the lake centre. */
-function lakeCentres(type: string, lakes: number) {
+/** Every lake has one of the centre objects exactly at the lake centre (`types` lists every lake's, any order). */
+function lakeCentres(type: string | readonly string[], lakes: number) {
+    const types = typeof type === "string" ? Array.from({ length: lakes }, () => type) : type;
     return (g: GenerateMapResult): string[] => {
         const centres = g.terrain.rivers.filter((r) => r.looped).map((r) => r.center);
-        const objs = g.objects.filter((o) => o.type === type && o.parentId === 0);
+        const objs = g.objects.filter((o) => types.includes(o.type) && o.parentId === 0);
         const out: string[] = [];
         if (centres.length !== lakes) out.push(`${centres.length} lakes (expected ${lakes})`);
+        const found: string[] = [];
         for (const c of centres) {
-            if (!objs.some((o) => Math.abs(o.pos.x - c.x) < 1e-6 && Math.abs(o.pos.y - c.y) < 1e-6)) {
-                out.push(`lake at ${c.x.toFixed(1)},${c.y.toFixed(1)} has no ${type}`);
-            }
+            const o = objs.find((x) => Math.abs(x.pos.x - c.x) < 1e-6 && Math.abs(x.pos.y - c.y) < 1e-6);
+            if (o) found.push(o.type);
+            else out.push(`lake at ${c.x.toFixed(1)},${c.y.toFixed(1)} has no ${[...new Set(types)].join(" / ")}`);
+        }
+        if (found.length === lakes && [...found].sort().join() !== [...types].sort().join()) {
+            out.push(`lake centres ${found.join(", ")} (expected ${types.join(", ")})`);
         }
         return out;
     };
@@ -80,8 +85,8 @@ export const MAP_CASES: readonly MapCase[] = [
     {
         map: "main_spring",
         teamModes: [1, 4],
-        required: { club_complex_01: 1, greenhouse_01: 1, teahouse_01: 2, warehouse_01: 2 },
-        forbidden: ["warehouse_03"],
+        // survev map generation (survev content wave stage 3): one warehouse is the Alternate Warehouse
+        required: { club_complex_01: 1, greenhouse_01: 1, teahouse_01: 2, warehouse_01: 1, warehouse_03: 1 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
         custom: chooseTwo,
@@ -89,8 +94,7 @@ export const MAP_CASES: readonly MapCase[] = [
     {
         map: "main_summer",
         teamModes: [1, 4],
-        required: { club_complex_01: 1, teahouse_complex_01su: 1, warehouse_01: 2 },
-        forbidden: ["warehouse_03"],
+        required: { club_complex_01: 1, teahouse_complex_01su: 1, warehouse_01: 1, warehouse_03: 1 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
         custom: chooseTwo,
@@ -98,11 +102,21 @@ export const MAP_CASES: readonly MapCase[] = [
     {
         map: "desert",
         teamModes: [1, 4],
-        required: { desert_town_01: 1, desert_town_02: 1, river_town_02: 1, greenhouse_02: 1, stone_05: 6 },
-        requiredAnywhere: ["saloon_structure_01", "saloon_01", "bank_01b", "police_01"],
-        forbidden: ["barn_02d", "club_complex_01", "oasis_01", "warehouse_complex_01"],
+        // survev map generation: the Reserve replaces the small town's bank, the Oasis lake, the alternate barn
+        required: {
+            desert_town_01: 1,
+            desert_town_02: 1,
+            river_town_02: 1,
+            greenhouse_02: 1,
+            stone_05: 6,
+            oasis_01: 1,
+            barn_02d: 1,
+            warehouse_03: 1,
+        },
+        requiredAnywhere: ["saloon_structure_01", "saloon_01", "police_01", "reserve_structure_01", "reserve_vault_01"],
+        forbidden: ["club_complex_01", "warehouse_complex_01"],
         maxWarnings: 0.5,
-        custom: (g) => (g.terrain.rivers.some((r) => r.looped) ? ["desert has a lake (fork oasis)"] : []),
+        custom: lakeCentres("oasis_01", 1),
     },
     {
         map: "woods",
@@ -115,45 +129,59 @@ export const MAP_CASES: readonly MapCase[] = [
             bunker_structure_07: 1,
             cache_03: 48,
         },
-        requiredAnywhere: ["loot_tier_helmet_forest", "bunker_structure_06"],
-        forbidden: ["club_complex_01", "workshop_complex_01", "cache_07w"],
+        requiredAnywhere: ["loot_tier_helmet_forest", "bunker_structure_06", "workshop_01", "gun_mount_07"],
+        forbidden: ["club_complex_01"],
         maxWarnings: 0.5,
         custom: lakeCentres("teapavilion_01w", 1),
     },
     {
         map: "woods_snow",
         teamModes: [1, 4],
-        required: { logging_complex_01: 1, logging_complex_03: 3, teapavilion_01w: 1, bunker_structure_07: 1 },
-        requiredAnywhere: ["loot_tier_helmet_forest"],
-        forbidden: ["logging_complex_03x", "stone_04x", "workshop_complex_01w", "cache_07w"],
+        required: {
+            logging_complex_01: 1,
+            logging_complex_03x: 2,
+            teapavilion_01w: 1,
+            bunker_structure_07: 1,
+            workshop_complex_01w: 1,
+            camp_01w: 2,
+        },
+        requiredAnywhere: ["loot_tier_helmet_forest", "campfire_01"],
         maxWarnings: 0.5,
         custom: lakeCentres("teapavilion_01w", 1),
     },
     {
         map: "woods_spring",
         teamModes: [1, 4],
-        required: { logging_complex_01sp: 1, logging_complex_02sp: 1, teapavilion_01w: 1, bunker_structure_07: 1 },
-        forbidden: ["workshop_complex_01", "cache_07w"],
+        required: {
+            logging_complex_01sp: 1,
+            logging_complex_02sp: 1,
+            teapavilion_01w: 1,
+            bunker_structure_07: 1,
+            workshop_complex_01: 1,
+        },
         maxWarnings: 0.5,
         custom: lakeCentres("teapavilion_01w", 1),
     },
     {
         map: "woods_summer",
         teamModes: [1, 4],
-        required: { logging_complex_01: 1, teapavilion_01w: 1, bunker_structure_07: 1 },
-        forbidden: ["logging_complex_01su", "workshop_complex_01", "cache_07w"],
+        // survev map generation: the summer logging complex at the centre
+        required: { logging_complex_01su: 1, teapavilion_01w: 1, bunker_structure_07: 1, workshop_complex_01: 1 },
+        forbidden: ["logging_complex_01"],
         maxWarnings: 0.5,
         custom: (g) => {
-            const n = countTop(g).get("logging_complex_01") ?? 0;
-            return [...(n === 1 ? [] : [`${n} logging_complex_01`]), ...lakeCentres("teapavilion_01w", 1)(g)];
+            const n = countTop(g).get("logging_complex_01su") ?? 0;
+            return [...(n === 1 ? [] : [`${n} logging_complex_01su`]), ...lakeCentres("teapavilion_01w", 1)(g)];
         },
     },
     {
         map: "snow",
         teamModes: [1, 4],
-        required: { club_complex_01: 1, greenhouse_02: 1, tree_10: 100, crate_03x: 1, stone_04: 1 },
-        forbidden: ["tree_01", "stone_04x", "greenhouse_01"],
-        softFixed: RIVER_SOFT,
+        // survev map generation: camps, three iced hardstones, the snow alternate warehouse
+        required: { club_complex_01: 1, greenhouse_02: 1, tree_10: 100, crate_03x: 1, camp_01: 2, warehouse_03x: 1 },
+        forbidden: ["tree_01", "greenhouse_01"],
+        // survev's snow shack_03x stands at a bridge like shack_03a (survev modeBuildingDefs.ts:8800-8806)
+        softFixed: [...RIVER_SOFT, "shack_03x"],
         maxWarnings: 1.5,
     },
     {
@@ -181,8 +209,7 @@ export const MAP_CASES: readonly MapCase[] = [
     {
         map: "potato_spring",
         teamModes: [1, 4],
-        required: { shilo_01: 1, potato_01: 20, potato_02: 20, potato_03: 20 },
-        forbidden: ["egg_01", "egg_02", "egg_03", "egg_04"],
+        required: { shilo_01: 1, potato_01: 20, potato_02: 20, potato_03: 20, egg_01: 1 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
     },
@@ -201,21 +228,24 @@ export const MAP_CASES: readonly MapCase[] = [
             bunker_structure_01sv: 1,
             bunker_structure_03: 1,
             mil_crate_05: 6,
-            crate_21b: 1,
+            // survev map generation: the Cloud bunker lake, the Oasis, brush clumps, the alternate warehouse
+            bunker_structure_10: 1,
+            oasis_01sv: 1,
+            brush_clump_01: 11,
+            warehouse_03sv: 1,
         },
+        requiredAnywhere: ["bunker_cloud_sublevel_01"],
         forbidden: [
             "club_complex_01",
             "warehouse_complex_01",
             "greenhouse_01",
             "hut_01",
             "cabin_01",
-            "bunker_structure_10",
-            "oasis_01sv",
             "bank_01",
             "police_01",
         ],
         maxWarnings: 0.5,
-        custom: lakeCentres("crate_02sv_lake", 3),
+        custom: lakeCentres(["bunker_structure_10", "oasis_01sv", "crate_02sv_lake", "crate_02sv_lake"], 4),
     },
     {
         map: "cobalt",
@@ -248,7 +278,8 @@ export const MAP_CASES: readonly MapCase[] = [
         maxWarnings: 1.5,
         custom: (g) => {
             const counts = countTop(g);
-            return ["cache_01", "cache_02", "cache_07"]
+            // survev's faction cache reskins (survev map generation, survev content wave stage 3)
+            return ["cache_01f", "cache_02f", "cache_07f"]
                 .filter((t) => counts.get(t) !== 1)
                 .map((t) => `${t} x${counts.get(t) ?? 0} (expected 1)`);
         },

@@ -9,6 +9,13 @@ import { SPRITES } from "../src/assets/spriteManifest.ts";
 const PIXELS_PER_UNIT = 16;
 /** an image's edge may sit this far inside a zoomIn region's edge (the original's own ceilings do by up to 0.5) */
 const TOLERANCE = 0.5;
+/**
+ * zoomIn regions survev leaves open to the sky on purpose: the Reserve's south-east palm garden (x 33..59, y 22.5..30.5)
+ * has no ceiling image in survev either (modeBuildingDefs.ts reserve_01; wikigg The_Reserve roof tab).
+ */
+const OPEN_ZOOM_REGIONS: Readonly<Record<string, ReadonlyArray<{ x: number; y: number }>>> = {
+    reserve_01: [{ x: 59, y: 30.5 }],
+};
 
 interface Rect {
     min: { x: number; y: number };
@@ -34,13 +41,14 @@ function ceilingRect(def: BuildingDef): Rect | null {
 }
 
 /** How far the zoomIn regions reach past the ceiling images (0 when covered). */
-function uncovered(def: BuildingDef): number {
+function uncovered(def: BuildingDef, open?: ReadonlyArray<{ x: number; y: number }>): number {
     const rect = ceilingRect(def);
     if (!rect) return 0;
     let gap = 0;
     for (const region of def.ceiling.zoomRegions) {
         const z = region.zoomIn;
         if (!z) continue;
+        if (open?.some((m) => m.x === z.max.x && m.y === z.max.y)) continue;
         gap = Math.max(gap, rect.min.x - z.min.x, z.max.x - rect.max.x, rect.min.y - z.min.y, z.max.y - rect.max.y);
     }
     return gap;
@@ -68,7 +76,7 @@ describe("ceiling sprite sizes", () => {
             if (!def.ceiling.imgs.some((img) => SPRITES[img.sprite]?.source === "survev")) continue;
             if (!def.ceiling.zoomRegions.some((r) => r.zoomIn)) continue;
             checked++;
-            const gap = uncovered(def);
+            const gap = uncovered(def, OPEN_ZOOM_REGIONS[type]);
             if (gap > TOLERANCE) short.push(`${type}: ${gap.toFixed(2)} u`);
         }
         expect(checked).toBeGreaterThan(5);

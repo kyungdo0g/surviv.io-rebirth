@@ -3046,6 +3046,7 @@
           "bush_01": 78,
           "cache_06": 12,
           "tree_01": 320,
+          "tree_13": 30,
           "hedgehog_01": 24,
           "container_01": 5,
           "container_02": 5,
@@ -3059,7 +3060,11 @@
       ],
       "fixedSpawns": [
         {
-          "warehouse_01": 2,
+          "warehouse_01": {
+            "small": 1,
+            "large": 2
+          },
+          "warehouse_03": 1,
           "house_red_01": {
             "small": 3,
             "large": 4
@@ -3084,6 +3089,7 @@
           "greenhouse_01": 1,
           "cache_01": 1,
           "cache_02": 1,
+          "cache_04": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -3105,8 +3111,7 @@
             "small": 1,
             "large": 2
           },
-          "stone_04": 1,
-          "club_complex_01": 1
+          "stone_04": 1
         }
       ],
       "randomSpawns": [
@@ -6197,7 +6202,11 @@
       ],
       "fixedSpawns": [
         {
-          "warehouse_01": 2,
+          "warehouse_01": {
+            "small": 1,
+            "large": 2
+          },
+          "warehouse_03": 1,
           "house_red_01": {
             "small": 2,
             "large": 3
@@ -6222,6 +6231,7 @@
           "greenhouse_01": 1,
           "cache_01": 1,
           "cache_02sp": 1,
+          "cache_04": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -6243,8 +6253,7 @@
             "small": 2,
             "large": 3
           },
-          "stone_04": 1,
-          "club_complex_01": 1
+          "stone_04": 1
         }
       ],
       "randomSpawns": [
@@ -9361,7 +9370,11 @@
       ],
       "fixedSpawns": [
         {
-          "warehouse_01": 2,
+          "warehouse_01": {
+            "small": 1,
+            "large": 2
+          },
+          "warehouse_03": 1,
           "house_red_01": {
             "small": 3,
             "large": 4
@@ -9385,6 +9398,8 @@
           },
           "greenhouse_01": 1,
           "cache_01": 1,
+          "cache_02su": 1,
+          "cache_04": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -9406,9 +9421,7 @@
             "small": 1,
             "large": 2
           },
-          "stone_04": 1,
-          "club_complex_01": 1,
-          "cache_02": 1
+          "stone_04": 1
         }
       ],
       "randomSpawns": [
@@ -9527,10 +9540,14 @@
         "crates": [
           {
             "name": "airdrop_crate_01",
-            "weight": 10
+            "weight": 12
           },
           {
             "name": "airdrop_crate_02de",
+            "weight": 1
+          },
+          {
+            "name": "airdrop_crate_05",
             "weight": 1
           }
         ]
@@ -12276,7 +12293,23 @@
         "shoreInset": 8,
         "grassInset": 12,
         "rivers": {
-          "lakes": [],
+          "lakes": [
+            {
+              "odds": 1,
+              "innerRad": 10,
+              "outerRad": 20,
+              "centerObj": "oasis_01",
+              "noRiverObjs": true,
+              "riverMaskRad": 48,
+              "spawnBound": {
+                "pos": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "rad": 300
+              }
+            }
+          ],
           "weights": [
             {
               "weight": 0.1,
@@ -12405,7 +12438,7 @@
           "crate_03": 8,
           "bush_01": 90,
           "tree_06": 220,
-          "tree_05c": 144,
+          "tree_05c": 96,
           "tree_09": 40,
           "hedgehog_01": 12,
           "container_01": 5,
@@ -12420,11 +12453,14 @@
       ],
       "fixedSpawns": [
         {
-          "warehouse_01": 4,
-          "house_red_01": 3,
+          "warehouse_01": 2,
+          "warehouse_03": 1,
+          "house_red_01": 2,
           "house_red_02": 1,
           "barn_01": 1,
+          "barn_02d": 1,
           "cache_01": 1,
+          "cache_02d": 1,
           "bunker_structure_01": {
             "odds": 0.05
           },
@@ -12441,9 +12477,7 @@
           "desert_town_01": 1,
           "desert_town_02": 1,
           "greenhouse_02": 1,
-          "stone_05": 6,
-          "cache_02": 1,
-          "river_town_02": 1
+          "stone_05": 6
         }
       ],
       "randomSpawns": [],
@@ -15654,9 +15688,9 @@
           "shack_03a": 2,
           "shack_03b": 3,
           "greenhouse_01": 1,
-          "cache_01": 1,
-          "cache_02": 1,
-          "cache_07": 1,
+          "cache_01f": 1,
+          "cache_02f": 1,
+          "cache_07f": 1,
           "mansion_structure_01": 1,
           "bunker_structure_01": {
             "odds": 1
@@ -15669,8 +15703,7 @@
           "mil_crate_02": {
             "odds": 1
           },
-          "tree_02": 3,
-          "river_town_01": 1
+          "tree_02": 3
         }
       ],
       "randomSpawns": [],
@@ -22399,16 +22432,28 @@
         {
           "junkyard_01": 1,
           "warehouse_01h": 4,
-          "house_red_01h": 7,
+          "house_red_01h": {
+            "small": 2,
+            "large": 3
+          },
+          "house_red_02h": {
+            "small": 2,
+            "large": 3
+          },
           "barn_01h": 1,
           "cache_03": 36,
           "cache_01": 1,
+          "cache_02h": 1,
           "mansion_structure_02": 1,
           "bunker_structure_01": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
           "mil_crate_02": {
             "odds": 0.25
+          },
+          "tree_02h": {
+            "small": 6,
+            "large": 8
           },
           "tree_05": 72,
           "tree_07": 700,
@@ -22420,8 +22465,7 @@
           "table_01": 24,
           "vending_01": 24,
           "woodpile_01": 24,
-          "stone_04": 1,
-          "cache_02": 1
+          "stone_04": 1
         }
       ],
       "randomSpawns": [],
@@ -25467,8 +25511,7 @@
             "large": 2
           },
           "stone_04": 1,
-          "club_complex_01": 1,
-          "shilo_01": 1
+          "club_complex_01": 1
         }
       ],
       "randomSpawns": [
@@ -28453,6 +28496,7 @@
           "crate_03": 8,
           "bush_01": 78,
           "cache_06": 12,
+          "tree_02": 3,
           "tree_07sp": 300,
           "tree_08sp": 30,
           "tree_08spb": 30,
@@ -28462,6 +28506,10 @@
           "potato_01": 50,
           "potato_02": 50,
           "potato_03": 50,
+          "egg_01": 15,
+          "egg_02": 15,
+          "egg_03": 15,
+          "egg_04": 15,
           "container_01": 5,
           "container_02": 5,
           "container_03": 5,
@@ -28522,8 +28570,7 @@
           },
           "stone_04": 1,
           "club_complex_01": 1,
-          "cache_02sp": 1,
-          "shilo_01": 1
+          "cache_02sp": 1
         }
       ],
       "randomSpawns": [
@@ -31633,26 +31680,57 @@
           "stone_01x": 350,
           "barrel_01": 76,
           "silo_01": 8,
+          "crate_01x": 38,
+          "crate_02x": 4,
           "crate_03": 8,
           "crate_03x": 1,
+          "bush_01x": 78,
           "cache_06": 12,
+          "tree_10": 300,
+          "tree_11": 20,
           "hedgehog_01": 24,
+          "container_01x": 5,
           "container_02": 5,
           "container_03": 5,
           "container_04": 5,
+          "shack_01x": 7,
+          "outhouse_01x": 5,
           "loot_tier_1": 24,
-          "loot_tier_beach": 4,
-          "crate_02": 4,
-          "bush_01": 78,
-          "tree_01": 320,
-          "container_01": 5,
-          "shack_01": 7
+          "loot_tier_beach": 4
         }
       ],
       "fixedSpawns": [
         {
+          "warehouse_01x": {
+            "small": 1,
+            "large": 2
+          },
+          "warehouse_03x": 1,
+          "house_red_01x": {
+            "small": 3,
+            "large": 4
+          },
+          "house_red_02x": {
+            "small": 3,
+            "large": 4
+          },
+          "barn_01x": {
+            "small": 1,
+            "large": 3
+          },
+          "barn_02x": 1,
+          "hut_01x": 3,
+          "hut_02x": 1,
           "hut_03": 1,
           "shack_03a": 2,
+          "shack_03x": {
+            "small": 2,
+            "large": 3
+          },
+          "greenhouse_02": 1,
+          "cache_01x": 1,
+          "cache_02x": 1,
+          "cache_04": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -31663,40 +31741,34 @@
           "bunker_structure_05": 1,
           "warehouse_complex_01": 1,
           "chest_01": 1,
-          "tree_02": 3,
-          "club_complex_01": 1,
-          "cache_02": 1,
-          "cache_01": 1,
-          "house_red_02": {
-            "small": 3,
-            "large": 4
-          },
-          "barn_01": {
-            "small": 1,
-            "large": 3
-          },
-          "barn_02": 1,
-          "hut_01": 3,
-          "hut_02": 1,
-          "shack_03b": {
-            "small": 2,
-            "large": 3
-          },
-          "greenhouse_01": 1,
-          "chest_03": {
+          "chest_03x": {
             "odds": 0.2
           },
-          "mil_crate_02": {
+          "mil_crate_03": {
             "odds": 0.25
           },
-          "teahouse_complex_01su": {
+          "tree_02": 3,
+          "teahouse_complex_01x": {
             "small": 1,
             "large": 2
           },
-          "stone_04": 1
+          "stone_04x": 3,
+          "camp_01": {
+            "small": 2,
+            "large": 3
+          }
         }
       ],
-      "randomSpawns": [],
+      "randomSpawns": [
+        {
+          "spawns": [
+            "mansion_structure_01x",
+            "police_01x",
+            "bank_01x"
+          ],
+          "choose": 2
+        }
+      ],
       "spawnReplacements": [
         {
           "bridge_lg_01": "bridge_lg_01x",
@@ -31713,22 +31785,7 @@
           "table_02": "table_02x",
           "table_03": "table_03x",
           "tree_01": "tree_10",
-          "warehouse_02": "warehouse_02x",
-          "bank_01": "bank_01x",
-          "barn_01": "barn_01x",
-          "greenhouse_01": "greenhouse_02",
-          "house_red_01": "house_red_01x",
-          "house_red_02": "house_red_02x",
-          "hut_01": "hut_01x",
-          "hut_02": "hut_02x",
-          "mansion_01": "mansion_01x",
-          "outhouse_01": "outhouse_01x",
-          "police_01": "police_01x",
-          "shack_03a": "shack_03x",
-          "warehouse_01": "warehouse_01x",
-          "bush_01": "bush_01x",
-          "chest_03": "chest_03x",
-          "stone_01": "stone_01x"
+          "warehouse_02": "warehouse_02x"
         }
       ],
       "importantSpawns": [
@@ -34572,20 +34629,24 @@
           "container_03": 2,
           "container_04": 2,
           "shack_01": 2,
-          "outhouse_01": 1,
+          "outhouse_01": 6,
           "loot_tier_1": 36,
           "loot_tier_beach": 8
         }
       ],
       "fixedSpawns": [
         {
-          "barn_01": 3,
+          "barn_01": {
+            "small": 3,
+            "large": 4
+          },
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
-          "cache_01": 1,
-          "cache_02": 1,
+          "cache_01w": 1,
+          "cache_02w": 1,
           "cache_03": 48,
+          "cache_07w": 1,
           "chest_03": {
             "odds": 0.5
           },
@@ -34596,12 +34657,18 @@
           },
           "logging_complex_02": 1,
           "logging_complex_03": 3,
-          "stone_04": 6,
+          "stone_04": {
+            "small": 6,
+            "large": 8
+          },
           "teahouse_01": {
             "small": 2,
             "large": 3
           },
-          "tree_02": 6,
+          "tree_02": {
+            "small": 6,
+            "large": 8
+          },
           "tree_07": 1100,
           "tree_08": 1100,
           "tree_08b": 150,
@@ -34610,8 +34677,7 @@
             "small": 3,
             "large": 4
           },
-          "logging_complex_01": 1,
-          "teapavilion_01w": 1
+          "workshop_complex_01": 1
         }
       ],
       "randomSpawns": [],
@@ -37503,16 +37569,43 @@
       ],
       "fixedSpawns": [
         {
+          "barn_01x": {
+            "small": 3,
+            "large": 4
+          },
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
+          "cache_01w": 1,
           "cache_02w": 1,
           "cache_03": 48,
+          "cache_07w": 1,
+          "camp_01w": {
+            "small": 2,
+            "large": 3
+          },
           "chest_03": {
             "odds": 0.5
           },
           "crate_19": 12,
-          "tree_02": 6,
+          "house_red_01x": {
+            "small": 3,
+            "large": 4
+          },
+          "logging_complex_02x": 1,
+          "logging_complex_03x": 2,
+          "stone_04x": {
+            "small": 6,
+            "large": 8
+          },
+          "teahouse_01x": {
+            "small": 2,
+            "large": 3
+          },
+          "tree_02": {
+            "small": 6,
+            "large": 8
+          },
           "tree_07": 1100,
           "tree_08": 1100,
           "tree_08b": 150,
@@ -37521,18 +37614,7 @@
             "small": 3,
             "large": 4
           },
-          "cache_01": 1,
-          "logging_complex_01": 1,
-          "teapavilion_01w": 1,
-          "logging_complex_02": 1,
-          "logging_complex_03": 3,
-          "barn_01": 3,
-          "teahouse_01": {
-            "small": 2,
-            "large": 3
-          },
-          "stone_04": 6,
-          "house_red_01": 3
+          "workshop_complex_01w": 1
         }
       ],
       "randomSpawns": [],
@@ -37553,18 +37635,8 @@
           "stone_01": "stone_01x",
           "stone_03": "stone_03x",
           "tree_01": "tree_07",
-          "bank_01": "bank_01x",
-          "barn_01": "barn_01x",
-          "greenhouse_01": "greenhouse_02",
-          "house_red_01": "house_red_01x",
-          "house_red_02": "house_red_02x",
-          "hut_01": "hut_01x",
-          "hut_02": "hut_02x",
-          "mansion_01": "mansion_01x",
-          "police_01": "police_01x",
-          "shack_03a": "shack_03x",
-          "cabin_01": "cabin_01x",
-          "shack_02": "shack_02x"
+          "recorder_01": "recorder_08",
+          "recorder_02": "recorder_09"
         }
       ],
       "importantSpawns": [
@@ -40444,7 +40516,9 @@
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
+          "cache_01w": 1,
           "cache_02sp": 1,
+          "cache_07w": 1,
           "chest_03": {
             "odds": 0.5
           },
@@ -40470,9 +40544,7 @@
             "small": 3,
             "large": 4
           },
-          "cache_01": 1,
-          "teapavilion_01w": 1,
-          "logging_complex_01sp": 1
+          "workshop_complex_01": 1
         }
       ],
       "randomSpawns": [],
@@ -43307,7 +43379,7 @@
       "customSpawnRules": {
         "locationSpawns": [
           {
-            "type": "logging_complex_01",
+            "type": "logging_complex_01su",
             "pos": {
               "x": 0.5,
               "y": 0.5
@@ -43338,10 +43410,17 @@
       ],
       "fixedSpawns": [
         {
-          "barn_01": 3,
+          "barn_01": {
+            "small": 3,
+            "large": 4
+          },
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
+          "cache_01w": 1,
+          "cache_02su": 1,
+          "cache_06": 48,
+          "cache_07w": 1,
           "chest_03": {
             "odds": 0.5
           },
@@ -43350,38 +43429,41 @@
             "small": 3,
             "large": 4
           },
-          "stone_04": 6,
+          "logging_complex_02su": 1,
+          "logging_complex_03su": 3,
+          "stone_04": {
+            "small": 6,
+            "large": 8
+          },
           "teahouse_01": {
             "small": 2,
             "large": 3
           },
-          "tree_02": 6,
+          "tree_02": {
+            "small": 6,
+            "large": 8
+          },
+          "tree_07su": 1100,
+          "tree_08su": 1100,
+          "tree_08sub": 150,
           "tree_09": 84,
           "warehouse_01": {
             "small": 3,
             "large": 4
           },
-          "cache_01": 1,
-          "logging_complex_01": 1,
-          "teapavilion_01w": 1,
-          "logging_complex_02": 1,
-          "logging_complex_03": 3,
-          "cache_03": 48,
-          "cache_02w": 1,
-          "tree_07": 1100,
-          "tree_08": 1100,
-          "tree_08b": 150
+          "workshop_complex_01": 1
         }
       ],
       "randomSpawns": [],
       "spawnReplacements": [
         {
-          "tree_01": "tree_07",
+          "tree_01": "tree_07su",
           "crate_02": "crate_19",
           "crate_08": "crate_19",
           "crate_09": "crate_19",
           "recorder_01": "recorder_08",
-          "recorder_02": "recorder_09"
+          "recorder_02": "recorder_09",
+          "tree_07": "tree_07su"
         }
       ],
       "importantSpawns": [
@@ -45884,13 +45966,29 @@
               "odds": 1,
               "innerRad": 32,
               "outerRad": 48,
-              "centerObj": "crate_02sv_lake",
+              "centerObj": "bunker_structure_10",
               "spawnBound": {
                 "pos": {
                   "x": 0.5,
                   "y": 0.5
                 },
-                "rad": 0
+                "rad": 200
+              },
+              "riverMaskRad": 85
+            },
+            {
+              "odds": 1,
+              "innerRad": 10,
+              "outerRad": 20,
+              "centerObj": "oasis_01sv",
+              "noRiverObjs": true,
+              "riverMaskRad": 48,
+              "spawnBound": {
+                "pos": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "rad": 300
               }
             },
             {
@@ -45924,6 +46022,13 @@
             {
               "weight": 1,
               "widths": [
+                4
+              ]
+            },
+            {
+              "weight": 1,
+              "widths": [
+                4,
                 4
               ]
             }
@@ -46006,10 +46111,10 @@
           "barrel_01": 48,
           "propane_01": 24,
           "stone_07": 6,
-          "crate_01": 50,
-          "crate_02sv": 4,
-          "crate_03": 8,
-          "crate_21b": 2,
+          "crate_01": 70,
+          "crate_02sv": 6,
+          "crate_03": 10,
+          "crate_21b": 3,
           "bush_01sv": 48,
           "tree_01sv": 48,
           "hedgehog_01": 24,
@@ -46020,7 +46125,7 @@
           "container_04": 5,
           "shack_01": 7,
           "outhouse_01": 5,
-          "loot_tier_1": 24,
+          "loot_tier_1": 30,
           "loot_tier_beach": 4
         }
       ],
@@ -46071,12 +46176,14 @@
             "small": 3,
             "large": 4
           },
+          "warehouse_03sv": 1,
           "cache_01sv": 1,
           "cache_02sv": 1,
           "cache_07": 1,
           "bunker_structure_01sv": 1,
           "bunker_structure_03": 1,
           "chest_01": 1,
+          "chest_03sv": 1,
           "mil_crate_05": {
             "small": 6,
             "large": 8
@@ -46088,10 +46195,13 @@
       "spawnReplacements": [
         {
           "tree_01": "tree_01sv",
-          "bush_01": "bush_01sv"
+          "bush_01": "bush_01sv",
+          "stone_03": "stone_03sv"
         }
       ],
-      "importantSpawns": []
+      "importantSpawns": [
+        "club_complex_01"
+      ]
     }
   },
   "cobalt": {
@@ -49084,6 +49194,7 @@
           "crate_02": 4,
           "crate_03": 8,
           "bush_01cb": 78,
+          "cache_06cb": 12,
           "tree_01cb": 320,
           "hedgehog_01": 24,
           "container_01": 5,
@@ -49120,8 +49231,9 @@
             "small": 2,
             "large": 3
           },
-          "cache_01": 1,
-          "cache_02": 1,
+          "cache_01cb": 1,
+          "cache_02cb": 1,
+          "cache_04cb": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -49138,15 +49250,17 @@
           "mil_crate_02": {
             "odds": 0.25
           },
-          "stone_04": 1,
-          "club_complex_01": 1,
-          "class_shell_01": 40,
-          "cache_log_13": 1,
-          "teahouse_complex_01su": {
+          "teahouse_complex_01cb": {
             "small": 1,
             "large": 2
           },
-          "bunker_structure_09": 1
+          "stone_04": 1,
+          "club_complex_01": 1,
+          "class_shell_01": {
+            "small": 45,
+            "large": 55
+          },
+          "cache_log_13": 1
         }
       ],
       "randomSpawns": [
@@ -49309,7 +49423,7 @@
             "weight": 10
           },
           {
-            "name": "airdrop_crate_02tr",
+            "name": "airdrop_crate_02",
             "weight": 1
           }
         ]
@@ -52277,12 +52391,19 @@
       },
       "densitySpawns": [
         {
-          "stone_01": 350,
+          "squash_01": 25,
+          "squash_02": 12,
+          "stone_01": 200,
           "barrel_01": 76,
-          "silo_01": 8,
+          "silo_01": 9,
           "crate_01": 45,
-          "crate_02": 4,
+          "crate_02": 3,
           "crate_03": 7,
+          "bush_06tr": 70,
+          "cache_03tr": 50,
+          "tree_07": 20,
+          "tree_08": 170,
+          "tree_08b": 4,
           "hedgehog_01": 24,
           "container_01": 5,
           "container_02": 5,
@@ -52290,12 +52411,10 @@
           "container_04": 5,
           "shack_01": 7,
           "outhouse_01": 7,
+          "outhouse_02": 2,
           "loot_tier_1": 24,
           "loot_tier_beach": 4,
-          "cache_06": 12,
-          "bush_01": 78,
-          "tree_01": 320,
-          "squash_01": 25
+          "woodpile_02": 4
         }
       ],
       "fixedSpawns": [
@@ -52318,9 +52437,13 @@
             "large": 3
           },
           "barn_02": 1,
-          "hut_01": 3,
-          "hut_02": 1,
-          "hut_03": 1,
+          "hut_01": 1,
+          "hut_02": {
+            "odds": 0.05
+          },
+          "hut_03": {
+            "odds": 0.05
+          },
           "shack_03a": 2,
           "shack_03b": {
             "small": 2,
@@ -52328,6 +52451,8 @@
           },
           "greenhouse_01": 1,
           "cache_01": 1,
+          "cache_02w": 1,
+          "cache_04": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -52338,20 +52463,14 @@
           "bunker_structure_05": 1,
           "warehouse_complex_01": 1,
           "chest_01": 1,
+          "chest_03tr": {
+            "odds": 0.2
+          },
           "mil_crate_02": {
             "odds": 0.25
           },
-          "tree_02": 3,
-          "stone_04": 1,
-          "club_complex_01": 1,
-          "cache_02": 1,
-          "chest_03": {
-            "odds": 0.2
-          },
-          "teahouse_complex_01su": {
-            "small": 1,
-            "large": 2
-          }
+          "tree_02": 4,
+          "stone_04": 1
         }
       ],
       "randomSpawns": [
@@ -52365,7 +52484,10 @@
         }
       ],
       "spawnReplacements": [
-        {}
+        {
+          "tree_01": "tree_08",
+          "stone_03": "stone_03tr"
+        }
       ],
       "importantSpawns": [
         "club_complex_01"

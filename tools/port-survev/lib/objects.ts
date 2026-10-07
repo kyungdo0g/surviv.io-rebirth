@@ -81,9 +81,11 @@ export function portGameObjects(
     return { defs, status, fixups, excluded };
 }
 
+export type MapObjectStatus = "original" | "survev-only" | "survev-override";
+
 export interface MapObjectPort {
     defs: Record<string, any>;
-    status: Record<string, "original" | "survev-only">;
+    status: Record<string, MapObjectStatus>;
     fixups: Fixup[];
     lootRemovals: Array<{ mapObject: string; item: string; reason: string }>;
     excluded: string[];
@@ -108,25 +110,15 @@ export function portMapObjects(
     survev: Record<string, any>,
     maps: Record<string, any>,
     gameObjects: Record<string, unknown>,
+    survevOverrides: readonly string[] = [],
 ): MapObjectPort {
     const defs: Record<string, any> = {};
-    const status: Record<string, "original" | "survev-only"> = {};
-    for (const [id, def] of Object.entries(live)) {
-        defs[id] = clone(def);
-        status[id] = "original";
-    }
-    const roles = perkModeRoles(Object.values(maps));
-    const roots: string[] = [];
-    for (const map of Object.values(maps)) roots.push(...mapDefSpawnRefs(map).map((r) => r.id));
-    for (const def of Object.values(live)) roots.push(...mapObjectChildIds(def, roles));
-    const reachable = new Set(mapObjectClosure(roots, { ...survev, ...live }, roles));
-    const missing = [...reachable].filter((id) => !(id in live) && !(id in survev)).sort();
-
+    const status: Record<string, MapObjectStatus> = {};
     const fixups: Fixup[] = [];
     const lootRemovals: MapObjectPort["lootRemovals"] = [];
-    for (const [id, def] of Object.entries(survev)) {
-        if (id in live || !reachable.has(id)) continue;
-        let out = clone(def);
+    /** a survev map object in the original's shape: `category` renamed back, loot of unported items dropped */
+    const fromSurvev = (id: string): any => {
+        let out = clone(survev[id]);
         const field = CATEGORY_FIELD[out.type];
         if (field && "category" in out && !(field in out)) {
             out = renameKey(out, "category", field);
@@ -144,7 +136,28 @@ export function portMapObjects(
                 return !bad;
             });
         }
-        defs[id] = out;
+        return out;
+    };
+    for (const id of survevOverrides) {
+        if (!(id in live) || !(id in survev))
+            throw new Error(`policy.json survevMapObjects: ${id} is not in both sources`);
+    }
+    // structure overrides (policy survevMapObjects) take survev's def in the original's slot (the Reserve's town)
+    const overridden = new Set(survevOverrides);
+    for (const [id, def] of Object.entries(live)) {
+        defs[id] = overridden.has(id) ? fromSurvev(id) : clone(def);
+        status[id] = overridden.has(id) ? "survev-override" : "original";
+    }
+    const roles = perkModeRoles(Object.values(maps));
+    const roots: string[] = [];
+    for (const map of Object.values(maps)) roots.push(...mapDefSpawnRefs(map).map((r) => r.id));
+    for (const def of Object.values(defs)) roots.push(...mapObjectChildIds(def, roles));
+    const reachable = new Set(mapObjectClosure(roots, { ...survev, ...defs }, roles));
+    const missing = [...reachable].filter((id) => !(id in live) && !(id in survev)).sort();
+
+    for (const id of Object.keys(survev)) {
+        if (id in live || !reachable.has(id)) continue;
+        defs[id] = fromSurvev(id);
         status[id] = "survev-only";
     }
     const excluded = Object.keys(survev).filter((id) => !(id in defs));

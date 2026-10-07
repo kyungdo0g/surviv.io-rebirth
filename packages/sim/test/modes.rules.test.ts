@@ -25,19 +25,21 @@ function onMap(mapName: string): { game: Game; p: Player } {
 const items = (mapName: string, tier: string) => getMapDef(mapName).lootTable[tier].map((e) => e.name);
 
 describe("event map corrections in the ported data (tools/port-survev/lib/eventMaps.ts)", () => {
-    it("savannah: survev's Savannah reconstruction replaces the Main copy (savannah.md)", () => {
+    it("savannah: survev's Savannah map generation (Cloud bunker lake, Oasis, brush clumps) with the reconstruction's loot", () => {
         const def = getMapDef("savannah");
         const fixed = def.mapGen.fixedSpawns[0];
         expect(fixed.club_complex_01).toBeUndefined();
         expect(fixed.perch_01).toEqual({ small: 11, large: 13 });
+        expect(fixed.brush_clump_01).toEqual({ small: 11, large: 13 });
         expect(def.mapGen.randomSpawns).toEqual([]);
+        // survev/shared/defs/maps/savannahDefs.ts: the Cloud bunker lake, the Oasis and two crate lakes
         expect(def.mapGen.map.rivers.lakes.map((l) => [l.centerObj, l.spawnBound.rad])).toEqual([
-            ["crate_02sv_lake", 0],
+            ["bunker_structure_10", 200],
+            ["oasis_01sv", 300],
             ["crate_02sv_lake", 200],
             ["crate_02sv_lake", 200],
         ]);
-        expect(def.mapGen.map.rivers.weights).toEqual([{ weight: 1, widths: [4] }]);
-        // ground ammo stacks of 30 including .45 ACP; strobes in grenade crates
+        // loot stays the reconstruction's until the loot stage: ground ammo stacks of 30 including .45 ACP; strobes
         expect(def.lootTable.tier_ammo.map((e) => `${e.name}x${e.count}`)).toEqual([
             "9mmx30",
             "45acpx30",
@@ -69,23 +71,22 @@ describe("event map corrections in the ported data (tools/port-survev/lib/eventM
         }
     });
 
-    it("turkey has green squashes (Perky Shoot) and the turkey gold drop; desert, snow, woods and faction lose fork or doubled spawns", () => {
-        expect(getMapDef("turkey").mapGen.densitySpawns[0].squash_01).toBe(25);
-        expect(getMapDef("turkey").gameConfig.planes.crates.map((c) => c.name)).toEqual([
-            "airdrop_crate_01",
-            "airdrop_crate_02tr",
-        ]);
+    it("map generation is survev's (survev content wave stage 3); only the loot parts of the event-map fixes apply", () => {
+        // survev/shared/defs/maps/turkeyDefs.ts: 25 green and 12 orange squashes, the normal gold drop
+        expect(getMapDef("turkey").mapGen.densitySpawns[0]).toMatchObject({ squash_01: 25, squash_02: 12 });
         const desert = getMapDef("desert");
-        expect(desert.mapGen.map.rivers.lakes).toEqual([]);
-        expect(desert.mapGen.fixedSpawns[0].barn_02d).toBeUndefined();
+        // survev desertDefs.ts: the Oasis lake, the alternate barn, the crimson air drop
+        expect(desert.mapGen.map.rivers.lakes.map((l) => l.centerObj)).toEqual(["oasis_01"]);
+        expect(desert.mapGen.fixedSpawns[0].barn_02d).toBe(1);
+        expect(desert.gameConfig.planes.crates.map((c) => c.name)).toContain("airdrop_crate_05");
+        // the desert fix's loot part still applies (desert.md CONFLICT desert-pkp-airdrop-rare)
         expect(desert.lootTable.tier_airdrop_rare.find((e) => e.name === "pkp")?.weight).toBe(3);
-        expect(getMapDef("snow").mapGen.fixedSpawns[0].stone_04x).toBeUndefined();
-        expect(getMapDef("main_spring").mapGen.fixedSpawns[0]).toMatchObject({ warehouse_01: 2 });
-        expect(getMapDef("main_spring").mapGen.fixedSpawns[0].warehouse_03).toBeUndefined();
-        expect(getMapDef("woods").mapGen.fixedSpawns[0].cache_01).toBe(1);
-        expect(getMapDef("faction").mapGen.fixedSpawns[0]).toMatchObject({ cache_01: 1, cache_02: 1, cache_07: 1 });
-        expect(getMapDef("potato_spring").mapGen.densitySpawns[0].egg_01).toBeUndefined();
-        expect(getMapDef("woods_summer").mapGen.customSpawnRules.locationSpawns[0].type).toBe("logging_complex_01");
+        expect(getMapDef("snow").mapGen.fixedSpawns[0].stone_04x).toBe(3);
+        expect(getMapDef("main_spring").mapGen.fixedSpawns[0]).toMatchObject({ warehouse_03: 1 });
+        expect(getMapDef("woods").mapGen.fixedSpawns[0]).toMatchObject({ cache_01w: 1, workshop_complex_01: 1 });
+        expect(getMapDef("faction").mapGen.fixedSpawns[0]).toMatchObject({ cache_01f: 1, cache_02f: 1, cache_07f: 1 });
+        expect(getMapDef("potato_spring").mapGen.densitySpawns[0].egg_01).toBe(15);
+        expect(getMapDef("woods_summer").mapGen.customSpawnRules.locationSpawns[0].type).toBe("logging_complex_01su");
         // maps without corrections are the ported defs themselves
         expect(getMapDef("main")).toBe(getMapDef("main"));
     });

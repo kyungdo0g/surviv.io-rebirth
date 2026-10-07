@@ -6,8 +6,12 @@ import { overlaps, toBounds, transformOri } from "../src/geom/transform.ts";
 import { Game, type GeneratedObject, generateMap, getBoundingCollider } from "../src/index.ts";
 import { cachedMap, objectsHash } from "./helpers.ts";
 
-/** Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. */
-const MAIN_12345_HASH = "555953c84482c164";
+/**
+ * Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. Last change: the
+ * survev content wave stage 3 takes survev's map generation (main gains the Alternate Warehouse, the river-stone
+ * cache_04 and survev's spawn counts; tools/port-survev/policy.json survevMapGen).
+ */
+const MAIN_12345_HASH = "7f48d105692eadcd";
 
 /** Area an object reserves against other top-level objects (what canSpawn tests against). */
 function footprints(o: GeneratedObject): Collider[] {

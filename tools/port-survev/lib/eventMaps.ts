@@ -177,14 +177,19 @@ export interface EventMapFixLog {
  * Applies MAP_FIXES and LOOT_BANS to the ported map defs in place (after the balance revert and the reskin revert,
  * before loot cleanup) and returns what was applied, for provenance.
  */
-export function applyEventMapFixes(maps: Record<string, MapDef>): EventMapFixLog[] {
+export function applyEventMapFixes(maps: Record<string, MapDef>, opts: { lootOnly?: boolean } = {}): EventMapFixLog[] {
     const log: EventMapFixLog[] = [];
     for (const [name, fixes] of Object.entries(MAP_FIXES)) {
         const def = maps[name];
         if (!def) continue;
         for (const fix of fixes) {
-            applyFix(def, fix);
-            log.push({ map: name, reason: fix.reason });
+            // survev map generation (policy survevMapGen): only the loot parts of a fix apply
+            const applied = opts.lootOnly
+                ? { reason: fix.reason, lootTable: fix.lootTable, lootWeights: fix.lootWeights }
+                : fix;
+            if (!applied.lootTable && !applied.lootWeights) continue;
+            applyFix(def, applied);
+            log.push({ map: name, reason: opts.lootOnly ? `${fix.reason} (loot only)` : fix.reason });
         }
     }
     for (const [name, banned] of Object.entries(LOOT_BANS)) {

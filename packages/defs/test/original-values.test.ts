@@ -3,7 +3,7 @@
 // takes (tools/port-survev/policy.json) follow the original ones and are checked in survevGuns.test.ts.
 import { describe, expect, it } from "vitest";
 import { getDefOfType } from "../src/index.ts";
-import { gameObjects, mapObjects, maps, provenance, readOptionalJson } from "./helpers.ts";
+import { gameObjects, mapObjects, maps, portPolicy, provenance, readOptionalJson } from "./helpers.ts";
 
 const live = readOptionalJson("research-cache/live/defs.json");
 const liveVsSurvev = readOptionalJson("docs/research/data/live-vs-survev.json");
@@ -55,6 +55,8 @@ describe("original client values", () => {
         ] as const) {
             for (const entry of list) {
                 if (entry.status !== "both") continue;
+                // structure overrides take survev's whole def (policy.json survevMapObjects, survev content wave)
+                if (defs === mapObjects && provenance.mapObjects[entry.id] === "survev-override") continue;
                 for (const diff of entry.diffs ?? []) {
                     if (diff.live === undefined) continue;
                     expect(get(defs[entry.id], diff.field), `${entry.id}.${diff.field}`).toEqual(JSON.parse(diff.live));
@@ -84,10 +86,14 @@ describe.skipIf(!live)("generated defs equal the original client defs", () => {
         }
     });
 
-    it("map objects: original ids first in client order, same values", () => {
+    it("map objects: original ids first in client order, same values but the policy's structure overrides", () => {
         const ids = Object.keys(live.mapObjects);
         expect(Object.keys(mapObjects).slice(0, ids.length)).toEqual(ids);
-        for (const id of ids) expect(mapObjects[id], id).toEqual(live.mapObjects[id]);
+        const overrides = new Set<string>(portPolicy.survevMapObjects);
+        for (const id of ids) {
+            if (overrides.has(id)) expect(provenance.mapObjects[id], id).toBe("survev-override");
+            else expect(mapObjects[id], id).toEqual(live.mapObjects[id]);
+        }
     });
 
     it("client-visible map parts come from the original client", () => {

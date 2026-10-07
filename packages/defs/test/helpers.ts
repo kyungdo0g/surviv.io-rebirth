@@ -27,6 +27,8 @@ export const portPolicy: {
     survevOnlyGameObjects: string[];
     survevSkins: Record<string, string>;
     survevGameConfig: string[];
+    survevMapGen?: boolean;
+    survevMapObjects: string[];
 } = JSON.parse(readFileSync(`${REPO_ROOT}tools/port-survev/policy.json`, "utf8"));
 
 /** Every survev-only game object id the port takes (listed ids and skins). */

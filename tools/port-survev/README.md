@@ -47,6 +47,11 @@ this order (0 is the empty type), so every original def keeps the index its posi
    `karambit_borealis` likewise) and `survevGameConfig` (GameConfig paths from survev, arrays cut to
    the original's length; a whole table keeps the original's keys first: today `bagSizes`, survev's five levels). Unknown keys are errors; a listed id that is
    original or not in survev is an error.
+   `survevMapGen` (survev content wave stage 3): map generation as survev has it, so the balance revert skips every
+   `mapSpawns` entry and the map-level `other` entries (cache variants, Cobalt's unlock timing, Potato vs Tomato's
+   air drop weights), `revertForkReskins` is off and the event-map fixes apply only their loot parts.
+   `survevMapObjects`: original map object ids whose survev def replaces the original whole (status
+   `survev-override`; `category` renamed back and unported loot dropped as for survev-only objects).
 1. **Game objects** are the original client defs, unchanged, then the policy's survev-only ids in survev order
    (`provenance.gameObjects`: `"original"` or `"survev-only"`). Other survev-only ids are left out
    (`provenance.excluded.gameObjects`). survev fields the original lacks are not merged into original defs.

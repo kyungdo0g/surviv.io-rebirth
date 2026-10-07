@@ -95,8 +95,15 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "obstacle.button.sound": impl("sound.on names a recorder's recording (RecorderEvent); otherwise client"),
     "obstacle.button.destroyOnUse": impl("interact.ts useButton / updateObstacleTimers"),
     "obstacle.button.useParticle": client(),
-    // button.useStyle / useLock / useCooldown / useExpiration / resetAfterCooldown stay implemented (interact.ts,
-    // doors.ts) but no v0.8.82 object uses them since the port stopped keeping survev's fork-only maps' objects
+    // survev-only buttons (survev content wave stage 3): the Reserve's and the Cloud bunker's control panels, the
+    // Augmenting Vat
+    "obstacle.button.useStyle": impl("interact.ts useButton -> doors.ts scheduleDoor (close / open / toggle)"),
+    "obstacle.button.useLock": impl("interact.ts useButton -> doors.ts (lock / unlock the doors)"),
+    "obstacle.button.useCooldown": impl("interact.ts interactObstacle (interactCooldown)"),
+    "obstacle.button.useExpiration": impl("interact.ts useButton -> doors.ts updateDoorTimers (memorized state)"),
+    "obstacle.button.resetAfterCooldown": impl("interact.ts updateObstacleTimers (flips back after the cooldown)"),
+    "obstacle.button.roleToPromote": impl("interact.ts useButton -> roles promote (Augmenting Vat: classless)"),
+    "obstacle.button.isVat": client("survev client: vat interaction text and art"),
     // buildings
     "building.type": data(),
     "building.scale": data("buildings always spawn at scale 1"),
@@ -142,10 +149,6 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "building.floor_loot": factoryParam,
     "building.stand": factoryParam,
     "building.cabin_mount": factoryParam,
-    "building.tree": factoryParam,
-    "building.tree_scale": factoryParam,
-    "building.tree_loot": factoryParam,
-    "building.bush_chance": factoryParam,
     "building.entry_loot": factoryParam,
     "building.mid_obs_01": factoryParam,
     "building.center_loot": factoryParam,
@@ -180,11 +183,15 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "building.mapObjects.ori": mapgen(),
     "building.mapObjects.inheritOri": mapgen(),
     "building.mapObjects.ignoreMapSpawnReplacement": mapgen(),
+    "building.mapObjects.layer": impl("generator.ts genBuilding (child.layer ?? building layer)"),
     "building.mapObjects.puzzlePiece": impl("generator.ts -> entities.ts Obstacle.puzzlePiece -> puzzles.ts"),
     "building.healRegions.collision": impl("entities.ts Building.healRegions"),
     "building.healRegions.healRate": impl("buildings.ts healRegionRate"),
     // structures
     "structure.type": data(),
+    "structure.teamId": data(
+        "survev faction-side placement (map.ts:1475-1485); only snow's mansion_structure_01x has it",
+    ),
     "structure.terrain": mapgen(),
     "structure.ori": mapgen(),
     "structure.mapObstacleBounds": mapgen(),

@@ -1,8 +1,8 @@
 // Where the survev-only guns spawn on every map: survev's own placements on the maps we have (the port keeps them,
 // tools/port-survev/lib/survevLoot.ts) plus the rebirth Barrett in the classic gold drop (rebirth/survevGuns.ts).
 // "Reachable" follows what each map can hand out (test/reach.ts). Placements that survev has in tables nothing on our
-// maps reaches yet are pinned too: they become live with the later survev waves (the crimson air drop, the Reserve,
-// the Pirate's Bounty perk, Cobalt's Classless crates, 50v50's gold military crate).
+// maps reaches yet are pinned too: they become live with the later survev waves (the Pirate's Bounty kills, Cobalt's
+// common Classless crate, 50v50's gold military crate); the crimson air drop and the Reserve came with stage 3.
 import { describe, expect, it } from "vitest";
 import {
     GOLD_DROP_TABLE,
@@ -65,20 +65,25 @@ const REACHABLE: Readonly<Record<string, Readonly<Record<string, readonly string
         barrett: ["tier_airdrop_rare 1.5", "tier_airdrop_tier2 0.075", "tier_airdrop_uncommon 0.075", "tier_guns 0.06"],
         sw500: ["tier_airdrop_rare 2", "tier_airdrop_tier2 0.25", "tier_airdrop_uncommon 0.25", "tier_guns 0.09"],
     },
-    // cobalt: Tank and Demo class pods, Master Scavenger kills (survev/shared/defs/maps/baseDefs.ts:464, 494, 548)
+    // cobalt: Tank and Demo class pods, Master Scavenger kills (survev/shared/defs/maps/baseDefs.ts:464, 494, 548), and
+    // since survev's Twins bunker (survev content wave stage 3) the Classless rare crate
     cobalt: {
         imbel: ["tier_guns_common_tank 0.5"],
-        spas16: ["tier_guns_rare_demo 0.4", "tier_scavenger_adv 1"],
+        spas16: ["tier_guns_rare_classless 1", "tier_guns_rare_demo 0.4", "tier_scavenger_adv 1"],
+    },
+    // desert (survev content wave stage 3): the crimson air drop and the Reserve's Gold Crimson Case
+    // (tier_airdrop_crimson), the Reserve's wine racks (tier_revolvers; survev desertDefs.ts)
+    desert: {
+        barrett: ["tier_airdrop_crimson 1"],
+        sw500: ["tier_airdrop_crimson 1", "tier_revolvers 0.5"],
+        ash12: ["tier_airdrop_crimson 1"],
     },
 };
 
 /** Placements survev has that no object on our maps reaches yet, by table, with where they will come from. */
 const LATER_WAVES: Readonly<Record<string, { guns: readonly string[]; source: string }>> = {
-    tier_airdrop_crimson: {
-        guns: ["ash12", "sw500", "barrett"],
-        source: "desert crimson air drop, Reserve vault case",
-    },
-    tier_revolvers: { guns: ["sw500"], source: "the Reserve's wine racks (rack_01)" },
+    tier_airdrop_crimson: { guns: ["ash12", "sw500", "barrett"], source: "other maps' copies (desert only, live)" },
+    tier_revolvers: { guns: ["sw500"], source: "other maps' copies (the Reserve's wine racks, desert only, live)" },
     tier_pirate_rare: { guns: ["sw500", "ash12", "barrett"], source: "desert: Pirate's Bounty kills (Gold Cutlass)" },
     tier_airdrop_mythic: { guns: ["barrett"], source: "50v50 gold military crate (crate_13)" },
     tier_guns_common_classless: { guns: ["imbel"], source: "Cobalt Classless crates" },
@@ -107,9 +112,8 @@ describe("survev-only guns: loot placements", () => {
                 }
             }
         }
-        // desert, Halloween, Turkey, Birthday and Beach hand out none of them yet
-        for (const name of ["desert", "halloween", "turkey", "birthday", "beach"])
-            expect(REACHABLE[name]).toBeUndefined();
+        // Halloween, Turkey, Birthday and Beach hand out none of them yet
+        for (const name of ["halloween", "turkey", "birthday", "beach"]) expect(REACHABLE[name]).toBeUndefined();
     });
 
     it("Potato vs Tomato's Lone Survivr carries the PMG-134 40 % of the time (survev factionPotatoDefs)", () => {

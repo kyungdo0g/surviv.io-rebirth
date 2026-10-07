@@ -20,7 +20,7 @@ import {
 } from "./lib/maps.ts";
 import { objectPaths, portGameConfig, portGameObjects, portMapObjects } from "./lib/objects.ts";
 import { loadPolicy, portedSurvevIds } from "./lib/policy.ts";
-import { keepSurvevPlacements, restoreSurvevPlacements } from "./lib/survevLoot.ts";
+import { keepSurvevPlacements, restoreSurvevPlacements, splitMapGenEntries } from "./lib/survevLoot.ts";
 import { stableJson } from "./lib/util.ts";
 import { validate } from "./lib/validate.ts";
 
@@ -59,7 +59,9 @@ if (existsSync(BALANCE_REVERT)) {
         policy.survevSkins,
         Object.keys(maps.maps),
     );
-    const entries = kept.apply;
+    // survev map generation (policy survevMapGen): map-spawn entries and map-level game config entries stay unapplied
+    const mapGen = policy.survevMapGen ? splitMapGenEntries(kept.apply) : { apply: kept.apply, skipped: [] };
+    const entries = mapGen.apply;
     const survevOnlyMapObjects = Object.fromEntries(
         Object.entries(survev.mapObjects).filter(([id]) => !(id in live.mapObjects)),
     );
@@ -72,17 +74,17 @@ if (existsSync(BALANCE_REVERT)) {
         mapObjectStatus: Object.fromEntries(Object.keys(survevOnlyMapObjects).map((id) => [id, "survev-only"])),
         knownMapObjects: new Set([...Object.keys(live.mapObjects), ...Object.keys(survev.mapObjects)]),
     });
-    balanceRevert.push(...kept.skipped);
+    balanceRevert.push(...kept.skipped, ...mapGen.skipped);
 } else {
     balanceRevertNote = `${BALANCE_REVERT_REL} not found: balance reverts skipped (re-run the port once it exists)`;
     console.warn(`warning: ${balanceRevertNote}`);
 }
 
 // 3b. fork reskins (woods/faction/cobalt caches, desert crimson airdrop) back to the original objects
-const reskinReverts = revertForkReskins(maps.maps, live.mapObjects);
+const reskinReverts = policy.survevMapGen ? [] : revertForkReskins(maps.maps, live.mapObjects);
 
 // 3c. event maps whose revert baseline was not the original (Savannah, Turkey, seasonal variants) + loot bans
-const eventMapFixes = applyEventMapFixes(maps.maps);
+const eventMapFixes = applyEventMapFixes(maps.maps, { lootOnly: policy.survevMapGen });
 // 3d. survev's placements of the ported survev-only items in tables a fix rebuilt (Savannah), bans permitting
 const survevPlacements = restoreSurvevPlacements(maps.maps, survev.mapDefs, ported, LOOT_BANS);
 
@@ -92,7 +94,13 @@ const lootRemovals = cleanLootTables(maps.maps, gameObjects.defs);
 const roleOverrideRemovals = cleanRoleOverrides(maps.maps, gameObjects.defs);
 
 // 5. map objects: original + survev-only ones the maps need
-const mapObjects = portMapObjects(live.mapObjects, survev.mapObjects, maps.maps, gameObjects.defs);
+const mapObjects = portMapObjects(
+    live.mapObjects,
+    survev.mapObjects,
+    maps.maps,
+    gameObjects.defs,
+    policy.survevMapObjects,
+);
 
 // 6. GameConfig: original client wins, survev supplies server constants
 const gameConfig = portGameConfig(live.gameConfig, survev.gameConfig, gameObjects.defs, policy.survevGameConfig);

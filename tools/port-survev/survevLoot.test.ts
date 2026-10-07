@@ -1,9 +1,9 @@
 // Unit tests of the port policy (lib/policy.ts), the survev-only game objects and skins (lib/objects.ts) and the
 // survev placements of ported items (lib/survevLoot.ts), on synthetic data.
 import { describe, expect, it } from "vitest";
-import { portGameConfig, portGameObjects } from "./lib/objects.ts";
+import { portGameConfig, portGameObjects, portMapObjects } from "./lib/objects.ts";
 import { parsePolicy } from "./lib/policy.ts";
-import { keepSurvevPlacements, restoreSurvevPlacements } from "./lib/survevLoot.ts";
+import { keepSurvevPlacements, restoreSurvevPlacements, splitMapGenEntries } from "./lib/survevLoot.ts";
 
 const policy = parsePolicy({
     survevOnlyGameObjects: ["barrett", "bullet_barrett"],
@@ -135,5 +135,50 @@ describe("survev placements of ported items", () => {
         expect(log).toEqual([
             { map: "savannah", tier: "tier_guns", item: "barrett", weight: 0.06, reason: "survev placement restored" },
         ]);
+    });
+});
+
+describe("survev map generation and structure overrides (stage 3)", () => {
+    it("parses survevMapGen and survevMapObjects", () => {
+        const p = parsePolicy({ survevMapGen: true, survevMapObjects: ["desert_town_02"] });
+        expect(p.survevMapGen).toBe(true);
+        expect(p.survevMapObjects).toEqual(["desert_town_02"]);
+        expect(parsePolicy({}).survevMapGen).toBe(false);
+        expect(() => parsePolicy({ survevMapGen: "yes" })).toThrow(/boolean/);
+    });
+
+    it("skips map-spawn and map-level entries, keeps loot and gameplay entries", () => {
+        const entries = [
+            { section: "mapSpawns", target: "main.mapGen.fixedSpawns.warehouse_03" },
+            { section: "other", target: "cobalt.gameConfig.unlocks.timings[bunker_twins_sublevel_01]" },
+            { section: "other", target: "cache variants (cache_01cb, ...)" },
+            { section: "other", target: "GameConfig.player.downedDamageBuffer" },
+            { section: "lootTables", target: "main.lootTable.tier_guns[ak47]" },
+        ];
+        const out = splitMapGenEntries(entries);
+        expect(out.skipped.map((s) => s.entry.target)).toEqual(entries.slice(0, 3).map((e) => e.target));
+        expect(out.apply).toEqual(entries.slice(3));
+    });
+
+    it("a structure override takes survev's def in the original's slot, with the category renamed back", () => {
+        const live = { town: { type: "structure", layers: [] }, wall: { type: "obstacle", obstacleType: "wall" } };
+        const survev = {
+            town: { type: "structure", layers: [{ type: "vault" }] },
+            vault: { type: "building", mapObjects: [{ type: "safe" }] },
+            safe: { type: "obstacle", category: "safe", loot: [{ type: "gone" }, { type: "kept" }] },
+            wall: { type: "obstacle", category: "wall" },
+        };
+        const maps = { m: { mapGen: { fixedSpawns: [{ town: 1 }] } } };
+        const out = portMapObjects(live, survev, maps, { kept: {} }, ["town"]);
+        expect(Object.keys(out.defs)).toEqual(["town", "wall", "vault", "safe"]);
+        expect(out.defs.town).toEqual(survev.town);
+        expect(out.status).toEqual({
+            town: "survev-override",
+            wall: "original",
+            vault: "survev-only",
+            safe: "survev-only",
+        });
+        expect(out.defs.safe).toEqual({ type: "obstacle", obstacleType: "safe", loot: [{ type: "kept" }] });
+        expect(() => portMapObjects(live, survev, maps, {}, ["vault"])).toThrow(/not in both sources/);
     });
 });

@@ -346,10 +346,12 @@ export class MapGenerator {
             if (!partType) continue;
             const partOri = child.inheritOri === false ? child.ori : (child.ori + o) % 4;
             const partPos = math.addAdjust(pos, child.pos, o);
+            // a child may name its own layer (survev map.ts genBuilding: mapObject.layer ?? layer; the Twins bunker's
+            // surface button)
             const part = this.genAuto(
                 partType,
                 partPos,
-                layer,
+                child.layer ?? layer,
                 partOri,
                 child.scale,
                 building.id,

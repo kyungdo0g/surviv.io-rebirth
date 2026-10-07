@@ -17,7 +17,7 @@ may not touch, the schema number used and open questions.
 |---|---|---|---|
 | 1 | melee `iceaxe`, `cutlass`, `cutlass_gold`, skins `naginata_daemon`, `karambit_borealis`; throwables `coconut`, `tomato` + explosions; `pirate` perk | done | be03cb6 |
 | 2 | gear / perks / roles (backpack04, 5-level bags, 6 more perks, captain, classless) | done | see `git log --grep "stage 2"` |
-| 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | next (owner: top priority) | |
+| 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | port + sim done; test map next | see `git log --grep "stage 3"` |
 | 4 | cosmetics (outfits, emotes, heal / boost effects) | planned | |
 | 5 | balance option B (no balance revert for shared gameplay fields) | planned | |
 
@@ -53,6 +53,22 @@ may not touch, the schema number used and open questions.
 - Changed tests (not bot tests): `faction.test.ts` succession test, `protocol/test/game.m7.test.ts` (role
   `captain`), `modes.rules.test.ts` (woods bag rows 5 levels), `modes.cobalt.test.ts` (mythic pod has `lifeline`),
   `gameConfig.test.ts`, `integrity.test.ts`, `survevGuns.test.ts` (5-level bags).
+
+### Stage 3 details
+
+- Port: `policy.json` `survevMapGen: true` (survev's map generation: map-spawn balance reverts, the fork-reskin revert
+  and the map-generation parts of the event-map fixes are off; loot parts stay) and `survevMapObjects` (nine original
+  structures take survev's def: desert_town_02 = the Reserve's town, house_red_01x/02x, mansion_01x,
+  bunker_chrys_compartment_01/03, bunker_twins_01, bunker_twins_sublevel_01, bunker_twins_compartment_01; provenance
+  status `survev-override`). `lib/policy.ts`, `lib/objects.ts portMapObjects`, `lib/eventMaps.ts` (`lootOnly`),
+  `lib/survevLoot.ts splitMapGenEntries`, `port.ts`.
+- Sim: puzzle codes `bunker_chrys_02`, `bunker_twins`, `reserve_vault` (`world/puzzles.ts`); building children with
+  their own layer (`mapgen/generator.ts`); field triage (`world/coverage.ts`). Tests:
+  `packages/sim/test/survevBuildings.test.ts` (Reserve vault + security panel, camp and Oasis heal, Workshop mount,
+  Augmenting Vat, Cloud bunker panel); mapValidation cases, mapgen golden and event-map tests moved to survev's
+  generation.
+- Client: `apps/client/scripts/sound-defs.ts` also collects map-object sounds and survev-only groups (Reserve music,
+  egg and tomato breaks).
 
 ## Changes needed in the lead's files
 
@@ -102,7 +118,34 @@ already recorded in `docs/research/conflicts.md#survev-throwable-cookable`.
 - HUD: a fifth backpack level needs no change (bag counts come from GameConfig); two loot perks show as two perk
   slots like role perks.
 
-### 4. Held melee sprites
+### 4. Bot tests broken by survev's map generation (stage 3) — `packages/bots/test/**` (lead-owned, not touched)
+
+survev's map generation moves every object of `main` seed 12345 (golden hash `555953c84482c164` -> `7f48d105692eadcd`),
+so the bot tests that pin object ids or coordinates of that map fail:
+- `walk.test.ts`, `nav.test.ts`, `nav.follower.test.ts`: `house_red_02` id 1391 no longer exists. The main 12345
+  `house_red_02`s are now ids 1402 (610.1, 583.7, ori 0), 1440 (491.3, 144.5, ori 1) and 1478 (127.3, 501.2, ori 3).
+  Re-pin, or better find the first `house_red_02` by type.
+- `nav.basements.test.ts` "plans through narrow doorways": the storm-bunker hut cells (x 564-567, y 562-565) moved;
+  the storm bunker (`bunker_structure_05`) is now id 209.
+
+### 5. Survev building particles (`apps/client/src/fx/particleDefs*.ts`, lead-owned)
+
+`apps/client/test/particles.test.ts` allowlists these until they exist (`PARTICLE_PENDING`, `campfire_smoke`):
+- `depositBoxSilverBreak` (survev `client/src/objects/particles.ts:772`: part-plate-01, life 0.5-1, drag 6-8, rotVel
+  0-3π, scale 0.2-0.35 -> 0.18-0.25, grey hsv(0, 0, 0.68-0.72)), `toiletGoldChip` (:1613, part-spark-02, life 0.5,
+  drag 1-10, scale 0.04-0.08 -> 0.01-0.02, gold hsv(0.14, 0.72-0.86, 0.71-0.85)), `toiletGoldBreak` (:1632, same
+  colour, life 0.8-1, drag 4-5, scale 0.07-0.12 -> 0.05-0.1), `leafSynthetic` (:992, part-leaf-01, hsv(0.44, 0.8,
+  0.2-0.3)), and the emitter `campfire_smoke` (:3520: particle cabinSmoke, rate 2-4, speed 1-1.5, angle 0.1π).
+  Remove the allowlist entries when they land.
+
+### 6. Air drop tier tests (lead's rebirth feature, test files edited minimally)
+
+Desert's crimson air drop (`airdrop_crate_05` -> `crate_17`, `tier_airdrop_crimson`) is back with survev's map
+generation. `AIRDROP_TIER_SPLITS` already leaves it unsplit (special crate). Two assertions now name it:
+`packages/defs/test/airdropTiers.test.ts` (excluded from the gold-drop checks) and
+`packages/sim/test/airdropTiers.test.ts` (desert's crate set gains `airdrop_crate_05:`).
+
+### 7. Held melee sprites
 
 The Cutlass / Gold Cutlass use the existing `cutlass` idle pose and `cut` / `cutReverse` animations
 (`apps/client/src/objects/anims.ts`, unchanged); the held sprite comes from `worldImg` like other melee. Nothing to do

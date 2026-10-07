@@ -144,6 +144,8 @@ export interface BuildingChildDef {
     inheritOri?: boolean;
     ignoreMapSpawnReplacement?: boolean;
     puzzlePiece?: string;
+    /** survev: the child's own layer instead of the building's */
+    layer?: number;
 }
 
 /**

@@ -92,3 +92,26 @@ export function restoreSurvevPlacements(
     }
     return log;
 }
+
+/** Map-level game config targets of the `other` section that belong to map generation (unlocks, air drop crates). */
+const MAP_LEVEL_OTHER = /^(cache variants|[a-z0-9_]+\.gameConfig\.(unlocks|airdrop|planes)\b)/i;
+
+/**
+ * Splits the balance-revert entries for survev's map generation (policy.json survevMapGen, survev content wave stage
+ * 3): map-spawn entries, the cache-variant reskin entry and map-level game config entries (Cobalt's unlock timing,
+ * Potato vs Tomato's air drop crates) are skipped, so maps keep survev's buildings, spawn counts and variants.
+ */
+export function splitMapGenEntries(entries: readonly unknown[]): { apply: unknown[]; skipped: RevertLog[] } {
+    const reason = "survev map generation (tools/port-survev/policy.json survevMapGen)";
+    const apply: unknown[] = [];
+    const skipped: RevertLog[] = [];
+    for (const e of entries) {
+        const entry = e as RevertEntry;
+        const section = String(entry?.section ?? "").toLowerCase();
+        const mapGen =
+            section === "mapspawns" || (section === "other" && MAP_LEVEL_OTHER.test(String(entry?.target ?? "")));
+        if (mapGen) skipped.push({ status: "skipped", entry, reason });
+        else apply.push(e);
+    }
+    return { apply, skipped };
+}
