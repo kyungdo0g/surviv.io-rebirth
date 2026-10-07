@@ -1,7 +1,7 @@
 // Id <-> small integer mapping used to serialize definition ids on the wire, as in the original protocol:
-// id 0 is the empty type "", definitions follow in JSON key order. Game objects use 10 bits, map objects 12.
-import gameObjectsJson from "./generated/gameObjects.json" with { type: "json" };
-import mapObjectsJson from "./generated/mapObjects.json" with { type: "json" };
+// id 0 is the empty type "", definitions follow in JSON key order, then the rebirth-only defs (data.ts), so every
+// original type keeps its original id. Game objects use 10 bits, map objects 12.
+import { gameObjectsData, mapObjectsData } from "./data.ts";
 
 /**
  * Bump whenever the wire format in @rebirth/protocol changes, so clients built against an older format are rejected
@@ -11,9 +11,12 @@ import mapObjectsJson from "./generated/mapObjects.json" with { type: "json" };
  * · 6: M8 touch movement stick in Input (touchMoveActive bit, touchMoveDir 8+8, touchMoveLen u8) · 7: M9 DeadBody objects
  * (type code 5: layer, playerId u16, pos), bullet tracer speed factor (hasSpeedMult bit + 10 bits), the loot's
  * isPreloadedGun bit · 8: the player action's alternate-reload bit (the Mosin's full reload, original Action.ReloadAlt)
- * as the last field of the player table, in the action group.
+ * as the last field of the player table, in the action group · 9: rebirth air strike variants: each AirstrikeZones
+ * record ends with the zone's variant (2 bits, index into AIRSTRIKE_VARIANT_IDS); the rebirth-only bomb_heavy and
+ * explosion_bomb_heavy game types and the decal_bomb_heavy_explosion and decal_frag_large_explosion map types follow
+ * the generated ones.
  */
-export const PROTOCOL_SCHEMA_VERSION = 8;
+export const PROTOCOL_SCHEMA_VERSION = 9;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 
@@ -81,10 +84,10 @@ export function computeProtocolHash(
 
 export const GameObjectRegistry = new DefRegistry(
     "GameObjectDefs",
-    Object.keys(gameObjectsJson),
+    Object.keys(gameObjectsData),
     GAME_OBJECT_TYPE_BITS,
 );
-export const MapObjectRegistry = new DefRegistry("MapObjectDefs", Object.keys(mapObjectsJson), MAP_OBJECT_TYPE_BITS);
+export const MapObjectRegistry = new DefRegistry("MapObjectDefs", Object.keys(mapObjectsData), MAP_OBJECT_TYPE_BITS);
 
 export const PROTOCOL_HASH = computeProtocolHash(
     PROTOCOL_SCHEMA_VERSION,

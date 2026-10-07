@@ -47,6 +47,7 @@ import { ObjectWorld } from "../objects/world.ts";
 import { WorldQuery, type WorldQueryDeps } from "../objects/worldQuery.ts";
 import { Camera } from "../render/camera.ts";
 import { Renderer } from "../render/renderer.ts";
+import { airstrikeAnnouncement } from "../ui/airstrikeVariantStyle.ts";
 import { DebugHud } from "../ui/debugHud.ts";
 import { Hud, type HudFrame } from "../ui/hud.ts";
 import { Minimap } from "../ui/minimap.ts";
@@ -352,14 +353,19 @@ export class GameClient {
         this.effects.endSnapshot(s);
         this.teamPlay.applySnapshot(s, this.localId, this.world);
         this.worldFx?.apply(s);
-        this.minimap?.airstrikeZones.apply(s.airstrikeZones ?? []);
+        // rebirth: announce each new heavy or carpet air strike zone (ui/airstrikeVariantStyle.ts; normal stays silent)
+        for (const zone of this.minimap?.airstrikeZones.apply(s.airstrikeZones ?? []) ?? []) {
+            const text = zone.announce ? airstrikeAnnouncement(zone.variant) : null;
+            if (text) this.match.hud.announce(text);
+        }
         this.interp.push(s, performance.now() / 1000);
         this.air?.apply(s.planes ?? [], s.airdrops ?? []);
         if (this.minimap && s.mapIndicators?.length) {
             for (const ping of this.minimap.applyIndicators(s.mapIndicators)) {
+                const def = this.minimap.styledPing(ping);
                 // map-event pings always play at full volume (survev emote.ts addPing)
-                this.audio.playSound(ping.def.sound, { channel: "ui" });
-                if (ping.def.mapEvent) this.pingIndicator.show(ping.def, ping.pos);
+                this.audio.playSound(def.sound, { channel: "ui" });
+                if (def.mapEvent) this.pingIndicator.show(def, ping.pos);
             }
         }
         if (!this.local) this.effects.preloadWeapons(s.local);

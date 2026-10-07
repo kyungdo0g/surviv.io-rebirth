@@ -370,6 +370,10 @@ function exposeGlobals(
         get pingIndicator() {
             return client.pingIndicator.active;
         },
+        /** air strike planes the client created since boot (rebirth variants: carpet sends 6) */
+        get strikePlanesSeen() {
+            return client.air?.strikePlanesSeen ?? 0;
+        },
     };
 }
 
@@ -523,6 +527,12 @@ function exposeM5(client: GameClient): void {
         get airstrikeZones() {
             return client.minimap?.airstrikeZones.list ?? [];
         },
+        /** tint of the last map-event ping's edge indicator (rebirth: ping_airstrike takes the zone's colour) */
+        get pingTint() {
+            return client.pingIndicator.tint;
+        },
+        /** burst particle scale last drawn for an explosion type (rebirth: sized from the def radius) */
+        burstScale: (type: string) => client.worldFx?.explosions.lastBurstScale.get(type) ?? 0,
         get recorders() {
             return client.worldFx?.recorders ?? 0;
         },

@@ -62,7 +62,7 @@ export class WorldFx {
         this.explosions = new ExplosionSystem({
             particles: deps.particles,
             audio: deps.audio,
-            addShake: (pos, intensity) => deps.camera.addShake(pos, intensity),
+            addShake: (pos, intensity, rangeMult) => deps.camera.addShake(pos, intensity, rangeMult),
             isWater: (pos) => surface(pos, 0) === "water",
             rippleColor,
             insideCeiling: (pos) => deps.world.insideCeiling(pos),

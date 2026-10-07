@@ -36,6 +36,14 @@ export interface PingFields {
     sound?: string;
 }
 
+/** A map-event ping that just appeared (its sound and edge indicator). */
+export interface AppearedPing {
+    id: number;
+    type: string;
+    def: PingFields;
+    pos: Vec2;
+}
+
 /** A sprite on the minimap with the original MapSprite fade: in over 0.1 s, out over the last 0.5 s. */
 interface MapSprite {
     sprite: Sprite;
@@ -150,8 +158,8 @@ export class MapIndicators {
     }
 
     /** Applies a snapshot's markers; returns the pings that just appeared (their sound and edge indicator). */
-    apply(list: readonly MapIndicatorView[]): Array<{ def: PingFields; pos: Vec2 }> {
-        const appeared: Array<{ def: PingFields; pos: Vec2 }> = [];
+    apply(list: readonly MapIndicatorView[]): AppearedPing[] {
+        const appeared: AppearedPing[] = [];
         for (const data of list) {
             if (data.dead) {
                 this.remove(data.id);
@@ -166,13 +174,24 @@ export class MapIndicators {
                 ind = this.create(data);
                 this.indicators.set(data.id, ind);
                 const def = GameObjectDefs[data.type] as { type?: string } | undefined;
-                if (def?.type === "ping")
-                    appeared.push({ def: def as PingFields, pos: { x: data.pos.x, y: data.pos.y } });
+                if (def?.type === "ping") {
+                    appeared.push({
+                        id: data.id,
+                        type: data.type,
+                        def: def as PingFields,
+                        pos: { x: data.pos.x, y: data.pos.y },
+                    });
+                }
             }
             for (const s of ind.sprites) if (!s.pulse) s.pos = { x: data.pos.x, y: data.pos.y };
             if (ind.indicator) ind.indicator.equipped = data.equipped;
         }
         return appeared;
+    }
+
+    /** Re-tints a map-event ping's icon and pulse ring (rebirth: air strike variant colours). */
+    tint(id: number, tint: number): void {
+        for (const s of this.indicators.get(id)?.sprites ?? []) s.sprite.tint = tint;
     }
 
     private addSprite(id: string, pos: Vec2, scale: number, lifetime: number, tint: number, z: number): MapSprite {

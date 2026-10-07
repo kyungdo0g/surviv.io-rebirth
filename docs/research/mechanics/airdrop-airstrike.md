@@ -129,6 +129,8 @@
 
 ## Air strike zones (50v50 scheduled strikes)
 
+> The rebirth rolls a variant for every scheduled zone (normal as below, heavy shells, carpet bombing with 6 planes) at the owner's request; see `rebirth-deviations.md`.
+
 - Timing options per entry: `airstrikeZoneRad` (60, 55, 50, 45, 40 for circles 1–5), `wait` 1.5 s before the first plane, `delay` 1 s between planes [src:survev/shared/defs/maps/factionDefs.ts:104-193] [M]
 - Plane-count weights: circle 1 {3: 5, 4: 1, 5: 0.1}; circle 2 {3: 4, 4: 1, 5: 0.1}; circle 3 {3: 3, …}; circle 4 {3: 2, …}; circle 5 {3: 1, 4: 1, 5: 0.1}; default 3 [src:survev/shared/defs/maps/factionDefs.ts:107-187] [src:survev/server/src/game/objects/plane.ts:109-111] [M]
 - Zone centre (`getAirstrikeZonePos`): connected living players are shuffled. For each, count non-dead, non-underground (layer ≠ 1) players within `rad`, keep the best, and stop early once more than ⅓ of players are covered. Falls back to the safe-zone centre, then adds `randomPointInCircle(3)` and clamps to the map [src:survev/server/src/game/objects/plane.ts:128-163] [src:fandom/Air_Strike] [H]

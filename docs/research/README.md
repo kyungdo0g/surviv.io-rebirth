@@ -18,7 +18,7 @@ Blockquotes (`> ...`) are for editorial notes and are not checked.
 
 Source prefixes (see `sources.md`): `survev/<path>:<line>`, `fandom/<Page_Title>`, `wikigg/<Page_Title>`, `wp-en/<Page>`, `wp-ko/<Page>`,
 `namu/<문서명>` (search snippet only, never `[H]` on its own), `changelog/<version>`, `balance/<line>`, `l10n/<lang>:<key>`,
-`kong/<note>`, `web/<url>`, `derived/<note>`.
+`kong/<note>`, `web/<url>`, `derived/<note>`, `user/<date>-<topic>` (a deliberate rebirth deviation the project owner asked for).
 
 ## Precedence when sources disagree
 
@@ -37,6 +37,7 @@ Every disagreement goes to `conflicts.md`.
 | `README.md` | this file: scope, era target, line format, precedence, layout |
 | `sources.md` | source registry (prefixes, snapshots, maximum confidence) |
 | `conflicts.md` | every disagreement, merged and deduplicated: one `## <id>` entry with sides, proposed resolution and the files that raise it |
+| `rebirth-deviations.md` | deliberate deviations from v0.8.82 the project owner asked for (frag radius, 50v50 air strike variants), applied by `packages/defs/src/rebirth/` |
 | `open-questions.md` | every unresolved question, merged and deduplicated: one `## <id>` entry with proposed handling, related conflicts and files |
 | `history.md` | timeline from 2017 development to the 2026 Kongregate relaunch and the survev revival |
 | `community-ko.md` | Korean community: servers, clans, creators, DC Inside gallery |

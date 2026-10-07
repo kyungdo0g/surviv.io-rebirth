@@ -10,11 +10,12 @@
 //   Smokes:         u8 count x {id u16, layer 2, interior bit, pos mapPos, rad float 0..10 8 bits} (original Smoke
 //                   fields, interior as one bit instead of 6, plus the id), align
 //   AirstrikeZones: u8 count x {id u8, pos mapPos, rad float 0..256 8 bits, duration float 0..60 8 bits, zoneT float
-//                   0..1 8 bits} (original record with 16-bit positions, plus id and progress), align
+//                   0..1 8 bits, variant 2 bits} (original record with 16-bit positions, plus id, progress and the
+//                   rebirth air strike variant: index into AIRSTRIKE_VARIANT_IDS, schema 9), align
 //   Recorders (M5b): u8 count x {id u16, type map type, pos mapPos, layer 2}, align; the recording's sound id is the
 //                   def's button.sound.on (the original client played it from the button seq of the obstacle)
 import type { BitReader, BitWriter } from "@rebirth/core";
-import { GameConfig, getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
+import { AIRSTRIKE_VARIANT_IDS, GameConfig, getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
 import type {
     AirstrikeZoneView,
     ExplosionEvent,
@@ -52,6 +53,8 @@ const POS_Z_BITS = 10;
 const PROJ_DIR_BITS = 7;
 const SMOKE_RAD_BITS = 8;
 const ZONE_BITS = 8;
+/** rebirth air strike variant index (AIRSTRIKE_VARIANT_IDS, 3 of 4 values used) */
+const ZONE_VARIANT_BITS = 2;
 
 export function writeExplosions(w: BitWriter, ctx: NetCtx, list: readonly ExplosionEvent[]): void {
     writeCount(w, list.length, 8);
@@ -137,6 +140,7 @@ export function writeAirstrikeZones(w: BitWriter, ctx: NetCtx, list: readonly Ai
         w.writeBits(quantize(z.rad, 0, EffectLimits.AirstrikeZoneMaxRad, ZONE_BITS), ZONE_BITS);
         w.writeBits(quantize(z.duration, 0, EffectLimits.AirstrikeZoneMaxDuration, ZONE_BITS), ZONE_BITS);
         w.writeBits(quantize(z.zoneT, 0, 1, ZONE_BITS), ZONE_BITS);
+        w.writeBits(Math.max(0, AIRSTRIKE_VARIANT_IDS.indexOf(z.variant ?? "normal")), ZONE_VARIANT_BITS);
     }
     w.alignToNextByte();
 }
@@ -149,7 +153,10 @@ export function readAirstrikeZones(r: BitReader, ctx: NetCtx): AirstrikeZoneView
         const rad = dequantize(r.readBits(ZONE_BITS), 0, EffectLimits.AirstrikeZoneMaxRad, ZONE_BITS);
         const duration = dequantize(r.readBits(ZONE_BITS), 0, EffectLimits.AirstrikeZoneMaxDuration, ZONE_BITS);
         const zoneT = dequantize(r.readBits(ZONE_BITS), 0, 1, ZONE_BITS);
-        out.push({ id, pos, rad, duration, zoneT });
+        const variantIdx = r.readBits(ZONE_VARIANT_BITS);
+        const variant = AIRSTRIKE_VARIANT_IDS[variantIdx];
+        if (variant === undefined) throw new RangeError(`AirstrikeZones: unknown variant ${variantIdx}`);
+        out.push({ id, variant, pos, rad, duration, zoneT });
     }
     r.alignToNextByte();
     return out;

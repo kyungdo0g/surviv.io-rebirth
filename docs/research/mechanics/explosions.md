@@ -18,6 +18,8 @@
 
 ## Explosion types
 
+> The rebirth deliberately enlarges `explosion_frag` to 6.5–15.6 (×1.3) and adds the heavy air strike shell `explosion_bomb_heavy` (radius 14–38) at the owner's request; this table keeps the original values. See `rebirth-deviations.md`.
+
 | id | damage | obstacle × | rad min–max | shrapnel | source(s) | status | sources |
 |---|---|---|---|---|---|---|---|
 | `explosion_frag` | 125 | 1.1 | 5–12 | 12 × `shrapnel_frag` | frag grenade | original | [src:survev/shared/defs/gameObjects/explosionsDefs.ts:31-40] [src:kong/relaunch-client-defs] [src:fandom/Frag_Grenade] [src:wikigg/Frag_Grenade] [H] |

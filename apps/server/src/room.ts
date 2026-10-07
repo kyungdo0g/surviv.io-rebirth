@@ -119,6 +119,8 @@ export class GameRoom {
         this.mapName = mapName;
         this.teamMode = teamMode;
         this.game = new Game({ mapName, seed: seed >>> 0, teamMode }, { minPlayers: config.minPlayers });
+        // rebirth 50v50 air strike variants (AIRSTRIKE_VARIANTS; the sim rolls them on faction maps only)
+        this.game.rules.roles.factionAirstrikeVariants = { ...config.airstrikeVariants };
         this.cache = new ObjectCache({ width: this.game.mapData.width, height: this.game.mapData.height });
         this.mapMsg = encodeMapMsg(this.game.mapData);
         this.createdAt = now;

@@ -43,6 +43,11 @@ export class PingIndicator {
         this.container.visible = false;
     }
 
+    /** tint of the last ping shown (tests: rebirth air strike variant colours) */
+    get tint(): number {
+        return this.inner.tint;
+    }
+
     /** whether the indicator is showing (tests) */
     get active(): boolean {
         return this.fadeOut > 0;

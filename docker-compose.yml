@@ -19,6 +19,8 @@ services:
             # 1 behind a reverse proxy that sets X-Forwarded-For (client IPs for limits and bans)
             TRUST_PROXY: "${TRUST_PROXY:-0}"
             MAP_NAME: "${MAP_NAME:-main}"
+            # 50v50 air strike variant weights (normal:60,heavy:25,carpet:15; "normal" turns them off; docs/deploy.md)
+            AIRSTRIKE_VARIANTS: "${AIRSTRIKE_VARIANTS:-}"
             MAX_PLAYERS: "${MAX_PLAYERS:-80}"
             MAX_GAMES: "${MAX_GAMES:-16}"
             MIN_PLAYERS: "${MIN_PLAYERS:-2}"

@@ -191,7 +191,7 @@ export class Game implements GameApi, SimContext {
         this.deadBodies = new DeadBodySystem(this.world);
         const gasRng = subRng(options.seed, `gas:${options.mapName}`);
         this.gas = new Gas(this.mapData.width, this.mapData.height, gasRng, init.gasStages);
-        this.planes = new PlaneSystem(this, options.mapName, subRng(options.seed, `planes:${options.mapName}`));
+        this.planes = new PlaneSystem(this, options.mapName, options.seed);
         this.unlocks = new UnlockSystem(this);
         this.gas.onCircle = (circleIdx) => {
             this.planes.scheduleCircle(circleIdx);

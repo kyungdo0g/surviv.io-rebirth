@@ -83,6 +83,7 @@ directory (`/app` in the image).
 | `MODES` | Solo, Duo, Squad of `MAP_NAME` | the three play buttons, `map:teamMode,...` (e.g. `main:1,main:2,desert:4`; a map without `:n` plays its event queue) |
 | `MAX_PLAYERS` | `80` | players per game |
 | `FACTION_MAX_PLAYERS` | `100` | players per 50v50 game |
+| `AIRSTRIKE_VARIANTS` | `normal:60,heavy:25,carpet:15` | rebirth: roll weights of each scheduled 50v50 air strike zone's variant, `variant[:weight],...` (`normal` the v0.8.82 strike; `heavy` 5 heavy shells per plane with a 14-38 u blast over a zone 24 u larger; `carpet` 6 planes instead of 3-5). Weights are plain decimals from 0 to 1000000; unlisted variants get 0, a variant without a weight gets 1; `normal` turns the variants off. Strobe strikes are always normal (docs/research/rebirth-deviations.md) |
 | `MAX_GAMES` | `16` | games this process runs at once (find_game answers 503 `full` beyond) |
 | `MIN_PLAYERS` | `2` | living players (groups in team modes) a game needs to start |
 | `GAME_OVER_GRACE_MS` | `1800` | a finished game closes this long after the winner is decided |
