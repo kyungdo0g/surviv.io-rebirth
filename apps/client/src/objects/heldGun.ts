@@ -1,14 +1,23 @@
 // The held (top-down) image of a gun. Most of the rebirth's beta new guns have no top-down art yet (owner, 2026-10-07:
 // "if there's no texture, just hold a bar"): a new gun draws its own gun-<id>-01.img once the sprite manifest has it
-// (the drawn ones, packages/defs rebirth/heldGunArt.ts: the G36C, M16A4, SIG 550 and G3 since 2026-10-08, committed SVGs
-// under /rebirth/guns/), at scale 0.5 in its own colours with the sheet's hands, gun offset and recoil, else
-// a plain bar, the original bar sprites (gun-short-01 / gun-med-01 / gun-long-01: a white capsule with a dark outline,
-// tinted) stretched to the gun's barrel length the way the original bar guns are. The balance sheet's own bar entries
-// (docs/design/new-gun-stats.json worldImg, already sized that way) are kept; the ones it borrowed from another gun's
-// art (the potato cannon for the launchers, the AWM-S for the Hécate II and the Lynx, the PKP for the belt guns) become
-// a long bar sized and tinted by gun class. Every other gun draws its def's worldImg unchanged (the AK-47's own drawn
-// sprite comes with its def: heldGunArt.ts applyHeldGunArt).
-import { GameObjectDefs, type GunDef, gunClass, NEW_GUN_IDS } from "@rebirth/defs";
+// (the drawn ones, packages/defs rebirth/heldGunArt.ts: the G36C, M16A4, SIG 550 and G3, then the FN FAL, WA2000, M200,
+// Hécate II, Lynx and Boys, all 2026-10-08, committed SVGs under /rebirth/guns/), at scale 0.5 in its own colours with
+// the sheet's hands and recoil and its gun offset (the bullpups' own sprites take survev's (-8, 0),
+// HELD_GUN_ART_GUN_OFFSET), else a plain bar, the original bar sprites (gun-short-01 / gun-med-01 / gun-long-01: a
+// white capsule with a dark outline, tinted) stretched to the gun's barrel length the way the original bar guns are.
+// The balance sheet's own bar entries (docs/design/new-gun-stats.json worldImg, already sized that way) are kept; the
+// ones it borrowed from another gun's art (the potato cannon for the launchers, the PKP for the belt guns; the AWM-S
+// for the Hécate II and the Lynx, now drawn) become a long bar sized and tinted by gun class. The Mk 14 EBR stays a bar
+// on purpose (owner). Every other gun draws its def's worldImg unchanged (the AK-47's own drawn sprite comes with its
+// def: heldGunArt.ts applyHeldGunArt).
+import {
+    GameObjectDefs,
+    type GunDef,
+    gunClass,
+    HELD_GUN_ART_GUN_OFFSET,
+    type HeldGunArtId,
+    NEW_GUN_IDS,
+} from "@rebirth/defs";
 import { SPRITES } from "../assets/spriteManifest.ts";
 
 export type HeldGunImage = GunDef["worldImg"];
@@ -63,7 +72,14 @@ export function heldGunImage(def: GunDef): HeldGunImage {
     if (!id || !NEW_GUNS.has(id)) return img;
     const own = ownHeldSprite(id);
     if (SPRITES[own]?.path) {
-        return { ...img, sprite: own, scale: { x: 0.5, y: 0.5 }, tint: 0xffffff, magImg: undefined };
+        return {
+            ...img,
+            sprite: own,
+            scale: { x: 0.5, y: 0.5 },
+            tint: 0xffffff,
+            magImg: undefined,
+            gunOffset: HELD_GUN_ART_GUN_OFFSET[id as HeldGunArtId] ?? img.gunOffset,
+        };
     }
     if (isBarSprite(img.sprite)) return img;
     const style = CLASS_BAR[gunClass(id) ?? ""] ?? DEFAULT_BAR;

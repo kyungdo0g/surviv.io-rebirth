@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="192" viewBox="0 0 60 192">
+  <!-- Walther WA2000 held sprite, own art: seen from above, barrel up; bullpup, walnut body, rail tube over the barrel, folded bipod. -->
+  <!-- rear body (action behind the grip), the walnut cheek strip on top running to the butt pad; cocking knob on the right -->
+  <rect x="19" y="137" width="22" height="47" rx="2" fill="#555555" stroke="#000" stroke-width="8"/>
+  <rect x="19" y="141" width="22" height="43" rx="2" fill="#7d4b33" stroke="#000" stroke-width="4"/>
+  <path d="M26.5 156v22" stroke="#57321f" stroke-width="3"/>
+  <circle cx="30" cy="147" r="3" fill="#000"/>
+  <rect x="45" y="150" width="6" height="6" rx="2" fill="#000"/>
+  <rect x="14" y="184" width="32" height="8" rx="2" fill="#000"/>
+  <!-- receiver block, top rail with slots, knob-ended cross clamp at the rail front -->
+  <rect x="21" y="81" width="18" height="58" rx="2" fill="#555555" stroke="#000" stroke-width="8"/>
+  <rect x="25" y="87" width="10" height="34" fill="#000"/>
+  <path d="M26 99h8v2h-8zM26 105h8v2h-8zM26 111h8v2h-8zM26 117h8v2h-8z" fill="#555555"/>
+  <rect x="14" y="90" width="32" height="5" fill="#000"/>
+  <circle cx="14" cy="92.5" r="3" fill="#000"/>
+  <circle cx="46" cy="92.5" r="3" fill="#000"/>
+  <!-- walnut fore-end; the rail tube runs over it (the one highlight strip) -->
+  <rect x="18" y="22" width="24" height="59" rx="2" fill="#7d4b33" stroke="#000" stroke-width="6"/>
+  <rect x="26" y="21" width="8" height="62" fill="#000"/>
+  <rect x="28" y="24" width="4" height="56" fill="#8f8f8f"/>
+  <!-- folded bipod legs either side, spiked feet pointing back -->
+  <path d="M11 22v58M49 22v58" stroke="#000" stroke-width="4"/>
+  <path d="M8.5 78h5l-2.5 6zM46.5 78h5l-2.5 6z" fill="#000"/>
+  <!-- front yoke spanning the legs, with the bipod hinge knobs -->
+  <rect x="11" y="16" width="38" height="7" rx="2" fill="#000"/>
+  <circle cx="11" cy="20" r="4" fill="#000"/>
+  <circle cx="49" cy="20" r="4" fill="#000"/>
+  <!-- barrel stub and muzzle cap -->
+  <rect x="24" y="6" width="12" height="11" fill="#000"/>
+  <rect x="23" y="1" width="14" height="7" rx="2" fill="#000"/>
+</svg>

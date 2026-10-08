@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="232" viewBox="0 0 60 232">
+  <!-- PGM Hecate II held sprite, own art: seen from above, barrel up; black anti-materiel rifle with a box muzzle brake. -->
+  <!-- skeleton stock from above: hinge block, beam, cheek rest, butt pad (under the right hand in game) -->
+  <rect x="25" y="170" width="10" height="54" fill="#000"/>
+  <rect x="23" y="195" width="14" height="24" rx="1" fill="#484848" stroke="#000" stroke-width="6"/>
+  <rect x="16" y="222" width="28" height="10" rx="3" fill="#000"/>
+  <rect x="21" y="168" width="18" height="10" rx="1" fill="#000"/>
+  <!-- barrel reinforce: thick cylinder from the taper back into the receiver -->
+  <path d="M23 72h14l4 5v43H19V77z" fill="#484848" stroke="#000" stroke-width="6" stroke-linejoin="round"/>
+  <!-- receiver box (steel) -->
+  <rect x="17" y="119" width="26" height="48" rx="2" fill="#555555" stroke="#000" stroke-width="8"/>
+  <!-- bolt handle on the right: arm + ball -->
+  <path d="M46 160l6 6" stroke="#000" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="53" cy="167" r="4.5" fill="#000"/>
+  <!-- long top rail over the reinforce and the receiver; slots where it shows in front of the scope -->
+  <rect x="25" y="86" width="10" height="84" fill="#000"/>
+  <rect x="27" y="90" width="6" height="2" fill="#555555"/>
+  <rect x="27" y="96" width="6" height="2" fill="#555555"/>
+  <rect x="27" y="102" width="6" height="2" fill="#555555"/>
+  <rect x="27" y="108" width="6" height="2" fill="#555555"/>
+  <!-- scope from above: bell, rings, tube with the highlight strip, turret knobs out both sides with the elevation cap, eyepiece -->
+  <rect x="21" y="112" width="18" height="12" rx="2" fill="#000"/>
+  <rect x="25" y="122" width="10" height="52" fill="#000"/>
+  <rect x="9" y="146" width="42" height="10" rx="3" fill="#000"/>
+  <rect x="23" y="172" width="14" height="10" rx="2" fill="#000"/>
+  <rect x="28" y="124" width="4" height="22" fill="#8f8f8f"/>
+  <rect x="28" y="156" width="4" height="16" fill="#8f8f8f"/>
+  <rect x="23" y="132" width="14" height="4" fill="#000"/>
+  <rect x="23" y="163" width="14" height="4" fill="#000"/>
+  <circle cx="30" cy="151" r="6" fill="#000"/>
+  <!-- bipod clamp band -->
+  <rect x="14" y="81" width="32" height="6" rx="1" fill="#000"/>
+  <!-- heavy barrel, tapering to the muzzle -->
+  <path d="M24 26h12l1 47H23z" fill="#000"/>
+  <!-- box muzzle brake: the biggest, squarest part, port band across; split clamp collar behind it -->
+  <rect x="18" y="19" width="24" height="9" rx="1" fill="#000"/>
+  <rect x="29" y="21" width="2" height="5" fill="#555555"/>
+  <path d="M15 1h30l3 3v15l-3 3H15l-3-3V4z" fill="#000"/>
+  <rect x="16" y="9" width="28" height="4" fill="#555555"/>
+</svg>

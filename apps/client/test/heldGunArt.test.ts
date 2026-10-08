@@ -16,8 +16,21 @@ const FORBIDDEN =
     /<(text|image|linearGradient|radialGradient|filter|script|foreignObject|style|mask|use)\b|sodipodi|inkscape|xlink:href/i;
 
 describe("drawn top-down held sprites", () => {
-    it("the five drawn guns: the AK-47 and four beta rifles", () => {
-        expect(Object.keys(HELD_GUN_ART)).toEqual(["ak47", "g36c", "m16a4", "sig550", "g3"]);
+    it("the drawn guns: the AK-47, four beta rifles and six beta snipers and DMRs (the Mk 14 EBR stays a bar)", () => {
+        expect(Object.keys(HELD_GUN_ART)).toEqual([
+            "ak47",
+            "g36c",
+            "m16a4",
+            "sig550",
+            "g3",
+            "fal",
+            "wa2000",
+            "m200",
+            "hecate",
+            "lynx",
+            "boys",
+        ]);
+        expect(Object.hasOwn(HELD_GUN_ART, "mk14")).toBe(false);
     });
 
     it("each committed SVG exists at its served path, at its declared size, minimal and small", () => {

@@ -21,6 +21,8 @@ import {
     HEAVY_BOMB_DECAL_TYPE,
     HEAVY_BOMB_EFFECT_TYPE,
     HEAVY_BOMB_EXPLOSION,
+    HELD_GUN_ART,
+    HELD_GUN_ART_GUN_OFFSET,
     heldGunArt,
     IRON_BOMB_DECAL_TYPE,
     IRON_BOMB_RAD_MAX,
@@ -103,11 +105,27 @@ describe("rebirth balance deviations", () => {
             { id: "m16a4", sprite: "gun-m16a4-01.img", size: [48, 220] },
             { id: "sig550", sprite: "gun-sig550-01.img", size: [48, 188] },
             { id: "g3", sprite: "gun-g3-01.img", size: [48, 190] },
+            { id: "fal", sprite: "gun-fal-01.img", size: [48, 196] },
+            { id: "wa2000", sprite: "gun-wa2000-01.img", size: [60, 192] },
+            { id: "m200", sprite: "gun-m200-01.img", size: [60, 226] },
+            { id: "hecate", sprite: "gun-hecate-01.img", size: [60, 232] },
+            { id: "lynx", sprite: "gun-lynx-01.img", size: [60, 192] },
+            { id: "boys", sprite: "gun-boys-01.img", size: [60, 238] },
         ]);
-        // the beta rifles keep the balance sheet's bar in their defs (the client switches them, heldGun.ts)
-        for (const id of ["g36c", "m16a4", "sig550", "g3"]) {
+        // the beta guns keep the balance sheet's held image in their defs (the client switches them, heldGun.ts): its
+        // bar, or the AWM-S art it borrowed for the Hecate II and the Lynx; the bullpups' gun offset is client-only
+        for (const id of ["g36c", "m16a4", "sig550", "g3", "fal", "wa2000", "m200", "boys"]) {
             expect(getDefOfType("gun", id).worldImg.sprite, id).toMatch(/^gun-(med|long)-01\.img$/);
         }
+        for (const id of ["hecate", "lynx"]) expect(getDefOfType("gun", id).worldImg.sprite, id).toBe("gun-awc-01.img");
+        expect(HELD_GUN_ART_GUN_OFFSET).toEqual({ wa2000: { x: -8, y: 0 }, lynx: { x: -8, y: 0 } });
+        for (const id of ["wa2000", "lynx"]) expect(getDefOfType("gun", id).worldImg.gunOffset, id).toBeUndefined();
+        expect(Object.hasOwn(HELD_GUN_ART, "mk14")).toBe(false);
+        expect(getDefOfType("gun", "mk14").worldImg).toMatchObject({
+            sprite: "gun-long-01.img",
+            scale: { x: 0.5, y: 0.47 },
+            tint: 0xa08c6a,
+        });
     });
 
     it("the frag scorch mark grows x1.3 with its blast; the MIRV keeps the original decal", () => {

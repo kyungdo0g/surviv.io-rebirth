@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="226" viewBox="0 0 60 226">
+  <!-- CheyTac M200 Intervention held sprite, own art: seen from above, barrel up; FDE tube handguard, rod stock. -->
+  <!-- stock: two rods, cheek plate with its pad, butt pad (under the right hand in game) -->
+  <rect x="22" y="176" width="4" height="18" fill="#000"/>
+  <rect x="34" y="176" width="4" height="18" fill="#000"/>
+  <path d="M21 189h18l2 2v28H19v-28z" fill="#8c7a5a" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="26" y="193" width="8" height="22" fill="#6e5f45"/>
+  <rect x="15" y="219" width="30" height="7" rx="2" fill="#000"/>
+  <!-- receiver -->
+  <path d="M19 125h22l2 2v48l-2 2H19l-2-2v-48z" fill="#8c7a5a" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <!-- bolt handle: arm + ball, right side -->
+  <path d="M43 168l8 6" stroke="#000" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="52" cy="175" r="4.5" fill="#000"/>
+  <!-- long top rail (dark FDE, 3 px slots) -->
+  <rect x="25" y="129" width="10" height="38" fill="#6e5f45"/>
+  <path d="M25 134h10M25 141h10M25 148h10M25 155h10M25 162h10" stroke="#000" stroke-width="3"/>
+  <!-- bipod clamp: wraps under the tube, its ears stick out either side -->
+  <rect x="10" y="84" width="40" height="7" rx="2" fill="#000"/>
+  <!-- tube handguard, one piece, highlight strip along its top; barrel-nut ring at the receiver -->
+  <path d="M22 60h16l4 4v61H18V64z" fill="#8c7a5a" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="27" y="64" width="6" height="55" fill="#b5a585"/>
+  <rect x="13" y="119" width="34" height="6" rx="1" fill="#000"/>
+  <!-- heavy fluted barrel and muzzle crown -->
+  <rect x="24" y="4" width="12" height="58" fill="#000"/>
+  <rect x="29" y="10" width="2" height="46" fill="#555555"/>
+  <rect x="22" y="1" width="16" height="6" rx="1" fill="#000"/>
+</svg>

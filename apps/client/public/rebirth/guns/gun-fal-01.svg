@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="196" viewBox="0 0 48 196">
+  <!-- FN FAL held sprite, own art: seen from above, barrel up; wood furniture, steel receiver, left cocking handle. -->
+  <!-- buttstock widening to the butt, grain lines, butt plate (under the right hand in game) -->
+  <path d="M16 150h16l1 36H15z" fill="#9a5a2c" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M21.5 156v24M26.5 158v20" stroke="#6b3a17" stroke-width="3"/>
+  <rect x="11" y="190" width="26" height="6" rx="1" fill="#000"/>
+  <!-- receiver; the top cover is the highlight strip; rear sight block at its rear -->
+  <rect x="16" y="98" width="16" height="52" rx="2" fill="#555555" stroke="#000" stroke-width="8"/>
+  <rect x="22" y="104" width="4" height="32" fill="#8f8f8f"/>
+  <rect x="18" y="138" width="12" height="8" rx="1" fill="#000"/>
+  <!-- cocking handle sticking out on the left, at the receiver front -->
+  <rect x="8" y="102" width="6" height="3" fill="#000"/>
+  <rect x="3" y="99" width="8" height="8" rx="2" fill="#000"/>
+  <!-- carry handle folded to the right: arm and ribbed grip -->
+  <rect x="34" y="102" width="8" height="4" fill="#000"/>
+  <rect x="38" y="105" width="6" height="17" rx="2" fill="#000"/>
+  <rect x="40" y="108" width="2" height="11" fill="#555555"/>
+  <!-- wooden handguard with the side vents showing at its edges -->
+  <rect x="13" y="54" width="22" height="46" rx="3" fill="#9a5a2c" stroke="#000" stroke-width="6"/>
+  <path d="M18.5 63v7M18.5 73v7M18.5 83v7M29.5 63v7M29.5 73v7M29.5 83v7" stroke="#000" stroke-width="3"/>
+  <!-- barrel, front sight block with the post -->
+  <rect x="20" y="14" width="8" height="36" fill="#000"/>
+  <rect x="15" y="44" width="18" height="12" rx="2" fill="#000"/>
+  <rect x="22" y="48" width="4" height="4" fill="#8f8f8f"/>
+  <!-- slotted flash hider -->
+  <rect x="17" y="1" width="14" height="16" rx="2" fill="#000"/>
+  <rect x="20" y="4" width="2" height="9" fill="#555555"/>
+  <rect x="26" y="4" width="2" height="9" fill="#555555"/>
+</svg>
