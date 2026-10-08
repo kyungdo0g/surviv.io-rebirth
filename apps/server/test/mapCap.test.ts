@@ -53,4 +53,21 @@ describe("a room's player cap", () => {
         expect(host.findRoom("main", 1, 1)).not.toBe(room);
         for (let i = 0; i < 5; i++) room.tick();
     }, 60_000);
+
+    it("counts one place per fill bot that may leave when routing a party into a game near 255", () => {
+        const config = makeConfig({ log: false, maxPlayers: 255, botFill: 254, botFillIntervalMs: 0 });
+        const host = new GameHost(config);
+        const room = host.createRoom("main");
+        for (let i = 0; i < 253; i++) room.game.addPlayer(`gone ${i}`);
+        for (let i = 0; i < 5 && room.gamePlayerCount < 254; i++) room.tick();
+        expect([room.gamePlayerCount, room.bots?.count, room.bots?.replaceableCount()]).toEqual([254, 1, 1]);
+        // the one bot frees one place: a party of 4 would take the game to 257
+        expect(host.findRoom("main", 1, 4)).not.toBe(room);
+        expect(host.findRoom("main", 1, 2)).toBe(room);
+        const member: RoomMember = { ack: 0, bufferedAmount: 0, sendFrame: () => {} };
+        room.join(member, "a");
+        room.join(member, "b");
+        expect([room.gamePlayerCount, room.bots?.count]).toEqual([255, 0]);
+        expect(room.isFull).toBe(true);
+    }, 60_000);
 });

@@ -10,7 +10,7 @@
 // isGameStarted, getWinningTeamId, showStatsMsg, getGameoverPlayers, getPlayersSortedByRank) and objects/player.ts
 // (kill, down, promoteToKillLeader, addGameOverMsg); docs/research/ui/hud.md (kill feed, kill leader, death and win
 // screens).
-import { DamageType, getMapDef } from "@rebirth/defs";
+import { DamageType, getMapDef, playerLimit } from "@rebirth/defs";
 import { TICK_HZ } from "../api.ts";
 import type { DamageParams } from "../combat/damage.ts";
 import type { GameOverEvent, KillEvent, KillLeaderView, PlayerStatsView, RoleAnnouncementEvent } from "../view.ts";
@@ -41,7 +41,7 @@ export interface MatchOptions {
     sandbox: boolean;
     /** players alive for at least `rules.minActiveTime` needed to start (original: 2, survev isGameStarted) */
     minPlayers: number;
-    /** the game's player cap (GameOptions.maxPlayers): above the mode's maxPlayers it lets that many play */
+    /** the game's player cap (GameOptions.maxPlayers): where it grows the map, that many play (defs playerLimit) */
     maxPlayers?: number;
 }
 
@@ -100,10 +100,10 @@ export class Match {
     constructor(host: MatchHost, options: MatchOptions) {
         this.host = host;
         this.options = options;
-        const mode = getMapDef(host.options.mapName).gameMode;
-        this.killLeaderEnabled = mode.killLeaderEnabled;
-        // a cap above the mode's maxPlayers lets that many play (on a map grown for them: defs mapDefForPlayers)
-        this.maxPlayers = Math.min(MAX_PLAYERS_IN_GAME, Math.max(mode.maxPlayers, options.maxPlayers ?? 0));
+        const def = getMapDef(host.options.mapName);
+        this.killLeaderEnabled = def.gameMode.killLeaderEnabled;
+        // a cap that grows the map lets that many play (defs mapDefForPlayers, playerLimit)
+        this.maxPlayers = Math.min(MAX_PLAYERS_IN_GAME, playerLimit(def, options.maxPlayers));
     }
 
     /** Living players in join (id) order. */
@@ -126,8 +126,8 @@ export class Match {
 
     /**
      * Whether a new player may join: not over, fewer living players than the mode's maximum (or the game's player cap
-     * above it), fewer than MAX_PLAYERS_IN_GAME in the game, and the match started less than `joinWindowSeconds` ago
-     * (survev game.ts canJoin). Sandbox matches always accept joins.
+     * where it grows the map), fewer than MAX_PLAYERS_IN_GAME in the game, and the match started less than
+     * `joinWindowSeconds` ago (survev game.ts canJoin). Sandbox matches always accept joins.
      */
     canJoin(): boolean {
         if (this.options.sandbox) return true;

@@ -127,3 +127,13 @@ export function playerAreaFactor(def: MapDef, maxPlayers?: number): number {
     if (maxPlayers === undefined || !(maxPlayers > 0)) return 1;
     return Math.min(MAX_PLAYER_AREA_FACTOR, Math.max(1, maxPlayers / designPlayers(def)));
 }
+
+/**
+ * Living players a game of `def` takes under the player cap `maxPlayers`: the cap where it grows the map (above the
+ * design count), else the mode's maxPlayers, so the default caps change nothing (test_faction keeps its 80 under the
+ * 50v50 cap of 100). The sim's Match and the server's bot fill both use it.
+ */
+export function playerLimit(def: MapDef, maxPlayers?: number): number {
+    const mode = def.gameMode.maxPlayers;
+    return maxPlayers !== undefined && playerAreaFactor(def, maxPlayers) > 1 ? Math.max(mode, maxPlayers) : mode;
+}

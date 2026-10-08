@@ -162,7 +162,8 @@ export class Game implements GameApi, SimContext {
 
     constructor(options: GameOptions, init: GameInit = {}) {
         this.options = { ...options };
-        const mode = getMapDef(options.mapName).gameMode;
+        const design = getMapDef(options.mapName);
+        const mode = design.gameMode;
         // 50v50 always plays in squads inside the factions (the original 50v50 squad queue, survev config)
         if (mode.factionMode) this.options.teamMode = 4;
         // a cap above the map's design count grows the map (defs mapDefForPlayers; the same def object otherwise)
@@ -182,8 +183,10 @@ export class Game implements GameApi, SimContext {
         this.smokes = new SmokeSystem(this);
         this.deadBodies = new DeadBodySystem(this.world);
         const gasRng = subRng(options.seed, `gas:${options.mapName}`);
-        // a wider map stretches the gas and its schedules (match/gasScale.ts); explicit stages are used as given
-        const gasScale = init.gasStages ? 1 : gasTimeScale(mapDef, getMapDef(options.mapName), options.teamMode ?? 1);
+        // under a cap that grows the map, the gas and its schedules stretch by how much wider the map played is than
+        // the design (not at all for a design-size generation passed in: match/gasScale.ts); explicit stages stay
+        const stretch = mapDef !== design && !init.gasStages;
+        const gasScale = stretch ? gasTimeScale(this.mapData.width, design, options.teamMode ?? 1) : 1;
         this.gas = new Gas(
             this.mapData.width,
             this.mapData.height,

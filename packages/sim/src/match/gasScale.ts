@@ -7,14 +7,13 @@ import { type GasStage, type MapDef, mapWidth } from "@rebirth/defs";
 import { TICK_HZ } from "../api.ts";
 
 /**
- * How much the map a game plays on (defs mapDefForPlayers) is wider than its design map (the map's own def), in the
- * scale variant the game generates (squads play the large one): 1 when it is the same def.
+ * How much the map a game plays on (`playedWidth`, its generation's) is wider than its design map (the map's own def)
+ * in the scale variant the game generates (squads play the large one): 1 for a map no wider than the design, so a
+ * design-size generation keeps the design gas whatever the cap.
  */
-export function gasTimeScale(played: MapDef, design: MapDef, teamMode: 1 | 2 | 4): number {
-    if (played === design) return 1;
-    const variant = teamMode > 2 ? "large" : "small";
-    const s = mapWidth(played, variant) / mapWidth(design, variant);
-    return Math.abs(s - 1) < 1e-9 ? 1 : s;
+export function gasTimeScale(playedWidth: number, design: MapDef, teamMode: 1 | 2 | 4): number {
+    const s = playedWidth / mapWidth(design, teamMode > 2 ? "large" : "small");
+    return s > 1 + 1e-9 ? s : 1;
 }
 
 /**

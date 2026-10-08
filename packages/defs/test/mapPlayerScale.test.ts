@@ -14,6 +14,7 @@ import {
     mapDefForPlayers,
     mapWidth,
     playerAreaFactor,
+    playerLimit,
     REBIRTH_BUILDING_SPAWNS,
     REBIRTH_MAP_SCALE,
     scaleMapDef,
@@ -42,6 +43,16 @@ describe("maps follow the player cap", () => {
         expect(MAX_PLAYER_AREA_FACTOR).toBe(2);
         const main = getMapDef("main");
         expect([90, 120, 160, 200, 255].map((c) => playerAreaFactor(main, c))).toEqual([1.125, 1.5, 2, 2, 2]);
+    });
+
+    it("lets the cap's players in only where the cap grows the map", () => {
+        const limit = (name: string, cap?: number) => playerLimit(getMapDef(name), cap);
+        expect([undefined, 40, 80, 100, 160, 300].map((cap) => limit("main", cap))).toEqual([
+            80, 80, 80, 100, 160, 300,
+        ]);
+        expect([undefined, 100, 150, 200].map((cap) => limit("faction", cap))).toEqual([100, 100, 150, 200]);
+        // test_faction's mode says 80; the default 50v50 cap of 100 is its design count and changes nothing
+        expect([undefined, 80, 100, 101, 150].map((cap) => limit("test_faction", cap))).toEqual([80, 80, 80, 101, 150]);
     });
 
     it("rebuilds each map's own def from the unscaled one (the route a capped map takes)", () => {

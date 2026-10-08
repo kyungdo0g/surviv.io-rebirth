@@ -55,9 +55,8 @@ describe("a game's player cap", () => {
         expect(game.gas.timeScale).toBeCloseTo(1415 / 1034, 12);
     });
 
-    it("lets as many players join as the cap (the mode's maxPlayers at least, 255 at most)", () => {
-        const joinable = (maxPlayers: number | undefined, generation: GenerateMapResult) => {
-            const game = new Game({ mapName: "main", seed: 2, maxPlayers }, { generation, spawnLoot: false });
+    it("lets as many players join as a cap that grows the map (else the mode's maxPlayers; 255 at most)", () => {
+        const fill = (game: Game) => {
             let n = 0;
             while (game.canJoin() && n < 400) {
                 game.addPlayer(`p${n}`);
@@ -65,6 +64,8 @@ describe("a game's player cap", () => {
             }
             return n;
         };
+        const joinable = (maxPlayers: number | undefined, generation: GenerateMapResult) =>
+            fill(new Game({ mapName: "main", seed: 2, maxPlayers }, { generation, spawnLoot: false }));
         const design = cachedMap("main", 2);
         expect(joinable(undefined, design)).toBe(80);
         expect(joinable(40, design)).toBe(80);
@@ -73,7 +74,23 @@ describe("a game's player cap", () => {
         expect(MAX_PLAYERS_IN_GAME).toBe(255);
         expect(joinable(255, big)).toBe(255);
         expect(joinable(400, big)).toBe(255);
+        // test_faction (mode 80) under the default 50v50 cap of 100, its design count: still 80
+        const faction = (maxPlayers: number) =>
+            fill(new Game({ mapName: "test_faction", seed: 2, maxPlayers }, { spawnLoot: false }));
+        expect(faction(100)).toBe(80);
+        expect(faction(120)).toBe(120);
     }, 60_000);
+
+    it("stretches the gas by the width a generation passed in is played at", () => {
+        const design = cachedMap("main", 1, 4);
+        const capped = new Game({ mapName: "main", seed: 1, teamMode: 4, maxPlayers: 160 }, { generation: design });
+        expect(capped.mapData.width).toBe(899);
+        expect(capped.gas.timeScale).toBe(1);
+        expect(capped.gas.stages).toBe(GameConfig.gas.stages);
+        const grown = generateMap("main", 1, 4, mapDefForPlayers("main", 160));
+        const game = new Game({ mapName: "main", seed: 1, teamMode: 4, maxPlayers: 160 }, { generation: grown });
+        expect(game.gas.timeScale).toBeCloseTo(1225 / 899, 12);
+    });
 
     it("stretches the circle-1 air drop wait with the gas", () => {
         const game = new Game({ mapName: "main", seed: 5, maxPlayers: 160 }, { spawnLoot: false, sandbox: true });
