@@ -9,7 +9,9 @@
 // guns, the dual TEC-9 and the original M4A1, AWM-S, Vector (a bar), Scorpion, P30L, Saiga and PKP (with its box
 // sprite) for comparison are held at the size the default zoom of a 1920 x 1080 screen draws them (1x scope: radius
 // 28 over 960 px, the same 2.14 camera zoom as radius 18.67 over the 640 px of the test's 1280 x 720 page, which
-// renders much faster), facing right. Hooks: window.__rebirth (game, player, client, heldGun, missingSprites).
+// renders much faster), facing right. The launchers are held on the shoulder with the hands under them; the RPG-7
+// shows its empty sprite (no warhead) from its shot until its reload ends; the rounds fly with their own sprite (the
+// rockets frozen mid-flight for the screenshot); the Panzerfaust and the M202 leave the slot after their shot. Hooks: window.__rebirth (game, player, client, heldGun, missingSprites).
 // Screenshots: __screens__/topdown-guns.
 import { expect, type Page, test } from "@playwright/test";
 import { decodePng } from "../../tools/assets/png.ts";
@@ -38,7 +40,15 @@ const DRAWN: Readonly<Record<string, number>> = {
     m60: 212,
     mg42: 218,
     dshk: 250,
+    m79: 186,
+    gl06: 180,
+    mgl: 192,
+    rpg7: 204,
+    panzerfaust: 210,
+    m202: 196,
 };
+/** The launchers: held on the shoulder with both hands under the gun (the sheet's potato cannon worldImg). */
+const LAUNCHERS = ["m79", "gl06", "mgl", "rpg7", "panzerfaust", "m202"] as const;
 /** The dual pistols that hold a drawn sprite: their single's, one in each hand (objects/heldGun.ts ownHeldSprite). */
 const DRAWN_DUALS = ["tec9_dual"] as const;
 /**
@@ -106,6 +116,48 @@ function pixelsNear(png: Buffer, rgb: number, tol = 24): number {
         if (c.every((v, k) => Math.abs(img.data[i + k]! - v) <= tol)) n++;
     }
     return n;
+}
+
+/** Waits until the held gun can fire (its switch delay over), then clicks once. */
+async function fire(page: Page): Promise<void> {
+    await expect
+        .poll(() =>
+            page.evaluate(() => {
+                const l = (window as any).__rebirth.local;
+                return l.cooldowns?.weapons?.[l.curWeapIdx] ?? 0;
+            }),
+        )
+        .toBe(0);
+    await page.waitForTimeout(100);
+    await page.mouse.down();
+    await page.waitForTimeout(150);
+    await page.mouse.up();
+}
+
+/**
+ * Freezes the next launcher round a few units into its flight for a screenshot: once a round sprite flies, the
+ * tracers get 0.06 s more, then dt 0 (they stay put and keep being drawn).
+ */
+async function freezeBullets(page: Page): Promise<void> {
+    await page.evaluate(() => {
+        const b = (window as any).__rebirth.client.bullets;
+        const update = b.update.bind(b);
+        b.realUpdate = update;
+        let left = 0.06;
+        b.update = (dt: number, scene: unknown) => {
+            if (b.roundHeads.length === 0) return update(dt, scene);
+            const step = Math.min(dt, left);
+            left -= step;
+            update(step, scene);
+        };
+    });
+}
+
+async function thawBullets(page: Page): Promise<void> {
+    await page.evaluate(() => {
+        const b = (window as any).__rebirth.client.bullets;
+        b.update = b.realUpdate;
+    });
 }
 
 async function missing(page: Page): Promise<string[]> {
@@ -323,6 +375,168 @@ test.describe("top-down held sprites", () => {
                 "/rebirth/guns/gun-dshk-01.svg",
             ]),
         );
+        expect(await missing(page)).toEqual([]);
+        expect(errors).toEqual([]);
+    });
+
+    test("launchers: own SVG on the shoulder, the RPG-7 empty after its shot, rounds fly with their own sprite", async ({
+        page,
+    }) => {
+        test.setTimeout(180_000);
+        const errors = collectErrors(page);
+        await boot(page, `/?sandbox=1&map=main&seed=1&loot=0&give=rpg7&zoom=${(28 * 640) / 960}`);
+        await faceRight(page);
+        const me = async () =>
+            page.evaluate(() => {
+                const r = (window as any).__rebirth;
+                return r.worldToScreen(r.visualPos(r.player.id)) as { x: number; y: number };
+            });
+        const near = async (w: number, h: number, back = 80) => {
+            const p = await me();
+            return { x: Math.round(p.x) - back, y: Math.round(p.y) - h / 2, width: w, height: h };
+        };
+        for (const gun of LAUNCHERS) {
+            await hold(page, gun, textureOf(gun));
+            await page.waitForTimeout(400);
+            const state = await page.evaluate(() => {
+                const r = (window as any).__rebirth;
+                const view = r.client.world.renderOf(r.player.id);
+                return {
+                    height: r.heldGun(r.player.id).height as number,
+                    tint: view.gunR.barrel.tint as number,
+                    gunOverHand: view.handR.children.at(-1) === view.gunR.container,
+                    posR: { x: view.gunR.container.position.x as number, y: view.gunR.container.position.y as number },
+                };
+            });
+            expect(state.height, gun).toBeCloseTo(DRAWN[gun]! * 0.25, 0);
+            expect(state.tint, gun).toBe(0xffffff);
+            // hands under the gun; the potato cannon's gun offset (-10, -4) on the hand offset (-4.25, -1.75)
+            expect(state.gunOverHand, gun).toBe(true);
+            expect(state.posR.x, gun).toBeCloseTo(-14.25, 6);
+            expect(state.posR.y, gun).toBeCloseTo(-5.75, 6);
+            const png = await page.screenshot({ path: `${SCREENS}/${gun}-held.png`, clip: await near(290, 120) });
+            expect(pixelsNear(png, 0xff00ff, 30), `${gun}: placeholder pixels`).toBe(0);
+        }
+
+        // the RPG-7: its warhead leaves with the shot, the rocket flies with its own sprite, the reload brings it back
+        await hold(page, "rpg7", "gun-rpg7-01.img");
+        await freezeBullets(page);
+        await fire(page);
+        await expect
+            .poll(() => page.evaluate(() => (window as any).__rebirth.client.bullets.roundHeads.length), {
+                timeout: 10_000,
+            })
+            .toBeGreaterThan(0);
+        await expect
+            .poll(() =>
+                page.evaluate(() => (window as any).__rebirth.heldGun((window as any).__rebirth.player.id)?.texture),
+            )
+            .toBe("gun-rpg7-empty-01.img");
+        await page.waitForTimeout(300);
+        const heads = await page.evaluate(() => (window as any).__rebirth.client.bullets.roundHeads);
+        expect(heads.map((h: { bulletType: string }) => h.bulletType)).toEqual(["bullet_rpg7"]);
+        expect(heads[0].rotation).toBeCloseTo(Math.PI / 2, 2);
+        let png = await page.screenshot({ path: `${SCREENS}/rpg7-fired.png`, clip: await near(420, 160) });
+        expect(pixelsNear(png, 0xff00ff, 30), "rpg7 fired: placeholder pixels").toBe(0);
+        await thawBullets(page);
+        // the reload (a rocket left in the bag) loads the next warhead
+        await page.keyboard.press("KeyR");
+        await expect
+            .poll(
+                () =>
+                    page.evaluate(
+                        () => (window as any).__rebirth.heldGun((window as any).__rebirth.player.id)?.texture,
+                    ),
+                { timeout: 10_000 },
+            )
+            .toBe("gun-rpg7-01.img");
+
+        // the M79's 40 mm grenade: its own round sprite, nose along the throw, growing with its height
+        await hold(page, "m79", "gun-m79-01.img");
+        await fire(page);
+        await expect
+            .poll(() => page.evaluate(() => (window as any).__rebirth.client.worldFx.projectiles.count), {
+                timeout: 10_000,
+            })
+            .toBeGreaterThan(0);
+        // freeze it a few frames into the flight for the screenshot (no new snapshots, no time), until its sprite shows
+        await page.evaluate(() => {
+            const ps = (window as any).__rebirth.client.worldFx.projectiles;
+            const update = ps.update.bind(ps);
+            ps.realApply = ps.apply;
+            ps.realUpdate = update;
+            let left = 0.12;
+            ps.update = (dt: number, layer: number) => {
+                const step = Math.min(dt, left);
+                left -= step;
+                update(step, layer);
+            };
+            ps.apply = () => {};
+        });
+        await expect
+            .poll(() =>
+                page.evaluate(
+                    () =>
+                        [...(window as any).__rebirth.client.worldFx.projectiles.projs.values()][0].sprite.texture
+                            .label,
+                ),
+            )
+            .toBe("proj-40mm-01.img");
+        await page.waitForTimeout(300);
+        const round = await page.evaluate(() => {
+            const p = [...(window as any).__rebirth.client.worldFx.projectiles.projs.values()][0];
+            return {
+                texture: p.sprite.texture.label as string,
+                rotation: p.sprite.rotation as number,
+                tint: p.sprite.tint,
+            };
+        });
+        expect(round).toEqual({
+            texture: "proj-40mm-01.img",
+            rotation: expect.closeTo(Math.PI / 2, 2),
+            tint: 0xffffff,
+        });
+        // around the player and the grenade, wherever the snapshots had it when frozen
+        const box = await page.evaluate(() => {
+            const r = (window as any).__rebirth;
+            const p = [...r.client.worldFx.projectiles.projs.values()][0];
+            const b = p.sprite.getBounds();
+            const me = r.worldToScreen(r.visualPos(r.player.id));
+            const x0 = Math.max(0, Math.min(me.x - 80, b.x - 40));
+            const x1 = Math.min(1280, Math.max(me.x + 120, b.x + b.width + 40));
+            const y0 = Math.max(0, Math.min(me.y - 80, b.y - 40));
+            const y1 = Math.min(720, Math.max(me.y + 80, b.y + b.height + 40));
+            return { x: Math.round(x0), y: Math.round(y0), width: Math.round(x1 - x0), height: Math.round(y1 - y0) };
+        });
+        png = await page.screenshot({ path: `${SCREENS}/m79-grenade.png`, clip: box });
+        expect(pixelsNear(png, 0xff00ff, 30), "m79 grenade: placeholder pixels").toBe(0);
+        await page.evaluate(() => {
+            const ps = (window as any).__rebirth.client.worldFx.projectiles;
+            ps.update = ps.realUpdate;
+            ps.apply = ps.realApply;
+        });
+        // the M202 bursts its fan at the cursor: aim far out of the blasts' reach
+        const pos = await me();
+        await page.mouse.move(pos.x + 620, pos.y);
+
+        // the Panzerfaust and the M202 are thrown away after their shot: the slot empties
+        for (const gun of ["panzerfaust", "m202"] as const) {
+            await hold(page, gun, textureOf(gun));
+            await freezeBullets(page);
+            await fire(page);
+            await expect
+                .poll(() => page.evaluate(() => (window as any).__rebirth.client.bullets.roundHeads.length), {
+                    timeout: 10_000,
+                })
+                .toBeGreaterThan(0);
+            await page.waitForTimeout(300);
+            await page.screenshot({ path: `${SCREENS}/${gun}-fired.png`, clip: await near(420, 200) });
+            await thawBullets(page);
+            await expect
+                .poll(() => page.evaluate(() => (window as any).__rebirth.local.weapons[0].type), { timeout: 5_000 })
+                .toBe("");
+            await page.screenshot({ path: `${SCREENS}/${gun}-discarded.png`, clip: await near(290, 120) });
+        }
         expect(await missing(page)).toEqual([]);
         expect(errors).toEqual([]);
     });

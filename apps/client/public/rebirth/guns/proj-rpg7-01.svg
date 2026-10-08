@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="58" viewBox="0 0 16 58">
+  <!-- PG-7 rocket in flight (RPG-7), own art (surviv.io-rebirth): top-down, nose up; fins open at the tail. -->
+  <path d="M6 46l-4 6v4l4-2zM10 46l4 6v4l-4-2z" fill="#000" stroke="#000" stroke-width="2" stroke-linejoin="round"/>
+  <g stroke="#000" stroke-width="2" stroke-linejoin="round">
+    <rect x="6" y="42" width="4" height="13" fill="#3f8a46"/>
+    <rect x="6" y="29" width="4" height="13" fill="#6e7436"/>
+    <path d="M6.5 29l-1.5 5h6l-1.5-5z" fill="#6e7436"/>
+    <path d="M6.5 7L2 19c-.5 2 0 4 1.5 6L6 29h4l2.5-4c1.5-2 2-4 1.5-6L9.5 7z" fill="#8c8a3a"/>
+    <rect x="6.5" y="2" width="3" height="5" fill="#8f8f8f"/>
+  </g>
+  <rect x="7" y="12" width="2" height="12" fill="#b5b25e"/>
+</svg>

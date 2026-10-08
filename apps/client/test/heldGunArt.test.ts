@@ -3,7 +3,15 @@
 // the build). Each gun's held image resolves to its file through the client's sprite manifest, at the declared size.
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { GameObjectDefs, type GunDef, HELD_GUN_ART, heldGunArt } from "@rebirth/defs";
+import {
+    GameObjectDefs,
+    type GunDef,
+    HELD_GUN_ART,
+    heldGunArt,
+    heldGunArtEmpty,
+    LAUNCHER_ROUND_ART,
+    type LauncherRoundSprite,
+} from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { rebirthHeldGunUrl } from "../src/assets/rebirthSprites.ts";
 import { SPRITES } from "../src/assets/spriteManifest.ts";
@@ -16,7 +24,7 @@ const FORBIDDEN =
     /<(text|image|linearGradient|radialGradient|filter|script|foreignObject|style|mask|use)\b|sodipodi|inkscape|xlink:href/i;
 
 describe("drawn top-down held sprites", () => {
-    it("the drawn guns: the AK-47 and 19 beta rifles, snipers, DMRs, SMGs, machine pistols, shotguns and MGs", () => {
+    it("the drawn guns: the AK-47 and 25 beta rifles, snipers, DMRs, SMGs, machine pistols, shotguns, MGs, launchers", () => {
         expect(Object.keys(HELD_GUN_ART)).toEqual([
             "ak47",
             "g36c",
@@ -38,6 +46,12 @@ describe("drawn top-down held sprites", () => {
             "m60",
             "mg42",
             "dshk",
+            "m79",
+            "gl06",
+            "mgl",
+            "rpg7",
+            "panzerfaust",
+            "m202",
         ]);
         // bars on purpose (owner); a dual pistol is never listed, it shares its single's sprite
         for (const id of ["mk14", "m1928", "vz61", "vz61_dual", "tec9_dual"]) {
@@ -77,9 +91,15 @@ describe("drawn top-down held sprites", () => {
     });
 
     it("each committed SVG exists at its served path, at its declared size, minimal and small", () => {
-        for (const art of heldGunArt()) {
+        const rounds = (Object.keys(LAUNCHER_ROUND_ART) as LauncherRoundSprite[]).map((sprite) => ({
+            sprite,
+            size: LAUNCHER_ROUND_ART[sprite],
+        }));
+        // the held sprites, the RPG-7's empty one and the launcher rounds in flight
+        for (const art of [...heldGunArt(), ...heldGunArtEmpty(), ...rounds]) {
             const url = rebirthHeldGunUrl(art.sprite);
-            expect(url).toBe(`/rebirth/guns/gun-${art.id}-01.svg`);
+            expect(url).toBe(`/rebirth/guns/${art.sprite.replace(/\.img$/, ".svg")}`);
+            expect(SPRITES[art.sprite], art.sprite).toEqual({ source: "rebirth", path: url, size: art.size });
             const file = join(PUBLIC, url);
             expect(existsSync(file), file).toBe(true);
             const text = readFileSync(file, "utf8");

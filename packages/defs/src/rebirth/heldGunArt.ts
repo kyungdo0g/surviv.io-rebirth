@@ -1,5 +1,6 @@
 // Top-down held sprites drawn for the rebirth (the owner, 2026-10-08: "draw only 5 first", then the snipers and DMRs,
-// then the SMGs and machine pistols, then two shotguns and three machine guns, the MG 42 and the DShK "menacing"): our
+// then the SMGs and machine pistols, then two shotguns and three machine guns, the MG 42 and the DShK "menacing", then
+// the six launchers, the RPG-7 also empty and the Panzerfaust and M202 thrown away after their shot): our
 // own art, minimal hand-written SVGs committed under apps/client/public/rebirth/guns/gun-<id>-01.svg and served at
 // /rebirth/guns/, like the rebirth buildings' images (buildings.ts rebirthBuildingArt). Each is the gun seen from
 // straight above, barrel up, butt flush with the bottom edge, drawn at worldImg.scale 0.5 in its own colours (tint
@@ -7,7 +8,8 @@
 // shotgun sprites (gun-m4a1-01, gun-famas-01, gun-vector-01, gun-saiga-01), the bolt snipers and the sniper bullpups 60
 // like gun-awc-01 and gun-scarssr-01, the pistol class 40, centre line x 20 (the original pistol frames are 56 wide,
 // their art at most 40), the M60 and MG 42 80 and the DShK 88, centre line x 40 / 44, so the ammo box or belt on the
-// left, the bipod and the DShK's spade grips fit on both sides of the centre line. The width moves nothing in game: the
+// left, the bipod and the DShK's spade grips fit on both sides of the centre line, the launchers 56 like
+// gun-potato-cannon-01 (the MGL's cylinder, the RPG-7's optic and the M202's box 64). The width moves nothing in game: the
 // anchor is the bottom centre, and the client rasterises each sprite at its logical size.
 // The belt guns draw their box and belt into the one sprite, under the receiver's outline: the original belt guns'
 // bottom sprite (worldImg.magImg, gun-pkp-bot-01) is drawn at the same 0.25 body px per sprite px under the gun and
@@ -19,8 +21,10 @@
 // (heldGun.ts ownHeldSprite strips "_dual", so tec9_dual draws gun-tec9-01 through the tec9 entry). Hands and recoil
 // stay as they were: the sprites are drawn to sit under the existing grips (the machine guns keep the PKP's left hand
 // 12.5 the sheet gave them); only the bullpups' own sprites get survev's bullpup gun offset (HELD_GUN_ART_GUN_OFFSET),
-// the P90's is held with the hands under it (HELD_GUN_ART_HANDS_BELOW) and the AS Val's left hand moves back onto its
-// forend (HELD_GUN_ART_LEFT_HAND_OFFSET).
+// the P90's is held with the hands under it (HELD_GUN_ART_HANDS_BELOW) and the AS Val's and RPG-7's left hands move
+// back onto the forend and the tube (HELD_GUN_ART_LEFT_HAND_OFFSET). The launchers keep the sheet's launcher hold
+// (the potato cannon's: hands under the gun); the RPG-7 also has an empty sprite (HELD_GUN_ART_EMPTY), and the rounds
+// they fire have their own sprites (launcherRoundArt.ts).
 // Bars on purpose (owner, 2026-10-08), never add them here: the Mk 14 EBR ("Mk 14 EBR만 막대기로"), the Thompson M1928
 // ("Thompson M1928 막대기") and the Škorpion vz. 61 and its dual ("Škorpion vz. 61 막대기").
 // docs/research/rebirth-deviations.md "Top-down held sprites".
@@ -49,6 +53,12 @@ export const HELD_GUN_ART = {
     m60: [80, 212],
     mg42: [80, 218],
     dshk: [88, 250],
+    m79: [56, 186],
+    gl06: [56, 180],
+    mgl: [64, 192],
+    rpg7: [64, 204],
+    panzerfaust: [56, 210],
+    m202: [64, 196],
 } as const satisfies Readonly<Record<string, readonly [number, number]>>;
 
 export type HeldGunArtId = keyof typeof HELD_GUN_ART;
@@ -88,7 +98,17 @@ export const HELD_GUN_ART_HANDS_BELOW: Readonly<Partial<Record<string, boolean>>
  */
 export const HELD_GUN_ART_LEFT_HAND_OFFSET: Readonly<Partial<Record<string, { x: number; y: number }>>> = {
     asval: { x: 4, y: 0 },
+    // the launchers' shared (7, 2) (the potato cannon's) puts it 13 sprite px in front of the empty RPG-7's muzzle
+    // (gun-rpg7-empty-01: no warhead); at (-2, 2) it holds the front grip on the steel tube
+    rpg7: { x: -2, y: 2 },
 };
+
+/**
+ * Own sprites drawn with an empty variant, gun-<id>-empty-01.img at the same size: the RPG-7 without its warhead,
+ * shown while its one round is fired and not yet reloaded (owner, 2026-10-08: "RPG-7 발사시에는 탄두가 안
+ * 꽂혀있는모습으로"; apps/client objects/gunLoad.ts decides). Client-only like the other overrides.
+ */
+export const HELD_GUN_ART_EMPTY: readonly HeldGunArtId[] = ["rpg7"];
 
 export interface HeldGunArt {
     id: HeldGunArtId;
@@ -105,13 +125,23 @@ export function heldGunArtSprite(id: string): string {
     return `gun-${id}-01.img`;
 }
 
-/** Every drawn held sprite with its size (the client's sprite manifest entries). */
+/** Sprite id of a drawn gun's empty held image (HELD_GUN_ART_EMPTY). */
+export function heldGunArtEmptySprite(id: string): string {
+    return `gun-${id}-empty-01.img`;
+}
+
+/** Every drawn held sprite with its size (the client's sprite manifest entries; the empty variants: heldGunArtEmpty). */
 export function heldGunArt(): HeldGunArt[] {
     return (Object.keys(HELD_GUN_ART) as HeldGunArtId[]).map((id) => ({
         id,
         sprite: heldGunArtSprite(id),
         size: HELD_GUN_ART[id],
     }));
+}
+
+/** The drawn empty variants with their size (the same as the loaded sprite's). */
+export function heldGunArtEmpty(): HeldGunArt[] {
+    return HELD_GUN_ART_EMPTY.map((id) => ({ id, sprite: heldGunArtEmptySprite(id), size: HELD_GUN_ART[id] }));
 }
 
 /**

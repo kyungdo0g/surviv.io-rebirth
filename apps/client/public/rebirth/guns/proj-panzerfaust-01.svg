@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="46" viewBox="0 0 18 46">
+  <!-- Panzerfaust warhead in flight, own art (surviv.io-rebirth): top-down, nose up; wooden tail, fins open. -->
+  <path d="M7 34l-4 6v4l4-3zM11 34l4 6v4l-4-3z" fill="#000" stroke="#000" stroke-width="2" stroke-linejoin="round"/>
+  <g stroke="#000" stroke-width="2" stroke-linejoin="round">
+    <rect x="7" y="22" width="4" height="21" fill="#8a4316"/>
+    <path d="M7 2h4c4 2 6 8 6 13 0 4-3 7-6 9H7c-3-2-6-5-6-9 0-5 2-11 6-13z" fill="#66713f"/>
+  </g>
+  <rect x="8" y="5" width="2" height="13" fill="#9aa070"/>
+</svg>

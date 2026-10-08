@@ -24,6 +24,7 @@ export { type DefDeviation, FRAG_DECAL_TYPE, FRAG_RADIUS_MULT, IRON_BOMB_DECAL_T
 export * from "./gunBeta.ts";
 export * from "./gunSpeeds.ts";
 export * from "./heldGunArt.ts";
+export * from "./launcherRoundArt.ts";
 export * from "./mapScale.ts";
 export * from "./newGunAssets.ts";
 export * from "./newGunLoot.ts";

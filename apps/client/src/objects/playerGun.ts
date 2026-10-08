@@ -32,9 +32,12 @@ export class GunSprites {
         this.container.visible = v;
     }
 
-    /** Shows `def`'s world image; `bodyScale` undoes the body container's scale so guns keep their size. */
-    setType(def: GunDef, bodyScale: number, textures: TextureStore): void {
-        const img = heldGunImage(def);
+    /**
+     * Shows `def`'s world image (its empty variant when `empty`, heldGun.ts); `bodyScale` undoes the body container's
+     * scale so guns keep their size.
+     */
+    setType(def: GunDef, bodyScale: number, textures: TextureStore, empty = false): void {
+        const img = heldGunImage(def, empty);
         const sx = (img.scale.x * 0.5) / bodyScale;
         const sy = (img.scale.y * 0.5) / bodyScale;
         textures.apply(this.barrel, img.sprite, Math.max(sx, sy));

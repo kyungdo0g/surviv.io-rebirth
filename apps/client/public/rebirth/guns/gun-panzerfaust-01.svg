@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="56" height="210" viewBox="0 0 56 210">
+  <!-- Panzerfaust 60, own art: top view, barrel up, single-use. Thin olive launch tube, big round warhead in front. -->
+  <!-- launch tube, open rear end flush at the bottom; the highlight strip runs along its top -->
+  <rect x="21" y="58" width="14" height="148" fill="#4f5b39" stroke="#000" stroke-width="8"/>
+  <rect x="26" y="100" width="4" height="98" fill="#8a9070"/>
+  <rect x="17" y="202" width="22" height="8" rx="1" fill="#000"/>
+  <!-- flip-up rear sight leaf (seen edge-on from above, wider than the tube) and the firing lever behind it -->
+  <rect x="13" y="74" width="30" height="5" rx="1" fill="#000"/>
+  <rect x="24" y="80" width="8" height="14" rx="1" fill="#000"/>
+  <!-- warhead: blunt round head, much wider than the tube, tapering back into the tube mouth -->
+  <path d="M28 4C40 4 46 13 46 24v6L36 54H20L10 30v-6C10 13 16 4 28 4z" fill="#6e7436" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M15 30h26" stroke="#4f5b39" stroke-width="3"/>
+  <rect x="18" y="52" width="20" height="8" rx="1" fill="#000"/>
+</svg>

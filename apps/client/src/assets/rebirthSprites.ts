@@ -7,12 +7,16 @@
 // The rebirth buildings' floors and roofs (rebirth/buildings.ts) are committed SVGs served from /rebirth/map/
 // (tools/assets/rebirthBuildingArt.ts draws them), so they need no install step. The drawn top-down held sprites
 // (packages/defs rebirth/heldGunArt.ts: the AK-47, four beta rifles, six beta snipers and DMRs, four beta SMGs and
-// machine pistols and two beta shotguns and three machine guns, our own art; the dual TEC-9 shares the TEC-9's) are
+// machine pistols, two beta shotguns and three machine guns and the six beta launchers, the RPG-7 also empty, our own
+// art; the dual TEC-9 shares the TEC-9's) and the launcher rounds drawn in flight (rebirth/launcherRoundArt.ts) are
 // committed SVGs too, served from /rebirth/guns/, each at its own logical size; they have no fallback, since the file
 // always ships.
 import {
     GameObjectDefs,
     heldGunArt,
+    heldGunArtEmpty,
+    LAUNCHER_ROUND_ART,
+    type LauncherRoundSprite,
     NEW_AMMO_IDS,
     NEW_GUN_IDS,
     NEW_GUN_LOOT_FALLBACKS,
@@ -38,8 +42,8 @@ export function rebirthHeldGunUrl(sprite: string): string {
 }
 
 /**
- * The new guns' loot icon and new ammo emote entries, the rebirth buildings' images and the drawn held sprites, by
- * sprite id.
+ * The new guns' loot icon and new ammo emote entries, the rebirth buildings' images, the drawn held sprites and the
+ * launcher rounds, by sprite id.
  */
 export function rebirthSpriteEntries(): Record<string, SpriteEntry> {
     const out: Record<string, SpriteEntry> = {};
@@ -67,8 +71,11 @@ export function rebirthSpriteEntries(): Record<string, SpriteEntry> {
         out[art.floor] = { source: "rebirth", path: rebirthBuildingUrl(art.floor), size: art.floorSize ?? art.size };
         out[art.ceiling] = { source: "rebirth", path: rebirthBuildingUrl(art.ceiling), size: art.size };
     }
-    for (const art of heldGunArt()) {
+    for (const art of [...heldGunArt(), ...heldGunArtEmpty()]) {
         out[art.sprite] = { source: "rebirth", path: rebirthHeldGunUrl(art.sprite), size: art.size };
+    }
+    for (const sprite of Object.keys(LAUNCHER_ROUND_ART) as LauncherRoundSprite[]) {
+        out[sprite] = { source: "rebirth", path: rebirthHeldGunUrl(sprite), size: LAUNCHER_ROUND_ART[sprite] };
     }
     return out;
 }

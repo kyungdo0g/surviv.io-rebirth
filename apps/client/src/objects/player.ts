@@ -13,6 +13,7 @@
 // M9 (playerSteps.ts): footsteps per surface, water ripples and wading, bush enter / exit effects; every shot fired
 // since the last snapshot kicks the gun back (snapshots carry the shot counter, not each shot); the left hand keeps
 // its gun grip offset only while a gun is out and no revive runs (survev updateRotation).
+// Rebirth: the RPG-7 is drawn without its warhead while its round is fired and not yet reloaded (gunLoad.ts).
 import type { Vec2 } from "@rebirth/core";
 import {
     type BackpackDef,
@@ -32,6 +33,7 @@ import { greySpriteId } from "../assets/textures.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
 import { AnimPlayer, BONE_COUNT, Bone, IDENTITY_POSE, IDLE_POSES, type Pose } from "./anims.ts";
+import { GunLoad } from "./gunLoad.ts";
 import { heldGunImage } from "./heldGun.ts";
 import { MedicAura } from "./playerAura.ts";
 import { PlayerEmitters } from "./playerEmitters.ts";
@@ -147,6 +149,9 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private animSeq = -1;
     private actionSeq = -1;
     private shotSeq = -1;
+    /** shots and reloads of the guns drawn empty after firing (the RPG-7; gunLoad.ts) and the held gun's look */
+    private readonly load = new GunLoad();
+    private gunEmpty = false;
     /** weapon sprites hidden (downed or reviving) */
     private weaponHidden = false;
     private handsDowned = false;
@@ -256,6 +261,8 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             this.actionSeq = action.seq;
             this.shotSeq = shot.seq;
             if (anim.type === "revive") this.startAnim(anim.type);
+            this.load.action(action, true);
+            this.refreshGunEmpty(view);
             return;
         }
         if (anim.seq !== this.animSeq) {
@@ -264,14 +271,26 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         }
         if (action.seq !== this.actionSeq) {
             this.actionSeq = action.seq;
+            this.load.action(action);
             this.deps.fx?.actionStart(view, view.pos, view.dir);
         }
         if (shot.seq !== this.shotSeq) {
             const shots = shotsSince(this.shotSeq, shot.seq);
             this.shotSeq = shot.seq;
+            this.load.shots(view.activeWeapon, shots);
             // dual guns alternate hands: the latest shot was `offHand`, the one before it the other hand
             for (let i = shots - 1; i >= 0; i--) this.onShot(view, i % 2 === 0 ? shot.offHand : !shot.offHand);
         }
+        this.refreshGunEmpty(view);
+    }
+
+    /** The held gun's empty look (the RPG-7 without its warhead; gunLoad.ts): redraws the gun when it changes. */
+    private refreshGunEmpty(view: PlayerView): void {
+        const gun = view.activeWeapon;
+        const empty = this.load.empty(gun, this.deps.loadedAmmo?.(view.id, gun));
+        if (empty === this.gunEmpty) return;
+        this.gunEmpty = empty;
+        this.updateWeapon(this.weapon, view.scale || 1, this.weaponHidden);
     }
 
     private startAnim(type: string): void {
@@ -427,10 +446,10 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             return;
         }
         if (weapon.type === "gun") {
-            this.gunR.setType(weapon, bodyScale, tex);
+            this.gunR.setType(weapon, bodyScale, tex, this.gunEmpty);
             this.gunR.visible = true;
             if (weapon.isDual) {
-                this.gunL.setType(weapon, bodyScale, tex);
+                this.gunL.setType(weapon, bodyScale, tex, this.gunEmpty);
                 this.gunL.visible = true;
             }
             const handsBelow = !!heldGunImage(weapon).handsBelow;
@@ -487,6 +506,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
 
     update(ctx: FrameContext, pos: Vec2, dir?: Vec2): void {
         const view = this.data;
+        this.load.tick(ctx.dt);
         const local = toLocal(pos);
         this.container.position.set(local.x, local.y);
         this.container.visible = !view.dead;

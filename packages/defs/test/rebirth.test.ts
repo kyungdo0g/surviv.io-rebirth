@@ -22,13 +22,17 @@ import {
     HEAVY_BOMB_EFFECT_TYPE,
     HEAVY_BOMB_EXPLOSION,
     HELD_GUN_ART,
+    HELD_GUN_ART_EMPTY,
     HELD_GUN_ART_GUN_OFFSET,
     HELD_GUN_ART_HANDS_BELOW,
     HELD_GUN_ART_LEFT_HAND_OFFSET,
     heldGunArt,
+    heldGunArtEmpty,
     IRON_BOMB_DECAL_TYPE,
     IRON_BOMB_RAD_MAX,
     isAirstrikeBomb,
+    LAUNCHER_ROUND_ART,
+    launcherRound,
     MapObjectDefs,
     MapObjectRegistry,
     newGunDefs,
@@ -122,7 +126,25 @@ describe("rebirth balance deviations", () => {
             { id: "m60", sprite: "gun-m60-01.img", size: [80, 212] },
             { id: "mg42", sprite: "gun-mg42-01.img", size: [80, 218] },
             { id: "dshk", sprite: "gun-dshk-01.img", size: [88, 250] },
+            { id: "m79", sprite: "gun-m79-01.img", size: [56, 186] },
+            { id: "gl06", sprite: "gun-gl06-01.img", size: [56, 180] },
+            { id: "mgl", sprite: "gun-mgl-01.img", size: [64, 192] },
+            { id: "rpg7", sprite: "gun-rpg7-01.img", size: [64, 204] },
+            { id: "panzerfaust", sprite: "gun-panzerfaust-01.img", size: [56, 210] },
+            { id: "m202", sprite: "gun-m202-01.img", size: [64, 196] },
         ]);
+        // the RPG-7 also without its warhead, at the same size (shown while its round is fired; the client decides)
+        expect(HELD_GUN_ART_EMPTY).toEqual(["rpg7"]);
+        expect(heldGunArtEmpty()).toEqual([{ id: "rpg7", sprite: "gun-rpg7-empty-01.img", size: [64, 204] }]);
+        // the launchers' defs keep the sheet's borrowed potato cannon and its hands (the client switches them)
+        for (const id of ["m79", "gl06", "mgl", "rpg7", "panzerfaust", "m202"]) {
+            expect(getDefOfType("gun", id).worldImg, id).toMatchObject({
+                sprite: "gun-potato-cannon-01.img",
+                leftHandOffset: { x: 7, y: 2 },
+                gunOffset: { x: -10, y: -4 },
+                handsBelow: true,
+            });
+        }
         // the beta guns keep the balance sheet's held image in their defs (the client switches them, heldGun.ts): its
         // bar, or the AWM-S art it borrowed for the Hecate II and the Lynx, or the PKP's for the belt guns; the own
         // sprites' overrides are client-only
@@ -149,7 +171,7 @@ describe("rebirth balance deviations", () => {
             dp12: { x: -8, y: 0 },
         });
         expect(HELD_GUN_ART_HANDS_BELOW).toEqual({ p90: true });
-        expect(HELD_GUN_ART_LEFT_HAND_OFFSET).toEqual({ asval: { x: 4, y: 0 } });
+        expect(HELD_GUN_ART_LEFT_HAND_OFFSET).toEqual({ asval: { x: 4, y: 0 }, rpg7: { x: -2, y: 2 } });
         for (const id of ["wa2000", "lynx", "p90", "dp12"]) {
             expect(getDefOfType("gun", id).worldImg.gunOffset, id).toBeUndefined();
         }
@@ -164,6 +186,32 @@ describe("rebirth balance deviations", () => {
             scale: { x: 0.5, y: 0.47 },
             tint: 0xa08c6a,
         });
+    });
+
+    it("launcher rounds in flight: the 40 mm grenade for the M79, MGL and GL-06, each rocket its own", () => {
+        expect(Object.keys(LAUNCHER_ROUND_ART)).toEqual([
+            "proj-40mm-01.img",
+            "proj-rpg7-01.img",
+            "proj-m202-01.img",
+            "proj-panzerfaust-01.img",
+        ]);
+        // the M79 and MGL lob the m79_grenade projectile (their bullets are invisible); the others fly as bullets
+        const sprite = (type: string) => launcherRound(type)?.sprite;
+        expect(getDefOfType("gun", "m79").projType).toBe("m79_grenade");
+        expect(getDefOfType("gun", "mgl").projType).toBe("m79_grenade");
+        for (const gun of ["gl06", "rpg7", "panzerfaust", "m202"])
+            expect(getDefOfType("gun", gun).projType).toBeFalsy();
+        expect(sprite("m79_grenade")).toBe("proj-40mm-01.img");
+        expect(sprite(getDefOfType("gun", "gl06").bulletType)).toBe("proj-40mm-01.img");
+        expect(sprite(getDefOfType("gun", "rpg7").bulletType)).toBe("proj-rpg7-01.img");
+        expect(sprite(getDefOfType("gun", "panzerfaust").bulletType)).toBe("proj-panzerfaust-01.img");
+        expect(sprite(getDefOfType("gun", "m202").bulletType)).toBe("proj-m202-01.img");
+        for (const type of ["bullet_m79", "bullet_mgl", "bullet_ak47", "frag", "toString"]) {
+            expect(launcherRound(type), type).toBeUndefined();
+        }
+        // world px per sprite px: the RPG-7's 58 px round about one body (32 px) across, the 40 mm about a frag's
+        expect(launcherRound("bullet_rpg7")!.scale * LAUNCHER_ROUND_ART["proj-rpg7-01.img"][1]).toBeCloseTo(34.8, 6);
+        expect(launcherRound("m79_grenade")!.scale * 34).toBeCloseTo(13.6, 6);
     });
 
     it("the frag scorch mark grows x1.3 with its blast; the MIRV keeps the original decal", () => {

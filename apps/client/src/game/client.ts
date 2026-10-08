@@ -127,6 +127,8 @@ export class GameClient {
     /** the player the camera follows: the local player, or the one being spectated */
     activeId = -1;
     local: LocalPlayerState | null = null;
+    /** the local state of the snapshot being applied (the views read it before `local` takes it) */
+    private snapLocal: LocalPlayerState | null = null;
     /** latest snapshot tick */
     tick = 0;
     snapshotCount = 0;
@@ -303,6 +305,11 @@ export class GameClient {
             teamOf: (id) => this.match.teamId(id),
             nameOf: (id) => this.match.name(id),
             effectsOf: (id) => this.match.effectsOf(id),
+            loadedAmmo: (id, gun) => {
+                const l = this.snapLocal;
+                const w = l && id === this.activeId ? l.weapons[l.curWeapIdx] : undefined;
+                return w?.type === gun ? w.ammo : undefined;
+            },
             worldQueries: queries,
         };
         this.world = new ObjectWorld(deps, this.interp);
@@ -373,6 +380,7 @@ export class GameClient {
         if (!this.world || this.destroyed) return;
         if (s.localPlayerId !== this.activeId) this.retarget(s.localPlayerId);
         this.effects.beginSnapshot(s);
+        this.snapLocal = s.local;
         this.world.applySnapshot(s);
         this.effects.endSnapshot(s);
         this.teamPlay.applySnapshot(s, this.localId, this.world);

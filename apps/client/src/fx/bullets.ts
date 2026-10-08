@@ -16,12 +16,17 @@
 // downed. Flare rounds (`addFlare`) are drawn by fx/flare.ts.
 // Rebirth (user/2026-10-07-hit-feedback): after the original effects of a player hit, `hitListener` (fx/hitFeedback.ts)
 // hears of it with the bullet's nominal damage, for the Enhanced hit effects.
+// Rebirth (2026-10-08): a launcher round (the GL-06's grenade, the RPG-7, Panzerfaust and M202 rockets) draws its own
+// sprite (defs rebirth/launcherRoundArt.ts) nose first on the bullet over its tracer, which stays as the exhaust;
+// the sprite goes the moment the round stops (its explosion takes over).
 import { type Collider, collider, math, type Vec2 } from "@rebirth/core";
 import {
     type BulletDef,
     GameConfig,
     GameObjectDefs,
     type GunDef,
+    type LauncherRound,
+    launcherRound,
     type MapDef,
     MapObjectDefs,
     type MeleeDef,
@@ -42,6 +47,9 @@ import type { ParticleSystem } from "./particles.ts";
 const TRAIL_SPRITE = "player-bullet-trail-02.img";
 const TRAIL_PIVOT = 14.5;
 const TRAIL_Z_ORD = 20;
+/** a launcher round's sprite sits just over the tracers; its anchor puts the nose a little ahead of the bullet */
+const ROUND_Z_ORD = TRAIL_Z_ORD + 1;
+const ROUND_NOSE = 0.1;
 /** shrink rate of a stopped tracer (1/s) */
 const COLLIDED_SHRINK = 6;
 /** bullets passing closer than this to the camera whiz (survev bullet.ts) */
@@ -80,6 +88,8 @@ interface Tracer {
     chipped: Set<number>;
     /** the client already showed this bullet's player hit */
     playerFx: boolean;
+    /** a launcher round's own sprite, while it flies */
+    head: Sprite | null;
 }
 
 /** What the tracer system needs from the object world. */
@@ -148,6 +158,12 @@ export class BulletSystem {
     readonly variants = { saturated: 0, thick: 0, splinter: 0 };
     /** hit effects shown since boot (tests, M9): blood on players, pan chips, player hit sounds */
     readonly hits = { blood: 0, pan: 0, sounds: 0, stairs: 0 };
+    /** launcher round sprites in flight: bullet type, rotation and scale (tests) */
+    get roundHeads(): Array<{ bulletType: string; rotation: number; scale: number }> {
+        return this.tracers.flatMap((t) =>
+            t.head ? [{ bulletType: t.bulletType, rotation: t.head.rotation, scale: t.head.scale.x }] : [],
+        );
+    }
     /** rebirth Enhanced hit effects: told about every player hit after its original effects */
     hitListener: PlayerHitListener | null = null;
 
@@ -248,11 +264,29 @@ export class BulletSystem {
         t.sprite.visible = true;
         t.container.rotation = -Math.atan2(e.dir.y, e.dir.x);
         t.container.visible = true;
+        const round = launcherRound(e.bulletType);
+        t.head = round ? this.roundHead(round, t.container.rotation) : null;
         this.tracers.push(t);
         this.spawned++;
         if (e.saturated) this.variants.saturated++;
         if (e.thick) this.variants.thick++;
         if (e.splinter) this.variants.splinter++;
+    }
+
+    /** A launcher round's sprite: it points up, so a quarter turn past the tracer's rotation (+x along the flight). */
+    private roundHead(round: LauncherRound, rotation: number): Sprite {
+        const head = this.renderer.pool.acquire();
+        this.textures.apply(head, round.sprite, round.scale);
+        head.anchor.set(0.5, ROUND_NOSE);
+        head.scale.set(round.scale);
+        head.rotation = rotation + Math.PI / 2;
+        return head;
+    }
+
+    private dropHead(t: Tracer): void {
+        if (!t.head) return;
+        this.renderer.pool.release(t.head);
+        t.head = null;
     }
 
     private obstacleCollider(view: ObstacleView, def: ObstacleDef): CachedCollider {
@@ -498,6 +532,11 @@ export class BulletSystem {
             t.container.position.set(local.x, local.y);
             t.container.scale.set(Math.min(t.tracerLength * 15, dist / 2) * t.scale, 1);
             this.renderer.add(t.container, t.layer, TRAIL_Z_ORD, t.id % 2 ** 31);
+            if (t.head && t.collided) this.dropHead(t);
+            if (t.head) {
+                t.head.position.set(local.x, local.y);
+                this.renderer.add(t.head, t.layer, ROUND_Z_ORD, t.id % 2 ** 31);
+            }
             visible++;
         }
         this.visibleCount = visible;
@@ -548,6 +587,7 @@ export class BulletSystem {
         this.tracers.splice(index, 1);
         t.container.removeFromParent();
         t.container.visible = false;
+        this.dropHead(t);
         this.free.push(t);
     }
 
