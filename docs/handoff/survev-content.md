@@ -6,10 +6,10 @@ may not touch, the schema number used and open questions.
 
 ## Schema
 
-- `PROTOCOL_SCHEMA_VERSION` = **12** ("survev content wave"; history comment in `packages/defs/src/registry.ts` leaves
-  11 to the lead's branch). Renumber at merge if needed: the tests pinning it are
-  `packages/defs/test/registry.test.ts`, `packages/protocol/test/survevGuns.test.ts` and
-  `packages/protocol/test/airstrikeVariants.test.ts` (each `toBe(12)`).
+- The wave shipped as `PROTOCOL_SCHEMA_VERSION` 14 ("survev content wave"; 11 hit feedback, 12 new guns beta, 13
+  variant strobes are the lead's). The lead's merge (2acdac0) took the base to **15** (AP Rounds tracer and last-stand
+  bits); stage 4b (loadouts in Join) is 16.
+- Merged: PR #2 (3b98364) into `claude/relaxed-fermat-hcg1fo` at aa63e93; the lead applied items 1-14 below in 2acdac0.
 
 ## Stages
 
@@ -19,7 +19,7 @@ may not touch, the schema number used and open questions.
 | 2 | gear / perks / roles (backpack04, 5-level bags, 6 more perks, captain, classless) | done | see `git log --grep "stage 2"` |
 | 3 | buildings and map objects (Reserve, Workshop, Camp, Oasis, Cloud bunker, ...) + a buildings-only test map | done | see `git log --grep "stage 3"` |
 | 3d | 50v50 buildings and structures (added scope from the lead, owner priority) | done | see `git log --grep "50v50"` |
-| 4 | cosmetics (outfits, emotes, heal / boost effects) | 4a defs + loot done; 4b loadout on hold (open question) | see `git log --grep "stage 4"` |
+| 4 | cosmetics (outfits, emotes, heal / boost effects) | 4a defs + loot done; 4b loadout done (everything unlocked) | see `git log --grep "stage 4"` |
 | 5 | balance option B (no balance revert for shared gameplay fields) | done (5a port, kits, heavy throwables; 5b perk numbers, faction outfits) | see `git log --grep "stage 5"` |
 
 ### Stage 1 details
@@ -130,6 +130,18 @@ may not touch, the schema number used and open questions.
   `NOT_PORTED_IDS` (defs test helpers) now lists survev meta content (quests, passes). Tests:
   `packages/defs/test/survevContent.test.ts` "survev cosmetics", `tools/port-survev/survevLoot.test.ts` renames,
   `survevPerksRoles.test.ts` (Classless outfit).
+- 4b (loadout; the lead's decision 2026-10-07: everything unlocked, no accounts): the main menu's Loadout button opens
+  `apps/client/src/menu/loadoutMenu.ts` (tabs: outfit, melee skin, emotes with the six slots, heal and boost
+  particles, crosshair with colour / size / stroke). The loadout lives in localStorage `rebirth.loadout`
+  (`menu/loadoutStore.ts`), goes out in Join (survev's layout, schema 16) and is validated again in the sim
+  (`packages/sim/src/match/loadout.ts`: unknown or wrong-type ids take the default; role uniforms, loot melee weapons
+  and `noCustom` emotes are not loadout items). `match/playerLoadout.ts` applies it at join: outfit (worn, never
+  dropped; a faction outfit of the other side falls back to the base outfit; a costume brings its disguise), melee
+  skin, emotes (Joined returns them), heal / boost particles in PlayerInfo. The death emote goes 0.3 s after dying,
+  the win emotes 1 s after the game over (`match/emotes.ts updateSlotEmotes`). The crosshair is the CSS cursor over
+  the game canvas (`menu/crosshair.ts`, set in `game/sandbox.ts`). v0.8.82 has no death-effect loadout: the death
+  slot is the death emote. Tests: `packages/sim/test/loadout.test.ts`, `packages/protocol/test/messages.test.ts`
+  (Join), `apps/client/test/loadout.test.ts`, `tests/e2e/survev-loadout.spec.ts`. Lead patches: section 15.
 
 ### Stage 3d details (50v50)
 
@@ -182,7 +194,76 @@ may not touch, the schema number used and open questions.
 - Visual reference: if the owner has 50v50 gameplay video (River Town, bridges, team-side crates), the lead can ask for
   it; the screenshots in `tests/e2e/__screens__/survev-faction/` are what to compare.
 
+## Survev parity wave (the lead's tasks, 2026-10-07)
+
+- 1. Potato-faction gold drop: done. survev drops `airdrop_crate_04po` (inner `crate_13po`: `crate_13` plus 2
+  tier_airdrop_potato rolls) on potato faction maps (survev plane.ts:273-278). No map def names it, so the port gained
+  `policy.json` `survevServerMapObjects` (roots for objects only survev's server spawns; `lib/policy.ts`,
+  `lib/objects.ts portMapObjects`). The scheduled gold drop and the comeback drop pick `rules.roles.potatoGoldCrate` on
+  potatoMode maps (`match/faction.ts goldCrate`). Schema 17: the two map types take ids in survev order, map ids from
+  `crate_17` (926 -> 927) on move up by one or two. Test: `faction.test.ts` "Potato vs Tomato: the gold drop and the
+  comeback drop are the potato gold crate".
+- 2. survev server audit: done (commits "survev parity 2a" to "2g"). Five read-only audits compared survev's server
+  (`.survev/server`, c6185e31) with `packages/sim` for planes and air drops, gas, mode rules and swaps, role and perk
+  timing, map spawns and events. Tests: `packages/sim/test/survevParity.test.ts` unless named. The list:
+
+  | # | survev behaviour | status |
+  |---|---|---|
+  | 1 | heavy snowball slows 2 s, heavy potato drops 2 items (explosion defs) | fixed: `rules.modes.throwableHits` built from the defs' `freezeDuration` / `dropRandomLoot` |
+  | 2 | potato swaps use `weaponSourceType \|\| gameSourceType` (the potato in hand for a heavy potato, the MIRV for its bomblets, the gun that shot a barrel) | fixed: `DamageParams.weaponSourceType`, projectiles carry the thrown item |
+  | 3 | no kill swap when the victim's own hit kills it; Lone Survivr keeps its weapons | fixed |
+  | 4 | the Crowbar can be potato-swapped (survev's def has no `noPotatoSwap`) | fixed in the port: survev leaving a gameplay flag out turns it off (`lib/objects.ts SURVEV_ABSENT_IS_OFF`, provenance `survevValues` "absent") |
+  | 5 | a promotion never drops the kit's leftover 1x scope | fixed |
+  | 6 | an empty kit slot fills the gun from the bag (free only with endless ammo or non-bag ammo); the Captain's guns too | fixed: `keepWeapons` removed (`roles.test.ts`) |
+  | 7 | a worn role helmet refuses a helmet picked up by hand | fixed |
+  | 8 | a role of 4+ perks drops the loot perks | knob `rules.perks.roleDropsLootPerks`, off (conflicts.md perk-max-perks-rule) |
+  | 9 | Lone Survivr pings reach the whole faction | fixed |
+  | 10 | any kill credit (a teamkill too) re-checks the kill leader | fixed |
+  | 11 | `canDespawn`: 50v50 role holders never despawn; the start counts downed players, dead teammates of a living side and role holders; no Captain check on player removal | fixed (`match.ts canDespawn`) |
+  | 12 | spawns on beach sand and river banks (only water is refused); 16 u from another group's ground-layer projectile | fixed (`match/spawn.ts`) |
+  | 13 | scheduled drops are not re-rolled into the circle; opened shells still block drops; box pushes take the larger overlap axis; round crates clamp by radius; landing crates crush trees by their canopy box | fixed (`match/planes.ts`, `survevBoxPush`) |
+  | 14 | strike zone centres count players by survev's grid cells (`grid.intersectCollider` has no exact test; the audit's "rad + player radius" was wrong) | fixed (`airstrikes.ts inGridCells`) |
+  | 15 | 50v50: a shot in an enemy's view shows the shooter on the enemy minimap for 1 s | fixed: `rules.roles.factionRevealTime` 1 (0 off); FactionStatus lists revealed enemies after the own faction (schema 18, no layout change); client dots in the enemy colour, 0.1 s fade in, gone 2-2.5 s after they leave the list |
+  | 16 | gas hits inside each player's update, after boost, perks, the downed buffer and bleeding; disconnected players take a flat 22 | fixed / knob `rules.gasDisconnectedDamage` null (conflicts.md gas-escalation) |
+  | 17 | Cobalt: the server's random class waits 25 s, the client confirms the highlighted one at 20 s | fixed (`modes.cobalt.test.ts`, `roles.test.ts`) |
+  | 18 | the Commander's automatic flare fires the flare gun (dual too), indoors too | fixed under the knob, still off (`leaderAutoFlare`) |
+  | 19 | the comeback drop skips circle 0 only | fixed under the knob, still off (`helpLosingTeam`) |
+
+  Decided (conflicts.md; most predate ADR 0003, so worth re-confirming against the survev baseline; each is one rules
+  value away from survev): crush damage 100 through perks (`airdropCrushInstantKill`, survev 1e10); a scheduled gold
+  drop at circle 3 + 2 s and no comeback drop (`factionGoldDrop`, `helpLosingTeam`; survev has only the comeback drop);
+  faction strike waits 24 / 18 s (survev 30 / 21); no time-in-gas ramp (`gasDamageRamp`); 100 HP knocks after the zone
+  closed (`downHealthFinalCircle`, survev 50); no free Savannah 2x scope; the 50v50 promotion schedule
+  (`factionSchedule: "map"` gives survev's seven roles at 50-74 s); Mass Medicate x0.8 (survev x0.75); the loot perk
+  cap at 3 (survev refuses at 4). Not done: survev's 50v50 MVP in the game over (a fork feature that also needs the
+  client's badge); kept: GameOver goes to every player, 50v50 is squads only (survev also has solo 50v50).
+
+  survev bugs not ported: round crates (Cobalt pods, `airdrop_crate_02h`) pulled into boxes by a sign error in its
+  collider push; Trick or Treat? checking `halloween_mystery` instead of the rolled perk and deleting a held loot perk;
+  Combat Stimulants ending also ends Last Breath; the potato Grenadier's Saiga / potato cannon rolled once per server
+  process; a promotion dropping a copy of a same-type backpack or chest; the comeback drop's winners' centre summing
+  connected players but dividing by all living ones (ours: connected players throughout, knob off); the spawn fallback
+  keeping the last invalid candidate (ours: the first valid crowded point). Negligible and left: one-tick offsets of the
+  zone and strobe timers, plane ids 1-255 instead of 1-254.
+
+  For the bots (lead-owned): `Snapshot.factionStatus` now also carries revealed enemies; nothing in `packages/bots`
+  reads it today, but any future reader has to check the member's team.
+- 3. Missing sprites: done; `pnpm assets` reports none. `map-crate-13x` (the snow air drops' opened image): neither
+  client ships it; survev opens them on `map-airdrop-02x`, which they now take for `button.useImg` only (new policy key
+  `survevSpriteFixes`, provenance `survevSpriteFixes`; the closed images stay the original's). `map-tire-01`,
+  `map-wall-glass-18`, `map-bathhouse-column-02`: their defs (`tire_01`, `glass_wall_18`, `bathhouse_column_2`) are never
+  spawned (no map, building, game object, sim or server code names them) and neither client has the image, so
+  `tools/assets/unspawned-defs.json` lists them and the import records them as drawing nothing without a warning;
+  `tools/assets/sources.test.ts` checks the list stays true.
+
 ## Changes needed in the lead's files
+
+All closed: applied by the lead in 2acdac0 (2026-10-07). Two items differ from the patch here: the coconut and tomato
+particles keep survev's grey tint instead of 0xffffff (item 1), and a disguise lets a client bullet through but still
+plays its chip particle and sound, as survev's client does (item 11). The sections stay as the record.
+- Sprites: `map-building-reserve-*`, `map-crate-17` and `map-airdrop-05` come in with a fresh `pnpm assets` (checked
+  after the merge); `tools/assets` needs no change. The import's four sprites without a file (`map-crate-13x`,
+  `map-tire-01`, `map-wall-glass-18`, `map-bathhouse-column-02`) belong to original defs and are missing in survev too.
 
 ### 1. Coconut and tomato explosion effects (`apps/client/src/fx/explosions.ts`, `apps/client/src/fx/particleDefs.ts`)
 
@@ -333,6 +414,26 @@ moved: `bagSizes.strobe` is `[2, 3, 4, 5, 6]` (Pack04 6, the wiki's own value), 
 `packages/defs/src/rebirth/strobes.ts applySurvevStrobe`: return `[]` when `strobe.strikeDelay === STROBE_STRIKE_DELAY`
 (no deviation left), and the test's deviation pin goes.
 
+### 15. Loadout wiring in lead files (closed: applied by the lead in 23c1936)
+
+The lead wired `effectsOf` (`setLoadout` runs whenever a player's heal / boost changes, so a late PlayerInfo still
+applies), draws both hands of the per-hand outfits (`OutfitDef.skinImg.handSprite` is `string | { left, right }`),
+added the deviation entry and an e2e join in `outfitAurora`. The patch notes below stay as the record.
+
+- Heal / boost particles: `apps/client/src/game/client.ts` view deps (both places that set `teamOf` / `nameOf`) add
+  `effectsOf: (id) => this.match.effectsOf(id)` (`ViewDeps.effectsOf` exists, `game/match.ts effectsOf` reads
+  PlayerInfo); in `apps/client/src/objects/player.ts`, when the emitters are created or the player view is set up,
+  `const fx = this.deps.effectsOf?.(view.id); if (fx) this.emitters?.setLoadout(fx.heal, fx.boost);`.
+- Left / right hand outfits: survev's `outfitAurora` and `outfitSpringTree` give `skinImg.handSprite` as
+  `{ left, right }`, so `objects/player.ts:331` passes an object to the texture store (console
+  "TypeError: id.endsWith is not a function", no hands). Patch as survev player.ts:1530-1532: apply
+  `typeof hs === "string" ? hs : hs.left` to `handLSprite` and `hs.right` to `handRSprite`, and type
+  `packages/defs/src/types/meta.ts OutfitDef.skinImg.handSprite` as `string | { left: string; right: string }`.
+  The preload (`assets/spriteSets.ts`) already takes both. Both outfits are loot since stage 4a and loadout items now.
+- `docs/research/rebirth-deviations.md`: "Loadout: everything unlocked (no accounts; the original and survev unlock
+  only `unlock_default` for a guest). Role uniforms, loot melee weapons and `noCustom` emotes stay out
+  (packages/sim/src/match/loadout.ts)."
+
 ## Owner requests (2026-10-07, while stage 2 ran)
 
 - Buildings first: stage 3 is top priority. Go through every building of the survev.wiki.gg Buildings navbox
@@ -345,8 +446,8 @@ moved: `bagSizes.strobe` is `[2, 3, 4, 5, 6]` (Pack04 6, the wiki's own value), 
 
 ## Shared hotspots touched (minimal)
 
-- `packages/defs/src/registry.ts`: schema 14 + history line (11 hit feedback, 12 new guns beta and 13 variant strobes are
-  the lead's).
+- `packages/defs/src/registry.ts`: schema 14, then 16 (stage 4b) + history lines (11 hit feedback, 12 new guns beta, 13
+  variant strobes and 15 the AP Rounds / last-stand bits are the lead's); the next bump is 17.
 - `packages/defs/src/index.ts`, `packages/defs/src/data.ts`: export and apply the survev wiki-spec layer.
 - `packages/defs/src/types/weapons.ts`: `MeleeDef.perk`, `ExplosionDef.healTeam / healAmount / dropRandomLoot`.
 - `packages/defs/test/helpers.ts` (`NOT_PORTED_IDS`), `packages/defs/test/survevGuns.test.ts` (policy pins now
@@ -357,18 +458,17 @@ moved: `bagSizes.strobe` is `[2, 3, 4, 5, 6]` (Pack04 6, the wiki's own value), 
 - Obstacle disguises: `packages/protocol/src/objects.ts` (ObstacleCodec), `packages/sim/src/game.ts` (tick, snapshot,
   removePlayer), `apps/client/src/objects/world.ts` (`anchorOf`), `objects/worldQuery.ts` (`skin`),
   `input/aimLine.ts`.
+- Loadouts (stage 4b): `packages/protocol/src/messages.ts` (Join), `match.ts` (PlayerInfos heal / boost),
+  `connection.ts` (`loadout` option); `apps/server/src/session.ts`, `room.ts` (Join loadout, Joined emotes);
+  `packages/sim/src/game.ts` (applyLoadout, PlayerInfo, slot emotes), `viewTeams.ts` (`AddPlayerOptions.loadout`),
+  `view.ts` (`PlayerInfoView.heal / boost`), `combat/combat.ts` (death emote ticker); `apps/client/src/menu/mainMenu.ts`
+  (Loadout button), `game/sandbox.ts` (Join loadout, cursor), `net/loopback.ts`, `game/match.ts` (`effectsOf`),
+  `objects/types.ts` (`ViewDeps.effectsOf`), `assets/spriteSets.ts` (left / right hands), `l10n/menu.ts`;
+  `packages/sim/test/match.test.ts` (PlayerInfo heal / boost).
 
 ## Open questions
 
-- Loadout (stage 4b, on hold): the original and survev both validate a guest's loadout against `unlock_default`
-  (survev player.ts:4295-4340 `setLoadout(..., useDefaultUnlocks)`), which unlocks only `outfitBase`, `fists`,
-  `heal_basic`, `boost_basic`, 15 crosshairs and the emotes (survev's list adds its 19 new emotes and drops
-  `emote_flagisrael`). With no accounts, a loadout menu would only change emotes; survev's outfits stay world loot and
-  the heal / boost effects stay unused. Options: (a) guest rules as survev: an emote / crosshair picker only (crosshair
-  is the lead's settings UI); (b) rebirth deviation "everything unlocked": a full loadout menu (outfit, melee, heal,
-  boost, emotes) with the Join message's survev loadout fields and per-player heal / boost emitters. Needs the owner's
-  call (rebirth-deviations.md is the lead's).
 - Cookable flags: the plan (section 2.3) proposed survev's source values; ADR 0003 point 4 and this wave's brief say
   the wiki wins, so the wiki's apply. Flip `WIKI_SPEC_OVERRIDES` if the owner prefers the source.
-- English name of `cutlass_gold`: survev's en.json says "Cutlass Gold" (used, the presentation source for survev-only
-  items); the def name and the wiki say "Gold Cutlass".
+- English name of `cutlass_gold` (closed): "Gold Cutlass" as its def name and the wiki have it, fixed in
+  `apps/client/scripts/l10n-items.ts` NAME_FIXES (survev's en.json says "Cutlass Gold").

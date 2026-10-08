@@ -5,11 +5,13 @@
 // Play (controls), a language toggle (English / 한국어) and the error line under the buttons (#server-warning).
 // M8: the region select under the name (regionSelect.ts), and the original's bottom-right buttons: settings, keybinds
 // and sound (settingsModal.ts; survev index.html #start-bottom-right); name and language live in the config (config.ts).
+// Survev content wave stage 4b: the Loadout button opens the loadout menu (loadoutMenu.ts; everything unlocked).
 import { toggleMute } from "../audio/shared.ts";
 import { config } from "../config.ts";
 import { getLang, type Lang, setLang, t } from "../l10n/index.ts";
 import { parseRoomCode } from "../net/party.ts";
 import { applyL10n, h } from "./dom.ts";
+import { LoadoutMenu } from "./loadoutMenu.ts";
 import "./menu.css";
 import { RegionSelect } from "./regionSelect.ts";
 import { KeybindModal, SettingsModal } from "./settingsModal.ts";
@@ -67,6 +69,7 @@ export class MainMenu {
     readonly regionSelect: RegionSelect;
     readonly settings: SettingsModal;
     readonly keybinds: KeybindModal;
+    readonly loadout: LoadoutMenu;
     private readonly muteButton: HTMLDivElement;
     private readonly unsubscribe: () => void;
     private panel: MenuPanel = "start";
@@ -128,6 +131,12 @@ export class MainMenu {
                     click: () => cb.createTeam(),
                 }),
             ),
+            h("a", {
+                id: "btn-customize",
+                cls: "btn-grey btn-darken menu-option",
+                l10n: "index-loadout",
+                click: () => this.loadout.show(),
+            }),
             h("a", {
                 id: "btn-help",
                 cls: "btn-grey btn-darken menu-option",
@@ -203,6 +212,7 @@ export class MainMenu {
         parent.append(this.root);
         this.settings = new SettingsModal(this.root, (lang) => this.setLang(lang));
         this.keybinds = new KeybindModal(this.root);
+        this.loadout = new LoadoutMenu(this.root);
         const renderMute = () => {
             const muted = config().get("muteAudio");
             this.muteButton.classList.toggle("audio-on-icon", !muted);
@@ -295,6 +305,7 @@ export class MainMenu {
         this.unsubscribe();
         this.settings.destroy();
         this.keybinds.destroy();
+        this.loadout.destroy();
         this.root.remove();
     }
 }

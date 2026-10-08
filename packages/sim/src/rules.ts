@@ -39,6 +39,11 @@ export interface SimRules {
     /** timeInsideGas only accumulates from this circle on (survev player.ts: circleIdx > 2) */
     gasDamageRampFromCircle: number;
     /**
+     * Gas damage per tick of a disconnected player instead of the stage's (survev player.ts:1654: 22); null keeps the
+     * stage damage (conflicts.md gas-escalation: survev's fork options stay off)
+     */
+    gasDisconnectedDamage: number | null;
+    /**
      * Damage of a landing air drop crate. conflicts.md airdrop-crush-damage: the client-visible
      * GameConfig.airdrop.crushDamage (100) through the Flak Jacket / Cast Ironskin reductions; survev applies 1e10.
      */
@@ -177,6 +182,7 @@ export function defaultRules(): SimRules {
         gasDamageRamp: false,
         gasDamageRampRate: 0.025,
         gasDamageRampFromCircle: 3,
+        gasDisconnectedDamage: null,
         airdropCrushDamage: GameConfig.airdrop.crushDamage,
         airdropCrushInstantKill: false,
         airdropCrushArmor: false,

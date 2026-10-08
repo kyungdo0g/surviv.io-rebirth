@@ -2,6 +2,7 @@
 // must come back equal within its quantization tolerance.
 import { createRng, type Rng } from "@rebirth/core";
 import { PROTOCOL_HASH } from "@rebirth/defs";
+import { loadoutChoices } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import {
     type ClientMsg,
@@ -27,6 +28,10 @@ import { assertClose, exact } from "./close.ts";
 import { netTolerances, randGameType, randInput, randMap, randMapType, randString } from "./gen.ts";
 
 const CASES = 2000;
+
+function pickOf<T>(rng: Rng, list: readonly T[]): T {
+    return list[rng.int(0, list.length - 1)];
+}
 
 function forCases(seed: number, fn: (rng: Rng, i: number) => void): void {
     const rng = createRng(seed);
@@ -66,8 +71,31 @@ describe("client messages", () => {
                 useTouch: rng.bool(),
                 isMobile: rng.bool(),
                 bot: rng.bool(),
+                // survev content wave stage 4b: survev's loadout at the end
+                loadout: {
+                    outfit: pickOf(rng, loadoutChoices("outfit")),
+                    melee: pickOf(rng, loadoutChoices("melee")),
+                    heal: pickOf(rng, loadoutChoices("heal")),
+                    boost: pickOf(rng, loadoutChoices("boost")),
+                    emotes: Array.from({ length: rng.int(0, 6) }, () => pickOf(rng, loadoutChoices("emote"))),
+                },
             };
             assertClose(clientRoundTrip(msg), msg, exact);
+        });
+    });
+
+    it("Join without a loadout reads back empty ids (the server takes the defaults)", () => {
+        const msg: ClientMsg = {
+            type: MsgType.Join,
+            protocol: 1,
+            name: "a",
+            useTouch: false,
+            isMobile: false,
+            bot: true,
+        };
+        expect(clientRoundTrip(msg)).toEqual({
+            ...msg,
+            loadout: { outfit: "", melee: "", heal: "", boost: "", emotes: [] },
         });
     });
 

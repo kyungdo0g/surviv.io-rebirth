@@ -19,6 +19,8 @@ import { mountShowcaseBar, resolveShowcase } from "../dev/showcase.ts";
 import { debugGlobals } from "../globals.ts";
 import { isTouchMode } from "../input/device.ts";
 import { t } from "../l10n/index.ts";
+import { crosshairCursor } from "../menu/crosshair.ts";
+import { joinLoadout, loadLoadout } from "../menu/loadoutStore.ts";
 import { LoopbackTransport } from "../net/loopback.ts";
 import type { Transport } from "../net/transport.ts";
 import { describeDisconnect, WsTransport } from "../net/ws.ts";
@@ -124,6 +126,10 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
     const textures = sharedTextures;
     const touch = isTouchMode();
     const globals = debugGlobals();
+    // the menu's loadout goes out with Join; its crosshair is the cursor over the game (survev content wave stage 4b)
+    const saved = loadLoadout();
+    const loadout = joinLoadout(saved);
+    app.canvas.style.cursor = crosshairCursor(saved.crosshair);
     let transport: Transport;
     let loopback: LoopbackTransport | null = null;
     let ws: WsTransport | null = null;
@@ -148,6 +154,7 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
             region: opts.net.region,
             useTouch: touch,
             isMobile: touch,
+            loadout,
             onDisconnect: (reason) => {
                 const normal = conn.endedNormally;
                 globals.disconnect = { reason, normal, message: describeDisconnect(reason) };
@@ -178,6 +185,7 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
                 give: opts.give,
                 isMobile: touch,
                 spawnSpots: show ? showcaseSpawnSpots(show) : undefined,
+                loadout,
             },
         );
         transport = loopback;

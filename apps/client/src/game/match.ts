@@ -154,6 +154,12 @@ export class MatchUi implements PlayerNames {
         return this.infos.get(id)?.teamId ?? 0;
     }
 
+    /** A player's loadout heal and boost particles (PlayerInfo; survev content wave stage 4b), the defaults if unknown. */
+    effectsOf(id: number): { heal: string; boost: string } {
+        const info = this.infos.get(id);
+        return { heal: info?.heal ?? "heal_basic", boost: info?.boost ?? "boost_basic" };
+    }
+
     /** A new local player (join or sandbox respawn): everything of the previous life is reset. */
     reset(localId: number): void {
         this.localId = localId;

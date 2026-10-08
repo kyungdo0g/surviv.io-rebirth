@@ -136,6 +136,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private readonly gunR: GunSprites;
     private data!: PlayerView;
     private visualsKey = "";
+    private loadoutKey = "";
     private idlePose = "fists";
     private weapon: WeaponDef | undefined;
     private readonly anim = new AnimPlayer();
@@ -327,8 +328,13 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.bodySprite.scale.set(0.25);
 
         const handTint = ghillie ? colors.playerGhillie : skin.handTint;
-        for (const hand of [this.handLSprite, this.handRSprite]) {
-            tex.apply(hand, skin.handSprite, 0.175 * bodyScale);
+        // left / right hand outfits (aurora, spring tree) name one sprite per hand (survev player.ts:1530-1532)
+        const hs = skin.handSprite;
+        for (const [hand, img] of [
+            [this.handLSprite, typeof hs === "string" ? hs : hs.left],
+            [this.handRSprite, typeof hs === "string" ? hs : hs.right],
+        ] as const) {
+            tex.apply(hand, img, 0.175 * bodyScale);
             hand.scale.set(0.175);
             hand.tint = handTint;
         }
@@ -520,6 +526,11 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             (view.id === ctx.localId ? 65536 : 0) +
             (view.scale > 1 ? 131072 : 0);
         this.deps.renderer.add(this.container, layer, zOrd, zIdx);
+        const fx = this.deps.effectsOf?.(view.id);
+        if (fx && this.emitters && `${fx.heal},${fx.boost}` !== this.loadoutKey) {
+            this.loadoutKey = `${fx.heal},${fx.boost}`;
+            this.emitters.setLoadout(fx.heal, fx.boost);
+        }
         this.emitters?.update(view, pos, layer, zOrd + 1);
         this.mode.update(view, pos, layer, zOrd, dt);
         this.aura.update(view, local, this.deps.renderer, layer, zOrd, zIdx, ctx.localLayer, dt);

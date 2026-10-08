@@ -17,6 +17,8 @@ const SURVEV_EN = ".survev/client/src/en.json";
  * Barrett, ASh-12 and S&W 500 (wikigg .50 Caliber; docs/design/survev-content-and-new-guns.md section 1.3).
  */
 const SURVEV_NAMES = ["50AE"];
+/** survev-only names fixed by hand: survev's en.json says "Cutlass Gold", its def name and wikigg Cutlass "Gold Cutlass" */
+const NAME_FIXES: Record<string, string> = { cutlass_gold: "Gold Cutlass" };
 const ITEM_TYPES = new Set([
     "gun",
     "melee",
@@ -61,7 +63,7 @@ for (const [id, def] of Object.entries(defs)) {
             fromSurvev.push(key);
         }
     }
-    const name = strings.get(`game-${id}`);
+    const name = NAME_FIXES[id] ?? strings.get(`game-${id}`);
     if (name) names[id] = name;
     const short = strings.get(`game-hud-${id}`);
     if (short) hud[id] = short;

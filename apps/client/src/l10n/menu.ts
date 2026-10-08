@@ -66,6 +66,26 @@ export const enMenu: Readonly<Record<string, string>> = {
     "index-copied": "Copied!",
     /** rebirth: shown while the room looks for a game (the original only spins the Play button) */
     "index-finding-game": "Finding game",
+    // loadout menu (survev content wave stage 4b; the original loadout-* keys, l10n-ko.md "리버스 표기")
+    "index-loadout": "Loadout",
+    "loadout-title-outfit": "Outfit Skin",
+    "loadout-title-melee": "Melee Skin",
+    "loadout-title-emote": "Emotes",
+    "loadout-title-heal": "Heal Particles",
+    "loadout-title-boost": "Boost Particles",
+    "loadout-title-crosshair": "Crosshair",
+    "loadout-size": "Size",
+    "loadout-stroked": "Stroked",
+    /** rebirth: the crosshair colour picker's label (the original showed a colour wheel without one) */
+    "loadout-color": "Color",
+    /** rebirth: the emote slot labels and the empty win / death slot */
+    "loadout-emote-top": "Top",
+    "loadout-emote-right": "Right",
+    "loadout-emote-bottom": "Bottom",
+    "loadout-emote-left": "Left",
+    "loadout-emote-win": "Win",
+    "loadout-emote-death": "Death",
+    "loadout-none": "None",
 };
 
 export const koMenu: Readonly<Record<string, string>> = {
@@ -129,4 +149,21 @@ export const koMenu: Readonly<Record<string, string>> = {
     "index-copy": "복사",
     "index-copied": "복사했습니다!",
     "index-finding-game": "게임 찾는 중",
+    "index-loadout": "로드아웃",
+    "loadout-title-outfit": "의상",
+    "loadout-title-melee": "근접 무기 스킨",
+    "loadout-title-emote": "이모티콘",
+    "loadout-title-heal": "치유 효과",
+    "loadout-title-boost": "부스트 효과",
+    "loadout-title-crosshair": "조준선",
+    "loadout-size": "크기",
+    "loadout-stroked": "테두리",
+    "loadout-color": "색상",
+    "loadout-emote-top": "위",
+    "loadout-emote-right": "오른쪽",
+    "loadout-emote-bottom": "아래",
+    "loadout-emote-left": "왼쪽",
+    "loadout-emote-win": "승리",
+    "loadout-emote-death": "사망",
+    "loadout-none": "없음",
 };

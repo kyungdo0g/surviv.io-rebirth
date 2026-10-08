@@ -10,6 +10,7 @@ import {
     type ClientMsg,
     DisconnectReason,
     decodeClientFrame,
+    type JoinMsg,
     MsgType,
     NetLimits,
     peekJoinProtocol,
@@ -173,7 +174,7 @@ export class ClientSession implements RoomMember {
     private handle(msg: ClientMsg): void {
         switch (msg.type) {
             case MsgType.Join:
-                this.join(msg.name, msg.isMobile);
+                this.join(msg.name, msg.isMobile, msg.loadout);
                 break;
             case MsgType.Input: {
                 if (this.state !== "joined" || !this.room) {
@@ -222,7 +223,7 @@ export class ClientSession implements RoomMember {
         }
     }
 
-    private join(name: string, isMobile: boolean): void {
+    private join(name: string, isMobile: boolean, loadout?: JoinMsg["loadout"]): void {
         if (this.state !== "connecting" || this.ticket === null) {
             this.disconnect(DisconnectReason.InvalidPacket);
             return;
@@ -252,7 +253,12 @@ export class ClientSession implements RoomMember {
         this.joinTimer = null;
         this.name = chosen;
         const shown = this.moderation.names.filter(chosen);
-        const { playerId, frame } = room.join(this, shown, { ...this.ticket.group, isMobile: isMobile === true });
+        // the loadout is validated by the simulation (unknown ids take the defaults; survev content wave stage 4b)
+        const { playerId, frame } = room.join(this, shown, {
+            ...this.ticket.group,
+            isMobile: isMobile === true,
+            loadout,
+        });
         this.room = room;
         this.playerId = playerId;
         this.state = "joined";

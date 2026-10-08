@@ -1515,6 +1515,7 @@
 - A: desert crates `01` w12 / `02de` w1 / `05` w1 [src:survev/shared/defs/maps/desertDefs.ts:48-66] [H]
 - B: original `01` w10 / `02de` w1 [src:balance/319] [H]
 - proposed resolution: original weights, no `airdrop_crate_05` [src:derived/readme-precedence] [H]
+- superseded by the survev baseline (docs/adr/0003-survev-baseline.md): the port takes survev's 01 w12 / 02de w1 / 05 w1 [src:survev/shared/defs/maps/desertDefs.ts:48-66] [H]
 - files: `mechanics/airdrop-airstrike.md` (`desert-airdrop-weights`) [src:derived/kb-crossref] [H]
 
 ## airdrop-crush-damage
@@ -1871,6 +1872,7 @@
 - A: 20 s on the client menu [src:survev/shared/gameConfig.ts:228] [src:fandom/Cobalt_Map] [H]
 - B: survev server fallback after 25 s [src:survev/server/src/game/objects/player.ts:231] [H]
 - proposed resolution: 20 s, assign the highlighted or a random class [src:derived/readme-precedence] [M]
+- rebirth (survev parity wave): the client confirms the highlighted class at 20 s, the server's random fallback waits 25 s like survev so that choice arrives first [src:survev/server/src/game/objects/player.ts:225-231] [src:survev/server/src/game/objects/player.ts:1497-1503] [H]
 - files: `modes/cobalt.md` (`cobalt-role-timeout`) [src:derived/kb-crossref] [H]
 
 ## desert-pkp-airdrop-rare
@@ -2061,6 +2063,7 @@
 - A: v0.8.82 pool has no fork guns [src:changelog/0.8.82] [H]
 - B: survev pool containing imbel, barrett, sw500, ash12 [src:derived/survev-nopotatoswap-scan] [H]
 - proposed resolution: build the pool from v0.8.82 item ids only [src:derived/readme-precedence] [H]
+- superseded by the survev baseline (docs/adr/0003-survev-baseline.md): the pool is every weapon def without `noPotatoSwap`, survev guns included, but the rebirth's gold-only guns [src:survev/server/src/game/objects/player.ts:4057-4066] [H]
 - files: `modes/potato.md` (`potato-swap-pool`) [src:derived/kb-crossref] [H]
 
 ## potato-tier-perks
@@ -2413,7 +2416,7 @@
 
 - A (survev.wiki.gg): the Coconut is cookable, the Tomato is not [src:wikigg/Coconut] [src:wikigg/Tomato_(Throwable)] [M]
 - B (survev source): `coconut` has `cookable: false`, `tomato` `cookable: true` [src:survev/shared/defs/gameObjects/throwableDefs.ts:846] [src:survev/shared/defs/gameObjects/throwableDefs.ts:913] [H]
-- proposed resolution: the wiki wins for survev-only items (ADR 0003 point 4, `user/2026-10-07-survev-guns`); applied in `packages/defs/src/survev/wikiSpecs.ts`, generated JSON keeps survev's value [src:user/2026-10-07-survev-guns] [M]
+- resolution: the owner says both cook: the Coconut takes the wiki's true, the Tomato keeps survev's true; applied in `packages/defs/src/survev/wikiSpecs.ts`, generated JSON keeps survev's value [src:user/2026-10-07-cookable] [H]
 - files: `items/throwables.md` [src:derived/kb-crossref] [H]
 
 ## Conflicts

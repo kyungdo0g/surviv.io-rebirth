@@ -10,6 +10,11 @@ export interface DamageParams {
     damageType: number;
     /** weapon (gun, melee, throwable) that dealt the hit; its headshotMult applies */
     gameSourceType?: string;
+    /**
+     * the weapon the hit started from when that is not `gameSourceType`: the throwable in hand for a heavy potato or a
+     * MIRV's bomblets, the gun that shot an exploding barrel (survev weaponSourceType; potato swaps prefer it)
+     */
+    weaponSourceType?: string;
     /** map object that dealt the hit (exploding barrel, ...) */
     mapSourceType?: string;
     /** explosions and shrapnel never headshot and use the Flak Jacket explosion reduction */

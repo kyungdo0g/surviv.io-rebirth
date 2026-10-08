@@ -54,6 +54,10 @@ this order (0 is the empty type), so every original def keeps the index its posi
    logged in `provenance.survevMapGenFields`).
    `survevMapObjects`: original map object ids whose survev def replaces the original whole (status
    `survev-override`; `category` renamed back and unported loot dropped as for survev-only objects).
+   `survevServerMapObjects`: survev-only map objects only survev's server code spawns (no map def names them), ported
+   with everything they reference (the potato-faction gold drop `airdrop_crate_04po`).
+   `survevSpriteFixes`: original map object id -> image field paths that take survev's image, where the original
+   names art no client ships (the snow air drops' `button.useImg`); logged in `provenance.survevSpriteFixes`.
 1. **Game objects** are the original client defs, unchanged, then the policy's survev-only ids in survev order
    (`provenance.gameObjects`: `"original"` or `"survev-only"`). Other survev-only ids are left out
    (`provenance.excluded.gameObjects`). survev fields the original lacks are not merged into original defs.

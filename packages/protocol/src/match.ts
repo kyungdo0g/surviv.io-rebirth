@@ -222,8 +222,8 @@ export function writePlayerInfos(w: BitWriter, infos: readonly PlayerInfoView[])
         w.writeUint8(clampUint(p.teamId, 8));
         w.writeUint8(clampUint(p.groupId, 8));
         w.writeString(p.name, NetLimits.PlayerNameMaxBytes);
-        writeGameType(w, "");
-        writeGameType(w, "");
+        writeGameType(w, p.heal ?? "");
+        writeGameType(w, p.boost ?? "");
         w.alignToNextByte();
     }
 }
@@ -235,11 +235,14 @@ export function readPlayerInfos(r: BitReader): PlayerInfoView[] {
         const teamId = r.readUint8();
         const groupId = r.readUint8();
         const name = r.readString(NetLimits.PlayerNameMaxBytes);
-        // heal / boost loadout cosmetics (not modelled)
-        readGameType(r);
-        readGameType(r);
+        // the loadout's heal / boost particles (survev content wave stage 4b)
+        const heal = readGameType(r);
+        const boost = readGameType(r);
         r.alignToNextByte();
-        out.push({ playerId, teamId, groupId, name });
+        const info: PlayerInfoView = { playerId, teamId, groupId, name };
+        if (heal) info.heal = heal;
+        if (boost) info.boost = boost;
+        out.push(info);
     }
     return out;
 }

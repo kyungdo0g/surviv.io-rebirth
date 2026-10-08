@@ -126,12 +126,18 @@ describe("role kits", () => {
         expect(["m249", "pkp"]).toContain(p.weaponManager.weapons[WeaponSlot.Secondary].type);
     });
 
-    it("an empty kit slot refills the gun already there (fandom: promotion refills the magazine)", () => {
+    it("an empty kit slot fills the gun already there from the bag (survev player.ts:1046-1058 reload(i, true))", () => {
         const { game, p } = setup();
-        giveGun(p, "ak47", { ammo: 3, reserve: 0 });
+        giveGun(p, "ak47", { ammo: 3, reserve: 100 });
         game.roles.promote(p, "lieutenant");
-        // the Lieutenant's Firepower comes first: the AK-47 refills to its extended 40 rounds
+        // the Lieutenant's Firepower comes first: the AK-47 fills to its extended 40 rounds, 37 of them from the bag
         expect(p.weaponManager.weapons[WeaponSlot.Primary]).toMatchObject({ type: "ak47", ammo: 40 });
+        expect(p.inv.get("762mm")).toBe(63);
+        // a short bag fills what it can
+        const { game: g2, p: q } = setup();
+        giveGun(q, "ak47", { ammo: 3, reserve: 10 });
+        g2.roles.promote(q, "lieutenant");
+        expect([q.weaponManager.weapons[WeaponSlot.Primary].ammo, q.inv.get("762mm")]).toEqual([13, 0]);
     });
 });
 
@@ -233,7 +239,7 @@ describe("The Hunted (Savannah)", () => {
 });
 
 describe("Cobalt classes", () => {
-    it("a class is chosen once from the map's perkModeRoles, else given at random after 20 s (cobalt-role-timeout)", () => {
+    it("a class is chosen once from the map's perkModeRoles, else given at random after the server's 25 s (cobalt-role-timeout)", () => {
         const gen = cachedMap("cobalt", 5);
         const Game = flatGame().constructor as typeof import("../src/index.ts").Game;
         const game = new Game(
@@ -258,6 +264,8 @@ describe("Cobalt classes", () => {
         game.emote(b.id, { type: "emote_thumbsup", isPing: false });
         expect(game.getSnapshot(b.id).emotes).toEqual([]);
         steps(game, 2001);
+        expect(b.role).toBe("");
+        steps(game, 500);
         expect(getMapDef("cobalt").gameMode.perkModeRoles).toContain(b.role);
     });
 });

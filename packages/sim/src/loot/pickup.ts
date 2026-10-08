@@ -178,7 +178,8 @@ export function pickupLoot(ctx: SimContext, player: Player, loot: Loot): PickupR
         case "backpack": {
             const current = player[def.type];
             amountLeft = 1;
-            if (gearQuality(current) > gearQuality(loot.type)) {
+            // a role helmet is never swapped by hand (survev player.ts:3861)
+            if ((def.type === "helmet" && player.hasRoleHelmet) || gearQuality(current) > gearQuality(loot.type)) {
                 result = "betterItemEquipped";
                 break;
             }

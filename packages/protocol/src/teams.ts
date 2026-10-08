@@ -11,7 +11,7 @@
 //   Emote (client -> server): pos vec 0..1024 16+16 bits, type game type, isPing bit (original layout)
 //   FactionStatus (M7a, 50v50): u8 count x {playerId u16, pos 11+11 bits, dead bit, downed bit, hasRole bit [+ role game
 //                 type]}, align: the original faction PlayerStatus records of the viewer's faction (the role rides in
-//                 PlayerStatus records too since M7a)
+//                 PlayerStatus records too since M7a), then the enemies revealed by firing (schema 18)
 import type { BitReader, BitWriter, Vec2 } from "@rebirth/core";
 import type { EmoteEvent, EmoteRequest, FactionMemberView, TeamMemberView } from "@rebirth/sim";
 import {

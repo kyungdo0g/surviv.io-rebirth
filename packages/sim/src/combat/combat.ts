@@ -4,6 +4,7 @@
 import type { Vec2 } from "@rebirth/core";
 import { DamageType, GameObjectDefs, getMapDef, hasDef } from "@rebirth/defs";
 import { dropEverythingOnDeath, dropObstacleLoot, spawnDestroyType } from "../loot/drops.ts";
+import { DEATH_EMOTE_DELAY } from "../match/emotes.ts";
 import { onKillCredited, onPerkHolderDeath } from "../perks/effects.ts";
 import { clearHaste } from "../perks/perks.ts";
 import { randomWeaponSwap } from "../weapons/potatoSwap.ts";
@@ -126,11 +127,19 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     // potato mode: a kill swaps the killer's weapon too (survev player.ts kill: lastDamagedBy.randomWeaponSwap)
     const killer = player.lastDamagedBy ? ctx.getPlayer(player.lastDamagedBy) : undefined;
     const potato = !!getMapDef(ctx.options.mapName).gameMode.potatoMode;
-    if (potato && killer && killer !== player && params.damageType === DamageType.Player) {
+    if (
+        potato &&
+        killer &&
+        killer !== player &&
+        params.sourceId !== player.id &&
+        params.damageType === DamageType.Player
+    ) {
         randomWeaponSwap(ctx, killer, params);
     }
     // the body slides along the killing hit, before the loot drops (survev player.ts kill addDeadBody) (M9)
     ctx.deadBodies.add(player.pos, player.id, player.layer, params.dir);
+    // the loadout's death emote follows 0.3 s later (match/emotes.ts updateSlotEmotes)
+    player.deathEmoteTicker = DEATH_EMOTE_DELAY;
     // an obstacle disguise dies with its wearer, loot and explosion included (survev player.ts kill obstacleOutfit)
     const disguise = disguiseOf(ctx, player);
     if (disguise) destroyObstacle(ctx, disguise, params.dir, params);
@@ -191,6 +200,8 @@ function onObstacleDestroyed(ctx: SimContext, obstacle: Obstacle, params: Damage
     if (def.explosion) {
         ctx.explosions.add(def.explosion, obstacle.pos, obstacle.layer, {
             gameSourceType: "",
+            // survev passes the destroying hit's params on: a barrel shot apart credits the gun (potato swaps)
+            weaponSourceType: params.weaponSourceType || params.gameSourceType || "",
             mapSourceType: obstacle.type,
             damageType: params.damageType,
             sourceId: params.sourceId ?? 0,

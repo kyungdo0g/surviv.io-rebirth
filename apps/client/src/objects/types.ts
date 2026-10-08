@@ -48,6 +48,8 @@ export interface ViewDeps {
     teamOf?: (playerId: number) => number;
     /** display name of a player (anonymized per the settings), "" when unknown (M9: dead bodies) */
     nameOf?: (playerId: number) => string;
+    /** a player's loadout heal / boost particles (PlayerInfo; survev content wave stage 4b; game/match.ts effectsOf) */
+    effectsOf?: (playerId: number) => { heal: string; boost: string };
 }
 
 /** Per-frame state handed to every view. */

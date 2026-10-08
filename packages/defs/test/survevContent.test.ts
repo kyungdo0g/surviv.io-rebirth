@@ -7,6 +7,7 @@ import {
     GameConfig,
     getDefOfType,
     getMapDef,
+    getMapObjectDefOfType,
     idsOfType,
     SURVEV_MELEE_SKINS,
     SURVEV_ONLY_MELEE,
@@ -112,10 +113,10 @@ const WIKI_THROWABLE: Readonly<
         },
         bag: [3, 6, 9, 12, 15],
     },
-    // wikigg/Tomato_(Throwable) rev 7178 (Cookable False: the wiki wins over the source's true)
+    // wikigg/Tomato_(Throwable) rev 7178; its Cookable False is overruled by the owner (both cook, survev's true)
     tomato: {
         item: {
-            cookable: false,
+            cookable: true,
             fuseTime: 9999,
             rad: 1,
             explodeOnImpact: true,
@@ -195,9 +196,12 @@ describe("survev-only melee and throwables: specs", () => {
         expect(GameConfig.bagSizes[id]).toEqual(w.bag);
     });
 
-    it("only the cookable flags differ between the wiki and survev's source; the wiki's apply", () => {
+    it("the Coconut and the Tomato both cook (the owner): only the Coconut's cookable changes survev's source, to the wiki's", () => {
         expect(survevWikiSpecs).toBe(WIKI_SPEC_OVERRIDES);
-        expect(WIKI_SPEC_OVERRIDES.map((o) => `${o.id}.${o.field}`)).toEqual(["coconut.cookable", "tomato.cookable"]);
+        expect(WIKI_SPEC_OVERRIDES.map((o) => `${o.id}.${o.field}`)).toEqual(["coconut.cookable"]);
+        for (const id of Object.keys(SURVEV_ONLY_THROWABLES)) {
+            expect((getDefOfType("throwable", id) as any).cookable, id).toBe(true);
+        }
         for (const o of WIKI_SPEC_OVERRIDES) {
             expect(gameObjects[o.id][o.field], "generated JSON keeps survev's value").toBe(o.survev);
             expect((getDefOfType("throwable", o.id) as any)[o.field]).toBe(o.wiki);
@@ -299,5 +303,18 @@ describe("survev cosmetics (stage 4)", () => {
         // survev renamed the original tree costume (tools/port-survev/lib/maps.ts ITEM_RENAMES): Halloween keeps the id
         expect(tier("halloween", "tier_outfits")).toContain("outfitTree");
         expect(idsOfType("outfit")).not.toContain("outfitHalloweenTree");
+    });
+});
+
+describe("snow air drops (policy survevSpriteFixes)", () => {
+    // the original opens both on map-crate-13x, which no client ships; survev crateDefs.ts opens them on
+    // map-airdrop-02x. The closed images stay the original's (the gold one shows map-airdrop-02x).
+    it("open on map-airdrop-02x; the closed images stay the original's", () => {
+        for (const id of ["airdrop_crate_01x", "airdrop_crate_02x"]) {
+            expect(getMapObjectDefOfType("obstacle", id).button?.useImg, id).toBe("map-airdrop-02x.img");
+        }
+        expect(getMapObjectDefOfType("obstacle", "airdrop_crate_01x").img.sprite).toBe("map-airdrop-01x.img");
+        expect(getMapObjectDefOfType("obstacle", "airdrop_crate_02x").img.sprite).toBe("map-airdrop-02x.img");
+        expect(provenance.survevSpriteFixes).toHaveLength(2);
     });
 });

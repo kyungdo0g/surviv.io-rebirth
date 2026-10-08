@@ -1,6 +1,6 @@
 // Encoder/decoder against the simulation on event maps (M7b). Cobalt: six players wait in the Twins bunker, five pick
-// a class through PerkModeRoleSelect frames (the sixth gets one after 20 s), all move to the surface, open a class pod
-// (smartLoot: the opener's class crate) and break it. Potato: players break potatoes and kill each other (weapon swaps
+// a class through PerkModeRoleSelect frames (the sixth gets one after the server's 25 s), all move to the surface,
+// open a class pod (smartLoot: the opener's class crate) and break it. Potato: players break potatoes and kill each other (weapon swaps
 // with their loot emotes), emote (always the potato), and get hit by potatoes (frozen pose + random drop). Every frame
 // goes through the shared-cache encoder and a decoder fed by the Map message; the decoded snapshot must equal
 // Game.getSnapshot within quantization tolerance, including the new PlayerView `frozen` / `frozenOri` fields.
@@ -103,7 +103,8 @@ describe("Update encoder/decoder against the simulation (M7b event maps)", () =>
         let classSeen = 0;
         let pods = 0;
         let seq = 0;
-        for (let tick = 1; tick <= 2400; tick++) {
+        // the sixth player's class comes from the server's 25 s fallback (survev player.ts:231)
+        for (let tick = 1; tick <= 2600; tick++) {
             if (tick === 40) {
                 // the class choices arrive as PerkModeRoleSelect frames
                 h.clients.slice(0, 5).forEach((c, i) => {

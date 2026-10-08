@@ -403,16 +403,18 @@ describe("player infos", () => {
         const a = game.addPlayer("alice");
         const b = game.addPlayer("bob");
         const first = game.getSnapshot(a);
+        // the default loadout's heal and boost particles (survev content wave stage 4b)
+        const fx = { heal: "heal_basic", boost: "boost_basic" };
         expect(first.playerInfos).toEqual([
-            { playerId: a, teamId: 1, groupId: 1, name: "alice" },
-            { playerId: b, teamId: 2, groupId: 2, name: "bob" },
+            { playerId: a, teamId: 1, groupId: 1, name: "alice", ...fx },
+            { playerId: b, teamId: 2, groupId: 2, name: "bob", ...fx },
         ]);
         expect(game.getSnapshot(a).playerInfos).toEqual([]);
         const c = game.addPlayer("carol");
         game.removePlayer(b);
         game.step();
         const next = game.getSnapshot(a);
-        expect(next.playerInfos).toEqual([{ playerId: c, teamId: 3, groupId: 3, name: "carol" }]);
+        expect(next.playerInfos).toEqual([{ playerId: c, teamId: 3, groupId: 3, name: "carol", ...fx }]);
         expect(next.deletedPlayerIds).toEqual([b]);
         expect(game.getSnapshot(c).playerInfos?.map((p) => p.name)).toEqual(["alice", "carol"]);
     });

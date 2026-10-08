@@ -111,6 +111,7 @@ export function portMapObjects(
     maps: Record<string, any>,
     gameObjects: Record<string, unknown>,
     survevOverrides: readonly string[] = [],
+    serverSpawned: readonly string[] = [],
 ): MapObjectPort {
     const defs: Record<string, any> = {};
     const status: Record<string, MapObjectStatus> = {};
@@ -142,6 +143,10 @@ export function portMapObjects(
         if (!(id in live) || !(id in survev))
             throw new Error(`policy.json survevMapObjects: ${id} is not in both sources`);
     }
+    for (const id of serverSpawned) {
+        if (id in live || !(id in survev))
+            throw new Error(`policy.json survevServerMapObjects: ${id} is not a survev-only map object`);
+    }
     // structure overrides (policy survevMapObjects) take survev's def in the original's slot (the Reserve's town)
     const overridden = new Set(survevOverrides);
     for (const [id, def] of Object.entries(live)) {
@@ -149,7 +154,8 @@ export function portMapObjects(
         status[id] = overridden.has(id) ? "survev-override" : "original";
     }
     const roles = perkModeRoles(Object.values(maps));
-    const roots: string[] = [];
+    // server-spawned objects (policy survevServerMapObjects) are roots like the maps' spawns
+    const roots: string[] = [...serverSpawned];
     for (const map of Object.values(maps)) roots.push(...mapDefSpawnRefs(map).map((r) => r.id));
     for (const def of Object.values(defs)) roots.push(...mapObjectChildIds(def, roles));
     const reachable = new Set(mapObjectClosure(roots, { ...survev, ...defs }, roles));
@@ -221,13 +227,29 @@ export interface GameplayChange {
     id: string;
     field: string;
     original: unknown;
+    /** survev's value; "absent" for a flag survev leaves out (the field is deleted) */
     survev: unknown;
 }
 
 /**
+ * Gameplay flags whose absence in survev means off: survev leaving one out turns the original's `true` off (the
+ * Crowbar, noPotatoSwap in the original, can be potato-swapped in survev: meleeDefs.ts crowbar has no flag).
+ */
+const SURVEV_ABSENT_IS_OFF: ReadonlySet<string> = new Set([
+    "noPotatoSwap",
+    "armorPiercing",
+    "stonePiercing",
+    "cleave",
+    "noDistAdj",
+    "useExplosiveRoundsAlt",
+    "forceMaxThrowDistance",
+    "cookable",
+]);
+
+/**
  * Option B (policy `survevBalance`): original game objects (and the survev skins built from them) take survev's
- * gameplay fields where survev defines them and they differ. Mutates `defs`; returns what changed (provenance
- * `survevValues`).
+ * gameplay fields where survev defines them and they differ, and lose the flags survev leaves out
+ * (SURVEV_ABSENT_IS_OFF). Mutates `defs`; returns what changed (provenance `survevValues`).
  */
 export function applySurvevGameplay(
     defs: Record<string, any>,
@@ -244,6 +266,11 @@ export function applySurvevGameplay(
         if (!eligible || !fields || !(id in survev)) continue;
         for (const field of fields) {
             const value = survev[id][field];
+            if (value === undefined && SURVEV_ABSENT_IS_OFF.has(field) && def[field] === true) {
+                changes.push({ id, field, original: true, survev: "absent" });
+                delete def[field];
+                continue;
+            }
             if (value === undefined || deepEqual(value, def[field])) continue;
             changes.push({ id, field, original: def[field] ?? "absent", survev: clone(value) });
             def[field] = clone(value);
@@ -291,6 +318,43 @@ export function applySurvevMapGenFields(
         }
     }
     return changes;
+}
+
+export interface SpriteFix {
+    id: string;
+    path: string;
+    original: unknown;
+    survev: unknown;
+}
+
+/**
+ * Policy `survevSpriteFixes`: listed image fields of original map objects take survev's value (the original names an
+ * image neither client ships; survev's same def names the art it draws). Presentation otherwise stays the original's.
+ */
+export function applySurvevSpriteFixes(
+    defs: Record<string, any>,
+    status: Readonly<Record<string, MapObjectStatus>>,
+    survev: Readonly<Record<string, any>>,
+    fixes: Readonly<Record<string, readonly string[]>>,
+): SpriteFix[] {
+    const out: SpriteFix[] = [];
+    const at = (o: any, keys: string[]) => keys.reduce((v, k) => (v == null ? undefined : v[k]), o);
+    for (const [id, paths] of Object.entries(fixes)) {
+        if (status[id] !== "original" || !(id in survev))
+            throw new Error(`policy.json survevSpriteFixes: ${id} is not an original map object survev defines`);
+        for (const path of paths) {
+            const keys = path.split(".");
+            const value = at(survev[id], keys);
+            const original = at(defs[id], keys);
+            if (typeof value !== "string" || !value.endsWith(".img") || value === original)
+                throw new Error(`policy.json survevSpriteFixes: ${id}.${path} is not a different survev image`);
+            const parent = at(defs[id], keys.slice(0, -1));
+            if (!isPlainObject(parent)) throw new Error(`policy.json survevSpriteFixes: ${id}.${path} has no parent`);
+            parent[keys[keys.length - 1]] = value;
+            out.push({ id, path, original: original ?? "absent", survev: value });
+        }
+    }
+    return out;
 }
 
 export interface GameConfigPort {

@@ -35,7 +35,8 @@ export interface OutfitDef extends BaseLootDef, BaseLoadoutItem {
         baseTint: number;
         baseSprite: string;
         handTint: number;
-        handSprite: string;
+        /** one sprite for both hands, or one per hand (survev outfitAurora, outfitSpringTree) */
+        handSprite: string | { left: string; right: string };
         footTint: number;
         footSprite: string;
         backpackTint: number;

@@ -3,7 +3,7 @@
 // succession, alive counts and the faction minimap rows, the air strike / gold drop schedules, the comeback drop, and
 // the faction map's team buildings and statues. Values: docs/research/modes/faction.md, items/roles.md, conflicts.md.
 import { type Vec2, v2 } from "@rebirth/core";
-import { DamageType } from "@rebirth/defs";
+import { DamageType, getMapDef, getMapObjectDefOfType } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { Game, type GameInit, type Player, type RoleAnnouncementEvent } from "../src/index.ts";
 import { cachedMap } from "./helpers.ts";
@@ -336,6 +336,35 @@ describe("planes", () => {
         expect(game.faction!.sentHelp).toBe(true);
         finish(game, blue[2], red[0]);
         expect(game.planes.zones.zones).toHaveLength(1);
+    });
+
+    // survev plane.ts:273-278: potato factions drop airdrop_crate_04po, whose crate_13po adds potato loot
+    it("Potato vs Tomato: the gold drop and the comeback drop are the potato gold crate", () => {
+        const game = new Game(
+            { mapName: "faction_potato", seed: SEED, teamMode: 4 },
+            { generation: cachedMap("faction_potato", SEED, 4), spawnLoot: false },
+        );
+        game.rules.roles.helpLosingTeam = true;
+        const players = add(game, 14);
+        game.gas.onCircle?.(3);
+        for (let i = 0; i < 201; i++) game.step();
+        expect(game.planes.planes.map((p) => p.crateType)).toContain("airdrop_crate_04po");
+        expect(game.planes.planes.map((p) => p.crateType)).not.toContain("airdrop_crate_04");
+        const count = () => game.planes.planes.filter((p) => p.crateType === "airdrop_crate_04po").length;
+        const before = count();
+        (game.gas as { circleIdx: number }).circleIdx = 1;
+        const red = players.filter((p) => p.teamId === 1);
+        const blue = players.filter((p) => p.teamId === 2);
+        finish(game, blue[0], red[0]);
+        finish(game, blue[1], red[0]);
+        expect(game.faction!.sentHelp).toBe(true);
+        expect(count()).toBe(before + 1);
+        // the inner crate: crate_13po, two tier_airdrop_potato rolls on top of the gold crate's loot
+        const inner = getMapObjectDefOfType("obstacle", "airdrop_crate_04po").destroyType;
+        expect(inner).toBe("crate_13po");
+        const loot = getMapObjectDefOfType("obstacle", "crate_13po").loot;
+        expect(loot[0]).toMatchObject({ tier: "tier_airdrop_potato", min: 2, max: 2 });
+        expect(getMapDef("faction_potato").lootTable.tier_airdrop_potato?.length).toBeGreaterThan(0);
     });
 });
 

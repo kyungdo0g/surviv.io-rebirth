@@ -70,9 +70,16 @@ function clipMuzzle(
 
 /**
  * Fires the active gun once. `cooldown` is the new weapon cooldown (fireDelay plus the carried remainder), or
- * null to leave it unchanged. Returns true when bullets were fired.
+ * null to leave it unchanged. `force` fires an outdoors-only gun indoors (survev fireWeapon forceFire: the Commander's
+ * automatic flare). Returns true when bullets were fired.
  */
-export function fireGun(ctx: SimContext, player: Player, offHand: boolean, cooldown: number | null): boolean {
+export function fireGun(
+    ctx: SimContext,
+    player: Player,
+    offHand: boolean,
+    cooldown: number | null,
+    force = false,
+): boolean {
     const wm = player.weaponManager;
     const weapon = wm.activeSlot;
     const def = getDefOfType("gun", weapon.type);
@@ -83,7 +90,7 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     if (cooldown !== null) weapon.cooldown = cooldown;
     weapon.recoilTime = def.recoilTime;
     // flare guns refuse to fire indoors (the cooldown is still spent, as in survev)
-    if (def.outsideOnly && player.indoors) return false;
+    if (def.outsideOnly && player.indoors && !force) return false;
 
     const dir = player.dir;
     player.shotSlowdownTimer = def.fireDelay;
@@ -194,6 +201,7 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     if (weapon.type === "bugle" && player.hasPerk("inspiration")) playBugle(ctx, player);
     // the Commander's flare gun may be dropped once fired (survev fireWeapon hasFiredFlare)
     if (def.bulletType === "bullet_flare" && player.role === "leader") player.firedFlare = true;
+    ctx.faction?.onShot(player);
     player.shotSeq++;
     player.shotOffhand = offHand;
     if (fired) ctx.observer?.onShotFired?.(player, weapon.type, fired);

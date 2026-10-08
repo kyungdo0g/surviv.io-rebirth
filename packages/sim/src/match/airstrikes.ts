@@ -37,6 +37,8 @@ const BOMB_TICKS = 2;
 const DEFAULT_WAIT = 1.5;
 const DEFAULT_DELAY = 1;
 const DEFAULT_PLANES = 3;
+/** survev's grid cell size (server grid.ts:21) */
+const GRID_CELL = 16;
 /** A zone lasts wait + 2.5 + planes x delay + 2.5 s (survev addAirstrikeZone). */
 const ZONE_FINISH_BUFFER = 2.5;
 /** Half of the aim points are near a player of the zone: random offset up to bombCount x bombOffset / 4. */
@@ -248,7 +250,8 @@ export class AirstrikeZones {
 
     /**
      * Zone centre over a high player density (survev getAirstrikeZonePos): the connected players are shuffled and
-     * the one with the most above-ground players within `rad` wins, stopping once more than a third are covered.
+     * the one with the most above-ground players around it wins, stopping once more than a third are covered. survev
+     * counts what its grid query returns, so "around" is the grid cells under the circle's box (inGridCells).
      */
     zonePos(rad: number): Vec2 {
         let pos = v2.copy(this.host.gas.posNew);
@@ -257,7 +260,7 @@ export class AirstrikeZones {
         let best = 0;
         for (const p of players) {
             let n = 0;
-            for (const q of players) if (q.layer !== 1 && v2.distance(q.pos, p.pos) <= rad) n++;
+            for (const q of players) if (q.layer !== 1 && inGridCells(q, p.pos, rad)) n++;
             if (n > best) {
                 best = n;
                 pos = v2.copy(p.pos);
@@ -326,4 +329,20 @@ export class AirstrikeZones {
             zoneT: Math.min(1, z.elapsed / z.duration),
         }));
     }
+}
+
+/**
+ * Whether survev's grid query of the circle (`center`, `rad`) returns player `q`: the cells under the circle's box
+ * share one with the cells under the player's grid bounds (maxVisualRadius x scale). grid.intersectCollider has no
+ * exact test (survev plane.ts:142-150, grid.ts:101-124).
+ */
+function inGridCells(q: Player, center: Vec2, rad: number): boolean {
+    const cell = (v: number) => Math.floor(v / GRID_CELL);
+    const ext = GameConfig.player.maxVisualRadius * q.scale;
+    return (
+        cell(center.x - rad) <= cell(q.pos.x + ext) &&
+        cell(q.pos.x - ext) <= cell(center.x + rad) &&
+        cell(center.y - rad) <= cell(q.pos.y + ext) &&
+        cell(q.pos.y - ext) <= cell(center.y + rad)
+    );
 }

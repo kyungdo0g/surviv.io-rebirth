@@ -117,11 +117,10 @@
 |---|---|---|---|---|
 | `potato_lmg` | `barrelLength` | 5 | 4.5 | [src:user/2026-10-07-survev-guns] [src:wikigg/PMG-134] [src:survev/shared/defs/gameObjects/gunDefs.ts:3543] [H] |
 | `potato_lmgshot` | `throwPhysics.velZ` | 5 | 3 | [src:user/2026-10-07-survev-guns] [src:wikigg/Petite_Potato] [src:survev/shared/defs/gameObjects/throwableDefs.ts:762] [H] |
-| `coconut` (survev-only throwable) | `cookable` | false | true | [src:user/2026-10-07-survev-guns] [src:wikigg/Coconut] [src:survev/shared/defs/gameObjects/throwableDefs.ts:846] [M] |
-| `tomato` (survev-only throwable) | `cookable` | true | false | [src:user/2026-10-07-survev-guns] [src:wikigg/Tomato_(Throwable)] [src:survev/shared/defs/gameObjects/throwableDefs.ts:913] [M] |
+| `coconut` (survev-only throwable) | `cookable` | false | true | [src:user/2026-10-07-cookable] [src:wikigg/Coconut] [src:survev/shared/defs/gameObjects/throwableDefs.ts:846] [H] |
 
 - The owner asked for every gun only survev.io has, with the specs of the wiki ("스펙도 위키 따라서"); where the wiki and survev's source differ the wiki's value applies, citing both [src:user/2026-10-07-survev-guns] [H]
-- The survev content wave applies the same rule to the survev-only throwables: the Coconut (wikigg rev 7413) and the Tomato (wikigg Tomato_(Throwable) rev 7178) take the wiki's `cookable`, the reverse of survev's source (`packages/defs/src/survev/wikiSpecs.ts` `WIKI_SPEC_OVERRIDES`; `conflicts.md` `survev-throwable-cookable`); the generated JSON keeps survev's value [src:user/2026-10-07-survev-guns] [src:wikigg/Coconut] [src:wikigg/Tomato_(Throwable)] [M]
+- The Coconut and the Tomato both cook, by the owner's ruling on the wiki/source conflict ("쿠킹은 전부되는대"): the Coconut takes the wiki's `cookable` true (survev's source says false) and the Tomato keeps survev's true (its wiki page says False) (`packages/defs/src/survev/wikiSpecs.ts` `WIKI_SPEC_OVERRIDES`; `conflicts.md` `survev-throwable-cookable`); the generated JSON keeps survev's value [src:user/2026-10-07-cookable] [src:wikigg/Coconut] [src:wikigg/Tomato_(Throwable)] [H]
 - Every other infobox value of the six guns equals survev's source: magazine, extended magazine, spawn ammo, reload, fire delay, switch delay, spreads, barrel, player and recoil speed, headshot multiplier, quality, and the bullets' damage, falloff, obstacle multiplier, range and speed (`packages/defs/test/survevGuns.test.ts` pins them all) [src:wikigg/Barrett_M107] [src:wikigg/ASh-12] [src:wikigg/S&W_500] [src:wikigg/IMD-2] [src:wikigg/SPAS-16] [src:wikigg/PMG-134] [src:survev/shared/defs/gameObjects/gunDefs.ts:1212] [src:survev/shared/defs/gameObjects/bulletDefs.ts:441-480] [H]
 - The Petite Potato page gives the PMG-134 shot's explosion a max radius of 1.7, while the newer PMG-134 page and survev's source give 1.75; the wiki disagrees with itself, so the explosion keeps 1.75 [src:wikigg/Petite_Potato] [src:wikigg/PMG-134] [src:survev/shared/defs/gameObjects/explosionsDefs.ts:219-230] [M]
 - A PMG-134 hit slows the target for 0.25 s and takes 1.5 off its view radius per hit, at most 32, never below the 1x view, until 2.5 s pass without a hit (`rules.modes.throwableHits.explosion_potato_lmgshot`, `rules.modes.viewShrink`) [src:wikigg/PMG-134] [src:survev/server/src/game/objects/explosion.ts:222-242] [src:survev/server/src/game/objects/player.ts:4592-4597] [H]
@@ -218,3 +217,8 @@
 - Headshots stay invisible to bystanders, as in v0.8.82: only the dealer and the target learn of them [src:user/2026-10-07-hit-feedback] [src:survev/shared/gameConfig.ts:200] [H]
 - No new art or sounds: the blood reuses `part-splat-*`, the flash the plain body sprite, the confirm sounds existing hit sounds; the marker, the ring and the arcs are drawn shapes [src:user/2026-10-07-hit-feedback] [H]
 - Bots do not read the hits and the simulation stays deterministic [src:user/2026-10-07-hit-feedback] [H]
+
+## Loadout: everything unlocked
+
+- The rebirth has no accounts, so the start menu's Loadout lets every player pick any outfit, melee skin, six emotes, heal and boost effect and crosshair; v0.8.82 and survev unlock only `unlock_default` for a guest [src:user/2026-10-07-survev-baseline] [src:survev/shared/defs/gameObjects/unlockDefs.ts] [H]
+- Role uniforms, loot melee weapons and `noCustom` emotes stay out of the menu, and the simulation replaces unknown or ineligible ids with the defaults (`packages/sim/src/match/loadout.ts`) [src:user/2026-10-07-survev-baseline] [H]

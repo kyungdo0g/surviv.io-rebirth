@@ -202,8 +202,8 @@ export class GameRoom {
             teamMode: this.game.options.teamMode ?? 1,
             playerId,
             started: this.game.started,
-            // the emote loadout (wheel, win and death slots); loadouts are not modelled: the original defaults
-            emotes: [...GameConfig.defaultEmoteLoadout],
+            // the player's validated emote loadout (wheel, win and death slots)
+            emotes: [...(this.game.getPlayer(playerId)?.emoteLoadout ?? GameConfig.defaultEmoteLoadout)],
         });
         w.writeBytes(this.mapMsg);
         return { playerId, frame: w.getBuffer() };

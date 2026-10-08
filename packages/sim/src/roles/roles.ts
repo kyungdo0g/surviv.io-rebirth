@@ -3,7 +3,7 @@
 // carries a perk or a role (the desert Lieutenant Helmet's Firepower, the K-pot-ato's Rare Potato, the Woods King's
 // Shishigami no Kabuto). Behaviour follows survev server/src/game/objects/player.ts promoteToRole / removeRole and the
 // helmet branch of pickupLoot, docs/research/items/roles.md "What promotion does".
-import { GameObjectDefs, getDef, getDefOfType, getMapDef, hasDef, WeaponSlot } from "@rebirth/defs";
+import { GameObjectDefs, type GunDef, getDef, getDefOfType, getMapDef, hasDef, WeaponSlot } from "@rebirth/defs";
 import { isBagItem } from "../items/inventory.ts";
 import { dropGun, playerDropLoot } from "../loot/drops.ts";
 import { addPerk, giveHaste, removePerk, removePerksWhere } from "../perks/perks.ts";
@@ -14,11 +14,6 @@ import type { Player } from "../world/player.ts";
 import { type ResolvedLoadout, resolveLoadout, resolveRolePerks, roleLoadout } from "./loadouts.ts";
 
 const MAX_STAT = 100;
-
-export interface PromoteOptions {
-    /** keep the current weapons (Commander succession keeps the Lieutenant's guns, like survev's Captain) */
-    keepWeapons?: boolean;
-}
 
 function noDrop(id: string): boolean {
     return !!id && hasDef(id) && !!(GameObjectDefs[id] as { noDrop?: boolean }).noDrop;
@@ -38,7 +33,7 @@ function dropGear(ctx: SimContext, player: Player, id: string): void {
  * Promotes `player` to `role` (survev promoteToRole). A role change first strips the old role's no-drop helmet and
  * chest and its perks; a loot perk the new role also grants is dropped. Announced to everyone.
  */
-export function promoteToRole(ctx: SimContext, player: Player, role: string, opts: PromoteOptions = {}): void {
+export function promoteToRole(ctx: SimContext, player: Player, role: string): void {
     if (!hasDef(role) || getDef(role).type !== "role") return;
     const def = getDefOfType("role", role);
     const rules = ctx.rules.roles;
@@ -60,7 +55,14 @@ export function promoteToRole(ctx: SimContext, player: Player, role: string, opt
         player.boost = MAX_STAT;
         giveHaste(player, "windwalk", rules.lastManHasteDuration);
     }
-    const newPerks = new Set(resolveRolePerks(def.perks ?? [], ctx.roleRng));
+    const rolePerks = def.perks ?? [];
+    if (role !== "classless" && rolePerks.length >= 4 && ctx.rules.perks.roleDropsLootPerks) {
+        for (const src of player.perkSources.filter((s) => s.droppable)) {
+            playerDropLoot(ctx, player, src.type);
+            removePerk(player, src.type);
+        }
+    }
+    const newPerks = new Set(resolveRolePerks(rolePerks, ctx.roleRng));
     if (role === "last_man" && rules.lastManExtraPerks.length > 0)
         newPerks.add(ctx.roleRng.pick(rules.lastManExtraPerks));
     // Classless: one random class perk it does not hold; earlier role perks stay (survev player.ts:935-972)
@@ -80,7 +82,7 @@ export function promoteToRole(ctx: SimContext, player: Player, role: string, opt
     }
     for (const perk of newPerks) addPerk(player, perk, { fromRole: true });
     const kit = roleLoadout(role, getMapDef(ctx.options.mapName));
-    if (kit) applyLoadout(ctx, player, resolveLoadout(kit, player.teamId, ctx.roleRng), opts);
+    if (kit) applyLoadout(ctx, player, resolveLoadout(kit, player.teamId, ctx.roleRng));
 }
 
 /**
@@ -98,8 +100,21 @@ export function swapClasslessPerk(ctx: SimContext, player: Player): void {
     addPerk(player, perk, { fromRole: true });
 }
 
+/**
+ * Fills the gun in slot `i` from the bag (survev weaponManager.reload(i, true)): free with endless ammo and for
+ * ammo the bag does not hold (the bugle's).
+ */
+function fillFromBag(player: Player, i: number, def: GunDef): void {
+    const wm = player.weaponManager;
+    const slot = wm.weapons[i];
+    let amount = wm.ammoStats(def).maxClip - slot.ammo;
+    if (amount <= 0) return;
+    if (!wm.isInfinite(def) && isBagItem(def.ammo)) amount = player.inv.take(def.ammo, amount);
+    slot.ammo += amount;
+}
+
 /** Applies a resolved kit in survev's order: backpack, items, outfit, role helmet, chest, weapons. */
-function applyLoadout(ctx: SimContext, player: Player, kit: ResolvedLoadout, opts: PromoteOptions): void {
+function applyLoadout(ctx: SimContext, player: Player, kit: ResolvedLoadout): void {
     if (kit.backpack) {
         if (player.backpack !== kit.backpack) dropGear(ctx, player, player.backpack);
         player.backpack = kit.backpack;
@@ -107,7 +122,8 @@ function applyLoadout(ctx: SimContext, player: Player, kit: ResolvedLoadout, opt
     for (const [item, amount] of Object.entries(kit.inventory)) {
         if (!isBagItem(item) || amount <= 0) continue;
         const rest = player.inv.give(item, amount).remaining;
-        if (rest > 0) playerDropLoot(ctx, player, item, rest);
+        // every kit lists a 1x scope the player already holds: it never drops (survev inventoryManager.ts:154)
+        if (rest > 0 && item !== "1xscope") playerDropLoot(ctx, player, item, rest);
     }
     player.noDropOutfit = kit.noDropOutfit;
     if (kit.outfit) {
@@ -132,15 +148,14 @@ function applyLoadout(ctx: SimContext, player: Player, kit: ResolvedLoadout, opt
         if (player.chest !== kit.chest) dropGear(ctx, player, player.chest);
         player.chest = kit.chest;
     }
-    if (opts.keepWeapons) return;
     const wm = player.weaponManager;
     kit.weapons.forEach((weapon, i) => {
         const cur = wm.weapons[i];
         if (!weapon.type) {
-            // an empty kit slot refills the gun already there (fandom: promotion refills the magazine), but for the
-            // rebirth's single-use guns, which are never reloaded (new-gun-stats.md 4.2)
+            // an empty kit slot fills the gun already there from the bag (survev player.ts:1046-1058 reload(i, true)),
+            // but for the rebirth's single-use guns, which are never reloaded (new-gun-stats.md 4.2)
             const def = gunDef(cur.type);
-            if (def && !def.charges) cur.ammo = Math.max(cur.ammo, wm.ammoStats(def).maxClip);
+            if (def && !def.charges) fillFromBag(player, i, def);
             return;
         }
         const def = getDef(weapon.type);

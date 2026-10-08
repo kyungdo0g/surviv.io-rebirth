@@ -5,13 +5,15 @@
 // Behaviour follows survev server/src/game/objects/player.ts (PlayerBarn.update scheduled roles, scheduleRoleAssignments,
 // promoteToKillLeader, kill), group.ts (Team.checkAndApplyLastMan / checkAndApplyCaptain) and
 // docs/research/items/roles.md "50v50 promotion rules" / "Map roles" / "Cobalt classes".
-import { getDefOfType, getMapDef, hasDef, type MapDef } from "@rebirth/defs";
+import { getDefOfType, getMapDef, hasDef, type MapDef, WeaponSlot } from "@rebirth/defs";
 import type { LootSystem } from "../loot/loot.ts";
 import { type FactionSystem, living } from "../match/faction.ts";
 import type { TrackedIndicator } from "../match/indicators.ts";
+import { fireGun } from "../weapons/gun.ts";
+import { gunDef } from "../weapons/weaponManager.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
-import { type PromoteOptions, promoteToRole, removeRole, swapClasslessPerk } from "./roles.ts";
+import { promoteToRole, removeRole, swapClasslessPerk } from "./roles.ts";
 
 /** What the role system needs from the game. */
 export interface RoleHost extends SimContext {
@@ -81,7 +83,7 @@ export class RoleSystem {
         const gameMode = this.map.gameMode;
         for (const p of this.host.players()) {
             if (p.dead) continue;
-            // Cobalt: a player who did not choose gets a random class (conflicts.md cobalt-role-timeout: 20 s)
+            // Cobalt: a player who did not choose gets a random class (survev's 25 s server fallback)
             if (gameMode.perkMode && !p.role && p.timeAlive >= this.rules.perkModeRoleSelectTime - 1e-9) {
                 const classes = gameMode.perkModeRoles ?? [];
                 if (classes.length > 0) {
@@ -113,8 +115,8 @@ export class RoleSystem {
     }
 
     /** Promotes `player` (announced); a team's first Commander is remembered for the game over (survev Team.leader). */
-    promote(player: Player, role: string, opts: PromoteOptions = {}): void {
-        promoteToRole(this.host, player, role, opts);
+    promote(player: Player, role: string): void {
+        promoteToRole(this.host, player, role);
         if (role === "leader" && this.faction) {
             const team = this.faction.team(player.teamId);
             if (team && !team.leader) team.leader = player;
@@ -135,14 +137,22 @@ export class RoleSystem {
     }
 
     /** The fork's automatic Commander flare (conflicts.md role-leader-auto-flare, off by default). */
+    /**
+     * The fork's automatic flare (rules.roles.leaderAutoFlare, off): the Commander draws its flare gun and fires it,
+     * indoors too, then a downed one goes back to its melee weapon (survev player.ts:1478-1495).
+     */
     private autoFlare(player: Player, dt: number): void {
         player.flareTimer -= dt;
         if (player.flareTimer > 0) return;
         player.firedFlare = true;
-        const flare = player.weaponManager.weapons.find((w) => w.type === "flare_gun" && w.ammo > 0);
-        if (!flare) return;
-        flare.ammo--;
-        this.host.planes.addAirdrop(this.host.world.clampToMap(player.pos, 0));
+        player.flareTimer = 0;
+        const wm = player.weaponManager;
+        const idx = wm.weapons.findIndex((w) => w.type === "flare_gun" || w.type === "flare_gun_dual");
+        const def = idx >= 0 ? gunDef(wm.weapons[idx].type) : undefined;
+        if (!def) return;
+        wm.setCurWeapIndex(idx, true);
+        fireGun(this.host, player, false, def.fireDelay, true);
+        if (player.downed) wm.setCurWeapIndex(WeaponSlot.Melee, true);
     }
 
     /** A faction player was knocked down: Lone Survivr may apply (survev down -> checkAndApplyLastMan). */
@@ -168,11 +178,6 @@ export class RoleSystem {
         this.faction.checkHelpLosingTeam();
     }
 
-    /** A player left the game: a faction team may have lost its Commander. */
-    onPlayerRemoved(player: Player): void {
-        if (this.faction) this.checkSuccession(player.teamId, player);
-    }
-
     /**
      * Lone Survivr (survev checkAndApplyLastMan): once per team, when at most `lastManCount` of its living players are
      * standing and connected and the game no longer accepts joins, they become Lone Survivrs.
@@ -189,17 +194,18 @@ export class RoleSystem {
 
     /**
      * rules.roles.commanderSuccession: once per team, the first standing Lieutenant of a team left without a Commander
-     * becomes its Captain, keeping its weapons (survev group.ts checkAndApplyCaptain, on every knock and kill).
+     * becomes its Captain; the Captain's kit has no weapons, so its guns are filled from the bag (survev group.ts
+     * checkAndApplyCaptain, on every knock and kill).
      */
-    private checkSuccession(teamId: number, leaving?: Player): void {
+    private checkSuccession(teamId: number): void {
         const team = this.faction?.team(teamId);
         if (!team || !this.rules.commanderSuccession || this.succeeded.has(teamId)) return;
-        const alive = living(team).filter((p) => p !== leaving && !p.disconnected);
+        const alive = living(team).filter((p) => !p.disconnected);
         if (alive.some((p) => p.role === "leader")) return;
         const lt = alive.find((p) => p.role === "lieutenant" && !p.downed);
         if (!lt) return;
         this.succeeded.add(teamId);
-        this.promote(lt, "captain", { keepWeapons: true });
+        this.promote(lt, "captain");
     }
 
     /**

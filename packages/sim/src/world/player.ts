@@ -8,6 +8,7 @@ import { emptyInput, type PlayerInput } from "../input.ts";
 import { Inventory, type InventoryOwner, SCOPE_LEVELS, THROWABLE_LIST } from "../items/inventory.ts";
 import type { PickupResult } from "../loot/pickup.ts";
 import { updateEmoteThrottle } from "../match/emotes.ts";
+import { applyGasDamage } from "../match/gas.ts";
 import type { Group } from "../match/teams.ts";
 import { trackActivity, updatePerks } from "../perks/effects.ts";
 import { type PerkSource, rulesOf } from "../perks/perks.ts";
@@ -84,7 +85,10 @@ export class Player implements InventoryOwner {
     /** id of the obstacle a disguise outfit puts over the player (world/disguise.ts), 0 for none */
     disguiseId = 0;
     /** outfit the player joined with: it never drops on death (survev compares with the loadout outfit) */
-    readonly loadoutOutfit: string = PLAYER.defaultItems.outfit;
+    loadoutOutfit: string = PLAYER.defaultItems.outfit;
+    /** loadout heal and boost particles (PlayerInfo; match/playerLoadout.ts) */
+    loadoutHeal = "heal_basic";
+    loadoutBoost = "boost_basic";
     backpack: string = PLAYER.defaultItems.backpack;
     helmet: string = PLAYER.defaultItems.helmet;
     chest: string = PLAYER.defaultItems.chest;
@@ -107,6 +111,8 @@ export class Player implements InventoryOwner {
     frozen = { ticker: 0, ori: 0 };
     /** PMG-134 hits: zoom radius taken off the view until `ticker` s pass without a hit (modes/frozen.ts) */
     viewShrink = { amount: 0, ticker: 0 };
+    /** 50v50: seconds the player stays on the enemy faction's minimap after firing in its sight (match/faction.ts) */
+    timeUntilHidden = 0;
     /** Cobalt: no class chosen yet; the player waits (in the Twins bunker) and cannot act or be hurt (M7b) */
     awaitingClass = false;
     /** seconds until the bugle regains a charge (Inspiration), 0 when not recharging */
@@ -190,8 +196,10 @@ export class Player implements InventoryOwner {
     emoteCounter = 0;
     emoteSoftTicker = 0;
     emoteHardTicker = 0;
-    /** emote wheel (slots 0-3), win and death emotes (GameConfig.defaultEmoteLoadout; no loadouts yet) */
+    /** emote wheel (slots 0-3), win and death emotes (GameConfig.defaultEmoteLoadout, then the Join loadout) */
     readonly emoteLoadout: string[] = [...GameConfig.defaultEmoteLoadout];
+    /** seconds until the death emote once dead (survev sendDeathEmoteTicker); 0 when sent or alive */
+    deathEmoteTicker = 0;
     /** seconds alive (match stats, start condition) */
     timeAlive = 0;
     /** seconds in the gas since entering it, counted from rules.gasDamageRampFromCircle (escalation rule) */
@@ -463,6 +471,8 @@ export class Player implements InventoryOwner {
         if (this.dead) return;
         // revive range, damage buffer, bleeding (may kill), emote throttle (M6a)
         updateDowned(ctx, this, dt);
+        if (this.dead) return;
+        applyGasDamage(ctx, this, dt);
         if (this.dead) return;
         updateEmoteThrottle(this, dt);
         // snowball / potato slowdown (survev update "Projectile slowdown logic")

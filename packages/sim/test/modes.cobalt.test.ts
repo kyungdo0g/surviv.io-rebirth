@@ -1,10 +1,10 @@
 // Cobalt class selection (M7b, modes/classSelect.ts): players wait in the Twins bunker without a class, cannot act or be
-// hurt, and move to a surface spawn point once they have one (chosen or after 20 s); class pods follow the opener's
+// hurt, and move to a surface spawn point once they have one (chosen, or the server's random one after 25 s); class pods follow the opener's
 // class. docs/research/modes/cobalt.md "Class selection and spawning" / "Class pods".
 import { v2 } from "@rebirth/core";
 import { DamageType, GameConfig, getMapDef, getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { Game, type Player, TWINS_WAITING_ROOM, terrainSurfaceAt } from "../src/index.ts";
+import { Game, type Player, TWINS_WAITING_ROOM } from "../src/index.ts";
 import { send, steps } from "./combatHelpers.ts";
 import { cachedMap } from "./helpers.ts";
 
@@ -53,7 +53,7 @@ describe("Cobalt class menu waiting room", () => {
         expect(p.awaitingClass).toBe(false);
         expect(p.layer).toBe(0);
         expect(v2.distance(p.pos, room(game).pos)).toBeGreaterThan(1);
-        expect(terrainSurfaceAt(game.world.terrain, p.pos)).toBe("grass");
+        expect(game.world.isOnWater(p.pos, 0)).toBe(false);
         const start = v2.copy(p.pos);
         send(game, p, { moveRight: true });
         steps(game, 20);
@@ -62,10 +62,10 @@ describe("Cobalt class menu waiting room", () => {
         expect(p.health).toBeLessThan(GameConfig.player.health);
     });
 
-    it("without a choice a random class comes after 20 s, with the move to the surface", () => {
+    it("without a choice a random class comes after the server's 25 s (the client confirms at 20 s), with the move to the surface", () => {
         const game = cobaltGame();
         const p = add(game, "idle");
-        steps(game, 1999);
+        steps(game, 2499);
         expect(p.awaitingClass).toBe(true);
         steps(game, 2);
         expect(CLASSES).toContain(p.role);

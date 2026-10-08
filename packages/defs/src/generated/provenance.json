@@ -123,6 +123,17 @@
       "bunker_structure_09",
       "perch_01"
     ],
+    "survevServerMapObjects": [
+      "airdrop_crate_04po"
+    ],
+    "survevSpriteFixes": {
+      "airdrop_crate_01x": [
+        "button.useImg"
+      ],
+      "airdrop_crate_02x": [
+        "button.useImg"
+      ]
+    },
     "survevBalance": true
   },
   "gameObjects": {
@@ -1776,9 +1787,11 @@
     "crate_09de": "survev-only",
     "crate_12po": "survev-only",
     "crate_12dev": "survev-only",
+    "crate_13po": "survev-only",
     "crate_17": "survev-only",
     "airdrop_crate_03po": "survev-only",
     "airdrop_crate_03dev": "survev-only",
+    "airdrop_crate_04po": "survev-only",
     "airdrop_crate_05": "survev-only",
     "barrel_05": "survev-only",
     "chair_01": "survev-only",
@@ -19171,6 +19184,20 @@
       ]
     }
   ],
+  "survevSpriteFixes": [
+    {
+      "id": "airdrop_crate_01x",
+      "path": "button.useImg",
+      "original": "map-crate-13x.img",
+      "survev": "map-airdrop-02x.img"
+    },
+    {
+      "id": "airdrop_crate_02x",
+      "path": "button.useImg",
+      "original": "map-crate-13x.img",
+      "survev": "map-airdrop-02x.img"
+    }
+  ],
   "survevValues": [
     {
       "id": "bullet_an94",
@@ -19653,6 +19680,12 @@
         ],
         "cooldownTime": 0.3
       }
+    },
+    {
+      "id": "crowbar",
+      "field": "noPotatoSwap",
+      "original": true,
+      "survev": "absent"
     },
     {
       "id": "spade_assault",
@@ -25156,6 +25189,12 @@
       "reason": "survev `category` renamed to the original field name"
     },
     {
+      "id": "crate_13po",
+      "field": "obstacleType",
+      "value": "crate",
+      "reason": "survev `category` renamed to the original field name"
+    },
+    {
       "id": "crate_17",
       "field": "obstacleType",
       "value": "crate",
@@ -25169,6 +25208,12 @@
     },
     {
       "id": "airdrop_crate_03dev",
+      "field": "obstacleType",
+      "value": "airdrop",
+      "reason": "survev `category` renamed to the original field name"
+    },
+    {
+      "id": "airdrop_crate_04po",
       "field": "obstacleType",
       "value": "airdrop",
       "reason": "survev `category` renamed to the original field name"
@@ -25492,8 +25537,6 @@
     "mapObjects": [
       "concrete_wall_column_2x8",
       "concrete_wall_column_8x3",
-      "crate_13po",
-      "airdrop_crate_04po",
       "class_crate_common_classless",
       "class_crate_rare_classless",
       "gun_mount_empty",
