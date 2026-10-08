@@ -468,3 +468,18 @@
 - At the largest maps every fixed spawn still lands (validation budgets, three seeds of main solo and squads, 50v50, snow and cobalt at cap 255) and buildings per land area stay within 10 % of the design map; air drops and air strikes keep their counts, so there are fewer per player [src:derived/rebirth-map-player-cap] [M]
 - The same seed at another cap gives another map (the server logs the cap and the map's size). The dev sandbox and the bots' scripts pass no cap and play the maps' own sizes [src:user/2026-10-08-map-player-cap] [H]
 
+
+## The Commander's automatic flare (2026-10-08)
+
+> The owner, after a 50v50 game with bot fill: the Commander should fire the supply (flare) gun by itself within 5 seconds. Code: `packages/sim/src/roles/roleRules.ts` (`leaderAutoFlare`, `leaderAutoFlareDelay`), `packages/sim/src/roles/roleSystem.ts` (`autoFlare`). Tests: `packages/sim/test/leaderAutoFlare.test.ts`, `survevParity.test.ts`.
+
+| rule | v0.8.82 | survev (fork 0.1.2) | rebirth | sources |
+|---|---|---|---|---|
+| automatic flare (`rules.roles.leaderAutoFlare`) | none: the Commander fires its flare gun itself | on | on | [src:user/2026-10-08-leader-auto-flare] [src:fandom/Commander] [src:survev/server/src/game/objects/player.ts:1478-1495] [H] |
+| delay from the promotion (`rules.roles.leaderAutoFlareDelay`) | — | 15 s | 5 s | [src:user/2026-10-08-leader-auto-flare] [src:survev/server/src/game/objects/player.ts:885-888] [H] |
+
+- survev's fork behaviour, only sooner: a living Commander whose flare gun has not been fired when the delay is up draws it and fires it the way it faces, indoors too (survev's forced shot), and keeps it drawn; a Commander that fired it earlier fires nothing more, and a dead one never fires [src:survev/server/src/game/objects/player.ts:1478-1495] [src:survev/server/src/game/weaponManager.ts:1010-1012] [H]
+- A downed Commander still fires at 5 s and then goes back to its melee weapon, as in survev, so the team gets its drop either way [src:survev/server/src/game/objects/player.ts:1486-1492] [H]
+- The drop follows the usual flare rules: it is called where the shot leaves the barrel (not where the flare lands), kept on the map and moved off indestructible obstacles, roofs and other crates; the crate is the map's air drop roll [src:survev/server/src/game/objects/bullet.ts:117-118] [src:survev/server/src/game/objects/plane.ts:298-352] [H]
+- The delay counts from the tick of the promotion, so the scheduled 50v50 Commander (50 s into circle 0) calls its drop about 55 s in. Only the Commander role, which exists only on 50v50 maps, has the timer; `leaderAutoFlare` false restores v0.8.82's manual flare [src:user/2026-10-08-leader-auto-flare] [H]
+- The bots never fire a flare gun on their own (it scores 0 as a weapon), so before this a bot Commander never called its drop; now every Commander does [src:derived/rebirth-bot-flare-score] [H]

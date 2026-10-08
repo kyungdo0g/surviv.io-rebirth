@@ -148,6 +148,7 @@
 - Fandom: natural air strikes use 2 to 5 jets, show a large yellow circle with a bomb ping on the minimap, and nobody gets kill credit; the kill feed reads "The air strike killed <name>" [src:fandom/Air_Strike] [M]
 - wiki.gg: usually 3 bombers, rarely 4 or 5 [src:wikigg/50v50_mode] [M]
 - The Commander's flare gun calls one extra military drop (the fork fires it automatically after 15 s) [src:fandom/Game_Modes] [src:survev/server/src/game/objects/player.ts:1478-1494] [src:survev/client/public/changelogRec.html:436] [H]
+- The rebirth fires it automatically after 5 s, the owner's ruling (`rebirth-deviations.md` "The Commander's automatic flare") [src:user/2026-10-08-leader-auto-flare] [H]
 
 ### Military air drop contents
 

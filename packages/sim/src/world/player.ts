@@ -124,7 +124,10 @@ export class Player implements InventoryOwner {
     movingTime = 0;
     stillTime = 0;
     timeWithoutMoving = 0;
-    /** the Commander's flare gun was fired (it may then be dropped); seconds until its automatic shot (fork knob) */
+    /**
+     * the Commander's flare gun was fired (it may then be dropped); seconds until its automatic shot
+     * (rules.roles.leaderAutoFlare)
+     */
     firedFlare = true;
     flareTimer = 0;
     /** camera zoom radius in world units */
