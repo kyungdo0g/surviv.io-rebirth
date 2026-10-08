@@ -4,7 +4,8 @@
 // what the bot then does with a site goes through its snapshots (brain/puzzle.ts presses only pieces it sees).
 // Each piece also gets a front: a walkable spot about 1.6 units off the face a player stands at to use it, with no
 // wall between, preferring faces from which Use reaches no other piece (Use presses everything in reach: sim
-// world/interact.ts interactableObstacles).
+// world/interact.ts interactableObstacles). Where something stands in front of the face (the saloon's bottles on their
+// bar counters) the player presses from farther out, still within the piece's reach.
 import { type Bounds, type Collider, type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
 import type { MapData, MapObjectSpawn } from "@rebirth/sim";
@@ -20,6 +21,7 @@ import {
 } from "../geom.ts";
 import { codeOf, PUZZLES, type PuzzleEntry } from "../knowledge/puzzles.ts";
 import type { CellGrid } from "../nav/cellGrid.ts";
+import { doorShape } from "../nav/doorGeom.ts";
 import type { WorldModel } from "../perception/world.ts";
 
 const PLAYER_RAD = GameConfig.player.radius;
@@ -29,6 +31,15 @@ const STAND_OFF = 1.6;
 const ROOM_SEARCH = 90;
 /** Obstacles this close to a piece are checked when choosing its front. */
 const NEAR_PIECE = 6;
+/**
+ * A press point blocked at the face (a counter in front of it) slides out and along the face in these steps, up to this
+ * much short of the piece's reach; a slid point keeps the whole body (radius 1) clear, so a body pressed against the
+ * counter there is in reach. Each unit off costs SLIDE_COST: one step (2) outweighs any snap of the stand spot (at most
+ * about 1.5), so a face the player can step right up to, at its middle, wins whenever there is one.
+ */
+const SLIDE_STEP = 0.1;
+const SLIDE_SHORT = 0.15;
+const SLIDE_COST = 20;
 /** A spawned child sits exactly where the def puts it (sim mapgen addAdjust); this much float slack. */
 const MATCH_EPS = 0.05;
 /**
@@ -51,6 +62,8 @@ export interface SitePiece {
     col: Collider;
     /** interactionRad: Use reaches it from a player whose circle comes this close */
     reach: number;
+    /** a door piece (the bank's vault door): its closed panel's normal (perception/drawn.ts two probes), else null */
+    normal: Vec2 | null;
 }
 
 export interface SiteDoor {
@@ -58,6 +71,8 @@ export interface SiteDoor {
     type: string;
     pos: Vec2;
     layer: number;
+    /** a door's closed panel normal (perception/drawn.ts: drawn when either side shows), null for a blocker */
+    normal: Vec2 | null;
 }
 
 export interface SiteRoom {
@@ -91,10 +106,15 @@ export interface PuzzleSite {
     blockers: SiteDoor[];
 }
 
-/** Where to stand for a piece: `spot` to walk to, `face` the unit direction from the piece out to it. */
+/**
+ * Where to stand for a piece: `spot` to walk to, `face` the unit direction from the piece out to it, and `lean` the
+ * point the last steps head for (the face's middle; for a press point slid out past something in front of the face,
+ * the piece's nearest point to it: the body stops against that something, within the reach).
+ */
 export interface PieceFront {
     spot: Vec2;
     face: Vec2;
+    lean: Vec2;
 }
 
 const siteCache = new WeakMap<MapData, PuzzleSite[]>();
@@ -170,6 +190,12 @@ function roomOf(map: MapData, site: MapObjectSpawn, spec: PuzzleEntry["rooms"][n
     return { bounds, layer, center, containers };
 }
 
+/** The closed panel normal of a door spawn (doorGeom.ts), null for anything else. */
+function doorNormal(o: MapObjectSpawn): Vec2 | null {
+    const def = obstacleDef(o.type);
+    return def?.door ? (doorShape(o.id, def, o.pos, o.ori, o.scale)?.normal ?? null) : null;
+}
+
 function resolve(map: MapData, b: MapObjectSpawn, entry: PuzzleEntry, index: number): PuzzleSite | null {
     if (entry.pieces.length === 0) return null;
     const pieces: SitePiece[] = [];
@@ -186,12 +212,15 @@ function resolve(map: MapData, b: MapObjectSpawn, entry: PuzzleEntry, index: num
             layer: o.layer,
             col: obstacleCollider(def, o.pos, o.ori, o.scale),
             reach: p.reach,
+            normal: doorNormal(o),
         });
     }
     const doors: SiteDoor[] = [];
     for (const d of entry.opens) {
         const o = spawnAt(map, d.type, v2.add(b.pos, rotateOri(d.pos, b.ori)));
-        if (o && obstacleDef(o.type)?.door) doors.push({ id: o.id, type: o.type, pos: v2.copy(o.pos), layer: o.layer });
+        if (o && obstacleDef(o.type)?.door) {
+            doors.push({ id: o.id, type: o.type, pos: v2.copy(o.pos), layer: o.layer, normal: doorNormal(o) });
+        }
     }
     const rooms: SiteRoom[] = [];
     for (const spec of entry.rooms) {
@@ -223,7 +252,7 @@ function resolve(map: MapData, b: MapObjectSpawn, entry: PuzzleEntry, index: num
                 ? Math.max(db.min.x - ob.max.x, ob.min.x - db.max.x)
                 : Math.max(db.min.y - ob.max.y, ob.min.y - db.max.y);
             if (cover > BLOCKER_COVER && gap < BLOCKER_GAP) {
-                blockers.push({ id: o.id, type: o.type, pos: v2.copy(o.pos), layer: o.layer });
+                blockers.push({ id: o.id, type: o.type, pos: v2.copy(o.pos), layer: o.layer, normal: null });
             }
         }
     }
@@ -270,6 +299,12 @@ export function puzzleSites(map: MapData): PuzzleSite[] {
     return sites;
 }
 
+/** The point of a collider nearest `p`. */
+function nearestOn(col: Collider, p: Vec2): Vec2 {
+    if (col.type === 0) return v2.add(col.pos, v2.mul(v2.normalizeSafe(v2.sub(p, col.pos)), col.rad));
+    return { x: Math.min(Math.max(p.x, col.min.x), col.max.x), y: Math.min(Math.max(p.y, col.min.y), col.max.y) };
+}
+
 /** Half the size of a collider along the unit axis `n` (boxes: their support; circles: the radius). */
 function extentAlong(col: Collider, n: Vec2): number {
     if (col.type === 0) return col.rad;
@@ -286,8 +321,10 @@ const AXES: readonly Vec2[] = [
 /**
  * The front of a piece on `grid` (the ground grid, or the underground grid of its floor): of its four faces, one with
  * a walkable spot STAND_OFF out and nothing between the spot and the press point (the player's centre against the
- * face), preferring a face from which Use reaches no other piece of the site. Null when no face is open. Cached per
- * grid and piece (static geometry: map walls never move).
+ * face, or slid out within the reach when something stands in front of the face: the saloon's bottles stand on bar
+ * counters, review of the interactions), preferring a face from which Use reaches no other piece of the site, then the
+ * press point closest to the face. Null when no face is open. Cached per grid and piece (static geometry: map walls
+ * never move).
  */
 export function pieceFront(site: PuzzleSite, piece: SitePiece, grid: CellGrid): PieceFront | null {
     let cache = frontCache.get(grid);
@@ -300,20 +337,12 @@ export function pieceFront(site: PuzzleSite, piece: SitePiece, grid: CellGrid): 
     const c = colliderCenter(piece.col);
     let best: PieceFront | null = null;
     let bestCost = Number.POSITIVE_INFINITY;
+    const walls = site.near.filter((o) => sameFloor(o.layer, piece.layer));
     for (const n of AXES) {
         const ext = extentAlong(piece.col, n);
-        const press = v2.add(c, v2.mul(n, ext + PLAYER_RAD));
-        const want = v2.add(c, v2.mul(n, ext + STAND_OFF));
-        if (!grid.covers(want)) continue;
-        const cell = grid.nearestWalkable(want, 0.8);
-        if (cell < 0) continue;
-        const spot = grid.center(cell);
-        // never from inside the room it opens (a vault door's inner face)
-        if (site.rooms.some((r) => sameFloor(r.layer, piece.layer) && inside(spot, r.bounds, -0.5))) continue;
-        const walls = site.near.filter((o) => sameFloor(o.layer, piece.layer));
-        // a wall between the spot and the face, or no room for the player's body at the press point
-        if (walls.some((o) => segmentHits(o.col, spot, press) || distanceToCollider(press, o.col) < PLAYER_RAD - 0.1))
-            continue;
+        const front = faceSpot(site, piece, grid, walls, c, n, ext);
+        if (!front) continue;
+        const { spot, want, press, off } = front;
         // Use presses every piece in reach: a face that reaches a neighbour is a last resort
         const others = site.pieces.filter(
             (p) =>
@@ -321,13 +350,62 @@ export function pieceFront(site: PuzzleSite, piece: SitePiece, grid: CellGrid): 
                 sameFloor(p.layer, piece.layer) &&
                 distanceToCollider(press, p.col) < p.reach + PLAYER_RAD,
         ).length;
-        const cost = others * 100 + v2.distance(spot, want);
+        const cost = others * 100 + off * SLIDE_COST + v2.distance(spot, want);
         if (cost < bestCost) {
             bestCost = cost;
-            best = { spot, face: n };
+            // (a box's face middle; a circle's centre)
+            const lean = off === 0 ? v2.add(c, v2.mul(n, piece.col.type === 1 ? ext : 0)) : nearestOn(piece.col, press);
+            best = { spot, face: n, lean };
         }
     }
     cache.set(piece.id, best);
+    return best;
+}
+
+/**
+ * The stand spot off one face (unit normal `n`, the piece's extent `ext` along it): the press point nearest the piece
+ * with room for the body and a walkable spot STAND_OFF - PLAYER_RAD farther out with no wall between: the body against
+ * the face's middle when that is free, else slid out (and along the face) within the reach. `off`: how far the press
+ * point is off the face (beyond the body's radius) plus how far it is moved along the face. Null: none.
+ */
+function faceSpot(
+    site: PuzzleSite,
+    piece: SitePiece,
+    grid: CellGrid,
+    walls: PuzzleSite["near"],
+    c: Vec2,
+    n: Vec2,
+    ext: number,
+): { spot: Vec2; want: Vec2; press: Vec2; off: number } | null {
+    const maxSlide = Math.max(0, piece.reach - SLIDE_SHORT);
+    const perp = { x: -n.y, y: n.x };
+    const side = extentAlong(piece.col, perp) + Math.sqrt((PLAYER_RAD + maxSlide) ** 2 - PLAYER_RAD ** 2);
+    let best: { spot: Vec2; want: Vec2; press: Vec2; off: number } | null = null;
+    for (let k = 0; k <= maxSlide + 1e-9; k += SLIDE_STEP) {
+        for (let i = 0; SLIDE_STEP * Math.floor((i + 1) / 2) <= side + 1e-9; i++) {
+            const t = SLIDE_STEP * Math.ceil(i / 2) * (i % 2 === 0 ? -1 : 1);
+            const press = v2.add(v2.add(c, v2.mul(n, ext + PLAYER_RAD + k)), v2.mul(perp, t));
+            // within the reach (the server's: a circle of interactionRad + the player's radius touching the collider)
+            const slid = Math.max(0, distanceToCollider(press, piece.col) - PLAYER_RAD);
+            if (slid > maxSlide + 1e-9) continue;
+            const off = slid + Math.abs(t) < 1e-6 ? 0 : slid + Math.abs(t);
+            if (best && off >= best.off) continue;
+            // room for the body at the press point (against the face a little give; slid out the whole body)
+            const room = off === 0 ? PLAYER_RAD - 0.1 : PLAYER_RAD + 0.05;
+            if (walls.some((o) => distanceToCollider(press, o.col) < room)) continue;
+            const want = v2.add(press, v2.mul(n, STAND_OFF - PLAYER_RAD));
+            if (!grid.covers(want)) continue;
+            const cell = grid.nearestWalkable(want, 0.8);
+            if (cell < 0) continue;
+            const spot = grid.center(cell);
+            // never from inside the room it opens (a vault door's inner face)
+            if (site.rooms.some((r) => sameFloor(r.layer, piece.layer) && inside(spot, r.bounds, -0.5))) continue;
+            // a wall between the spot and the press point
+            if (walls.some((o) => segmentHits(o.col, spot, press))) continue;
+            best = { spot, want, press, off };
+            if (off === 0) return best;
+        }
+    }
     return best;
 }
 

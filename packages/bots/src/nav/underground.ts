@@ -129,7 +129,7 @@ export class UndergroundGrid extends CellGrid {
     private readonly fields = new Map<number, { version: number; dist: Float64Array }>();
 
     constructor(owner: UndergroundNav, id: number, spawn: MapObjectSpawn, layout: Layout, map: MapData) {
-        super(layout.ox, layout.oy, layout.w, layout.h, 1, DEFAULT_CLEARANCE, NavTerrain.Ground);
+        super(layout.ox, layout.oy, layout.w, layout.h, 1, DEFAULT_CLEARANCE, NavTerrain.Ground, owner.learnsSealed);
         this.owner = owner;
         this.id = id;
         this.structureId = spawn.id;
@@ -158,8 +158,8 @@ export class UndergroundGrid extends CellGrid {
                 this.addDoor(o.id, o.type, def, col, o.ori);
                 continue;
             }
-            // the bathhouse vault, the chrys and eye vaults: walls until a snapshot shows them open (cellGrid.ts)
-            if (def.door) {
+            // the bathhouse vault, the chrys and eye vaults: walls (until a snapshot shows them open, cellGrid.ts)
+            if (def.door && this.learnsSealed) {
                 this.addSealedDoor(o.id, col);
                 continue;
             }
@@ -298,7 +298,9 @@ export class UndergroundGrid extends CellGrid {
     }
 }
 
+/** the shared underground navigation of a map, one per kind of ground grid (NavOptions.sealedDoors) */
 const navCache = new WeakMap<MapData, UndergroundNav>();
+const sealedNavCache = new WeakMap<MapData, UndergroundNav>();
 
 /** Every underground grid and stair portal of a map. */
 export class UndergroundNav {
@@ -307,17 +309,25 @@ export class UndergroundNav {
     private budgetTime = Number.NaN;
     private budgetLeft = 0;
 
-    /** The shared underground navigation of a map (built on first use). */
+    /**
+     * The shared underground navigation of a map (built on first use), of the same kind as the ground grid: learning
+     * sealed doors with a ground grid that does (the puzzle bots', NavOptions.sealedDoors), else not.
+     */
     static forMap(map: MapData, ground: NavGrid = NavGrid.forMap(map)): UndergroundNav {
-        let nav = navCache.get(map);
+        const store = ground.learnsSealed ? sealedNavCache : navCache;
+        let nav = store.get(map);
         if (!nav) {
             nav = new UndergroundNav(map, ground);
-            navCache.set(map, nav);
+            store.set(map, nav);
         }
         return nav;
     }
 
+    /** whether its grids learn sealed doors (like the ground grid it was built with) */
+    readonly learnsSealed: boolean;
+
     constructor(map: MapData, ground: NavGrid) {
+        this.learnsSealed = ground.learnsSealed;
         for (const o of map.objects) {
             if ((o.layer & 1) !== 0 || !hasMapObjectDef(o.type)) continue;
             const def = getMapObjectDef(o.type);

@@ -41,6 +41,13 @@ export class PuzzleMemory {
     /** sites done with for good (opened and looted, opened by someone else, a broken panel) */
     readonly finished = new Set<number>();
     /**
+     * Site doors the bot knows open: seen open on its screen or heard opening, until seen or heard shut (brain/
+     * puzzleSight.ts; a door out of its sight is unknown, never read from the snapshot)
+     */
+    readonly seenOpen = new Set<number>();
+    /** the path follower's stuck events so far (Bot.updateSteering copies them in while the flag is on) */
+    followerStuck = 0;
+    /**
      * room stage: the container being broken, its health when last seen hurt, the seconds punched since without it
      * losing any, the last update, and the last time the bot was punching it (the walk to it is capped)
      */
@@ -49,6 +56,14 @@ export class PuzzleMemory {
     roomSince = 0;
     roomAt = 0;
     roomWalk = 0;
+    /**
+     * room stage, at the stand spot of the container being broken: the closest the bot got to it, the seconds spent at
+     * the spot since without getting 0.1 closer or landing a punch, and the follower's stuck events when it became the
+     * target (brain/puzzleRoom.ts trackProgress)
+     */
+    roomBest = Number.POSITIVE_INFINITY;
+    roomNear = 0;
+    roomStuck = 0;
     /** containers given up in this room */
     readonly roomSkip = new Set<number>();
     /** blockers seen broken (the grid's components were relabelled for each) */

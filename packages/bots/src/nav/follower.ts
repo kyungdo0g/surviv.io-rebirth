@@ -39,6 +39,13 @@ export type PlanGrid = CellGrid & { planBudget(now: number): number; spendPlanBu
 
 /** Distance from the player centre within which Interact reaches a door (interactionRad + player radius, minus slack). */
 const DOOR_REACH_SLACK = 0.15;
+/**
+ * Doors feature: an open door this much past the reach (interactionRad + player radius) still holds Use back. The sim's
+ * Use toggles every door it reaches (sim world/interact.ts), and the bot has moved since its snapshot: a bot opening a
+ * house door closed the open one beside it, 1.70 away against a reach of 1.75, on four allies (review of the
+ * interactions; brain/doorClose.ts uses the same margin).
+ */
+export const USE_SAFETY = 0.3;
 const PLAYER_RAD = 1;
 /** Doors feature: the same door is used again after this long at the earliest, any door after DOOR_USE_GAP. */
 const DOOR_RETRY = 0.7;
@@ -517,8 +524,9 @@ export class PathFollower {
     /**
      * doorToOpen with BrainFeatures.doors: the nearest closed, usable, unlocked, hand-opened door in reach that lies ahead
      * on the way (the next 3 units towards `wp`, or the leg after it when `wp` is close); each door is retried after
-     * DOOR_RETRY, other doors after DOOR_USE_GAP; nothing while an open door is in reach (Use toggles all of them). Also
-     * keeps `doorAhead`: the nearest closed door on the way within DOOR_AHEAD that opens for the bot (opensOnTheWay).
+     * DOOR_RETRY, other doors after DOOR_USE_GAP; nothing while an open door is in reach or within USE_SAFETY of it (Use
+     * toggles all of them). Also keeps `doorAhead`: the nearest closed door on the way within DOOR_AHEAD that opens for
+     * the bot (opensOnTheWay).
      */
     private doorToOpenSense(
         model: WorldModel,
@@ -545,7 +553,8 @@ export class PathFollower {
             if (d >= DOOR_AHEAD) continue;
             const inReach = d < def.interactionRad + PLAYER_RAD - DOOR_REACH_SLACK;
             if (door.open) {
-                openInReach ||= inReach;
+                // (the safety margin past the reach: never close an open door by accident)
+                openInReach ||= d < def.interactionRad + PLAYER_RAD + USE_SAFETY;
                 continue;
             }
             if (!door.canUse || door.locked) continue;

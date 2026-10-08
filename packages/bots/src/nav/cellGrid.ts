@@ -89,9 +89,13 @@ export abstract class CellGrid {
     /**
      * Doors only a switch, a puzzle or a scheduled unlock opens (def `canUse` false or `locked`: the club's secret door,
      * vault and cell doors, the Twins and arsenal lab doors), by obstacle id: their closed panel is a wall under
-     * doorKey(id) until a snapshot shows them open (or unlocked), like an open door's panel (observeDoor).
+     * doorKey(id) until a snapshot shows them open (or unlocked), like an open door's panel (observeDoor). Only on a grid
+     * that learns them (`learnsSealed`, BrainFeatures.puzzles); elsewhere they are stamped walls under their own id, for
+     * good, as before the puzzles existed.
      */
     readonly sealedDoors = new Set<number>();
+    /** whether this grid learns sealed doors (NavOptions.sealedDoors): the puzzle bots' grids only */
+    readonly learnsSealed: boolean;
     /** one-way door cells: 0, or 1 + the index of their passage direction in `oneWayDirs` */
     readonly oneWay: Uint8Array;
     readonly oneWayDirs: Vec2[] = [];
@@ -111,7 +115,17 @@ export abstract class CellGrid {
     /** a sealed door changed (a vault opened): relabel at the next component query, the room behind joins the map */
     private relabelNow = false;
 
-    constructor(ox: number, oy: number, w: number, h: number, cellSize: number, clearance: number, terrain: number) {
+    constructor(
+        ox: number,
+        oy: number,
+        w: number,
+        h: number,
+        cellSize: number,
+        clearance: number,
+        terrain: number,
+        learnsSealed = false,
+    ) {
+        this.learnsSealed = learnsSealed;
         this.ox = ox;
         this.oy = oy;
         this.w = w;
@@ -383,7 +397,7 @@ export abstract class CellGrid {
             this.version++;
             return;
         }
-        if (def.door) {
+        if (def.door && this.learnsSealed) {
             this.addSealedDoor(view.id, col);
             if (view.door) this.observeDoor(view);
             return;

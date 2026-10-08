@@ -5,23 +5,23 @@
 //   door just streamed in), on the sfx channel whose range is 48 units (sound-defs.json channels.sfx.maxRange), so the
 //   change counts only while the door was in the snapshot at the previous observation too and lies within that range
 //   (or is drawn on the screen, where the panel is seen moving).
-// - "passed": a door on the screen (drawn: inside the 16:9 screen and not under a roof the bot is not under) stands open
-//   while the bot last saw or heard it closed, or closed while it was open: someone used it while the bot was away.
+// - "passed": a door on the screen (drawn, perception/drawn.ts: on the bot's floor, inside the 16:9 screen and not under
+//   a roof the bot is not under) stands open while the bot last saw or heard it closed, or closed while it was open:
+//   someone used it while the bot was away. A door of the other floor is never seen (the client fades that floor out),
+//   only heard.
 // What the bot believes about a door (its state) comes only from those two sources, never from a door in the
 // snapshot's margin that it neither sees nor hears change. Who caused a change is decided by the caller (the brain:
 // itself, a teammate, an enemy in view, or nobody it can see). Closed shapes come from MapData (the minimap knows every
 // door's spawn) or from the first sighting of the door closed. Pure perception: no rng.
-import { type Bounds, type Collider, type Vec2, v2 } from "@rebirth/core";
+import { type Collider, type Vec2, v2 } from "@rebirth/core";
 import type { MapData, MapObjectSpawn } from "@rebirth/sim";
-import { colliderCenter, obstacleDef, pointInBounds } from "../geom.ts";
+import { colliderCenter, obstacleDef } from "../geom.ts";
 import { type DoorShape, doorShape } from "../nav/doorGeom.ts";
-import { roofRegions } from "./roofs.ts";
+import { drawnObstacle } from "./drawn.ts";
 import type { SeenObstacle, WorldModel } from "./world.ts";
 
 /** Range of the door sounds (sfx channel maxRange, apps/client/src/generated/sound-defs.json). */
 export const DOOR_SOUND_RANGE = 48;
-/** A door this far out on either side of its panel is drawn when one of the two probes is not under a foreign roof. */
-const PROBE = 1.5;
 /** Events older than this are dropped. */
 const EVENT_MEMORY = 30;
 
@@ -66,7 +66,6 @@ function doorSpawns(map: MapData): Map<number, MapObjectSpawn> {
 export class DoorWatch {
     private readonly records = new Map<number, DoorRecord>();
     private readonly shapes = new Map<number, DoorShape | null>();
-    private readonly roofCache = new Map<number, Bounds[]>();
     private count = 0;
     /** recent events, oldest first (EVENT_MEMORY) */
     readonly events: DoorEvent[] = [];
@@ -98,18 +97,8 @@ export class DoorWatch {
         const now = model.time;
         const prev = this.count++;
         const fresh: DoorEvent[] = [];
-        let foreign: Bounds[] | null = null;
-        const drawn = (o: SeenObstacle): boolean => {
-            const c = colliderCenter(o.col);
-            if (!model.onScreen(c, 0.5)) return false;
-            foreign ??= foreignRoofs(model, this.roofCache);
-            const shape = this.shape(model, o);
-            if (!shape) return !foreign.some((b) => pointInBounds(c, b));
-            const out = v2.mul(shape.normal, PROBE);
-            const p1 = v2.add(c, out);
-            const p2 = v2.sub(c, out);
-            return !foreign.some((b) => pointInBounds(p1, b)) || !foreign.some((b) => pointInBounds(p2, b));
-        };
+        // (a door of the other floor is not drawn: the bot on the surface never saw the bathhouse vault open below it)
+        const drawn = (o: SeenObstacle): boolean => drawnObstacle(model, o, this.shape(model, o)?.normal);
         for (const o of model.obstacles) {
             const door = o.view.door;
             if (!door || !o.def.door || o.view.dead) continue;
@@ -147,15 +136,4 @@ export class DoorWatch {
         while (this.events.length && now - this.events[0].time > EVENT_MEMORY) this.events.shift();
         return fresh;
     }
-}
-
-/** The roof regions over someone else's head: buildings in view whose ceiling the bot does not stand under. */
-function foreignRoofs(model: WorldModel, cache: Map<number, Bounds[]>): Bounds[] {
-    const me = model.self.pos;
-    const out: Bounds[] = [];
-    for (const r of roofRegions(model.buildings, cache)) {
-        if (r.regions.some((b) => pointInBounds(me, b))) continue;
-        for (const b of r.regions) out.push(b);
-    }
-    return out;
 }

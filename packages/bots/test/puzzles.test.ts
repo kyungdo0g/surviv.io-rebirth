@@ -1,15 +1,19 @@
 // Puzzle knowledge and sites (BrainFeatures.puzzles): the knowledge table agrees with the building defs for every
 // puzzle (pieces, labels, positions, the doors the solution moves, delays) and its codes with the server's; the sites
 // of the main map resolve to real obstacles with fronts to press from and rooms with containers; who knows which code
-// is a per-bot draw from its own stream, by tier and persona; puzzle doors stop being walls in the navigation once a
-// snapshot shows them open; and a brain without the flag never touches any of it. Owner: bot interactions.
+// is a per-bot draw from its own stream, by tier and persona; every site a bot may know on every map has a front for
+// each piece (the saloon's bottles stand on bar counters: pressed from farther out); puzzle doors stop being walls in
+// the navigation of the puzzle bots once a snapshot shows them open, and never in the baseline's (its replay stays as
+// before the puzzles existed); and a brain without the flag never touches any of it. Owner: bot interactions.
+import { createHash } from "node:crypto";
 import { v2 } from "@rebirth/core";
-import { type BuildingDef, MapObjectDefs } from "@rebirth/defs";
-import { interactObstacle, PUZZLE_CODES } from "@rebirth/sim";
+import { type BuildingDef, MapDefs, MapObjectDefs } from "@rebirth/defs";
+import { generateMap, interactObstacle, PUZZLE_CODES } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import { BRAIN_PRESETS } from "../src/brain/features.ts";
 import { floorGrid, pieceFront, puzzleSites } from "../src/brain/puzzleSites.ts";
 import { BotController } from "../src/controller.ts";
+import { distanceToCollider } from "../src/geom.ts";
 import { codeOf, drawPuzzleKnowledge, knowsChance, PUZZLES } from "../src/knowledge/puzzles.ts";
 import { doorKey } from "../src/nav/cellGrid.ts";
 import { NavGrid } from "../src/nav/grid.ts";
@@ -17,7 +21,7 @@ import { installPerception } from "../src/perception/install.ts";
 import { WorldModel } from "../src/perception/world.ts";
 import { NEUTRAL, PERSONAS } from "../src/persona.ts";
 import type { SkillProfile } from "../src/skill.ts";
-import { cachedMap, mainGame, placePlayer, runUntil } from "./helpers.ts";
+import { cachedMap, giveGun, mainGame, placePlayer, runUntil } from "./helpers.ts";
 
 function buildings(): Array<[string, BuildingDef]> {
     const out: Array<[string, BuildingDef]> = [];
@@ -148,6 +152,30 @@ describe("puzzle sites", () => {
             true,
         );
     });
+
+    it("gives every piece of every site a bot may know a front, on every map (the saloon's bottles too)", () => {
+        let saloon = false;
+        for (const name of Object.keys(MapDefs)) {
+            const gen = generateMap(name, 1, 1);
+            const sites = puzzleSites(gen.mapData).filter((s) => s.entry.lore !== "squad");
+            if (sites.length === 0) continue;
+            const model = new WorldModel(gen.mapData);
+            installPerception(model, BRAIN_PRESETS.smart);
+            for (const s of sites) {
+                if (s.entry.building === "saloon_01") saloon = true;
+                for (const p of s.pieces) {
+                    const grid = floorGrid(model, p.layer, p.pos);
+                    const front = grid ? pieceFront(s, p, grid) : null;
+                    expect(front, `${name} ${s.entry.building} ${p.label}`).not.toBeNull();
+                    if (!front || !grid) continue;
+                    // a walkable spot from which the last steps (towards `lean`) come within the piece's reach
+                    expect(grid.walkableAt(front.spot) || grid.nearestWalkable(front.spot, 0.8) >= 0).toBe(true);
+                    expect(distanceToCollider(front.lean, p.col)).toBeLessThan(1e-6);
+                }
+            }
+        }
+        expect(saloon).toBe(true);
+    }, 60_000);
 });
 
 describe("puzzle doors in the navigation", () => {
@@ -155,7 +183,7 @@ describe("puzzle doors in the navigation", () => {
         const game = mainGame();
         const police = puzzleSites(game.mapData).find((s) => s.entry.building === "police_01");
         if (!police) throw new Error("no police station");
-        const nav = new NavGrid(game.mapData);
+        const nav = new NavGrid(game.mapData, { sealedDoors: true });
         // the cell next to the panel (the others are out of its view)
         const panelPos = police.pieces[0].pos;
         const door = [...police.doors].sort((a, b) => v2.distance(a.pos, panelPos) - v2.distance(b.pos, panelPos))[0];
@@ -203,6 +231,63 @@ describe("puzzle doors in the navigation", () => {
         // the closed panel is no wall any more: the cell joins the hall
         expect(nav.component(inside)).toBe(nav.component(hall));
     });
+
+    it("only the puzzle bots' grid learns them: a baseline bot replays the same whether or not a human opens the cells", () => {
+        // (THE RULE, brain/features.ts: with the sealed doors in the one shared grid, a baseline bot standing in the
+        // police station walked off elsewhere once a human pressed the cell panel)
+        const run = (press: boolean) => {
+            const game = mainGame();
+            const police = puzzleSites(game.mapData).find((s) => s.entry.building === "police_01");
+            if (!police) throw new Error("no police station");
+            const panel = police.pieces[0];
+            const p = placePlayer(game, "base", panel.pos);
+            giveGun(p, "mp5", 90);
+            const bot = new BotController(game, p.id, { seed: 5, skill: "intermediate", brain: "baseline" });
+            const human = placePlayer(game, "human", panel.pos);
+            const o = game.world.get(panel.id);
+            if (press && o?.kind === "obstacle") interactObstacle(game, o, human);
+            game.teleportPlayer(human.id, { x: 5, y: 5 }, 0);
+            const h = createHash("sha256");
+            for (let t = 0; t < 3000; t++) {
+                bot.update();
+                game.step();
+                if (t % 25 === 0) h.update(`${p.pos.x.toFixed(3)},${p.pos.y.toFixed(3)};`);
+            }
+            const door = [...police.doors].sort(
+                (a, b) => v2.distance(a.pos, panel.pos) - v2.distance(b.pos, panel.pos),
+            )[0];
+            const nav = bot.bot.model.nav;
+            let inside = -1;
+            for (let dx = -4; dx <= 4 && inside < 0; dx++) {
+                for (let dy = -4; dy <= 4 && inside < 0; dy++) {
+                    const c = nav.cellOf(v2.add(door.pos, { x: dx, y: dy }));
+                    if (nav.walkable(c) && nav.component(c) !== nav.component(nav.nearestWalkable(panel.pos, 4))) {
+                        inside = c;
+                    }
+                }
+            }
+            const open = game.world.get(door.id);
+            return {
+                open: open?.kind === "obstacle" && !!open.door?.open,
+                cutOff: inside >= 0,
+                trajectory: h.digest("hex"),
+                nav,
+                map: game.mapData,
+            };
+        };
+        const quiet = run(false);
+        const pressed = run(true);
+        expect(quiet.open).toBe(false);
+        expect(pressed.open).toBe(true);
+        // the cells stay walls in its grid, and it walks exactly as when nobody touched the panel
+        expect(pressed.cutOff).toBe(true);
+        expect(pressed.trajectory).toBe(quiet.trajectory);
+        // its own grid, the plain one (the cells stamped under the door's own id), apart from the puzzle bots'
+        expect(pressed.nav).toBe(NavGrid.forMap(pressed.map));
+        expect(pressed.nav).not.toBe(NavGrid.forMap(pressed.map, { sealedDoors: true }));
+        expect(pressed.nav.learnsSealed).toBe(false);
+        expect(pressed.nav.sealedDoors.size).toBe(0);
+    }, 60_000);
 });
 
 describe("the puzzles flag", () => {

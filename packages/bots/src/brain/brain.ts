@@ -35,6 +35,7 @@ import { manageScope } from "./gear.ts";
 import { grenadeOpportunity, smartGrenade } from "./grenades.ts";
 import { judged } from "./judgement.ts";
 import { planLayerEscape } from "./layers.ts";
+import { observePuzzleDoors } from "./puzzleSight.ts";
 import { bestBreakable, breakScore, planBreak } from "./scavenge.ts";
 import { noteChoice, noteFlight, steadyCrate, steadyLoot, steadyScores } from "./steady.ts";
 import { noteStillHit, unpinUnderFire } from "./stillHit.ts";
@@ -162,6 +163,8 @@ export class Brain {
         const ctx = this.context(now);
         // doors: what the snapshot's doors show and sound like, before anything is decided
         this.doors?.observe(ctx);
+        // puzzles: the site doors the bot sees or hears open (never read from the snapshot out of its sight)
+        if (ctx.features.puzzles) observePuzzleDoors(ctx, this.doors?.watch ?? null);
         const order = this.mem.order;
         if (order) {
             const intent = emptyIntent("order");

@@ -11,9 +11,12 @@
 //
 // Only when it is quiet: no enemy in view or seen close lately, no hit and no bullet passing close for a while, out of
 // the gas, healthy, the site inside the safe zone. Any of that changing ends it at once (the site waits a while):
-// nobody camps a puzzle with enemies around. Fair: a piece is pressed only when it is in the bot's snapshot and on its
-// floor; positions come from MapData and the defs (the minimap and the labels painted next to the pieces); the
-// solutions are learned knowledge, never the server's codes.
+// nobody camps a puzzle with enemies around; nor while the site lies in a place the bot was chased out of (BrainFeatures
+// .pursuit danger memory). Fair: the state of a door, a piece or a button is read only while the client draws it on
+// the bot's screen (brain/puzzleSight.ts: its floor, on the screen, not under a roof the bot is not under), a door known
+// open stays known (seen or heard), and a piece is pressed only when it is drawn and on its floor; positions come from
+// MapData and the defs (the minimap and the labels painted next to the pieces); the solutions are learned knowledge,
+// never the server's codes.
 import { type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, Input } from "@rebirth/defs";
 import type { BuildingView } from "@rebirth/sim";
@@ -25,6 +28,7 @@ import { addCombatLayer } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 import type { PuzzleMemory } from "./puzzleMemory.ts";
 import { planRoom, roomDone } from "./puzzleRoom.ts";
+import { doorUnseen, knownOpen, piecesIdle, seenPiece, seenSpent, siteInDanger } from "./puzzleSight.ts";
 import {
     floorGrid,
     type PieceFront,
@@ -105,10 +109,6 @@ export function calm(ctx: BrainCtx): boolean {
     return true;
 }
 
-function view(ctx: BrainCtx, id: number): SeenObstacle | undefined {
-    return ctx.model.obstacleById.get(id);
-}
-
 function buildingView(ctx: BrainCtx, site: PuzzleSite): BuildingView | undefined {
     return ctx.model.buildings.find((b) => b.id === site.buildingId);
 }
@@ -176,13 +176,6 @@ function workable(ctx: BrainCtx, site: PuzzleSite): boolean {
     return site.pieces.every((p) => frontOf(ctx, site, p) !== null);
 }
 
-/** Whether the site is done with as seen now: its doors open, or a piece broken (a shot police panel). */
-function seenSpent(ctx: BrainCtx, site: PuzzleSite): boolean {
-    for (const d of site.doors) if (view(ctx, d.id)?.view.door?.open) return true;
-    for (const p of site.pieces) if (view(ctx, p.id)?.view.dead) return true;
-    return false;
-}
-
 /** The nearest site worth working now, or null. */
 function chooseSite(ctx: BrainCtx): PuzzleSite | null {
     const { model, self, now } = ctx;
@@ -200,6 +193,8 @@ function chooseSite(ctx: BrainCtx): PuzzleSite | null {
             continue;
         }
         if (!model.insideSafeZone(first.pos, 6) || !onLeash(ctx, first.pos) || !workable(ctx, site)) continue;
+        // a place the bot was chased out of waits as long as the danger memory holds it (pursuit)
+        if (siteInDanger(ctx, site)) continue;
         // a teammate closer to it does it (two players pressing the same switches spoil each other's input)
         if (model.team.some((m) => m.playerId !== self.id && !m.dead && v2.distance(m.pos, first.pos) < d)) continue;
         const front = frontOf(ctx, site, first);
@@ -317,27 +312,18 @@ function errored(ctx: BrainCtx, site: PuzzleSite): boolean {
     return err > pm.errSeq;
 }
 
-/** Whether the pieces in view are all off and usable (nobody else's input, no reset running). */
-function piecesIdle(ctx: BrainCtx, site: PuzzleSite): boolean {
-    for (const p of site.pieces) {
-        const b = view(ctx, p.id)?.view.button;
-        if (b && (b.onOff || !b.canUse)) return false;
-    }
-    return true;
-}
-
 /** Moves the attempt on from what the snapshot shows (every think while the site is worked on). */
 function advance(ctx: BrainCtx, site: PuzzleSite): void {
     const pm = ctx.mem.puzzle;
     const now = ctx.now;
     const entry = site.entry;
     if (pm.stage === "room") return;
-    // the doors open: someone solved it (or the bot did): in to loot
-    if (site.doors.some((d) => view(ctx, d.id)?.view.door?.open)) {
+    // the doors known open (seen or heard): someone solved it (or the bot did): in to loot
+    if (knownOpen(ctx, site)) {
         setStage(ctx, "room");
         return;
     }
-    if (site.pieces.some((p) => view(ctx, p.id)?.view.dead)) {
+    if (seenSpent(ctx, site)) {
         finishSite(ctx);
         return;
     }
@@ -350,7 +336,7 @@ function advance(ctx: BrainCtx, site: PuzzleSite): void {
             return;
         }
         const there = v2.distance(ctx.self.pos, front.spot) < 3 && sameLayer(ctx.self.layer, first.layer);
-        if (there && view(ctx, first.id)) setStage(ctx, "ready");
+        if (there && seenPiece(ctx, site, first.id)) setStage(ctx, "ready");
         else if (now - pm.since > GO_LIMIT) leaveSite(ctx, FAIL_COOLDOWN);
         return;
     }
@@ -361,7 +347,7 @@ function advance(ctx: BrainCtx, site: PuzzleSite): void {
         }
         // panels and doors: still usable, or used up already (someone pressed it: the doors are on their way)
         if (entry.kind !== "code") {
-            const first = view(ctx, pm.order[0]);
+            const first = seenPiece(ctx, site, pm.order[0]);
             if (first && usable(first)) {
                 pm.readyAt = now + reaction(ctx);
                 setStage(ctx, "press");
@@ -388,14 +374,14 @@ function advance(ctx: BrainCtx, site: PuzzleSite): void {
         }
         // a piece pressed earlier in this attempt is off again: the input was reset
         for (let i = 0; i < pm.step; i++) {
-            const b = view(ctx, pm.order[i])?.view.button;
+            const b = seenPiece(ctx, site, pm.order[i])?.view.button;
             if (b && !b.onOff && entry.kind === "code") {
                 fail(ctx, site);
                 return;
             }
         }
         const id = pm.order[pm.step];
-        const o = view(ctx, id);
+        const o = seenPiece(ctx, site, id);
         if (pm.pressId === id && o) {
             if (pressShows(o, pm.pressSeq)) {
                 pm.step++;
@@ -423,8 +409,12 @@ function advance(ctx: BrainCtx, site: PuzzleSite): void {
         return;
     }
     if (now - pm.since > entry.openAfter + DOOR_GRACE) {
-        if (solved || entry.kind !== "code") finishSite(ctx);
-        else fail(ctx, site);
+        // solved (or the panel used) and no door seen or heard opening: one out of its sight opened (the bathhouse's
+        // vault below the switch): in to look; every door in view and still shut: they did not open
+        if (solved || entry.kind !== "code") {
+            if (doorUnseen(ctx, site)) setStage(ctx, "room");
+            else finishSite(ctx);
+        } else fail(ctx, site);
     }
 }
 
@@ -453,8 +443,8 @@ export function puzzleScore(ctx: BrainCtx): number {
         clear(pm);
         return 0;
     }
-    // a threat ends it at once: nobody camps a puzzle with enemies around
-    if (!calm(ctx) || zonePressure(model) > ZONE_LIMIT) {
+    // a threat ends it at once: nobody camps a puzzle with enemies around (nor in a place it was chased out of)
+    if (!calm(ctx) || zonePressure(model) > ZONE_LIMIT || siteInDanger(ctx, site)) {
         leaveSite(ctx, THREAT_COOLDOWN);
         return 0;
     }
@@ -482,7 +472,7 @@ function pressPiece(ctx: BrainCtx, site: PuzzleSite, piece: SitePiece, intent: I
     const me = ctx.self.pos;
     const front = frontOf(ctx, site, piece);
     if (!front) return;
-    const o = view(ctx, piece.id);
+    const o = seenPiece(ctx, site, piece.id);
     const floor = sameLayer(ctx.self.layer, piece.layer);
     const c = colliderCenter(piece.col);
     intent.lookAt = c;
@@ -505,11 +495,9 @@ function pressPiece(ctx: BrainCtx, site: PuzzleSite, piece: SitePiece, intent: I
         return;
     }
     if (v2.distance(me, front.spot) < STEP_IN || d < STEP_IN) {
-        // the last steps straight at the face's middle (a person leans into the switch)
-        const ext = Math.abs(front.face.x) * (piece.col.type === 1 ? (piece.col.max.x - piece.col.min.x) / 2 : 0);
-        const exty = Math.abs(front.face.y) * (piece.col.type === 1 ? (piece.col.max.y - piece.col.min.y) / 2 : 0);
-        const faceMid = v2.add(c, v2.mul(front.face, ext + exty));
-        intent.moveDir = v2.normalizeSafe(v2.sub(faceMid, me), v2.mul(front.face, -1));
+        // the last steps straight at the face's middle (a person leans into the switch), or at the piece over what
+        // stands in front of it (a bottle on the saloon's bar counter: puzzleSites.ts pieceFront)
+        intent.moveDir = v2.normalizeSafe(v2.sub(front.lean, me), v2.mul(front.face, -1));
         intent.nudge = true;
         return;
     }

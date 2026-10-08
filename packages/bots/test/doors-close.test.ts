@@ -2,16 +2,19 @@
 // shuts the door behind it from inside, out of the doorway, and stays inside to loot (a cautious expert: closeChance
 // near its cap); a baseline bot leaves it open; the door stays open while a teammate waits right outside (following),
 // and is shut once the teammate is far; when a teammate opens it again while the bot is inside, the bot shuts it again.
-// All on the real main map (seed 12345), the first unrotated red house and its south door.
+// All on the real main map (seed 12345), the first unrotated red house and its south door. And in the bank, whose
+// south-east room is reached from the hall only round the outside: a bot that came in by a door and loots on in the
+// other wing leaves that door open (it shut it and opened it again a moment later, review of the interactions).
 import { type Vec2, v2 } from "@rebirth/core";
 import { Input } from "@rebirth/defs";
 import { emptyInput, type Game, type Player } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import { FOLLOW_RADIUS } from "../src/brain/doorClose.ts";
+import { BRAIN_PRESETS } from "../src/brain/features.ts";
 import { underRoof } from "../src/brain/grenades.ts";
 import { BotController } from "../src/controller.ts";
 import { obstacleDef } from "../src/geom.ts";
-import { doorShape, inDoorway, sideOf } from "../src/nav/doorGeom.ts";
+import { doorMiddle, doorShape, inDoorway, sideOf } from "../src/nav/doorGeom.ts";
 import { cachedMap, firstOfType, mainGame, placePlayer } from "./helpers.ts";
 
 const gen = cachedMap("main", 12345);
@@ -142,4 +145,61 @@ describe("doors: closing behind", () => {
         expect(reclosed).toBe(true);
         expect(run.bot.bot.brain.doors?.closes).toBeGreaterThanOrEqual(2);
     });
+});
+
+describe("doors: closing behind, two wings", () => {
+    it("leaves the door it came in by open when the way to its next loot leads back out by it", () => {
+        const bank = firstOfType(gen, "bank_01");
+        // the south-east room's door (the room joins the hall only round the outside), and the bank's doors
+        const want = v2.add(bank.pos, { x: 13.5, y: 17.25 });
+        const se = gen.objects
+            .filter((o) => o.type === "house_door_01")
+            .sort((a, b) => v2.distance(a.pos, want) - v2.distance(b.pos, want))[0];
+        const seShape = doorShape(se.id, obstacleDef(se.type)!, se.pos, se.ori, se.scale)!;
+        const mid = doorMiddle(seShape);
+        const inSide = Math.sign(sideOf(seShape, bank.pos));
+        const doors = gen.objects.filter((o) => obstacleDef(o.type)?.door && v2.distance(o.pos, bank.pos) < 40);
+        const game = mainGame();
+        // outside the south-east door; a vest in the west hall, a gun in the south-east room (puzzles off: no vault)
+        const p = placePlayer(game, "bot", v2.sub(mid, v2.mul(seShape.normal, inSide * 4)));
+        const bot = new BotController(game, p.id, {
+            seed: 6,
+            persona: "camper",
+            skill: "expert",
+            brain: { ...BRAIN_PRESETS.smart, puzzles: false },
+        });
+        game.loot.addLoot("chest02", v2.add(bank.pos, { x: -14, y: 2 }), 0, 1, { pushSpeed: 0 });
+        game.loot.addLoot("mp5", v2.add(mid, v2.mul(seShape.normal, inSide * 3.5)), 0, 1, { pushSpeed: 0 });
+        const isOpen = (id: number) => {
+            const o = game.world.get(id);
+            return o?.kind === "obstacle" && !!o.door?.open;
+        };
+        const prev = new Map(doors.map((d) => [d.id, isOpen(d.id)]));
+        const shutAt = new Map<number, number>();
+        const reopened: string[] = [];
+        let leaves = false;
+        let vest = false;
+        let gun = false;
+        for (let i = 0; i < 2500; i++) {
+            bot.update();
+            game.step();
+            for (const d of doors) {
+                const open = isOpen(d.id);
+                if (prev.get(d.id) && !open) shutAt.set(d.id, game.time);
+                const at = shutAt.get(d.id);
+                if (!prev.get(d.id) && open && at !== undefined && game.time - at < 1) {
+                    reopened.push(`${d.id} after ${(game.time - at).toFixed(2)} s`);
+                }
+                prev.set(d.id, open);
+            }
+            if (bot.bot.brain.doors?.entry?.route?.out) leaves = true;
+            vest ||= p.chest === "chest02";
+            gun ||= p.weaponManager.weapons[0].type === "mp5";
+        }
+        // no door was shut only to be opened again: the route check saw the way out by the entry door
+        expect(reopened).toEqual([]);
+        expect(leaves).toBe(true);
+        expect(vest && gun).toBe(true);
+        expect(bot.bot.follower.stuckEvents).toBe(0);
+    }, 60_000);
 });

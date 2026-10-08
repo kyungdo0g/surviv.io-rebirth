@@ -143,7 +143,7 @@ export class Bot {
         this.brainName = brainLabel(this.features);
         this.seed = opts.seed;
         this.rng = createRng(opts.seed);
-        this.model = new WorldModel(map, opts.nav ?? NavGrid.forMap(map));
+        this.model = new WorldModel(map, opts.nav ?? NavGrid.forMap(map, { sealedDoors: this.features.puzzles }));
         this.model.memory = this.params.memory;
         installPerception(this.model, this.features);
         this.brain = new Brain(this.model, this.params, this.rng, this.features, {
@@ -338,8 +338,8 @@ export class Bot {
             this.moveDir = it.moveDir;
         } else if (it.goal) {
             // goal layer (0 ground, 1 underground: basements and bunkers); undefined keeps ground navigation
-            const goalLayer = (it as Intent & { goalLayer?: number }).goalLayer;
-            const r = this.follower.steer(this.model, it.goal, this.clock, it.arriveDist, goalLayer);
+            const r = this.follower.steer(this.model, it.goal, this.clock, it.arriveDist, it.goalLayer);
+            if (this.features.puzzles) this.brain.mem.puzzle.followerStuck = this.follower.stuckEvents;
             // human keys: head for a carrot on the path leg, so 8-way motion converges on the line
             this.moveDir =
                 r.dir && this.stick ? this.carrot.heading(this.model.self.pos, this.follower.points, r.dir) : r.dir;

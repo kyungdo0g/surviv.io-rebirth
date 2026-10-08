@@ -3,12 +3,15 @@
 // then crates); the loot behaviour picks up what drops. Furniture blocking a door (the bookshelf in front of the club's
 // secret door) goes first. The bot punches, on either floor, from a spot off the container towards the room's middle
 // on that floor's grid: no shooting in a closed vault (rounds glance off its walls back at the shooter, and a hit ends
-// the attempt: brain/puzzle.ts calm). A container that loses no health for a while is left; the stage ends when nothing
-// worth breaking is left or after ROOM_TIME. Containers are known from the defs (a player knows a vault holds deposit
-// boxes); whether one is still there comes from the snapshot once the bot is inside.
+// the attempt: brain/puzzle.ts calm). A container that loses no health for a while is left, and so is one the bot stands
+// at without getting any closer or a punch in (a planter in a corner it cannot reach: it pushed against it for 12 s);
+// the stage ends when nothing worth breaking is left or after ROOM_TIME. Containers are known from the defs (a player
+// knows a vault holds deposit boxes); whether one is still there comes from the snapshot only while the client draws
+// it (perception/drawn.ts: the vault's ceiling hides its boxes from a bot still outside the room).
 import { type Vec2, v2 } from "@rebirth/core";
 import { WeaponSlot } from "@rebirth/defs";
 import { colliderCenter, distanceToCollider, pointInBounds } from "../geom.ts";
+import { drawnObstacle } from "../perception/drawn.ts";
 import type { SeenObstacle } from "../perception/world.ts";
 import { closestPoint, containerValue, meleeBreaks, meleeReach, nearSurface, swingLands } from "./containers.ts";
 import type { BrainCtx, Intent } from "./context.ts";
@@ -18,8 +21,15 @@ import { floorGrid, type PuzzleSite, type SiteRoom } from "./puzzleSites.ts";
 const ROOM_TIME = 50;
 /** A container punched for this long without losing health is left ... */
 const NO_PROGRESS = 5;
-/** ... and one walked to for this long without a punch landing on it. */
+/** ... and one walked to for this long without a punch landing on it ... */
 const WALK_LIMIT = 12;
+/**
+ * ... and one the bot stands at (within SPOT_NEAR of its stand spot, or stepping straight in) for this long without
+ * getting NEAR_GAIN closer or landing a punch, or while the path follower reports STUCK_SKIP stuck events walking to it.
+ */
+const NEAR_LIMIT = 2;
+const NEAR_GAIN = 0.1;
+const STUCK_SKIP = 2;
 /** At the stand spot within this distance: the last steps go straight in. */
 const SPOT_NEAR = 0.8;
 /** Closer than this, the bot walks straight at the container it punches. */
@@ -41,13 +51,20 @@ function roomValue(o: SeenObstacle): number {
     return containerValue(o);
 }
 
+/** A container of the room as the bot sees it now: in the snapshot and drawn on its screen, else undefined. */
+function seenContainer(ctx: BrainCtx, id: number): SeenObstacle | undefined {
+    const o = ctx.model.obstacleById.get(id);
+    return o && drawnObstacle(ctx.model, o) ? o : undefined;
+}
+
 /** A container of the room the bot could still break: alive as last seen, breakable by it, not given up. */
 function open(ctx: BrainCtx, room: SiteRoom, id: number): boolean {
     // (not the loot blacklist: the scavenge behaviour passes a vault's deposit boxes over while it sees no stand spot
     // for them; the room keeps its own give-ups, trackProgress)
     if (ctx.mem.puzzle.roomSkip.has(id)) return false;
-    const o = ctx.model.obstacleById.get(id);
-    // out of the snapshot: still there unless the bot stands in the room (everything inside is in view there)
+    const o = seenContainer(ctx, id);
+    // not drawn (out of the snapshot, under the room's ceiling seen from outside): still there unless the bot stands in
+    // the room (everything inside is in view there)
     if (!o) return !insideRoom(ctx, room);
     return !o.view.dead && meleeBreaks(ctx.self, o);
 }
@@ -85,7 +102,7 @@ function pickContainer(ctx: BrainCtx, room: SiteRoom): SeenObstacle | null {
     let best: SeenObstacle | null = null;
     let bestScore = 0;
     for (const id of room.containers) {
-        const o = ctx.model.obstacleById.get(id);
+        const o = seenContainer(ctx, id);
         if (!o || !open(ctx, room, id)) continue;
         const d = distanceToCollider(ctx.self.pos, o.col);
         const s = (roomValue(o) / (1 + d / 10)) * (id === ctx.mem.puzzle.roomTarget ? 1.5 : 1);
@@ -97,8 +114,14 @@ function pickContainer(ctx: BrainCtx, room: SiteRoom): SeenObstacle | null {
     return best;
 }
 
-/** Gives up on a container that loses no health while the bot punches it (the clock runs only while it does). */
-function trackProgress(ctx: BrainCtx, o: SeenObstacle, working: boolean): boolean {
+/** How the punch went: swinging at it, at its stand spot (or stepping straight in), or walking there. */
+type PunchState = "swing" | "near" | "walk";
+
+/**
+ * Gives up on a container that loses no health while the bot punches it (the clock runs only while it does), that it
+ * stands at without getting closer or a punch in (NEAR_LIMIT), or that the follower gets stuck walking to.
+ */
+function trackProgress(ctx: BrainCtx, o: SeenObstacle, state: PunchState): boolean {
     const pm = ctx.mem.puzzle;
     const id = o.view.id;
     const dt = Math.min(0.5, Math.max(0, ctx.now - pm.roomAt));
@@ -108,14 +131,27 @@ function trackProgress(ctx: BrainCtx, o: SeenObstacle, working: boolean): boolea
         pm.roomHealth = o.view.healthT;
         pm.roomSince = 0;
         pm.roomWalk = ctx.now;
+        pm.roomBest = Number.POSITIVE_INFINITY;
+        pm.roomNear = 0;
+        pm.roomStuck = pm.followerStuck;
         return false;
     }
-    if (working) {
+    if (state === "swing") {
         pm.roomSince += dt;
         pm.roomWalk = ctx.now;
+        pm.roomNear = 0;
+    } else if (state === "near") {
+        // at the spot: closer by NEAR_GAIN is progress, else the clock runs (walking back to the spot pauses it)
+        const d = distanceToCollider(ctx.self.pos, o.col);
+        if (d < pm.roomBest - NEAR_GAIN) {
+            pm.roomBest = d;
+            pm.roomNear = 0;
+        } else pm.roomNear += dt;
     }
-    // punched without a dent, or walked to without ever getting a punch in: something is in the way
-    if (pm.roomSince > NO_PROGRESS || ctx.now - pm.roomWalk > WALK_LIMIT) {
+    // punched without a dent, walked to without ever getting a punch in, standing at it without getting closer, or the
+    // way to it gets the follower stuck: something is in the way
+    const stuck = pm.followerStuck - pm.roomStuck >= STUCK_SKIP;
+    if (pm.roomSince > NO_PROGRESS || ctx.now - pm.roomWalk > WALK_LIMIT || pm.roomNear > NEAR_LIMIT || stuck) {
         pm.roomSkip.add(id);
         pm.roomTarget = 0;
         return true;
@@ -124,7 +160,7 @@ function trackProgress(ctx: BrainCtx, o: SeenObstacle, working: boolean): boolea
 }
 
 /** Punches a container: a spot off its surface towards `side` (the room's middle) on its floor's grid, then in. */
-function punch(ctx: BrainCtx, layer: number, side: Vec2, o: SeenObstacle, intent: Intent): boolean {
+function punch(ctx: BrainCtx, layer: number, side: Vec2, o: SeenObstacle, intent: Intent): PunchState {
     const me = ctx.self.pos;
     const d = distanceToCollider(me, o.col);
     const floor = (ctx.self.layer & 1) === (layer & 1);
@@ -136,7 +172,7 @@ function punch(ctx: BrainCtx, layer: number, side: Vec2, o: SeenObstacle, intent
         intent.stop = true;
         intent.aim = aim;
         intent.fire = ctx.self.curWeapIdx === WeaponSlot.Melee;
-        return true;
+        return "swing";
     }
     const c = colliderCenter(o.col);
     const out = v2.normalizeSafe(v2.sub(side, c), { x: 0, y: 1 });
@@ -144,12 +180,14 @@ function punch(ctx: BrainCtx, layer: number, side: Vec2, o: SeenObstacle, intent
     const spot = floorSpot(ctx, want, layer);
     if (spot && v2.distance(me, spot) > SPOT_NEAR) {
         walkOnFloor(ctx, spot, layer, intent, 0.4);
-    } else if (d < APPROACH && clear) {
+        return "walk";
+    }
+    if (d < APPROACH && clear) {
         // at the spot: the last steps straight in
         intent.moveDir = v2.normalizeSafe(v2.sub(aim, me));
         intent.aim = aim;
     } else walkOnFloor(ctx, want, layer, intent, 0.4);
-    return false;
+    return spot ? "near" : "walk";
 }
 
 /** The walkable cell nearest `p` on its floor's grid, or null. */
@@ -177,7 +215,8 @@ function standingBlocker(ctx: BrainCtx, site: PuzzleSite): SeenObstacle | null {
     for (const b of site.blockers) {
         if (pm.roomSkip.has(b.id) || pm.cleared.has(b.id)) continue;
         const o = ctx.model.obstacleById.get(b.id);
-        if (o && !o.view.dead) {
+        // (one not drawn on the screen is taken as standing until the bot sees it: a player expects the bookshelf)
+        if (o && (!o.view.dead || !drawnObstacle(ctx.model, o))) {
             if (meleeBreaks(ctx.self, o)) return o;
             continue;
         }
@@ -191,8 +230,8 @@ function standingBlocker(ctx: BrainCtx, site: PuzzleSite): SeenObstacle | null {
 
 /** Breaks `o` on its floor by punching it from the `side` it is approached from. */
 function breakOne(ctx: BrainCtx, layer: number, side: Vec2, o: SeenObstacle, intent: Intent): void {
-    const working = punch(ctx, layer, side, o, intent);
-    if (trackProgress(ctx, o, working)) {
+    const state = punch(ctx, layer, side, o, intent);
+    if (trackProgress(ctx, o, state)) {
         intent.stop = true;
         intent.fire = false;
     }

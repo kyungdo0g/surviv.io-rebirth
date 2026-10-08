@@ -8,10 +8,13 @@
 // toggles every door and button in reach, so the spot must reach no other). It never shuts the door on a teammate in
 // the doorway or following within FOLLOW_RADIUS outside, nor on anyone standing in the panel's way, gives up after
 // PLAN_TIMEOUT, and closes it again (up to maxCloses) when someone opens it while the bot stays inside. Leaving, the
-// path follower opens it like any closed door on the way.
+// path follower opens it like any closed door on the way; so a bot whose way to its next goal leads out by that door
+// (loot in the bank's other wing, reached round the outside) leaves it open: it shut doors only to open them again
+// 0.3-0.7 s later, about one close in ten (review of the interactions).
 import { type Rng, type Vec2, v2 } from "@rebirth/core";
 import { Input } from "@rebirth/defs";
 import { colliderBounds, distanceToCollider, segmentHits } from "../geom.ts";
+import { findPath } from "../nav/astar.ts";
 import { sameLayer } from "../nav/cellGrid.ts";
 import {
     alongOf,
@@ -25,6 +28,7 @@ import {
     sweepLines,
     useReach,
 } from "../nav/doorGeom.ts";
+import { USE_SAFETY } from "../nav/follower.ts";
 import type { DoorWatch } from "../perception/doorWatch.ts";
 import type { SeenObstacle } from "../perception/world.ts";
 import type { PersonaParams } from "../persona.ts";
@@ -98,6 +102,8 @@ export interface DoorEntry {
     spot: Vec2 | null;
     spotClear: boolean;
     blockedUntil: number;
+    /** the last goal whose route was checked, and whether that route leaves by this door (routeLeaves) */
+    route: { goal: Vec2; out: boolean } | null;
 }
 
 export function newEntry(id: number, side: number, now: number): DoorEntry {
@@ -115,7 +121,47 @@ export function newEntry(id: number, side: number, now: number): DoorEntry {
         spot: null,
         spotClear: false,
         blockedUntil: Number.NEGATIVE_INFINITY,
+        route: null,
     };
+}
+
+/** Whether the leg `a` -> `b` passes through the doorway: across the panel's line within the doorway's span. */
+export function crossesDoorway(shape: DoorShape, a: Vec2, b: Vec2): boolean {
+    const s0 = sideOf(shape, a);
+    const s1 = sideOf(shape, b);
+    if (s0 * s1 > 0 || s0 === s1) return false;
+    const t = alongOf(shape, v2.lerp(s0 / (s0 - s1), a, b));
+    return t >= shape.t0 - PLAYER_RAD * 0.5 && t <= shape.t1 + PLAYER_RAD * 0.5;
+}
+
+/** A* nodes the route check may expand (inside one building). */
+const ROUTE_NODES = 4000;
+/** A goal within this of the last one checked keeps its verdict. */
+const ROUTE_SAME = 1.5;
+
+/**
+ * Whether the way to `goal` leads out by the entry door: a leg of the grid route (the path follower plans the same
+ * way) crosses its doorway. Checked once per goal (DoorEntry.route); no route: no.
+ */
+function routeLeaves(ctx: BrainCtx, entry: DoorEntry, shape: DoorShape, goal: Vec2): boolean {
+    const known = entry.route;
+    if (known && v2.distance(known.goal, goal) < ROUTE_SAME) return known.out;
+    const grid = ctx.model.nav;
+    const res = findPath(grid, ctx.self.pos, goal, { maxExpand: ROUTE_NODES });
+    grid.spendPlanBudget(res ? res.expanded : 50);
+    let out = false;
+    if (res) {
+        let a = ctx.self.pos;
+        for (const p of [...res.points, goal]) {
+            if (crossesDoorway(shape, a, p)) {
+                out = true;
+                break;
+            }
+            a = p;
+        }
+    }
+    entry.route = { goal: v2.copy(goal), out };
+    return out;
 }
 
 /**
@@ -191,9 +237,9 @@ function othersNear(ctx: BrainCtx, target: SeenObstacle): SeenObstacle[] {
     return out;
 }
 
-/** Whether Use from `p` would toggle one of `others` too. */
+/** Whether Use from `p` would toggle one of `others` too (with the follower's safety margin past the reach). */
 function touchesOther(others: readonly SeenObstacle[], p: Vec2): boolean {
-    for (const o of others) if (distanceToCollider(p, o.col) < useReach(o.def) + 0.1) return true;
+    for (const o of others) if (distanceToCollider(p, o.col) < useReach(o.def) + USE_SAFETY) return true;
     return false;
 }
 
@@ -287,6 +333,18 @@ export function planClose(
     if (!shape || distanceToCollider(self.pos, shape.closedCol) > range) return false;
     // heading out (the goal is not under the roof): the door is the way out
     if (intent.goal && !underRoof(model, intent.goal)) return false;
+    // ... or the way to it, under the roof, leads out by this door (another wing), or what it breaks or picks up in
+    // place lies on the outer side: the follower would open it again at once
+    const outer = !intent.goal && !!intent.aim && (intent.behaviour === "break" || intent.behaviour === "loot");
+    if (
+        (intent.goal && routeLeaves(ctx, entry, shape, intent.goal)) ||
+        (outer && intent.aim && sideOf(shape, intent.aim) * entry.side <= 0)
+    ) {
+        entry.since = Number.NEGATIVE_INFINITY;
+        entry.blockedUntil = now + BLOCKED_FOR;
+        entry.spot = null;
+        return false;
+    }
     const lines = sweepLines(shape, o.view.pos, o.view.ori);
     if (doorBusy(ctx, shape, entry.side, lines)) return false;
     const target: Door = { o, shape, side: entry.side, lines, others: othersNear(ctx, o) };

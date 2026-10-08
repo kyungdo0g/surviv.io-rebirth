@@ -131,6 +131,39 @@ describe("doors: opening on the way", () => {
         expect(sense.doorToOpen(w.model, s, bend, 20, next)).toBe(c.view.id);
     });
 
+    it("holds Use back while an open door stands within the sim's reach plus a margin (it would shut it too)", () => {
+        // (review of the interactions: a bot opening a house door shut the open one beside it, 1.70 away against the
+        // sim's reach of 1.75, on four allies; the old hold-back stopped at 1.60)
+        const w = testWorld();
+        const s = w.spot;
+        const pos = v2.add(s, { x: 0.6, y: 0 });
+        const wp = v2.add(s, { x: 6, y: 0 });
+        const closed = seenDoor(9201, "house_door_01", v2.add(s, { x: 2, y: -2 }), 0);
+        type Rule = { doorToOpen(m: unknown, pos: Vec2, wp: Vec2, now: number): number };
+        const reach = useReach(closed.def);
+        expect(reach).toBe(1.75);
+        // an open door beside the way, its panel `gap` from the bot (house_door_01: 0.6 wide, 4 long)
+        const openAt = (gap: number) =>
+            seenDoor(9202, "house_door_01", v2.add(pos, { x: -gap - 0.3, y: -2 }), 0, { open: true });
+        for (const [gap, use] of [
+            [1.55, false],
+            [1.7, false],
+            [reach + 0.25, false],
+            [reach + 0.4, true],
+        ] as const) {
+            const other = openAt(gap);
+            expect(distanceToCollider(pos, other.col)).toBeCloseTo(gap, 6);
+            w.model.obstacles = [closed, other];
+            w.model.self.pos = v2.copy(pos);
+            const f = new PathFollower(createRng(1), { noteUse: () => {} }) as unknown as Rule;
+            expect(f.doorToOpen(w.model, pos, wp, 10), `open door ${gap} away`).toBe(use ? closed.view.id : 0);
+        }
+        // the baseline's rule is untouched (it holds back within its reach less the slack only)
+        const plain = new PathFollower(createRng(1)) as unknown as Rule;
+        w.model.obstacles = [closed, openAt(1.7)];
+        expect(plain.doorToOpen(w.model, pos, wp, 10)).toBe(closed.view.id);
+    });
+
     it("never uses a door that only a switch, a puzzle or a scheduled unlock opens", () => {
         const w = testWorld();
         const s = w.spot;

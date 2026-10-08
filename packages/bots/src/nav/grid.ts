@@ -3,8 +3,11 @@
 // and lakes are slow, the sea is avoided), and structure stairs blocked so bots stay on the ground floor (layer 0;
 // nav/underground.ts plans the way down for bots with the basements feature).
 // The grid is shared by every bot of a map (WeakMap cache) and updated from what bots observe: obstacles seen dead
-// are cleared, collidable obstacles that MapData did not list (air drop crates) are added, doors update their panel
-// (doors only a switch, a puzzle or an unlock opens are walls until a snapshot shows them open: cellGrid.ts).
+// are cleared, collidable obstacles that MapData did not list (air drop crates) are added, doors update their panel.
+// Doors only a switch, a puzzle or an unlock opens are walls for good, except on the grid of the bots with
+// BrainFeatures.puzzles (NavOptions.sealedDoors, its own shared grid): there they stop being walls once a snapshot shows
+// them open (cellGrid.ts sealedDoors). The flags-off grid must not learn them: the baseline replays as before the
+// puzzles existed even when a human opens the police cells (THE RULE, brain/features.ts).
 import { getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
 import { createTerrain, type MapData } from "@rebirth/sim";
 import { obstacleCollider, transformCollider } from "../geom.ts";
@@ -27,6 +30,8 @@ const EDGE_MARGIN = 1.5;
 export interface NavOptions {
     cellSize?: number;
     clearance?: number;
+    /** doors only a switch, a puzzle or an unlock opens open in the grid once seen open (BrainFeatures.puzzles) */
+    sealedDoors?: boolean;
 }
 
 /** Layer test of the simulation for a player on the ground floor (layers 0 and 2 collide with it). */
@@ -34,7 +39,9 @@ export function onGroundLayer(layer: number): boolean {
     return (layer & 1) === 0;
 }
 
+/** the shared grids of a map: the plain one, and the one that learns sealed doors (NavOptions.sealedDoors) */
 const cache = new WeakMap<MapData, NavGrid>();
+const sealedCache = new WeakMap<MapData, NavGrid>();
 
 export class NavGrid extends CellGrid implements RasterGrid {
     readonly width: number;
@@ -42,12 +49,13 @@ export class NavGrid extends CellGrid implements RasterGrid {
     private budgetTime = Number.NaN;
     private budgetLeft = 0;
 
-    /** The shared grid of a map (built on first use). */
+    /** The shared grid of a map (built on first use), one per kind (NavOptions.sealedDoors). */
     static forMap(map: MapData, opts: NavOptions = {}): NavGrid {
-        let grid = cache.get(map);
+        const store = opts.sealedDoors ? sealedCache : cache;
+        let grid = store.get(map);
         if (!grid) {
             grid = new NavGrid(map, opts);
-            cache.set(map, grid);
+            store.set(map, grid);
         }
         return grid;
     }
@@ -62,6 +70,7 @@ export class NavGrid extends CellGrid implements RasterGrid {
             cellSize,
             opts.clearance ?? DEFAULT_CLEARANCE,
             NavTerrain.Sea,
+            opts.sealedDoors ?? false,
         );
         this.width = map.width;
         this.height = map.height;
@@ -137,8 +146,8 @@ export class NavGrid extends CellGrid implements RasterGrid {
                 this.addDoor(obj.id, obj.type, def, col, obj.ori);
                 continue;
             }
-            // a puzzle, switch or locked door: a wall until a snapshot shows it open (cellGrid.ts sealedDoors)
-            if (def.door) {
+            // a puzzle, switch or locked door: a wall (until a snapshot shows it open, cellGrid.ts sealedDoors)
+            if (def.door && this.learnsSealed) {
                 this.addSealedDoor(obj.id, col);
                 continue;
             }

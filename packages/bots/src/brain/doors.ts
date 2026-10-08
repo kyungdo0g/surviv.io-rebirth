@@ -13,12 +13,12 @@
 // they were; with the flag off nothing here runs, draws or writes.
 import { type Collider, createRng, type Rng, type Vec2, v2 } from "@rebirth/core";
 import { distanceToCollider } from "../geom.ts";
-import { alongOf, closable, doorMiddle, PLAYER_RAD, sideOf, useReach } from "../nav/doorGeom.ts";
+import { closable, doorMiddle, sideOf, useReach } from "../nav/doorGeom.ts";
 import type { DoorUseSink } from "../nav/follower.ts";
 import { type DoorCause, type DoorEvent, DoorWatch } from "../perception/doorWatch.ts";
 import type { SeenObstacle } from "../perception/world.ts";
 import type { BehaviourName, BrainCtx, Intent } from "./context.ts";
-import { type DoorEntry, leaveDoorway, newEntry, planClose } from "./doorClose.ts";
+import { crossesDoorway, type DoorEntry, leaveDoorway, newEntry, planClose } from "./doorClose.ts";
 import { underRoof } from "./grenades.ts";
 
 /** Salt of the door decisions' random stream (createRng(seed ^ DOOR_SALT)). */
@@ -199,14 +199,9 @@ export class DoorBrain implements DoorUseSink {
             if (!o.view.door || o.view.dead || o.view.layer !== 0 || !closable(o.def)) continue;
             const shape = this.watch.shape(model, o);
             if (!shape || distanceToCollider(cur, shape.closedCol) > 6) continue;
-            const s0 = sideOf(shape, prev);
-            const s1 = sideOf(shape, cur);
-            if (s0 * s1 > 0 || s0 === s1) continue;
-            const k = s0 / (s0 - s1);
-            const t = alongOf(shape, v2.lerp(k, prev, cur));
-            if (t < shape.t0 - PLAYER_RAD * 0.5 || t > shape.t1 + PLAYER_RAD * 0.5) continue;
+            if (!crossesDoorway(shape, prev, cur)) continue;
             const mid = doorMiddle(shape);
-            const side = s1 > 0 ? 1 : -1;
+            const side = sideOf(shape, cur) > 0 ? 1 : -1;
             const ahead = underRoof(model, v2.add(mid, v2.mul(shape.normal, side * ROOF_PROBE)));
             const behind = underRoof(model, v2.add(mid, v2.mul(shape.normal, -side * ROOF_PROBE)));
             if (ahead === behind) continue;

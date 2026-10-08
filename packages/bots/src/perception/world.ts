@@ -178,8 +178,8 @@ export class WorldModel {
     faction: FactionIntel | null = null;
     private obstacleCache = new Map<number, SeenObstacle>();
     private readonly roofCache = new Map<number, Bounds[]>();
-    /** the regions of the roofs over someone else's head this snapshot (not over the bot) */
-    private roofBoxes: Bounds[] = [];
+    /** the regions of the roofs over someone else's head this snapshot (not over the bot; perception/drawn.ts) */
+    roofBoxes: Bounds[] = [];
     /** concealed enemies shown for a moment by their own shot or a hit */
     private readonly reveals = new Reveals();
 
