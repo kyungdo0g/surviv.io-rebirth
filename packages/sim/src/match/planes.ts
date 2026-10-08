@@ -10,7 +10,7 @@
 // crate weights is a tier 1 or a tier 2 drop (defs tieredAirdropCrates, by the gas circle); the shell stays the normal
 // one and opens into the tier's inner crate (Obstacle.destroyTypeOverride, kept server-side until it is opened).
 // Behaviour follows docs/research/mechanics/airdrop-airstrike.md (survev objects/plane.ts, objects/airdrop.ts).
-import { type Bounds, type Collider, collider, math, type Rng, type Vec2, v2 } from "@rebirth/core";
+import { type Bounds, type Collider, ColliderType, collider, math, type Rng, type Vec2, v2 } from "@rebirth/core";
 import {
     AIRSTRIKE_VARIANTS,
     type AirdropTier,
@@ -61,11 +61,6 @@ const AIRDROP_VIEW_EXTENT = 5;
 /** Overlap resolution attempts for a drop point; a random 3 u nudge on some of them (survev addAirdrop). */
 const DROP_ATTEMPTS = 10000;
 const NUDGE_DIST = 3;
-/**
- * Rebirth: drop points pushed outside the next safe circle by the overlap resolution are rerolled this many times,
- * so scheduled crates always land inside it (survev can push them a few units out).
- */
-const DROP_REROLLS = 20;
 const PLANE_IDS = 255;
 /** Crush damage of survev's instant kill. */
 const INSTANT_KILL_DAMAGE = 1e10;
@@ -305,20 +300,15 @@ export class PlaneSystem {
     }
 
     /**
-     * A scheduled air drop: a uniform point inside the next safe circle (survev PlaneBarn.update), moved off
-     * indestructible obstacles, roofs and other crates; rerolled while that pushes it out of the circle. Without
-     * `crateType` the map's crate weights pick it (with the rebirth tiers); `tier` forces a tier of a splittable shell.
+     * A scheduled air drop: a uniform point inside the next safe circle, moved off indestructible obstacles, roofs and
+     * other crates, which can push it a few units out of the circle (survev plane.ts:94-102). Without `crateType` the
+     * map's crate weights pick it (with the rebirth tiers); `tier` forces a tier of a splittable shell.
      */
     scheduleAirdrop(crateType?: string, tier?: AirdropTier): void {
         const gas = this.host.gas;
         const { type, inner } = this.crateChoice(crateType, tier);
-        let target = v2.add(gas.posNew, randomPointInCircle(this.rng, gas.radNew));
-        let drop = this.resolveDrop(target, type);
-        for (let i = 0; i < DROP_REROLLS && (!drop.ok || v2.distance(drop.pos, gas.posNew) >= gas.radNew); i++) {
-            target = v2.add(gas.posNew, randomPointInCircle(this.rng, gas.radNew));
-            drop = this.resolveDrop(target, type);
-        }
-        this.addPlane(target, drop.pos, type, inner);
+        const target = v2.add(gas.posNew, randomPointInCircle(this.rng, gas.radNew));
+        this.addPlane(target, this.findDropPos(target, type), type, inner);
     }
 
     /**
@@ -349,16 +339,12 @@ export class PlaneSystem {
         return transformOri(getMapObjectDefOfType("obstacle", type).collision, pos, 0, 1);
     }
 
-    /** Drop point for a crate aimed at `target` (see resolveDrop). */
-    findDropPos(target: Vec2, type: string): Vec2 {
-        return this.resolveDrop(target, type).pos;
-    }
-
     /**
-     * survev PlaneBarn.addAirdrop: pushes the crate collider out of whatever it overlaps, up to 10000 times (`ok`
-     * false when it still overlaps something then).
+     * Drop point for a crate aimed at `target` (survev PlaneBarn.addAirdrop): the crate collider is pushed out of
+     * whatever it overlaps, up to 10000 times, and kept on the map (a box by its larger side, a round crate by its
+     * radius).
      */
-    private resolveDrop(target: Vec2, type: string): { pos: Vec2; ok: boolean } {
+    findDropPos(target: Vec2, type: string): Vec2 {
         const { world } = this.host;
         let pos = v2.copy(target);
         for (let attempt = 1; attempt <= DROP_ATTEMPTS; attempt++) {
@@ -367,22 +353,26 @@ export class PlaneSystem {
             const push = this.overlapPush(coll, world);
             if (push) coll = translate(coll, push);
             const b = toBounds(coll);
-            const rad = Math.max(b.max.x - b.min.x, b.max.y - b.min.y);
+            const rad = coll.type === ColliderType.Circle ? coll.rad : Math.max(b.max.x - b.min.x, b.max.y - b.min.y);
             pos = world.clampToMap(v2.mul(v2.add(b.min, b.max), 0.5), rad);
-            if (!push) return { pos, ok: true };
+            if (!push) break;
         }
-        return { pos, ok: false };
+        return pos;
     }
 
-    /** Push separating `coll` from the first thing it overlaps, or null when it overlaps nothing. */
+    /**
+     * Push separating `coll` from the first thing it overlaps, or null when it overlaps nothing. Opened crates still
+     * count: survev keeps dead shells in its grid with their collider (survev plane.ts:338-352).
+     */
     private overlapPush(coll: Collider, world: World): Vec2 | null {
         const sep = (other: Collider): Vec2 | null => {
+            if (coll.type === ColliderType.Aabb && other.type === ColliderType.Aabb) return survevBoxPush(coll, other);
             const res = collider.intersect(coll, other);
             return res ? v2.mul(res.dir, res.pen) : null;
         };
         for (const obj of world.query(toBounds(coll))) {
             if (obj.layer !== 0) continue;
-            if (obj.kind === "obstacle" && !obj.destructible && !obj.dead) {
+            if (obj.kind === "obstacle" && !obj.destructible) {
                 const p = sep(obj.collider);
                 if (p) return p;
             } else if (obj.kind === "building" && !obj.def.ceiling.destroy) {
@@ -457,7 +447,9 @@ export class PlaneSystem {
                 if (obj.dead || !collider.intersect(collider.createCircle(obj.pos, obj.rad), crate)) continue;
                 this.host.damagePlayer(obj, { amount, damageType: DamageType.Airdrop, dir: v2.copy(obj.dir) });
             } else if (obj.kind === "obstacle") {
-                if (obj.dead || !collider.intersect(obj.collider, crate)) continue;
+                // a tree is crushed by its canopy box (survev airdrop.ts:80-86 obstacleAABB, def.aabb)
+                const box = obj.def.aabb ? transformOri(obj.def.aabb, obj.pos, obj.ori, obj.scale) : obj.collider;
+                if (obj.dead || !collider.intersect(box, crate)) continue;
                 this.host.damageObstacle(obj, { amount: INSTANT_KILL_DAMAGE, damageType: DamageType.Airdrop });
             } else if (obj.kind === "building" && !obj.ceilingDead && obj.def.ceiling.destroy) {
                 const hit = obj.zoomRegions.some(
@@ -536,4 +528,19 @@ function circleTouchesBox(pos: Vec2, rad: number, b: Bounds): boolean {
     const dx = pos.x - math.clamp(pos.x, b.min.x, b.max.x);
     const dy = pos.y - math.clamp(pos.y, b.min.y, b.max.y);
     return dx * dx + dy * dy <= rad * rad;
+}
+
+/**
+ * survev's box separation for air drop placement (survev shared/utils/coldet.ts:405-428 intersectAabbAabb, pushed by
+ * -dir * pen): it separates along the axis of the larger overlap, where the core collider takes the smaller one.
+ */
+export function survevBoxPush(a: Bounds, b: Bounds): Vec2 | null {
+    const nx = (b.min.x + b.max.x - a.min.x - a.max.x) * 0.5;
+    const ny = (b.min.y + b.max.y - a.min.y - a.max.y) * 0.5;
+    const xo = (a.max.x - a.min.x + b.max.x - b.min.x) * 0.5 - Math.abs(nx);
+    if (xo <= 0) return null;
+    const yo = (a.max.y - a.min.y + b.max.y - b.min.y) * 0.5 - Math.abs(ny);
+    if (yo <= 0) return null;
+    if (xo > yo) return { x: nx < 0 ? xo : -xo, y: 0 };
+    return { x: 0, y: ny < 0 ? yo : -yo };
 }

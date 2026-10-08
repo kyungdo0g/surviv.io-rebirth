@@ -16,6 +16,7 @@ import {
     randomWeaponSwap,
     terrainSurfaceAt,
 } from "../src/index.ts";
+import { survevBoxPush } from "../src/match/planes.ts";
 import { flatGame, giveGun, openSpot, spawnAt, steps } from "./combatHelpers.ts";
 import { cookAndThrow, holdThrowable } from "./fxHelpers.ts";
 import { cachedMap } from "./helpers.ts";
@@ -304,5 +305,48 @@ describe("spawn points (survev map.ts getRandomSpawnPos / canPlayerSpawn)", () =
         // the thrower's own group ignores it
         const own = randomSpawnPos(game, rng, thrower.group, near);
         expect(v2.distance(own, frag.pos)).toBeLessThan(16);
+    });
+});
+
+describe("air drops (survev plane.ts addAirdrop, airdrop.ts land)", () => {
+    function untilLanded(game: Game): void {
+        for (let i = 0; i < 6000; i++) {
+            game.step();
+            if (game.planes.planes.every((p) => p.actionComplete) && game.planes.airdrops.every((d) => d.landed)) {
+                return;
+            }
+        }
+        throw new Error("the crate did not land");
+    }
+
+    it("a landing crate crushes a tree whose canopy box it covers, not only its trunk (obstacleAABB)", () => {
+        const spot = openSpot(flatGame(), 80);
+        // trunk radius 1.55 at 6 u: clear of the 5x5 crate; the canopy box (5.75) reaches under it
+        const game = flatGame([{ type: "tree_01", pos: v2.add(spot, { x: 6, y: 0 }) }]);
+        const tree = [...game.world.objects.values()].find((o) => o.kind === "obstacle" && o.type === "tree_01")!;
+        game.planes.addAirdrop(spot, "airdrop_crate_01");
+        untilLanded(game);
+        expect(tree.kind === "obstacle" && tree.dead).toBe(true);
+    });
+
+    it("an opened crate still keeps a new drop off its spot (dead shells stay in survev's grid)", () => {
+        const game = flatGame();
+        const spot = openSpot(game, 80);
+        game.planes.addAirdrop(spot, "airdrop_crate_01");
+        untilLanded(game);
+        const shell = [...game.world.objects.values()].find(
+            (o) => o.kind === "obstacle" && o.type === "airdrop_crate_01",
+        )!;
+        if (shell.kind !== "obstacle") throw new Error("no shell");
+        shell.dead = true;
+        expect(v2.distance(game.planes.findDropPos(spot, "airdrop_crate_01"), spot)).toBeGreaterThanOrEqual(5 - 1e-6);
+    });
+
+    it("box crates are pushed along the axis of the larger overlap (survev coldet.ts:405-428)", () => {
+        const crate = { min: { x: 10, y: -2 }, max: { x: 15, y: 3 } };
+        const box = { min: { x: -20, y: -10 }, max: { x: 20, y: 10 } };
+        // x overlaps 10, y overlaps 12: survev moves the crate 12 along y (the core collider would take x)
+        expect(survevBoxPush(crate, box)).toEqual({ x: 0, y: 12 });
+        expect(survevBoxPush({ min: { x: 30, y: 0 }, max: { x: 35, y: 5 } }, box)).toBeNull();
     });
 });
