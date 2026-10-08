@@ -3,8 +3,8 @@
 // the deposit boxes in the vault; a beginner who never learned the club code leaves its switches alone but presses the
 // bathhouse's single switch, and the ring-case vault opens; anyone uses the police cell panel and the bank vault door;
 // a bot at work walks off the moment an enemy shows up and stays off while it is around; in the greenhouse bunker, the
-// last room (behind a glass wall, no route) is given up at once instead of walked at along the glass. Owner: bot
-// interactions.
+// last room (behind a glass wall, no route) is given up at once instead of walked at along the glass, but a room the
+// bot can walk into is kept after a goal in it failed while the doors were shut. Owner: bot interactions.
 import { type Vec2, v2 } from "@rebirth/core";
 import type { Game } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
@@ -216,5 +216,29 @@ describe("puzzles in a game", () => {
         expect(done).toBeLessThan(8 * SECOND);
         expect(atGlass).toBeLessThan(3 * SECOND);
         expect(pm.site).not.toBe(comp.index);
+    }, 60_000);
+
+    it("keeps a room it can walk into although a goal in it failed while the doors were shut", () => {
+        // move-slide review: a failed goal in the bathhouse vault's far end (15 units out, past the 12 the room stage
+        // forgets on its own) from before the switch was pressed gave the vault up untouched, 0 of its 9 containers
+        const game = mainGame();
+        const bath = site(game, "bathhouse_01");
+        const room = bath.rooms[0];
+        const corner = { x: room.bounds.max.x - 1.5, y: room.bounds.max.y - 1.5 };
+        expect(v2.distance(corner, room.center)).toBeGreaterThan(12);
+        const bot = botAt(game, bath, "expert", 3);
+        const mem = bot.bot.brain.mem;
+        const broken = () => room.containers.filter((id) => !alive(game, id)).length;
+        for (let i = 0; i < 60 * SECOND && broken() < 5; i++) {
+            // (the failure is fresh when the vault opens: the switch takes about 3 s)
+            if (i < 1.5 * SECOND) {
+                mem.failedGoal = v2.copy(corner);
+                mem.failedUntil = game.time + 20;
+            }
+            bot.update();
+            game.step();
+        }
+        expect(mem.puzzle.stage === "room" || mem.puzzle.finished.has(bath.index)).toBe(true);
+        expect(broken()).toBeGreaterThanOrEqual(5);
     }, 60_000);
 });
