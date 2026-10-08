@@ -110,6 +110,7 @@
 - Fandom map pages (Normal, Desert, Halloween, Snow, Cobalt, 50v50, Cinco de Mayo) all describe the same 8-step schedule, so there is no wiki evidence of per-mode timings in the original either [src:fandom/Normal_Map] [src:fandom/50v50_Map] [src:fandom/Snow_Map] [src:fandom/Cobalt_Map] [M]
 - What does vary per mode is what is scheduled on `circleIdx` changes: plane timings (`mapDef.gameConfig.planes.timings`), role promotions (`gameConfig.roles`) and timed door unlocks (`gameConfig.unlocks`) [src:survev/server/src/game/objects/gas.ts:296-310] [M]
 - Bleed damage (2/s, ×1.25 per extra down in 50v50) is a separate per-mode setting, not a gas setting [src:survev/shared/defs/maps/baseDefs.ts:86-88] [src:survev/shared/defs/maps/factionDefs.ts:245-246] [src:wikigg/50v50_mode] [H]
+- Rebirth: a game whose player cap grows its map (rebirth-deviations.md "Maps follow the player cap") stretches every stage's duration, and the plane, role and unlock waits counted from a circle's start, by the map's width over the design map's (at most 1.37), so the gas keeps its speed in units per second (sim `match/gasScale.ts`) [src:user/2026-10-08-map-player-cap] [H]
 
 ## Client presentation
 

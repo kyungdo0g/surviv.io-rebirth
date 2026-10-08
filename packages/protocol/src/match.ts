@@ -6,8 +6,9 @@
 //   Gas:           mode u8, duration f32, posOld mapPos, posNew mapPos, radOld/radNew float 0..2048 16 bits
 //                  (original), then rebirth additions: stage u8, circleIdx+1 u8, damage f32
 //   GasT:          float 0..1 16 bits (original)
-//   Planes:        u8 count x {id u8, pos vec 10+10 bits over -512..1536 (0.8.82 range), dir unit vec 8+8,
-//                  actionComplete bit, action 3 bits} (original 0.8.82), align
+//   Planes:        u8 count x {id u8, pos vec 11+11 bits over -512..2560 (rebirth: 0.8.82 has 10+10 over -512..1536,
+//                  too short for maps the player cap grows past 1280), dir unit vec 8+8, actionComplete bit, action 3
+//                  bits} (original 0.8.82), align
 //   Airdrops:      u8 count x {id u16, pos mapPos, fallT float 0..1 7 bits, landed bit}, align (rebirth: the
 //                  original sends falling crates as Airdrop objects with the same fields)
 //   MapIndicators: u8 count (0.8.82) x {id 4 bits, dead bit, equipped bit, type game type, pos mapPos}, align
@@ -50,9 +51,10 @@ const GAS_MODES: readonly GasModeName[] = ["inactive", "waiting", "moving"];
 const GAS_RAD_MAX = 2048;
 const GAS_RAD_BITS = 16;
 const GAS_T_BITS = 16;
+// planes fly while within 256 of the map (sim planes.ts): -512..2560 covers maps up to 2304 a side (schema 23)
 const PLANE_POS_MIN = -512;
-const PLANE_POS_MAX = 1536;
-const PLANE_POS_BITS = 10;
+const PLANE_POS_MAX = 2560;
+const PLANE_POS_BITS = 11;
 const PLANE_DIR_BITS = 8;
 const PLANE_TYPES = ["airdrop", "airstrike"] as const;
 const FALL_T_BITS = 7;

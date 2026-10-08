@@ -55,17 +55,19 @@ export class RoleSystem {
     onCircle(circleIdx: number): void {
         if (!this.faction) return;
         const schedule = this.rules.factionSchedule;
+        // the waits stretch with the gas on a map grown by the player cap (Gas.timeScale)
+        const stretch = this.host.gas.timeScale ?? 1;
         if (schedule === "map") {
             for (const t of this.map.gameConfig.roles?.timings ?? []) {
                 if (t.circleIdx === circleIdx)
-                    this.scheduled.push({ role: t.role, ticks: Math.round(t.wait * TICK_HZ) });
+                    this.scheduled.push({ role: t.role, ticks: Math.round(t.wait * stretch * TICK_HZ) });
             }
             return;
         }
         for (const slot of schedule) {
             if (slot.circleIdx !== circleIdx || slot.roles.length === 0) continue;
             const role = slot.roles.length === 1 ? slot.roles[0] : this.host.roleRng.pick(slot.roles);
-            this.scheduled.push({ role, ticks: Math.round(slot.wait * TICK_HZ) });
+            this.scheduled.push({ role, ticks: Math.round(slot.wait * stretch * TICK_HZ) });
         }
     }
 

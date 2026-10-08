@@ -4,6 +4,7 @@
 // empty for the grace period. Games are per map and team mode (M6a: duo and squad games).
 import { randomInt } from "node:crypto";
 import { MapDefs } from "@rebirth/defs";
+import { MAX_PLAYERS_IN_GAME } from "@rebirth/sim";
 import type { SuspectFlag } from "./anticheat/match.ts";
 import { effectiveTeamMode, roomCapacity, type ServerConfig } from "./config.ts";
 import { GameRoom, type RoomStats } from "./room.ts";
@@ -77,7 +78,12 @@ export class GameHost {
         let best: GameRoom | null = null;
         for (const room of this.rooms.values()) {
             if (room.mapName !== mapName || room.teamMode !== teamMode || !room.canJoin()) continue;
-            if (room.playerCount + this.tokens.pendingFor(room.id) + seats > capacity) continue;
+            const pending = this.tokens.pendingFor(room.id);
+            if (room.playerCount + pending + seats > capacity) continue;
+            // the game itself holds at most MAX_PLAYERS_IN_GAME (bots and players who left count): each join frees at
+            // most one place, from the bots that may leave for humans now
+            const freeable = room.bots?.replaceableCount() ?? 0;
+            if (room.gamePlayerCount + pending + seats - freeable > MAX_PLAYERS_IN_GAME) continue;
             // the oldest joinable game fills first (survev gameProcessManager)
             if (!best || room.createdAt < best.createdAt) best = room;
         }
@@ -93,7 +99,11 @@ export class GameHost {
         room.onFlag = (flag) => this.onFlag?.(flag);
         this.rooms.set(room.id, room);
         if (this.config.log) {
-            console.log(`game ${room.id} created (${mapName}, team mode ${teamMode}, seed ${room.game.options.seed})`);
+            const { seed, maxPlayers } = room.game.options;
+            const size = room.game.mapData.width;
+            console.log(
+                `game ${room.id} created (${mapName}, team mode ${teamMode}, seed ${seed}, cap ${maxPlayers}, map ${size})`,
+            );
         }
         return room;
     }

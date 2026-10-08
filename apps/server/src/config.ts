@@ -22,9 +22,12 @@ import { parseRegionServers, REGION_ID } from "./regions.ts";
 export interface ServerConfig {
     port: number;
     host: string;
-    /** players per game (survev maxPlayers 80) */
+    /**
+     * players per game (survev maxPlayers 80); above a map's design count (80) the map grows with it (defs
+     * mapDefForPlayers: up to twice the land area, from 160)
+     */
     maxPlayers: number;
-    /** players per 50v50 game (the faction map's maxPlayers, 100; M7a) */
+    /** players per 50v50 game (the faction map's maxPlayers, 100; M7a); above 100 the map grows (up to 200) */
     factionMaxPlayers: number;
     /**
      * Rebirth: roll weights of the 50v50 scheduled air strike variants (AIRSTRIKE_VARIANTS

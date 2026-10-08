@@ -172,7 +172,8 @@ export class PlaneSystem {
 
     /**
      * Queues the map's plane timings of a new circle (survev gas.ts advanceGasStage -> schedulePlane). On faction maps
-     * `rules.roles.factionAirstrikeWaits` replaces air strike waits (conflicts.md faction-airstrike-timing).
+     * `rules.roles.factionAirstrikeWaits` replaces air strike waits (conflicts.md faction-airstrike-timing); the waits
+     * stretch with the gas on a map grown by the player cap (Gas.timeScale).
      */
     scheduleCircle(circleIdx: number): void {
         const def = getMapDef(this.mapName);
@@ -181,7 +182,9 @@ export class PlaneSystem {
             if (timing.circleIdx !== circleIdx) continue;
             const strike = timing.options.type === Plane.Airstrike;
             const wait = strike ? (overrides[circleIdx] ?? timing.wait) : timing.wait;
-            this.scheduled.push({ ticks: Math.round(wait * TICK_HZ), options: timing.options });
+            // a map grown by the player cap stretches the waits with the gas (match/gasScale.ts)
+            const ticks = Math.round(wait * (this.host.gas.timeScale ?? 1) * TICK_HZ);
+            this.scheduled.push({ ticks, options: timing.options });
         }
     }
 

@@ -207,6 +207,25 @@ describe("bot fill in a full game", () => {
         expect(playersIn(room)).toBe(80);
     }, 20_000);
 
+    it("fills a game whose player cap is above the mode's maxPlayers to that cap (on the larger map)", () => {
+        const config = makeConfig({ log: false, maxPlayers: 200, botFill: 200, botFillIntervalMs: 0 });
+        const room = new GameRoom(config, "main", 79, 0);
+        expect(room.game.mapData.width).toBe(1144);
+        for (let i = 0; i < 400 && playersIn(room) < 200; i++) room.tick();
+        expect(playersIn(room)).toBe(200);
+        expect(room.game.canJoin()).toBe(false);
+        expect(room.bots?.errors).toBe(0);
+    }, 60_000);
+
+    it("fills test_faction to its mode's 80 under the default 50v50 cap of 100 (its design count)", () => {
+        const config = makeConfig({ log: false, factionBotFill: 100, botFillIntervalMs: 0 });
+        const room = new GameRoom(config, "test_faction", 77, 0);
+        expect(room.capacity).toBe(100);
+        for (let i = 0; i < 200 && playersIn(room) < 100; i++) room.tick();
+        expect(playersIn(room)).toBe(80);
+        expect(room.game.canJoin()).toBe(false);
+    }, 60_000);
+
     it("bots never join once the join window closed", () => {
         const config = makeConfig({ log: false, botFill: 10, botFillIntervalMs: 0, minPlayers: 1 });
         const room = new GameRoom(config, "main", 78, 0);

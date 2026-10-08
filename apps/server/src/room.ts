@@ -19,6 +19,7 @@ import {
     type AddPlayerOptions,
     type EmoteRequest,
     Game,
+    MAX_PLAYERS_IN_GAME,
     type PlayerInput,
     SNAPSHOT_EVERY_TICKS,
     type SpectateActionName,
@@ -118,9 +119,11 @@ export class GameRoom {
         this.config = config;
         this.mapName = mapName;
         this.teamMode = teamMode;
-        // rebirth new-gun beta (GUN_BETA): read when the map loot spawns, so it goes in at creation
+        this.capacity = roomCapacity(config, mapName);
+        // rebirth new-gun beta (GUN_BETA): read when the map loot spawns, so it goes in at creation; the room's player
+        // cap grows the map above the map's design count (defs mapDefForPlayers)
         this.game = new Game(
-            { mapName, seed: seed >>> 0, teamMode },
+            { mapName, seed: seed >>> 0, teamMode, maxPlayers: this.capacity },
             { minPlayers: config.minPlayers, gunBeta: config.gunBeta },
         );
         // rebirth 50v50 air strike variants (AIRSTRIKE_VARIANTS; the sim rolls them on faction maps only)
@@ -131,7 +134,6 @@ export class GameRoom {
         this.mapMsg = encodeMapMsg(this.game.mapData);
         this.createdAt = now;
         this.emptySince = now;
-        this.capacity = roomCapacity(config, mapName);
         const botTarget = isFactionMap(mapName) ? config.factionBotFill : config.botFill;
         this.bots =
             botTarget > 0
@@ -162,8 +164,24 @@ export class GameRoom {
         return this.seats.size;
     }
 
+    /**
+     * No seat left, no object id headroom, or the game at MAX_PLAYERS_IN_GAME (the dead and disconnected included: the
+     * wire's 8-bit player lists) without a fill bot that would give up its place.
+     */
     get isFull(): boolean {
-        return this.seats.size >= this.capacity || !this.hasIdHeadroom();
+        return this.seats.size >= this.capacity || !this.hasIdHeadroom() || !this.hasGamePlace();
+    }
+
+    /** Players in the game, alive or dead, bots and humans who left included. */
+    get gamePlayerCount(): number {
+        let n = 0;
+        for (const _ of this.game.players()) n++;
+        return n;
+    }
+
+    /** Whether the game can take one more player: below MAX_PLAYERS_IN_GAME, or a fill bot leaves for the newcomer. */
+    private hasGamePlace(): boolean {
+        return this.gamePlayerCount < MAX_PLAYERS_IN_GAME || (this.bots?.canMakeRoom() ?? false);
     }
 
     /**

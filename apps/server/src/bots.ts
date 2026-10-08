@@ -23,7 +23,7 @@ import {
     shuffleBag,
 } from "@rebirth/bots";
 import { createRng, type Rng } from "@rebirth/core";
-import { getMapDef } from "@rebirth/defs";
+import { getMapDef, playerLimit } from "@rebirth/defs";
 import type { Game } from "@rebirth/sim";
 
 /** BOT_DIFFICULTY: a legacy preset, a skill tier, or "mixed" (the tier mix of BOT_SKILL_MIX). */
@@ -73,7 +73,8 @@ export class BotFill {
         this.options = options;
         this.rng = createRng(options.seed ^ 0x2c1b3c6d);
         this.bagRng = createRng(options.seed ^ 0x1b873593);
-        this.modeMaxPlayers = getMapDef(game.options.mapName).gameMode.maxPlayers;
+        // a player cap that grows the map (defs mapDefForPlayers) fills that far, else the mode's maxPlayers
+        this.modeMaxPlayers = playerLimit(getMapDef(game.options.mapName), game.options.maxPlayers);
         for (const p of game.players()) this.names.add(p.name);
     }
 
@@ -163,24 +164,35 @@ export class BotFill {
         this.botIds.add(bot.playerId);
     }
 
-    /** A bot whose seat a human may take: alive, standing, and (once the match started) not in a fight yet. */
+    /** Whether a human may take bot `id`'s seat: alive, standing, and (once the match started) not in a fight yet. */
+    private canLeave(id: number): boolean {
+        const p = this.game.getPlayer(id);
+        if (!p || p.dead || p.downed) return false;
+        return !this.game.started || (p.kills === 0 && p.damageDealt === 0 && p.damageTaken === 0);
+    }
+
+    /** The bot whose seat the next human takes (the latest that may leave); none once the join window closed. */
     private replaceable(): number | undefined {
         if (!this.joinWindowOpen()) return undefined;
-        const started = this.game.started;
         let pick: number | undefined;
-        for (const id of this.botIds) {
-            const p = this.game.getPlayer(id);
-            if (!p || p.dead || p.downed) continue;
-            if (started && (p.kills > 0 || p.damageDealt > 0 || p.damageTaken > 0)) continue;
-            // the most recent bot leaves first
-            if (pick === undefined || id > pick) pick = id;
-        }
+        for (const id of this.botIds) if (this.canLeave(id) && (pick === undefined || id > pick)) pick = id;
         return pick;
     }
 
     /** Whether a human could join although the game itself is full (by taking a bot's seat). */
     canMakeRoom(): boolean {
         return this.replaceable() !== undefined;
+    }
+
+    /**
+     * How many bots could leave for humans now (0 once the join window closed): each join frees at most one, so
+     * find_game routes no more joins past MAX_PLAYERS_IN_GAME than this.
+     */
+    replaceableCount(): number {
+        if (!this.joinWindowOpen()) return 0;
+        let n = 0;
+        for (const id of this.botIds) if (this.canLeave(id)) n++;
+        return n;
     }
 
     /**
