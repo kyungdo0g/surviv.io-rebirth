@@ -23,8 +23,8 @@ const VERSION = "0.8.82";
 export type MenuPanel = "start" | "join" | "lobby";
 
 export interface MainMenuCallbacks {
-    /** a quick-play button: 1 solo, 2 duo, 4 squad */
-    play(teamMode: 1 | 2 | 4): void;
+    /** a quick-play button: 1 solo, 2 duo, 4 squad; `mapName` overrides the page's map (the 50v50 button) */
+    play(teamMode: 1 | 2 | 4, mapName?: string): void;
     createTeam(): void;
     /** join a room by code */
     joinTeam(code: string): void;
@@ -85,8 +85,13 @@ export class MainMenu {
         this.nameInput.addEventListener("input", () => config().set("playerName", this.nameInput.value));
         this.regionSelect = new RegionSelect("server-select-main", (region) => cb.regionChanged(region));
 
-        const play = (id: string, key: string, mode: 1 | 2 | 4) => {
-            const a = h("a", { id, cls: "btn-green btn-darken menu-option", l10n: key, click: () => cb.play(mode) });
+        const play = (id: string, key: string, mode: 1 | 2 | 4, mapName?: string) => {
+            const a = h("a", {
+                id,
+                cls: "btn-green btn-darken menu-option",
+                l10n: key,
+                click: () => cb.play(mode, mapName),
+            });
             this.playButtons.push(a);
             return a;
         };
@@ -115,6 +120,7 @@ export class MainMenu {
                 play("btn-start-mode-1", "index-play-duo", 2),
                 play("btn-start-mode-2", "index-play-squad", 4),
             ),
+            play("btn-start-faction", "index-play-faction", 4, "faction"),
             h(
                 "div",
                 { cls: "btns-double-row" },
