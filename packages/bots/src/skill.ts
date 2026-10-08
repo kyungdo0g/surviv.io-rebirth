@@ -363,11 +363,15 @@ export function skillOf(d: Difficulty | DifficultyParams): SkillProfile {
     return { ...PRESET_SKILL[name] };
 }
 
-/** Percent mix of the server population (BOT_DIFFICULTY=mixed default, BOT_SKILL_MIX): 35 / 45 / 20. */
+/**
+ * Percent mix of the server population (BOT_DIFFICULTY=mixed default, BOT_SKILL_MIX): 20 / 65 / 15. The owner
+ * (2026-10-08): today's surviv players are mostly long-time intermediates, few newcomers; experts at 15 % so an endgame
+ * usually meets one.
+ */
 export const DEFAULT_SKILL_MIX: Readonly<Record<SkillTierName, number>> = {
-    beginner: 35,
-    intermediate: 45,
-    expert: 20,
+    beginner: 20,
+    intermediate: 65,
+    expert: 15,
 };
 
 /** Parses "35,45,20" (beginner, intermediate, expert percentages or weights); throws on anything else. */

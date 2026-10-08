@@ -45,7 +45,7 @@ export interface BotAssignment {
 
 /** Population draws of a match (MatchConfig.population). */
 export interface PopulationConfig {
-    /** tier weights of difficulty "population" (default DEFAULT_SKILL_MIX: 35 / 45 / 20) */
+    /** tier weights of difficulty "population" (default DEFAULT_SKILL_MIX: 20 / 65 / 15) */
     skillMix?: Partial<Record<SkillTierName, number>>;
     /** personas: off (default: every bot NEUTRAL), true for PERSONA_MIX, or a custom mix */
     personas?: boolean | Partial<Record<PersonaName, number>>;
