@@ -1,15 +1,21 @@
-// The launchers' look beyond the held sprite (owner, 2026-10-08): the RPG-7 is drawn without its warhead while its
-// round is fired and not yet reloaded (objects/gunLoad.ts: the followed player's loaded rounds, else the shots and
-// reloads seen in the snapshots), and the launcher rounds fly with their own sprite (defs rebirth/launcherRoundArt.ts;
-// fx/bullets.ts over the rockets' and the GL-06's tracers), turned along the flight.
+// The launchers' look beyond the held sprite (owner, 2026-10-08): the M79, GL-06 and MGL are held like a rifle
+// (GunDef.handHeld: the rifle pose, hands over the gun; objects/player.ts idlePoseName) while the RPG-7, Panzerfaust and
+// M202 keep the launcher pose, all six puffing launch smoke (fx/newGunFx.ts); the RPG-7 is drawn without its warhead
+// while its round is fired and not yet reloaded (objects/gunLoad.ts: the followed player's loaded rounds, else the
+// shots and reloads seen in the snapshots), and the launcher rounds fly with their own sprite (defs
+// rebirth/launcherRoundArt.ts; fx/bullets.ts over the rockets' and the GL-06's tracers), turned along the flight.
 import { GameObjectDefs, type GunDef } from "@rebirth/defs";
 import type { BulletEvent, PlayerAction } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import type { TextureStore } from "../src/assets/textures.ts";
 import type { AudioEngine } from "../src/audio/audio.ts";
 import { type BulletScene, BulletSystem } from "../src/fx/bullets.ts";
+import { LauncherFx } from "../src/fx/newGunFx.ts";
 import { ParticleSystem } from "../src/fx/particles.ts";
+import { IDLE_POSES } from "../src/objects/anims.ts";
 import { GunLoad, RELOAD_END_SLACK } from "../src/objects/gunLoad.ts";
+import { heldGunImage } from "../src/objects/heldGun.ts";
+import { idlePoseName } from "../src/objects/player.ts";
 import { SpritePool } from "../src/render/pool.ts";
 import type { Renderer } from "../src/render/renderer.ts";
 
@@ -20,6 +26,44 @@ const reload = (item: string, seq: number): PlayerAction => ({
     duration: (GameObjectDefs[item] as GunDef).reloadTime,
 });
 const none = (seq: number): PlayerAction => ({ type: "none", seq, item: "", duration: 0 });
+
+const gunDef = (id: string) => GameObjectDefs[id] as GunDef;
+
+describe("how the launchers are held (objects/player.ts idlePoseName, objects/heldGun.ts)", () => {
+    it("the M79, GL-06 and MGL take the rifle pose with the hands over the gun; the RPG-7, Panzerfaust and M202 the launcher pose", () => {
+        for (const id of ["m79", "gl06", "mgl"]) {
+            const def = gunDef(id);
+            expect([def.isLauncher, def.handHeld], id).toEqual([true, true]);
+            expect(idlePoseName(def, false), id).toBe("rifle");
+            const img = heldGunImage(def);
+            expect(img.sprite, id).toBe(`gun-${id}-01.img`);
+            expect(img.handsBelow, id).toBeFalsy();
+            expect(img.gunOffset, id).toEqual({ x: -8, y: 0 });
+        }
+        for (const id of ["rpg7", "panzerfaust", "m202"]) {
+            const def = gunDef(id);
+            expect([def.isLauncher, def.handHeld], id).toEqual([true, undefined]);
+            expect(idlePoseName(def, false), id).toBe("launcher");
+            const img = heldGunImage(def);
+            expect(img.handsBelow, id).toBe(true);
+            expect(img.gunOffset, id).toEqual({ x: -10, y: -4 });
+        }
+        // the poses: the rifle's right hand in front of the body, the launcher's on the shoulder beside it
+        expect(IDLE_POSES.rifle).not.toEqual(IDLE_POSES.launcher);
+        for (const id of ["m79", "rpg7"]) expect(idlePoseName(gunDef(id), true), id).toBe("downed");
+    });
+
+    it("all six launchers puff launch smoke, the hand-held ones included", () => {
+        const added: string[] = [];
+        const particles = { add: (type: string) => added.push(type) } as unknown as ParticleSystem;
+        const fx = new LauncherFx(particles);
+        for (const id of ["m79", "gl06", "mgl", "rpg7", "panzerfaust", "m202"]) {
+            const before = added.length;
+            fx.shot(gunDef(id), 0, { x: 0, y: 0 }, { x: 1, y: 0 });
+            expect(added.length - before, id).toBeGreaterThan(0);
+        }
+    });
+});
 
 describe("the RPG-7's empty look (objects/gunLoad.ts)", () => {
     it("another player's RPG-7: empty from its shot until a reload runs its full time", () => {

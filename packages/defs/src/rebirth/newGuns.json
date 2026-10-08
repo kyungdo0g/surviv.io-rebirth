@@ -1589,6 +1589,7 @@
                 "caseTiming": "shoot",
                 "ammo": "40mm",
                 "isLauncher": true,
+                "handHeld": true,
                 "noPotatoSwap": true,
                 "noSplinter": true,
                 "deployGroup": 3,
@@ -1601,7 +1602,7 @@
                 "fireDelay": 0.3,
                 "switchDelay": 0.9,
                 "barrelLength": 2,
-                "barrelOffset": -1,
+                "barrelOffset": 0,
                 "recoilTime": 10000000000,
                 "moveSpread": 2,
                 "shotSpread": 1,
@@ -1629,15 +1630,14 @@
                     },
                     "tint": 16777215,
                     "leftHandOffset": {
-                        "x": 7,
-                        "y": 2
+                        "x": -2,
+                        "y": 0
                     },
                     "gunOffset": {
-                        "x": -10,
-                        "y": -4
+                        "x": -8,
+                        "y": 0
                     },
-                    "recoil": 8,
-                    "handsBelow": true
+                    "recoil": 8
                 },
                 "particle": {
                     "shellScale": 1,
@@ -1748,6 +1748,7 @@
                 "caseTiming": "reload",
                 "ammo": "40mm",
                 "isLauncher": true,
+                "handHeld": true,
                 "noPotatoSwap": true,
                 "noSplinter": true,
                 "deployGroup": 3,
@@ -1762,7 +1763,7 @@
                 "fireDelay": 0.7,
                 "switchDelay": 1,
                 "barrelLength": 2.1,
-                "barrelOffset": -1,
+                "barrelOffset": 0,
                 "recoilTime": 10000000000,
                 "moveSpread": 2.5,
                 "shotSpread": 1.5,
@@ -1789,15 +1790,14 @@
                     },
                     "tint": 16777215,
                     "leftHandOffset": {
-                        "x": 7,
-                        "y": 2
+                        "x": 0,
+                        "y": 0
                     },
                     "gunOffset": {
-                        "x": -10,
-                        "y": -4
+                        "x": -8,
+                        "y": 0
                     },
-                    "recoil": 8,
-                    "handsBelow": true
+                    "recoil": 8
                 },
                 "particle": {
                     "shellScale": 1,
@@ -1840,6 +1840,7 @@
                 "caseTiming": "reload",
                 "ammo": "40mm",
                 "isLauncher": true,
+                "handHeld": true,
                 "noPotatoSwap": true,
                 "noSplinter": true,
                 "deployGroup": 3,
@@ -1880,15 +1881,14 @@
                     },
                     "tint": 16777215,
                     "leftHandOffset": {
-                        "x": 7,
-                        "y": 2
+                        "x": -2,
+                        "y": 0
                     },
                     "gunOffset": {
-                        "x": -10,
-                        "y": -4
+                        "x": -8,
+                        "y": 0
                     },
-                    "recoil": 8,
-                    "handsBelow": true
+                    "recoil": 8
                 },
                 "particle": {
                     "shellScale": 1,

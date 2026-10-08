@@ -9,7 +9,8 @@
 // guns, the dual TEC-9 and the original M4A1, AWM-S, Vector (a bar), Scorpion, P30L, Saiga and PKP (with its box
 // sprite) for comparison are held at the size the default zoom of a 1920 x 1080 screen draws them (1x scope: radius
 // 28 over 960 px, the same 2.14 camera zoom as radius 18.67 over the 640 px of the test's 1280 x 720 page, which
-// renders much faster), facing right. The launchers are held on the shoulder with the hands under them; the RPG-7
+// renders much faster), facing right. The RPG-7, Panzerfaust and M202 are held on the shoulder with the hands under
+// them, the M79, GL-06 and MGL like a rifle with the hands over them (handHeld, owner 2026-10-08); the RPG-7
 // shows its empty sprite (no warhead) from its shot until its reload ends; the rounds fly with their own sprite (the
 // rockets frozen mid-flight for the screenshot); the Panzerfaust and the M202 leave the slot after their shot. Hooks: window.__rebirth (game, player, client, heldGun, missingSprites).
 // Screenshots: __screens__/topdown-guns.
@@ -40,15 +41,23 @@ const DRAWN: Readonly<Record<string, number>> = {
     m60: 212,
     mg42: 218,
     dshk: 250,
-    m79: 186,
-    gl06: 180,
-    mgl: 192,
+    m79: 138,
+    gl06: 130,
+    mgl: 144,
     rpg7: 204,
     panzerfaust: 210,
     m202: 196,
 };
-/** The launchers: held on the shoulder with both hands under the gun (the sheet's potato cannon worldImg). */
+/**
+ * The launchers: the RPG-7, Panzerfaust and M202 held on the shoulder with both hands under the gun (the sheet's potato
+ * cannon worldImg); the M79, GL-06 and MGL held like a rifle (GunDef.handHeld, owner 2026-10-08), with their left hands.
+ */
 const LAUNCHERS = ["m79", "gl06", "mgl", "rpg7", "panzerfaust", "m202"] as const;
+const HAND_HELD: Readonly<Record<string, { x: number; y: number }>> = {
+    m79: { x: -2, y: 0 },
+    gl06: { x: -2, y: 0 },
+    mgl: { x: 0, y: 0 },
+};
 /** The dual pistols that hold a drawn sprite: their single's, one in each hand (objects/heldGun.ts ownHeldSprite). */
 const DRAWN_DUALS = ["tec9_dual"] as const;
 /**
@@ -379,7 +388,7 @@ test.describe("top-down held sprites", () => {
         expect(errors).toEqual([]);
     });
 
-    test("launchers: own SVG on the shoulder, the RPG-7 empty after its shot, rounds fly with their own sprite", async ({
+    test("launchers: own SVG, three like a rifle and three on the shoulder, the RPG-7 empty after its shot, own rounds", async ({
         page,
     }) => {
         test.setTimeout(180_000);
@@ -405,15 +414,37 @@ test.describe("top-down held sprites", () => {
                     height: r.heldGun(r.player.id).height as number,
                     tint: view.gunR.barrel.tint as number,
                     gunOverHand: view.handR.children.at(-1) === view.gunR.container,
+                    gunUnderHand: view.handR.children[0] === view.gunR.container,
                     posR: { x: view.gunR.container.position.x as number, y: view.gunR.container.position.y as number },
+                    // where the hands are (the pose's pivot; the left hand's position carries its offset)
+                    handR: { x: -view.handR.pivot.x as number, y: -view.handR.pivot.y as number },
+                    handL: {
+                        x: (view.handL.position.x - view.handL.pivot.x) as number,
+                        y: (view.handL.position.y - view.handL.pivot.y) as number,
+                    },
                 };
             });
             expect(state.height, gun).toBeCloseTo(DRAWN[gun]! * 0.25, 0);
             expect(state.tint, gun).toBe(0xffffff);
-            // hands under the gun; the potato cannon's gun offset (-10, -4) on the hand offset (-4.25, -1.75)
-            expect(state.gunOverHand, gun).toBe(true);
-            expect(state.posR.x, gun).toBeCloseTo(-14.25, 6);
-            expect(state.posR.y, gun).toBeCloseTo(-5.75, 6);
+            const lho = HAND_HELD[gun];
+            if (lho) {
+                // like a rifle: rifle pose hands (14, 1.75) and (28, 5.25) + its left hand, both over the gun; gun
+                // offset (-8, 0) on the hand offset (-4.25, -1.75)
+                expect(state.gunUnderHand, gun).toBe(true);
+                expect(state.handR, gun).toEqual({ x: expect.closeTo(14, 6), y: expect.closeTo(1.75, 6) });
+                expect(state.handL, gun).toEqual({
+                    x: expect.closeTo(28 + lho.x, 6),
+                    y: expect.closeTo(5.25 + lho.y, 6),
+                });
+                expect(state.posR.x, gun).toBeCloseTo(-12.25, 6);
+                expect(state.posR.y, gun).toBeCloseTo(-1.75, 6);
+            } else {
+                // on the shoulder, hands under the gun; the potato cannon's gun offset (-10, -4) on the hand offset
+                expect(state.gunOverHand, gun).toBe(true);
+                expect(state.handR, gun).toEqual({ x: expect.closeTo(2, 6), y: expect.closeTo(22, 6) });
+                expect(state.posR.x, gun).toBeCloseTo(-14.25, 6);
+                expect(state.posR.y, gun).toBeCloseTo(-5.75, 6);
+            }
             const png = await page.screenshot({ path: `${SCREENS}/${gun}-held.png`, clip: await near(290, 120) });
             expect(pixelsNear(png, 0xff00ff, 30), `${gun}: placeholder pixels`).toBe(0);
         }

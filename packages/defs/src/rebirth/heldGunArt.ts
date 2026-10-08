@@ -22,9 +22,12 @@
 // stay as they were: the sprites are drawn to sit under the existing grips (the machine guns keep the PKP's left hand
 // 12.5 the sheet gave them); only the bullpups' own sprites get survev's bullpup gun offset (HELD_GUN_ART_GUN_OFFSET),
 // the P90's is held with the hands under it (HELD_GUN_ART_HANDS_BELOW) and the AS Val's and RPG-7's left hands move
-// back onto the forend and the tube (HELD_GUN_ART_LEFT_HAND_OFFSET). The launchers keep the sheet's launcher hold
-// (the potato cannon's: hands under the gun); the RPG-7 also has an empty sprite (HELD_GUN_ART_EMPTY), and the rounds
-// they fire have their own sprites (launcherRoundArt.ts).
+// back onto the forend and the tube (HELD_GUN_ART_LEFT_HAND_OFFSET). The RPG-7, Panzerfaust and M202 keep the sheet's
+// launcher hold (the potato cannon's: hands under the gun); the M79, GL-06 and MGL are held like a rifle (owner,
+// 2026-10-08: GunDef.handHeld, with their rifle hands and gun offset (-8, 0) in the sheet), their sprites drawn short
+// enough for the rifle pose: the right hand on the grip, the left on the fore-end, the muzzle 3.4-3.8 body px past the
+// bullet origin. The RPG-7 also has an empty sprite (HELD_GUN_ART_EMPTY), and the rounds the launchers fire have their
+// own sprites (launcherRoundArt.ts).
 // Bars on purpose (owner, 2026-10-08), never add them here: the Mk 14 EBR ("Mk 14 EBR만 막대기로"), the Thompson M1928
 // ("Thompson M1928 막대기") and the Škorpion vz. 61 and its dual ("Škorpion vz. 61 막대기").
 // docs/research/rebirth-deviations.md "Top-down held sprites".
@@ -53,9 +56,9 @@ export const HELD_GUN_ART = {
     m60: [80, 212],
     mg42: [80, 218],
     dshk: [88, 250],
-    m79: [56, 186],
-    gl06: [56, 180],
-    mgl: [64, 192],
+    m79: [56, 138],
+    gl06: [56, 130],
+    mgl: [64, 144],
     rpg7: [64, 204],
     panzerfaust: [56, 210],
     m202: [64, 196],

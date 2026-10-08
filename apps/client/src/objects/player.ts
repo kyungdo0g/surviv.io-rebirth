@@ -77,7 +77,8 @@ export function idlePoseName(weapon: WeaponDef | undefined, downed: boolean): st
     else if (weapon?.type === "gun") {
         if (weapon.pistol) name = weapon.isDual ? "dualPistol" : "pistol";
         else if (weapon.isBullpup) name = "bullpup";
-        else if (weapon.isLauncher) name = "launcher";
+        // a hand-held launcher (rebirth: M79, GL-06, MGL; owner 2026-10-08) is held like a rifle
+        else if (weapon.isLauncher && !weapon.handHeld) name = "launcher";
         else if (weapon.isMinigun) name = "minigun";
         else name = weapon.isDual ? "dualRifle" : "rifle";
     } else if (weapon?.type === "throwable") name = "throwable";

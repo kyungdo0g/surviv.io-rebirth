@@ -1,27 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="56" height="180" viewBox="0 0 56 180">
-  <!-- B&T GL-06 grenade launcher held sprite, own art (surviv.io-rebirth): seen from above, barrel up, butt flush at the bottom. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="56" height="130" viewBox="0 0 56 130">
+  <!-- B&T GL-06 grenade launcher held sprite, own art (surviv.io-rebirth): seen from above, barrel up, butt flush at the bottom; held like a rifle. -->
   <!-- skeleton folding stock: a thin frame from above, flat butt plate, hinge block with its knuckle on the right -->
-  <rect x="23" y="126" width="10" height="46" fill="#484848" stroke="#000" stroke-width="6"/>
-  <rect x="15" y="170" width="26" height="10" rx="2" fill="#000"/>
-  <rect x="18" y="118" width="20" height="12" rx="2" fill="#000"/>
-  <rect x="38" y="120" width="6" height="8" rx="1" fill="#000"/>
+  <rect x="23" y="102" width="10" height="20" fill="#484848" stroke="#000" stroke-width="6"/>
+  <rect x="15" y="120" width="26" height="10" rx="2" fill="#000"/>
+  <rect x="18" y="92" width="20" height="12" rx="2" fill="#000"/>
+  <rect x="38" y="94" width="6" height="8" rx="1" fill="#000"/>
   <!-- compact receiver with the barrel release lever on the left -->
-  <rect x="16" y="92" width="24" height="28" rx="2" fill="#484848" stroke="#000" stroke-width="8"/>
-  <rect x="22" y="98" width="12" height="14" fill="#3a3a3a"/>
-  <path d="M10 102h6" stroke="#000" stroke-width="5"/>
-  <rect x="4" y="96" width="8" height="12" rx="2" fill="#000"/>
+  <rect x="16" y="72" width="24" height="24" rx="2" fill="#484848" stroke="#000" stroke-width="8"/>
+  <rect x="22" y="78" width="12" height="10" fill="#3a3a3a"/>
+  <path d="M10 82h6" stroke="#000" stroke-width="5"/>
+  <rect x="4" y="76" width="8" height="12" rx="2" fill="#000"/>
   <!-- side rails on the front of the tube -->
-  <rect x="8" y="16" width="7" height="32" rx="1" fill="#000"/>
-  <rect x="41" y="16" width="7" height="32" rx="1" fill="#000"/>
-  <path d="M9 22h5M9 28h5M9 34h5M9 40h5M42 22h5M42 28h5M42 34h5M42 40h5" stroke="#555555" stroke-width="2"/>
+  <rect x="8" y="18" width="7" height="30" rx="1" fill="#000"/>
+  <rect x="41" y="18" width="7" height="30" rx="1" fill="#000"/>
+  <path d="M9 24h5M9 30h5M9 36h5M9 42h5M42 24h5M42 30h5M42 36h5M42 42h5" stroke="#555555" stroke-width="2"/>
   <!-- fat 40 mm tube -->
-  <rect x="17" y="6" width="22" height="88" rx="2" fill="#555555" stroke="#000" stroke-width="8"/>
+  <rect x="17" y="6" width="22" height="70" rx="2" fill="#555555" stroke="#000" stroke-width="8"/>
   <!-- top rail (the highlight strip with slots) and the red-dot sight on its rear end -->
-  <rect x="23" y="6" width="10" height="56" fill="#000"/>
-  <rect x="26" y="8" width="4" height="52" fill="#8f8f8f"/>
-  <path d="M26 14h4M26 20h4M26 26h4M26 32h4M26 38h4M26 44h4M26 50h4" stroke="#000" stroke-width="2"/>
-  <rect x="18" y="62" width="20" height="26" rx="3" fill="#484848" stroke="#000" stroke-width="6"/>
-  <circle cx="28" cy="75" r="5" fill="#000"/>
-  <rect x="40" y="71" width="6" height="8" rx="1" fill="#000"/>
+  <rect x="23" y="6" width="10" height="46" fill="#000"/>
+  <rect x="26" y="8" width="4" height="42" fill="#8f8f8f"/>
+  <path d="M26 14h4M26 20h4M26 26h4M26 32h4M26 38h4M26 44h4" stroke="#000" stroke-width="2"/>
+  <rect x="18" y="50" width="20" height="22" rx="3" fill="#484848" stroke="#000" stroke-width="6"/>
+  <circle cx="28" cy="61" r="5" fill="#000"/>
+  <rect x="40" y="57" width="6" height="8" rx="1" fill="#000"/>
   <rect x="21" y="2" width="14" height="6" rx="1" fill="#000"/>
 </svg>

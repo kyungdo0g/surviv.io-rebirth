@@ -126,9 +126,9 @@ describe("rebirth balance deviations", () => {
             { id: "m60", sprite: "gun-m60-01.img", size: [80, 212] },
             { id: "mg42", sprite: "gun-mg42-01.img", size: [80, 218] },
             { id: "dshk", sprite: "gun-dshk-01.img", size: [88, 250] },
-            { id: "m79", sprite: "gun-m79-01.img", size: [56, 186] },
-            { id: "gl06", sprite: "gun-gl06-01.img", size: [56, 180] },
-            { id: "mgl", sprite: "gun-mgl-01.img", size: [64, 192] },
+            { id: "m79", sprite: "gun-m79-01.img", size: [56, 138] },
+            { id: "gl06", sprite: "gun-gl06-01.img", size: [56, 130] },
+            { id: "mgl", sprite: "gun-mgl-01.img", size: [64, 144] },
             { id: "rpg7", sprite: "gun-rpg7-01.img", size: [64, 204] },
             { id: "panzerfaust", sprite: "gun-panzerfaust-01.img", size: [56, 210] },
             { id: "m202", sprite: "gun-m202-01.img", size: [64, 196] },
@@ -136,14 +136,21 @@ describe("rebirth balance deviations", () => {
         // the RPG-7 also without its warhead, at the same size (shown while its round is fired; the client decides)
         expect(HELD_GUN_ART_EMPTY).toEqual(["rpg7"]);
         expect(heldGunArtEmpty()).toEqual([{ id: "rpg7", sprite: "gun-rpg7-empty-01.img", size: [64, 204] }]);
-        // the launchers' defs keep the sheet's borrowed potato cannon and its hands (the client switches them)
-        for (const id of ["m79", "gl06", "mgl", "rpg7", "panzerfaust", "m202"]) {
+        // the launchers' defs keep the sheet's borrowed potato cannon (the client switches them) and its hands, but the
+        // hand-held M79, GL-06 and MGL, held like a rifle (owner, 2026-10-08): rifle hands over the gun, (-8, 0)
+        for (const id of ["rpg7", "panzerfaust", "m202"]) {
             expect(getDefOfType("gun", id).worldImg, id).toMatchObject({
                 sprite: "gun-potato-cannon-01.img",
                 leftHandOffset: { x: 7, y: 2 },
                 gunOffset: { x: -10, y: -4 },
                 handsBelow: true,
             });
+        }
+        for (const id of ["m79", "gl06", "mgl"]) {
+            const def = getDefOfType("gun", id);
+            expect(def.handHeld, id).toBe(true);
+            expect(def.worldImg, id).toMatchObject({ sprite: "gun-potato-cannon-01.img", gunOffset: { x: -8, y: 0 } });
+            expect(def.worldImg.handsBelow, id).toBeUndefined();
         }
         // the beta guns keep the balance sheet's held image in their defs (the client switches them, heldGun.ts): its
         // bar, or the AWM-S art it borrowed for the Hecate II and the Lynx, or the PKP's for the belt guns; the own

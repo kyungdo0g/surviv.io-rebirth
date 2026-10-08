@@ -40,8 +40,13 @@ const HAVE_ASSETS = existsSync(join(ASSETS, "audio"));
 const gun = (id: string) => GameObjectDefs[id] as GunDef;
 /** Guns with a drawn top-down held sprite (packages/defs rebirth/heldGunArt.ts). */
 const DRAWN = new Set<string>(Object.keys(HELD_GUN_ART));
-/** The launchers, whose balance-sheet entry borrowed the potato cannon's sprite (held on the shoulder, hands below). */
+/**
+ * The launchers, whose balance-sheet entry borrowed the potato cannon's sprite: the RPG-7, Panzerfaust and M202 held on
+ * the shoulder with the hands below it, the hand-held M79, MGL and GL-06 like a rifle (owner, 2026-10-08).
+ */
 const LAUNCHERS: readonly string[] = ["m79", "mgl", "gl06", "rpg7", "panzerfaust", "m202"];
+/** The hand-held launchers (GunDef.handHeld): rifle hands over the gun, gun offset (-8, 0). */
+const HAND_HELD: readonly string[] = ["m79", "mgl", "gl06"];
 /** The belt-fed machine guns, whose balance-sheet entry borrowed the PKP's top and bottom sprites. */
 const BELT_GUNS: readonly string[] = ["m60", "mg42", "dshk"];
 /** Whether a gun holds a drawn sprite: its own, or a dual pistol its single's (heldGun.ts ownHeldSprite). */
@@ -266,14 +271,16 @@ describe("new guns: held sprites", () => {
                 const img = heldGunImage(gun(id));
                 expect(gun(id).worldImg.sprite, id).toBe("gun-potato-cannon-01.img");
                 expect(gunClass(id), id).toBe("launcher");
+                // the shoulder launchers' gun offset (-10, -4), the hand-held ones' rifle-style (-8, 0)
+                const rear = HAND_HELD.includes(id) ? 8 : 10;
                 expect(img, id).toMatchObject({
                     sprite: "gun-long-01.img",
                     scale: { x: 0.8 },
                     tint: 0x4b5320,
-                    gunOffset: { x: -10, y: -4 },
+                    gunOffset: HAND_HELD.includes(id) ? { x: -8, y: 0 } : { x: -10, y: -4 },
                 });
-                // 13.1 px per unit of barrel and the 10 px held behind the hand
-                expect(barLength(img), id).toBeCloseTo(13.1 * gun(id).barrelLength + 10, 6);
+                // 13.1 px per unit of barrel and the part held behind the hand
+                expect(barLength(img), id).toBeCloseTo(13.1 * gun(id).barrelLength + rear, 6);
             } finally {
                 sprites[own] = entry;
             }

@@ -1,8 +1,9 @@
 # New gun stats (final balance sheet)
 
-Status: **decided** 2026-10-07 (final stage of the balance workflow; no open questions); the owner's 2026-10-08 change
-of the M79, GL-06 and Milkor MGL Player speed (-1 / -1 / -1.5 -> 0) is applied here (section 6). Supersedes the
-per-gun stat columns of `survev-content-and-new-guns.md` 4.1 and the loot weights of 4.1 / 4.2 where they differ.
+Status: **decided** 2026-10-07 (final stage of the balance workflow; no open questions); the owner's 2026-10-08 changes
+of the M79, GL-06 and Milkor MGL (Player speed -1 / -1 / -1.5 -> 0, held like a rifle) are applied here (section 6).
+Supersedes the per-gun stat columns of `survev-content-and-new-guns.md` 4.1 and the loot weights of 4.1 / 4.2 where they
+differ.
 Machine-readable twin: [`new-gun-stats.json`](new-gun-stats.json) (GunDef + bullet / explosion / projectile defs, new
 ammo, loot).
 
@@ -688,6 +689,10 @@ numbers are what they are. All TTK values are seconds at 15 u unless noted.
 
 ### 2.8 Launchers
 
+The M79, GL-06 and Milkor MGL are held like a rifle (`handHeld`, owner 2026-10-08: not heavy shoulder-fired launchers):
+the rifle pose with both hands over the gun, on the aim line (`barrelOffset` 0). The RPG-7, Panzerfaust and M202 keep the
+launcher pose on the shoulder (section 6).
+
 #### M79 (`m79`)
 
 | Field | Value | Bullet | Value |
@@ -1160,6 +1165,7 @@ Every problem and correction raised by the cross-class balance stage and the two
 | Launcher `armDistance` | decided | yes: 5 u RPG-7 / M202, 4 u Panzerfaust / GL-06 | No point-blank rocket suicides; the 40 mm lob keeps the original no-arming rule. |
 | M79 Player speed | superseded (2026-10-08) | -1 -> 0 | Realistic weight rule plus the launcher pose; the owner's change below replaces it. |
 | Launcher Player speed (owner, 2026-10-08) | applied | m79 -1 -> 0, gl06 -1 -> 0, mgl -1.5 -> 0; rpg7 -2, panzerfaust -1.5, m202 -2.5 kept | Owner: every launcher slows its holder except the M79, GL-06 and Milkor (`user/2026-10-08-loot-speed`); held 12 u/s, firing 6. |
+| Hand-held launchers (owner, 2026-10-08) | applied | m79 / gl06 / mgl: `handHeld` (rifle pose, hands over the gun); worldImg left hand (7, 2) -> (-2, 0) / (-2, 0) / (0, 0), gun offset (-10, -4) -> (-8, 0), no `handsBelow`; `barrelOffset` -1 -> 0 (m79, mgl); rpg7 / panzerfaust / m202 keep the launcher pose | Owner: the M79, GL-06 and Milkor are not heavy shoulder-fired launchers but held like a rifle or shotgun (`user/2026-10-08-topdown-held-sprites`). The gun sits on the aim line, so the grenade leaves from its muzzle; the held sprites are drawn for the pose (rebirth-deviations.md "Top-down held sprites"). |
 | M202 incendiary | decided | deferred | Needs a burning-area mechanic; explosion only for v1. |
 | M202 volley (owner, 2026-10-08) | applied | random spread 6 / 4 and jitter 0.5 -> fixed 60° fan bursting at the cursor; explosion 50 rad 3.5-9 x1.1 -> 125 rad 5-16 x42 (plated obstacles too); 2 u recoil slide; own `m202` effect with the strongest shake | The endgame comeback weapon: a near-certain kill on anyone caught in the salvo, one-shotting trees, stones, crates and destructible walls. |
 | M202 blast vs the air strike bomb (owner, 2026-10-08) | applied | M202 kept at 125 rad 5-16 in the 60° fan (a same-day shrink to rad 4-11 in a 52° fan, below the bomb's 5-14, was reverted); the air strike bombs grow x1.25 instead: `explosion_bomb_iron` rad 5-14 -> 6.25-17.5, the heavy shell 14-38 -> 17.5-47.5 | The owner: keep the M202 big and make the bombs bigger, so a normal bomb clearly outsizes a rocket (rebirth-deviations.md "Air strike bomb size"). |

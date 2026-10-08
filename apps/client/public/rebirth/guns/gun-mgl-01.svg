@@ -1,25 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="192" viewBox="0 0 64 192">
-  <!-- Milkor MGL, own art: top view, barrel up. Tan/FDE with black parts; the 6-shot cylinder is much wider than the gun. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="144" viewBox="0 0 64 144">
+  <!-- Milkor MGL, own art: top view, barrel up, held like a rifle. Tan/FDE with black parts; the 6-shot cylinder is much wider than the gun. -->
   <!-- collapsible stock tube, butt cap flush at the bottom, black adjuster -->
-  <rect x="26" y="140" width="12" height="46" rx="2" fill="#9b7b48" stroke="#000" stroke-width="8"/>
-  <rect x="22" y="184" width="20" height="8" rx="2" fill="#000"/>
-  <rect x="25" y="118" width="14" height="26" fill="#000"/>
-  <rect x="19" y="126" width="26" height="6" rx="1" fill="#000"/>
+  <rect x="26" y="110" width="12" height="30" rx="2" fill="#9b7b48" stroke="#000" stroke-width="8"/>
+  <rect x="22" y="136" width="20" height="8" rx="2" fill="#000"/>
+  <rect x="25" y="98" width="14" height="16" fill="#000"/>
+  <rect x="19" y="104" width="26" height="6" rx="1" fill="#000"/>
   <!-- receiver behind the cylinder, release lever on the left -->
-  <rect x="22" y="100" width="20" height="20" rx="2" fill="#9b7b48" stroke="#000" stroke-width="8"/>
-  <rect x="10" y="106" width="10" height="6" rx="1" fill="#000"/>
+  <rect x="22" y="86" width="20" height="16" rx="2" fill="#9b7b48" stroke="#000" stroke-width="8"/>
+  <rect x="10" y="90" width="10" height="6" rx="1" fill="#000"/>
   <!-- revolver cylinder: chambers as long bands, frame top strap over the centre, front frame plate -->
-  <rect x="8" y="62" width="48" height="40" rx="6" fill="#9b7b48" stroke="#000" stroke-width="8"/>
-  <rect x="12" y="66" width="4" height="32" fill="#7b673c"/>
-  <rect x="48" y="66" width="4" height="32" fill="#7b673c"/>
-  <path d="M20 66v32M44 66v32" stroke="#000" stroke-width="3"/>
-  <rect x="28" y="58" width="8" height="46" fill="#000"/>
-  <rect x="6" y="56" width="52" height="8" rx="2" fill="#000"/>
+  <rect x="8" y="56" width="48" height="30" rx="6" fill="#9b7b48" stroke="#000" stroke-width="8"/>
+  <rect x="12" y="60" width="4" height="22" fill="#7b673c"/>
+  <rect x="48" y="60" width="4" height="22" fill="#7b673c"/>
+  <path d="M20 60v22M44 60v22" stroke="#000" stroke-width="3"/>
+  <rect x="28" y="52" width="8" height="38" fill="#000"/>
+  <rect x="6" y="50" width="52" height="8" rx="2" fill="#000"/>
   <!-- railed handguard: top rail is the highlight strip, side rail teeth -->
-  <rect x="21" y="14" width="22" height="42" rx="2" fill="#9b7b48" stroke="#000" stroke-width="8"/>
-  <rect x="29" y="16" width="6" height="38" fill="#c1ac7f"/>
-  <path d="M23 22h18M23 29h18M23 36h18M23 43h18M23 50h18" stroke="#000" stroke-width="3"/>
-  <path d="M14 18v4M14 28v4M14 38v4M14 48v4M50 18v4M50 28v4M50 38v4M50 48v4" stroke="#000" stroke-width="3"/>
+  <rect x="21" y="12" width="22" height="38" rx="2" fill="#9b7b48" stroke="#000" stroke-width="8"/>
+  <rect x="29" y="14" width="6" height="34" fill="#c1ac7f"/>
+  <path d="M23 19h18M23 25h18M23 31h18M23 37h18M23 43h18" stroke="#000" stroke-width="3"/>
+  <path d="M14 16v4M14 24v4M14 32v4M14 40v4M50 16v4M50 24v4M50 32v4M50 40v4" stroke="#000" stroke-width="3"/>
   <!-- muzzle -->
-  <rect x="24" y="2" width="16" height="14" rx="2" fill="#000"/>
+  <rect x="24" y="2" width="16" height="12" rx="2" fill="#000"/>
 </svg>
