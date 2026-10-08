@@ -1,6 +1,8 @@
 // Path follower fixes from the stuck-event investigation: no progress while the destination flips back and forth is a
 // dither event, not a stuck event; a goal inside a wall fails at the end of its snapped plan instead of being replanned
-// forever; a plan whose next legs a newly opened door blocks is replanned at once.
+// forever; a plan whose next legs a newly opened door blocks is replanned at once; a goal with no route at all (a room
+// walled in glass) is walked towards up to the reachable cell nearest it, where it fails, never straight at the goal
+// along the wall (move-slide).
 import { createRng, type Vec2, v2 } from "@rebirth/core";
 import type { ObstacleView } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
@@ -92,5 +94,73 @@ describe("path follower", () => {
         // checked against the changed grid at once (not at the next periodic refresh): replanned around the crate
         expect(f.points).not.toEqual(before);
         for (let k = 1; k < f.points.length; k++) expect(grid.linePassable(f.points[k - 1], f.points[k])).toBe(true);
+    });
+
+    it("walks a goal with no route only up to the reachable cell nearest it, then fails standing and keeps away", () => {
+        // a 20 x 20 room walled in glass on all sides (no door: only breaking a wall lets a player in, like the
+        // greenhouse bunker's compartment 3), in the open west of the red house
+        const grid = new NavGrid(gen.mapData);
+        const c = walkable(grid, { x: house.pos.x - 70, y: house.pos.y });
+        const walls: Array<[number, number, number]> = [
+            [10.5, -5, 0],
+            [10.5, 5, 0],
+            [-10.5, -5, 0],
+            [-10.5, 5, 0],
+            [-5.5, 10.5, 1],
+            [5.5, 10.5, 1],
+            [-5.5, -10.5, 1],
+            [5.5, -10.5, 1],
+        ];
+        walls.forEach(([dx, dy, ori], i) => {
+            const view: ObstacleView = {
+                id: 999100 + i,
+                kind: "obstacle",
+                type: "glass_wall_10",
+                pos: { x: c.x + dx, y: c.y + dy },
+                layer: 0,
+                ori,
+                scale: 1,
+                healthT: 1,
+                dead: false,
+            };
+            grid.observeObstacle(view);
+        });
+        grid.labelComponents();
+        const start = walkable(grid, v2.add(c, { x: 30, y: 6 }));
+        expect(grid.reachable(start, c)).toBe(false);
+        const m = modelAt(start, grid);
+        const f = new PathFollower(createRng(4));
+        // walk at 12 u/s, stopping where the grid is blocked (no sliding in this sketch: the plan itself must not
+        // lead into the wall)
+        let r = f.steer(m, c, 0);
+        let t = 0;
+        let moved = 0;
+        while (!r.failed && t < 8) {
+            if (r.dir) {
+                const next = v2.add(m.self.pos, v2.mul(r.dir, 0.6));
+                if (grid.walkableAt(next)) {
+                    m.self.pos = next;
+                    moved++;
+                }
+            }
+            // every waypoint of the plan is reachable: it never ends at the goal inside the room
+            const last = f.points[f.points.length - 1];
+            if (last) expect(grid.reachable(start, last), `t=${t.toFixed(2)}`).toBe(true);
+            t += 0.05;
+            r = f.steer(m, c, t);
+        }
+        expect(moved).toBeGreaterThan(20);
+        expect(r.failed).toBe(true);
+        expect(r.dir).toBeNull();
+        // it stopped at the east wall, beside the room, in a few seconds
+        expect(t).toBeLessThan(4);
+        expect(m.self.pos.x - c.x).toBeGreaterThan(11);
+        expect(m.self.pos.x - c.x).toBeLessThan(15);
+        // the bot gives the goal up (bot.ts clears the follower); asked again soon, it fails at once and stands
+        f.clear();
+        const again = f.steer(m, c, t + 1);
+        expect(again.failed).toBe(true);
+        expect(again.dir).toBeNull();
+        expect(f.points.length).toBe(0);
     });
 });

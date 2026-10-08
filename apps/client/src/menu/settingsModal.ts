@@ -1,9 +1,9 @@
 // Main page modals (M8; survev index.html #modal-settings and #ui-modal-keybind, ui/menu.ts MenuModal; docs/research/
 // ui/menus.md "Settings modal (main menu)", "Keybind modal (main menu)"). Settings: language, screen shake, the rebirth
-// Enhanced hit effects toggle (user/2026-10-07-hit-feedback), anonymize player names and the Master / SFX / Music
-// sliders (High resolution is left out: the client always renders at the device's resolution). Keybinds: the
-// rebinding screen with its share section (ui/keybindsUi.ts). A click on the backdrop, the close button or Escape
-// closes a modal.
+// Enhanced hit effects toggle (user/2026-10-07-hit-feedback), the rebirth Weather effects toggle (user/2026-10-08-rain:
+// the rainy matches' rain and tint), anonymize player names and the Master / SFX / Music sliders (High resolution is
+// left out: the client always renders at the device's resolution). Keybinds: the rebinding screen with its share
+// section (ui/keybindsUi.ts). A click on the backdrop, the close button or Escape closes a modal.
 import { getLang, type Lang } from "../l10n/index.ts";
 import { KeybindsUi } from "../ui/keybindsUi.ts";
 import { SettingControls } from "../ui/settingsControls.ts";
@@ -81,6 +81,7 @@ export class SettingsModal extends Modal {
             h("div", { cls: "modal-settings-item" }, this.langSelect),
             c.checkbox("screenShake", "index-screen-shake", "screenShake"),
             c.checkbox("enhancedHitFx", "index-enhanced-hit-fx", "enhancedHitFx"),
+            c.checkbox("weatherFx", "index-weather-fx", "weatherFx"),
             c.checkbox("anonPlayerNames", "index-anon-player-names", "anonPlayerNames"),
             c.slider("masterVolume", "modal-settings-item slider-container main-volume-slider"),
             c.slider("soundVolume", "modal-settings-item slider-container main-volume-slider"),

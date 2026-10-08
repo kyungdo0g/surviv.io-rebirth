@@ -11,8 +11,8 @@ import {
     child,
     layoutArt,
     openingChildren,
-    type RebirthBuildingArt,
     type RebirthBuildingLayout,
+    type RoofedBuildingArt,
     wallChildren,
 } from "./layout.ts";
 
@@ -75,7 +75,7 @@ export const RADIO_LAYOUT: RebirthBuildingLayout = {
     ],
 };
 
-export const RADIO_ART: RebirthBuildingArt = layoutArt(
+export const RADIO_ART: RoofedBuildingArt = layoutArt(
     RADIO_LAYOUT,
     "map-building-radio-floor-01.img",
     "map-building-radio-ceiling-01.img",

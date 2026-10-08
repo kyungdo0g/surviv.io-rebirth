@@ -1,14 +1,32 @@
 // The held (top-down) image of a gun. Most of the rebirth's beta new guns have no top-down art yet (owner, 2026-10-07:
 // "if there's no texture, just hold a bar"): a new gun draws its own gun-<id>-01.img once the sprite manifest has it
-// (the drawn ones, packages/defs rebirth/heldGunArt.ts: the G36C, M16A4, SIG 550 and G3 since 2026-10-08, committed SVGs
-// under /rebirth/guns/), at scale 0.5 in its own colours with the sheet's hands, gun offset and recoil, else
-// a plain bar, the original bar sprites (gun-short-01 / gun-med-01 / gun-long-01: a white capsule with a dark outline,
-// tinted) stretched to the gun's barrel length the way the original bar guns are. The balance sheet's own bar entries
-// (docs/design/new-gun-stats.json worldImg, already sized that way) are kept; the ones it borrowed from another gun's
-// art (the potato cannon for the launchers, the AWM-S for the Hécate II and the Lynx, the PKP for the belt guns) become
-// a long bar sized and tinted by gun class. Every other gun draws its def's worldImg unchanged (the AK-47's own drawn
-// sprite comes with its def: heldGunArt.ts applyHeldGunArt).
-import { GameObjectDefs, type GunDef, gunClass, NEW_GUN_IDS } from "@rebirth/defs";
+// (the drawn ones, packages/defs rebirth/heldGunArt.ts: the G36C, M16A4, SIG 550 and G3, then the FN FAL, WA2000, M200,
+// Hécate II, Lynx and Boys, then the PP-19 Bizon, AS Val, P90 and TEC-9, then the DP-12, AA-12, M60, MG 42 and DShK,
+// then the M79, GL-06, MGL, RPG-7, Panzerfaust and M202, all 2026-10-08, committed SVGs under /rebirth/guns/; a dual
+// pistol holds its single's sprite in each hand, ownHeldSprite; the RPG-7 draws gun-rpg7-empty-01, no warhead, while
+// its round is fired and not yet reloaded, objects/gunLoad.ts), at scale 0.5 in its own colours with the sheet's hands
+// and recoil and its gun offset, but for the rebirth's own-sprite overrides (the bullpups' own sprites take survev's
+// (-8, 0), HELD_GUN_ART_GUN_OFFSET; the P90's is held with both hands under it, HELD_GUN_ART_HANDS_BELOW; the AS Val's
+// left hand sits on its forend and the RPG-7's on its tube, HELD_GUN_ART_LEFT_HAND_OFFSET), and with no magazine
+// sprite (the belt guns draw their box and belt into the one sprite, so the PKP bottom sprite the sheet borrowed for
+// them never shows on it), else a plain bar, the original bar sprites (gun-short-01 / gun-med-01 / gun-long-01: a
+// white capsule with a dark outline, tinted) stretched to the gun's barrel length the way the original bar guns are.
+// The balance sheet's own bar entries (docs/design/new-gun-stats.json worldImg, already sized that way) are kept; the
+// ones it borrowed from another gun's art (the potato cannon for the launchers; the PKP for the M60, MG 42 and DShK and
+// the AWM-S for the Hécate II and the Lynx, all now drawn) become a long bar sized and tinted by gun class. The Mk 14
+// EBR, the Thompson M1928 and the Škorpion vz. 61 (single and dual) stay bars on purpose (owner). Every other gun draws
+// its def's worldImg unchanged (the AK-47's own drawn sprite comes with its def: heldGunArt.ts applyHeldGunArt).
+import {
+    GameObjectDefs,
+    type GunDef,
+    gunClass,
+    HELD_GUN_ART_EMPTY,
+    HELD_GUN_ART_GUN_OFFSET,
+    HELD_GUN_ART_HANDS_BELOW,
+    HELD_GUN_ART_LEFT_HAND_OFFSET,
+    heldGunArtEmptySprite,
+    NEW_GUN_IDS,
+} from "@rebirth/defs";
 import { SPRITES } from "../assets/spriteManifest.ts";
 
 export type HeldGunImage = GunDef["worldImg"];
@@ -56,14 +74,29 @@ export function isBarSprite(sprite: string): boolean {
     return Object.hasOwn(BARS, sprite);
 }
 
-/** The image `def` is held with (see the header). */
-export function heldGunImage(def: GunDef): HeldGunImage {
+const EMPTY_ART = new Set<string>(HELD_GUN_ART_EMPTY);
+
+/**
+ * The image `def` is held with (see the header); `empty`: its magazine is empty (objects/gunLoad.ts), which draws
+ * the own sprite's empty variant where one is drawn (HELD_GUN_ART_EMPTY: the RPG-7 without its warhead).
+ */
+export function heldGunImage(def: GunDef, empty = false): HeldGunImage {
     const id = gunId(def);
     const img = def.worldImg;
     if (!id || !NEW_GUNS.has(id)) return img;
     const own = ownHeldSprite(id);
     if (SPRITES[own]?.path) {
-        return { ...img, sprite: own, scale: { x: 0.5, y: 0.5 }, tint: 0xffffff, magImg: undefined };
+        const emptySprite = empty && EMPTY_ART.has(id) ? heldGunArtEmptySprite(id) : undefined;
+        return {
+            ...img,
+            sprite: emptySprite && SPRITES[emptySprite]?.path ? emptySprite : own,
+            scale: { x: 0.5, y: 0.5 },
+            tint: 0xffffff,
+            magImg: undefined,
+            leftHandOffset: HELD_GUN_ART_LEFT_HAND_OFFSET[id] ?? img.leftHandOffset,
+            gunOffset: HELD_GUN_ART_GUN_OFFSET[id] ?? img.gunOffset,
+            handsBelow: HELD_GUN_ART_HANDS_BELOW[id] ?? img.handsBelow,
+        };
     }
     if (isBarSprite(img.sprite)) return img;
     const style = CLASS_BAR[gunClass(id) ?? ""] ?? DEFAULT_BAR;
@@ -77,6 +110,12 @@ export function heldGunImage(def: GunDef): HeldGunImage {
         tint: img.tint === 0xffffff ? style.tint : img.tint,
         magImg: undefined,
     };
+}
+
+/** Whether `def`'s held image has an empty variant (objects/gunLoad.ts tracks only these). */
+export function hasEmptyHeldImage(def: GunDef): boolean {
+    const id = gunId(def);
+    return !!id && EMPTY_ART.has(id);
 }
 
 /** Length in sprite pixels of a held image drawn with the bar sprites (tests). */

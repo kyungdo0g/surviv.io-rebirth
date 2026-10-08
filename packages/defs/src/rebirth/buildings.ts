@@ -11,6 +11,7 @@ import { CLINIC_ART, clinic, MEDICAL_LOOT_SPAWNER } from "./buildings/clinic.ts"
 import { FIRESTATION_ART, firestation } from "./buildings/firestation.ts";
 import type { RebirthBuildingArt } from "./buildings/layout.ts";
 import { LIBRARY_ART, library } from "./buildings/library.ts";
+import { militaryBaseArt, militaryBaseDefs } from "./buildings/military/structure.ts";
 import { OUTPOST_FACTIONS, outpost, outpostArt } from "./buildings/outpost.ts";
 import { RADIO_ART, radioStation } from "./buildings/radio.ts";
 
@@ -20,11 +21,26 @@ export * from "./buildings/clinic.ts";
 export * from "./buildings/firestation.ts";
 export * from "./buildings/layout.ts";
 export * from "./buildings/library.ts";
+export * from "./buildings/military/armory.ts";
+export * from "./buildings/military/bunker.ts";
+export * from "./buildings/military/compound.ts";
+export * from "./buildings/military/guard.ts";
+export * from "./buildings/military/hq.ts";
+export * from "./buildings/military/infirmary.ts";
+export type {
+    Box as MilitaryBox,
+    MilitaryPart,
+    PartImage,
+    PartMapShape,
+    Prop as MilitaryProp,
+} from "./buildings/military/part.ts";
+export * from "./buildings/military/structure.ts";
+export * from "./buildings/military/yard.ts";
 export * from "./buildings/outpost.ts";
 export * from "./buildings/radio.ts";
 
 /** Buildings whose heal regions the client draws (apps/client objects/healRegionFx.ts: glow, crosses, ring pulse). */
-export const REBIRTH_HEAL_FX_BUILDINGS: ReadonlySet<string> = new Set(["clinic_01"]);
+export const REBIRTH_HEAL_FX_BUILDINGS: ReadonlySet<string> = new Set(["clinic_01", "military_infirmary_01"]);
 
 /**
  * 50v50 front-line buildings (sim mapgen placement.ts): a neutral one goes in a tenth touching the river line, a
@@ -34,6 +50,12 @@ export const REBIRTH_FRONT_LINE_BUILDINGS: ReadonlySet<string> = new Set([
     "arsenal_01",
     ...BLOCKHOUSE_FACTIONS.map((f) => f.id),
 ]);
+
+/**
+ * 50v50 home buildings (sim mapgen placement.ts): a faction's (`teamId`) goes in its own half outside its spawn tenth,
+ * where `teamId` alone would put it on the spawn edge (the military bases are too big for that band).
+ */
+export const REBIRTH_OWN_HALF_BUILDINGS: ReadonlySet<string> = new Set(["military_base_01r", "military_base_01b"]);
 
 /** Sprite ids of every rebirth building image, with their size (the client's sprite manifest entries). */
 export function rebirthBuildingArt(): RebirthBuildingArt[] {
@@ -45,6 +67,7 @@ export function rebirthBuildingArt(): RebirthBuildingArt[] {
         RADIO_ART,
         ARSENAL_ART,
         ...BLOCKHOUSE_FACTIONS.map((f) => blockhouseArt(f.teamId)),
+        ...militaryBaseArt(),
     ];
 }
 
@@ -65,13 +88,23 @@ export function rebirthBuildings(generated: Readonly<Record<string, MapObjectDef
         radio_station_01: radioStation(known),
         arsenal_01: arsenal(known),
         ...Object.fromEntries(BLOCKHOUSE_FACTIONS.map((f) => [f.id, blockhouse(f, known)])),
+        // the military bases (the owner, 2026-10-08), after every earlier id
+        ...militaryBaseDefs(known),
     };
 }
 
 /** Where the rebirth buildings spawn: map -> fixedSpawns entries added (rebirth/index.ts applyRebirthMaps). */
 export const REBIRTH_BUILDING_SPAWNS: Readonly<Record<string, Readonly<Record<string, number>>>> = {
-    main: { clinic_01: 1, firestation_01: 1, library_01: 1, radio_station_01: 1 },
-    faction: { outpost_01r: 1, outpost_01b: 1, arsenal_01: 1, blockhouse_01r: 2, blockhouse_01b: 2 },
+    main: { clinic_01: 1, firestation_01: 1, library_01: 1, radio_station_01: 1, military_base_01: 1 },
+    faction: {
+        outpost_01r: 1,
+        outpost_01b: 1,
+        arsenal_01: 1,
+        blockhouse_01r: 2,
+        blockhouse_01b: 2,
+        military_base_01r: 1,
+        military_base_01b: 1,
+    },
 };
 
 /**

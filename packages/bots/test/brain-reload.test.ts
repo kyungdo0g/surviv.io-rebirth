@@ -49,6 +49,28 @@ describe("smart reload", () => {
         expect(reloads(again)).toBe(false);
     });
 
+    it("no top-up while an enemy kneels in a revive within reach: it is finished first (50v50 endgame)", () => {
+        const w = testWorld();
+        w.model.self.weapons[0].ammo = 10;
+        w.model.self.kills = 1;
+        // a downed enemy that only bleeds out does not hold the reload up...
+        const bleeding = addEnemy(w, 2, { x: 15, y: 0 }, { downed: true });
+        const brain = brainOf(w, ["smartReload"]);
+        brain.mem.smart.lastEnemySeen = NOW - 2;
+        const plain = emptyIntent("zone");
+        manageReload(brain.context(NOW), plain);
+        expect(reloads(plain)).toBe(true);
+        // ...one reviving itself (a Medic's Revivify) or being revived does, while rounds remain
+        bleeding.reviving = true;
+        const kneeling = emptyIntent("zone");
+        manageReload(brain.context(NOW + 2), kneeling);
+        expect(reloads(kneeling)).toBe(false);
+        w.model.self.weapons[0].ammo = 0;
+        const empty = emptyIntent("zone");
+        manageReload(brain.context(NOW + 4), empty);
+        expect(reloads(empty)).toBe(true);
+    });
+
     it("waits a moment after the last enemy left sight unless the magazine is low", () => {
         const w = testWorld();
         w.model.self.weapons[0].ammo = 26;

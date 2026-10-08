@@ -8,10 +8,9 @@ import { cachedMap, objectsHash } from "./helpers.ts";
 
 /**
  * Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. Last change: the
- * rebirth's second wave of buildings (fire station, library, radio station; rebirth/buildings/), after the bigger maps
- * (1.2 per side, counts grown with the land area; rebirth/mapScale.ts).
+ * military base (rebirth/buildings/military/), placed before the Hydra as the largest fixed spawn.
  */
-const MAIN_12345_HASH = "534bd6f91c4c7b33";
+const MAIN_12345_HASH = "9e1a7279640f14db";
 
 /** Area an object reserves against other top-level objects (what canSpawn tests against). */
 function footprints(o: GeneratedObject): Collider[] {

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="204" viewBox="0 0 64 204">
+  <!-- RPG-7, own art: top view, barrel up, loaded with a PG-7 warhead. Steel tube, wooden heat shield, venturi bell; optic on the left. -->
+  <!-- venturi bell flaring to the rear, end rim flush at the bottom -->
+  <path d="M27 174h10l9 24H18z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="14" y="196" width="36" height="8" rx="2" fill="#000"/>
+  <!-- wooden heat shield with a black band; the highlight strip -->
+  <rect x="22" y="120" width="20" height="56" rx="2" fill="#8a4316" stroke="#000" stroke-width="8"/>
+  <rect x="28" y="124" width="8" height="48" fill="#a85a24"/>
+  <rect x="18" y="156" width="28" height="4" fill="#000"/>
+  <!-- steel front tube, front sight at the muzzle, muzzle ring -->
+  <rect x="25" y="64" width="14" height="58" fill="#555555" stroke="#000" stroke-width="8"/>
+  <rect x="17" y="70" width="8" height="6" fill="#000"/>
+  <rect x="21" y="62" width="22" height="6" rx="1" fill="#000"/>
+  <!-- optic on the left: mount arm, body, rear eyecup -->
+  <rect x="16" y="104" width="8" height="8" fill="#000"/>
+  <rect x="8" y="94" width="10" height="24" rx="2" fill="#555555" stroke="#000" stroke-width="6"/>
+  <rect x="9" y="118" width="8" height="8" rx="1" fill="#000"/>
+  <!-- PG-7 warhead: tail stub in the muzzle, ogive body, nose fuze -->
+  <rect x="26" y="52" width="12" height="12" fill="#000"/>
+  <path d="M32 10l10 18 2 10v8l-6 8H26l-6-8v-8l2-10z" fill="#6e7436" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M23 45h18" stroke="#4f5b39" stroke-width="3"/>
+  <rect x="30" y="2" width="4" height="12" fill="#000"/>
+</svg>

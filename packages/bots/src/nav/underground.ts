@@ -5,13 +5,14 @@
 // ground NavGrid: a walkable ground point just past the stair's top end and an underground point just past its bottom
 // end. The path follower plans hierarchically (nav/layered.ts): ground A* to a portal's top, along the stair axis, local
 // A* underground, and the way back. The ground grid, its A* and its per-tick plan budget are unchanged; underground
-// plans spend a budget of their own. Built only from MapData (what every client receives), shared by every bot of a map.
+// plans spend a budget of their own. Built only from MapData (what every client receives), shared by every bot of a
+// game: one per ground grid (NavGrid.forMap), a later game's a copy of the map's pristine one (grid.ts PerGame).
 import { type Bounds, type Vec2, v2 } from "@rebirth/core";
 import { type BuildingDef, getMapObjectDef, hasMapObjectDef, type StructureDef } from "@rebirth/defs";
 import type { MapData, MapObjectSpawn, ObstacleView } from "@rebirth/sim";
 import { colliderBounds, obstacleCollider, pointInBounds, rotateOri, transformCollider } from "../geom.ts";
 import { CellGrid, NavTerrain, walkThroughDoor } from "./cellGrid.ts";
-import { DEFAULT_CLEARANCE, NavGrid } from "./grid.ts";
+import { DEFAULT_CLEARANCE, NavGrid, PerGame } from "./grid.ts";
 
 /** A* nodes all bots of a map may expand underground in one simulation tick (the ground budget is separate). */
 export const UNDERGROUND_PLAN_BUDGET = 6000;
@@ -126,11 +127,16 @@ export class UndergroundGrid extends CellGrid {
     readonly floor: Uint8Array;
     readonly portals: StairPortal[] = [];
     private readonly owner: UndergroundNav;
+    private readonly spawn: MapObjectSpawn;
+    private readonly layout: Layout;
     private readonly fields = new Map<number, { version: number; dist: Float64Array }>();
 
-    constructor(owner: UndergroundNav, id: number, spawn: MapObjectSpawn, layout: Layout, map: MapData) {
-        super(layout.ox, layout.oy, layout.w, layout.h, 1, DEFAULT_CLEARANCE, NavTerrain.Ground);
+    /** Builds the floor of `spawn` from `map`, or only its geometry for a copy (`map` null: copyFor). */
+    constructor(owner: UndergroundNav, id: number, spawn: MapObjectSpawn, layout: Layout, map: MapData | null) {
+        super(layout.ox, layout.oy, layout.w, layout.h, 1, DEFAULT_CLEARANCE, NavTerrain.Ground, owner.learnsSealed);
         this.owner = owner;
+        this.spawn = spawn;
+        this.layout = layout;
         this.id = id;
         this.structureId = spawn.id;
         this.type = spawn.type;
@@ -142,6 +148,7 @@ export class UndergroundGrid extends CellGrid {
                 this.floor[i] = 1;
             });
         }
+        if (!map) return;
         for (let i = 0; i < this.floor.length; i++) if (!this.floor[i]) this.blockForever(i);
         // the stairs are the way up, never part of an underground path
         layout.stairs.forEach((s, k) => {
@@ -158,9 +165,21 @@ export class UndergroundGrid extends CellGrid {
                 this.addDoor(o.id, o.type, def, col, o.ori);
                 continue;
             }
+            // the bathhouse vault, the chrys and eye vaults: walls (until a snapshot shows them open, cellGrid.ts)
+            if (def.door && this.learnsSealed) {
+                this.addSealedDoor(o.id, col);
+                continue;
+            }
             this.stamp(o.id, col);
         }
         this.labelComponents();
+    }
+
+    /** A copy of this grid (cells, stamps, doors, labels) for the navigation `owner` of another game. */
+    copyFor(owner: UndergroundNav): UndergroundGrid {
+        const g = new UndergroundGrid(owner, this.id, this.spawn, this.layout, null);
+        g.copyFrom(this);
+        return g;
     }
 
     /** Players underground collide with layers 1 and 3. */
@@ -293,7 +312,9 @@ export class UndergroundGrid extends CellGrid {
     }
 }
 
-const navCache = new WeakMap<MapData, UndergroundNav>();
+/** the underground navigation of a map's games, one per kind of ground grid (NavOptions.sealedDoors) */
+const navs = new WeakMap<MapData, PerGame<UndergroundNav>>();
+const sealedNavs = new WeakMap<MapData, PerGame<UndergroundNav>>();
 
 /** Every underground grid and stair portal of a map. */
 export class UndergroundNav {
@@ -302,17 +323,43 @@ export class UndergroundNav {
     private budgetTime = Number.NaN;
     private budgetLeft = 0;
 
-    /** The shared underground navigation of a map (built on first use). */
+    /**
+     * The underground navigation going with a ground grid (one per game, NavGrid.forMap), of the same kind: learning
+     * sealed doors with a ground grid that does (the puzzle bots', NavOptions.sealedDoors), else not. A later game's is
+     * a copy of the map's pristine one (stair portals placed on the pristine ground grid).
+     */
     static forMap(map: MapData, ground: NavGrid = NavGrid.forMap(map)): UndergroundNav {
-        let nav = navCache.get(map);
-        if (!nav) {
-            nav = new UndergroundNav(map, ground);
-            navCache.set(map, nav);
+        const sealed = ground.learnsSealed;
+        const store = sealed ? sealedNavs : navs;
+        let per = store.get(map);
+        if (!per) {
+            per = new PerGame<UndergroundNav>();
+            store.set(map, per);
         }
-        return nav;
+        return per.get(
+            ground,
+            () => new UndergroundNav(map, ground),
+            (pristine) => new UndergroundNav(map, ground, pristine),
+            () => new UndergroundNav(map, NavGrid.pristine(map, { sealedDoors: sealed })),
+        );
     }
 
-    constructor(map: MapData, ground: NavGrid) {
+    /** whether its grids learn sealed doors (like the ground grid it was built with) */
+    readonly learnsSealed: boolean;
+
+    /** Builds the underground grids and stair portals of `map`, or copies `from` (another game's on the same map). */
+    constructor(map: MapData, ground: NavGrid, from?: UndergroundNav) {
+        this.learnsSealed = ground.learnsSealed;
+        if (from) {
+            for (const r of from.regions) this.regions.push(r.copyFor(this));
+            for (const p of from.portals) {
+                const region = this.regions[p.region.id];
+                const q: StairPortal = { ...p, region };
+                this.portals.push(q);
+                region.portals.push(q);
+            }
+            return;
+        }
         for (const o of map.objects) {
             if ((o.layer & 1) !== 0 || !hasMapObjectDef(o.type)) continue;
             const def = getMapObjectDef(o.type);

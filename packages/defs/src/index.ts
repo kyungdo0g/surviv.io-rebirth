@@ -27,6 +27,7 @@ export {
 } from "./data.ts";
 export * from "./gunClasses.ts";
 export * from "./rebirth/index.ts";
+export * from "./rebirth/weather.ts";
 export * from "./refs.ts";
 export * from "./registry.ts";
 export * from "./survev/wikiSpecs.ts";

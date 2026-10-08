@@ -1,11 +1,12 @@
 // The cell grid shared by the ground navigation grid (nav/grid.ts, the whole map) and the small underground grids of
 // basements and bunkers (nav/underground.ts): square cells from an origin, blocking stamps (colliders inflated by the
 // player's clearance), door cells, terrain cost classes, connected components, grid line of sight and nearest
-// walkable cell search. A* (nav/astar.ts) runs on any CellGrid.
+// walkable cell search. A* (nav/astar.ts) runs on any CellGrid; nav/components.ts keeps the component labels.
 import { type Collider, type Vec2, v2 } from "@rebirth/core";
 import type { ObstacleDef } from "@rebirth/defs";
 import type { ObstacleView } from "@rebirth/sim";
 import { obstacleCollider, obstacleDef, rotateOri } from "../geom.ts";
+import { CellLabels } from "./components.ts";
 
 /** Terrain cost classes per cell. */
 export const NavTerrain = { Ground: 0, Water: 1, Sea: 2 } as const;
@@ -86,6 +87,16 @@ export abstract class CellGrid {
     readonly doorMask: Uint8Array;
     /** usable doors of this grid's floor, by obstacle id */
     readonly doors = new Map<number, NavDoor>();
+    /**
+     * Doors only a switch, a puzzle or a scheduled unlock opens (def `canUse` false or `locked`: the club's secret door,
+     * vault and cell doors, the Twins and arsenal lab doors), by obstacle id: their closed panel is a wall under
+     * doorKey(id) until a snapshot shows them open (or unlocked), like an open door's panel (observeDoor). Only on a grid
+     * that learns them (`learnsSealed`, BrainFeatures.puzzles); elsewhere they are stamped walls under their own id, for
+     * good, as before the puzzles existed.
+     */
+    readonly sealedDoors = new Set<number>();
+    /** whether this grid learns sealed doors (NavOptions.sealedDoors): the puzzle bots' grids only */
+    readonly learnsSealed: boolean;
     /** one-way door cells: 0, or 1 + the index of their passage direction in `oneWayDirs` */
     readonly oneWay: Uint8Array;
     readonly oneWayDirs: Vec2[] = [];
@@ -96,14 +107,23 @@ export abstract class CellGrid {
     /** obstacle ids already considered (stamped or deliberately left out) */
     protected readonly known = new Set<number>();
     /**
-     * Connected component of each walkable cell (0 for blocked cells), with the same moves as A*. Relabelled lazily
-     * after enough changes, so it may be slightly stale: a hint that saves hopeless searches, never a hard rule.
+     * Connected component of each walkable cell (0 for blocked cells), with the same moves as A*: cells an obstacle
+     * frees join their component at once, an obstacle added relabels only after enough changes (components.ts). A hint
+     * that saves hopeless searches, never a hard rule.
      */
-    protected comp: Int32Array;
-    private changesSinceLabel = 0;
-    private queriesSinceLabel = 0;
+    protected readonly labels: CellLabels;
 
-    constructor(ox: number, oy: number, w: number, h: number, cellSize: number, clearance: number, terrain: number) {
+    constructor(
+        ox: number,
+        oy: number,
+        w: number,
+        h: number,
+        cellSize: number,
+        clearance: number,
+        terrain: number,
+        learnsSealed = false,
+    ) {
+        this.learnsSealed = learnsSealed;
         this.ox = ox;
         this.oy = oy;
         this.w = w;
@@ -117,60 +137,50 @@ export abstract class CellGrid {
         this.terrain = new Uint8Array(n).fill(terrain);
         this.doorMask = new Uint8Array(n);
         this.oneWay = new Uint8Array(n);
-        this.comp = new Int32Array(n);
+        this.labels = new CellLabels(w, h, this.blocked, this.tight);
+    }
+
+    /**
+     * Takes over every cell, stamp, door and label of a grid of the same geometry (a new game's grid starts as a copy
+     * of the map's pristine grid: nav/grid.ts NavGrid.forMap). Colliders and door records are shared (never mutated).
+     */
+    protected copyFrom(src: CellGrid): void {
+        this.blocked.set(src.blocked);
+        this.tight.set(src.tight);
+        this.sub.set(src.sub);
+        this.terrain.set(src.terrain);
+        this.doorMask.set(src.doorMask);
+        this.oneWay.set(src.oneWay);
+        this.oneWayDirs.push(...src.oneWayDirs);
+        for (const [id, d] of src.doors) this.doors.set(id, d);
+        for (const id of src.sealedDoors) this.sealedDoors.add(id);
+        for (const [key, col] of src.stamps) this.stamps.set(key, col);
+        for (const id of src.known) this.known.add(id);
+        this.labels.copyFrom(src.labels);
+        this.version = src.version;
     }
 
     /** Whether an object on `layer` collides with a player walking this grid's floor. */
     protected abstract collidesWith(layer: number): boolean;
 
-    /**
-     * Labels the walkable cells with their connected component. Diagonal steps need both orthogonal neighbours free
-     * (no corner cutting), so A*'s 8-connected moves connect exactly what 4-connectivity connects: a two-pass
-     * union-find over rows (a few milliseconds for a 720 x 720 grid).
-     */
+    /** Labels the walkable cells with their connected component anew (components.ts). */
     labelComponents(): void {
-        const { w, h, blocked, tight } = this;
-        const comp = this.comp;
-        const parent = new Int32Array(w * h + 1);
-        let next = 1;
-        const find = (a: number): number => {
-            while (parent[a] !== a) {
-                parent[a] = parent[parent[a]];
-                a = parent[a];
-            }
-            return a;
-        };
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                const i = y * w + x;
-                if (blocked[i] !== 0 && tight[i] === 0) {
-                    comp[i] = 0;
-                    continue;
-                }
-                const left = x > 0 ? comp[i - 1] : 0;
-                const up = y > 0 ? comp[i - w] : 0;
-                if (left === 0 && up === 0) {
-                    parent[next] = next;
-                    comp[i] = next++;
-                } else if (left !== 0 && up !== 0) {
-                    const a = find(left);
-                    const b = find(up);
-                    if (a !== b) parent[Math.max(a, b)] = Math.min(a, b);
-                    comp[i] = Math.min(a, b);
-                } else {
-                    comp[i] = left || up;
-                }
-            }
-        }
-        for (let i = 0; i < w * h; i++) if (comp[i] !== 0) comp[i] = find(comp[i]);
-        this.changesSinceLabel = 0;
-        this.queriesSinceLabel = 0;
+        this.labels.label();
+    }
+
+    /** Full component labellings so far (diagnostics, tests). */
+    get relabels(): number {
+        return this.labels.relabels;
+    }
+
+    /** Bumped whenever components may have grown together (a crate across a corridor broke): see components.ts. */
+    get joins(): number {
+        return this.labels.joins;
     }
 
     /** Component label of a cell (0 when blocked); relabels first when the labels grew stale. */
     component(idx: number): number {
-        if (this.changesSinceLabel >= 60 && ++this.queriesSinceLabel >= 600) this.labelComponents();
-        return this.blocked[idx] === 0 || this.tight[idx] !== 0 ? this.comp[idx] : 0;
+        return this.labels.of(idx);
     }
 
     /** A* may enter the cell: free, or tight. */
@@ -198,6 +208,12 @@ export abstract class CellGrid {
         });
     }
 
+    /** Registers a door players cannot open by hand: its closed panel blocks until a snapshot shows it open. */
+    protected addSealedDoor(id: number, col: Collider): void {
+        this.sealedDoors.add(id);
+        this.stamp(doorKey(id), col);
+    }
+
     /**
      * Whether the step between neighbour cells `from` -> `to` respects one-way doors: a step into a one-way door's
      * cells must go along its passage direction (sideways inside them is fine), never against it.
@@ -211,11 +227,9 @@ export abstract class CellGrid {
         return this.oneWay[from] === 0 ? dot > 0.5 : dot > -0.5;
     }
 
-    /** Calls `fn` for each cell whose centre is within `margin` of the collider. */
-    protected forCells(col: Collider, margin: number, fn: (i: number) => void): void {
+    /** Cells x0, y0, x1, y1 (clamped to the grid) of the collider's bounds grown by `margin` units and `pad` cells. */
+    private cellBox(col: Collider, margin: number, pad: number): [number, number, number, number] {
         const cs = this.cellSize;
-        const ox = this.ox;
-        const oy = this.oy;
         const b =
             col.type === 0
                 ? {
@@ -223,10 +237,20 @@ export abstract class CellGrid {
                       max: { x: col.pos.x + col.rad, y: col.pos.y + col.rad },
                   }
                 : col;
-        const x0 = Math.max(0, Math.floor((b.min.x - margin - ox) / cs));
-        const x1 = Math.min(this.w - 1, Math.floor((b.max.x + margin - ox) / cs));
-        const y0 = Math.max(0, Math.floor((b.min.y - margin - oy) / cs));
-        const y1 = Math.min(this.h - 1, Math.floor((b.max.y + margin - oy) / cs));
+        return [
+            Math.max(0, Math.floor((b.min.x - margin - this.ox) / cs - pad)),
+            Math.max(0, Math.floor((b.min.y - margin - this.oy) / cs - pad)),
+            Math.min(this.w - 1, Math.floor((b.max.x + margin - this.ox) / cs + pad)),
+            Math.min(this.h - 1, Math.floor((b.max.y + margin - this.oy) / cs + pad)),
+        ];
+    }
+
+    /** Calls `fn` for each cell whose centre is within `margin` of the collider. */
+    protected forCells(col: Collider, margin: number, fn: (i: number) => void): void {
+        const cs = this.cellSize;
+        const ox = this.ox;
+        const oy = this.oy;
+        const [x0, y0, x1, y1] = this.cellBox(col, margin, 0);
         const m2 = margin * margin;
         for (let y = y0; y <= y1; y++) {
             const cy = (y + 0.5) * cs + oy;
@@ -255,7 +279,7 @@ export abstract class CellGrid {
         });
         this.stampSub(col, 1);
         this.version++;
-        this.changesSinceLabel++;
+        this.labels.added();
     }
 
     unstamp(key: number): void {
@@ -267,24 +291,16 @@ export abstract class CellGrid {
         });
         this.stampSub(col, -1);
         this.version++;
-        this.changesSinceLabel++;
+        // the freed cells join the component they border now, and a corridor the obstacle blocked relabels the grid
+        const [x0, y0, x1, y1] = this.cellBox(col, this.clearance, 0.5);
+        this.labels.freed(x0, y0, x1, y1);
     }
 
     /** Counts `col` (inflated by the clearance) on the quarter points it covers, then refreshes the tight flags there. */
     private stampSub(col: Collider, delta: 1 | -1): void {
         const cs = this.cellSize;
         const margin = this.clearance;
-        const b =
-            col.type === 0
-                ? {
-                      min: { x: col.pos.x - col.rad, y: col.pos.y - col.rad },
-                      max: { x: col.pos.x + col.rad, y: col.pos.y + col.rad },
-                  }
-                : col;
-        const x0 = Math.max(0, Math.floor((b.min.x - margin - this.ox) / cs - 0.5));
-        const x1 = Math.min(this.w - 1, Math.floor((b.max.x + margin - this.ox) / cs + 0.5));
-        const y0 = Math.max(0, Math.floor((b.min.y - margin - this.oy) / cs - 0.5));
-        const y1 = Math.min(this.h - 1, Math.floor((b.max.y + margin - this.oy) / cs + 0.5));
+        const [x0, y0, x1, y1] = this.cellBox(col, margin, 0.5);
         const m2 = margin * margin;
         const sub = this.sub;
         for (let y = y0; y <= y1; y++) {
@@ -328,6 +344,14 @@ export abstract class CellGrid {
         this.tight[i] = 0;
     }
 
+    /**
+     * Relabel the components at the next query (something that sealed off a room is gone: the bookshelf in front of
+     * the club's secret door was broken, brain/puzzleRoom.ts).
+     */
+    relabelSoon(): void {
+        this.labels.soon();
+    }
+
     isStamped(key: number): boolean {
         return this.stamps.has(key);
     }
@@ -348,7 +372,7 @@ export abstract class CellGrid {
             this.known.add(view.id);
             return;
         }
-        if (view.door && this.doors.has(view.id)) this.observeDoor(view);
+        if (view.door && (this.doors.has(view.id) || this.sealedDoors.has(view.id))) this.observeDoor(view);
         if (this.known.has(view.id)) return;
         this.known.add(view.id);
         const def = obstacleDef(view.type);
@@ -359,21 +383,32 @@ export abstract class CellGrid {
             this.version++;
             return;
         }
+        if (def.door && this.learnsSealed) {
+            this.addSealedDoor(view.id, col);
+            if (view.door) this.observeDoor(view);
+            return;
+        }
         this.stamp(view.id, col);
     }
 
     /**
      * An open door's panel stands across the floor next to its doorway (a hinged door turns a quarter around its hinge,
      * a sliding door moves along the wall): it blocks while open and the doorway itself is free. A closed door that
-     * cannot be used (it opens once, by a switch or a puzzle; locked) blocks like a wall.
+     * cannot be used (it opens once, by a switch or a puzzle; locked) blocks like a wall. Sealed doors (sealedDoors)
+     * start out stamped closed and go through here too, so a puzzle door a snapshot shows open stops being a wall.
      */
     protected observeDoor(view: ObstacleView): void {
         const key = doorKey(view.id);
         const stamped = this.stamps.get(key);
         const door = view.door;
         const blocksClosed = !!door && !door.open && (!door.canUse || door.locked);
+        // (a sealed door moving joins or cuts off a whole room: the component labels must not wait for 60 changes)
+        const sealed = this.sealedDoors.has(view.id);
         if (!door?.open && !blocksClosed) {
-            if (stamped) this.unstamp(key);
+            if (stamped) {
+                this.unstamp(key);
+                if (sealed) this.labels.soon();
+            }
             return;
         }
         const def = obstacleDef(view.type);
@@ -382,6 +417,7 @@ export abstract class CellGrid {
         if (stamped && sameCollider(stamped, col)) return;
         if (stamped) this.unstamp(key);
         this.stamp(key, col);
+        if (sealed) this.labels.soon();
     }
 
     /** Cell coordinates inside the grid. */
@@ -501,10 +537,21 @@ export abstract class CellGrid {
         return false;
     }
 
+    /** Whether `count` waypoints from `from` on and the legs between them are passable (a plan still open). */
+    legsOpen(points: readonly Vec2[], from: number, count: number): boolean {
+        const end = Math.min(points.length, from + count);
+        for (let i = from; i < end; i++) {
+            if (!this.covers(points[i]) || !this.passable(this.cellOf(points[i]))) return false;
+            if (i > from && !this.linePassable(points[i - 1], points[i])) return false;
+        }
+        return true;
+    }
+
     /** Nearest walkable cell within `maxRadius` world units of `p` (ring search), optionally in component `comp`. */
     nearestWalkable(p: Vec2, maxRadius = 6, comp = 0): number {
         const start = this.cellOf(p);
-        if (this.blocked[start] === 0 && (comp === 0 || this.comp[start] === comp)) return start;
+        const labels = this.labels.comp;
+        if (this.blocked[start] === 0 && (comp === 0 || labels[start] === comp)) return start;
         const cx = start % this.w;
         const cy = Math.floor(start / this.w);
         const maxR = Math.ceil(maxRadius / this.cellSize);
@@ -518,7 +565,7 @@ export abstract class CellGrid {
                     const y = cy + dy;
                     if (!this.inside(x, y)) continue;
                     const i = y * this.w + x;
-                    if (this.blocked[i] !== 0 || (comp !== 0 && this.comp[i] !== comp)) continue;
+                    if (this.blocked[i] !== 0 || (comp !== 0 && labels[i] !== comp)) continue;
                     const d = v2.distanceSqr(this.center(i), p) * (this.terrain[i] === NavTerrain.Ground ? 1 : 4);
                     if (d < bestD) {
                         bestD = d;

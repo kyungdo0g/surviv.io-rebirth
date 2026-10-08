@@ -13,6 +13,7 @@ import { FactionMemory } from "./factionMemory.ts";
 import type { BrainFeatures } from "./features.ts";
 import { LootMemory } from "./lootMemory.ts";
 import { PursuitMemory } from "./pursuitMemory.ts";
+import { PuzzleMemory } from "./puzzleMemory.ts";
 import { SmartMemory } from "./smartMemory.ts";
 
 export type BehaviourName =
@@ -46,7 +47,9 @@ export type BehaviourName =
     | "advance"
     | "rally"
     // bot round 6 early game (BrainFeatures.fistRush): an unarmed rush at an armed enemy
-    | "rush";
+    | "rush"
+    // bot interactions (BrainFeatures.puzzles): code puzzles, switches, control panels, vault doors and their rooms
+    | "puzzle";
 
 export interface ThrowPlan {
     /** throwable to use (frag, mirv, smoke) */
@@ -86,6 +89,11 @@ export interface Intent {
     stop: boolean;
     /** a dodge (grenade, air strike): the keys may reverse at once (motor/keys.ts; round 5) */
     urgent?: boolean;
+    /**
+     * Walking into an obstacle on purpose (stepping up against a switch to use it, BrainFeatures.puzzles): the human
+     * keys do not slide off it (motor/keys.ts octantFree would turn them away within ~1.5 units of it).
+     */
+    nudge?: boolean;
     /** world point to aim at; null: look where walking */
     aim: Vec2 | null;
     /** contact the aim tracks (0 for none); used for the reaction delay and the aim error */
@@ -172,6 +180,12 @@ export class BrainMemory {
     lastThrowPos: Vec2 | null = null;
     lastSmoke = Number.NEGATIVE_INFINITY;
     lastUseObstacle = Number.NEGATIVE_INFINITY;
+    /**
+     * Doors the bot set moving itself, away from where it stands (the doors a puzzle's pieces, a control panel or a
+     * vault door's delay open: brain/puzzle.ts), with the time until which they may still move: when they do, it is
+     * no sign of anyone else (brain/doors.ts)
+     */
+    readonly ownDoors = new Map<number, number>();
     /** goal the path follower could not reach, and until when it is avoided */
     failedGoal: Vec2 | null = null;
     failedUntil = 0;
@@ -194,6 +208,8 @@ export class BrainMemory {
     readonly faction = new FactionMemory();
     /** early-game rush and melee-answer decisions (BrainFeatures.fistRush / meleeAnswer: brain/early.ts) */
     readonly early = new EarlyMemory();
+    /** puzzle sites, the solutions the bot knows and the attempt under way (BrainFeatures.puzzles: brain/puzzle.ts) */
+    readonly puzzle = new PuzzleMemory();
 }
 
 export interface BrainCtx {

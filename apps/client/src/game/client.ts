@@ -11,7 +11,8 @@
 // clientControls.ts (Toggle Minimap, Hide UI) applied to the HUD, the minimap and the match HUD every frame.
 // M9: the map's falling camera particles (cameraEmitters.ts), the world queries behind footsteps, wading, bushes and the
 // ceiling ray scan (worldQuery.ts, handed to the views with their deps), and the map's particle sprites preloaded.
-// Rebirth: the Enhanced hit effects (fx/hitFeedback.ts, user/2026-10-07-hit-feedback), drawn after the camera shake.
+// Rebirth: the Enhanced hit effects (fx/hitFeedback.ts, user/2026-10-07-hit-feedback), drawn after the camera shake;
+// the rainy matches (fx/weather.ts in worldFx.ts, user/2026-10-08-rain), decided from the map seed.
 import type { Vec2 } from "@rebirth/core";
 import { GameObjectDefs, getMapDef, Input, MapObjectDefs, type RoleDef } from "@rebirth/defs";
 import {
@@ -37,6 +38,7 @@ import { GasShape, WORLD_GAS_COLOR } from "../fx/gas.ts";
 import { bindHitFx, HitFeedback } from "../fx/hitFeedback.ts";
 import { mapParticleSprites } from "../fx/particleDefsAll.ts";
 import { ParticleSystem } from "../fx/particles.ts";
+import { rainyMatch } from "../fx/weather.ts";
 import { debugCameraAt } from "../globals.ts";
 import { InputManager } from "../input/input.ts";
 import { DebugHudBind } from "../input/keybinds.ts";
@@ -84,6 +86,8 @@ export interface ClientOptions {
     onQuit?: () => void;
     /** network games: sends a player report (M8; absent hides the Report buttons) */
     report?: ReportFlowDeps["submit"];
+    /** the sandbox's ?rain=1 / ?rain=0: forces the weather instead of the map seed's (rebirth isRainyMatch) */
+    rain?: boolean;
 }
 
 export class GameClient {
@@ -127,6 +131,8 @@ export class GameClient {
     /** the player the camera follows: the local player, or the one being spectated */
     activeId = -1;
     local: LocalPlayerState | null = null;
+    /** the local state of the snapshot being applied (the views read it before `local` takes it) */
+    private snapLocal: LocalPlayerState | null = null;
     /** latest snapshot tick */
     tick = 0;
     snapshotCount = 0;
@@ -141,6 +147,7 @@ export class GameClient {
     interaction: Prompt | null = null;
     private cameraPlaced = false;
     private readonly debugZoom: number | undefined;
+    private readonly rain: boolean | undefined;
     private readonly ownsAudio: boolean;
     private readonly unbindAudio: () => void = () => {};
     private readonly unbindHitFx: () => void;
@@ -158,6 +165,7 @@ export class GameClient {
         this.renderer.gas.addChild(this.gasOverlay.display);
         this.hud = new DebugHud(!!opts.showDebugHud);
         this.debugZoom = opts.debugZoom;
+        this.rain = opts.rain;
         this.renderer.overlay.addChild(this.hud.container);
         this.pingIndicator = new PingIndicator(textures);
         this.renderer.overlay.addChild(this.pingIndicator.container);
@@ -303,6 +311,11 @@ export class GameClient {
             teamOf: (id) => this.match.teamId(id),
             nameOf: (id) => this.match.name(id),
             effectsOf: (id) => this.match.effectsOf(id),
+            loadedAmmo: (id, gun) => {
+                const l = this.snapLocal;
+                const w = l && id === this.activeId ? l.weapons[l.curWeapIdx] : undefined;
+                return w?.type === gun ? w.ammo : undefined;
+            },
             worldQueries: queries,
         };
         this.world = new ObjectWorld(deps, this.interp);
@@ -319,6 +332,8 @@ export class GameClient {
             terrain: terrainQuery,
             terrainShape: terrain,
             fading,
+            rainy: rainyMatch(map, this.rain),
+            groundSurface: (pos) => queries.groundSurface(pos, 0),
         });
         this.effects.setWorld(this.world, playerId);
         this.hitFx.setWorld(this.world, playerId);
@@ -373,6 +388,7 @@ export class GameClient {
         if (!this.world || this.destroyed) return;
         if (s.localPlayerId !== this.activeId) this.retarget(s.localPlayerId);
         this.effects.beginSnapshot(s);
+        this.snapLocal = s.local;
         this.world.applySnapshot(s);
         this.effects.endSnapshot(s);
         this.teamPlay.applySnapshot(s, this.localId, this.world);

@@ -232,12 +232,13 @@ may not touch, the schema number used and open questions.
   Decided (conflicts.md; most predate ADR 0003, so worth re-confirming against the survev baseline; each is one rules
   value away from survev): crush damage 100 through perks (`airdropCrushInstantKill`, survev 1e10); a scheduled gold
   drop at circle 3 + 2 s and no comeback drop (`factionGoldDrop`, `helpLosingTeam`; survev has only the comeback drop);
-  faction strike waits 24 / 18 s (survev 30 / 21); no time-in-gas ramp (`gasDamageRamp`); 100 HP knocks after the zone
-  closed (`downHealthFinalCircle`, survev 50); no free Savannah 2x scope; the 50v50 promotion schedule
-  (`factionSchedule: "map"` gives survev's seven roles at 50-74 s); Mass Medicate x0.8 (survev x0.75); the loot perk
-  cap at 3 (survev refuses at 4). Done since (owner, 2026-10-08): survev's 50v50 MVP in the game over with the client's
-  Commander stars and MVP ribbon; kept: GameOver goes to every player, 50v50 is squads only (survev also has solo
-  50v50).
+  faction strike waits 24 / 18 s (survev 30 / 21); no time-in-gas ramp (`gasDamageRamp`); no free Savannah 2x scope;
+  the 50v50 promotion schedule (`factionSchedule: "map"` gives survev's seven roles at 50-74 s); Mass Medicate x0.8
+  (survev x0.75); the loot perk cap at 3 (survev refuses at 4). Done since (owner, 2026-10-08): survev's 50v50 MVP in
+  the game over with the client's Commander stars and MVP ribbon; kept: GameOver goes to every player, 50v50 is squads
+  only (survev also has solo 50v50). Switched to survev since (2026-10-08, conflicts.md down-health-50): 50 HP knocks
+  once the zone has closed (`downHealthFinalCircle` on), without which the last Revivify holder (Medic) of each faction
+  self revives in the closed gas forever (bots `faction.test.ts` seed 11 ran to its time limit).
 
   survev bugs not ported: round crates (Cobalt pods, `airdrop_crate_02h`) pulled into boxes by a sign error in its
   collider push; Trick or Treat? checking `halloween_mystery` instead of the rolled perk and deleting a held loot perk;
@@ -309,6 +310,24 @@ additions (`packages/defs/src/rebirth/buildings.ts`, `docs/research/rebirth-devi
 - For the bots (lead-owned, applied by the lead): `team.test.ts` centres its first circle at 0.34 × the map size,
   `nav.basements.test.ts` expects the mansion cellar (choose 3), `move-scenarios.test.ts` expects 8 red houses and
   uses houses 3, 6 and 7.
+
+## Owner request (2026-10-08, last): the military base
+
+- `packages/defs/src/rebirth/buildings/military/`: one structure per base (`military_base_01` on main,
+  `military_base_01r` / `_01b` on 50v50 in their own half, `REBIRTH_OWN_HALF_BUILDINGS`), the walled compound with the
+  parade ground, HQ, reviewing stand, infirmary (heal wards with the clinic's effect), armory, storehouse, garage,
+  gatehouse and two towers on layer 0, a 72 x 50 basement (Command, Magazine, vault, depot, motor pool, a sapper tunnel)
+  on layer 1, five stairs. Parts are authored in the compound frame (`part.ts` `fromWorld`); long walls are runs split
+  into the existing wall lengths (`hRun` / `vRun`); `structure.ts` builds the 22 defs (schema 22) and lists the images
+  (one roofless art record each). Only existing hooks: no sim change beyond the placement rule already merged.
+- Art: `tools/assets/rebirthArt/military/` (a drawer per sprite, `index.ts` dispatches; `svg()` takes a pixels-per-unit
+  for the 16 px markings and 8 px dark roofs). 49 SVGs (43 + the red and blue HQ roofs, stand roofs and emblems).
+- Tests: `packages/sim/test/militaryBase.test.ts` (structure data and the mechanics in the real sim on main 12345 and
+  both faction 7 bases), `rebirthBuildings.test.ts` (the 19 buildings' layouts), map validation, the golden hash (the
+  base is placed before the Hydra, which moves on main 12345), e2e.
+- For the bots (lead-owned, sent as a patch): `nav.basements.test.ts` adds `military_base_01` (21 portals),
+  `move-scenarios.test.ts` uses houses 1, 4 and 6, `knowledge/gunTiers.ts` marks the BLR, Model 94 and Mk45G as main-map
+  guns (the vault's `mil_crate_05` rolls `tier_snipers`).
 
 ## Changes needed in the lead's files
 

@@ -8,8 +8,11 @@
 // Rebirth addition: a soft ground shadow under every projectile that drifts away and fades as it rises, so the
 // throw arc reads at a glance (the original conveys the height by the sprite scale alone). The rebirth variant strobes
 // (defs STROBE_STRIKES) are drawn recoloured in their variant's colour (worldImg.recolor), their light pulse too.
+// The M79 and MGL's 40 mm grenade (m79_grenade) is drawn with the rebirth's own round sprite (defs
+// rebirth/launcherRoundArt.ts) in its own colours, nose along its flight instead of spinning; the def keeps the
+// sheet's tinted frag image.
 import type { Vec2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, isAirstrikeBomb, isStrobe, type ThrowableDef } from "@rebirth/defs";
+import { GameConfig, GameObjectDefs, isAirstrikeBomb, isStrobe, launcherRound, type ThrowableDef } from "@rebirth/defs";
 import type { ProjectileView } from "@rebirth/sim";
 import { Container, ImageSource, type Sprite, Texture } from "pixi.js";
 import { greySpriteId, type TextureStore } from "../assets/textures.ts";
@@ -86,6 +89,10 @@ interface Proj {
     id: number;
     type: string;
     def: ThrowableDef;
+    /** worldImg.scale, or the own round sprite's scale */
+    imgScale: number;
+    /** an own round sprite: drawn nose first along `dir` (it points up) instead of spinning */
+    alongDir: boolean;
     container: Container;
     sprite: Sprite;
     trail: Sprite | null;
@@ -171,10 +178,12 @@ export class ProjectileSystem {
         const pool = this.deps.renderer.pool;
         const container = new Container({ label: "projectile" });
         const sprite = pool.acquire();
-        const recolor = !!def.worldImg.recolor;
-        const image = recolor ? greySpriteId(def.worldImg.sprite) : def.worldImg.sprite;
-        this.deps.textures.apply(sprite, image, def.worldImg.scale * 4.75);
-        sprite.tint = def.worldImg.tint;
+        const round = launcherRound(data.type);
+        const recolor = !round && !!def.worldImg.recolor;
+        const image = round?.sprite ?? (recolor ? greySpriteId(def.worldImg.sprite) : def.worldImg.sprite);
+        const imgScale = round?.scale ?? def.worldImg.scale;
+        this.deps.textures.apply(sprite, image, imgScale * 4.75);
+        sprite.tint = round ? 0xffffff : def.worldImg.tint;
         let trail: Sprite | null = null;
         if (def.trail) {
             trail = pool.acquire();
@@ -202,6 +211,8 @@ export class ProjectileSystem {
             id: data.id,
             type: data.type,
             def,
+            imgScale,
+            alongDir: !!round,
             container,
             sprite,
             trail,
@@ -291,7 +302,7 @@ export class ProjectileSystem {
             p.rot += p.rotVel * dt;
             p.interpTicker += dt;
             const pos = this.visualPos(p);
-            const scale = def.worldImg.scale * remap(p.posZ, 0, MAX_HEIGHT, 1, 4.75);
+            const scale = p.imgScale * remap(p.posZ, 0, MAX_HEIGHT, 1, 4.75);
 
             if (p.strobe) {
                 p.strobeTicker = Math.min(1, Math.max(0, p.strobeTicker + dt * p.strobeDir * STROBE_SPEED));
@@ -299,14 +310,16 @@ export class ProjectileSystem {
                 p.strobe.scale.set(s);
                 if (s >= STROBE_SCALE_MAX || p.strobeTicker <= 0) p.strobeDir *= -1;
             }
-            p.sprite.rotation = p.rot;
+            p.sprite.rotation = p.alongDir ? Math.PI / 2 - Math.atan2(p.dir.y, p.dir.x) : p.rot;
             p.sprite.alpha = p.inWater ? 0.3 : 1;
             if (p.trail && def.trail) {
                 const speed = Math.hypot(p.vel.x, p.vel.y);
                 const t =
                     remap(speed, def.throwPhysics.speed * 0.25, def.throwPhysics.speed, 0, 1) *
                     remap(p.posZ, 0.1, MAX_HEIGHT * 0.5, 0, 1);
-                p.trail.scale.set(def.trail.maxLength * t, def.trail.width);
+                // the trail is sized for worldImg.scale (an own round sprite scales the container its own way)
+                const k = def.worldImg.scale / p.imgScale;
+                p.trail.scale.set(def.trail.maxLength * t * k, def.trail.width * k);
                 p.trail.rotation = -Math.atan2(p.dir.y, p.dir.x);
                 p.trail.alpha = def.trail.alpha * t;
                 p.trail.visible = t > 0;
@@ -339,7 +352,7 @@ export class ProjectileSystem {
             const h = Math.min(1, Math.max(0, p.posZ / MAX_HEIGHT));
             const drift = p.posZ * SHADOW_DRIFT;
             const shadowLocal = toLocal({ x: pos.x + drift, y: pos.y - drift });
-            const imgPx = (p.sprite.texture.width > 1 ? p.sprite.texture.width : DEFAULT_IMG_SIZE) * def.worldImg.scale;
+            const imgPx = (p.sprite.texture.width > 1 ? p.sprite.texture.width : DEFAULT_IMG_SIZE) * p.imgScale;
             const size = SHADOW_SIZE[0] + (SHADOW_SIZE[1] - SHADOW_SIZE[0]) * h;
             p.shadow.position.set(shadowLocal.x, shadowLocal.y);
             p.shadow.scale.set((imgPx * size) / SHADOW_TEX_SIZE);

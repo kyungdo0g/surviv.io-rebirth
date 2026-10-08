@@ -21,6 +21,7 @@ import { noteContested } from "./danger.ts";
 import { noteDeadEnd, planDeadEnd } from "./deadEnd.ts";
 import { updateTrade } from "./disengage.ts";
 import { dodge } from "./dodge.ts";
+import { DoorBrain } from "./doors.ts";
 import { crateFirstChoice, crateFirstScore } from "./early.ts";
 import { escapeFrag } from "./escapeFrag.ts";
 import { bestLoot, lootScore, planExplore, planLoot } from "./explore.ts";
@@ -34,6 +35,7 @@ import { manageScope } from "./gear.ts";
 import { grenadeOpportunity, smartGrenade } from "./grenades.ts";
 import { judged } from "./judgement.ts";
 import { planLayerEscape } from "./layers.ts";
+import { observePuzzleDoors } from "./puzzleSight.ts";
 import { bestBreakable, breakScore, planBreak } from "./scavenge.ts";
 import { noteChoice, noteFlight, steadyCrate, steadyLoot, steadyScores } from "./steady.ts";
 import { noteStillHit, unpinUnderFire } from "./stillHit.ts";
@@ -61,6 +63,11 @@ export interface BrainProfile {
     persona?: Readonly<PersonaParams>;
     skill?: Readonly<SkillProfile>;
     personaRng?: Rng;
+    /**
+     * the bot's seed (BotOptions.seed): streams of feature code that must not shift the brain's draws (doors), and the
+     * stream of what it learned (puzzle codes, knowledge/puzzles.ts), drawn only when used
+     */
+    seed?: number;
 }
 
 /**
@@ -88,6 +95,8 @@ export class Brain {
     /** the bot's skill (skill.ts; the preset's PRESET_SKILL by default) */
     readonly skill: Readonly<SkillProfile>;
     private readonly personaRng: Rng;
+    /** doors (BrainFeatures.doors): door state, alerts and the close behind; null with the flag off */
+    readonly doors: DoorBrain | null;
     /** scores of the last decision (diagnostics) */
     lastScores: Partial<Record<BehaviourName, number>> = {};
 
@@ -105,6 +114,9 @@ export class Brain {
         this.persona = profile.persona ?? NEUTRAL;
         this.skill = Object.freeze({ ...(profile.skill ?? skillOf(params)) });
         this.personaRng = profile.personaRng ?? createRng(PERSONA_SALT);
+        this.doors = features.doors ? new DoorBrain(profile.seed ?? 0) : null;
+        // (a number only: the knowledge is drawn from it on first use, by an enabled feature)
+        this.mem.puzzle.seed = profile.seed ?? 0;
     }
 
     context(now: number): BrainCtx {
@@ -149,6 +161,10 @@ export class Brain {
         const self = this.model.self;
         if (self.dead) return emptyIntent("idle");
         const ctx = this.context(now);
+        // doors: what the snapshot's doors show and sound like, before anything is decided
+        this.doors?.observe(ctx);
+        // puzzles: the site doors the bot sees or hears open (never read from the snapshot out of its sight)
+        if (ctx.features.puzzles) observePuzzleDoors(ctx, this.doors?.watch ?? null);
         const order = this.mem.order;
         if (order) {
             const intent = emptyIntent("order");
@@ -235,6 +251,8 @@ export class Brain {
             // round 5: an armed enemy in the house the bot loots on: the house waits (no in-out loop)
             noteContested(ctx, intent);
         }
+        // doors: an alert's look and pause, the close behind, out of a doorway (before the weapon, which may draw for it)
+        this.doors?.apply(ctx, intent);
         manageWeapons(ctx, intent);
         if (ctx.features.grenades) {
             // round 4: running from a chaser, a frag thrown back at its path (escapeFrag.ts) comes first
@@ -258,6 +276,8 @@ export class Brain {
         // pursuit: shot on the spot it stands on: step off it (stillHit.ts)
         if (ctx.features.pursuit) unpinUnderFire(ctx, intent);
         dodge(ctx, intent);
+        // doors: the bot's own Use (a door it toggles is no sign of anyone else)
+        if (this.doors && intent.actions.includes(Input.Use)) this.doors.noteUse(now);
         return intent;
     }
 }

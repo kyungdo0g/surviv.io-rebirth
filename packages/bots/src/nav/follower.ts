@@ -11,13 +11,20 @@
 // away from the goal (the goal cell is blocked) ends with a short straight approach and then reports failure instead
 // of replanning the same path forever; a bot in a blocked cell (pressed against an open door) plans from a free cell it
 // can walk to in a straight line; slow doors are waited for. Grid side: tight cells, unusable doors as walls, one-way
-// doors (nav/cellGrid.ts).
+// doors (nav/cellGrid.ts). A goal with no route at all (another component of the grid) is walked towards only up to
+// the reachable cell nearest it, then fails and is not tried again for a while (nav/followEnds.ts): it used to be
+// walked at in a straight line, sliding along the wall in between.
+// Doors (BrainFeatures.doors: a DoorUseSink, the bot's door brain, is given): the retry wait after a Use is per door (a
+// door used on the way out of one room held the next door shut for 0.7 s, and the bot walked into it), a door across
+// the leg after the next waypoint counts as on the way when that waypoint is close (a bend just before a doorway), and
+// every Use is reported to the sink (the door brain tells the bot's own door uses from other players').
 import type { Rng, Vec2 } from "@rebirth/core";
 import { v2 } from "@rebirth/core";
 import { colliderCenter, distanceToCollider, segmentHits } from "../geom.ts";
-import type { WorldModel } from "../perception/world.ts";
+import type { SeenObstacle, WorldModel } from "../perception/world.ts";
 import { findPath } from "./astar.ts";
 import { type CellGrid, sameLayer } from "./cellGrid.ts";
+import { blockedStart, planStartCell, towardUnreachable } from "./followEnds.ts";
 import { LayeredRoute } from "./layered.ts";
 
 export interface SteerResult {
@@ -35,7 +42,21 @@ export type PlanGrid = CellGrid & { planBudget(now: number): number; spendPlanBu
 
 /** Distance from the player centre within which Interact reaches a door (interactionRad + player radius, minus slack). */
 const DOOR_REACH_SLACK = 0.15;
+/**
+ * Doors feature: an open door this much past the reach (interactionRad + player radius) still holds Use back. The sim's
+ * Use toggles every door it reaches (sim world/interact.ts), and the bot has moved since its snapshot: a bot opening a
+ * house door closed the open one beside it, 1.70 away against a reach of 1.75, on four allies (review of the
+ * interactions; brain/doorClose.ts uses the same margin).
+ */
+export const USE_SAFETY = 0.3;
 const PLAYER_RAD = 1;
+/** Doors feature: the same door is used again after this long at the earliest, any door after DOOR_USE_GAP. */
+const DOOR_RETRY = 0.7;
+const DOOR_USE_GAP = 0.15;
+/** Doors feature: the leg after the next waypoint is checked for doors while that waypoint is this close. */
+const NEXT_LEG_NEAR = 2.5;
+/** Doors feature: a closed door on the way this close is the door ahead (PathFollower.doorAhead). */
+const DOOR_AHEAD = 4;
 /** A straight line is tried before A* for goals this close. */
 const DIRECT_DIST = 60;
 const STUCK_WINDOW = 0.9;
@@ -51,11 +72,24 @@ const NEW_DESTINATION = 6;
  */
 const APPROACH_TIME = 1.5;
 const APPROACH_DIST = 3;
-/** A bot in a blocked cell starts its plan from a free cell this close that it can walk to in a straight line. */
-const START_SEARCH = 4;
 /** A goal this close that a full search cannot reach is not searched for again for UNREACHABLE_MEMORY seconds. */
 const DETOUR_DIST = 30;
 const UNREACHABLE_MEMORY = 10;
+
+/**
+ * A closed door that opens for a bot walking up to it (usable and unlocked: by Use from the follower, or by itself):
+ * with BrainFeatures.doors the human keys (bot.ts) do not treat it as a wall to slide along, so the bot walks up to it
+ * and opens it instead of veering off along the wall before it opens.
+ */
+export function opensOnTheWay(o: SeenObstacle): boolean {
+    const door = o.view.door;
+    return !!door && !!o.def.door && !door.open && door.canUse && !door.locked && !o.view.dead;
+}
+
+/** Told about every door the follower uses (BrainFeatures.doors: brain/doors.ts DoorBrain). */
+export interface DoorUseSink {
+    noteUse(now: number): void;
+}
 
 export class PathFollower {
     goal: Vec2 | null = null;
@@ -73,6 +107,11 @@ export class PathFollower {
     private complete = false;
     /** the plan ends short of the goal (findPath snapped the goal to the nearest reachable cell) */
     private snapped = false;
+    /**
+     * the plan only leads towards a goal with no route at all (another component of the grid): its end is where the
+     * goal fails and is remembered as unreachable (followEnds.ts)
+     */
+    private toward = false;
     /** straight approach to the goal after a snapped plan ended, until this time */
     private approachUntil = Number.NEGATIVE_INFINITY;
     private checkPos: Vec2 | null = null;
@@ -89,7 +128,17 @@ export class PathFollower {
     private forceReplan = false;
     /** plan again at this time (a deferred replan) */
     private replanAt = Number.POSITIVE_INFINITY;
+    private joins = -1; // CellGrid.joins of the grid when last looked at
     private readonly rng: Rng;
+    /** BrainFeatures.doors: smarter door use (per-door retry, the next leg) reported here; null: the baseline rule */
+    private readonly doorSink: DoorUseSink | null;
+    /** doors feature: when each door was last used */
+    private readonly doorUses = new Map<number, number>();
+    /**
+     * doors feature: the closed door the path runs into next (within DOOR_AHEAD), 0 for none; the human keys walk up to
+     * it instead of sliding along it (bot.ts)
+     */
+    doorAhead = 0;
     private readonly route = new LayeredRoute();
     /** the destination changed during the current progress window */
     private destChanged = false;
@@ -101,8 +150,14 @@ export class PathFollower {
      */
     ditherEvents = 0;
 
-    constructor(rng: Rng) {
+    constructor(rng: Rng, doorSink: DoorUseSink | null = null) {
         this.rng = rng;
+        this.doorSink = doorSink;
+    }
+
+    /** Doors feature: `o` is the closed door ahead that opens for the bot (the keys walk up to it, bot.ts). */
+    walksInto(o: SeenObstacle): boolean {
+        return o.view.id === this.doorAhead && opensOnTheWay(o);
     }
 
     clear(): void {
@@ -113,6 +168,7 @@ export class PathFollower {
         this.failures = 0;
         this.stuckCount = 0;
         this.snapped = false;
+        this.toward = false;
         this.approachUntil = Number.NEGATIVE_INFINITY;
         this.route.clear();
     }
@@ -151,21 +207,11 @@ export class PathFollower {
         this.planTime = Number.NEGATIVE_INFINITY;
         this.complete = false;
         this.snapped = false;
+        this.toward = false;
         this.approachUntil = Number.NEGATIVE_INFINITY;
         this.replanAt = Number.POSITIVE_INFINITY;
         this.forceReplan = false;
         this.failures = 0;
-    }
-
-    /** The next few waypoints of the plan and the legs between them are still passable. */
-    private legsOpen(grid: CellGrid): boolean {
-        const pts = this.points;
-        const end = Math.min(pts.length, this.idx + 3);
-        for (let i = this.idx; i < end; i++) {
-            if (!grid.covers(pts[i]) || !grid.passable(grid.cellOf(pts[i]))) return false;
-            if (i > this.idx && !grid.linePassable(pts[i - 1], pts[i])) return false;
-        }
-        return true;
     }
 
     private plan(model: WorldModel, grid: PlanGrid, pos: Vec2, goal: Vec2, now: number): void {
@@ -173,6 +219,7 @@ export class PathFollower {
         this.forceReplan = false;
         this.replanAt = Number.POSITIVE_INFINITY;
         this.approachUntil = Number.NEGATIVE_INFINITY;
+        this.toward = false;
         if (v2.distance(pos, goal) < DIRECT_DIST && grid.lineWalkable(pos, goal)) {
             this.planTime = now;
             this.idx = 0;
@@ -196,14 +243,30 @@ export class PathFollower {
         this.planTime = now;
         this.idx = 0;
         const maxExpand = Math.min(MAX_PLAN_NODES, budget);
-        const res = findPath(grid, pos, goal, { maxExpand, startCell: this.startCell(model, grid, pos) });
+        const startCell = blockedStart(model, grid, pos);
+        let res = findPath(grid, pos, goal, { maxExpand, startCell });
         grid.spendPlanBudget(res ? res.expanded : 50);
+        const start = res ? -1 : planStartCell(grid, pos, startCell);
+        if (start >= 0) {
+            // no route at all (the goal lies in another component of the grid: behind a glass wall, past a wall with no
+            // gate): up to the reachable cell nearest it, where it fails (followEnds.ts), never straight at the goal
+            // along the wall in between; nothing reachable near it: it fails at once (steerOn stands)
+            const near = towardUnreachable(grid, start, pos, goal);
+            res = near ? findPath(grid, pos, near, { maxExpand, startCell }) : null;
+            if (res) grid.spendPlanBudget(res.expanded);
+            if (!res || res.points.length === 0) {
+                this.markUnreachable(goal, now);
+                this.points = [];
+                this.complete = false;
+                this.snapped = false;
+                return;
+            }
+            this.toward = true;
+        }
         if (res && !res.complete && maxExpand === MAX_PLAN_NODES && v2.distance(pos, goal) < DETOUR_DIST) {
             // a full search found no way to a goal this close: behind a wall, or only by a long detour (a tight gap on
             // the far side of a building); give up on it for a while instead of searching again and again
-            this.unreachable = v2.copy(goal);
-            this.unreachableUntil = now + UNREACHABLE_MEMORY;
-            this.failures = Math.max(this.failures, 3);
+            this.markUnreachable(goal, now);
         }
         if (!res || res.points.length === 0) {
             this.failures++;
@@ -215,8 +278,15 @@ export class PathFollower {
         this.points = res.points;
         this.complete = res.complete;
         const end = res.points[res.points.length - 1];
-        this.snapped = res.complete && v2.distance(end, goal) > 1.5;
+        this.snapped = res.complete && (this.toward || v2.distance(end, goal) > 1.5);
         if (!res.complete) this.failures++;
+    }
+
+    /** Steering to a goal near `goal` fails at once for UNREACHABLE_MEMORY seconds. */
+    private markUnreachable(goal: Vec2, now: number): void {
+        this.unreachable = v2.copy(goal);
+        this.unreachableUntil = now + UNREACHABLE_MEMORY;
+        this.failures = Math.max(this.failures, 3);
     }
 
     /**
@@ -230,6 +300,7 @@ export class PathFollower {
             this.idx = 0;
             this.complete = true;
             this.snapped = false;
+            this.toward = false;
             return true;
         }
         const pts = this.points;
@@ -248,6 +319,7 @@ export class PathFollower {
 
     /** Path following on one grid (the layered route runs each leg through it). */
     steerOn(model: WorldModel, grid: PlanGrid, goal: Vec2, now: number, arriveDist = 1): SteerResult {
+        this.doorAhead = 0;
         if (grid !== this.grid) this.useGrid(grid);
         const pos = model.self.pos;
         const dist = v2.distance(pos, goal);
@@ -258,6 +330,15 @@ export class PathFollower {
             this.stuckCount = 0;
             return { dir: null, openDoor: 0, arrived: true, failed: false };
         }
+        // components grew together (a crate across a corridor broke): a goal given up as cut off is planned again now
+        const gaveUp = this.snapped || this.failures > 0 || now < this.unreachableUntil;
+        if (grid.joins !== this.joins && gaveUp && grid.reachable(pos, goal, 6)) {
+            this.unreachable = null;
+            this.failures = 0;
+            this.stuckCount = 0;
+            this.forceReplan = true;
+        }
+        this.joins = grid.joins;
         if (this.unreachable && now < this.unreachableUntil && v2.distance(goal, this.unreachable) < 2) {
             return { dir: null, openDoor: 0, arrived: false, failed: true };
         }
@@ -288,17 +369,21 @@ export class PathFollower {
         // the grid changed (a door opened across the way): replan when the next legs are no longer open
         if (!replan && grid.version !== this.planVersion) {
             this.planVersion = grid.version;
-            if (this.complete && !this.legsOpen(grid)) replan = true;
+            if (this.complete && !grid.legsOpen(this.points, this.idx, 3)) replan = true;
         }
         // walked the whole plan without reaching the goal (an old or partial plan; a snapped one ends in an approach)
         const last = this.points[this.points.length - 1];
         const atEnd = !!last && v2.distance(pos, last) < 0.9 && v2.distance(last, goal) > 1.5;
         if (atEnd && this.snapped) {
             // the goal cell is blocked: close enough to try the last bit straight, else it cannot be reached from here
-            if (v2.distance(last, goal) > APPROACH_DIST) this.failures = Math.max(this.failures, 3);
+            // (a goal with no route: not for a while either)
+            if (this.toward) this.markUnreachable(goal, now);
+            else if (v2.distance(last, goal) > APPROACH_DIST) this.failures = Math.max(this.failures, 3);
             else if (this.approachUntil === Number.NEGATIVE_INFINITY) this.approachUntil = now + APPROACH_TIME;
         } else if (atEnd) replan = true;
         if (replan) this.plan(model, grid, pos, goal, now);
+        // (no route and nothing reachable near the goal: stand, the brain picks another goal)
+        if (this.points.length === 0) return { dir: null, openDoor: 0, arrived: false, failed: true };
 
         if (now < this.unstickUntil) return { dir: this.unstickDir, openDoor: 0, arrived: false, failed: false };
         if (this.waitingForDoor(model, now)) {
@@ -320,50 +405,22 @@ export class PathFollower {
         if (this.idx < pts.length - 1 && grid.lineWalkable(pos, pts[this.idx + 1])) this.idx++;
         const wp = this.idx < pts.length ? pts[this.idx] : goal;
         const dir = v2.normalizeSafe(v2.sub(wp, pos), { x: 1, y: 0 });
-        const openDoor = this.doorToOpen(model, pos, wp, now);
+        const openDoor = this.doorToOpen(
+            model,
+            pos,
+            wp,
+            now,
+            this.idx + 1 < pts.length ? pts[this.idx + 1] : undefined,
+        );
         this.checkStuck(pos, dir, now);
         const failed = this.failures >= 3 || this.stuckCount >= 5;
         // a failed goal: stand (the brain picks another) rather than jitter at the plan's end
         return { dir: failed && this.snapped ? null : dir, openDoor, arrived: false, failed };
     }
 
-    /**
-     * Where a plan starts when the bot stands in a blocked cell (pressed against an open door's panel, wedged between
-     * crates): the nearest walkable cell it can walk to in a straight line without crossing an obstacle of its floor
-     * (the plain nearest walkable cell may lie behind the panel it touches). Undefined: findPath's default.
-     */
-    private startCell(model: WorldModel, grid: CellGrid, pos: Vec2): number | undefined {
-        const own = grid.cellOf(pos);
-        if (!grid.covers(pos) || grid.blocked[own] === 0 || grid.tight[own] !== 0) return undefined;
-        const layer = model.self.layer;
-        const near = model.obstacles.filter(
-            (o) => o.blocksMove && sameLayer(layer, o.view.layer) && distanceToCollider(pos, o.col) < START_SEARCH + 1,
-        );
-        const r = Math.ceil(START_SEARCH / grid.cellSize);
-        const cx = own % grid.w;
-        const cy = Math.floor(own / grid.w);
-        let best = -1;
-        let bestD = Number.POSITIVE_INFINITY;
-        for (let dy = -r; dy <= r; dy++) {
-            for (let dx = -r; dx <= r; dx++) {
-                const x = cx + dx;
-                const y = cy + dy;
-                if (!grid.inside(x, y)) continue;
-                const i = y * grid.w + x;
-                if (grid.blocked[i] !== 0) continue;
-                const c = grid.center(i);
-                const d = v2.distanceSqr(c, pos);
-                if (d >= bestD || d > START_SEARCH * START_SEARCH) continue;
-                if (near.some((o) => segmentHits(o.col, pos, c))) continue;
-                bestD = d;
-                best = i;
-            }
-        }
-        return best >= 0 ? best : undefined;
-    }
-
     /** Walks `dir` directly (along stairs), with stuck detection and doors; `wp` is the point it heads for. */
     steerDirect(model: WorldModel, dir: Vec2, wp: Vec2, now: number): SteerResult {
+        this.doorAhead = 0;
         const pos = model.self.pos;
         if (now - this.lastSteer > 0.5) this.checkPos = null;
         this.lastSteer = now;
@@ -427,8 +484,12 @@ export class PathFollower {
         return true;
     }
 
-    /** A closed, usable door in reach that lies ahead on the way to `wp` (and no open door in reach). */
-    private doorToOpen(model: WorldModel, pos: Vec2, wp: Vec2, now: number): number {
+    /**
+     * A closed, usable door in reach that lies ahead on the way to `wp` (and no open door in reach). `next`: the waypoint
+     * after `wp` (BrainFeatures.doors).
+     */
+    private doorToOpen(model: WorldModel, pos: Vec2, wp: Vec2, now: number, next?: Vec2): number {
+        if (this.doorSink) return this.doorToOpenSense(model, pos, wp, now, next, this.doorSink);
         if (now - this.lastDoorUse < 0.7) return 0;
         let candidate = 0;
         let delay = 0;
@@ -453,6 +514,79 @@ export class PathFollower {
         }
         if (candidate) {
             this.lastDoorUse = now;
+            if (delay > 0) {
+                this.doorWaitId = candidate;
+                this.doorWaitUntil = now + delay + 0.5;
+            }
+        }
+        return candidate;
+    }
+
+    /**
+     * doorToOpen with BrainFeatures.doors: the nearest closed, usable, unlocked, hand-opened door in reach that lies ahead
+     * on the way (the next 3 units towards `wp`, or the leg after it when `wp` is close); each door is retried after
+     * DOOR_RETRY, other doors after DOOR_USE_GAP; nothing while an open door is in reach or within USE_SAFETY of it (Use
+     * toggles all of them). Also keeps `doorAhead`: the nearest closed door on the way within DOOR_AHEAD that opens for
+     * the bot (opensOnTheWay).
+     */
+    private doorToOpenSense(
+        model: WorldModel,
+        pos: Vec2,
+        wp: Vec2,
+        now: number,
+        next: Vec2 | undefined,
+        sink: DoorUseSink,
+    ): number {
+        let candidate = 0;
+        let delay = 0;
+        let best = Number.POSITIVE_INFINITY;
+        let aheadD = Number.POSITIVE_INFINITY;
+        let openInReach = false;
+        const layer = model.self.layer;
+        const ray = v2.add(pos, v2.mul(v2.normalizeSafe(v2.sub(wp, pos)), 3));
+        const bend = !!next && v2.distance(pos, wp) < NEXT_LEG_NEAR;
+        const gap = now - this.lastDoorUse < DOOR_USE_GAP;
+        for (const o of model.obstacles) {
+            const door = o.view.door;
+            const def = o.def.door;
+            if (!door || !def || o.view.dead || !sameLayer(layer, o.view.layer)) continue;
+            const d = distanceToCollider(pos, o.col);
+            if (d >= DOOR_AHEAD) continue;
+            const inReach = d < def.interactionRad + PLAYER_RAD - DOOR_REACH_SLACK;
+            if (door.open) {
+                // (the safety margin past the reach: never close an open door by accident)
+                openInReach ||= d < def.interactionRad + PLAYER_RAD + USE_SAFETY;
+                continue;
+            }
+            if (!door.canUse || door.locked) continue;
+            const toDoor = v2.sub(colliderCenter(o.col), pos);
+            const ahead = v2.dot(toDoor, v2.sub(wp, pos)) > 0;
+            const legAhead = bend && next !== undefined && v2.dot(toDoor, v2.sub(next, pos)) > 0;
+            const onWay =
+                (ahead && segmentHits(o.col, pos, ray)) ||
+                (legAhead && next !== undefined && segmentHits(o.col, wp, next));
+            if (!onWay) continue;
+            if (d < aheadD) {
+                aheadD = d;
+                this.doorAhead = o.view.id;
+            }
+            if (!inReach || def.autoOpen || gap) continue;
+            if (now - (this.doorUses.get(o.view.id) ?? Number.NEGATIVE_INFINITY) < DOOR_RETRY) continue;
+            if (d < best) {
+                best = d;
+                candidate = o.view.id;
+                delay = def.openDelay ?? 0;
+            }
+        }
+        if (openInReach) {
+            // (the closed half of a double door cannot be opened now: the keys slide along it)
+            this.doorAhead = 0;
+            return 0;
+        }
+        if (candidate) {
+            this.lastDoorUse = now;
+            this.doorUses.set(candidate, now);
+            sink.noteUse(now);
             if (delay > 0) {
                 this.doorWaitId = candidate;
                 this.doorWaitUntil = now + delay + 0.5;

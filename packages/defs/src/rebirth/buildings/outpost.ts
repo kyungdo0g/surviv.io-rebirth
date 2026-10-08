@@ -9,8 +9,8 @@ import {
     box,
     child,
     openingChildren,
-    type RebirthBuildingArt,
     type RebirthBuildingLayout,
+    type RoofedBuildingArt,
     wallChildren,
 } from "./layout.ts";
 
@@ -53,7 +53,7 @@ export const OUTPOST_FACTIONS = [
     { id: "outpost_01b", teamId: 2, crate: "crate_22", color: 0x1f5fbf },
 ] as const;
 
-export function outpostArt(teamId: number): RebirthBuildingArt {
+export function outpostArt(teamId: number): RoofedBuildingArt {
     const side = teamId === 1 ? "red" : "blue";
     return {
         floor: "map-building-outpost-floor-01.img",

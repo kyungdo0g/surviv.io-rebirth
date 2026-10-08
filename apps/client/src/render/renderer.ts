@@ -1,6 +1,8 @@
 // Layered world scene, ordered like the original client (survev client/src/renderer.ts):
 //   terrain -> layer 0 (ground) -> underground fill -> layer 1 (underground) -> layer 2/3 (stairs, tall objects)
 // then the screen-space red zone (`gas`, above every world layer like survev game.ts) and the UI overlay.
+// Rebirth: the screen-space `weather` container (the rainy matches' tint, fx/weather.ts) sits right over the world and
+// under the red zone and the UI, so it never tints the HUD.
 // Each layer is sorted by (zOrd, zIdx); views register their display objects every frame with `add()`, and things
 // that stand over the floor (smoke, flares, planes, falling air drops) with `addOverground()`, which lifts them onto the
 // top layers only when the viewer's floor can see them (layerRules.ts), so a surface air drop stays hidden in a bunker.
@@ -60,6 +62,8 @@ export class Renderer {
     readonly layers: Container[] = [];
     /** underground fill drawn between layer 0 and layer 1 */
     readonly undergroundFill = new Graphics();
+    /** screen-space weather over the world, under the red zone and the UI (rebirth rain tint) */
+    readonly weather = new Container({ label: "weather" });
     /** screen-space red zone between the world and the UI (survev game.ts scene order: layers, then gas) */
     readonly gas = new Container({ label: "gas" });
     /** screen-space effects over the world and under the UI: emote bubbles, team pings (M6) */
@@ -95,13 +99,14 @@ export class Renderer {
         this.overlay.interactiveChildren = false;
         this.gas.interactiveChildren = false;
         this.screen.interactiveChildren = false;
-        app.stage.addChild(this.world, this.gas, this.screen, this.overlay);
+        this.weather.interactiveChildren = false;
+        app.stage.addChild(this.world, this.weather, this.gas, this.screen, this.overlay);
     }
 
     /** Removes the scene from the stage and frees it (the client is torn down for a new game). */
     destroy(): void {
         this.pool.clear();
-        for (const root of [this.world, this.gas, this.screen, this.overlay]) {
+        for (const root of [this.world, this.weather, this.gas, this.screen, this.overlay]) {
             root.removeFromParent();
             root.destroy({ children: true });
         }

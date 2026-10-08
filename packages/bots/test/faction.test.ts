@@ -37,6 +37,12 @@ describe("50v50 bot match", () => {
         const teamplay = new TeamPlayProbe();
         const report = runMatch({
             faction: true,
+            // (seed 11 stalled after the bot interactions merge: the last player of each faction, both with Revivify
+            // (the Medic's self_revive), knocked by the closed zone's gas at 100 HP outlived its 8 s self revive and
+            // stood up again, forever. survev's 50 HP knock once the zone has closed (sim rules.downHealthFinalCircle)
+            // ends that loop, and the closed-zone bots heal or finish a kneeling enemy instead of standing at the
+            // centre (brain/survival.ts, reload.ts). Seed 12, used meanwhile, also ends with one faction left; one
+            // match is all this test can afford)
             seed: 11,
             gasStages: QUICK_GAS,
             maxTicks: 30000,

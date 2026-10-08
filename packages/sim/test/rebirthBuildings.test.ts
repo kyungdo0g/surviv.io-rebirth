@@ -8,6 +8,7 @@ import {
     CLINIC_HEAL_RATE,
     getMapObjectDef,
     getMapObjectDefOfType,
+    MILITARY_BASE_BUILDINGS,
     OUTPOST_FACTIONS,
     REBIRTH_BUILDING_SPAWNS,
 } from "@rebirth/defs";
@@ -27,12 +28,26 @@ const BUILDINGS = [
     "arsenal_01",
     "blockhouse_01r",
     "blockhouse_01b",
+    // the military bases' buildings (their structures are checked in militaryBase.test.ts)
+    ...MILITARY_BASE_BUILDINGS,
 ];
+/** Walls a building has at least: more than 8, but the military base's small parts have fewer. */
+const MIN_WALLS: Readonly<Record<string, number>> = {
+    military_stand_01: 4,
+    military_stand_01r: 4,
+    military_stand_01b: 4,
+    military_gatehouse_01: 6,
+    military_tower_01: 8,
+    military_bunker_command_01: 0,
+    military_bunker_magazine_01: 0,
+    military_bunker_vault_01: 6,
+};
 /** objects that stand outside the walls on purpose (porticos, bollards, sandbags, bushes) */
 const OUTSIDE = /^(bush_|sandbags_|bollard_|house_column_)/;
 /** a loophole (brick_wall_ext_3_0_low) fills a wall gap: it is an opening, not a wall */
-const WALL = /_wall_ext_(?!3_0_low)/;
-const OPENING = /^(house_door_0[12]|house_window_01|lab_door_01|lab_door_locked_01|brick_wall_ext_3_0_low)$/;
+const WALL = /_wall_ext_(?!3_0_low)|^stone_wall_int_4$/;
+const OPENING =
+    /^(house_door_0[12]|house_window_01|lab_door_01|lab_door_locked_01|brick_wall_ext_3_0_low|vault_door_main)$/;
 
 interface Placed {
     type: string;
@@ -73,7 +88,7 @@ describe("rebirth building layouts", () => {
             const walls = objs.filter((o) => WALL.test(o.type));
             const openings = objs.filter((o) => OPENING.test(o.type));
             const furniture = objs.filter((o) => !WALL.test(o.type) && !OPENING.test(o.type));
-            expect(walls.length).toBeGreaterThan(8);
+            expect(walls.length).toBeGreaterThanOrEqual(MIN_WALLS[type] ?? 9);
             for (const f of furniture) {
                 if (!OUTSIDE.test(f.type)) expect(inside(f.col, floor.min, floor.max), f.type).toBe(true);
                 for (const w of walls) expect(overlaps(f.col, w.col), `${f.type} in a wall`).toBe(false);
@@ -95,8 +110,16 @@ describe("rebirth building layouts", () => {
 describe("rebirth buildings in their maps", () => {
     it("spawn lists: the clinic, fire station, library and radio station on main; per faction a command post and two blockhouses, and the arsenal on 50v50", () => {
         expect(REBIRTH_BUILDING_SPAWNS).toEqual({
-            main: { clinic_01: 1, firestation_01: 1, library_01: 1, radio_station_01: 1 },
-            faction: { outpost_01r: 1, outpost_01b: 1, arsenal_01: 1, blockhouse_01r: 2, blockhouse_01b: 2 },
+            main: { clinic_01: 1, firestation_01: 1, library_01: 1, radio_station_01: 1, military_base_01: 1 },
+            faction: {
+                outpost_01r: 1,
+                outpost_01b: 1,
+                arsenal_01: 1,
+                blockhouse_01r: 2,
+                blockhouse_01b: 2,
+                military_base_01r: 1,
+                military_base_01b: 1,
+            },
         });
         for (const [map, teamMode] of [
             ["main", 1],

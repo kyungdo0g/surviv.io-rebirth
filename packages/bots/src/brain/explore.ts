@@ -44,19 +44,27 @@ const UPGRADE_VALUE = 40;
 
 /** Ammo on the ground this close to the bot counts as at hand for its guns and the guns it finds (desire.ts). */
 const AMMO_NEAR = 20;
+/**
+ * With BrainFeatures.steady, ammo at hand stays so while a stack of it lies this close: a bot walking from 5.56 ammo to
+ * an HK416 28 units from it valued the gun at nothing once the ammo fell 20 units behind, turned to a scope the other
+ * way, had the ammo back within 20 and turned again (85 s back and forth at the radio station, movestats seed 7).
+ */
+const AMMO_KEEP = 40;
 /** A gun just swapped out is not picked up again for this long (whatever the valuation says: no swapping back). */
 const SWAP_GUARD = 15;
 
 const ammoCache = new WeakMap<object, { at: number; set: Set<string> }>();
 
-/** Ammo types the bot knows on the ground within AMMO_NEAR (once per decision). */
+/** Ammo types the bot knows on the ground within AMMO_NEAR (once per decision; AMMO_KEEP for those already at hand). */
 export function ammoKnown(ctx: BrainCtx): ReadonlySet<string> {
     const c = ammoCache.get(ctx.mem);
     if (c && c.at === ctx.now) return c.set;
+    const kept = ctx.features.steady ? c?.set : undefined;
     const set = new Set<string>();
     for (const o of ctx.model.loot.values()) {
         if (!set.has(o.type) && hasDef(o.type) && GameObjectDefs[o.type].type === "ammo") {
-            if (v2.distance(o.pos, ctx.self.pos) < AMMO_NEAR) set.add(o.type);
+            const d = v2.distance(o.pos, ctx.self.pos);
+            if (d < AMMO_NEAR || (d < AMMO_KEEP && !!kept?.has(o.type))) set.add(o.type);
         }
     }
     ammoCache.set(ctx.mem, { at: ctx.now, set });

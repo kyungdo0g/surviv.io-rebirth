@@ -190,6 +190,38 @@ describe("new guns: mechanics fields (new-gun-stats.md section 4)", () => {
         ]);
     });
 
+    it("hand-held launchers (owner, 2026-10-08): the M79, GL-06 and MGL are held like a rifle, the rest on the shoulder", () => {
+        const handHeld = guns()
+            .filter(([, d]) => d.handHeld)
+            .map(([id]) => id);
+        expect(handHeld).toEqual(["m79", "mgl", "gl06"]);
+        // rifle hands over the gun, on the aim line: no potato cannon hold, survev's (-8, 0) gun offset, no side offset
+        const leftHand: Record<string, { x: number; y: number }> = {
+            m79: { x: -2, y: 0 },
+            gl06: { x: -2, y: 0 },
+            mgl: { x: 0, y: 0 },
+        };
+        for (const id of handHeld) {
+            const d = gun(id);
+            expect(d.isLauncher, id).toBe(true);
+            expect(d.worldImg.handsBelow, id).toBeUndefined();
+            expect(d.worldImg.gunOffset, id).toEqual({ x: -8, y: 0 });
+            expect(d.worldImg.leftHandOffset, id).toEqual(leftHand[id]);
+            expect(d.barrelOffset, id).toBe(0);
+        }
+        // the heavy ones keep the sheet's launcher hold (the potato cannon's) and its side offset
+        for (const id of ["rpg7", "panzerfaust", "m202"]) {
+            const d = gun(id);
+            expect(d.handHeld, id).toBeUndefined();
+            expect(d.worldImg, id).toMatchObject({
+                leftHandOffset: { x: 7, y: 2 },
+                gunOffset: { x: -10, y: -4 },
+                handsBelow: true,
+            });
+        }
+        expect(sheet.newFields.gun).toContain("handHeld");
+    });
+
     it("gold-only guns: RPG-7, MGL, Hécate II, Lynx, DShK; M16A4 3-round burst; AA-12 slugs on full auto", () => {
         const goldOnly = guns()
             .filter(([, d]) => d.goldOnly)

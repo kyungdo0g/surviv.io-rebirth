@@ -12,6 +12,8 @@ export const enSettings: Readonly<Record<string, string>> = {
     "index-screen-shake": "Screen shake",
     /** rebirth: the Enhanced hit effects setting (user/2026-10-07-hit-feedback) */
     "index-enhanced-hit-fx": "Enhanced hit effects",
+    /** rebirth: the Weather effects setting (user/2026-10-08-rain) */
+    "index-weather-fx": "Weather effects",
     "index-anon-player-names": "Anonymize player names",
     "index-master-volume": "Master Volume",
     "index-sfx-volume": "SFX Volume",
@@ -126,6 +128,7 @@ export const koSettings: Readonly<Record<string, string>> = {
     "index-settings": "설정",
     "index-screen-shake": "화면 흔들기",
     "index-enhanced-hit-fx": "히트 효과 강화",
+    "index-weather-fx": "날씨 효과",
     "index-anon-player-names": "플레이어 이름 익명화",
     "index-master-volume": "마스터 볼륨",
     "index-sfx-volume": "SFX 볼륨",

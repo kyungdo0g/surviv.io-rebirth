@@ -12,6 +12,10 @@ import {
     getDefOfType,
     gunClass,
     HELD_GUN_ART,
+    HELD_GUN_ART_GUN_OFFSET,
+    HELD_GUN_ART_HANDS_BELOW,
+    HELD_GUN_ART_LEFT_HAND_OFFSET,
+    type HeldGunArtId,
     Input,
     NEW_AMMO_EMOTES,
     NEW_AMMO_IDS,
@@ -23,12 +27,12 @@ import {
 import { emptyLocalState, LOCAL_ALL_DIRTY, quantizeLocal, readLocal, writeLocal } from "@rebirth/protocol";
 import { type BulletEvent, emptyInput, Game, generateMap, type LocalPlayerState, type PlayerInput } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
-import { SPRITES } from "../src/assets/spriteManifest.ts";
+import { SPRITES, type SpriteEntry } from "../src/assets/spriteManifest.ts";
 import { soundDef, soundFallback } from "../src/audio/soundDefs.ts";
 import { cycleSoundAfterShot, discardedGuns, LauncherFx, pumpedShot } from "../src/fx/newGunFx.ts";
 import type { ParticleSystem } from "../src/fx/particles.ts";
 import generatedSounds from "../src/generated/sound-defs.json";
-import { barLength, heldGunImage, isBarSprite, ownHeldSprite } from "../src/objects/heldGun.ts";
+import { barLength, hasEmptyHeldImage, heldGunImage, isBarSprite, ownHeldSprite } from "../src/objects/heldGun.ts";
 import { AMMO_COLORS } from "../src/ui/hudAmmo.ts";
 
 const ASSETS = join(import.meta.dirname, "../public/assets");
@@ -36,6 +40,17 @@ const HAVE_ASSETS = existsSync(join(ASSETS, "audio"));
 const gun = (id: string) => GameObjectDefs[id] as GunDef;
 /** Guns with a drawn top-down held sprite (packages/defs rebirth/heldGunArt.ts). */
 const DRAWN = new Set<string>(Object.keys(HELD_GUN_ART));
+/**
+ * The launchers, whose balance-sheet entry borrowed the potato cannon's sprite: the RPG-7, Panzerfaust and M202 held on
+ * the shoulder with the hands below it, the hand-held M79, MGL and GL-06 like a rifle (owner, 2026-10-08).
+ */
+const LAUNCHERS: readonly string[] = ["m79", "mgl", "gl06", "rpg7", "panzerfaust", "m202"];
+/** The hand-held launchers (GunDef.handHeld): rifle hands over the gun, gun offset (-8, 0). */
+const HAND_HELD: readonly string[] = ["m79", "mgl", "gl06"];
+/** The belt-fed machine guns, whose balance-sheet entry borrowed the PKP's top and bottom sprites. */
+const BELT_GUNS: readonly string[] = ["m60", "mg42", "dshk"];
+/** Whether a gun holds a drawn sprite: its own, or a dual pistol its single's (heldGun.ts ownHeldSprite). */
+const holdsDrawn = (id: string) => DRAWN.has(id.replace(/_dual$/, ""));
 const ORIGINAL_PLAYERS = (generatedSounds.lists as Record<string, Record<string, { path: string }>>).players;
 
 describe("new guns: loot icons", () => {
@@ -59,7 +74,7 @@ describe("new guns: loot icons", () => {
 describe("new guns: held sprites", () => {
     it("without own art, every new gun holds a bar drawn from an original bar sprite, as long as its barrel", () => {
         for (const id of NEW_GUN_IDS) {
-            if (DRAWN.has(id)) continue;
+            if (holdsDrawn(id)) continue;
             const def = gun(id);
             const img = heldGunImage(def);
             expect(SPRITES[ownHeldSprite(id)], id).toBeUndefined();
@@ -78,7 +93,50 @@ describe("new guns: held sprites", () => {
 
     it("a drawn new gun holds its own top-down sprite at 0.5 in its own colours, with the sheet's hands", () => {
         const drawnNew = NEW_GUN_IDS.filter((id) => DRAWN.has(id));
-        expect(drawnNew).toEqual(["g36c", "m16a4", "sig550", "g3"]);
+        expect(drawnNew).toEqual([
+            "g36c",
+            "m16a4",
+            "sig550",
+            "g3",
+            "fal",
+            "wa2000",
+            "tec9",
+            "bizon",
+            "asval",
+            "p90",
+            "dp12",
+            "aa12",
+            "m79",
+            "mgl",
+            "gl06",
+            "rpg7",
+            "panzerfaust",
+            "m202",
+            "m200",
+            "hecate",
+            "lynx",
+            "boys",
+            "m60",
+            "mg42",
+            "dshk",
+        ]);
+        // the bullpups' own sprites are drawn for survev's bullpup gun offset; the sheet gave them none
+        const gunOffset: Record<string, { x: number; y: number }> = {
+            wa2000: { x: -8, y: 0 },
+            lynx: { x: -8, y: 0 },
+            p90: { x: -8, y: 0 },
+            dp12: { x: -8, y: 0 },
+        };
+        expect(HELD_GUN_ART_GUN_OFFSET).toEqual(gunOffset);
+        // the P90's own sprite is held with both hands under it (its top magazine is its identity)
+        expect(HELD_GUN_ART_HANDS_BELOW).toEqual({ p90: true });
+        // the AS Val's left hand moves back from its suppressor onto its forend (the sheet's (9, 0) is the VSS's)
+        // and the RPG-7's onto its tube (the launchers' (7, 2) would float in front of the empty RPG-7's muzzle)
+        const leftHandOffset: Record<string, { x: number; y: number }> = {
+            asval: { x: 4, y: 0 },
+            rpg7: { x: -2, y: 2 },
+        };
+        expect(HELD_GUN_ART_LEFT_HAND_OFFSET).toEqual(leftHandOffset);
         for (const id of drawnNew) {
             const def = gun(id);
             const img = heldGunImage(def);
@@ -90,11 +148,19 @@ describe("new guns: held sprites", () => {
                 scale: { x: 0.5, y: 0.5 },
                 tint: 0xffffff,
                 magImg: undefined,
+                leftHandOffset: leftHandOffset[id] ?? def.worldImg.leftHandOffset,
+                gunOffset: gunOffset[id] ?? def.worldImg.gunOffset,
+                handsBelow: HELD_GUN_ART_HANDS_BELOW[id] ?? def.worldImg.handsBelow,
             });
-            // the balance sheet's bar stays in the def (rebirth/newGuns.json); hands, gun offset and recoil are kept
-            expect(isBarSprite(def.worldImg.sprite), id).toBe(true);
-            expect(img.leftHandOffset, id).toEqual(def.worldImg.leftHandOffset);
-            expect(img.gunOffset, id).toEqual(def.worldImg.gunOffset);
+            // the balance sheet's held image stays in the def (rebirth/newGuns.json): its bar, or the AWM-S art it
+            // borrowed for the Hecate II and the Lynx, or the PKP's (and its bottom sprite) for the belt guns; recoil
+            // is kept, and the hands and gun offset but the overrides
+            if (id === "hecate" || id === "lynx") expect(def.worldImg.sprite, id).toBe("gun-awc-01.img");
+            else if (BELT_GUNS.includes(id)) expect(def.worldImg.sprite, id).toBe("gun-pkp-top-01.img");
+            else if (LAUNCHERS.includes(id)) expect(def.worldImg.sprite, id).toBe("gun-potato-cannon-01.img");
+            else expect(isBarSprite(def.worldImg.sprite), id).toBe(true);
+            expect(img.leftHandOffset, id).toEqual(leftHandOffset[id] ?? def.worldImg.leftHandOffset);
+            expect(img.gunOffset, id).toEqual(gunOffset[id] ?? def.worldImg.gunOffset);
             expect(img.recoil, id).toBe(def.worldImg.recoil);
             expect(SPRITES[sprite], id).toEqual({
                 source: "rebirth",
@@ -103,6 +169,71 @@ describe("new guns: held sprites", () => {
             });
         }
         expect(gun("m16a4").worldImg).toMatchObject({ leftHandOffset: { x: 12, y: 0 }, gunOffset: { x: -8, y: 0 } });
+        for (const id of ["wa2000", "lynx", "p90", "dp12"]) {
+            expect(gun(id).isBullpup, id).toBe(true);
+            expect(gun(id).worldImg.gunOffset, id).toBeUndefined();
+            expect(heldGunImage(gun(id)).gunOffset, id).toEqual(HELD_GUN_ART_GUN_OFFSET[id as HeldGunArtId]);
+        }
+        expect(gun("p90").worldImg.handsBelow).toBeUndefined();
+        expect(heldGunImage(gun("p90")).handsBelow).toBe(true);
+        expect(gun("asval").worldImg.leftHandOffset).toEqual({ x: 9, y: 0 });
+        // the machine guns keep the PKP's left hand the sheet gave them; the shotguns their own
+        for (const id of BELT_GUNS) expect(heldGunImage(gun(id)).leftHandOffset, id).toEqual({ x: 12.5, y: 0 });
+        expect(heldGunImage(gun("aa12")).leftHandOffset).toEqual({ x: 8, y: 0 });
+        expect(heldGunImage(gun("dp12")).leftHandOffset).toEqual({ x: 7, y: 0 });
+    });
+
+    it("until its sprite entry exists, a belt gun holds the LMG class bar (the sheet borrowed the PKP's art)", () => {
+        const sprites = SPRITES as Record<string, SpriteEntry>;
+        for (const id of BELT_GUNS) {
+            const own = ownHeldSprite(id);
+            const entry = sprites[own]!;
+            delete sprites[own];
+            try {
+                const img = heldGunImage(gun(id));
+                expect(img, id).toMatchObject({ sprite: "gun-long-01.img", scale: { x: 0.6 }, tint: 0x262626 });
+                expect(img.magImg, id).toBeUndefined();
+                expect(barLength(img), id).toBeCloseTo(13.1 * gun(id).barrelLength, 6);
+            } finally {
+                sprites[own] = entry;
+            }
+            expect(heldGunImage(gun(id)).sprite, id).toBe(own);
+        }
+    });
+
+    it("the dual TEC-9 holds the TEC-9's drawn sprite in each hand, with its own hands", () => {
+        const dual = gun("tec9_dual");
+        expect(dual.isDual).toBe(true);
+        expect(DRAWN.has("tec9_dual")).toBe(false);
+        expect(ownHeldSprite("tec9_dual")).toBe("gun-tec9-01.img");
+        expect(heldGunImage(dual)).toEqual({
+            ...dual.worldImg,
+            sprite: "gun-tec9-01.img",
+            scale: { x: 0.5, y: 0.5 },
+            tint: 0xffffff,
+            magImg: undefined,
+        });
+        expect(heldGunImage(dual).leftHandOffset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('the Thompson M1928 and the Škorpion vz. 61 stay bars on purpose (owner: "막대기")', () => {
+        for (const id of ["m1928", "vz61", "vz61_dual"]) {
+            expect(holdsDrawn(id), id).toBe(false);
+            expect(SPRITES[ownHeldSprite(id)], id).toBeUndefined();
+            expect(heldGunImage(gun(id)), id).toBe(gun(id).worldImg);
+            expect(isBarSprite(gun(id).worldImg.sprite), id).toBe(true);
+        }
+    });
+
+    it('the Mk 14 EBR stays a bar on purpose (owner: "Mk 14 EBR만 막대기로")', () => {
+        expect(DRAWN.has("mk14")).toBe(false);
+        expect(SPRITES[ownHeldSprite("mk14")]).toBeUndefined();
+        expect(heldGunImage(gun("mk14"))).toBe(gun("mk14").worldImg);
+        expect(gun("mk14").worldImg).toMatchObject({
+            sprite: "gun-long-01.img",
+            scale: { x: 0.5, y: 0.47 },
+            tint: 0xa08c6a,
+        });
     });
 
     it("the AK-47 holds its drawn sprite through its def (a presentation deviation), hands and recoil unchanged", () => {
@@ -130,14 +261,49 @@ describe("new guns: held sprites", () => {
         expect(heldGunImage(gun("ak47"))).toBe(gun("ak47").worldImg);
         expect(heldGunImage(gun("ak47")).sprite).toBe("gun-ak47-01.img");
         expect(heldGunImage(gun("barrett"))).toBe(gun("barrett").worldImg);
-        const rpg = heldGunImage(gun("rpg7"));
-        expect(gun("rpg7").worldImg.sprite).toBe("gun-potato-cannon-01.img");
-        expect(rpg).toMatchObject({ sprite: "gun-long-01.img", scale: { x: 0.8 }, gunOffset: { x: -10, y: -4 } });
-        // 13.1 px per unit of barrel and the 10 px held behind the hand
-        expect(barLength(rpg)).toBeCloseTo(13.1 * 2.3 + 10, 6);
-        expect(heldGunImage(gun("dshk")).scale.x).toBe(0.6);
-        expect(gunClass("hecate")).toBe("sniper");
-        expect(heldGunImage(gun("hecate")).scale.x).toBe(0.55);
+        // a launcher without its sprite entry holds the olive launcher class bar (the sheet borrowed the potato cannon)
+        const sprites = SPRITES as Record<string, SpriteEntry>;
+        for (const id of LAUNCHERS) {
+            const own = ownHeldSprite(id);
+            const entry = sprites[own]!;
+            delete sprites[own];
+            try {
+                const img = heldGunImage(gun(id));
+                expect(gun(id).worldImg.sprite, id).toBe("gun-potato-cannon-01.img");
+                expect(gunClass(id), id).toBe("launcher");
+                // the shoulder launchers' gun offset (-10, -4), the hand-held ones' rifle-style (-8, 0)
+                const rear = HAND_HELD.includes(id) ? 8 : 10;
+                expect(img, id).toMatchObject({
+                    sprite: "gun-long-01.img",
+                    scale: { x: 0.8 },
+                    tint: 0x4b5320,
+                    gunOffset: HAND_HELD.includes(id) ? { x: -8, y: 0 } : { x: -10, y: -4 },
+                });
+                // 13.1 px per unit of barrel and the part held behind the hand
+                expect(barLength(img), id).toBeCloseTo(13.1 * gun(id).barrelLength + rear, 6);
+            } finally {
+                sprites[own] = entry;
+            }
+            expect(heldGunImage(gun(id)).sprite, id).toBe(own);
+        }
+    });
+
+    it("the RPG-7 is held without its warhead while empty; the other launchers have no empty look", () => {
+        const rpg = gun("rpg7");
+        expect(hasEmptyHeldImage(rpg)).toBe(true);
+        expect(heldGunImage(rpg).sprite).toBe("gun-rpg7-01.img");
+        const empty = heldGunImage(rpg, true);
+        expect(empty).toEqual({ ...heldGunImage(rpg), sprite: "gun-rpg7-empty-01.img" });
+        expect(SPRITES["gun-rpg7-empty-01.img"]).toEqual({
+            source: "rebirth",
+            path: "/rebirth/guns/gun-rpg7-empty-01.svg",
+            size: SPRITES["gun-rpg7-01.img"]!.size,
+        });
+        // the rest keep their one sprite (the Panzerfaust and M202 are thrown away after their shot instead)
+        for (const id of [...LAUNCHERS.filter((g) => g !== "rpg7"), "ak47", "m16a4", "ak74"]) {
+            expect(hasEmptyHeldImage(gun(id)), id).toBe(false);
+            expect(heldGunImage(gun(id), true), id).toEqual(heldGunImage(gun(id)));
+        }
     });
 });
 

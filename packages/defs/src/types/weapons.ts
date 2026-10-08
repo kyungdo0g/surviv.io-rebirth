@@ -110,6 +110,11 @@ export interface GunDef extends BaseWeaponDef {
     ignoreEndlessAmmo?: boolean;
     noSplinter?: boolean;
     isLauncher?: boolean;
+    /**
+     * a launcher held like a rifle (rebirth, owner 2026-10-08): the M79, GL-06 and Milkor MGL take the rifle idle pose
+     * with the hands over the gun; the other launchers keep the launcher pose (client objects/player.ts idlePoseName)
+     */
+    handHeld?: boolean;
     projType?: string;
     deployGroup?: number;
     ignoreDetune?: boolean;

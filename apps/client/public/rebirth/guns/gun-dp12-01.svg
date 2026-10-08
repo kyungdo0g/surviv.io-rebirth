@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="140" viewBox="0 0 48 140">
+  <!-- Standard Mfg DP-12 held sprite, own art (surviv.io-rebirth): seen from above, barrel up, butt flush at the bottom. -->
+  <!-- bullpup body: receiver and stock in one; the butt end (behind the right hand) carries the slanted grip stripes -->
+  <rect x="12" y="56" width="24" height="78" rx="2" fill="#484848" stroke="#000" stroke-width="8"/>
+  <path d="M17.5 120l8-8M17.5 128.5l13-13M25.5 128.5l5-5" stroke="#000" stroke-width="3"/>
+  <rect x="7" y="133" width="34" height="7" rx="2" fill="#000"/>
+  <!-- twin barrels side by side, peeking out past the pump with an open gap between the muzzles -->
+  <rect x="12" y="0" width="10" height="16" rx="2" fill="#000"/>
+  <rect x="26" y="0" width="10" height="16" rx="2" fill="#000"/>
+  <!-- pump (wraps both barrels, a little wider than the body): chamfered front, M-LOK slots along the left flank, flush with the outline -->
+  <path d="M13 14h22l4 4v34H9V18z" fill="#484848" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M14.5 20v6M14.5 29v6M14.5 38v6" stroke="#000" stroke-width="3"/>
+  <!-- full-length top rail down the centre; the highlight strip with rail slots -->
+  <rect x="20" y="8" width="8" height="72" rx="1" fill="#000"/>
+  <rect x="22" y="12" width="4" height="64" fill="#8f8f8f"/>
+  <path d="M22 18h4M22 24h4M22 30h4M22 36h4M22 42h4M22 48h4M22 54h4M22 60h4M22 66h4M22 72h4" stroke="#000" stroke-width="2"/>
+</svg>

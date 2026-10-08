@@ -50,6 +50,11 @@ export interface ViewDeps {
     nameOf?: (playerId: number) => string;
     /** a player's loadout heal / boost particles (PlayerInfo; survev content wave stage 4b; game/match.ts effectsOf) */
     effectsOf?: (playerId: number) => { heal: string; boost: string };
+    /**
+     * Rounds loaded in `gun` when it is the followed player's held gun (its local state, the snapshot being applied),
+     * else undefined (rebirth: the RPG-7's empty look, objects/gunLoad.ts)
+     */
+    loadedAmmo?: (playerId: number, gun: string) => number | undefined;
 }
 
 /** Per-frame state handed to every view. */

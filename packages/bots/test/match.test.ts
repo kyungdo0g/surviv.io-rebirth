@@ -34,9 +34,11 @@ describe("bot matches", () => {
     }, 120_000);
 
     it("a 16-bot duo match ends with one winning group", () => {
-        // seed 1: with the human motor, seed 5 now ends in a frag that kills the last players of three groups in the
-        // same tick (no group left standing; legacy aim does the same on seed 6), an ending this test does not cover
-        const report = runMatch({ bots: 16, seed: 1, teamMode: 2, gasStages: QUICK_GAS, maxTicks: BUDGET });
+        // seed 3: with the human motor, seed 5 now ends in a frag that kills the last players of three groups in the
+        // same tick (no group left standing; legacy aim does the same on seed 6), an ending this test does not cover;
+        // since the puzzle behaviour (BrainFeatures.puzzles) seed 1 ends with the last three players of two groups
+        // dying in the closing gas on the final tick, the same kind of ending
+        const report = runMatch({ bots: 16, seed: 3, teamMode: 2, gasStages: QUICK_GAS, maxTicks: BUDGET });
         expect(report.exceptions).toBe(0);
         expect(report.over).toBe(true);
         expect(report.winners.length).toBeGreaterThanOrEqual(1);

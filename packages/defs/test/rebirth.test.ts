@@ -21,10 +21,18 @@ import {
     HEAVY_BOMB_DECAL_TYPE,
     HEAVY_BOMB_EFFECT_TYPE,
     HEAVY_BOMB_EXPLOSION,
+    HELD_GUN_ART,
+    HELD_GUN_ART_EMPTY,
+    HELD_GUN_ART_GUN_OFFSET,
+    HELD_GUN_ART_HANDS_BELOW,
+    HELD_GUN_ART_LEFT_HAND_OFFSET,
     heldGunArt,
+    heldGunArtEmpty,
     IRON_BOMB_DECAL_TYPE,
     IRON_BOMB_RAD_MAX,
     isAirstrikeBomb,
+    LAUNCHER_ROUND_ART,
+    launcherRound,
     MapObjectDefs,
     MapObjectRegistry,
     newGunDefs,
@@ -103,11 +111,114 @@ describe("rebirth balance deviations", () => {
             { id: "m16a4", sprite: "gun-m16a4-01.img", size: [48, 220] },
             { id: "sig550", sprite: "gun-sig550-01.img", size: [48, 188] },
             { id: "g3", sprite: "gun-g3-01.img", size: [48, 190] },
+            { id: "fal", sprite: "gun-fal-01.img", size: [48, 196] },
+            { id: "wa2000", sprite: "gun-wa2000-01.img", size: [60, 192] },
+            { id: "m200", sprite: "gun-m200-01.img", size: [60, 226] },
+            { id: "hecate", sprite: "gun-hecate-01.img", size: [60, 232] },
+            { id: "lynx", sprite: "gun-lynx-01.img", size: [60, 192] },
+            { id: "boys", sprite: "gun-boys-01.img", size: [60, 238] },
+            { id: "bizon", sprite: "gun-bizon-01.img", size: [48, 140] },
+            { id: "asval", sprite: "gun-asval-01.img", size: [48, 152] },
+            { id: "p90", sprite: "gun-p90-01.img", size: [48, 116] },
+            { id: "tec9", sprite: "gun-tec9-01.img", size: [40, 116] },
+            { id: "dp12", sprite: "gun-dp12-01.img", size: [48, 140] },
+            { id: "aa12", sprite: "gun-aa12-01.img", size: [48, 194] },
+            { id: "m60", sprite: "gun-m60-01.img", size: [80, 212] },
+            { id: "mg42", sprite: "gun-mg42-01.img", size: [80, 218] },
+            { id: "dshk", sprite: "gun-dshk-01.img", size: [88, 250] },
+            { id: "m79", sprite: "gun-m79-01.img", size: [56, 138] },
+            { id: "gl06", sprite: "gun-gl06-01.img", size: [56, 130] },
+            { id: "mgl", sprite: "gun-mgl-01.img", size: [64, 144] },
+            { id: "rpg7", sprite: "gun-rpg7-01.img", size: [64, 204] },
+            { id: "panzerfaust", sprite: "gun-panzerfaust-01.img", size: [56, 210] },
+            { id: "m202", sprite: "gun-m202-01.img", size: [64, 196] },
         ]);
-        // the beta rifles keep the balance sheet's bar in their defs (the client switches them, heldGun.ts)
-        for (const id of ["g36c", "m16a4", "sig550", "g3"]) {
+        // the RPG-7 also without its warhead, at the same size (shown while its round is fired; the client decides)
+        expect(HELD_GUN_ART_EMPTY).toEqual(["rpg7"]);
+        expect(heldGunArtEmpty()).toEqual([{ id: "rpg7", sprite: "gun-rpg7-empty-01.img", size: [64, 204] }]);
+        // the launchers' defs keep the sheet's borrowed potato cannon (the client switches them) and its hands, but the
+        // hand-held M79, GL-06 and MGL, held like a rifle (owner, 2026-10-08): rifle hands over the gun, (-8, 0)
+        for (const id of ["rpg7", "panzerfaust", "m202"]) {
+            expect(getDefOfType("gun", id).worldImg, id).toMatchObject({
+                sprite: "gun-potato-cannon-01.img",
+                leftHandOffset: { x: 7, y: 2 },
+                gunOffset: { x: -10, y: -4 },
+                handsBelow: true,
+            });
+        }
+        for (const id of ["m79", "gl06", "mgl"]) {
+            const def = getDefOfType("gun", id);
+            expect(def.handHeld, id).toBe(true);
+            expect(def.worldImg, id).toMatchObject({ sprite: "gun-potato-cannon-01.img", gunOffset: { x: -8, y: 0 } });
+            expect(def.worldImg.handsBelow, id).toBeUndefined();
+        }
+        // the beta guns keep the balance sheet's held image in their defs (the client switches them, heldGun.ts): its
+        // bar, or the AWM-S art it borrowed for the Hecate II and the Lynx, or the PKP's for the belt guns; the own
+        // sprites' overrides are client-only
+        for (const id of [
+            ...["g36c", "m16a4", "sig550", "g3", "fal", "wa2000", "m200", "boys"],
+            ...["bizon", "asval", "p90", "dp12", "aa12"],
+        ]) {
             expect(getDefOfType("gun", id).worldImg.sprite, id).toMatch(/^gun-(med|long)-01\.img$/);
         }
+        for (const id of ["m60", "mg42", "dshk"]) {
+            expect(getDefOfType("gun", id).worldImg, id).toMatchObject({
+                sprite: "gun-pkp-top-01.img",
+                leftHandOffset: { x: 12.5, y: 0 },
+                magImg: { sprite: "gun-pkp-bot-01.img" },
+            });
+        }
+        for (const id of ["tec9", "tec9_dual"])
+            expect(getDefOfType("gun", id).worldImg.sprite, id).toBe("gun-short-01.img");
+        for (const id of ["hecate", "lynx"]) expect(getDefOfType("gun", id).worldImg.sprite, id).toBe("gun-awc-01.img");
+        expect(HELD_GUN_ART_GUN_OFFSET).toEqual({
+            wa2000: { x: -8, y: 0 },
+            lynx: { x: -8, y: 0 },
+            p90: { x: -8, y: 0 },
+            dp12: { x: -8, y: 0 },
+        });
+        expect(HELD_GUN_ART_HANDS_BELOW).toEqual({ p90: true });
+        expect(HELD_GUN_ART_LEFT_HAND_OFFSET).toEqual({ asval: { x: 4, y: 0 }, rpg7: { x: -2, y: 2 } });
+        for (const id of ["wa2000", "lynx", "p90", "dp12"]) {
+            expect(getDefOfType("gun", id).worldImg.gunOffset, id).toBeUndefined();
+        }
+        expect(getDefOfType("gun", "p90").worldImg.handsBelow).toBeUndefined();
+        expect(getDefOfType("gun", "asval").worldImg.leftHandOffset).toEqual({ x: 9, y: 0 });
+        // bars on purpose (owner); a dual pistol shares its single's sprite (the client's ownHeldSprite)
+        for (const id of ["mk14", "m1928", "vz61", "vz61_dual", "tec9_dual"]) {
+            expect(Object.hasOwn(HELD_GUN_ART, id), id).toBe(false);
+        }
+        expect(getDefOfType("gun", "mk14").worldImg).toMatchObject({
+            sprite: "gun-long-01.img",
+            scale: { x: 0.5, y: 0.47 },
+            tint: 0xa08c6a,
+        });
+    });
+
+    it("launcher rounds in flight: the 40 mm grenade for the M79, MGL and GL-06, each rocket its own", () => {
+        expect(Object.keys(LAUNCHER_ROUND_ART)).toEqual([
+            "proj-40mm-01.img",
+            "proj-rpg7-01.img",
+            "proj-m202-01.img",
+            "proj-panzerfaust-01.img",
+        ]);
+        // the M79 and MGL lob the m79_grenade projectile (their bullets are invisible); the others fly as bullets
+        const sprite = (type: string) => launcherRound(type)?.sprite;
+        expect(getDefOfType("gun", "m79").projType).toBe("m79_grenade");
+        expect(getDefOfType("gun", "mgl").projType).toBe("m79_grenade");
+        for (const gun of ["gl06", "rpg7", "panzerfaust", "m202"])
+            expect(getDefOfType("gun", gun).projType).toBeFalsy();
+        expect(sprite("m79_grenade")).toBe("proj-40mm-01.img");
+        expect(sprite(getDefOfType("gun", "gl06").bulletType)).toBe("proj-40mm-01.img");
+        expect(sprite(getDefOfType("gun", "rpg7").bulletType)).toBe("proj-rpg7-01.img");
+        expect(sprite(getDefOfType("gun", "panzerfaust").bulletType)).toBe("proj-panzerfaust-01.img");
+        expect(sprite(getDefOfType("gun", "m202").bulletType)).toBe("proj-m202-01.img");
+        for (const type of ["bullet_m79", "bullet_mgl", "bullet_ak47", "frag", "toString"]) {
+            expect(launcherRound(type), type).toBeUndefined();
+        }
+        // world px per sprite px: the RPG-7's 58 px round about one body (32 px) across, the 40 mm about a frag's
+        expect(launcherRound("bullet_rpg7")!.scale * LAUNCHER_ROUND_ART["proj-rpg7-01.img"][1]).toBeCloseTo(34.8, 6);
+        expect(launcherRound("m79_grenade")!.scale * 34).toBeCloseTo(13.6, 6);
     });
 
     it("the frag scorch mark grows x1.3 with its blast; the MIRV keeps the original decal", () => {
@@ -203,6 +314,28 @@ describe("rebirth-only defs", () => {
             "arsenal_01",
             "blockhouse_01r",
             "blockhouse_01b",
+            "military_infirmary_01",
+            "military_armory_01",
+            "military_storehouse_01",
+            "military_garage_01",
+            "military_gatehouse_01",
+            "military_tower_01",
+            "military_hq_01",
+            "military_hq_01r",
+            "military_hq_01b",
+            "military_stand_01",
+            "military_stand_01r",
+            "military_stand_01b",
+            "military_compound_01",
+            "military_compound_01r",
+            "military_compound_01b",
+            "military_bunker_command_01",
+            "military_bunker_magazine_01",
+            "military_bunker_vault_01",
+            "military_bunker_01",
+            "military_base_01",
+            "military_base_01r",
+            "military_base_01b",
         ]);
         expect(AIRDROP_TIER_CRATES).toEqual(["crate_10t1", "crate_10t2", "crate_10svt1", "crate_10svt2"]);
         expect(Object.keys(MapObjectDefs)).toEqual([...generatedMap, ...rebirthOnlyMapObjectIds]);

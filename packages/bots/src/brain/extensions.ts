@@ -11,6 +11,7 @@ import { evadeScore, planEvade } from "./evade.ts";
 import { advanceScore, planAdvance, planRally, rallyScore } from "./factionSquad.ts";
 import type { BrainFeature } from "./features.ts";
 import { guardScore, planGuard } from "./guard.ts";
+import { planPuzzle, puzzleScore } from "./puzzle.ts";
 import { planSearch, searchScore } from "./search.ts";
 import { planEvacuate, strikeScore } from "./strikes.ts";
 import { assistScore, planAssist } from "./teamplay.ts";
@@ -41,4 +42,6 @@ export const EXTENSION_BEHAVIOURS: readonly ExtensionBehaviour[] = [
     { name: "rally", feature: "faction", score: rallyScore, plan: planRally },
     // bot round 6, user report 38: early-game fist rushes at armed enemies
     { name: "rush", feature: "fistRush", score: rushScore, plan: planRush },
+    // bot interactions: puzzles, switches, panels and vault doors, and the rooms they open
+    { name: "puzzle", feature: "puzzles", score: puzzleScore, plan: planPuzzle },
 ];

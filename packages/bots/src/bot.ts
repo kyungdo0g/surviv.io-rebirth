@@ -143,15 +143,16 @@ export class Bot {
         this.brainName = brainLabel(this.features);
         this.seed = opts.seed;
         this.rng = createRng(opts.seed);
-        this.model = new WorldModel(map, opts.nav ?? NavGrid.forMap(map));
+        this.model = new WorldModel(map, opts.nav ?? NavGrid.forBrain(map, this.features));
         this.model.memory = this.params.memory;
         installPerception(this.model, this.features);
         this.brain = new Brain(this.model, this.params, this.rng, this.features, {
             persona: this.persona,
             skill: this.skill,
             personaRng,
+            seed: opts.seed,
         });
-        this.follower = new PathFollower(this.rng);
+        this.follower = new PathFollower(this.rng, this.brain.doors);
         const human = this.params.motor.model === "human";
         // the motor's own stream (like the class picker's): motor noise never shifts the brain's decisions
         const motorRng = createRng(opts.seed ^ 0x9e3779b9);
@@ -329,7 +330,7 @@ export class Bot {
             this.nearColliders = [];
             for (const o of this.model.obstacles)
                 if (o.blocksMove && sameLayer(self.layer, o.view.layer) && distanceToCollider(self.pos, o.col) < 3)
-                    this.nearColliders.push(o.col);
+                    if (!this.follower.walksInto(o)) this.nearColliders.push(o.col); // (a door to open: not slid along)
         }
         if (it.stop) {
             this.moveDir = null;
@@ -337,8 +338,8 @@ export class Bot {
             this.moveDir = it.moveDir;
         } else if (it.goal) {
             // goal layer (0 ground, 1 underground: basements and bunkers); undefined keeps ground navigation
-            const goalLayer = (it as Intent & { goalLayer?: number }).goalLayer;
-            const r = this.follower.steer(this.model, it.goal, this.clock, it.arriveDist, goalLayer);
+            const r = this.follower.steer(this.model, it.goal, this.clock, it.arriveDist, it.goalLayer);
+            if (this.features.puzzles) this.brain.mem.puzzle.followerStuck = this.follower.stuckEvents;
             // human keys: head for a carrot on the path leg, so 8-way motion converges on the line
             this.moveDir =
                 r.dir && this.stick ? this.carrot.heading(this.model.self.pos, this.follower.points, r.dir) : r.dir;
@@ -407,7 +408,8 @@ export class Bot {
     private humanKeys(input: PlayerInput, dir: Vec2 | null, stick: KeyStick): void {
         const it = this.steerIntent();
         const pos = this.model.self.pos;
-        const free = (octant: number) => octantFree(pos, octant, this.nearColliders);
+        // (stepping up against a switch on purpose: no sliding off it, Intent.nudge)
+        const free = it.nudge ? () => true : (octant: number) => octantFree(pos, octant, this.nearColliders);
         const fight = it.behaviour === "fight" || it.moveDir !== null;
         // strafing in a gunfight with a gun in hand: stop, shoot, move on
         const gun =

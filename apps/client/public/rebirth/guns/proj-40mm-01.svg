@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="34" viewBox="0 0 16 34">
+  <!-- 40x53 mm HE grenade in flight (M79 / Milkor MGL / GL-06), own art (surviv.io-rebirth): top-down, nose up. -->
+  <g stroke="#000" stroke-width="2" stroke-linejoin="round">
+    <rect x="3" y="25" width="10" height="7" rx="1" fill="#555555"/>
+    <rect x="3" y="14" width="10" height="7" fill="#3f7a2e"/>
+    <path d="M3 14V9a5 7 0 0 1 10 0v5z" fill="#c9a43a"/>
+    <rect x="2" y="21" width="12" height="4" fill="#b8683a"/>
+  </g>
+  <rect x="7" y="5" width="2" height="7" fill="#e6c96a"/>
+</svg>
