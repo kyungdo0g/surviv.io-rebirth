@@ -232,12 +232,13 @@ may not touch, the schema number used and open questions.
   Decided (conflicts.md; most predate ADR 0003, so worth re-confirming against the survev baseline; each is one rules
   value away from survev): crush damage 100 through perks (`airdropCrushInstantKill`, survev 1e10); a scheduled gold
   drop at circle 3 + 2 s and no comeback drop (`factionGoldDrop`, `helpLosingTeam`; survev has only the comeback drop);
-  faction strike waits 24 / 18 s (survev 30 / 21); no time-in-gas ramp (`gasDamageRamp`); 100 HP knocks after the zone
-  closed (`downHealthFinalCircle`, survev 50); no free Savannah 2x scope; the 50v50 promotion schedule
-  (`factionSchedule: "map"` gives survev's seven roles at 50-74 s); Mass Medicate x0.8 (survev x0.75); the loot perk
-  cap at 3 (survev refuses at 4). Done since (owner, 2026-10-08): survev's 50v50 MVP in the game over with the client's
-  Commander stars and MVP ribbon; kept: GameOver goes to every player, 50v50 is squads only (survev also has solo
-  50v50).
+  faction strike waits 24 / 18 s (survev 30 / 21); no time-in-gas ramp (`gasDamageRamp`); no free Savannah 2x scope;
+  the 50v50 promotion schedule (`factionSchedule: "map"` gives survev's seven roles at 50-74 s); Mass Medicate x0.8
+  (survev x0.75); the loot perk cap at 3 (survev refuses at 4). Done since (owner, 2026-10-08): survev's 50v50 MVP in
+  the game over with the client's Commander stars and MVP ribbon; kept: GameOver goes to every player, 50v50 is squads
+  only (survev also has solo 50v50). Switched to survev since (2026-10-08, conflicts.md down-health-50): 50 HP knocks
+  once the zone has closed (`downHealthFinalCircle` on), without which the last Revivify holder (Medic) of each faction
+  self revives in the closed gas forever (bots `faction.test.ts` seed 11 ran to its time limit).
 
   survev bugs not ported: round crates (Cobalt pods, `airdrop_crate_02h`) pulled into boxes by a sign error in its
   collider push; Trick or Treat? checking `halloween_mystery` instead of the rolled perk and deleting a held loot perk;

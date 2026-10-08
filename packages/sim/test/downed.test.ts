@@ -4,7 +4,7 @@
 import { v2 } from "@rebirth/core";
 import { DamageType, Input, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { bleedDamage, type Game, type KillEvent, type Player } from "../src/index.ts";
+import { bleedDamage, defaultRules, type Game, type KillEvent, type Player, TICK_HZ } from "../src/index.ts";
 import { giveGun, openSpot, send, steps } from "./combatHelpers.ts";
 import { addAt, flatTeamGame, hit, party } from "./teamHelpers.ts";
 
@@ -206,6 +206,33 @@ describe("the knock itself", () => {
             expect(team[0].downed).toBe(true);
             expect(team[0].health).toBe(rule ? 50 : 100);
         }
+    });
+
+    it("a lone Revivify holder in the closed zone bleeds out instead of self reviving forever (survev 042e29c7)", () => {
+        // the 50v50 endgame stall (bots faction.test.ts seed 11): the last Revivify holder of each faction knocked by
+        // the gas, up again after 8 s of self revive (4 gas ticks of 22 < 100 HP) and knocked again, until the end
+        const survive = (rule: boolean) => {
+            const { game, team } = squad(1);
+            const [m] = team;
+            m.perks.push("self_revive");
+            game.rules.downHealthFinalCircle = rule;
+            game.gas.currentRad = 0;
+            game.gas.damage = 22;
+            for (let i = 0; i < TICK_HZ * 120 && !m.dead; i++) {
+                send(game, m, { actions: m.downed && m.action.type === "none" ? [Input.Revive] : [] });
+                game.step();
+            }
+            return m;
+        };
+        // survev's rule (the default since ADR 0003): knocked at 50 HP, the gas kills it during its self revive
+        const m = survive(true);
+        expect(m.dead).toBe(true);
+        expect(m.downedCount).toBe(1);
+        expect(defaultRules().downHealthFinalCircle).toBe(true);
+        // without it the loop never ends (the knob keeps namu's "endless survival" reading, conflicts.md down-health-50)
+        const loop = survive(false);
+        expect(loop.dead).toBe(false);
+        expect(loop.downedCount).toBeGreaterThan(5);
     });
 
     it("bleeds faster on maps with bleedDamageMult (Faction): linear by default, compounding as the knob", () => {

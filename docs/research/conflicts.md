@@ -1594,8 +1594,9 @@
 - C (mechanics/gas.md): survev downs players at 50 HP once `currentRad ≤ 0.1` u, i.e. after the zone has fully closed (fork fix) [src:survev/server/src/game/objects/player.ts:2590-2592] [H]
 - D (mechanics/gas.md): the original having some health penalty after multiple revives [src:fandom/Revivify] [M]
 - E (mechanics/gas.md): namu saying gas damage never exceeds 100 while reviving, allowing endless survival [src:namu/Surviv.io] [M]
-- proposed resolution: ship without the 50 HP final-circle rule for v0.8.82 (a survev fix with no original source), keep it behind a flag [src:survev/server/src/game/objects/player.ts:2590-2592] [src:fandom/Revivify] [L]
-- note: `mechanics/downed-revive.md` proposed keeping survev's rule; `mechanics/gas.md` proposed shipping without it; this entry follows gas.md [src:derived/kb-crossref] [L]
+- proposed resolution: keep survev's 50 HP final-circle rule on by default (`rules.downHealthFinalCircle`; survev is the gameplay baseline since ADR 0003, and fandom also reports an anti-Revivify penalty in the original), with the knob off for namu's endless-survival reading [src:survev/server/src/game/objects/player.ts:2590-2592] [src:derived/survev-git-042e29c7] [src:user/2026-10-07-survev-baseline] [src:fandom/Revivify] [M]
+- note: with the rule off, a lone Revivify holder knocked in the closed zone (100 HP) survives its 8 s self revive (4 gas ticks of 22 = 88), stands up at 24 HP and is knocked again two ticks later, forever: a 50v50 match whose last player on each side holds Revivify (the Medic) never ends (bots `faction.test.ts` seed 11 ran to its time limit) [src:derived/faction-seed11-stall] [H]
+- note: this entry used to follow `mechanics/gas.md` (ship without the rule); `mechanics/downed-revive.md` proposed keeping survev's rule, which this entry now follows [src:derived/kb-crossref] [L]
 - files: `mechanics/downed-revive.md` (`down-health-50`), `mechanics/gas.md` (`gas-revivify-final-circle`) [src:derived/kb-crossref] [H]
 
 ## revive-drop-cancel

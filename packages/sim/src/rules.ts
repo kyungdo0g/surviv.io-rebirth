@@ -145,8 +145,12 @@ export interface SimRules {
     /** invulnerability right after being downed (GameConfig.player.downedDamageBuffer 0.1 s; oracle revive.json) */
     downedDamageBuffer: number;
     /**
-     * Players downed once the red zone has fully closed (radius <= 0.1) get 50 HP instead of 100 (survev 2025 fix
-     * against endless Revivify loops; conflicts.md down-health-50: not in 0.8.82, off).
+     * Players downed once the red zone has fully closed (radius <= 0.1) get 50 HP instead of 100 (survev player.ts
+     * down, commit 042e29c7 "fixes revivify infinite revive"; conflicts.md down-health-50). On since the survev
+     * baseline (ADR 0003): with 100 HP a lone Revivify holder (the 50v50 Medic) outlives its 8 s self revive in the
+     * final gas (4 ticks of 22) and stands up again forever, so a 50v50 match whose last player on each side holds
+     * Revivify never ends (bots faction.test.ts seed 11).
+     * false keeps namu's reading of the original (gas never beats a revive: "endless survival").
      */
     downHealthFinalCircle: boolean;
     /** survev adds the forced melee's equip bonus while downed (conflicts.md downed-melee-equip-bonus: off) */
@@ -210,7 +214,7 @@ export function defaultRules(): SimRules {
         cullOtherFloors: true,
         bleedEscalation: "linear",
         downedDamageBuffer: GameConfig.player.downedDamageBuffer,
-        downHealthFinalCircle: false,
+        downHealthFinalCircle: true,
         downedEquipBonus: false,
         reviverSpeed: "half",
         medicRevivedAoe: true,
