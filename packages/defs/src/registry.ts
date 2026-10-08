@@ -43,7 +43,8 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * · 17: the potato-faction gold drop (survev parity wave): the survev-only map types crate_13po and
  * airdrop_crate_04po take ids in survev order among the survev-only ones (map ids from crate_17 on move up).
  * · 18: the faction status (FactionStatus) also lists the enemies revealed by firing (survev timeUntilHidden), after
- * the viewer's faction; no record layout changed.
+ * the viewer's faction; no record layout changed. Then (still 18, unreleased) the rebirth buildings' map types
+ * loot_tier_medical, clinic_01, outpost_01r and outpost_01b after the air drop tier crates (rebirth/buildings.ts).
  */
 export const PROTOCOL_SCHEMA_VERSION = 18;
 export const GAME_OBJECT_TYPE_BITS = 10;

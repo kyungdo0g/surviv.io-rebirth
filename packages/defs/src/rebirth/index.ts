@@ -4,6 +4,7 @@
 // docs/research/rebirth-deviations.md is the cited list.
 import type { ExplosionDef, GameConfigDef, GameObjectDef, LootSpawnDef, MapDef, MapObjectDef } from "../types/index.ts";
 import { AIRDROP_TIER_SPLITS } from "./airdropTiers.ts";
+import { applyRebirthBuildingSpawns } from "./buildings.ts";
 import { rebirthOnlyDefs, rebirthOnlyMapObjects } from "./defs.ts";
 import { applyBalanceDeviations, type DefDeviation } from "./deviations.ts";
 import { applyNewGunLoot } from "./newGunLoot.ts";
@@ -14,6 +15,7 @@ import { applyRebirthGoldGuns, applyWikiStatOverrides } from "./survevGuns.ts";
 export * from "./airdropLoot.ts";
 export * from "./airdropTiers.ts";
 export * from "./airstrikeVariants.ts";
+export * from "./buildings.ts";
 export { type DefDeviation, FRAG_DECAL_TYPE, FRAG_RADIUS_MULT } from "./deviations.ts";
 export * from "./gunBeta.ts";
 export * from "./newGunAssets.ts";
@@ -87,7 +89,8 @@ export function applyRebirthGameConfig(generated: GameConfigDef): GameConfigDef 
  * The generated map defs with the rebirth loot tables added to copies of their loot tables: the new guns' rows around
  * the air drop tier tables (rebirth/newGunLoot.ts, rebirth/airdropLoot.ts), then the rebirth gold guns (the Barrett,
  * rebirth/survevGuns.ts) in the gold drop of main and its seasonal copies, then the rare crates' throwables with the
- * variant strobes (rebirth/strobeLoot.ts). Checks that every tier inner crate a map can drop finds its tiers in that
+ * variant strobes (rebirth/strobeLoot.ts), then the rebirth buildings in their maps' fixed spawns (rebirth/buildings.ts).
+ * Checks that every tier inner crate a map can drop finds its tiers in that
  * map's table. `gameObjects` gives the guns' ammo (the new guns' floor rule).
  */
 export function applyRebirthMaps(
@@ -99,7 +102,9 @@ export function applyRebirthMaps(
         const def = Object.hasOwn(gameObjects, id) ? gameObjects[id] : undefined;
         return def?.type === "gun" ? def.ammo : undefined;
     };
-    const maps = applyStrobeVariantLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf)));
+    const maps = applyRebirthBuildingSpawns(
+        applyStrobeVariantLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf))),
+    );
     for (const [name, def] of Object.entries(maps)) {
         for (const crate of def.gameConfig.planes.crates) {
             const split = Object.hasOwn(AIRDROP_TIER_SPLITS, crate.name) ? AIRDROP_TIER_SPLITS[crate.name] : undefined;

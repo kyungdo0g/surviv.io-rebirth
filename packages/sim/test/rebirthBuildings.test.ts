@@ -1,0 +1,128 @@
+// The rebirth buildings (packages/defs rebirth/buildings.ts, the owner's request 2026-10-08): the clinic on the normal
+// map, the faction command posts on 50v50. Their layouts are checked as built (furniture clear of the walls and of each
+// other, doors and windows in wall gaps), the clinic's treatment rooms heal, each command post stands on its faction's
+// side with its faction's crate.
+import { type Collider, collider, type Vec2, v2 } from "@rebirth/core";
+import {
+    CLINIC_HEAL_RATE,
+    getMapObjectDef,
+    getMapObjectDefOfType,
+    OUTPOST_FACTIONS,
+    REBIRTH_BUILDING_SPAWNS,
+} from "@rebirth/defs";
+import { describe, expect, it } from "vitest";
+import { toBounds, transformOri } from "../src/geom/transform.ts";
+import { Game } from "../src/index.ts";
+import { steps } from "./combatHelpers.ts";
+import { cachedMap } from "./helpers.ts";
+
+const BUILDINGS = ["clinic_01", "outpost_01r", "outpost_01b"];
+/** objects that stand outside the walls on purpose */
+const OUTSIDE = /^(bush_|sandbags_)/;
+const WALL = /_wall_ext_/;
+const OPENING = /^house_(door|window)_01$/;
+
+interface Placed {
+    type: string;
+    col: Collider;
+}
+
+/** The building's obstacle children at ori 0 with their world colliders (weighted picks: the first choice). */
+function children(type: string): Placed[] {
+    const def = getMapObjectDefOfType("building", type);
+    const out: Placed[] = [];
+    for (const c of def.mapObjects) {
+        const t = typeof c.type === "string" ? c.type : Object.keys(c.type)[0];
+        if (!t) continue;
+        const d = getMapObjectDef(t);
+        if (d.type !== "obstacle") continue;
+        out.push({ type: t, col: transformOri(d.collision, c.pos, c.ori, c.scale) });
+    }
+    return out;
+}
+
+/** Overlap deeper than `tol` (touching faces are fine). */
+function overlaps(a: Collider, b: Collider, tol = 0.02): boolean {
+    const res = collider.intersect(a, b);
+    return !!res && res.pen > tol;
+}
+
+function inside(c: Collider, min: Vec2, max: Vec2): boolean {
+    const b = toBounds(c);
+    return b.min.x >= min.x - 1e-6 && b.min.y >= min.y - 1e-6 && b.max.x <= max.x + 1e-6 && b.max.y <= max.y + 1e-6;
+}
+
+describe("rebirth building layouts", () => {
+    for (const type of BUILDINGS) {
+        it(`${type}: furniture inside, clear of walls and of each other; doors and windows in wall gaps`, () => {
+            const def = getMapObjectDefOfType("building", type);
+            const floor = def.floor.surfaces[0].collision[0];
+            const objs = children(type);
+            const walls = objs.filter((o) => WALL.test(o.type));
+            const openings = objs.filter((o) => OPENING.test(o.type));
+            const furniture = objs.filter((o) => !WALL.test(o.type) && !OPENING.test(o.type));
+            expect(walls.length).toBeGreaterThan(8);
+            for (const f of furniture) {
+                if (!OUTSIDE.test(f.type)) expect(inside(f.col, floor.min, floor.max), f.type).toBe(true);
+                for (const w of walls) expect(overlaps(f.col, w.col), `${f.type} in a wall`).toBe(false);
+            }
+            for (let i = 0; i < furniture.length; i++) {
+                for (let j = i + 1; j < furniture.length; j++) {
+                    const [a, b] = [furniture[i], furniture[j]];
+                    expect(overlaps(a.col, b.col), `${a.type} / ${b.type}`).toBe(false);
+                }
+            }
+            // a door or window fills a gap: it overlaps no wall beyond its frame
+            for (const o of openings) for (const w of walls) expect(overlaps(o.col, w.col, 0.6), o.type).toBe(false);
+            // heal regions stay inside
+            for (const h of def.healRegions ?? []) expect(inside(h.collision, floor.min, floor.max)).toBe(true);
+        });
+    }
+});
+
+describe("rebirth buildings in their maps", () => {
+    it("spawn lists: one clinic on main, one command post per faction on 50v50", () => {
+        expect(REBIRTH_BUILDING_SPAWNS).toEqual({
+            main: { clinic_01: 1 },
+            faction: { outpost_01r: 1, outpost_01b: 1 },
+        });
+        for (const seed of [1, 7, 99]) {
+            const gen = cachedMap("main", seed);
+            expect(gen.objects.filter((o) => o.type === "clinic_01")).toHaveLength(1);
+        }
+    });
+
+    it("the clinic's treatment rooms heal 2 HP/s (heal regions, survev camp_01's rate)", () => {
+        const generation = cachedMap("main", 12345);
+        const game = new Game({ mapName: "main", seed: 12345 }, { generation, spawnLoot: false });
+        const clinic = generation.objects.find((o) => o.type === "clinic_01")!;
+        const p = game.getPlayer(game.addPlayer("patient"))!;
+        const ward = transformOri({ type: 0, pos: { x: -9, y: 4.5 }, rad: 0 }, clinic.pos, clinic.ori, 1);
+        game.teleportPlayer(p.id, v2.copy((ward as { pos: Vec2 }).pos), 0);
+        p.health = 50;
+        steps(game, 100);
+        expect(p.health).toBeCloseTo(50 + CLINIC_HEAL_RATE, 1);
+    });
+
+    it("each command post stands on its faction's side and holds its faction's crate", () => {
+        for (const seed of [1, 7, 12345]) {
+            const generation = cachedMap("faction", seed, 4);
+            const game = new Game({ mapName: "faction", seed, teamMode: 4 }, { generation, spawnLoot: false });
+            const faction = game.faction!;
+            for (const f of OUTPOST_FACTIONS) {
+                const post = generation.objects.find((o) => o.type === f.id)!;
+                expect(post, `${f.id} seed ${seed}`).toBeDefined();
+                const band = faction.spawnBand(f.teamId);
+                const centre = { x: game.mapData.width / 2, y: game.mapData.height / 2 };
+                const bandCentre = v2.mul(v2.add(band.min, band.max), 0.5);
+                // the same half of the map as the faction's spawn band
+                const axis = Math.abs(bandCentre.x - centre.x) > Math.abs(bandCentre.y - centre.y) ? "x" : "y";
+                expect(Math.sign(post.pos[axis] - centre[axis]), `${f.id} seed ${seed}`).toBe(
+                    Math.sign(bandCentre[axis] - centre[axis]),
+                );
+                const crates = generation.objects.filter((o) => o.parentId === post.id && o.type === f.crate);
+                expect(crates).toHaveLength(1);
+            }
+        }
+    });
+});

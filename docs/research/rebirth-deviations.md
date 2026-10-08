@@ -222,3 +222,15 @@
 
 - The rebirth has no accounts, so the start menu's Loadout lets every player pick any outfit, melee skin, six emotes, heal and boost effect and crosshair; v0.8.82 and survev unlock only `unlock_default` for a guest [src:user/2026-10-07-survev-baseline] [src:survev/shared/defs/gameObjects/unlockDefs.ts] [H]
 - Role uniforms, loot melee weapons and `noCustom` emotes stay out of the menu, and the simulation replaces unknown or ineligible ids with the defaults (`packages/sim/src/match/loadout.ts`) [src:user/2026-10-07-survev-baseline] [H]
+
+## Rebirth buildings
+
+- The owner asked for two buildings of the rebirth's own: one for the normal map and one only for 50v50. Both are rebirth-only map types (`packages/defs/src/rebirth/buildings.ts`) whose ids follow every generated one, so original ids are unchanged [src:user/2026-10-08-own-buildings] [H]
+- They are built like the original houses: invisible `brick_wall_ext_*` / `concrete_wall_ext_*` walls centred on the floor's edge, the original `house_door_01` and `house_window_01`, original furniture and loot spawners, and their own floor and roof images. The images are rebirth art drawn from the same layouts (`tools/assets/rebirthBuildingArt.ts`, committed under `apps/client/public/rebirth/map/`): no original or survev file is copied [src:user/2026-10-08-own-buildings] [src:survev/shared/defs/mapObjectDefs.ts] [H]
+
+| building | map | size | rooms and contents | sources |
+|---|---|---|---|---|
+| `clinic_01` (clinic) | `main`, 1 fixed spawn | 32 × 22 | lobby with reception desk, waiting chairs, couch, plants and a soda machine; two treatment rooms with a bed each whose floor heals 2 HP/s (`healRegions`, survev `camp_01`'s rate, not in the gas); a pharmacy with shelves, two `loot_tier_medical` spots (rebirth-only spawner, `tier_medical`) and a container spot; red cross on the roof and on the map | [src:user/2026-10-08-own-buildings] [src:survev/shared/defs/mapObjects/buildings/modeBuildingDefs.ts] [H] |
+| `outpost_01r` / `outpost_01b` (command post) | `faction`, 1 fixed spawn each, on its faction's side (`teamId` 1 / 2, like `bank_01` / `police_01`) | 24 × 20 | armory with the faction's crate (`crate_02f` / `crate_22`), an M870 gun mount and an ammo crate; command room with the blueprint map table and a control panel; bunks and lockers; sandbags at the door; the roof in the faction's colour with a star | [src:user/2026-10-08-own-buildings] [src:survev/shared/defs/maps/factionDefs.ts] [H] |
+
+- The client receives them with the other map types (protocol schema 18: the rebirth-only map types `loot_tier_medical`, `clinic_01`, `outpost_01r` and `outpost_01b` take ids after the air drop tier crates) [src:user/2026-10-08-own-buildings] [H]

@@ -14,6 +14,7 @@ import {
     HEAVY_BOMB_SPRITE_SCALE,
     IRON_BOMB_RAD_MAX,
 } from "./airstrikeVariants.ts";
+import { rebirthBuildings } from "./buildings.ts";
 import { FRAG_DECAL_TYPE, FRAG_RADIUS_MULT, scaleDefValue } from "./deviations.ts";
 import { newGunDefs } from "./newGuns.ts";
 import { airstrikePingDefs, strobeVariantDefs } from "./strobes.ts";
@@ -70,6 +71,7 @@ function scaledDecal(decal: DecalDef, mult: number): DecalDef {
  *   x 38 / 14 (0.2 -> ~0.543), left by explosion_bomb_heavy; `decal_frag_large_explosion` is decal_frag_explosion
  *   x 1.3 (0.2 -> 0.26), left by the rebirth frag grenade (rebirth/deviations.ts); the MIRV keeps decal_frag_explosion.
  * - the air drop tier inner crates crate_10t1, crate_10t2, crate_10svt1 and crate_10svt2 (rebirth/airdropLoot.ts).
+ * - the rebirth buildings clinic_01, outpost_01r and outpost_01b and their loot_tier_medical (rebirth/buildings.ts).
  */
 export function rebirthOnlyMapObjects(generated: Readonly<Record<string, MapObjectDef>>): Record<string, MapObjectDef> {
     const ironDecal = generated.decal_bomb_iron_explosion as DecalDef;
@@ -78,5 +80,6 @@ export function rebirthOnlyMapObjects(generated: Readonly<Record<string, MapObje
         [HEAVY_BOMB_DECAL_TYPE]: scaledDecal(ironDecal, HEAVY_BOMB_EXPLOSION.rad.max / IRON_BOMB_RAD_MAX),
         [FRAG_DECAL_TYPE]: scaledDecal(fragDecal, FRAG_RADIUS_MULT),
         ...airdropTierCrates(generated),
+        ...rebirthBuildings(generated),
     };
 }

@@ -97,9 +97,17 @@ describe("rebirth-only defs", () => {
         expect(Object.keys(GameObjectDefs)).toEqual([...generated, ...rebirthOnlyIds]);
         expect(generated.map((id) => GameObjectRegistry.typeToId(id))).toEqual(generated.map((_, i) => i + 1));
         for (const id of rebirthOnlyIds) expect(Object.hasOwn(gameObjects, id)).toBe(false);
-        // the rebirth scorch decals and air drop tier crates likewise come after every generated map object
+        // the rebirth scorch decals, air drop tier crates and buildings likewise come after every generated map object
         const generatedMap = Object.keys(mapObjects);
-        expect(rebirthOnlyMapObjectIds).toEqual([HEAVY_BOMB_DECAL_TYPE, FRAG_DECAL_TYPE, ...AIRDROP_TIER_CRATES]);
+        expect(rebirthOnlyMapObjectIds).toEqual([
+            HEAVY_BOMB_DECAL_TYPE,
+            FRAG_DECAL_TYPE,
+            ...AIRDROP_TIER_CRATES,
+            "loot_tier_medical",
+            "clinic_01",
+            "outpost_01r",
+            "outpost_01b",
+        ]);
         expect(AIRDROP_TIER_CRATES).toEqual(["crate_10t1", "crate_10t2", "crate_10svt1", "crate_10svt2"]);
         expect(Object.keys(MapObjectDefs)).toEqual([...generatedMap, ...rebirthOnlyMapObjectIds]);
         expect(generatedMap.map((id) => MapObjectRegistry.typeToId(id))).toEqual(generatedMap.map((_, i) => i + 1));
