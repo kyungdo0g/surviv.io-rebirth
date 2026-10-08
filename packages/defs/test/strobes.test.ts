@@ -16,6 +16,8 @@ import {
     type GameObjectDef,
     GameObjectDefs,
     GameObjectRegistry,
+    GOLD_BONUS_CRATES,
+    GOLD_BONUS_TABLE,
     getDefOfType,
     getMapObjectDefOfType,
     isAirstrikePing,
@@ -255,14 +257,17 @@ describe("variant strobe loot", () => {
         for (const id of RARE_THROWABLE_CRATES) {
             const crate = getMapObjectDefOfType("obstacle", id);
             const original = mapObjects[id];
+            // the gold crates also roll the owner's bonus table last (rebirth/ownerLoot.ts, 2026-10-08)
+            const bonus = GOLD_BONUS_CRATES.includes(id) ? [GOLD_BONUS_TABLE] : [];
             expect(
                 crate.loot.map((l) => l.tier ?? l.type),
                 id,
-            ).toEqual(
-                original.loot.map((l: { tier?: string; type?: string }) =>
+            ).toEqual([
+                ...original.loot.map((l: { tier?: string; type?: string }) =>
                     l.tier === "tier_airdrop_throwables" ? RARE_THROWABLES_TABLE : (l.tier ?? l.type),
                 ),
-            );
+                ...bonus,
+            ]);
             expect({ ...crate, loot: original.loot }).toEqual(original);
         }
         // normal drops, their tier crates and the potato 50v50 crates keep tier_airdrop_throwables

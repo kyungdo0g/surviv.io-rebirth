@@ -9,6 +9,7 @@ import {
     GameConfig,
     GameObjectDefs,
     GameObjectRegistry,
+    GUN_SPEED_OVERRIDES,
     getDefOfType,
     gunClass,
     rebirthDeviations,
@@ -283,10 +284,20 @@ describe("survev-only guns: stats", () => {
         expect(classes).toEqual(["lmg", "shotgun", "sniper", "pistol", "assault", "special"]);
     });
 
-    it("every infobox value of the wiki is the game's value", () => {
+    it("every infobox value of the wiki is the game's value, but the owner's move speeds (gunSpeeds.ts)", () => {
         const all = pins();
         expect(all.length).toBeGreaterThan(100);
-        for (const [id, field, wiki] of all) expect(get(GameObjectDefs[id], field), `${id}.${field}`).toEqual(wiki);
+        // the PMG-134 slows its carrier like the DShK (owner, 2026-10-08): its wiki Player speed is survev's -1.5
+        const speedOf = new Map(GUN_SPEED_OVERRIDES.map((o) => [o.id, o]));
+        expect([...speedOf.keys()]).toEqual(["potato_lmg"]);
+        for (const [id, field, wiki] of all) {
+            const o = field.startsWith("speed.") ? speedOf.get(id) : undefined;
+            const key = field.slice("speed.".length) as keyof (typeof GUN_SPEED_OVERRIDES)[number]["survev"];
+            if (o) expect(o.survev[key], `wiki ${id}.${field}`).toBe(wiki);
+            expect(get(GameObjectDefs[id], field), `${id}.${field}`).toEqual(o ? o.rebirth[key] : wiki);
+        }
+        expect(getDefOfType("gun", "potato_lmg").speed).toEqual({ carry: -2, equip: -1, attack: -6 });
+        expect(gameObjects.potato_lmg.speed).toEqual({ equip: -1.5, attack: -6 });
     });
 
     it("the generated JSON holds survev's source value, which only two fields change to the wiki's", () => {

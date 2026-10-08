@@ -56,7 +56,10 @@ export interface GunDef extends BaseWeaponDef {
     /** bullet fired instead of bulletType when the matching bonus perk (bonus_9mm, bonus_45) is active */
     bulletTypeBonus?: string;
     headshotMult: number;
-    /** rebirth (new guns): `carry` applies while the gun sits in either gun slot, summed over both (DShK) */
+    /**
+     * rebirth: `carry` applies while the gun sits in either gun slot, summed over both; any gun may have it (the DShK
+     * in its sheet def, the PMG-134 through rebirth/gunSpeeds.ts)
+     */
     speed: { equip: number; attack: number; carry?: number };
     worldImg: {
         sprite: string;
@@ -132,6 +135,18 @@ export interface GunDef extends BaseWeaponDef {
     pumpDelay?: number;
     /** rebirth (new guns): spawns only from gold drops; never potato-swapped or role-rolled */
     goldOnly?: boolean;
+    /**
+     * rebirth (M202 FLASH, owner 2026-10-08): the bulletCount bullets of a shot leave the muzzle together in a fixed,
+     * evenly spaced fan this many degrees wide (outermost to outermost, centred on the aim), with no random spread or
+     * pellet jitter
+     */
+    fanAngle?: number;
+    /** rebirth (M202 FLASH): the shooter slides this far back, against the aim, after a shot (collision-checked) */
+    recoilKnockback?: number;
+    /** rebirth (M202 FLASH): its bullets and their explosions break armour-plated obstacles, as a piercing melee */
+    armorPiercing?: boolean;
+    /** rebirth (M202 FLASH): its bullets and their explosions break stone-plated obstacles, as a piercing melee */
+    stonePiercing?: boolean;
 }
 
 export interface MeleeImg {

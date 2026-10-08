@@ -1610,7 +1610,7 @@
                 "projType": "m79_grenade",
                 "headshotMult": 1,
                 "speed": {
-                    "equip": -1,
+                    "equip": 0,
                     "attack": 0
                 },
                 "ignoreEndlessAmmo": true,
@@ -1771,7 +1771,7 @@
                 "projType": "m79_grenade",
                 "headshotMult": 1,
                 "speed": {
-                    "equip": -1.5,
+                    "equip": 0,
                     "attack": 0
                 },
                 "lootImg": {
@@ -1861,7 +1861,7 @@
                 "bulletType": "bullet_gl06",
                 "headshotMult": 1,
                 "speed": {
-                    "equip": -1,
+                    "equip": 0,
                     "attack": 0
                 },
                 "ignoreEndlessAmmo": true,
@@ -2181,11 +2181,12 @@
                 "barrelLength": 2.2,
                 "barrelOffset": 0,
                 "recoilTime": 10000000000,
-                "moveSpread": 4,
-                "shotSpread": 6,
+                "moveSpread": 0,
+                "shotSpread": 0,
                 "bulletCount": 4,
-                "jitter": 0.5,
+                "jitter": 0,
                 "bulletType": "bullet_m202",
+                "toMouseHit": true,
                 "headshotMult": 1,
                 "speed": {
                     "equip": -2.5,
@@ -2227,7 +2228,11 @@
                     "empty": "empty_fire_01",
                     "deploy": "m202_switch_01",
                     "discard": "m202_discard_01"
-                }
+                },
+                "fanAngle": 60,
+                "recoilKnockback": 2,
+                "armorPiercing": true,
+                "stonePiercing": true
             },
             "bullets": {
                 "bullet_m202": {
@@ -2251,16 +2256,16 @@
             "explosions": {
                 "explosion_m202": {
                     "type": "explosion",
-                    "damage": 50,
-                    "obstacleDamage": 1.1,
+                    "damage": 125,
+                    "obstacleDamage": 42,
                     "rad": {
-                        "min": 3.5,
-                        "max": 9
+                        "min": 5,
+                        "max": 16
                     },
                     "shrapnelCount": 0,
                     "shrapnelType": "",
-                    "explosionEffectType": "barrel",
-                    "decalType": "decal_frag_small_explosion"
+                    "explosionEffectType": "m202",
+                    "decalType": "decal_frag_large_explosion"
                 }
             },
             "throwables": {}

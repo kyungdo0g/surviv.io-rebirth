@@ -42,8 +42,11 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * an 8-bit emote count and the emotes); PlayerInfos carry the heal and boost types in their existing fields.
  * · 17: the potato-faction gold drop (survev parity wave): the survev-only map types crate_13po and
  * airdrop_crate_04po take ids in survev order among the survev-only ones (map ids from crate_17 on move up).
+ * · 19: the owner's club secret room (2026-10-08, rebirth/ownerLoot.ts): the rebirth-only map type deposit_box_02_club
+ * follows the air drop tier crates as the last map type; every earlier id keeps its index. No record layout changed
+ * (18 is the 50v50 shooter minimap reveal on another branch).
  */
-export const PROTOCOL_SCHEMA_VERSION = 17;
+export const PROTOCOL_SCHEMA_VERSION = 19;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

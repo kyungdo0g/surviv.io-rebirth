@@ -1,8 +1,10 @@
 # New gun stats (final balance sheet)
 
-Status: **decided** 2026-10-07 (final stage of the balance workflow; no open questions). Supersedes the per-gun stat
-columns of `survev-content-and-new-guns.md` 4.1 and the loot weights of 4.1 / 4.2 where they differ. Machine-readable
-twin: [`new-gun-stats.json`](new-gun-stats.json) (GunDef + bullet / explosion / projectile defs, new ammo, loot).
+Status: **decided** 2026-10-07 (final stage of the balance workflow; no open questions); the owner's 2026-10-08 change
+of the M79, GL-06 and Milkor MGL Player speed (-1 / -1 / -1.5 -> 0) is applied here (section 6). Supersedes the
+per-gun stat columns of `survev-content-and-new-guns.md` 4.1 and the loot weights of 4.1 / 4.2 where they differ.
+Machine-readable twin: [`new-gun-stats.json`](new-gun-stats.json) (GunDef + bullet / explosion / projectile defs, new
+ammo, loot).
 
 - **Scope.** The owner's 30 guns plus `tec9_dual` and `vz61_dual`. The **SPAS-15 is dropped** (owner, 2026-10-07:
   "후속작에 SPAS16이 있네 SPAS15 빼자"): survev's SPAS-16, the full-auto SPAS-15, covers it and now gets a main-map
@@ -53,8 +55,8 @@ twin: [`new-gun-stats.json`](new-gun-stats.json) (GunDef + bullet / explosion / 
 | `mgl` | Milkor MGL | launcher | 40mm | 0 + 125e+shr | 86 | 6/6 | 1 per 1 | 178.6 | 0.3 / 1 / 1 / 1 | gold 0.5 |
 | `gl06` | GL-06 | launcher | 40mm | 10 + 100e+shr | 26.1 (1 per 2.3 s) | 1/1 | 2 | 366.7 | 0.27 / 2.57 / 2.57 / 2.57 | floor 0.02, T1 0.5 |
 | `rpg7` | RPG-7 | launcher | rocket | 60 + 150e+shr | 15.8 (1 per 3.8 s) | 1/1 | 3.5 | 700 | 0.14 / 0.14 / 0.14 / 3.94 | gold 0.5 |
-| `panzerfaust` | Panzerfaust | launcher | none | 80 + 140e+shr | single use | 1 (single use) | none (discarded when empty) | 440 | 0.33 / 0.33 / 0.33 / 0.33 | floor 0.02, T1 0.5 |
-| `m202` | M202 FLASH | launcher | none | 4 x (25 + 50e) | single use | 1 (single use) | none (discarded when empty) | 600 | 0.22 / 0.22 / 0.22 / 0.22 | T2 0.2, gold 0.25 |
+| `panzerfaust` | Panzerfaust | launcher | none | 80 + 140e+shr | single use | 1 (single use) | none (discarded when empty) | 440 | 0.33 / 0.33 / 0.33 / 0.33 | floor 0.2 (owner), T1 0.5 |
+| `m202` | M202 FLASH | launcher | none | 4 x (25 + 125e) | single use | 1 (single use) | none (discarded when empty) | 1200 | 0.22 / 0.22 / 0.22 / 0.22 | T1 0.05, T2 0.05, gold 0.25 + bonus 0.1 (owner) |
 | `m200` | M200 Intervention | sniper | 7.62mm | 115 | 38 | 7/9 | 3.5 | 71.9 | 0.05 / 1.65 / 1.65 / 1.65 | T2 0.25, gold 0.5 |
 | `hecate` | Hécate II | sniper | .50 AE | 160 | 34 | 7/9 | 4 | 91.4 | 0.05 / 0.05 / 1.8 / 1.8 | gold 0.5 |
 | `lynx` | Lynx | sniper | .50 AE | 118 | 50 | 5/6 | 4.2 | 98.3 | 0.05 / 1.25 / 1.25 / 1.25 | gold 0.5 |
@@ -693,13 +695,13 @@ numbers are what they are. All TTK values are seconds at 15 u unless noted.
 | Gun type | Grenade launcher (break action, lobbed 40 mm frag) | Damage | 0 + 125 explosion (rad 5-12) + 12 x 20 shrapnel |
 | Ammo | 40mm (teal, new) | Falloff | none (explosion) |
 | Fire mode | Single | Headshot multiplier | 1 |
-| Player speed | -1 | Obstacle multiplier | explosion x1.1 |
+| Player speed | 0 | Obstacle multiplier | explosion x1.1 |
 | Recoil speed | 0 | Distance | 52 |
 | Carry speed (rebirth) | 0 | Speed | 40 |
 | Magazine capacity | 1 (ext 1) | Max DPS | 416.7 (per reload cycle 48.1) |
 | Ammo spawn | 10 | Max obstacle DPS | 458.3 |
 | Reload time | 2.3 | Sustained DPS / magazine damage | 48.1 / 125 |
-| Fire delay | 0.3 (one round, then the reload: 1 shot per 2.6 s) | Speed carried / held / firing | 12 / 11 / 5.5 |
+| Fire delay | 0.3 (one round, then the reload: 1 shot per 2.6 s) | Speed carried / held / firing | 12 / 12 / 6 |
 | Switch delay | 0.9 | Direct-hit kill chance A0/1/2/3 (shrapnel) | 100 % / 99 % / 87 % / 53 % |
 | Standing / moving spread | 1 / 2 | Self-damage free from | 14.1 u (shooter to target centre) |
 | Barrel length | 2 |  |  |
@@ -716,13 +718,13 @@ numbers are what they are. All TTK values are seconds at 15 u unless noted.
 | Gun type | Grenade launcher (6-round revolver) | Damage | 0 + 125 explosion (rad 5-12) + 12 x 20 shrapnel |
 | Ammo | 40mm (teal, new) | Falloff | none (explosion) |
 | Fire mode | Single | Headshot multiplier | 1 |
-| Player speed | -1.5 | Obstacle multiplier | explosion x1.1 |
+| Player speed | 0 | Obstacle multiplier | explosion x1.1 |
 | Recoil speed | 0 | Distance | 52 |
 | Carry speed (rebirth) | 0 | Speed | 40 |
 | Magazine capacity | 6 (ext 6) | Max DPS | 178.6 (per reload cycle 73.5) |
 | Ammo spawn | 12 | Max obstacle DPS | 196.4 |
 | Reload time | 1 per 1 (full 6) | Sustained DPS / magazine damage | 73.5 / 750 |
-| Fire delay | 0.7 (86 rpm) | Speed carried / held / firing | 12 / 10.5 / 5.25 |
+| Fire delay | 0.7 (86 rpm) | Speed carried / held / firing | 12 / 12 / 6 |
 | Switch delay | 1 | Direct-hit kill chance A0/1/2/3 (shrapnel) | 100 % / 99 % / 87 % / 53 % |
 | Standing / moving spread | 1.5 / 2.5 | Self-damage free from | 14.1 u (shooter to target centre) |
 | Barrel length | 2.1 |  |  |
@@ -739,13 +741,13 @@ numbers are what they are. All TTK values are seconds at 15 u unless noted.
 | Gun type | Grenade launcher (single shot, 40 mm airburst at the cursor) | Damage | 10 + 100 explosion (rad 4-10) + 6 x 20 shrapnel |
 | Ammo | 40mm (teal, new) | Falloff | 1 |
 | Fire mode | Single | Headshot multiplier | 1 |
-| Player speed | -1 | Obstacle multiplier | bullet x1, explosion x1.1 |
+| Player speed | 0 | Obstacle multiplier | bullet x1, explosion x1.1 |
 | Recoil speed | 0 | Distance | 60 |
 | Carry speed (rebirth) | 0 | Speed | 45 |
 | Magazine capacity | 1 (ext 1) | Max DPS | 366.7 (per reload cycle 47.8) |
 | Ammo spawn | 10 | Max obstacle DPS | 400 |
 | Reload time | 2 | Sustained DPS / magazine damage | 47.8 / 110 |
-| Fire delay | 0.3 (one round, then the reload: 1 shot per 2.3 s) | Speed carried / held / firing | 12 / 11 / 5.5 |
+| Fire delay | 0.3 (one round, then the reload: 1 shot per 2.3 s) | Speed carried / held / firing | 12 / 12 / 6 |
 | Switch delay | 0.6 | Direct-hit kill chance A0/1/2/3 (shrapnel) | 100 % / 73 % / 15 % / 0 % |
 | Standing / moving spread | 1 / 2.5 | Self-damage free from | 12.1 u (shooter to target centre) |
 | Barrel length | 1.9 |  |  |
@@ -796,7 +798,7 @@ numbers are what they are. All TTK values are seconds at 15 u unless noted.
 | Standing / moving spread | 2 / 4 | Self-damage free from | 11.1 u (shooter to target centre) |
 | Barrel length | 2.4 |  |  |
 
-- **Placement:** floor 0.02, T1 0.5 (tier band T1). As the M79.
+- **Placement:** floor 0.2 on every map but the potato modes whose floor has the flare gun (owner, 2026-10-08: "a downgraded M202 from ordinary loot", a little above the flare gun's 0.145; it was 0.02 on main and Desert only), T1 0.5 (tier band T1).
 - **References:** `rpg7`.
 - **Real weapon:** Panzerfaust 60: single-shot disposable launcher, 6.8 kg, 45 m/s, effective 60 m (Wikipedia).
 - **Why:** One sure kill for tier 1: an 80 + 140 rocket at 35 u/s and 40 u kills any armour on a direct hit and breaks any obstacle (526), then the tube is discarded. Slow enough to dodge at range (7.4 u of strafe over 25 u). Tier 1 weight cut 1.0 -> 0.5.
@@ -805,24 +807,24 @@ numbers are what they are. All TTK values are seconds at 15 u unless noted.
 
 | Field | Value | Bullet | Value |
 |---|---|---|---|
-| Gun type | Rocket launcher (4 tubes, one volley, single use) | Damage | 4 x (25 + 50 explosion (rad 3.5-9)) |
+| Gun type | Rocket launcher (4 tubes, one volley in a fixed 60° fan bursting at the cursor, single use) | Damage | 4 x (25 + 125 explosion (rad 5-16)) |
 | Ammo | none (1 charge = 4 rockets) | Falloff | 1 |
 | Fire mode | Single | Headshot multiplier | 1 |
-| Player speed | -2.5 | Obstacle multiplier | bullet x2, explosion x1.1 |
-| Recoil speed | 0 | Distance | 75 |
+| Player speed | -2.5 | Obstacle multiplier | bullet x2, explosion x42 (5250 at the centre) |
+| Recoil speed | 0 | Distance | 75 (or the cursor, nearer) |
 | Carry speed (rebirth) | 0 | Speed | 55 |
-| Magazine capacity | 1 charge (4 rockets), no extension | Max DPS | 600 (single use) |
-| Ammo spawn | 0 | Max obstacle DPS | 840 |
-| Reload time | none (discarded when empty) | Sustained DPS / magazine damage | 600 / 300 |
+| Magazine capacity | 1 charge (4 rockets), no extension | Max DPS | 1200 (single use) |
+| Ammo spawn | 0 | Max obstacle DPS | 42400 |
+| Reload time | none (discarded when empty) | Sustained DPS / magazine damage | 1200 / 600 |
 | Fire delay | 0.5 (single use) | Speed carried / held / firing | 12 / 9.5 / 4.75 |
-| Switch delay | 1.1 | Volley kill chance, standing A2 at 15 / 20 / 30 / 40 u | 100 % / 97 % / 62 % / 32 % |
-| Standing / moving spread | 6 / 4 | Self-damage free from | 11.1 u (shooter to target centre) |
-| Barrel length | 2.2 |  |  |
+| Switch delay | 1.1 | Volley kill, A2 at full health, anywhere across the strip at 15 / 20 / 25 u | yes / yes / yes |
+| Standing / moving spread | 0 / 0 (fixed fan: -30 / -10 / 10 / 30°) | Self-damage free from | 17 u cursor distance (15 u: about 24 HP unarmoured; 12 u and nearer kills the shooter) |
+| Barrel length | 2.2 | Recoil slide | 2 u back, against the aim |
 
-- **Placement:** T2 0.2, gold 0.25 (tier band T2 + gold). No floor.
-- **References:** `rpg7`.
+- **Placement (owner, 2026-10-08):** T1 0.05, T2 0.05 ("barely ever"), gold main gun 0.25 ("occasionally", 1 gold crate in 112) and the gold crates' bonus roll 0.1 against nothing 0.9 ("sometimes", 1 gold crate in 10; `OWNER_LOOT_WEIGHTS` in `packages/defs/src/rebirth/ownerLootWeights.ts`). No floor.
+- **References:** `rpg7`, `usas` (rounds that stop at the cursor).
 - **Real weapon:** M202A1 FLASH: four 66 mm rockets, 12 kg loaded, 114 m/s (Wikipedia). Incendiary effect deferred.
-- **Why:** A single volley of four 25 + 50 rockets: it kills any armour at 10-15 u against a standing target (88 % on a moving A2 at 15 u) and 32 % at 40 u. No shrapnel, 75 u, then discarded. Gold weight cut 0.75 -> 0.25.
+- **Why (owner, 2026-10-08):** the endgame comeback weapon, a near-certain kill. One trigger pull fires all four rockets together in a fixed, evenly spaced 60° fan (no random spread, no pellet jitter; the beta fired the four at once with a random ±3° deviation each, ±5° moving, and random start offsets) that bursts at the cursor (`toMouseHit`, as the USAS-12 and GL-06). Neighbouring rockets are 20° apart, so their blast centres sit 2 d sin 10° apart: 5.2 u at 15 u, 6.9 u at 20 u, 8.7 u at 25 u, never more than the 10 u at which the full-damage discs (rad.min 5) would part, so the strip tiles with no gap from 15 to 25 u. Each blast deals 125 (two full ones kill a full-health A2 player: 2 x 125 x 0.546 = 136.5) with a 16 u reach (the rebirth frag's 15.6 is the next biggest); a level 2 armoured player anywhere across the strip at 15-25 u dies (`packages/sim/test/m202.test.ts`). Explosion obstacle multiplier x42: one blast's full 5250 breaks every destructible obstacle (the toughest: the bunker glass wall `glass_wall_12_2` 5000, the potato silo 2500, the tyre 1500), plated ones included (`armorPiercing` / `stonePiercing`: the ammo crates `crate_04` / `crate_06`, the plated stones, statues, safes and `stone_wall_int_4`); indestructible obstacles (`destructible: false`: building exterior walls) stay whole. Destructible walls are the interior walls (house, cabin, barn, bank, police, mansion, hut, Reserve), shack and grassy walls, glass walls and archway columns. The shooter slides 2 u back (`recoilKnockback`, a damped slide pushed out of obstacles every tick). Its explosion has its own client effect, `m202`: a 1.6 u camera shake for 1.6 s, felt to 120 u (full within 30 u), off with the Screen shake setting.
 
 ## 3. Class ladders (survev baseline + new guns, TTK against armour)
 
@@ -960,11 +962,11 @@ direct hit, no shrapnel (section 4.4 has the shrapnel model).
 | gun | tier | dmg | rpm | mag | reload | max / sust DPS | TTK body 15u A0/1/2/3 | E stand 15u A2 | E stand 40u A2 | E move 40u A2 | E stand 100u A2 | speed |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **panzerfaust** | T1 | 80+140e | single | 1 | - | 440 / - | 0.33 / 0.33 / 0.33 / 0.33 | 0.33 | 1.05 | ∞ | ∞ | 10.5 / 5.25 |
-| **gl06** | T1 | 10+100e | 26.1 | 1 | 2 | 366.7 / 47.8 | 0.27 / 2.57 / 2.57 / 2.57 | 2.57 | 3.12 | 3.88 | ∞ | 11 / 5.5 |
-| **m79** | T2 (T1) | 0+125e | 23.1 | 1 | 2.3 | 416.7 / 48.1 | 0.3 / 2.9 / 2.9 / 2.9 | 2.9 | 4.25 | 6.64 | ∞ | 11 / 5.5 |
+| **gl06** | T1 | 10+100e | 26.1 | 1 | 2 | 366.7 / 47.8 | 0.27 / 2.57 / 2.57 / 2.57 | 2.57 | 3.12 | 3.88 | ∞ | 12 / 6 |
+| **m79** | T2 (T1) | 0+125e | 23.1 | 1 | 2.3 | 416.7 / 48.1 | 0.3 / 2.9 / 2.9 / 2.9 | 2.9 | 4.25 | 6.64 | ∞ | 12 / 6 |
 | **rpg7** | gold | 60+150e | 15.8 | 1 | 3.5 | 700 / 55.3 | 0.14 / 0.14 / 0.14 / 3.94 | 0.14 | 0.43 | 1.63 | 1.14 | 10 / 5 |
-| **m202** | gold (T2) | 25+50e x4 | single | 1 | - | 600 / - | 0.22 / 0.22 / 0.22 / 0.22 | ∞ | ∞ | ∞ | ∞ | 9.5 / 4.75 |
-| **mgl** | gold | 0+125e | 86 | 6 | 6 | 178.6 / 73.5 | 0.3 / 1 / 1 / 1 | 1 | 2.09 | 2.66 | ∞ | 10.5 / 5.25 |
+| **m202** | gold (T1, T2) | 25+125e x4 | single | 1 | - | 1200 / - | 0.22 / 0.22 / 0.22 / 0.22 | ∞ | ∞ | ∞ | ∞ | 9.5 / 4.75 |
+| **mgl** | gold | 0+125e | 86 | 6 | 6 | 178.6 / 73.5 | 0.3 / 1 / 1 / 1 | 1 | 2.09 | 2.66 | ∞ | 12 / 6 |
 
 ### Long range: DMRs and snipers (E stand against A2 at 100 / 150 / 200 u)
 
@@ -1025,7 +1027,7 @@ over both slots (two DShKs: carry -4). Small Arms replaces only the equip term (
 |---|---|---|---|---|---|---|---|
 | Boys | 7 | 1 | `boys_ammo` | 7 | none | discarded after its fire delay (1.5 s) | ignoreEndlessAmmo, noPotatoSwap |
 | Panzerfaust | 1 | 1 rocket | `panzerfaust_ammo` | 1 | none | discarded after 0.5 s | ignoreEndlessAmmo, launcher flags |
-| M202 FLASH | 1 | 4 rockets (bulletCount 4, spread 6, jitter 0.5) | `m202_ammo` | 1 | none | discarded after 0.5 s | ignoreEndlessAmmo, launcher flags |
+| M202 FLASH | 1 | 4 rockets (bulletCount 4 in a fixed 60° fan, no jitter) | `m202_ammo` | 1 | none | discarded after 0.5 s | ignoreEndlessAmmo, launcher flags, recoil slide 2 u |
 
 A dropped single-use gun keeps its remaining charges server-side; Firepower cannot add shots (integrity test
 `extendedClip === maxClip === charges`); bots scale desire by `clip / charges`.
@@ -1047,15 +1049,16 @@ A dropped single-use gun keeps its remaining charges server-side; Firepower cann
 | gl06 | airburst at cursor | 10 / 100 | 4-10 | 6 x 20 | 120 | 45 / 60 | 4 u | 100 % / 73 % / 15 % / 0 % | 12.1 u | 13 u |
 | rpg7 | rocket (bullet) | 60 / 150 | 6-14 | 12 x 20 | 375 | 85 / 120 | 5 u | 100 % / 100 % / 100 % / 100 % | 16.1 u | 17 u |
 | panzerfaust | rocket (bullet) | 80 / 140 | 4-9 | 4 x 20 | 526 | 35 / 40 | 4 u | 100 % / 100 % / 100 % / 100 % | 11.1 u | 12 u |
-| m202 | rocket (bullet) | 25 / 50 (x4) | 3.5-9 | none | 105 | 55 / 75 | 5 u | one rocket 0 %; volley 100 % (any armour, standing, 15 u) | 11.1 u | 12 u |
+| m202 | 4 rockets in a fixed 60° fan, bursting at the cursor | 25 / 125 (x4) | 5-16 | none | 5300 | 55 / 75 (or the cursor) | 5 u | volley: A2 dead anywhere across the strip at 15-25 u | 17 u | 18 u |
 
 - Explosions use the sim's step falloff (full damage inside `rad.min`, then x (1 - s / rad.max)); armour reduces
   explosions as body hits (A2 takes 54.6 %); teammates are immune, the shooter is not.
-- M202 volley (standing target): kills any armour at 10-15 u, 97 % A2 at 20 u, 62 % at 30 u, 32 % at 40 u.
+- M202 volley (owner, 2026-10-08): the four blasts tile a strip across the cursor at 15-25 u and kill a full-health A2 player anywhere on it (2.8 above).
 - Rockets and the GL-06 round get `noReflect` (they explode on metal) and `armDistance` (dud before it: no point-blank
   suicide). The 40 mm lob keeps the original rule (no arming; it explodes on any impact).
-- Obstacles: RPG-7 (375) and Panzerfaust (526) breach the wall / tree / stone they hit; M202 lands 4 x 105 on one object;
-  40 mm takes 2 hits for a wall (as the frag). No launcher opens plated vault doors.
+- Obstacles: RPG-7 (375) and Panzerfaust (526) breach the wall / tree / stone they hit; each M202 blast breaks every
+  destructible obstacle it reaches at full damage (5250, plated ones too; owner, 2026-10-08); 40 mm takes 2 hits for a
+  wall (as the frag). Indestructible obstacles (building exterior walls, plated vault doors) stay whole.
 - `ignoreEndlessAmmo` on all six launchers (M79 and GL-06 added in review); `noDistAdj` on the four exploding
   bullets (the sim reads `rules.noDistAdjBullets`, so add the ids there or read the def field).
 
@@ -1081,12 +1084,13 @@ tier 2 rows silently land in tier 1 (classes as in section 2; launchers in the n
 
 | table | rows added |
 |---|---|
-| main `tier_guns` (floor) | ak74 1.5, g36c 1.2, m16a4 0.7, sig550 0.1, g3 0.2, honeybadger 0.02, fal 0.1, tec9 3, vz61 2, bizon 3, asval 0.05, p90 0.02, m79 0.02, gl06 0.02, panzerfaust 0.02, m60 0.02, mg42 0.005 |
+| main `tier_guns` (floor) | ak74 1.5, g36c 1.2, m16a4 0.7, sig550 0.1, g3 0.2, honeybadger 0.02, fal 0.1, tec9 3, vz61 2, bizon 3, asval 0.05, p90 0.02, m79 0.02, gl06 0.02, panzerfaust 0.2 (owner, 2026-10-08: every flare gun floor, `ownerLoot.ts`), m60 0.02, mg42 0.005 |
 | `tier_shotguns` | dp12 0.05 |
 | desert `tier_guns` | m1928 0.5 (and the 9mm-free subset of the floor rows: no tec9, vz61, bizon, asval, p90) |
-| `tier_airdrop_tier1` (appended after the derivation) | m16a4 1, sig550 1, g3 1, fal 1, m1928 1, asval 1.5, m79 0.5, gl06 0.5, panzerfaust 0.5 |
-| `tier_airdrop_uncommon` (-> tier 2, before the derivation) | honeybadger 0.75, mk14 0.75, wa2000 0.5, p90 1.5, dp12 1, m79 1, m202 0.2, m200 0.25, boys 0.75, m60 1, mg42 0.75, **spas16 1.0** (survev gun, see below) |
+| `tier_airdrop_tier1` (appended after the derivation) | m16a4 1, sig550 1, g3 1, fal 1, m1928 1, asval 1.5, m79 0.5, gl06 0.5, panzerfaust 0.5, m202 0.05 (owner, 2026-10-08) |
+| `tier_airdrop_uncommon` (-> tier 2, before the derivation) | honeybadger 0.75, mk14 0.75, wa2000 0.5, p90 1.5, dp12 1, m79 1, m202 0.05 (owner, 2026-10-08; was 0.2), m200 0.25, boys 0.75, m60 1, mg42 0.75, **spas16 1.0** (survev gun, see below) |
 | `tier_airdrop_rare` (gold) | aa12 0.5, mgl 0.5, rpg7 0.5, m202 0.25, m200 0.5, hecate 0.5, lynx 0.5, dshk 0.08 |
+| `tier_airdrop_gold_bonus` (rebirth, owner 2026-10-08: one more roll of every gold crate) | m202 0.1, nothing 0.9 |
 
 - **Tier 1's tier 2 roll is recomputed after appending:** weight = (core + appended) x 0.1 / 0.9 = 20.76 / 9 = 2.307, so
   it stays 10 % on every map (test). Without that, plan 5.8 step 3 would dilute it to 5.7 %.
@@ -1098,6 +1102,8 @@ tier 2 rows silently land in tier 1 (classes as in section 2; launchers in the n
 |---|---|---|
 | tier 1 | 23.07 (20.76 + roll 2.307) | new guns 34.7 %; launchers + single use 6.5 % (7.6 % with the roll) |
 | tier 2 | 17.20 | new guns 54.9 % (incl. SPAS-16); launchers + single use 11.3 % |
+| tier 1 (with the owner's 2026-10-08 rows: L86A2 1.25, M202 0.05) | 24.51 (22.06 + roll 2.451) | M202 0.2 % |
+| tier 2 (owner: M202 0.2 -> 0.05) | 17.05 | M202 0.3 % |
 | gold | 27.01 (22.68 + Barrett overlay 1 + 3.33) | survev's seven gold guns 84.0 %; snipers 20.4 %; launchers 4.6 %; PKP + M249 0.7 %; DShK 0.3 % |
 
 ## 6. Changelog of review decisions
@@ -1152,8 +1158,11 @@ Every problem and correction raised by the cross-class balance stage and the two
 | M1928 Firepower drum | decided | 100 (real C drum) | Firepower is a role perk. |
 | DP-12 pump counter | decided | reload leaves a fresh pair; switching keeps the counter | Simple and readable. |
 | Launcher `armDistance` | decided | yes: 5 u RPG-7 / M202, 4 u Panzerfaust / GL-06 | No point-blank rocket suicides; the 40 mm lob keeps the original no-arming rule. |
-| M79 Player speed | decided | -1 | Realistic weight rule plus the launcher pose. |
+| M79 Player speed | superseded (2026-10-08) | -1 -> 0 | Realistic weight rule plus the launcher pose; the owner's change below replaces it. |
+| Launcher Player speed (owner, 2026-10-08) | applied | m79 -1 -> 0, gl06 -1 -> 0, mgl -1.5 -> 0; rpg7 -2, panzerfaust -1.5, m202 -2.5 kept | Owner: every launcher slows its holder except the M79, GL-06 and Milkor (`user/2026-10-08-loot-speed`); held 12 u/s, firing 6. |
 | M202 incendiary | decided | deferred | Needs a burning-area mechanic; explosion only for v1. |
+| M202 volley (owner, 2026-10-08) | applied | random spread 6 / 4 and jitter 0.5 -> fixed 60° fan bursting at the cursor; explosion 50 rad 3.5-9 x1.1 -> 125 rad 5-16 x42 (plated obstacles too); 2 u recoil slide; own `m202` effect with the strongest shake | The endgame comeback weapon: a near-certain kill on anyone caught in the salvo, one-shotting trees, stones, crates and destructible walls. |
+| M202 / Panzerfaust loot (owner, 2026-10-08) | applied | M202 T1 0 -> 0.05, T2 0.2 -> 0.05, gold 0.25 kept + gold bonus roll 0.1; Panzerfaust floor 0.02 (main, Desert) -> 0.2 on every flare gun floor | The M202 barely ever in normal drops, sometimes a gold bonus; the Panzerfaust, a downgraded M202, from ordinary loot. |
 | 40 mm in ammo crates | decided | no | Launchers stay scarce; their ammo comes with them. |
 | MGL fire delay | decided | 0.7 (real 0.33) | A readable volley for a gold area weapon. |
 | Bot tiers | deferred | bot workflows own `gunTiers.ts` | One tier row per new id travels with each merge (plan 5.9). |

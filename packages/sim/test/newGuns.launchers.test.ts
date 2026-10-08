@@ -62,7 +62,8 @@ describe("launchers fire the sheet's explosions", () => {
             explosion_gl06: [100, 4, 10, 6, 1.1],
             explosion_rpg7: [150, 6, 14, 12, 0.9],
             explosion_panzerfaust: [140, 4, 9, 4, 0.9],
-            explosion_m202: [50, 3.5, 9, 0, 1.1],
+            // the owner's M202 rework (2026-10-08; new-gun-stats.md 2.8, packages/sim/test/m202.test.ts)
+            explosion_m202: [125, 5, 16, 0, 42],
         };
         for (const [id, want] of Object.entries(sheet)) {
             const e = getDefOfType("explosion", id);
@@ -120,18 +121,20 @@ describe("launchers fire the sheet's explosions", () => {
         }
     });
 
-    it("M202: the 4 rockets of the volley explode at the end of their 75 u range", () => {
+    it("M202: the 4 rockets of the volley burst at the cursor, at most at the end of their 75 u range", () => {
         const { game, p, log } = range("m202");
-        fire(game, p, 200);
+        const start = v2.copy(p.pos);
+        fire(game, p, 200, 200);
         const e = log.filter((x) => x.type === "explosion_m202");
         expect(e).toHaveLength(4);
-        for (const x of e) expect(v2.distance(x.pos, p.pos)).toBeGreaterThan(70);
-        // rockets fly their exact range (noDistAdj)
+        // 75 u from the muzzle, 2.2 u ahead of where the shooter stood (it then slid back with the recoil)
+        for (const x of e) expect(v2.distance(x.pos, start)).toBeGreaterThan(70);
+        // rockets fly their exact range (noDistAdj): the cursor (30 u) minus the barrel
         game.combatRng = constantRng(0);
         giveGun(p, "m202");
-        fire(game, p, 1);
+        fire(game, p, 1, 30);
         const b = game.bullets.active.filter((x) => x.bulletType === "bullet_m202");
-        expect(b.map((x) => x.distance)).toEqual([75, 75, 75, 75]);
+        expect(b.map((x) => +x.distance.toFixed(6))).toEqual([27.8, 27.8, 27.8, 27.8]);
     });
 });
 

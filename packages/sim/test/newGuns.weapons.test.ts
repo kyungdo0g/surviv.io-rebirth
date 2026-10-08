@@ -135,7 +135,10 @@ describe("single-use guns (new-gun-stats.md 4.2)", () => {
 
     it("M202: one trigger pull fires the volley of 4 rockets, then the launcher is discarded", () => {
         const { game, p, wm } = range("m202");
-        fireOnce(game, p);
+        // the rockets burst at the cursor (owner, 2026-10-08), so aim 30 u ahead
+        send(game, p, { shootHold: true, shootStart: true, toMouseLen: 30 });
+        game.step();
+        send(game, p, {});
         expect(game.bullets.active.filter((b) => b.bulletType === "bullet_m202")).toHaveLength(4);
         expect(wm.activeSlot.ammo).toBe(0);
         expect(p.shotSeq).toBe(1);

@@ -79,6 +79,9 @@ describe("new guns: the sheet's defs", () => {
             box.movingSpread,
         ]);
         expect(def.barrelLength, "barrel").toBe(box.barrelLength);
+        // the M202's fixed fan and recoil slide (owner, 2026-10-08)
+        expect(def.fanAngle, "fan angle").toBe(box.fanAngle);
+        expect(def.recoilKnockback, "recoil knockback").toBe(box.recoilKnockback);
         expect(def.headshotMult, "headshot").toBe(box.bullet.headshotMultiplier);
         expect(bullet.damage, "damage").toBe(num(box.bullet.damage.replace(/^\d+ x \(/, "")));
         if (typeof box.bullet.falloff === "number") expect(bullet.falloff, "falloff").toBe(box.bullet.falloff);

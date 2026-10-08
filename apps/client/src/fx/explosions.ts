@@ -8,7 +8,8 @@
 // Rebirth (docs/research/rebirth-deviations.md "Client presentation"): the burst follows the def's blast radius, so an
 // explosion the rebirth layer resized (the frag grenade, x1.3) draws its burst that much bigger than the original
 // effect; the heavy air strike shell (explosion_bomb_heavy) has its own effect, "bomb_heavy", sized from its radius
-// against the iron bomb's, with a lower, louder and farther boom and a stronger, longer shake.
+// against the iron bomb's, with a lower, louder and farther boom and a stronger, longer shake. The M202 FLASH's rockets
+// (explosion_m202, owner 2026-10-08) have "m202": a big frag burst and by far the strongest, longest and widest shake.
 import type { Vec2 } from "@rebirth/core";
 import {
     AIRSTRIKE_VARIANTS,
@@ -120,6 +121,19 @@ const EFFECTS: Readonly<Record<string, EffectDef>> = {
         range: 3,
         refRad: IRON_BOMB_RAD_MAX,
         shakeRange: 1.75,
+    }),
+    /**
+     * Rebirth M202 FLASH rocket (owner, 2026-10-08: "shake like a magnitude-9 earthquake"): the frag's burst drawn for
+     * its 12 u radius (so x1.33 at the rocket's 16 u), the frag's boom a little lower and louder, heard 3x as far, and
+     * a shake of 1.6 world units (the frag's 0.2 x 8, the heavy shell's 0.55 x 2.9) for 1.6 s, felt 3x as far as the
+     * original's (full within 30 u, none past 120 u), fading with distance and time; off with the Screen shake setting.
+     */
+    m202: fx("explosionBurst", 1, "explosion_01", "explosion_02", 16, [1.6, 1.6], 2.5, {
+        detune: -300,
+        volume: 1.3,
+        range: 3,
+        refRad: 12,
+        shakeRange: 3,
     }),
 };
 

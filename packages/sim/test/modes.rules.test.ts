@@ -61,7 +61,9 @@ describe("event map corrections in the ported data (tools/port-survev/lib/eventM
             for (const e of entries) expect([tier, banned.has(e.name)]).toEqual([tier, false]);
         }
         const guns = items("savannah", "tier_guns").map((g) => gunClass(g));
-        expect(new Set(guns)).toEqual(new Set(["assault", "smg", "pistol", "sniper", "dmr"]));
+        // and the owner's Panzerfaust, on every floor with the flare gun (defs rebirth/ownerLoot.ts, 2026-10-08)
+        expect(new Set(guns)).toEqual(new Set(["assault", "smg", "pistol", "sniper", "dmr", "launcher"]));
+        expect(items("savannah", "tier_guns").filter((g) => gunClass(g) === "launcher")).toEqual(["panzerfaust"]);
     });
 
     it("woods guns are LMGs and shotguns only (woods.md 'Only LMGs and shotguns will spawn')", () => {
