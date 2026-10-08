@@ -194,6 +194,7 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     if (weapon.type === "bugle" && player.hasPerk("inspiration")) playBugle(ctx, player);
     // the Commander's flare gun may be dropped once fired (survev fireWeapon hasFiredFlare)
     if (def.bulletType === "bullet_flare" && player.role === "leader") player.firedFlare = true;
+    ctx.faction?.onShot(player);
     player.shotSeq++;
     player.shotOffhand = offHand;
     if (fired) ctx.observer?.onShotFired?.(player, weapon.type, fired);

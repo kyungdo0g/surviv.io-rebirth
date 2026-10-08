@@ -8,6 +8,7 @@ import type { ExplosionSystem } from "../combat/explosions.ts";
 import type { HitLog } from "../combat/hitLog.ts";
 import type { ProjectileSystem } from "../combat/projectiles.ts";
 import type { LootSystem } from "../loot/loot.ts";
+import type { FactionSystem } from "../match/faction.ts";
 import type { Gas } from "../match/gas.ts";
 import type { CombatObserver } from "../match/observer.ts";
 import type { PlaneSystem } from "../match/planes.ts";
@@ -49,6 +50,8 @@ export interface SimContext {
     readonly deadBodies: DeadBodySystem;
     /** red zone (heal regions do not work in the gas, M5b) */
     readonly gas: Gas;
+    /** 50v50 factions (M7a); null or absent outside faction mode */
+    readonly faction?: FactionSystem | null;
     /** simulation time in seconds */
     readonly time: number;
     /** read-only combat notifications for the host (anti-cheat telemetry, M8); null or absent for none */

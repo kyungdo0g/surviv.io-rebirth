@@ -17,7 +17,7 @@ import {
     terrainSurfaceAt,
 } from "../src/index.ts";
 import { survevBoxPush } from "../src/match/planes.ts";
-import { flatGame, giveGun, openSpot, spawnAt, steps } from "./combatHelpers.ts";
+import { fireOnce, flatGame, giveGun, openSpot, spawnAt, steps } from "./combatHelpers.ts";
 import { cookAndThrow, holdThrowable } from "./fxHelpers.ts";
 import { cachedMap } from "./helpers.ts";
 
@@ -348,5 +348,36 @@ describe("air drops (survev plane.ts addAirdrop, airdrop.ts land)", () => {
         // x overlaps 10, y overlaps 12: survev moves the crate 12 along y (the core collider would take x)
         expect(survevBoxPush(crate, box)).toEqual({ x: 0, y: 12 });
         expect(survevBoxPush({ min: { x: 30, y: 0 }, max: { x: 35, y: 5 } }, box)).toBeNull();
+    });
+});
+
+describe("50v50: firing reveals the shooter (survev weaponManager.ts:1013-1025, player.ts:3651-3663)", () => {
+    const ids = (game: Game, viewer: Player) =>
+        (game.getSnapshot(viewer.id).factionStatus ?? []).map((m) => m.playerId);
+
+    it("a shot in an enemy's view puts the shooter on the enemy faction's rows for 1 s; out of view it does not", () => {
+        const { game, red, blue } = faction();
+        const [shooter] = red;
+        const [enemy] = blue;
+        // the enemy stands within its own view radius of the shooter
+        game.teleportPlayer(enemy.id, v2.add(shooter.pos, { x: enemy.zoom - 5, y: 0 }));
+        giveGun(shooter, "m9");
+        shooter.dir = { x: 0, y: 1 };
+        game.setInput(shooter.id, { ...shooter.input, toMouseDir: { x: 0, y: 1 } });
+        fireOnce(game, shooter);
+        expect(shooter.timeUntilHidden).toBeGreaterThan(0.9);
+        steps(game, 50);
+        expect(ids(game, enemy)).toContain(shooter.id);
+        // its own faction always lists it; the enemy's teammates see it too
+        expect(ids(game, blue[1])).toContain(shooter.id);
+        steps(game, 120);
+        expect(shooter.timeUntilHidden).toBe(0);
+        expect(ids(game, enemy)).not.toContain(shooter.id);
+
+        // far away: no reveal
+        game.teleportPlayer(enemy.id, v2.add(shooter.pos, { x: enemy.zoom + 20, y: 0 }));
+        steps(game, 30);
+        fireOnce(game, shooter);
+        expect(shooter.timeUntilHidden).toBe(0);
     });
 });

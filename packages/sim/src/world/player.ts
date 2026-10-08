@@ -110,6 +110,8 @@ export class Player implements InventoryOwner {
     frozen = { ticker: 0, ori: 0 };
     /** PMG-134 hits: zoom radius taken off the view until `ticker` s pass without a hit (modes/frozen.ts) */
     viewShrink = { amount: 0, ticker: 0 };
+    /** 50v50: seconds the player stays on the enemy faction's minimap after firing in its sight (match/faction.ts) */
+    timeUntilHidden = 0;
     /** Cobalt: no class chosen yet; the player waits (in the Twins bunker) and cannot act or be hurt (M7b) */
     awaitingClass = false;
     /** seconds until the bugle regains a charge (Inspiration), 0 when not recharging */

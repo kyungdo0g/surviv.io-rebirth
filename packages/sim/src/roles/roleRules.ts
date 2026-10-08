@@ -85,6 +85,11 @@ export interface RoleRules {
     potatoGoldCrate: string;
     /** seconds between faction status refreshes (original PlayerStatus rate in faction mode, net.ts 0.5 s) */
     factionStatusInterval: number;
+    /**
+     * seconds a shot in an enemy's view shows the shooter on the enemy faction's minimap (survev weaponManager.ts:1024
+     * timeUntilHidden 1; 0 turns it off: open-questions.md faction-minimap-reveal keeps survev's behaviour as a knob)
+     */
+    factionRevealTime: number;
     /** Cobalt: a player without a class gets a random one after this many seconds (conflicts.md cobalt-role-timeout) */
     perkModeRoleSelectTime: number;
 }
@@ -129,6 +134,7 @@ export function defaultRoleRules(): RoleRules {
         helpLosingTeamCrate: "airdrop_crate_04",
         potatoGoldCrate: "airdrop_crate_04po",
         factionStatusInterval: 0.5,
+        factionRevealTime: 1,
         perkModeRoleSelectTime: 20,
     };
 }

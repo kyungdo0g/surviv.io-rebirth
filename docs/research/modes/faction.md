@@ -218,6 +218,6 @@
 ## Open questions
 
 - Exact time of the v0.8.82 scheduled gold military drop (fandom marks it unknown) [src:fandom/50v50_Map] [L]
-- Whether v0.8.82 revealed firing enemies on the minimap the way survev's 1 s `timeUntilHidden` does; wiki.gg only says teammates can see if allies are in a fight [src:survev/server/src/game/weaponManager.ts:1013-1024] [src:wikigg/50v50_mode] [L]
+- Whether v0.8.82 revealed firing enemies on the minimap the way survev's 1 s `timeUntilHidden` does; wiki.gg only says teammates can see if allies are in a fight. The rebirth follows survev (the survev baseline, a rules knob) [src:survev/server/src/game/weaponManager.ts:1013-1024] [src:wikigg/50v50_mode] [L]
 - The fork v0.0.18 note "normal crates increased from 38 to 55" does not match survev's current `crate_01: 38`; which value the fork actually uses over time is unclear [src:survev/client/public/changelogRec.html:508] [src:survev/shared/defs/maps/factionDefs.ts:439] [L]
 - Original 50v50 loot weights for `tier_guns` / `tier_airdrop_uncommon` are only known from survev's pre-fork reconstruction (marked estimates in places) [src:derived/survev@4b291f4d:shared/defs/maps/factionDefs.ts] [L]
