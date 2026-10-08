@@ -47,6 +47,7 @@ describe("baseline isolation", () => {
             "advance",
             "rally",
             "rush",
+            "puzzle",
         ]);
     });
 });

@@ -3,7 +3,8 @@
 // and lakes are slow, the sea is avoided), and structure stairs blocked so bots stay on the ground floor (layer 0;
 // nav/underground.ts plans the way down for bots with the basements feature).
 // The grid is shared by every bot of a map (WeakMap cache) and updated from what bots observe: obstacles seen dead
-// are cleared, collidable obstacles that MapData did not list (air drop crates) are added, doors update their panel.
+// are cleared, collidable obstacles that MapData did not list (air drop crates) are added, doors update their panel
+// (doors only a switch, a puzzle or an unlock opens are walls until a snapshot shows them open: cellGrid.ts).
 import { getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
 import { createTerrain, type MapData } from "@rebirth/sim";
 import { obstacleCollider, transformCollider } from "../geom.ts";
@@ -134,6 +135,11 @@ export class NavGrid extends CellGrid implements RasterGrid {
             const col = obstacleCollider(def, obj.pos, obj.ori, obj.scale);
             if (walkThroughDoor(def)) {
                 this.addDoor(obj.id, obj.type, def, col, obj.ori);
+                continue;
+            }
+            // a puzzle, switch or locked door: a wall until a snapshot shows it open (cellGrid.ts sealedDoors)
+            if (def.door) {
+                this.addSealedDoor(obj.id, col);
                 continue;
             }
             this.stamp(obj.id, col);

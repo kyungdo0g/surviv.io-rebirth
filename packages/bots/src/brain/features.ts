@@ -84,6 +84,11 @@ export interface BrainFeatures {
      * heard or found opened as a sign of someone (brain/doors.ts, brain/doorClose.ts, perception/doorWatch.ts)
      */
     doors: boolean;
+    /**
+     * code puzzles, switches, control panels and vault doors, then the room behind (the "puzzle" behaviour:
+     * brain/puzzle.ts; who knows which code: knowledge/puzzles.ts, its own rng stream)
+     */
+    puzzles: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -117,6 +122,7 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "dmrFit",
     "quickSwitch",
     "doors",
+    "puzzles",
 ];
 
 export type BrainName = "baseline" | "smart";

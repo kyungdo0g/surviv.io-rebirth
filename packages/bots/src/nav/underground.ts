@@ -158,6 +158,11 @@ export class UndergroundGrid extends CellGrid {
                 this.addDoor(o.id, o.type, def, col, o.ori);
                 continue;
             }
+            // the bathhouse vault, the chrys and eye vaults: walls until a snapshot shows them open (cellGrid.ts)
+            if (def.door) {
+                this.addSealedDoor(o.id, col);
+                continue;
+            }
             this.stamp(o.id, col);
         }
         this.labelComponents();

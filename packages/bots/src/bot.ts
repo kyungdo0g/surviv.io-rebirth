@@ -328,10 +328,9 @@ export class Bot {
         if (this.stick) {
             const self = this.model.self;
             this.nearColliders = [];
-            // (doors: the closed door the path runs into is walked up to and opened, not slid along: walksInto)
             for (const o of this.model.obstacles)
                 if (o.blocksMove && sameLayer(self.layer, o.view.layer) && distanceToCollider(self.pos, o.col) < 3)
-                    if (!this.follower.walksInto(o)) this.nearColliders.push(o.col);
+                    if (!this.follower.walksInto(o)) this.nearColliders.push(o.col); // (a door to open: not slid along)
         }
         if (it.stop) {
             this.moveDir = null;
@@ -409,7 +408,8 @@ export class Bot {
     private humanKeys(input: PlayerInput, dir: Vec2 | null, stick: KeyStick): void {
         const it = this.steerIntent();
         const pos = this.model.self.pos;
-        const free = (octant: number) => octantFree(pos, octant, this.nearColliders);
+        // (stepping up against a switch on purpose: no sliding off it, Intent.nudge)
+        const free = it.nudge ? () => true : (octant: number) => octantFree(pos, octant, this.nearColliders);
         const fight = it.behaviour === "fight" || it.moveDir !== null;
         // strafing in a gunfight with a gun in hand: stop, shoot, move on
         const gun =
