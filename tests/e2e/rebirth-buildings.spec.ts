@@ -1,7 +1,7 @@
-// The rebirth buildings (packages/defs rebirth/buildings.ts, the owner's request 2026-10-08) in the building showcase:
-// the clinic (main) and the faction command posts (50v50) draw their own floor and roof (committed SVGs, no missing
-// sprite), the roof hides once the player is inside, the clinic's treatment rooms heal, each post holds its faction's
-// crate. Hooks: window.__rebirth (showcase, game, player, missingSprites). Screenshots: __screens__/rebirth-buildings.
+// The rebirth buildings (packages/defs rebirth/buildings.ts, the owner's requests 2026-10-08) in the building showcase:
+// the clinic, fire station, library and radio station (main), the faction command posts, arsenal and blockhouses (50v50)
+// draw their own floor and roof (committed SVGs, no missing sprite), the roof hides once the player is inside, the
+// clinic's treatment rooms heal and show it, each post holds its faction's crate. Hooks: window.__rebirth (showcase, game, player, missingSprites). Screenshots: __screens__/rebirth-buildings.
 import { expect, type Page, test } from "@playwright/test";
 import { boot, collectErrors } from "./m4-helpers.ts";
 
@@ -95,6 +95,32 @@ test.describe("rebirth buildings", () => {
             await page.waitForTimeout(1500);
             await page.screenshot({ path: `${SCREENS}/${type}-inside.png` });
             expect((await missing(page)).filter((s) => s.includes("outpost"))).toEqual([]);
+            expect(errors).toEqual([]);
+        });
+    }
+
+    // the second wave (the owner, 2026-10-08: "more buildings, the maps get bigger"): [type, map, sprite name, a
+    // spot outside, a spot inside, the camera zoom for the roof shot]
+    for (const [type, map, art, outside, inside, zoom] of [
+        ["firestation_01", "main", "firestation", [-7.5, -20], [-8, 0], 34],
+        ["library_01", "main", "library", [1, -18], [0, 5], 32],
+        ["radio_station_01", "main", "radio", [0, -15], [0, 3], 28],
+        ["arsenal_01", "faction", "arsenal", [0, -17], [-11.5, 0], 30],
+        ["blockhouse_01r", "faction", "blockhouse", [0, -16], [0, 6], 24],
+        ["blockhouse_01b", "faction", "blockhouse", [0, -16], [0, 6], 24],
+    ] as const) {
+        test(`${type}: its own roof outside, its rooms inside`, async ({ page }) => {
+            test.setTimeout(120_000);
+            const errors = collectErrors(page);
+            await boot(page, `/?building=${type}&seed=1&zoom=${zoom}`);
+            expect(await page.evaluate(() => (window as any).__rebirth.showcase.mapName)).toBe(map);
+            await standAt(page, type, outside[0], outside[1]);
+            await page.waitForTimeout(1500);
+            await page.screenshot({ path: `${SCREENS}/${type}-outside.png` });
+            await standAt(page, type, inside[0], inside[1]);
+            await page.waitForTimeout(1500);
+            await page.screenshot({ path: `${SCREENS}/${type}-inside.png` });
+            expect((await missing(page)).filter((s) => s.includes(art))).toEqual([]);
             expect(errors).toEqual([]);
         });
     }

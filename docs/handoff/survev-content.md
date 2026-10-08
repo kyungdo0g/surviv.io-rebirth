@@ -283,10 +283,32 @@ additions (`packages/defs/src/rebirth/buildings.ts`, `docs/research/rebirth-devi
   (manifest entries in `apps/client/src/assets/rebirthSprites.ts`; `assetUrl` takes absolute paths). They are the
   rebirth's own drawings, not original or survev art, so they can be committed; `tools/assets/rebirthBuildingArt.test.ts`
   keeps them in step with the layouts.
-- Schema 18 (unreleased): the four map types take ids after the air drop tier crates. The main 12345 golden hash moved.
+- Schema 20 (the lead's renumbering): the four map types take ids after the air drop tier crates. The main 12345
+  golden hash moved.
 - Tests: `packages/sim/test/rebirthBuildings.test.ts` (layouts clear of walls, healing, faction sides and crates),
   map validation counts, `tests/e2e/rebirth-buildings.spec.ts` (screenshots in `__screens__/rebirth-buildings`).
 - For the bots (lead-owned): the 50v50 map gains two buildings, one per side; nothing in `packages/bots` names them.
+
+## Owner requests (2026-10-08, later): the clinic's heal effect, bigger maps, more buildings
+
+- Heal effect: `apps/client/src/objects/healRegionFx.ts` (hooked in `objects/building.ts`) draws the clinic's heal
+  regions under the roof: a breathing green glow with a floor cross, rising heal crosses, an aura pulse from the bed,
+  brighter while the player stands in one; `ambient_lab_01` hums in each ward. Opt-in per building
+  (`REBIRTH_HEAL_FX_BUILDINGS`); survev's heal regions keep survev's look. The clinic's `planter_04` (the chrysanthemum
+  puzzle button) became `planter_07` and its exploding `control_panel_03` a `stand_01`.
+- Bigger maps (the owner through the lead): `packages/defs/src/rebirth/mapScale.ts` `REBIRTH_MAP_SCALE` 1.2 for main,
+  main_spring, main_summer, snow, faction, faction_potato (842 / 899, 1034); `randomSpawns` choose and the grass
+  `fixedSpawns` counts grow with the land area (choose 3: mansion, police and bank every game, the lead's call); coast,
+  river and bridge spawns and odds keep theirs. `unscaledMapDef` gives survev's size for tests (the gas oracle, the
+  regeneration test). Schema 21: the Emote request's position spans 0..2048. Buildings per land area: −2 to −5 %.
+  The bots' 100-player faction tick p99 did not rise (13.5 ms after vs 13.8–14.8 ms before, 4 seeds × 2 rounds).
+- More buildings (`packages/defs/src/rebirth/buildings/`, one file each, picked by a design panel): fire station,
+  library and radio station on main; the arsenal (neutral, timed magazine unlock) and two blockhouses per faction on
+  50v50, placed on the front line by `REBIRTH_FRONT_LINE_BUILDINGS` (the one sim change, `mapgen/placement.ts`).
+  Tests: `rebirthBuildings.test.ts`, `rebirthBuildingsWave2.test.ts`, `mapScale.test.ts`, map validation, e2e.
+- For the bots (lead-owned, applied by the lead): `team.test.ts` centres its first circle at 0.34 × the map size,
+  `nav.basements.test.ts` expects the mansion cellar (choose 3), `move-scenarios.test.ts` expects 8 red houses and
+  uses houses 3, 6 and 7.
 
 ## Changes needed in the lead's files
 
