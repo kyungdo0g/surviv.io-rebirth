@@ -11,6 +11,7 @@ import type { BuildingDef, FloorImage } from "@rebirth/defs";
 import { MapObjectDefs } from "@rebirth/defs";
 import type { BuildingView } from "@rebirth/sim";
 import type { Sprite } from "pixi.js";
+import { roofsHidden } from "../globals.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
@@ -216,6 +217,7 @@ export class BuildingRender implements ObjectRender<BuildingView> {
         if (canSeeInside && !blocked && ctx.localLayer & 2 && (this.data.layer & 1) !== (ctx.localLayer & 1)) {
             this.ceilingAlpha = 0;
         }
+        if (roofsHidden()) this.ceilingAlpha = 0;
 
         const renderer = this.deps.renderer;
         let ceilingLayer = this.data.layer;

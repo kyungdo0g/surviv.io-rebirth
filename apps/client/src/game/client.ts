@@ -37,6 +37,7 @@ import { GasShape, WORLD_GAS_COLOR } from "../fx/gas.ts";
 import { bindHitFx, HitFeedback } from "../fx/hitFeedback.ts";
 import { mapParticleSprites } from "../fx/particleDefsAll.ts";
 import { ParticleSystem } from "../fx/particles.ts";
+import { debugCameraAt } from "../globals.ts";
 import { InputManager } from "../input/input.ts";
 import { DebugHudBind } from "../input/keybinds.ts";
 import { createTerrainGraphics } from "../map/terrain.ts";
@@ -457,7 +458,8 @@ export class GameClient {
             return;
         }
         this.visualPos = world.visualPos(this.activeId, now) ?? this.localPos;
-        this.camera.follow(dt, this.visualPos, this.debugZoom ?? this.local.zoom, !this.cameraPlaced);
+        const camAt = debugCameraAt() ?? this.visualPos;
+        this.camera.follow(dt, camAt, this.debugZoom ?? this.local.zoom, !this.cameraPlaced);
         this.cameraPlaced = true;
 
         const spectating = this.match.spectating;

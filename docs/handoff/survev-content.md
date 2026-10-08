@@ -256,6 +256,18 @@ may not touch, the schema number used and open questions.
   spawned (no map, building, game object, sim or server code names them) and neither client has the image, so
   `tools/assets/unspawned-defs.json` lists them and the import records them as drawing nothing without a warning;
   `tools/assets/sources.test.ts` checks the list stays true.
+- 4. Building visual parity: no discrepancy found, nothing changed in defs or rendering. Every survev-only or
+  survev-overridden showcase entry (49 buildings, structures and caches) was shot with roofs, with every roof open and
+  underground, plus close-ups of Reserve and its basement, the Cloud and Twins sublevels, mansion_03 and its cellar and
+  the snow barn basement (`tests/e2e/survev-building-parity.spec.ts`; `PARITY_ALL=1` shoots all, default 5 + 1
+  close-up; screenshots in `__screens__/survev-parity`). Client test hooks: `window.__rebirth.hideRoofs` (every
+  ceiling open) and `window.__rebirth.cameraAt` (camera centred there, not on the player). The ported defs equal
+  survev's raw data (only `category` → `obstacleType` renamed); compared with the survev.wiki.gg layout and roof images:
+  workshop, alt warehouse, pirate hut, hunting perch, Twins and Cloud bunkers and sublevels, Reserve and basement,
+  oasis, camps, logging complexes, mansions, teahouses, the snow, spring, summer and Halloween variants. The showcase
+  keeps only the structure, so the Cloud bunker there lacks its lake dressing (stones, lily pads, island brush); the real
+  savannah map has it. The wiki's Cloud ground image shows a light circle around the lake: that is the savannah grass
+  (`0xb4b02e`) with the rest of the image darkened to 70 % by the wiki author to mark the footprint, not a map feature.
 
 ## Owner request (2026-10-08): two rebirth buildings
 
