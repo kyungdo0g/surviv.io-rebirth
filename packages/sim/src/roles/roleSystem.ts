@@ -5,10 +5,12 @@
 // Behaviour follows survev server/src/game/objects/player.ts (PlayerBarn.update scheduled roles, scheduleRoleAssignments,
 // promoteToKillLeader, kill), group.ts (Team.checkAndApplyLastMan / checkAndApplyCaptain) and
 // docs/research/items/roles.md "50v50 promotion rules" / "Map roles" / "Cobalt classes".
-import { getDefOfType, getMapDef, hasDef, type MapDef } from "@rebirth/defs";
+import { getDefOfType, getMapDef, hasDef, type MapDef, WeaponSlot } from "@rebirth/defs";
 import type { LootSystem } from "../loot/loot.ts";
 import { type FactionSystem, living } from "../match/faction.ts";
 import type { TrackedIndicator } from "../match/indicators.ts";
+import { fireGun } from "../weapons/gun.ts";
+import { gunDef } from "../weapons/weaponManager.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
 import { promoteToRole, removeRole, swapClasslessPerk } from "./roles.ts";
@@ -135,14 +137,22 @@ export class RoleSystem {
     }
 
     /** The fork's automatic Commander flare (conflicts.md role-leader-auto-flare, off by default). */
+    /**
+     * The fork's automatic flare (rules.roles.leaderAutoFlare, off): the Commander draws its flare gun and fires it,
+     * indoors too, then a downed one goes back to its melee weapon (survev player.ts:1478-1495).
+     */
     private autoFlare(player: Player, dt: number): void {
         player.flareTimer -= dt;
         if (player.flareTimer > 0) return;
         player.firedFlare = true;
-        const flare = player.weaponManager.weapons.find((w) => w.type === "flare_gun" && w.ammo > 0);
-        if (!flare) return;
-        flare.ammo--;
-        this.host.planes.addAirdrop(this.host.world.clampToMap(player.pos, 0));
+        player.flareTimer = 0;
+        const wm = player.weaponManager;
+        const idx = wm.weapons.findIndex((w) => w.type === "flare_gun" || w.type === "flare_gun_dual");
+        const def = idx >= 0 ? gunDef(wm.weapons[idx].type) : undefined;
+        if (!def) return;
+        wm.setCurWeapIndex(idx, true);
+        fireGun(this.host, player, false, def.fireDelay, true);
+        if (player.downed) wm.setCurWeapIndex(WeaponSlot.Melee, true);
     }
 
     /** A faction player was knocked down: Lone Survivr may apply (survev down -> checkAndApplyLastMan). */

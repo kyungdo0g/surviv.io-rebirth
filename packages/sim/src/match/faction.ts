@@ -194,12 +194,13 @@ export class FactionSystem {
     }
 
     /**
-     * After a kill (survev kill -> isOneTeamWinning / helpLosingTeam, fork flag): once per match, after circle 0, when
+     * After a kill (survev kill -> isOneTeamWinning / helpLosingTeam, fork flag): once per match, outside circle 0, when
      * the connected living gap is at least 10 % of the connected living players or 5, a gold drop lands near the
      * losing team's player farthest from the winners' centre (out of the gas) and an air strike hits the densest group.
      */
     checkHelpLosingTeam(): void {
-        if (!this.host.rules.roles.helpLosingTeam || this.sentHelp || this.host.gas.circleIdx <= 0) return;
+        // survev plane.ts:213 skips circle 0 only (circleIdx == 0)
+        if (!this.host.rules.roles.helpLosingTeam || this.sentHelp || this.host.gas.circleIdx === 0) return;
         const counts = this.teams.map((t) => living(t).filter((p) => !p.disconnected).length);
         const max = Math.max(...counts);
         const min = Math.min(...counts);

@@ -410,3 +410,24 @@ describe("gas (survev player.ts:1648-1669)", () => {
         expect(100 - p.health).toBeCloseTo(7, 9);
     });
 });
+
+describe("the Commander's automatic flare (rules.roles.leaderAutoFlare, off; survev player.ts:1478-1495)", () => {
+    it("draws the flare gun and fires it through the gun path", () => {
+        const { game, red } = faction();
+        game.rules.roles.leaderAutoFlare = true;
+        game.rules.roles.leaderAutoFlareDelay = 0.5;
+        const [cmd] = red;
+        game.roles.promote(cmd, "leader");
+        const wm = cmd.weaponManager;
+        const idx = wm.weapons.findIndex((w) => w.type === "flare_gun" || w.type === "flare_gun_dual");
+        expect(idx).toBeGreaterThanOrEqual(0);
+        const ammo = wm.weapons[idx].ammo;
+        const planes = game.planes.planes.length;
+        steps(game, 60);
+        expect(cmd.firedFlare).toBe(true);
+        expect(wm.curWeapIdx).toBe(idx);
+        expect(wm.weapons[idx].ammo).toBe(ammo - 1);
+        // the flare's air drop is called where the shot is fired (gun.ts)
+        expect(game.planes.planes.length).toBe(planes + 1);
+    });
+});

@@ -1515,6 +1515,7 @@
 - A: desert crates `01` w12 / `02de` w1 / `05` w1 [src:survev/shared/defs/maps/desertDefs.ts:48-66] [H]
 - B: original `01` w10 / `02de` w1 [src:balance/319] [H]
 - proposed resolution: original weights, no `airdrop_crate_05` [src:derived/readme-precedence] [H]
+- superseded by the survev baseline (docs/adr/0003-survev-baseline.md): the port takes survev's 01 w12 / 02de w1 / 05 w1 [src:survev/shared/defs/maps/desertDefs.ts:48-66] [H]
 - files: `mechanics/airdrop-airstrike.md` (`desert-airdrop-weights`) [src:derived/kb-crossref] [H]
 
 ## airdrop-crush-damage
@@ -2062,6 +2063,7 @@
 - A: v0.8.82 pool has no fork guns [src:changelog/0.8.82] [H]
 - B: survev pool containing imbel, barrett, sw500, ash12 [src:derived/survev-nopotatoswap-scan] [H]
 - proposed resolution: build the pool from v0.8.82 item ids only [src:derived/readme-precedence] [H]
+- superseded by the survev baseline (docs/adr/0003-survev-baseline.md): the pool is every weapon def without `noPotatoSwap`, survev guns included, but the rebirth's gold-only guns [src:survev/server/src/game/objects/player.ts:4057-4066] [H]
 - files: `modes/potato.md` (`potato-swap-pool`) [src:derived/kb-crossref] [H]
 
 ## potato-tier-perks
