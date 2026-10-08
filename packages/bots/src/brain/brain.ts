@@ -10,11 +10,14 @@ import { Input } from "@rebirth/defs";
 import type { DifficultyParams } from "../difficulty.ts";
 import { hasAmmo, heldGunsWithAmmo } from "../knowledge/arsenal.ts";
 import { POTATO_GUNS } from "../knowledge/gunTiers.ts";
+import { installBlastWatch } from "../perception/blasts.ts";
 import type { WorldModel } from "../perception/world.ts";
 import { NEUTRAL, PERSONA_SALT, type PersonaParams } from "../persona.ts";
 import { type SkillProfile, skillOf } from "../skill.ts";
 import { reactToThreats } from "./alert.ts";
 import { assessCached, wantsAssessment } from "./assess.ts";
+import { planBarrelShot } from "./barrelShot.ts";
+import { holdBlastFire, stepOutOfBlast } from "./blast.ts";
 import { addCombatLayer, selectTarget } from "./combat.ts";
 import { type BehaviourName, type BrainCtx, BrainMemory, emptyIntent, type Intent } from "./context.ts";
 import { noteContested } from "./danger.ts";
@@ -115,6 +118,8 @@ export class Brain {
         this.skill = Object.freeze({ ...(profile.skill ?? skillOf(params)) });
         this.personaRng = profile.personaRng ?? createRng(PERSONA_SALT);
         this.doors = features.doors ? new DoorBrain(profile.seed ?? 0) : null;
+        // exploding obstacles: the model's blast watch prices them into every cover search (perception/blasts.ts)
+        if (features.blastAware) installBlastWatch(model);
         // (a number only: the knowledge is drawn from it on first use, by an enabled feature)
         this.mem.puzzle.seed = profile.seed ?? 0;
     }
@@ -253,6 +258,8 @@ export class Brain {
         }
         // doors: an alert's look and pause, the close behind, out of a doorway (before the weapon, which may draw for it)
         this.doors?.apply(ctx, intent);
+        // an explosive next to the target that breaks within a moment: shoot it (intermediate and expert bots)
+        if (ctx.features.barrelShot) planBarrelShot(ctx, intent);
         manageWeapons(ctx, intent);
         if (ctx.features.grenades) {
             // round 4: running from a chaser, a frag thrown back at its path (escapeFrag.ts) comes first
@@ -275,6 +282,12 @@ export class Brain {
         if (ctx.features.scope) manageScope(ctx, intent);
         // pursuit: shot on the spot it stands on: step off it (stillHit.ts)
         if (ctx.features.pursuit) unpinUnderFire(ctx, intent);
+        // in the blast of an explosive being shot: step out of it, and never shoot one next to itself (blast.ts; a
+        // grenade's dodge comes first)
+        if (ctx.features.blastAware) {
+            stepOutOfBlast(ctx, intent);
+            holdBlastFire(ctx, intent);
+        }
         dodge(ctx, intent);
         // doors: the bot's own Use (a door it toggles is no sign of anyone else)
         if (this.doors && intent.actions.includes(Input.Use)) this.doors.noteUse(now);

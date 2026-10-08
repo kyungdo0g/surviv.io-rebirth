@@ -14,6 +14,7 @@ import { WeaponSlot } from "@rebirth/defs";
 import { colliderCenter, colliderRadius } from "../geom.ts";
 import { currentGun, fightSlot, type HeldGun, hasAmmo } from "../knowledge/arsenal.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
+import { blastWatchOf } from "../perception/blasts.ts";
 import { bodyAimPoint } from "../perception/rays.ts";
 import type { Contact, SeenObstacle, WorldModel } from "../perception/world.ts";
 import { aimSigma, engagingMe, holdFire } from "./assess.ts";
@@ -318,6 +319,8 @@ interface CoverCandidate {
     c: Vec2;
     r: number;
     box: boolean;
+    /** the obstacle's id (an explosive's cover cost: perception/blasts.ts) */
+    id: number;
 }
 
 const coverLists = new WeakMap<WorldModel, { src: SeenObstacle[]; len: number; cands: CoverCandidate[] }>();
@@ -334,7 +337,7 @@ function coverCandidates(model: WorldModel): CoverCandidate[] {
         if (!o.blocksBullets || o.def.door) continue;
         const { c, r } = obstacleGeom(o);
         if (r < 0.9 || r > 7) continue;
-        cands.push({ c, r, box: o.col.type === 1 });
+        cands.push({ c, r, box: o.col.type === 1, id: o.view.id });
     }
     coverLists.set(model, { src: model.obstacles, len: model.obstacles.length, cands });
     return cands;
@@ -342,7 +345,10 @@ function coverCandidates(model: WorldModel): CoverCandidate[] {
 
 /**
  * A spot behind an obstacle that shields from `threat`, within `maxDist` of `from`, or null. `accept` filters the
- * candidate spots (default: all).
+ * candidate spots (default: all). A brain that knows exploding obstacles (BrainFeatures.blastAware: the model has a
+ * blast watch) pays for an explosive cover and for a spot inside a blast, and never hides behind an explosive being
+ * shot or badly damaged nor in its blast (perception/blasts.ts coverCost): a crate or a wall a few steps farther wins
+ * over a barrel next to the bot.
  */
 export function findCoverFrom(
     model: WorldModel,
@@ -353,7 +359,8 @@ export function findCoverFrom(
 ): Vec2 | null {
     let best: Vec2 | null = null;
     let bestCost = Number.POSITIVE_INFINITY;
-    for (const { c, r, box } of coverCandidates(model)) {
+    const blasts = blastWatchOf(model);
+    for (const { c, r, box, id } of coverCandidates(model)) {
         if (v2.distance(from, c) > maxDist) continue;
         const away = v2.normalizeSafe(v2.sub(c, threat));
         const raw = v2.add(c, v2.mul(away, r * (box ? 0.75 : 1) + 1.5));
@@ -363,10 +370,13 @@ export function findCoverFrom(
         const spot = model.nav.center(model.nav.nearestWalkable(raw, 1));
         // the whole body hidden, not only its centre (an edge ray from the threat would still land)
         if (model.bodyLineOfFire(threat, spot)) continue;
+        // exploding obstacles (blastAware): an explosive is poor cover, a blast poor company
+        const blast = blasts ? blasts.coverCost(model, id, spot) : 0;
+        if (blast === null) continue;
         if (accept && !accept(spot)) continue;
         // prefer close spots that do not make the bot walk towards the threat
         const towards = Math.max(0, v2.distance(threat, from) - v2.distance(threat, spot));
-        const cost = v2.distance(from, spot) + towards * 1.5;
+        const cost = v2.distance(from, spot) + towards * 1.5 + blast;
         if (cost < bestCost) {
             bestCost = cost;
             best = spot;
