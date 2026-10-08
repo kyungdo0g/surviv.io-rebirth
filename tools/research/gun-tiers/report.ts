@@ -315,13 +315,72 @@ function changes(): string {
     );
     for (const r of moved) {
         const steps = rk(r.current) - rk(r.tier);
-        const why = REASON[r.id] ?? autoReason(r.id);
+        const why0 = REASON[r.id] ?? autoReason(r.id);
         const flag = r.flags
-            .filter((x: string) => !x.startsWith("ruling agrees"))
+            .filter((x: string) => !x.startsWith("ruling agrees") && !x.startsWith(OWNER_1008))
             .map((x: string) => x.split(":")[0])
             .join(", ");
+        const owner =
+            r.before1008 !== r.tier ? ` Owner ruling 2026-10-08: ${r.before1008} → ${r.tier} (section 1a).` : "";
+        // the owner note follows as its own sentence
+        const why = owner && !/[.!?]$/.test(why0) ? `${why0}.` : why0;
         lines.push(
-            `| ${name(r.id)}${r.mainMap ? "" : " (off-map)"} | ${r.current} | ${r.tier} | ${steps > 0 ? `+${steps}` : steps} | ${f(r.C)} | ${why}${flag ? ` *(${flag})*` : ""} |`,
+            `| ${name(r.id)}${r.mainMap ? "" : " (off-map)"} | ${r.current} | ${r.tier} | ${steps > 0 ? `+${steps}` : steps} | ${f(r.C)} | ${why}${flag ? ` *(${flag})*` : ""}${owner} |`,
+        );
+    }
+    return lines.join("\n");
+}
+
+/** Section 1's summary: how many guns moved against the baseline, and how well the old order matches the composite. */
+function counts(): string {
+    const rows = T.rows.filter((r: Any) => r.inRows);
+    const moved = rows.filter((r: Any) => r.current !== r.tier);
+    const steps = (r: Any) => rk(r.current) - rk(r.tier);
+    const two = moved.filter((r: Any) => Math.abs(steps(r)) >= 2).length;
+    const up = moved.filter((r: Any) => steps(r) > 0).length;
+    const main = rows.filter((r: Any) => r.mainMap);
+    const mainMoved = main.filter((r: Any) => r.current !== r.tier).length;
+    const rank = (v: number[]) => {
+        const order = v.map((x, i) => [x, i]).sort((a, b) => a[0] - b[0]);
+        const out: number[] = new Array(v.length);
+        for (let i = 0; i < order.length; ) {
+            let j = i;
+            while (j + 1 < order.length && order[j + 1][0] === order[i][0]) j++;
+            for (let k = i; k <= j; k++) out[order[k][1]] = (i + j) / 2;
+            i = j + 1;
+        }
+        return out;
+    };
+    const a = rank(rows.map((r: Any) => -rk(r.current)));
+    const b = rank(rows.map((r: Any) => r.C));
+    const m = (v: number[]) => v.reduce((x, y) => x + y, 0) / v.length;
+    const ma = m(a);
+    const mb = m(b);
+    const cov = m(a.map((x, i) => (x - ma) * (b[i] - mb)));
+    const rho = cov / Math.sqrt(m(a.map((x) => (x - ma) ** 2)) * m(b.map((y) => (y - mb) ** 2)));
+    return (
+        `${moved.length} of the ${rows.length} tiered guns move against the round 6 list, ${two} of them by two steps or more ` +
+        `(${up} up, ${moved.length - up} down); ${mainMoved} of the ${main.length} main-map guns move. The Spearman ` +
+        `correlation between the round 6 tiers and the new composite is ${f(rho)}.`
+    );
+}
+
+/** flags of the owner rulings of 2026-10-08 (score.ts OWNER_1008): their own table, ownerRulings() */
+const OWNER_1008 = "owner 2026-10-08";
+
+function ownerRulings(): string {
+    const lines = [
+        "| gun | class | stat tier (composite) | reviewed (d96246a) | now | ruling |",
+        "|---|---|---|---|---|---|",
+    ];
+    const moved = T.rows.filter((r: Any) => r.inRows && r.before1008 !== r.tier);
+    moved.sort((a: Any, b: Any) => rk(a.tier) - rk(b.tier) || b.C - a.C);
+    for (const r of moved) {
+        const why = r.flags
+            .filter((x: string) => x.startsWith(OWNER_1008))
+            .map((x: string) => x.split(": ").slice(1).join(": "));
+        lines.push(
+            `| ${name(r.id)} | ${row.get(r.id).gclass} | ${r.stat} (${f(r.C)}) | ${r.before1008} | ${r.tier} | ${why.join("; ").replaceAll("->", "→")} |`,
         );
     }
     return lines.join("\n");
@@ -329,9 +388,10 @@ function changes(): string {
 
 function conflicts(): string {
     const lines = ["| gun | ruling / pin | stat tier | composite | what the numbers say |", "|---|---|---|---|---|"];
-    for (const r of T.rows.filter((x: Any) => x.flags.some((fl: string) => !fl.startsWith("ruling agrees")))) {
+    const shown = (fl: string) => !fl.startsWith("ruling agrees") && !fl.startsWith(OWNER_1008);
+    for (const r of T.rows.filter((x: Any) => x.flags.some(shown))) {
         for (const fl of r.flags) {
-            if (fl.startsWith("ruling agrees")) continue;
+            if (!shown(fl)) continue;
             lines.push(`| ${name(r.id)} | ${r.tier} | ${r.stat} | ${f(r.C)} | ${REASON[`conflict:${r.id}`] ?? fl} |`);
         }
     }
@@ -395,6 +455,8 @@ const doc = tpl
     .replace("{{LAUNCHERS}}", launcherTable())
     .replace("{{CHANGES}}", changes())
     .replace("{{CONFLICTS}}", conflicts())
+    .replace("{{OWNER_1008}}", ownerRulings())
+    .replace("{{COUNTS}}", counts())
     .replace("{{ROWS}}", proposedRows())
     .replace("{{SENS}}", sens)
     .replace("{{AMMO}}", ammoTable())

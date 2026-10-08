@@ -5,7 +5,7 @@
 // - a zone is dangerous out to its drawn radius (the view's `rad`, which already includes a variant's growth: the
 //   heavy-shell variant grows its circle by its larger blast) plus the blast of the bombs its planes drop (planes aim
 //   anywhere inside the circle, survev getAirstrikePos, so a bomb at the edge still reaches its blast radius past it:
-//   explosion_bomb_iron rad.max 14 from GameObjectDefs), less what the variant's marker already adds (round 5:
+//   explosion_bomb_iron rad.max 17.5 from GameObjectDefs), less what the variant's marker already adds (round 5:
 //   zoneMargin, the carpet marker covers every blast);
 // - a falling bomb (a throwable with explodeOnImpact: the iron bomb, and any heavier shell a variant drops) is
 //   dangerous out to its own explosion def's rad.max, plus the player's radius and its drift while it falls
@@ -31,9 +31,9 @@ import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 /**
  * The margin past a zone's drawn radius (round 5, user reports 27 and 32): planes aim anywhere inside the aim radius,
  * so a bomb at its edge reaches its blast past it. The drawn radius is the aim radius plus the variant's zoneRadAdd
- * (defs AIRSTRIKE_VARIANTS), so the margin is the blast of the variant's bomb less that: normal 14 - 0, heavy shells
- * 38 - 24 (both: aim radius + their own blast), carpet 0 (its marker already covers every blast). It was the iron
- * bomb's 14 for every zone.
+ * (defs AIRSTRIKE_VARIANTS), so the margin is the blast of the variant's bomb less that: normal 17.5 - 0, heavy
+ * shells 47.5 - 30 (both: aim radius + their own blast), carpet 0 (its marker already covers every blast). It was the
+ * iron bomb's blast for every zone. (Blasts x1.25 since the owner's 2026-10-08 strike size: 14 - 0 and 38 - 24 before.)
  */
 function zoneMargin(variant: AirstrikeVariant | undefined): number {
     const v = AIRSTRIKE_VARIANTS[variant ?? "normal"];
@@ -53,7 +53,7 @@ const EXIT_TRIES = [0, 0.5, -0.5, 1, -1, 1.5, -1.5, 2.2, -2.2, Math.PI];
 
 const blastCache = new Map<string, number>();
 
-/** rad.max of the explosion a throwable makes (0 when it makes none): explosion_bomb_iron 14. */
+/** rad.max of the explosion a throwable makes (0 when it makes none): explosion_bomb_iron 17.5. */
 export function blastRadius(type: string): number {
     const hit = blastCache.get(type);
     if (hit !== undefined) return hit;

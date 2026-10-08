@@ -28,27 +28,31 @@ describe("air strike variants (reports 27, 32)", () => {
         const at = (x: number) => v2.add(w.spot, { x, y: 200 });
         board.zones = [
             { kind: "airstrike", pos: at(0), rad: 50, until: NOW + 10 },
-            { kind: "airstrike", pos: at(200), rad: 74, until: NOW + 10, variant: "heavy" },
-            { kind: "airstrike", pos: at(400), rad: 92, until: NOW + 10, variant: "carpet" },
+            { kind: "airstrike", pos: at(200), rad: 50 + 30, until: NOW + 10, variant: "heavy" },
+            { kind: "airstrike", pos: at(400), rad: 50 * 1.4 + 46, until: NOW + 10, variant: "carpet" },
         ];
         w.model.threats = board;
         const list = strikeDangers(brainOf(w, ["pursuit"]).context(NOW));
         const iron = blastRadius("bomb_iron");
         const heavy = blastRadius("bomb_heavy");
-        expect(heavy).toBe(38);
-        // normal: aim radius + the iron blast (as before); heavy: the marker holds +24, so aim + 38 = rad + 14
+        // the defs' blasts (x1.25 since the owner's 2026-10-08 strike size)
+        expect([iron, heavy]).toEqual([17.5, 47.5]);
+        expect(AIRSTRIKE_VARIANTS.heavy.zoneRadAdd).toBe(30);
+        // normal: aim radius + the iron blast (as before); heavy: the marker holds +30, so aim + 47.5 = rad + 17.5
         expect(list[0].rad).toBe(50 + iron);
-        expect(list[1].rad).toBe(74 + heavy - AIRSTRIKE_VARIANTS.heavy.zoneRadAdd);
-        // carpet: its marker covers every blast already (it was rad + 14)
-        expect(list[2].rad).toBe(92);
+        expect(list[1].rad).toBe(80 + heavy - AIRSTRIKE_VARIANTS.heavy.zoneRadAdd);
+        expect(list[1].rad).toBe(50 + heavy);
+        // carpet: its marker covers every blast already (it was rad + the iron blast)
+        expect(list[2].rad).toBe(50 * 1.4 + 46);
     });
 
     it("a strike marker takes its zone's variant: as wide as its lines spread plus its bomb's blast (bot round 6)", () => {
-        // the lines' spread (5 u, the carpet's 21), the bombs' 4 u jitter, the blast (iron 14, heavy 38) and the body
+        // the lines' spread (5 u, the carpet's 21), the bombs' 4 u jitter, the blast (iron 17.5, heavy 47.5) and the
+        // body
         for (const [variant, rad, time] of [
-            [undefined, 24, MARKER_DANGER_TIME],
-            ["heavy", 48, MARKER_DANGER_TIME],
-            ["carpet", 40, MARKER_DANGER_TIME],
+            [undefined, 27.5, MARKER_DANGER_TIME],
+            ["heavy", 57.5, MARKER_DANGER_TIME],
+            ["carpet", 43.5, MARKER_DANGER_TIME],
         ] as const) {
             const model = newModel();
             const board = new ThreatTracker();

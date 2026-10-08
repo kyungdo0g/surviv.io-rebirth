@@ -150,10 +150,9 @@ describe("gun tiers", () => {
         expect(gunTier("m249")?.tier).toBe("S");
         expect(gunTier("pkp")?.tier).toBe("S");
         expect(gunTier("awc")?.tier).toBe("S-aim");
-        // stat tiers (gun-tiers.md section 6): the QBB-97 and the SV-98 fell one step, the M1100 rose three (about 10
-        // of its 18 pellets land at 10 u from the muzzle), the CZ-3A1 and the MAC-10 held
+        // stat tiers (gun-tiers.md section 6): the QBB-97 fell one step, the M1100 rose three (about 10 of its 18
+        // pellets land at 10 u from the muzzle), the CZ-3A1 and the MAC-10 held
         expect(gunTier("qbb97")?.tier).toBe("A");
-        expect(gunTier("sv98")?.tier).toBe("A");
         expect(gunTier("scorpion")?.tier).toBe("A-");
         expect(gunTier("m1100")?.tier).toBe("B");
         expect(gunTier("mac10")?.tier).toBe("C+");
@@ -167,11 +166,21 @@ describe("gun tiers", () => {
         expect(gunTier("ots38_dual")?.tier).toBe("B+");
         expect(gunTier("ot38_dual")?.tier).toBe("B-");
         expect(gunTier("colt45")?.tier).toBe("C");
-        // round 5 (user report 33): the Mosin strong but not top (A), the MK12 / M39 low-tier DMRs (B+)
-        expect(gunTier("mosin")?.tier).toBe("A");
-        expect(gunTier("mk12")?.tier).toBe("B+");
-        expect(gunTier("m39")?.tier).toBe("B+");
+        // owner 2026-10-08 (gun-tiers.md 1a): every DMR and sniper one tier up over the report 33 rulings (the MK12 /
+        // M39 low-tier DMRs B+ -> A-, the Mosin A -> A+, the SV-98 with it); S-aim stays
+        expect(gunTier("mosin")?.tier).toBe("A+");
+        expect(gunTier("sv98")?.tier).toBe("A+");
+        expect(gunTier("mk12")?.tier).toBe("A-");
+        expect(gunTier("m39")?.tier).toBe("A-");
+        expect(gunTier("wa2000")?.tier).toBe("B+");
+        expect(gunTier("garand")?.tier).toBe("S-aim");
         expect(gunRank("mk12")).toBeLessThan(gunRank("garand"));
+        // owner 2026-10-08: the RPG-7 and the Panzerfaust were far too low; the M202 is the endgame comeback gun, the
+        // Panzerfaust its downgrade
+        expect(gunTier("rpg7")?.tier).toBe("A-");
+        expect(gunTier("panzerfaust")?.tier).toBe("B+");
+        expect(gunTier("m202")?.tier).toBe("A+");
+        expect(gunRank("m202")).toBeGreaterThan(gunRank("panzerfaust"));
         // behaviour pins (gun-tiers.md 2.6): the AK-47 at B (owner item 43) and the M9 at D, against their stats
         expect(gunTier("ak47")?.tier).toBe("B");
         for (const id of ["ot38", "m9", "glock"]) expect(gunTier(id)?.tier, id).toBe("D");

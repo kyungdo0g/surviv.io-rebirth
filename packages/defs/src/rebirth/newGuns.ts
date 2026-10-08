@@ -8,9 +8,8 @@
 // New fields (types/weapons.ts): charges + discardWhenEmpty (Boys 7 shots, Panzerfaust 1, M202 one volley), pumpEvery +
 // pumpDelay (DP-12), speed.carry (DShK), goldOnly, sound.discard; bullets noReflect, armDistance, noDistAdj. The
 // owner's changes of 2026-10-08 are in the sheet too: the M79, GL-06 and MGL hold no equip slowdown, and the M202 fires
-// a fixed fan (fanAngle) bursting at the cursor, slides its shooter back (recoilKnockback) and breaks plated
-// obstacles (armorPiercing, stonePiercing) with its bigger blasts; the owner's faction feedback of the same day made
-// each blast smaller than an air strike bomb's (rad 4-11 against 5-14), so the fan narrowed from 60° to 52°.
+// a fixed 60° fan (fanAngle) bursting at the cursor, slides its shooter back (recoilKnockback) and breaks plated
+// obstacles (armorPiercing, stonePiercing) with its bigger blasts.
 import type {
     AmmoDef,
     BulletDef,

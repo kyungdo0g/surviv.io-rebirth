@@ -9,6 +9,7 @@ import { DIFFICULTY_PRESETS } from "../src/difficulty.ts";
 import { S_RULE_GUNS, tieredGuns } from "../src/knowledge/gunTiers.ts";
 import {
     baseDesire,
+    botPersona,
     byThoroughness,
     fleeHealth,
     isNeutral,
@@ -156,12 +157,14 @@ describe("persona and skill determinism", () => {
         expect(draws(exact)).toEqual(ref);
         expect(plain.persona).toBe(NEUTRAL);
         expect(plain.params).toBe(DIFFICULTY_PRESETS.normal);
-        expect(tasted.persona).toBe(PERSONAS.rusher);
+        // a named persona carries the bot's own gun taste (owner 2026-10-08), drawn from its own stream
+        expect(tasted.persona.name).toBe("rusher");
+        expect(tasted.persona).toEqual(botPersona("rusher", 42));
         expect(tasted.skill.tier).toBe("expert");
         expect(exact.skill).toEqual({ tier: "beginner", s: 0.3, g: 0.9 });
         // the brain context carries them
         const ctx = tasted.brain.context(0);
-        expect(ctx.persona).toBe(PERSONAS.rusher);
+        expect(ctx.persona).toBe(tasted.persona);
         expect(ctx.skill).toEqual(tasted.skill);
         // the same seed and tier always draws the same skill
         expect(new Bot(game.mapData, { seed: 42, skill: "expert" }).skill).toEqual(tasted.skill);

@@ -95,6 +95,31 @@ const PIN: Record<string, { tier: Tier; why: string }> = {
     m9: { tier: "D", why: "pinned so a bot with an M9 and an MP5 takes an AK for the M9" },
 };
 
+/**
+ * Owner rulings of 2026-10-08, given after the owner reviewed the rebuilt list; applied last, so they override the
+ * earlier ones (the MK12 / M39 B+ and the Mosin A of report 33 become A- and A+):
+ * - "every DMR and every sniper moves up one tier": the bots' classes dmr and sniper (winter skins included); S-aim has
+ *   no higher aim tier and stays, an S gun stays;
+ * - the RPG-7 (A-) and the Panzerfaust (B+): "far too low";
+ * - the M202 FLASH (A+): "overpowered, a near-certain kill, the endgame comeback gun"; the Panzerfaust is its downgrade.
+ */
+const OWNER_BUMP_CLASSES: ReadonlySet<string> = new Set(["dmr", "sniper"]);
+/**
+ * The list the owner reviewed (gunTiers.ts at d96246a): the one-tier bump counts from it, so a later stat shift (the
+ * M202's revert moved the B cut past the Model 94) cannot make it two steps.
+ */
+const REVIEWED: Record<string, Tier> = JSON.parse(
+    readFileSync(new URL("reviewed-d96246a.json", import.meta.url), "utf8"),
+).tiers;
+const OWNER_1008: Record<string, { tier: Tier; why: string }> = {
+    rpg7: { tier: "A-", why: "the RPG-7 and the Panzerfaust are far too low" },
+    panzerfaust: { tier: "B+", why: "the RPG-7 and the Panzerfaust are far too low" },
+    m202: {
+        tier: "A+",
+        why: "overpowered, a near-certain kill, the endgame comeback gun (the Panzerfaust is its downgrade)",
+    },
+};
+
 export interface TierRow {
     id: string;
     cls: string;
@@ -102,6 +127,8 @@ export interface TierRow {
     CE: number;
     F: number;
     stat: Tier;
+    /** the tier in the list the owner reviewed on 2026-10-08 (d96246a), before the rulings of that day */
+    before1008?: Tier;
     tier: Tier;
     current?: Tier;
     currentF?: number;
@@ -190,6 +217,23 @@ for (const r of rows) {
                 u.tier = t.tier;
             }
         }
+    }
+}
+
+// the owner rulings of 2026-10-08 come last
+for (const t of out) {
+    t.before1008 = REVIEWED[t.id] ?? t.tier;
+    if (OWNER_BUMP_CLASSES.has(t.cls)) {
+        // exactly one tier over the reviewed list; S-aim and S stay
+        const from = t.before1008;
+        const up = from === "S" || from === "S-aim" ? from : ORDER[ORDER.indexOf(from) - 1];
+        if (up !== t.tier) t.flags.push(`owner 2026-10-08: every DMR and sniper moves up one tier: ${from} -> ${up}`);
+        t.tier = up;
+    }
+    const r = OWNER_1008[t.id];
+    if (r && r.tier !== t.tier) {
+        t.flags.push(`owner 2026-10-08: ${t.tier} -> ${r.tier}: ${r.why}`);
+        t.tier = r.tier;
     }
 }
 

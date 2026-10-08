@@ -49,6 +49,8 @@ export interface PopulationConfig {
     skillMix?: Partial<Record<SkillTierName, number>>;
     /** personas: off (default: every bot NEUTRAL), true for PERSONA_MIX, or a custom mix */
     personas?: boolean | Partial<Record<PersonaName, number>>;
+    /** the drawn personas' own gun taste (Bot taste: fire-rate lovers, class bias; default true) */
+    tastes?: boolean;
 }
 
 /**
@@ -224,6 +226,7 @@ export function runMatch(cfg: MatchConfig = {}): MatchReport {
             seed: seed * 1000 + i,
             ...(skill !== undefined ? { skill } : {}),
             ...(persona !== undefined ? { persona } : {}),
+            ...(cfg.population?.tastes === false ? { taste: false } : {}),
         });
         difficulty.set(bot.playerId, bot.bot.params.name);
         brainOf.set(bot.playerId, brain);

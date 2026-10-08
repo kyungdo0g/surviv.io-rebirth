@@ -56,7 +56,8 @@ describe("air strike variants on the wire", () => {
             id: i + 1,
             variant,
             pos: { x: 100 + i * 50, y: 300 },
-            rad: variant === "heavy" ? 84 : 60,
+            // the 50v50 map's first circle: 60, 90 (heavy: + 47.5 - 17.5) and 130 (carpet: 84 + 46)
+            rad: airstrikeZoneRad(variant, 60),
             duration: variant === "carpet" ? 12.5 : 9.5,
             zoneT: 0.4,
         }));
@@ -203,6 +204,31 @@ describe("air strike variants on the wire", () => {
             );
             expect(z.rad).toBeGreaterThanOrEqual(airstrikeAimRad("carpet", mapRad) + reach);
             expect(z.rad).toBeLessThan(256);
+        }
+        expect(radii.map((r) => airstrikeZoneRad("carpet", r))).toEqual([130, 123, 116, 109, 102]);
+    });
+
+    it("a heavy zone's radius, as the client reads it, grows by the shell's extra reach over an iron bomb", () => {
+        const extra =
+            getDefOfType("explosion", "explosion_bomb_heavy").rad.max -
+            getDefOfType("explosion", "explosion_bomb_iron").rad.max;
+        expect(extra).toBe(47.5 - 17.5);
+        for (const mapRad of [60, 55, 50, 45, 40]) {
+            const [z] = roundTrip(
+                (w) =>
+                    writeAirstrikeZones(w, ctx, [
+                        {
+                            id: 1,
+                            variant: "heavy",
+                            pos: { x: 1, y: 1 },
+                            rad: airstrikeZoneRad("heavy", mapRad),
+                            duration: 9.5,
+                            zoneT: 0,
+                        },
+                    ]),
+                (r) => readAirstrikeZones(r, ctx),
+            );
+            expect(Math.abs(z.rad - (mapRad + extra))).toBeLessThanOrEqual(0.5);
         }
     });
 });

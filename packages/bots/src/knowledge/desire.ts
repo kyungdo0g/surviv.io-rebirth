@@ -13,8 +13,8 @@
 // Desire only reads the defs and the bot's own inventory (fair: what the player's HUD shows).
 import { WeaponSlot } from "@rebirth/defs";
 import type { SelfState } from "../perception/world.ts";
-import { baseDesire, NEUTRAL, type PersonaParams } from "../persona.ts";
-import { gunRank, isWeakGun, POTATO_GUNS } from "./gunTiers.ts";
+import { baseDesire, fireRateBonus, LIKED_FAST_BONUS, NEUTRAL, type PersonaParams } from "../persona.ts";
+import { gunRank, isWeakGun, POTATO_GUNS, S_RULE_GUNS, tierRank } from "./gunTiers.ts";
 import { type GunInfo, gunInfo, type WeaponClass } from "./weapons.ts";
 
 /** Whose taste a desire is: the bot's persona and mechanics skill s (BrainCtx.persona, BrainCtx.skill.s). */
@@ -115,10 +115,30 @@ export function heldDesires(
     return out;
 }
 
+/**
+ * Whether a gun is weak to this persona: C+ or lower (gunTiers isWeakGun), unless the bot's own taste loves it (a
+ * fire-rate lover's MAC-10: persona.ts LIKED_FAST_BONUS), so an under-armed lover takes it as a real gun.
+ */
+export function isWeakFor(id: string, persona?: Readonly<PersonaParams>): boolean {
+    return isWeakGun(id) && !(persona && fireRateBonus(id, persona) >= LIKED_FAST_BONUS);
+}
+
 /** Whether every held gun with ammo is weak (C+ or lower) and there is at least one: the bot is under-armed. */
-export function weakOnly(held: readonly HeldDesire[]): boolean {
+export function weakOnly(held: readonly HeldDesire[], persona?: Readonly<PersonaParams>): boolean {
     const alive = held.filter((h) => h.alive);
-    return alive.length > 0 && alive.every((h) => isWeakGun(h.info.id));
+    return alive.length > 0 && alive.every((h) => isWeakFor(h.info.id, persona));
+}
+
+/**
+ * Tier steps a gun the bot's taste loves may sit under the held gun it replaces (owner 2026-10-08: a fire-rate lover
+ * takes a MAC-10 for an AK-47, B to C+); never an S-rule gun, nor an S or S-aim one.
+ */
+const TASTE_TIER_SLACK = 2;
+
+function tasteMayReplace(out: HeldDesire, id: string, taste: Readonly<Taste>): boolean {
+    if (fireRateBonus(id, taste.persona) <= 0 || S_RULE_GUNS.has(out.info.id)) return false;
+    if (out.rank >= tierRank("S-aim")) return false;
+    return out.rank - gunRank(id) <= TASTE_TIER_SLACK;
 }
 
 /**
@@ -143,7 +163,8 @@ export function replaceCandidate(held: readonly HeldDesire[]): HeldDesire | null
 
 /**
  * The best swap of a held gun for gun `id` when both slots are full: the slot whose replacement raises the loadout's
- * worth most, and that gain. A gun of a higher tier with ammo is never given up for a lower one (user report 12).
+ * worth most, and that gain. A gun of a higher tier with ammo is never given up for a lower one (user report 12),
+ * unless the bot's taste loves the lower one (tasteMayReplace, at most two steps).
  */
 export function bestSwap(
     held: readonly HeldDesire[],
@@ -157,7 +178,7 @@ export function bestSwap(
     const before = loadoutValue(held);
     let best: { slot: number; gain: number } | null = null;
     for (const out of held) {
-        if (out.alive && out.rank > gunRank(id)) continue;
+        if (out.alive && out.rank > gunRank(id) && !tasteMayReplace(out, id, taste)) continue;
         const after = loadoutValue(held.map((h) => (h === out ? incoming : h)));
         const gain = after - before;
         if (!best || gain > best.gain) best = { slot: out.slot, gain };
@@ -186,17 +207,17 @@ export function gunPickupValue(
     const held = heldDesires(self, taste, ammoKnown);
     if (held.length === 0) return Math.min(99, FIRST_GUN + want / 25 + ammoBonus * 0.5);
     const best = Math.max(0, ...held.filter((h) => h.alive).map((h) => h.desire));
-    const weak = weakOnly(held);
+    const weak = weakOnly(held, taste.persona);
     if (held.some((h) => h.info.id === id)) {
         // the same pistol again becomes its dual version; any other duplicate is worthless
         const dual = info.def.dualWieldType ? gunInfo(info.def.dualWieldType) : undefined;
         if (!dual) return 0;
         const gain = gunDesire(dual.id, taste) - want;
-        if (weak && !isWeakGun(dual.id) && gain > 0) return weakUpgrade(gain);
+        if (weak && !isWeakFor(dual.id, taste.persona) && gain > 0) return weakUpgrade(gain);
         return gain >= 5 ? Math.min(70, 25 + gain * 0.8) : 0;
     }
     // under-armed: a real gun first (critique C3: "weak" is the tier, not the pistol class)
-    if (weak && alive && !isWeakGun(id) && want > best) return weakUpgrade(want - best);
+    if (weak && alive && !isWeakFor(id, taste.persona) && want > best) return weakUpgrade(want - best);
     if (held.length === 1) {
         const band = bandOf(info.cls);
         const complement = band !== "none" && band !== held[0].band ? 12 * taste.persona.complementWeight : 0;

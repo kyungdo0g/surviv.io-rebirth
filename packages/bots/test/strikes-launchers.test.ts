@@ -19,18 +19,20 @@ import { addEnemy, addObstacle, ctxOf, FixedBoard, giveGun, NOW, testWorld } fro
 import { newModel, ORIGIN, snap } from "./perceptionSnap.ts";
 
 describe("strike markers per variant", () => {
-    it("the lines' spread plus the variant bomb's blast: heavy shells reach 38 u, carpet lines 21 u (28 with Broken Arrow)", () => {
-        expect(bombBlast(AIRSTRIKE_VARIANTS.normal.bombType)).toBe(14);
-        expect(bombBlast(AIRSTRIKE_VARIANTS.heavy.bombType)).toBe(38);
+    it("the lines' spread plus the variant bomb's blast: heavy shells reach 47.5 u, carpet lines 21 u (28 with Broken Arrow)", () => {
+        // the defs' blasts, x1.25 since the owner's 2026-10-08 strike size (iron 14 -> 17.5, heavy 38 -> 47.5)
+        expect(bombBlast(AIRSTRIKE_VARIANTS.normal.bombType)).toBe(17.5);
+        expect(bombBlast(AIRSTRIKE_VARIANTS.heavy.bombType)).toBe(47.5);
+        expect(bombBlast(AIRSTRIKE_VARIANTS.carpet.bombType)).toBe(17.5);
         expect(strobeLateral("strobe")).toBe(5);
         expect(strobeLateral("strobe", true)).toBe(10);
         expect(strobeLateral("strobe_carpet")).toBeCloseTo(21);
         expect(strobeLateral("strobe_carpet", true)).toBeCloseTo(28);
         // + the bombs' 4 u jitter and the 1 u body
-        expect(markerRadius("normal")).toBe(5 + 4 + 14 + 1);
-        expect(markerRadius("heavy")).toBe(5 + 4 + 38 + 1);
-        expect(markerRadius("carpet")).toBeCloseTo(21 + 4 + 14 + 1);
-        expect(markerRadius("carpet", true)).toBeCloseTo(28 + 4 + 14 + 1);
+        expect(markerRadius("normal")).toBe(5 + 4 + 17.5 + 1);
+        expect(markerRadius("heavy")).toBe(5 + 4 + 47.5 + 1);
+        expect(markerRadius("carpet")).toBeCloseTo(21 + 4 + 17.5 + 1);
+        expect(markerRadius("carpet", true)).toBeCloseTo(28 + 4 + 17.5 + 1);
         expect(markerRadius(undefined)).toBe(markerRadius("normal"));
     });
 
@@ -50,7 +52,7 @@ describe("strike markers per variant", () => {
         // a 50v50 zone (no strobe) still blocks the way through it, with its bombs' blast past its edge
         board.zones = [{ kind: "airstrike", pos: at, rad: 20, until: NOW + 5 }];
         const zctx = ctxOf(w, ["pursuit"]);
-        expect(strikeDangers(zctx)[0].rad).toBe(20 + 14);
+        expect(strikeDangers(zctx)[0].rad).toBe(20 + 17.5);
         expect(strikeBlocks(zctx, v2.add(w.spot, { x: 120, y: 0 }))).toBe(true);
     });
 });
@@ -120,12 +122,14 @@ describe("thrown strobes", () => {
         expect(circle?.variant).toBe("carpet");
     });
 
-    it("a heavy strobe's strip is as wide as its shells' 38 u blast, a carpet strobe's as its 21 u spread", () => {
+    it("a heavy strobe's strip is as wide as its shells' 47.5 u blast, a carpet strobe's as its 21 u spread", () => {
         const heavy = strobeStrip("strobe_heavy", { x: 0, y: 0 }, { x: 0, y: 1 }, NOW);
-        expect(heavy[0].rad).toBe(5 + 4 + 38 + 1);
+        expect(heavy[0].rad).toBe(5 + 4 + 47.5 + 1);
         expect(heavy[0].variant).toBe("heavy");
         const carpet = strobeStrip("strobe_carpet", { x: 0, y: 0 }, { x: 0, y: 1 }, NOW);
-        expect(carpet[0].rad).toBeCloseTo(21 + 4 + 14 + 1);
+        expect(carpet[0].rad).toBeCloseTo(21 + 4 + 17.5 + 1);
+        const normal = strobeStrip("strobe", { x: 0, y: 0 }, { x: 0, y: 1 }, NOW);
+        expect(normal[0].rad).toBe(5 + 4 + 17.5 + 1);
     });
 
     it("bots never detour for strobes: they are worth nothing as loot", () => {

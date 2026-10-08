@@ -21,7 +21,7 @@ export const REASON: Record<string, string> = {
     ash12: "31 damage at 0.1 s is a level 1 kill in 0.35 s (perfect), but 3.5° spread, a 70 u range, a 10-round magazine and scarce .50 AE: TTK 2.25 s at 10-35 u",
     mg42: "11 damage (14 hits through level 1) and a 50-round drum; 3.25 u/s while firing; TTK 1.84 s at 10-35 u against the M249's 1.55",
     scar: "the 20-round magazine (1.1 kills per magazine, sustained DPS 67) and 2 / 5° spread: TTK 2.57 s at 10-35 u against the M4A1's 2.08; 0.02 below the A- cut",
-    mk14: "scores 0.13, below the M39 (0.17) the owner rules B+: 25 damage and 7° moving spread give TTK 3.73 s at 20-50 u, level with the MK12",
+    mk14: "scores 0.13, below the M39 (0.17), so it sits with the owner's low DMRs: 25 damage and 7° moving spread give TTK 3.73 s at 20-50 u, level with the MK12",
     tec9_dual: "a 64-round magazine at 0.07 s: TTK 1.34 s at 5-20 u and 3.4 kills per magazine, SMG-like",
     vector: "7.5 damage (20 hits through level 1) and a 46 u range with 0.6 falloff: high burst DPS (197) but TTK 1.37 s at 5-20 u, little past 25 u",
     m9_dual: "13 damage every 0.08 s from 30 rounds: TTK 1.38 s at 5-20 u, level with the MP5 (1.51) and UMP9",
@@ -47,7 +47,7 @@ export const REASON: Record<string, string> = {
     ak47: "TTK 2.54 s at 10-35 u, level with the AK-74 and G3; 0.02 above the B+ cut",
     ak74: "TTK 2.50 s at 10-35 u with 2° standing spread; the AK-47 scores the same but is pinned at B (section 5)",
     bar: "17.5 damage but a 20-round magazine (1.3 kills each): TTK 2.60 s at 10-35 u, an assault rifle in LMG weight",
-    vss: "scores 0.15, below the M39 (0.17, ruled B+): 24 damage, 125 u range, TTK 3.74 s at 20-50 u",
+    vss: "scores 0.15, below the M39 (0.17), so it sits with the owner's low DMRs: 24 damage, 125 u range, TTK 3.74 s at 20-50 u",
     p30l: "stats A (0.13): 21 damage, 2 / 1° spread, +1 u/s: TTK 1.19 s at 5-20 u, it out-scores every SMG (CZ-3A1 0.07); capped at B (pistols are low)",
     asval: "13.5 damage at 0.08 s but 20 rounds, 90 u range and 0.65 falloff: TTK 1.38 s at 5-20 u, behind the P90 and Scorpion",
     glock_dual:
@@ -66,9 +66,11 @@ export const REASON: Record<string, string> = {
     // round 6 classes: launchers and potato guns (direct hits on a strafing target unless the round bursts at the cursor)
     gl06: "the round bursts at the cursor, so a near miss within 5 u of the centre still takes the full 100 blast (rad.min 4) plus shrapnel: level 1 dies to one burst about 3 times in 4 (perfect 0.62 s), TTK 2.14 s at 15-40 u; one round per 2.3 s and 40 mm ammo keep sustain low",
     mgl: "six 125-damage grenades 0.7 s apart, a direct hit kills level 1, and no speed penalty since the owner's speed pass: TTK 2.2 s at 15-40 u, 2.1 kills per load; S against a stationary target",
-    m202: "the owner's rework: four 25 + 125 rockets in a fixed 52° fan, one of them on target; a direct hit (150) kills level 1 but not level 2, so a pickup kills 43 % of the time at average aim over 15-40 u (66 % against a stationary target) before the backup gun takes over; B by 0.001 over the cut",
+    m202: "four 25 + 125 rockets in a fixed 60° fan (blast 5-16 u), one of them on target; a direct hit (150) kills level 1 but not level 2, so a pickup kills 42 % of the time at average aim over 15-40 u (66 % against a stationary target) before the backup gun takes over: stats B-",
+    panzerfaust:
+        "one 80 + 140 rocket at 35 u/s, then the tube is gone: a strafing target steps out of it, so a pickup kills 32 % of the time at average aim over 15-40 u (59 % against a stationary target): stats C+",
     m79: "one 125-damage grenade per 2.6 s, lobbed at 40 u/s: a direct hit kills level 1, but a strafing target mostly steps out of the lob (a miss flies on to 52 u): TTK 5.6 s at 15-40 u; B against a stationary target",
-    rpg7: "one-hit kill on any armour, but one 85 u/s rocket per 3.8 s, only the 4 that come with it, and a miss flies on to 120 u: TTK 5.3 s at 15-40 u against a strafing target; B against a stationary one",
+    rpg7: "one-hit kill on any armour, but one 85 u/s rocket per 3.8 s, only the 4 that come with it, and a miss flies on to 120 u: TTK 5.3 s at 15-40 u against a strafing target (B against a stationary one): stats C+",
     potato_cannon:
         "a 95-damage blast every 1.2 s from a 65 u/s lob: 2 hits even on bare players, TTK 5.3 s at 15-40 u, and 9 u/s held",
     potato_smg:
@@ -107,16 +109,17 @@ export const ROW_COMMENTS: Array<string[] | null> = [
     [
         "tiers and F: docs/design/gun-tiers.md (a stat composite over class-band TTK, range, damage per shot, sustain,",
         "handling and ammo; F = expert / beginner band TTK at level 1 armour, aim error 1.6 / 5.4 degrees). Owner rulings",
-        "kept where the stats differ: M249 S (stats A+), Mosin A (C+), MK12 and M39 B+ (A), pistols low.",
+        "kept where the stats differ: M249 S (stats A+), pistols low; 2026-10-08: every DMR and sniper one tier up (the",
+        "MK12 / M39 A-, the Mosin A+), the RPG-7 A-, the Panzerfaust B+, the M202 A+.",
         "LMGs: the M249 and the PKP on top (S-rule); the DShK scores with the M249 but is the heaviest gun (9 / 2 u/s)",
     ],
     [
-        "snipers: the AWM-S, Hecate, M200 and Lynx one-shot level 1 and the Barrett two-hits any armour (S-aim). The",
-        "Mosin is A by ruling (3 hits through level 1); the SV-98 beats it on every stat, so never below it",
+        "snipers: the AWM-S, Hecate, M200 and Lynx one-shot level 1 and the Barrett two-hits any armour (S-aim). Owner",
+        "2026-10-08: every other sniper one tier up; the Mosin (stats C+: 3 hits through level 1) A+ with the SV-98",
     ],
     [
-        "DMRs: the MK12 and the M39 are B+ by ruling; the VSS, Mk45G and Mk 14 score no better than the M39, so B+ too;",
-        "the Garand's expert composite just reaches the top band (S-aim)",
+        "DMRs: the MK12 and the M39 are the owner's low DMRs (A- after the 2026-10-08 bump of every DMR and sniper); the",
+        "VSS, Mk45G and Mk 14 score no better than the M39, so A- too; the Garand reaches the top band (S-aim)",
     ],
     null,
     [
@@ -150,7 +153,7 @@ export const ROW_COMMENTS: Array<string[] | null> = [
     ],
     [
         "bot round 6: the beta launchers at direct hits on a strafing target, the GL-06's cursor bursts splashing near",
-        "misses; the M202's 52-degree fan lands one rocket. The MGL leads (A); against a stationary target the RPG-7 and",
-        "M79 score B, the Panzerfaust A-, the M202 A",
+        "misses. Owner 2026-10-08: the M202 A+ (the endgame comeback gun), the RPG-7 A-, the Panzerfaust B+ (its",
+        "downgrade); by stats they are B-, C+ and C+ (A, B and A- against a stationary target)",
     ],
 ];
