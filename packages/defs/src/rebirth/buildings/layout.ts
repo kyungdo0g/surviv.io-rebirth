@@ -63,7 +63,8 @@ export interface RebirthBuildingLayout {
 /** Floor and roof sprite ids of a rebirth building, with their image sizes in pixels and the floor image's offset. */
 export interface RebirthBuildingArt {
     readonly floor: string;
-    readonly ceiling: string;
+    /** absent for a roofless part (a yard's markings) */
+    readonly ceiling?: string;
     /** the roof image (and the floor image unless `floorSize` is given) */
     readonly size: readonly [number, number];
     readonly floorSize?: readonly [number, number];
@@ -159,10 +160,16 @@ export function roofArtPos(layout: RebirthBuildingLayout): { x: number; y: numbe
     return { x: (f.min.x + f.max.x) / 2, y: (f.min.y + f.max.y) / 2 };
 }
 
-/** The art record of a layout: floor and roof sprite ids, sizes. */
-export function layoutArt(layout: RebirthBuildingLayout, floor: string, ceiling: string): RebirthBuildingArt {
+/** A building's art with its roof image. */
+export type RoofedBuildingArt = RebirthBuildingArt & { readonly ceiling: string };
+
+/** The art record of a layout: floor and roof sprite ids (a roofless part has none), sizes. */
+export function layoutArt(layout: RebirthBuildingLayout, floor: string, ceiling: string): RoofedBuildingArt;
+export function layoutArt(layout: RebirthBuildingLayout, floor: string): RebirthBuildingArt;
+export function layoutArt(layout: RebirthBuildingLayout, floor: string, ceiling?: string): RebirthBuildingArt {
     const size = artSize(layout);
     const floorSize = floorArtSize(layout);
     const same = floorSize[0] === size[0] && floorSize[1] === size[1];
-    return same ? { floor, ceiling, size } : { floor, ceiling, size, floorSize };
+    const art = ceiling ? { floor, ceiling, size } : { floor, size };
+    return same ? art : { ...art, floorSize };
 }

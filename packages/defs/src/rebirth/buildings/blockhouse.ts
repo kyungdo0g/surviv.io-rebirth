@@ -13,8 +13,8 @@ import {
     LOOKOUT_ZOOM,
     layoutArt,
     openingChildren,
-    type RebirthBuildingArt,
     type RebirthBuildingLayout,
+    type RoofedBuildingArt,
     wallChildren,
 } from "./layout.ts";
 
@@ -66,7 +66,7 @@ export const BLOCKHOUSE_FACTIONS = [
     { id: "blockhouse_01b", teamId: 2, color: 0x1f5fbf },
 ] as const;
 
-export function blockhouseArt(teamId: number): RebirthBuildingArt {
+export function blockhouseArt(teamId: number): RoofedBuildingArt {
     const side = teamId === 1 ? "red" : "blue";
     return layoutArt(
         BLOCKHOUSE_LAYOUT,

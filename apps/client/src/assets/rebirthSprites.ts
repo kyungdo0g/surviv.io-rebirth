@@ -63,7 +63,9 @@ export function rebirthSpriteEntries(): Record<string, SpriteEntry> {
     for (const art of rebirthBuildingArt()) {
         // the floor image is larger than the roof's where an outdoor apron widens it
         out[art.floor] = { source: "rebirth", path: rebirthBuildingUrl(art.floor), size: art.floorSize ?? art.size };
-        out[art.ceiling] = { source: "rebirth", path: rebirthBuildingUrl(art.ceiling), size: art.size };
+        // a roofless part (the military base's yard markings) has no roof image
+        if (art.ceiling)
+            out[art.ceiling] = { source: "rebirth", path: rebirthBuildingUrl(art.ceiling), size: art.size };
     }
     for (const art of heldGunArt()) {
         out[art.sprite] = { source: "rebirth", path: rebirthHeldGunUrl(art.sprite), size: art.size };

@@ -13,8 +13,8 @@ import {
     LOOKOUT_ZOOM,
     layoutArt,
     openingChildren,
-    type RebirthBuildingArt,
     type RebirthBuildingLayout,
+    type RoofedBuildingArt,
     wallChildren,
 } from "./layout.ts";
 
@@ -80,7 +80,7 @@ export const FIRESTATION_LAYOUT: RebirthBuildingLayout = {
     outdoor: [{ min: { x: -20, y: -17.5 }, max: { x: 3.5, y: -12.5 }, floor: "apron" }],
 };
 
-export const FIRESTATION_ART: RebirthBuildingArt = layoutArt(
+export const FIRESTATION_ART: RoofedBuildingArt = layoutArt(
     FIRESTATION_LAYOUT,
     "map-building-firestation-floor-01.img",
     "map-building-firestation-ceiling-01.img",
