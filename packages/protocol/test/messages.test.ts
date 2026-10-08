@@ -118,14 +118,15 @@ describe("client messages", () => {
         expect([0, 1, 2, 3, 200].map(spectateActionName)).toEqual([null, "begin", "next", "prev", null]);
     });
 
-    it("Emote round-trips (M6a: original layout, positions over 0..1024 with 16 bits, only for pings)", () => {
-        const posTol = 1024 / 65535 / 2 + 1e-9;
+    it("Emote round-trips (M6a: original layout, positions over 0..2048 with 16 bits since schema 21, only for pings)", () => {
+        const posTol = 2048 / 65535 / 2 + 1e-9;
         forCases(31, (rng) => {
             const isPing = rng.bool();
+            // up to past the 1034-unit 50v50 map (the original's 0..1024 clamped there)
             const msg: ClientMsg = {
                 type: MsgType.Emote,
                 emote: isPing
-                    ? { type: randGameType(rng), isPing, pos: { x: rng.range(0, 1024), y: rng.range(0, 1024) } }
+                    ? { type: randGameType(rng), isPing, pos: { x: rng.range(0, 1100), y: rng.range(0, 1100) } }
                     : { type: randGameType(rng), isPing },
             };
             const bytes = encodeClientMsg(msg);

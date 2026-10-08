@@ -8,7 +8,7 @@
 // puzzle sounds, occupied emitters and sound emitters are in buildingFx.ts.
 import { type Aabb, collider, math, type Vec2, v2 } from "@rebirth/core";
 import type { BuildingDef, FloorImage } from "@rebirth/defs";
-import { MapObjectDefs } from "@rebirth/defs";
+import { MapObjectDefs, REBIRTH_HEAL_FX_BUILDINGS } from "@rebirth/defs";
 import type { BuildingView } from "@rebirth/sim";
 import type { Sprite } from "pixi.js";
 import { roofsHidden } from "../globals.ts";
@@ -16,6 +16,7 @@ import type { ViewBounds } from "../render/camera.ts";
 import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
 import { BuildingFx } from "./buildingFx.ts";
+import { HealRegionFx } from "./healRegionFx.ts";
 import { adjustValue, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
 import { type WorldQuery, worldQueriesOf } from "./worldQuery.ts";
 
@@ -85,6 +86,8 @@ export class BuildingRender implements ObjectRender<BuildingView> {
     /** 1 = ceiling fully drawn, 0 = hidden */
     ceilingAlpha = 1;
     private fx: BuildingFx | null = null;
+    /** the rebirth buildings' heal region glow and crosses (healRegionFx.ts) */
+    private healFx: HealRegionFx | null = null;
     /** collapsed-roof residue on the floor */
     private residue: Sprite | null = null;
     private readonly queries: WorldQuery | null;
@@ -135,6 +138,9 @@ export class BuildingRender implements ObjectRender<BuildingView> {
             local && collider.transform(collider.createAabb(local.min, local.max), v2.create(0), this.rot, this.scale);
         this.fx = new BuildingFx(this.deps, this.def, view);
         this.fx.setData(view, true);
+        if (this.def.healRegions?.length && REBIRTH_HEAL_FX_BUILDINGS.has(view.type)) {
+            this.healFx = new HealRegionFx(this.deps, this.def, view);
+        }
         // a roof that was already gone when the building entered the view is not revealed gradually
         if (view.ceilingDead) this.ceilingAlpha = 0;
         this.updateResidue();
@@ -157,12 +163,13 @@ export class BuildingRender implements ObjectRender<BuildingView> {
     }
 
     /** roof collapses and puzzle sounds played in view (tests) */
-    get fxCounts(): { collapses: number; puzzleFails: number; puzzleSolves: number } {
+    get fxCounts(): { collapses: number; puzzleFails: number; puzzleSolves: number; healFx: number } {
         const fx = this.fx;
         return {
             collapses: fx?.collapses ?? 0,
             puzzleFails: fx?.puzzleFails ?? 0,
             puzzleSolves: fx?.puzzleSolves ?? 0,
+            healFx: this.healFx?.spawned ?? 0,
         };
     }
 
@@ -256,6 +263,7 @@ export class BuildingRender implements ObjectRender<BuildingView> {
             ceilingLayer,
             ceilingZOrd,
         });
+        if (this.healFx && floor) this.healFx.update(ctx, this.ceilingAlpha, floor.zOrd, floor.zIdx + 60);
     }
 
     bounds(pos: Vec2): ViewBounds {
@@ -283,6 +291,7 @@ export class BuildingRender implements ObjectRender<BuildingView> {
         for (const img of this.imgs) img.sprite.visible = visible;
         if (this.residue) this.residue.visible = visible;
         if (!visible) this.fx?.silence();
+        this.healFx?.setVisible(visible);
     }
 
     destroy(): void {
@@ -292,5 +301,7 @@ export class BuildingRender implements ObjectRender<BuildingView> {
         this.residue = null;
         this.fx?.destroy();
         this.fx = null;
+        this.healFx?.destroy();
+        this.healFx = null;
     }
 }

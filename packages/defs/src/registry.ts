@@ -48,8 +48,11 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * follows the air drop tier crates as the last map type; every earlier id keeps its index. No record layout changed.
  * · 20: the rebirth buildings (the owner, 2026-10-08; rebirth/buildings.ts): the map types loot_tier_medical, clinic_01,
  * outpost_01r and outpost_01b follow deposit_box_02_club as the last map types. No record layout changed.
+ * · 21: bigger maps and more rebirth buildings (the owner, 2026-10-08; rebirth/mapScale.ts, rebirth/buildings): the
+ * Emote request's position spans 0..2048 (was the original's 0..1024, which clamped pings on the 1034-unit 50v50
+ * map); the new rebirth map types follow outpost_01b as the last map types.
  */
-export const PROTOCOL_SCHEMA_VERSION = 20;
+export const PROTOCOL_SCHEMA_VERSION = 21;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

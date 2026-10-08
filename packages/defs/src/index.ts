@@ -18,7 +18,13 @@ import type {
 } from "./types/index.ts";
 
 export * from "./constants.ts";
-export { rebirthDeviations, rebirthOnlyIds, rebirthOnlyMapObjectIds, survevWikiSpecs } from "./data.ts";
+export {
+    rebirthDeviations,
+    rebirthOnlyIds,
+    rebirthOnlyMapObjectIds,
+    survevWikiSpecs,
+    unscaledMapDef,
+} from "./data.ts";
 export * from "./gunClasses.ts";
 export * from "./rebirth/index.ts";
 export * from "./refs.ts";

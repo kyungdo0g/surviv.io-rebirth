@@ -29,6 +29,22 @@ export const mapsData: Readonly<Record<string, MapDef>> = applyRebirthMaps(
     rebirth.mapObjects,
     rebirth.gameObjects,
 );
+let unscaledMaps: Readonly<Record<string, MapDef>> | null = null;
+/**
+ * A map def as it was before REBIRTH_MAP_SCALE (rebirth/mapScale.ts), with every other rebirth change: tests compare
+ * the bigger maps' densities with it. Built on first use.
+ */
+export function unscaledMapDef(name: string): MapDef {
+    unscaledMaps ??= applyRebirthMaps(
+        mapsJson as unknown as Readonly<Record<string, MapDef>>,
+        rebirth.mapObjects,
+        rebirth.gameObjects,
+        {},
+    );
+    const def = Object.hasOwn(unscaledMaps, name) ? unscaledMaps[name] : undefined;
+    if (!def) throw new Error(`unknown map "${name}"`);
+    return def;
+}
 /** balance deviations from the generated defs (rebirth/deviations.ts) */
 export const rebirthDeviations = rebirth.deviations;
 /** ids of the rebirth-only game objects, after every generated id */

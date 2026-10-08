@@ -80,8 +80,11 @@ describe("bridges", () => {
             const tag = `${loot.layer}${loot.belowBridge ? "b" : ""}`;
             if (seen[seen.length - 1] !== tag) seen.push(tag);
         }
-        // pushed onto the stairs, then carried by the river under the deck and out the other side
-        expect(seen).toEqual(["0", "2b", "3b", "1b", "3b", "2b", "0"]);
+        // pushed onto the stairs, then carried by the river under the deck and out the other side (further down the
+        // river it may float under another bridge the same way)
+        const pass = ["2b", "3b", "1b", "3b", "2b", "0"];
+        expect(seen.slice(0, 7)).toEqual(["0", ...pass]);
+        for (let i = 7; i < seen.length; i += pass.length) expect(seen.slice(i, i + pass.length)).toEqual(pass);
         expect(v2.distance(loot.pos, start)).toBeGreaterThan(30);
     });
 });

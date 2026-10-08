@@ -46,10 +46,14 @@ function countTop(g: GenerateMapResult): Map<string, number> {
     return counts;
 }
 
-function chooseTwo(g: GenerateMapResult): string[] {
-    const counts = countTop(g);
-    const n = ROTATION.filter((t) => counts.has(t)).length;
-    return n === 2 ? [] : [`random rotation spawned ${n} of mansion / police / bank (expected 2)`];
+/** The random rotation spawns the map def's `choose` of mansion / police / bank (2, 3 on the bigger maps). */
+function chooseOf(map: string) {
+    const want = getMapDef(map).mapGen.randomSpawns[0]?.choose ?? 0;
+    return (g: GenerateMapResult): string[] => {
+        const counts = countTop(g);
+        const n = ROTATION.filter((t) => counts.has(t)).length;
+        return n === want ? [] : [`random rotation spawned ${n} of mansion / police / bank (expected ${want})`];
+    };
 }
 
 /** Every lake has one of the centre objects exactly at the lake centre (`types` lists every lake's, any order). */
@@ -88,7 +92,7 @@ export const MAP_CASES: readonly MapCase[] = [
         },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseTwo,
+        custom: chooseOf("main"),
     },
     {
         map: "main_spring",
@@ -97,7 +101,7 @@ export const MAP_CASES: readonly MapCase[] = [
         required: { club_complex_01: 1, greenhouse_01: 1, teahouse_01: 2, warehouse_01: 1, warehouse_03: 1 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseTwo,
+        custom: chooseOf("main_spring"),
     },
     {
         map: "main_summer",
@@ -105,7 +109,7 @@ export const MAP_CASES: readonly MapCase[] = [
         required: { club_complex_01: 1, teahouse_complex_01su: 1, warehouse_01: 1, warehouse_03: 1 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseTwo,
+        custom: chooseOf("main_summer"),
     },
     {
         map: "desert",
@@ -212,7 +216,7 @@ export const MAP_CASES: readonly MapCase[] = [
         required: { shilo_01: 1, club_complex_01: 1, potato_01: 20, potato_02: 20, potato_03: 20 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseTwo,
+        custom: chooseOf("potato"),
     },
     {
         map: "potato_spring",
@@ -262,7 +266,7 @@ export const MAP_CASES: readonly MapCase[] = [
         requiredAnywhere: ["bunker_twins_sublevel_01", "class_shell_03"],
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseTwo,
+        custom: chooseOf("cobalt"),
     },
     {
         map: "turkey",
@@ -270,7 +274,7 @@ export const MAP_CASES: readonly MapCase[] = [
         required: { club_complex_01: 1, squash_01: 10 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseTwo,
+        custom: chooseOf("turkey"),
     },
     {
         map: "faction",

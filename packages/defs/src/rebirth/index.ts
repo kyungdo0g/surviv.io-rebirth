@@ -8,6 +8,7 @@ import { applyRebirthBuildingSpawns } from "./buildings.ts";
 import { rebirthOnlyDefs, rebirthOnlyMapObjects } from "./defs.ts";
 import { applyBalanceDeviations, type DefDeviation } from "./deviations.ts";
 import { applyGunSpeedOverrides } from "./gunSpeeds.ts";
+import { applyRebirthMapScale, REBIRTH_MAP_SCALE } from "./mapScale.ts";
 import { applyNewGunLoot } from "./newGunLoot.ts";
 import { applyOwnerLoot, CLUB_VAULT_BOX, clubVaultBuilding, GOLD_BONUS_CRATES, goldBonusCrates } from "./ownerLoot.ts";
 import { applyStrobeVariantLoot, rareThrowableCrates } from "./strobeLoot.ts";
@@ -21,6 +22,7 @@ export * from "./buildings.ts";
 export { type DefDeviation, FRAG_DECAL_TYPE, FRAG_RADIUS_MULT } from "./deviations.ts";
 export * from "./gunBeta.ts";
 export * from "./gunSpeeds.ts";
+export * from "./mapScale.ts";
 export * from "./newGunAssets.ts";
 export * from "./newGunLoot.ts";
 export * from "./newGuns.ts";
@@ -100,7 +102,8 @@ export function applyRebirthGameConfig(generated: GameConfigDef): GameConfigDef 
  * the SVD and the SCAR-SSR, rebirth/survevGuns.ts) in the gold drop of main and its seasonal copies, then the owner's
  * 2026-10-08 rows (the classic floor's USAS-12, the bathhouse ring case, the club gun box's table;
  * rebirth/ownerLoot.ts), then the rare crates' throwables with the variant strobes (rebirth/strobeLoot.ts), then the
- * rebirth buildings in their maps' fixed spawns (rebirth/buildings.ts). Checks that every tier inner crate a map can
+ * bigger classic and 50v50 maps (`scales`, REBIRTH_MAP_SCALE by default; rebirth/mapScale.ts), then the rebirth
+ * buildings in their maps' fixed spawns (rebirth/buildings.ts). Checks that every tier inner crate a map can
  * drop and the club's gun box find their tiers in that map's table. `gameObjects` gives the guns' ammo (the floor rule
  * of the new guns and of the club table).
  */
@@ -108,13 +111,23 @@ export function applyRebirthMaps(
     generatedMaps: Readonly<Record<string, MapDef>>,
     mapObjects: Readonly<Record<string, MapObjectDef>>,
     gameObjects: Readonly<Record<string, GameObjectDef>>,
+    scales: Readonly<Record<string, number>> = REBIRTH_MAP_SCALE,
 ): Record<string, MapDef> {
     const ammoOf = (id: string) => {
         const def = Object.hasOwn(gameObjects, id) ? gameObjects[id] : undefined;
         return def?.type === "gun" ? def.ammo : undefined;
     };
     const maps = applyRebirthBuildingSpawns(
-        applyStrobeVariantLoot(applyOwnerLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf)), ammoOf)),
+        applyRebirthMapScale(
+            applyStrobeVariantLoot(
+                applyOwnerLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf)), ammoOf),
+            ),
+            scales,
+            (type) => {
+                const terrain = (mapObjects[type] as { terrain?: Record<string, unknown> } | undefined)?.terrain;
+                return !!terrain?.grass && !terrain.bridge && !terrain.waterEdge && !terrain.nearbyRiver;
+            },
+        ),
     );
     for (const [name, def] of Object.entries(maps)) {
         // the owner's map objects are in every map's object set: their tiers must resolve everywhere

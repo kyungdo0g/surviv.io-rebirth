@@ -59,6 +59,16 @@ test.describe("rebirth buildings", () => {
         });
         expect(after).toBeGreaterThan(before + 2);
         await page.screenshot({ path: `${SCREENS}/clinic-ward.png` });
+        // the treatment rooms show that they heal: glow, rising crosses and ring pulses (healRegionFx.ts)
+        const healFx = await page.evaluate(() => {
+            const r = (window as any).__rebirth;
+            const clinic = r.game.generation.objects.find((o: any) => o.type === "clinic_01");
+            return r.buildingState(clinic.id)?.healFx as number;
+        });
+        expect(healFx).toBeGreaterThan(3);
+        await standAt(page, "clinic_01", 0, 0);
+        await page.waitForTimeout(1200);
+        await page.screenshot({ path: `${SCREENS}/clinic-wards-from-lobby.png` });
         expect((await missing(page)).filter((s) => s.includes("clinic"))).toEqual([]);
         expect(errors).toEqual([]);
     });

@@ -109,7 +109,8 @@ describe("map loot", () => {
             const def = getDefOfType("gun", gun.type);
             const ammo = items.filter((l) => l.type === def.ammo && v2.distance(l.pos, gun.pos) < 1.6);
             if (def.ammoSpawnCount > 0 && GameConfig.bagSizes[def.ammo]) {
-                expect(ammo.reduce((a, l) => a + l.count, 0)).toBe(def.ammoSpawnCount);
+                // its own ammo (at least: a spawner next to it may have rolled the same ammo or a gun using it)
+                expect(ammo.reduce((a, l) => a + l.count, 0)).toBeGreaterThanOrEqual(def.ammoSpawnCount);
             }
         }
         // the same seed rolls the same loot

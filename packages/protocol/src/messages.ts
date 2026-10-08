@@ -219,8 +219,8 @@ export function readInput(r: BitReader): PlayerInput {
 }
 
 /**
- * Client -> server emote or ping request (M6a; original layout: pos vec 0..1024 16+16 bits, type game type, isPing
- * bit; teams.ts writeEmoteRequest). The position matters for pings only.
+ * Client -> server emote or ping request (M6a; the original layout with the position over 0..2048 since schema 21:
+ * pos vec 16+16 bits, type game type, isPing bit; teams.ts writeEmoteRequest). The position matters for pings only.
  */
 export interface EmoteMsg {
     type: typeof MsgType.Emote;

@@ -4,10 +4,9 @@
 // circle centres are random, so the oracle's centres are fed through the Gas.chooseCenter hook; everything else
 // (stage timing, radii, interpolation, the damage tick, the optional escalation ramp) is ours.
 import { type Vec2, v2 } from "@rebirth/core";
-import { DamageType, GameConfig } from "@rebirth/defs";
+import { DamageType, GameConfig, unscaledMapDef } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { Game, type Player } from "../src/index.ts";
-import { cachedMap } from "./helpers.ts";
+import { Game, type GenerateMapResult, generateMap, type Player } from "../src/index.ts";
 import { hasFixture, loadFixture, Mismatches } from "./oracleHelpers.ts";
 
 interface GasState {
@@ -73,9 +72,16 @@ function stateOf(game: Game, time: number): GasState {
     };
 }
 
+let survevMainMap: GenerateMapResult | null = null;
+/** survev's main map at its own size (720: the oracle ran there; ours is bigger, rebirth/mapScale.ts). */
+function survevMain(): GenerateMapResult {
+    survevMainMap ??= generateMap("main", 12345, 1, unscaledMapDef("main"));
+    return survevMainMap;
+}
+
 /** Runs a whole gas cycle the way the oracle scenario does. */
 function runGas(fx: GasFixture, ramp: boolean): Run {
-    const gen = cachedMap("main", 12345);
+    const gen = survevMain();
     const generation = { ...gen, objects: [], lootSpawns: [], mapData: { ...gen.mapData, objects: [] } };
     const game = new Game({ mapName: "main", seed: 71 }, { generation, spawnLoot: false });
     game.rules.gasDamageRamp = ramp;
@@ -149,7 +155,7 @@ describe.skipIf(!fixture)("gas vs survev oracle (gas.json)", () => {
         expect(fx.stagesMatchOurGameConfig).toBe(true);
         expect(GameConfig.gas.stages.length).toBe(17);
         expect(GameConfig.gas.damageTickRate).toBe(fx.damageTickRate);
-        const game = new Game({ mapName: "main", seed: 1 }, { generation: cachedMap("main", 12345) });
+        const game = new Game({ mapName: "main", seed: 1 }, { generation: survevMain() });
         expect(game.gas.mapSize).toBe(fx.mapSize);
         // before the start: inactive, centred, radOld 0.85 and radNew 0.7425 of the map size
         const pre = fx.stages[0];

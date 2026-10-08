@@ -400,10 +400,15 @@ function missingLandmarks(stats: readonly SpawnStat[]): string[] {
 
 /**
  * Generates the full static map for a MapDefs key. `teamMode` selects the map scale (squads get the large map).
- * Deterministic: the same arguments always produce the same MapData.
+ * Deterministic: the same arguments always produce the same MapData. `def` replaces the key's def (tests: the map
+ * before the rebirth map scale, defs unscaledMapDef).
  */
-export function generateMap(mapName: string, seed: number, teamMode: 1 | 2 | 4 = 1): GenerateMapResult {
-    const def = getMapDef(mapName);
+export function generateMap(
+    mapName: string,
+    seed: number,
+    teamMode: 1 | 2 | 4 = 1,
+    def: MapDef = getMapDef(mapName),
+): GenerateMapResult {
     let result: ReturnType<typeof runGeneration> = null;
     const extraWarnings: string[] = [];
     for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS && !result; attempt++) {

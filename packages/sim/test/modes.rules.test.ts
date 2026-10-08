@@ -1,7 +1,7 @@
 // Event-mode rules (M7b): event-map corrections and loot bans (applied by tools/port-survev step 3c), Woods bag sizes, potato emotes,
 // snowball / potato hits (freeze + random drop), the drop-item action. Values: docs/research/modes/*.md.
 import { v2 } from "@rebirth/core";
-import { DamageType, GameConfig, getMapDef, gunClass, LOOT_BANS, WeaponSlot } from "@rebirth/defs";
+import { DamageType, GameConfig, getMapDef, gunClass, LOOT_BANS, unscaledMapDef, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import {
     addPerk,
@@ -83,7 +83,8 @@ describe("event map corrections in the ported data (tools/port-survev/lib/eventM
         expect(desert.gameConfig.planes.crates.map((c) => c.name)).toContain("airdrop_crate_05");
         // survev's PKP weight in rare air drops (desert.md CONFLICT desert-pkp-airdrop-rare; survev baseDefs.ts:612)
         expect(desert.lootTable.tier_airdrop_rare.find((e) => e.name === "pkp")?.weight).toBe(0.08);
-        expect(getMapDef("snow").mapGen.fixedSpawns[0].stone_04x).toBe(3);
+        // (as ported: the rebirth's bigger maps scale the per-map counts, rebirth/mapScale.ts)
+        expect(unscaledMapDef("snow").mapGen.fixedSpawns[0].stone_04x).toBe(3);
         expect(getMapDef("main_spring").mapGen.fixedSpawns[0]).toMatchObject({ warehouse_03: 1 });
         expect(getMapDef("woods").mapGen.fixedSpawns[0]).toMatchObject({ cache_01w: 1, workshop_complex_01: 1 });
         expect(getMapDef("faction").mapGen.fixedSpawns[0]).toMatchObject({ cache_01f: 1, cache_02f: 1, cache_07f: 1 });

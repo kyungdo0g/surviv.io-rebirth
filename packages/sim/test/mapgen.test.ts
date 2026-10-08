@@ -1,5 +1,5 @@
 import { type Collider, Grid, type Vec2 } from "@rebirth/core";
-import { getMapDef, getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
+import { getMapDef, getMapObjectDef, hasMapObjectDef, unscaledMapDef } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { polygonArea } from "../src/geom/polygon.ts";
 import { overlaps, toBounds, transformOri } from "../src/geom/transform.ts";
@@ -8,10 +8,10 @@ import { cachedMap, objectsHash } from "./helpers.ts";
 
 /**
  * Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. Last change: the
- * rebirth clinic_01 joins main's fixed spawns (rebirth/buildings.ts), after the survev content wave gave the original
- * bunkers survev's smaller mapObstacleBounds (tools/port-survev MAP_GEN_FIELDS).
+ * rebirth's bigger maps (1.2 per side, counts grown with the land area; rebirth/mapScale.ts) and the clinic's lobby
+ * props, after the rebirth clinic_01 joined main's fixed spawns (rebirth/buildings.ts).
  */
-const MAIN_12345_HASH = "48fcd8327edc57c6";
+const MAIN_12345_HASH = "5be39d930d30f3ad";
 
 /** Area an object reserves against other top-level objects (what canSpawn tests against). */
 function footprints(o: GeneratedObject): Collider[] {
@@ -126,9 +126,9 @@ describe("generateMap main", () => {
         for (const [type, spec] of Object.entries(fixed)) {
             if (typeof spec === "object" && "odds" in spec) expect(counts.get(type) ?? 0).toBeLessThanOrEqual(1);
         }
-        // randomSpawns: choose 2 of mansion / police / bank
+        // randomSpawns: the def's choose of mansion / police / bank (survev's 2; 3 on the bigger map, rebirth/mapScale.ts)
         const chosen = ["mansion_structure_01", "police_01", "bank_01"].filter((t) => counts.has(t));
-        expect(chosen.length).toBe(2);
+        expect(chosen.length).toBe(getMapDef("main").mapGen.randomSpawns[0].choose);
     });
 
     it("spawns density objects within 10% of density * shoreArea / 250000", () => {
@@ -220,9 +220,11 @@ describe("generateMap rules (M7b)", () => {
     });
 
     it("regenerates a map whose landmark buildings did not fit (docks, bunkers, towns)", () => {
+        // survev's main at its own size (on the bigger rebirth map nothing in seeds 1-200 fails to fit)
+        const survevMain = unscaledMapDef("main");
         let regenerated = 0;
         for (let seed = 1; seed <= 40; seed++) {
-            const g = generateMap("main", seed, 1);
+            const g = generateMap("main", seed, 1, survevMain);
             if (!g.warnings.some((w) => w.includes("regenerating"))) continue;
             regenerated++;
             for (const t of ["warehouse_complex_01", "bunker_structure_02", "bunker_structure_03", "club_complex_01"]) {
