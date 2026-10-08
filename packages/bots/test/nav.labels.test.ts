@@ -2,10 +2,10 @@
 // - a crate blocking the only corridor into a room breaks: the room joins the bot's component at once (the labels used
 //   to wait for 60 changes and 600 queries, and a bot in the crossing bunker's storage stood behind the broken crate
 //   for 12 s), and a bot with a goal in the room gets its route within a second; a crate in the open breaking does not
-//   relabel the grid;
+//   relabel the grid; a leg on another grid is no join: the room stays given up while the crate stands;
 // - each game's grid starts from the map's own state: games on one MapData (the tests reuse a generated map) used to
 //   share one grid, so a door opened or a crate broken in one game was open or gone in the next.
-import { type Vec2, v2 } from "@rebirth/core";
+import { createRng, type Vec2, v2 } from "@rebirth/core";
 import { DamageType } from "@rebirth/defs";
 import {
     Game,
@@ -19,8 +19,10 @@ import { describe, expect, it } from "vitest";
 import { BotController } from "../src/controller.ts";
 import { findPath } from "../src/nav/astar.ts";
 import { doorKey } from "../src/nav/cellGrid.ts";
+import { PathFollower } from "../src/nav/follower.ts";
 import { NavGrid } from "../src/nav/grid.ts";
 import { UndergroundNav } from "../src/nav/underground.ts";
+import { WorldModel } from "../src/perception/world.ts";
 import { cachedMap, firstOfType, flatGame, mainGame, openSpot, placePlayer } from "./helpers.ts";
 
 type Piece = { type: string; pos: Vec2; ori?: number };
@@ -161,6 +163,33 @@ describe("component labels", () => {
         // ...and walks in
         for (let i = 0; i < 600 && !inRoom(); i++) step();
         expect(inRoom()).toBe(true);
+    });
+
+    it("keep the room given up while the crate stands, when the follower walks a leg on another grid meanwhile", () => {
+        const grid = new NavGrid(generation.mapData);
+        const m = new WorldModel(generation.mapData, grid);
+        m.self.pos = v2.copy(layout.outside);
+        const f = new PathFollower(createRng(4));
+        // walked up to the reachable cell nearest the room, where the goal fails and is remembered as cut off
+        let t = 0;
+        let r = f.steerOn(m, grid, layout.room, t);
+        while (!r.failed && t < 10) {
+            const next = r.dir ? v2.add(m.self.pos, v2.mul(r.dir, 0.6)) : m.self.pos;
+            if (grid.walkableAt(next)) m.self.pos = next;
+            t += 0.05;
+            r = f.steerOn(m, grid, layout.room, t);
+        }
+        expect(r.failed).toBe(true);
+        // a leg on another grid (an underground floor's: its own join count) to a goal at hand
+        const other = new NavGrid(generation.mapData);
+        other.relabelSoon();
+        expect(other.joins).not.toBe(grid.joins);
+        const near = other.center(other.nearestWalkable(v2.add(m.self.pos, { x: 0, y: -3 }), 3));
+        f.steerOn(m, other, near, t + 0.05);
+        // back on the first grid nothing joined: the room still fails at once, without a new search
+        const again = f.steerOn(m, grid, layout.room, t + 0.1);
+        expect(again.failed).toBe(true);
+        expect(f.points.length).toBe(0);
     });
 });
 

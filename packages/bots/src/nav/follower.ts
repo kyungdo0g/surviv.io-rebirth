@@ -212,6 +212,7 @@ export class PathFollower {
         this.replanAt = Number.POSITIVE_INFINITY;
         this.forceReplan = false;
         this.failures = 0;
+        this.joins = grid.joins; // (another grid's count: no join, the goal given up as cut off stays given up)
     }
 
     private plan(model: WorldModel, grid: PlanGrid, pos: Vec2, goal: Vec2, now: number): void {
