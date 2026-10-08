@@ -62,8 +62,9 @@ export interface RebirthBuildingLayout {
 
 /** Floor and roof sprite ids of a rebirth building, with their image sizes in pixels and the floor image's offset. */
 export interface RebirthBuildingArt {
+    /** the floor image, or the one image of a record without a roof (the military base lists each image apart) */
     readonly floor: string;
-    /** absent for a roofless part (a yard's markings) */
+    /** absent for a record without a roof */
     readonly ceiling?: string;
     /** the roof image (and the floor image unless `floorSize` is given) */
     readonly size: readonly [number, number];
