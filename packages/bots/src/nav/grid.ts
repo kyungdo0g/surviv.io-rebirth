@@ -2,8 +2,10 @@
 // walls inflated by the player's clearance, closed-but-usable doors as passable "door" cells, terrain cost (rivers
 // and lakes are slow, the sea is avoided), and structure stairs blocked so bots stay on the ground floor (layer 0;
 // nav/underground.ts plans the way down for bots with the basements feature).
-// The grid is shared by every bot of a map (WeakMap cache) and updated from what bots observe: obstacles seen dead
+// The grid is shared by every bot of a game (NavGrid.forMap) and updated from what bots observe: obstacles seen dead
 // are cleared, collidable obstacles that MapData did not list (air drop crates) are added, doors update their panel.
+// Each game's grid starts from the map as MapData describes it: games on one MapData (the tests reuse generated maps)
+// used to share one grid, so a door opened or a crate broken in one game was open or gone in the next.
 // Doors only a switch, a puzzle or an unlock opens are walls for good, except on the grid of the bots with
 // BrainFeatures.puzzles (NavOptions.sealedDoors, its own shared grid): there they stop being walls once a snapshot shows
 // them open (cellGrid.ts sealedDoors). The flags-off grid must not learn them: the baseline replays as before the
@@ -32,6 +34,11 @@ export interface NavOptions {
     clearance?: number;
     /** doors only a switch, a puzzle or an unlock opens open in the grid once seen open (BrainFeatures.puzzles) */
     sealedDoors?: boolean;
+    /**
+     * NavGrid.forMap: the game whose bots share the grid (BotController: its Game); default the map itself (one game
+     * per MapData: the server's games, network bots)
+     */
+    game?: object;
 }
 
 /** Layer test of the simulation for a player on the ground floor (layers 0 and 2 collide with it). */
@@ -39,9 +46,53 @@ export function onGroundLayer(layer: number): boolean {
     return (layer & 1) === 0;
 }
 
-/** the shared grids of a map: the plain one, and the one that learns sealed doors (NavOptions.sealedDoors) */
-const cache = new WeakMap<MapData, NavGrid>();
-const sealedCache = new WeakMap<MapData, NavGrid>();
+/**
+ * The navigation objects of one map, one per game: the map's first game builds its own; later games (tests reuse a
+ * generated map) start from a copy of a pristine one, built when the second game comes and never observed (a copy takes
+ * a few milliseconds, building the main map's grid about 70). A map played once, as on the server, holds one object.
+ */
+export class PerGame<T> {
+    private readonly games = new WeakMap<object, T>();
+    private built = false;
+    private pristine: T | null = null;
+
+    /**
+     * The object of game `key`: built by `build` for the first game, else a `copy` of the pristine one (built by
+     * `pristine`, default `build`).
+     */
+    get(key: object, build: () => T, copy: (pristine: T) => T, pristine: () => T = build): T {
+        let v = this.games.get(key);
+        if (v === undefined) {
+            if (this.built) v = copy(this.pristineOf(pristine));
+            else {
+                this.built = true;
+                v = build();
+            }
+            this.games.set(key, v);
+        }
+        return v;
+    }
+
+    /** The pristine object (built on first use). */
+    pristineOf(build: () => T): T {
+        this.pristine ??= build();
+        return this.pristine;
+    }
+}
+
+/** the grids of a map's games: the plain ones, and the ones that learn sealed doors (NavOptions.sealedDoors) */
+const grids = new WeakMap<MapData, PerGame<NavGrid>>();
+const sealedGrids = new WeakMap<MapData, PerGame<NavGrid>>();
+
+function perGame(map: MapData, sealed: boolean): PerGame<NavGrid> {
+    const store = sealed ? sealedGrids : grids;
+    let per = store.get(map);
+    if (!per) {
+        per = new PerGame<NavGrid>();
+        store.set(map, per);
+    }
+    return per;
+}
 
 export class NavGrid extends CellGrid implements RasterGrid {
     readonly width: number;
@@ -49,18 +100,33 @@ export class NavGrid extends CellGrid implements RasterGrid {
     private budgetTime = Number.NaN;
     private budgetLeft = 0;
 
-    /** The shared grid of a map (built on first use), one per kind (NavOptions.sealedDoors). */
+    /**
+     * The shared grid of a game (NavOptions.game, default the map) on a map, one per kind (NavOptions.sealedDoors):
+     * the map as MapData describes it, then what the game's bots observe.
+     */
     static forMap(map: MapData, opts: NavOptions = {}): NavGrid {
-        const store = opts.sealedDoors ? sealedCache : cache;
-        let grid = store.get(map);
-        if (!grid) {
-            grid = new NavGrid(map, opts);
-            store.set(map, grid);
-        }
-        return grid;
+        return perGame(map, !!opts.sealedDoors).get(
+            opts.game ?? map,
+            () => new NavGrid(map, opts),
+            (pristine) => new NavGrid(map, opts, pristine),
+        );
     }
 
-    constructor(map: MapData, opts: NavOptions = {}) {
+    /**
+     * The shared grid a bot with `features` plans on in `game` (default the map): the one learning sealed doors for the
+     * puzzle bots (BrainFeatures.puzzles), else the plain one.
+     */
+    static forBrain(map: MapData, features: { puzzles: boolean }, game?: object): NavGrid {
+        return NavGrid.forMap(map, { sealedDoors: features.puzzles, game });
+    }
+
+    /** The map's grid of a kind as MapData describes it, never observed (the copies of later games start from it). */
+    static pristine(map: MapData, opts: NavOptions = {}): NavGrid {
+        return perGame(map, !!opts.sealedDoors).pristineOf(() => new NavGrid(map, opts));
+    }
+
+    /** Builds the grid of `map`, or copies `from` (a grid of the same map and options). */
+    constructor(map: MapData, opts: NavOptions = {}, from?: NavGrid) {
         const cellSize = opts.cellSize ?? DEFAULT_CELL_SIZE;
         super(
             0,
@@ -74,6 +140,10 @@ export class NavGrid extends CellGrid implements RasterGrid {
         );
         this.width = map.width;
         this.height = map.height;
+        if (from) {
+            this.copyFrom(from);
+            return;
+        }
         this.buildTerrain(map);
         this.buildObjects(map);
         this.blockEdges();

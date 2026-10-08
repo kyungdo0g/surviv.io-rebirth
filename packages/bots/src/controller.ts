@@ -5,6 +5,8 @@
 import type { Game } from "@rebirth/sim";
 import { type AddPlayerOptions, SNAPSHOT_EVERY_TICKS, TICK_HZ } from "@rebirth/sim";
 import { Bot, type BotOptions } from "./bot.ts";
+import { brainFeatures } from "./brain/features.ts";
+import { NavGrid } from "./nav/grid.ts";
 
 const DT = 1 / TICK_HZ;
 
@@ -26,7 +28,9 @@ export class BotController {
     constructor(game: Game, playerId: number, opts: BotOptions) {
         this.game = game;
         this.playerId = playerId;
-        this.bot = new Bot(game.mapData, opts);
+        // the navigation grid of this game: games on one MapData (tests) never see each other's doors and broken crates
+        const nav = opts.nav ?? NavGrid.forBrain(game.mapData, brainFeatures(opts.brain), game);
+        this.bot = new Bot(game.mapData, { ...opts, nav });
         this.phase = playerId % SNAPSHOT_EVERY_TICKS;
     }
 

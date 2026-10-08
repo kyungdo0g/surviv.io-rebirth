@@ -128,6 +128,7 @@ export class PathFollower {
     private forceReplan = false;
     /** plan again at this time (a deferred replan) */
     private replanAt = Number.POSITIVE_INFINITY;
+    private joins = -1; // CellGrid.joins of the grid when last looked at
     private readonly rng: Rng;
     /** BrainFeatures.doors: smarter door use (per-door retry, the next leg) reported here; null: the baseline rule */
     private readonly doorSink: DoorUseSink | null;
@@ -211,17 +212,6 @@ export class PathFollower {
         this.replanAt = Number.POSITIVE_INFINITY;
         this.forceReplan = false;
         this.failures = 0;
-    }
-
-    /** The next few waypoints of the plan and the legs between them are still passable. */
-    private legsOpen(grid: CellGrid): boolean {
-        const pts = this.points;
-        const end = Math.min(pts.length, this.idx + 3);
-        for (let i = this.idx; i < end; i++) {
-            if (!grid.covers(pts[i]) || !grid.passable(grid.cellOf(pts[i]))) return false;
-            if (i > this.idx && !grid.linePassable(pts[i - 1], pts[i])) return false;
-        }
-        return true;
     }
 
     private plan(model: WorldModel, grid: PlanGrid, pos: Vec2, goal: Vec2, now: number): void {
@@ -340,6 +330,15 @@ export class PathFollower {
             this.stuckCount = 0;
             return { dir: null, openDoor: 0, arrived: true, failed: false };
         }
+        // components grew together (a crate across a corridor broke): a goal given up as cut off is planned again now
+        const gaveUp = this.snapped || this.failures > 0 || now < this.unreachableUntil;
+        if (grid.joins !== this.joins && gaveUp && grid.reachable(pos, goal, 6)) {
+            this.unreachable = null;
+            this.failures = 0;
+            this.stuckCount = 0;
+            this.forceReplan = true;
+        }
+        this.joins = grid.joins;
         if (this.unreachable && now < this.unreachableUntil && v2.distance(goal, this.unreachable) < 2) {
             return { dir: null, openDoor: 0, arrived: false, failed: true };
         }
@@ -370,7 +369,7 @@ export class PathFollower {
         // the grid changed (a door opened across the way): replan when the next legs are no longer open
         if (!replan && grid.version !== this.planVersion) {
             this.planVersion = grid.version;
-            if (this.complete && !this.legsOpen(grid)) replan = true;
+            if (this.complete && !grid.legsOpen(this.points, this.idx, 3)) replan = true;
         }
         // walked the whole plan without reaching the goal (an old or partial plan; a snapped one ends in an approach)
         const last = this.points[this.points.length - 1];
