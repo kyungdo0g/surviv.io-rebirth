@@ -64,6 +64,8 @@ export interface SandboxOptions {
     building?: string;
     /** loopback team modes: idle teammates in the local player's group (M6) */
     teammates?: number;
+    /** loopback: force the rainy weather on or off (?rain=1 / 0) instead of the map seed's (fx/weather.ts) */
+    rain?: boolean;
     /** play on a game server instead of the loopback simulation */
     net?: {
         /** HTTP origin of the server; "" uses the page's origin (the Vite dev server proxies /api and /play) */
@@ -211,6 +213,7 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
     client = new GameClient(app, transport, textures, {
         showDebugHud: opts.showDebugHud,
         debugZoom: opts.debugZoom,
+        rain: loopback ? opts.rain : undefined,
         onPlayAgain: playAgain,
         audio,
         touch,
@@ -406,6 +409,10 @@ function exposeWorldFeel(client: GameClient): void {
     debugGlobals().worldFeel = {
         get cameraEmitter() {
             return { type: client.cameraFx?.type ?? "", running: !!client.cameraFx?.running };
+        },
+        /** the rainy match's effects (fx/weather.ts RainState), null on a dry match */
+        get rain() {
+            return client.worldFx?.rain?.state ?? null;
         },
         get particles() {
             return client.particles.count;

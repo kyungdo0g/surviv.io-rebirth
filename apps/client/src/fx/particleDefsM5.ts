@@ -234,6 +234,11 @@ export interface EmitterDef {
     /** the delay eases from `rate` towards `maxRate` over `maxElapsed` seconds (easeInExpo; heavy snowfall) */
     maxRate?: Range;
     maxElapsed?: number;
+    /**
+     * rebirth: at most this many of its particles alive at once (spawns past it are skipped); they have this budget of
+     * their own and never count toward the particle system's cap (rain cannot push out combat effects)
+     */
+    maxLive?: number;
 }
 
 /** a heal / boost effect emitter around a player: 1.5 units wide, rising at 1-1.5 units/s */

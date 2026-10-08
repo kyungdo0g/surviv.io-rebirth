@@ -1,6 +1,7 @@
 // The M5 world effects driven by snapshot sections rather than objects: explosions, flying projectiles, smoke clouds,
 // recorders, fading decals, the ambience tracks with the structures' interior music, and the underground state of
 // the listener (reverb, ground cover). The client creates one per map and feeds it every snapshot and frame.
+// Rebirth: the rain of a rainy match (fx/weather.ts, user/2026-10-08-rain), decided by the client from the map seed.
 import type { Vec2 } from "@rebirth/core";
 import type { MapDef } from "@rebirth/defs";
 import type { Snapshot, Terrain, TerrainShape } from "@rebirth/sim";
@@ -12,9 +13,11 @@ import { InteriorSounds } from "../audio/interior.ts";
 import { ExplosionSystem, explosionSounds } from "../fx/explosions.ts";
 import type { ParticleSystem } from "../fx/particles.ts";
 import { SmokeSystem } from "../fx/smoke.ts";
+import { RainFx } from "../fx/weather.ts";
 import type { FadingSprites } from "../objects/fading.ts";
 import { ProjectileSystem } from "../objects/projectiles.ts";
 import type { ObjectWorld } from "../objects/world.ts";
+import type { GroundSurface } from "../objects/worldQuery.ts";
 import type { Camera } from "../render/camera.ts";
 import type { Renderer } from "../render/renderer.ts";
 
@@ -29,6 +32,13 @@ export interface WorldFxDeps {
     terrain: Terrain;
     terrainShape: TerrainShape;
     fading: FadingSprites;
+    /** the match rains (rebirth isRainyMatch, or the sandbox's ?rain= override) */
+    rainy?: boolean;
+    /**
+     * the surface on the ground floor at a point, building floors and decals included (WorldQuery.groundSurface): the
+     * rain's ripples land on water, never on the bridge decks and docks over it
+     */
+    groundSurface: (pos: Vec2) => GroundSurface;
 }
 
 export interface WorldFxFrame {
@@ -49,6 +59,8 @@ export class WorldFx {
     readonly projectiles: ProjectileSystem;
     readonly smokes: SmokeSystem;
     readonly ambience: Ambience;
+    /** the rain of a rainy match, else null */
+    readonly rain: RainFx | null;
     private readonly interior = new InteriorSounds();
     /** recorder sounds played (tests) */
     recorders = 0;
@@ -80,6 +92,17 @@ export class WorldFx {
         });
         this.smokes = new SmokeSystem({ renderer: deps.renderer, textures: deps.textures });
         this.ambience = new Ambience(deps.audio);
+        this.rain = deps.rainy
+            ? new RainFx({
+                  renderer: deps.renderer,
+                  particles: deps.particles,
+                  insideCeiling: (pos) => deps.world.insideCeiling(pos),
+                  waterAt: (pos) => {
+                      const ground = deps.groundSurface(pos);
+                      return ground.type === "water" ? ground.rippleColor : null;
+                  },
+              })
+            : null;
         deps.audio.preload(explosionSounds(), "sfx");
         deps.audio.preload(["frag_pin_01", "frag_throw_01", "strobe_click_01", "ceiling_break_01"], "sfx");
         deps.audio.preload(["door_open_01", "door_close_01", "door_open_02", "door_close_02", "door_error_01"], "sfx");
@@ -113,6 +136,14 @@ export class WorldFx {
         this.ambience.updateEnvironment(f.viewerPos, f.viewerLayer, this.deps.terrainShape);
         this.interior.update(f.dt, world, f.viewerPos, f.viewerLayer, this.ambience);
         this.ambience.update(f.dt);
+        const camera = this.deps.camera;
+        this.rain?.update({
+            dt: f.dt,
+            cameraPos: camera.pos,
+            layer: f.viewerLayer,
+            roofs: world.localRoofs(),
+            view: camera.viewBounds(),
+        });
     }
 
     /** Drops everything in flight (sandbox respawn, new game). */
@@ -128,5 +159,6 @@ export class WorldFx {
     destroy(): void {
         this.clear();
         this.ambience.stop();
+        this.rain?.destroy();
     }
 }

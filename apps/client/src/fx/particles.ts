@@ -8,6 +8,11 @@
 // Every def lives in particleDefsAll.ts; an unknown type spawns nothing and warns once in development.
 // A particle that stands over the floor (`overground`, the air drop's landing smoke) is placed with
 // renderer.addOverground every frame, so it is hidden from a viewer on another floor even after a layer change.
+// Rebirth (user/2026-10-08-rain): a def can stretch its sprite along its rotation (`stretch`, the rain streaks) and an
+// emitter def can cap its live particles (`maxLive`): those keep a budget of their own outside MAX_PARTICLES, so the
+// rain never pushes out casings or blood, and `room` tells the light ambient effects (rain splashes) to hold back; an
+// emitter can spawn in a box (`box`, the screen) instead of its circle and reject spawn points (`skip`: no streak over
+// the roof the player is under), and `cull` removes the live particles of a type whose remaining path matches.
 import type { Vec2 } from "@rebirth/core";
 import type { Container, Sprite } from "pixi.js";
 import type { TextureStore } from "../assets/textures.ts";
@@ -115,6 +120,10 @@ export class Emitter {
     layer: number;
     zOrd: number;
     radius: number;
+    /** rebirth: spawn anywhere in this box (half extents, world units) instead of the circle (the rain: the screen) */
+    box: Vec2 | null = null;
+    /** rebirth: a spawn at a point this returns true for is skipped (its delay still runs, so the rate stays the same) */
+    skip: ((pos: Vec2) => boolean) | null = null;
     rateMult: number;
     speedMult: number;
     duration: number;
@@ -126,6 +135,8 @@ export class Emitter {
     ticker = 0;
     nextSpawn = 0;
     spawnCount = 0;
+    /** its particles alive now */
+    live = 0;
     active = true;
 
     constructor(type: string, def: EmitterDef, opts: EmitterOptions, particleZOrd: number) {
@@ -166,6 +177,8 @@ export class ParticleSystem {
     private readonly particles: Particle[] = [];
     private readonly emitters: Emitter[] = [];
     private spawned = 0;
+    /** live particles of emitters with their own budget (EmitterDef.maxLive), outside MAX_PARTICLES */
+    private budgeted = 0;
     /** biome valueAdjust (Halloween darkens particles) */
     valueAdjust = 1;
     /** particles spawned per type since boot (tests) */
@@ -182,6 +195,11 @@ export class ParticleSystem {
 
     get emitterCount(): number {
         return this.emitters.length;
+    }
+
+    /** particles that can still be added before the cap starts dropping the oldest (budgeted emitters excluded) */
+    get room(): number {
+        return MAX_PARTICLES - (this.particles.length - this.budgeted);
     }
 
     /** Sprites of the live particles of `type` (tests). */
@@ -201,7 +219,8 @@ export class ParticleSystem {
             warnUnknown("particle", type);
             return;
         }
-        if (this.particles.length >= MAX_PARTICLES) this.free(0);
+        const budgeted = emitter?.def.maxLive !== undefined;
+        if (!budgeted) while (this.particles.length - this.budgeted >= MAX_PARTICLES) this.free(0);
         const sprite = this.renderer.pool.acquire();
         const image = def.image[Math.floor(Math.random() * def.image.length)];
         const scale = opts.scale ?? 1;
@@ -210,7 +229,7 @@ export class ParticleSystem {
         const end = def.scaleExp !== undefined ? start : pick(def.scaleEnd) * scale;
         // rasterize for the largest size the particle reaches (growing ripples: at the end of their life)
         const grown = def.scaleExp !== undefined ? start + Math.max(0, def.scaleExp) * life : end;
-        this.textures.apply(sprite, image, Math.max(start, grown, 0.25));
+        this.textures.apply(sprite, image, Math.max(start * (def.stretch ?? 1), grown, 0.25));
         const color = opts.color ?? (typeof def.color === "function" ? def.color() : def.color);
         sprite.tint = def.ignoreValueAdjust ? color : adjustValue(color, this.valueAdjust);
         sprite.visible = false;
@@ -243,6 +262,8 @@ export class ParticleSystem {
             emitter: emitter ?? null,
             parent,
         });
+        if (emitter) emitter.live++;
+        if (budgeted) this.budgeted++;
         this.spawnedByType.set(type, (this.spawnedByType.get(type) ?? 0) + 1);
     }
 
@@ -258,10 +279,33 @@ export class ParticleSystem {
         return emitter;
     }
 
+    /**
+     * Removes the live particles of `type` for which `pred` is true, given where each is now and where it will be at
+     * the end of its life (straight on at its velocity, drag ignored); returns how many (rebirth: the rain's streaks
+     * over the roof the player just walked under).
+     */
+    cull(type: string, pred: (pos: Vec2, end: Vec2) => boolean): number {
+        let culled = 0;
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const p = this.particles[i];
+            if (p.type !== type) continue;
+            const left = Math.max(0, p.delay + p.life - p.ticker);
+            if (pred(p.pos, { x: p.pos.x + p.vel.x * left, y: p.pos.y + p.vel.y * left })) {
+                this.free(i);
+                culled++;
+            }
+        }
+        return culled;
+    }
+
     private free(index: number): void {
         const p = this.particles[index];
         // a parent destroyed with its children (a player view leaving) took the sprite with it: never pool that one
         if (!p.sprite.destroyed) this.renderer.pool.release(p.sprite);
+        if (p.emitter) {
+            p.emitter.live--;
+            if (p.emitter.def.maxLive !== undefined) this.budgeted--;
+        }
         this.particles.splice(index, 1);
     }
 
@@ -279,28 +323,28 @@ export class ParticleSystem {
             e.nextSpawn -= dt;
             const def = e.def;
             const max = def.maxCount ?? Number.POSITIVE_INFINITY;
+            const maxLive = def.maxLive ?? Number.POSITIVE_INFINITY;
             while (e.nextSpawn <= 0 && e.spawnCount < max) {
-                const off = randomInCircle(e.scale * e.radius);
-                const spread = (Math.random() - 0.5) * def.angle;
-                const c = Math.cos(spread);
-                const s = Math.sin(spread);
-                const speed = pick(def.speed) * e.speedMult;
-                const vel = { x: (e.dir.x * c - e.dir.y * s) * speed, y: (e.dir.x * s + e.dir.y * c) * speed };
-                const rot = def.rot === undefined ? undefined : pick(def.rot as Range);
-                this.add(
-                    def.particle,
-                    e.layer,
-                    { x: e.pos.x + off.x, y: e.pos.y + off.y },
-                    vel,
-                    { scale: e.scale, rot, zOrd: e.zOrd, color: e.color?.() },
-                    e,
-                );
                 let rate = pick(def.rate);
                 if (def.maxRate !== undefined && def.maxElapsed) {
                     const w = easeInExpo(Math.min(1, e.ticker / def.maxElapsed));
                     rate += (pick(def.maxRate) - rate) * w;
                 }
                 e.nextSpawn += rate * e.rateMult;
+                // at its budget (maxLive) or at a rejected point (skip): this spawn is skipped, the rate stays the same
+                if (e.live >= maxLive) continue;
+                const off = e.box
+                    ? { x: (Math.random() * 2 - 1) * e.box.x, y: (Math.random() * 2 - 1) * e.box.y }
+                    : randomInCircle(e.scale * e.radius);
+                const pos = { x: e.pos.x + off.x, y: e.pos.y + off.y };
+                if (e.skip?.(pos)) continue;
+                const spread = (Math.random() - 0.5) * def.angle;
+                const c = Math.cos(spread);
+                const s = Math.sin(spread);
+                const speed = pick(def.speed) * e.speedMult;
+                const vel = { x: (e.dir.x * c - e.dir.y * s) * speed, y: (e.dir.x * s + e.dir.y * c) * speed };
+                const rot = def.rot === undefined ? undefined : pick(def.rot as Range);
+                this.add(def.particle, e.layer, pos, vel, { scale: e.scale, rot, zOrd: e.zOrd, color: e.color?.() }, e);
                 e.spawnCount++;
             }
             if (e.ticker >= e.duration) {
@@ -357,7 +401,7 @@ export class ParticleSystem {
                 if (p.overground) this.renderer.addOverground(s, p.layer, p.zOrd, p.zIdx, p.pos);
                 else this.renderer.add(s, p.layer, p.zOrd, p.zIdx);
             }
-            s.scale.set(scale);
+            s.scale.set(scale * (def.stretch ?? 1), scale);
             s.rotation = p.rot;
             s.alpha = alpha;
             s.visible = true;

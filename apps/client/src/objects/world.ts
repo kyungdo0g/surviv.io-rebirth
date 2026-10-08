@@ -214,6 +214,15 @@ export class ObjectWorld {
         return false;
     }
 
+    /** The buildings whose roof the local player stands under (rebirth: no rain streaks over them, fx/weather.ts). */
+    localRoofs(): BuildingRender[] {
+        const roofs: BuildingRender[] = [];
+        for (const { render } of this.entries.values()) {
+            if (render instanceof BuildingRender && render.localInside) roofs.push(render);
+        }
+        return roofs;
+    }
+
     update(ctx: FrameContext, now: number, view: ViewBounds): void {
         let visible = 0;
         for (const [id, entry] of this.entries) {

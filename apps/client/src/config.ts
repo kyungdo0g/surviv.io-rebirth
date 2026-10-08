@@ -6,7 +6,8 @@
 // M6 / M7 stored separate keys (rebirth.playerName, rebirth.lang, rebirth.gameModeIdx, rebirth.teamAutoFill,
 // rebirth.perkModeRole); the first load imports them into the object and removes them.
 // Rebirth settings (not in the original ConfigManager): enhancedHitFx (on by default; user/2026-10-07-hit-feedback,
-// fx/hitFeedback.ts), off restoring the v0.8.82 hit feedback.
+// fx/hitFeedback.ts), off restoring the v0.8.82 hit feedback; weatherFx (on by default; user/2026-10-08-rain,
+// fx/weather.ts), off drawing a rainy match without its rain and tint.
 
 export type TouchStyle = "anywhere" | "locked";
 
@@ -27,6 +28,8 @@ export interface ConfigValues {
     screenShake: boolean;
     /** rebirth: stronger hit feedback (hit markers, damage vignette and arcs, body flashes, more blood) */
     enhancedHitFx: boolean;
+    /** rebirth: the rainy matches' rain and darker tint (effects only) */
+    weatherFx: boolean;
     anonPlayerNames: boolean;
     touchMoveStyle: TouchStyle;
     touchAimStyle: TouchStyle;
@@ -51,6 +54,7 @@ export const CONFIG_DEFAULTS: Readonly<ConfigValues> = {
     musicVolume: 1,
     screenShake: true,
     enhancedHitFx: true,
+    weatherFx: true,
     anonPlayerNames: false,
     touchMoveStyle: "anywhere",
     touchAimStyle: "anywhere",

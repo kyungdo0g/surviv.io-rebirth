@@ -178,6 +178,11 @@ export class BuildingRender implements ObjectRender<BuildingView> {
         return this.zoomIn.some((b) => pos.x >= b.min.x && pos.x <= b.max.x && pos.y >= b.min.y && pos.y <= b.max.y);
     }
 
+    /** Whether the segment `a`-`b` crosses one of the roof's zoom regions (rebirth: a rain streak's fall over it). */
+    ceilingOnSegment(a: Vec2, b: Vec2): boolean {
+        return this.zoomIn.some((box) => collider.intersectSegment(box, a, b) !== null);
+    }
+
     /** Distance from `pos` to the ceiling regions, capped at `maxDist`; 0 inside (survev getDistanceToBuilding). */
     distanceToCeiling(pos: Vec2, maxDist: number): number {
         let dist = maxDist;

@@ -32,6 +32,8 @@ export interface ParticleDef {
     zOrd?: number;
     /** keep the colour on darkened (Halloween) maps */
     ignoreValueAdjust?: boolean;
+    /** the sprite is drawn this many times wider than tall along its rotation (rebirth rain streaks) */
+    stretch?: number;
 }
 
 export function pick(r: Range): number {
