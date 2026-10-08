@@ -73,7 +73,11 @@ export class BotFill {
         this.options = options;
         this.rng = createRng(options.seed ^ 0x2c1b3c6d);
         this.bagRng = createRng(options.seed ^ 0x1b873593);
-        this.modeMaxPlayers = getMapDef(game.options.mapName).gameMode.maxPlayers;
+        // the game's player cap above the mode's maxPlayers (a map grown for it: defs mapDefForPlayers) fills that far
+        this.modeMaxPlayers = Math.max(
+            getMapDef(game.options.mapName).gameMode.maxPlayers,
+            game.options.maxPlayers ?? 0,
+        );
         for (const p of game.players()) this.names.add(p.name);
     }
 
