@@ -16,6 +16,12 @@
 //   every second: triage house.ts seed 0, zone <-> loot every ~1.5 s for 40 s), and an unarmed bot in the first two
 //   circles arms first (x0.6); the rotation goes round an air strike (brain/strikes.ts) instead of through it, and
 //   round a place the bot was chased out of (brain/danger.ts) while the zone does not press.
+//
+// BrainFeatures.endgame, once the zone has closed to nothing (the 50v50 endgame stall, bots faction.test.ts seed 11):
+// the gas is everywhere and hurts the same everywhere, so the zone behaviour has nothing left to offer (held at 0.97
+// plus its hysteresis it used to pin the last players to the centre, never healing and never going for an enemy);
+// it drops to ZONE_CLOSED, and the heals that outlast the others give way to a fight with a standing enemy close by or
+// with an enemy kneeling in a revive (a self reviving Medic stands up again: finishing it ends the match).
 import { type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, Input } from "@rebirth/defs";
 import { type GasView, gasCircle, gasTimeLeft } from "@rebirth/sim";
@@ -31,6 +37,9 @@ import { inStrike, strikeBlocks } from "./strikes.ts";
 
 /** The last circles close to (nearly) nothing (GameConfig gas stages: radius 0.0225 of the map, then 0). */
 const FINAL_RAD = 3;
+/** endgame: the current circle under this radius is gone (no safe spot left); the zone score then (below a fight). */
+const CLOSED_RAD = 1;
+const ZONE_CLOSED = 0.5;
 /** Effective rotation speed through terrain and obstacles (u/s; the player runs at 12). */
 const TRAVEL_SPEED = 8.5;
 /** pursuit: the boost bar kept when safe, the score of such a boost, and how long "safe" needs nothing to happen. */
@@ -109,8 +118,12 @@ export function healScore(ctx: BrainCtx): number {
     // wins: every heal and boost buys time, so use them on the way to the centre instead of only walking
     const gasNow = model.gas;
     if (ctx.features.endgame && gasNow && gasNow.radNew < FINAL_RAD && model.inGasNow()) {
-        // ...but not with the last enemy shooting it from close by: that fight decides the match
-        const fightOn = ctx.visibleEnemies.some((e) => !e.downed && v2.distance(e.pos, self.pos) < 40);
+        // ...but not with the last enemy shooting it from close by, nor with one kneeling in a revive within reach (a
+        // heal keeps the gun down for seconds): that fight decides the match
+        const fightOn = ctx.visibleEnemies.some((e) => {
+            const d = v2.distance(e.pos, self.pos);
+            return e.downed ? e.reviving && ctx.armed && d <= shootRange(ctx) : d < 40;
+        });
         if (!fightOn) return 0.98;
     }
     const isHeal = item === "healthkit" || item === "bandage";
@@ -274,6 +287,8 @@ export function zoneScore(ctx: BrainCtx): number {
     const { model, self } = ctx;
     const gas = model.gas;
     if (!gas || gas.mode === "inactive") return 0;
+    // endgame: the zone is gone, there is no safe spot to run to (heal or fight instead; see the header)
+    if (ctx.features.endgame && gas.radNew < FINAL_RAD && gasCircle(gas).rad < CLOSED_RAD) return ZONE_CLOSED;
     if (model.inGasNow()) return gas.damage >= 5 ? 0.97 : 0.93;
     const dist = v2.distance(self.pos, gas.posNew);
     // once rotating, keep going until comfortably inside (no flip-flop on the boundary)
