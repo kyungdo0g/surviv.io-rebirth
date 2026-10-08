@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="116" viewBox="0 0 48 116">
+  <!-- FN P90 held sprite, own art (surviv.io-rebirth): seen from above, barrel up, butt flush at the bottom. -->
+  <!-- wide polymer shell: blunt nose round the barrel, flat rear with the highlight strip; rubber butt pad at the bottom -->
+  <path d="M15 12h18l5 8v86l-2 4H12l-2-4V20z" fill="#706760" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="22" y="92" width="4" height="14" fill="#a8a09a"/>
+  <rect x="8" y="110" width="32" height="6" rx="2" fill="#000"/>
+  <!-- ambidextrous charging knobs sticking out sideways near the front of the shell (owner's top-down cutaway, ~90 %) -->
+  <rect x="2" y="18" width="6" height="8" rx="2" fill="#000"/>
+  <rect x="40" y="18" width="6" height="8" rx="2" fill="#000"/>
+  <!-- translucent magazine lying flat in the top of the shell (the shell rims are its sides): rounds across, catch at the rear -->
+  <rect x="14" y="18" width="20" height="66" fill="#8c5f3c"/>
+  <path d="M17 51.5h14M17 57.5h14M17 63.5h14M17 69.5h14M17 75.5h14" stroke="#a37450" stroke-width="3"/>
+  <rect x="12" y="82" width="24" height="4" fill="#000"/>
+  <rect x="19" y="80" width="10" height="8" rx="1" fill="#000"/>
+  <!-- sight housing (shell colour, as in the photo) straddling the front of the magazine: optic window, grey reticle -->
+  <rect x="12" y="16" width="24" height="28" rx="2" fill="#706760" stroke="#000" stroke-width="8"/>
+  <rect x="19" y="22" width="10" height="14" rx="1" fill="#000"/>
+  <rect x="22" y="27" width="4" height="4" fill="#8f8f8f"/>
+  <!-- standard flash hider with two slots -->
+  <rect x="19" y="1" width="10" height="12" rx="2" fill="#000"/>
+  <rect x="21" y="3" width="2" height="7" fill="#555555"/>
+  <rect x="25" y="3" width="2" height="7" fill="#555555"/>
+</svg>

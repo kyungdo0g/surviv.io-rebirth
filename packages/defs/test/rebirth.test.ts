@@ -23,6 +23,8 @@ import {
     HEAVY_BOMB_EXPLOSION,
     HELD_GUN_ART,
     HELD_GUN_ART_GUN_OFFSET,
+    HELD_GUN_ART_HANDS_BELOW,
+    HELD_GUN_ART_LEFT_HAND_OFFSET,
     heldGunArt,
     IRON_BOMB_DECAL_TYPE,
     IRON_BOMB_RAD_MAX,
@@ -111,16 +113,35 @@ describe("rebirth balance deviations", () => {
             { id: "hecate", sprite: "gun-hecate-01.img", size: [60, 232] },
             { id: "lynx", sprite: "gun-lynx-01.img", size: [60, 192] },
             { id: "boys", sprite: "gun-boys-01.img", size: [60, 238] },
+            { id: "bizon", sprite: "gun-bizon-01.img", size: [48, 140] },
+            { id: "asval", sprite: "gun-asval-01.img", size: [48, 152] },
+            { id: "p90", sprite: "gun-p90-01.img", size: [48, 116] },
+            { id: "tec9", sprite: "gun-tec9-01.img", size: [40, 116] },
         ]);
         // the beta guns keep the balance sheet's held image in their defs (the client switches them, heldGun.ts): its
-        // bar, or the AWM-S art it borrowed for the Hecate II and the Lynx; the bullpups' gun offset is client-only
-        for (const id of ["g36c", "m16a4", "sig550", "g3", "fal", "wa2000", "m200", "boys"]) {
+        // bar, or the AWM-S art it borrowed for the Hecate II and the Lynx; the own sprites' overrides are client-only
+        for (const id of ["g36c", "m16a4", "sig550", "g3", "fal", "wa2000", "m200", "boys", "bizon", "asval", "p90"]) {
             expect(getDefOfType("gun", id).worldImg.sprite, id).toMatch(/^gun-(med|long)-01\.img$/);
         }
+        for (const id of ["tec9", "tec9_dual"])
+            expect(getDefOfType("gun", id).worldImg.sprite, id).toBe("gun-short-01.img");
         for (const id of ["hecate", "lynx"]) expect(getDefOfType("gun", id).worldImg.sprite, id).toBe("gun-awc-01.img");
-        expect(HELD_GUN_ART_GUN_OFFSET).toEqual({ wa2000: { x: -8, y: 0 }, lynx: { x: -8, y: 0 } });
-        for (const id of ["wa2000", "lynx"]) expect(getDefOfType("gun", id).worldImg.gunOffset, id).toBeUndefined();
-        expect(Object.hasOwn(HELD_GUN_ART, "mk14")).toBe(false);
+        expect(HELD_GUN_ART_GUN_OFFSET).toEqual({
+            wa2000: { x: -8, y: 0 },
+            lynx: { x: -8, y: 0 },
+            p90: { x: -8, y: 0 },
+        });
+        expect(HELD_GUN_ART_HANDS_BELOW).toEqual({ p90: true });
+        expect(HELD_GUN_ART_LEFT_HAND_OFFSET).toEqual({ asval: { x: 4, y: 0 } });
+        for (const id of ["wa2000", "lynx", "p90"]) {
+            expect(getDefOfType("gun", id).worldImg.gunOffset, id).toBeUndefined();
+        }
+        expect(getDefOfType("gun", "p90").worldImg.handsBelow).toBeUndefined();
+        expect(getDefOfType("gun", "asval").worldImg.leftHandOffset).toEqual({ x: 9, y: 0 });
+        // bars on purpose (owner); a dual pistol shares its single's sprite (the client's ownHeldSprite)
+        for (const id of ["mk14", "m1928", "vz61", "vz61_dual", "tec9_dual"]) {
+            expect(Object.hasOwn(HELD_GUN_ART, id), id).toBe(false);
+        }
         expect(getDefOfType("gun", "mk14").worldImg).toMatchObject({
             sprite: "gun-long-01.img",
             scale: { x: 0.5, y: 0.47 },

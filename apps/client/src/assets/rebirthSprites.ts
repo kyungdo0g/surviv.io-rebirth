@@ -6,8 +6,9 @@
 // (ammo-<id>.img) are drawn by the same tool in the original ammo emotes' style, with the generic ammo emote as fallback.
 // The rebirth buildings' floors and roofs (rebirth/buildings.ts) are committed SVGs served from /rebirth/map/
 // (tools/assets/rebirthBuildingArt.ts draws them), so they need no install step. The drawn top-down held sprites
-// (packages/defs rebirth/heldGunArt.ts: the AK-47, four beta rifles and six beta snipers and DMRs, our own art) are
-// committed SVGs too, served from /rebirth/guns/; they have no fallback, since the file always ships.
+// (packages/defs rebirth/heldGunArt.ts: the AK-47, four beta rifles, six beta snipers and DMRs and four beta SMGs and
+// machine pistols, our own art; the dual TEC-9 shares the TEC-9's) are committed SVGs too, served from /rebirth/guns/;
+// they have no fallback, since the file always ships.
 import {
     GameObjectDefs,
     heldGunArt,

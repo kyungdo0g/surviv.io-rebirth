@@ -16,7 +16,7 @@ const FORBIDDEN =
     /<(text|image|linearGradient|radialGradient|filter|script|foreignObject|style|mask|use)\b|sodipodi|inkscape|xlink:href/i;
 
 describe("drawn top-down held sprites", () => {
-    it("the drawn guns: the AK-47, four beta rifles and six beta snipers and DMRs (the Mk 14 EBR stays a bar)", () => {
+    it("the drawn guns: the AK-47 and 14 beta rifles, snipers, DMRs, SMGs and machine pistols", () => {
         expect(Object.keys(HELD_GUN_ART)).toEqual([
             "ak47",
             "g36c",
@@ -29,8 +29,28 @@ describe("drawn top-down held sprites", () => {
             "hecate",
             "lynx",
             "boys",
+            "bizon",
+            "asval",
+            "p90",
+            "tec9",
         ]);
-        expect(Object.hasOwn(HELD_GUN_ART, "mk14")).toBe(false);
+        // bars on purpose (owner); a dual pistol is never listed, it shares its single's sprite
+        for (const id of ["mk14", "m1928", "vz61", "vz61_dual", "tec9_dual"]) {
+            expect(Object.hasOwn(HELD_GUN_ART, id), id).toBe(false);
+        }
+    });
+
+    it("the dual TEC-9 holds the TEC-9's committed sprite in each hand (heldGun.ts ownHeldSprite strips _dual)", () => {
+        const dual = GameObjectDefs.tec9_dual as GunDef;
+        expect(dual.isDual).toBe(true);
+        const img = heldGunImage(dual);
+        expect(img.sprite).toBe("gun-tec9-01.img");
+        expect(img).toMatchObject({ scale: { x: 0.5, y: 0.5 }, tint: 0xffffff });
+        // the dual's own hands: no gun offset, left hand (0, 0)
+        expect(img.gunOffset).toBeUndefined();
+        expect(img.leftHandOffset).toEqual({ x: 0, y: 0 });
+        expect(SPRITES[img.sprite]?.path).toBe("/rebirth/guns/gun-tec9-01.svg");
+        expect(SPRITES["gun-tec9_dual-01.img"]).toBeUndefined();
     });
 
     it("each committed SVG exists at its served path, at its declared size, minimal and small", () => {

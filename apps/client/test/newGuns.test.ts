@@ -13,6 +13,8 @@ import {
     gunClass,
     HELD_GUN_ART,
     HELD_GUN_ART_GUN_OFFSET,
+    HELD_GUN_ART_HANDS_BELOW,
+    HELD_GUN_ART_LEFT_HAND_OFFSET,
     type HeldGunArtId,
     Input,
     NEW_AMMO_EMOTES,
@@ -38,6 +40,8 @@ const HAVE_ASSETS = existsSync(join(ASSETS, "audio"));
 const gun = (id: string) => GameObjectDefs[id] as GunDef;
 /** Guns with a drawn top-down held sprite (packages/defs rebirth/heldGunArt.ts). */
 const DRAWN = new Set<string>(Object.keys(HELD_GUN_ART));
+/** Whether a gun holds a drawn sprite: its own, or a dual pistol its single's (heldGun.ts ownHeldSprite). */
+const holdsDrawn = (id: string) => DRAWN.has(id.replace(/_dual$/, ""));
 const ORIGINAL_PLAYERS = (generatedSounds.lists as Record<string, Record<string, { path: string }>>).players;
 
 describe("new guns: loot icons", () => {
@@ -61,7 +65,7 @@ describe("new guns: loot icons", () => {
 describe("new guns: held sprites", () => {
     it("without own art, every new gun holds a bar drawn from an original bar sprite, as long as its barrel", () => {
         for (const id of NEW_GUN_IDS) {
-            if (DRAWN.has(id)) continue;
+            if (holdsDrawn(id)) continue;
             const def = gun(id);
             const img = heldGunImage(def);
             expect(SPRITES[ownHeldSprite(id)], id).toBeUndefined();
@@ -80,10 +84,34 @@ describe("new guns: held sprites", () => {
 
     it("a drawn new gun holds its own top-down sprite at 0.5 in its own colours, with the sheet's hands", () => {
         const drawnNew = NEW_GUN_IDS.filter((id) => DRAWN.has(id));
-        expect(drawnNew).toEqual(["g36c", "m16a4", "sig550", "g3", "fal", "wa2000", "m200", "hecate", "lynx", "boys"]);
+        expect(drawnNew).toEqual([
+            "g36c",
+            "m16a4",
+            "sig550",
+            "g3",
+            "fal",
+            "wa2000",
+            "tec9",
+            "bizon",
+            "asval",
+            "p90",
+            "m200",
+            "hecate",
+            "lynx",
+            "boys",
+        ]);
         // the bullpups' own sprites are drawn for survev's bullpup gun offset; the sheet gave them none
-        const gunOffset: Record<string, { x: number; y: number }> = { wa2000: { x: -8, y: 0 }, lynx: { x: -8, y: 0 } };
+        const gunOffset: Record<string, { x: number; y: number }> = {
+            wa2000: { x: -8, y: 0 },
+            lynx: { x: -8, y: 0 },
+            p90: { x: -8, y: 0 },
+        };
         expect(HELD_GUN_ART_GUN_OFFSET).toEqual(gunOffset);
+        // the P90's own sprite is held with both hands under it (its top magazine is its identity)
+        expect(HELD_GUN_ART_HANDS_BELOW).toEqual({ p90: true });
+        // the AS Val's left hand moves back from its suppressor onto its forend (the sheet's (9, 0) is the VSS's)
+        const leftHandOffset: Record<string, { x: number; y: number }> = { asval: { x: 4, y: 0 } };
+        expect(HELD_GUN_ART_LEFT_HAND_OFFSET).toEqual(leftHandOffset);
         for (const id of drawnNew) {
             const def = gun(id);
             const img = heldGunImage(def);
@@ -95,13 +123,15 @@ describe("new guns: held sprites", () => {
                 scale: { x: 0.5, y: 0.5 },
                 tint: 0xffffff,
                 magImg: undefined,
+                leftHandOffset: leftHandOffset[id] ?? def.worldImg.leftHandOffset,
                 gunOffset: gunOffset[id] ?? def.worldImg.gunOffset,
+                handsBelow: HELD_GUN_ART_HANDS_BELOW[id] ?? def.worldImg.handsBelow,
             });
             // the balance sheet's held image stays in the def (rebirth/newGuns.json): its bar, or the AWM-S art it
-            // borrowed for the Hecate II and the Lynx; hands and recoil are kept, and the gun offset but the bullpups'
+            // borrowed for the Hecate II and the Lynx; recoil is kept, and the hands and gun offset but the overrides
             if (id === "hecate" || id === "lynx") expect(def.worldImg.sprite, id).toBe("gun-awc-01.img");
             else expect(isBarSprite(def.worldImg.sprite), id).toBe(true);
-            expect(img.leftHandOffset, id).toEqual(def.worldImg.leftHandOffset);
+            expect(img.leftHandOffset, id).toEqual(leftHandOffset[id] ?? def.worldImg.leftHandOffset);
             expect(img.gunOffset, id).toEqual(gunOffset[id] ?? def.worldImg.gunOffset);
             expect(img.recoil, id).toBe(def.worldImg.recoil);
             expect(SPRITES[sprite], id).toEqual({
@@ -111,10 +141,37 @@ describe("new guns: held sprites", () => {
             });
         }
         expect(gun("m16a4").worldImg).toMatchObject({ leftHandOffset: { x: 12, y: 0 }, gunOffset: { x: -8, y: 0 } });
-        for (const id of ["wa2000", "lynx"]) {
+        for (const id of ["wa2000", "lynx", "p90"]) {
             expect(gun(id).isBullpup, id).toBe(true);
             expect(gun(id).worldImg.gunOffset, id).toBeUndefined();
             expect(heldGunImage(gun(id)).gunOffset, id).toEqual(HELD_GUN_ART_GUN_OFFSET[id as HeldGunArtId]);
+        }
+        expect(gun("p90").worldImg.handsBelow).toBeUndefined();
+        expect(heldGunImage(gun("p90")).handsBelow).toBe(true);
+        expect(gun("asval").worldImg.leftHandOffset).toEqual({ x: 9, y: 0 });
+    });
+
+    it("the dual TEC-9 holds the TEC-9's drawn sprite in each hand, with its own hands", () => {
+        const dual = gun("tec9_dual");
+        expect(dual.isDual).toBe(true);
+        expect(DRAWN.has("tec9_dual")).toBe(false);
+        expect(ownHeldSprite("tec9_dual")).toBe("gun-tec9-01.img");
+        expect(heldGunImage(dual)).toEqual({
+            ...dual.worldImg,
+            sprite: "gun-tec9-01.img",
+            scale: { x: 0.5, y: 0.5 },
+            tint: 0xffffff,
+            magImg: undefined,
+        });
+        expect(heldGunImage(dual).leftHandOffset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('the Thompson M1928 and the Škorpion vz. 61 stay bars on purpose (owner: "막대기")', () => {
+        for (const id of ["m1928", "vz61", "vz61_dual"]) {
+            expect(holdsDrawn(id), id).toBe(false);
+            expect(SPRITES[ownHeldSprite(id)], id).toBeUndefined();
+            expect(heldGunImage(gun(id)), id).toBe(gun(id).worldImg);
+            expect(isBarSprite(gun(id).worldImg.sprite), id).toBe(true);
         }
     });
 

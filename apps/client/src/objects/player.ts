@@ -32,6 +32,7 @@ import { greySpriteId } from "../assets/textures.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
 import { AnimPlayer, BONE_COUNT, Bone, IDENTITY_POSE, IDLE_POSES, type Pose } from "./anims.ts";
+import { heldGunImage } from "./heldGun.ts";
 import { MedicAura } from "./playerAura.ts";
 import { PlayerEmitters } from "./playerEmitters.ts";
 import { GunSprites } from "./playerGun.ts";
@@ -139,6 +140,8 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private loadoutKey = "";
     private idlePose = "fists";
     private weapon: WeaponDef | undefined;
+    /** the held gun's left-hand offset (heldGun.ts: the def's, or a drawn sprite's override) */
+    private leftHandOffset: Vec2 | undefined;
     private readonly anim = new AnimPlayer();
     private readonly bones: Pose[] = Array.from({ length: BONE_COUNT }, newPose);
     private animSeq = -1;
@@ -392,6 +395,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         const weapon = weaponDef(view.activeWeapon);
         if (weapon !== this.weapon && this.anim.active && this.anim.name !== "revive") this.anim.stop(this.bones);
         this.weapon = weapon;
+        this.leftHandOffset = weapon?.type === "gun" ? heldGunImage(weapon).leftHandOffset : undefined;
         this.idlePose = idlePoseName(weapon, view.downed);
         this.placeHands(view.downed);
         this.weaponHidden = view.downed || this.anim.name === "revive";
@@ -429,7 +433,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
                 this.gunL.setType(weapon, bodyScale, tex);
                 this.gunL.visible = true;
             }
-            const handsBelow = !!weapon.worldImg.handsBelow;
+            const handsBelow = !!heldGunImage(weapon).handsBelow;
             // the gun is under the right hand unless the hands go below it; the left hand holds it from above
             // unless the magazine sits on top (survev updateVisuals)
             this.handR.setChildIndex(this.gunR.container, handsBelow ? this.handR.children.length - 1 : 0);
@@ -575,9 +579,10 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             this.meleeSprite.rotation = img.rot + bone.rot;
             this.meleeSprite.position.set(-bone.pivot.x, -bone.pivot.y);
         }
-        if (weapon?.type === "gun" && !view.downed && this.anim.name !== "revive" && weapon.worldImg.leftHandOffset) {
-            this.handL.position.x += weapon.worldImg.leftHandOffset.x;
-            this.handL.position.y += weapon.worldImg.leftHandOffset.y;
+        const lho = this.leftHandOffset;
+        if (weapon?.type === "gun" && !view.downed && this.anim.name !== "revive" && lho) {
+            this.handL.position.x += lho.x;
+            this.handL.position.y += lho.y;
         }
         this.handL.position.x -= this.recoilL * RECOIL_PIXELS;
         this.handR.position.x -= this.recoilR * RECOIL_PIXELS;
