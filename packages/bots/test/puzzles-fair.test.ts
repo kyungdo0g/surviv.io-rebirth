@@ -8,7 +8,7 @@
 // does not walk back in for the panel while its danger memory holds the building. On the main map, seed 12345 (no
 // loot spawned). Owner: bot interactions.
 import { type Vec2, v2 } from "@rebirth/core";
-import { type Game, interactObstacle } from "@rebirth/sim";
+import { Game, interactObstacle } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import { BRAIN_PRESETS } from "../src/brain/features.ts";
 import { floorGrid, type PuzzleSite, pieceFront, puzzleSites } from "../src/brain/puzzleSites.ts";
@@ -18,7 +18,7 @@ import { NavGrid } from "../src/nav/grid.ts";
 import { installPerception } from "../src/perception/install.ts";
 import { roofRegions } from "../src/perception/roofs.ts";
 import { WorldModel } from "../src/perception/world.ts";
-import { giveGun, mainGame, placePlayer, runUntil } from "./helpers.ts";
+import { cachedMap, firstOfType, giveGun, mainGame, placePlayer, runUntil } from "./helpers.ts";
 
 function site(game: Game, building: string): PuzzleSite {
     const s = puzzleSites(game.mapData).find((x) => x.entry.building === building);
@@ -159,9 +159,31 @@ describe("puzzles as a player sees them", () => {
     }, 60_000);
 });
 
+/**
+ * Main 12345 with only the building `type` (and what belongs to it) on the terrain: no other building and no crate to
+ * break, so a bot stays as armed as it starts.
+ */
+function onlyBuilding(type: string): Game {
+    const gen = cachedMap("main", 12345);
+    const root = firstOfType(gen, type);
+    const byId = new Map(gen.objects.map((o) => [o.id, o]));
+    const keep = new Set<number>();
+    for (const o of gen.objects) {
+        let top = o;
+        while (top.parentId) top = byId.get(top.parentId) ?? top;
+        if (top.id === root.id) keep.add(o.id);
+    }
+    const objects = gen.objects.filter((o) => keep.has(o.id));
+    const mapData = { ...gen.mapData, objects: gen.mapData.objects.filter((o) => keep.has(o.id)) };
+    const generation = { ...gen, objects, lootSpawns: [], mapData };
+    return new Game({ mapName: "main", seed: 12345, teamMode: 1 }, { generation, spawnLoot: false });
+}
+
 describe("puzzles and the danger memory", () => {
     it("an unarmed bot chased out of the police station by a gunman at the panel does not walk back in for it", () => {
-        const game = mainGame();
+        // the police station alone (the military base moved it next to a bridge whose crates armed the bot within the
+        // 15 s of the last phase: the danger memory holds for an unarmed bot, so the run needs one that stays unarmed)
+        const game = onlyBuilding("police_01");
         const s = site(game, "police_01");
         const first = s.pieces[0];
         const model = new WorldModel(game.mapData);

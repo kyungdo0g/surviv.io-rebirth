@@ -328,6 +328,9 @@ export function planClose(
     }
     if (!entry.wants || paused || now < entry.reactAt || now < entry.blockedUntil) return false;
     if (entry.closes >= maxCloses(ctx.skill)) return false;
+    // an item in reach is picked up first, and the goal after it decides: closing during the room's last pickup shut
+    // the door 0.1-0.2 s before the follower opened it again on the way to loot seen in the other wing (the bank)
+    if (intent.behaviour === "loot" && intent.stop) return false;
     const shape = watch.shape(model, o);
     const range = entry.since === Number.NEGATIVE_INFINITY && entry.closes === 0 ? CLOSE_RANGE : CLOSE_KEEP;
     if (!shape || distanceToCollider(self.pos, shape.closedCol) > range) return false;
