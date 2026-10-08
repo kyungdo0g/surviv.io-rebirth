@@ -170,17 +170,18 @@ export class BlastWatch {
 
     /**
      * The explosives whose blast would hit a body at `from` for HOT_HP or more (nothing between) that lie within
-     * `cone` radians of any of `dirs` (unit vectors), each with its angular offset from the nearest direction and its
-     * angular half-width as seen from `from` (a box by its half diagonal): what a shot from there may strike, setting
-     * it off next to the shooter (brain/blast.ts holdBlastFire weighs how soon).
+     * `cone` radians of any of `dirs` (unit vectors), each with its angular offset from the nearest direction, its
+     * angular half-width as seen from `from` (a box by its half diagonal), the unit direction to its centre and its
+     * distance: what a shot from there may strike, setting it off next to the shooter (brain/blast.ts holdBlastFire
+     * weighs how soon).
      */
     inShot(
         model: WorldModel,
         from: Vec2,
         dirs: readonly Vec2[],
         cone: number,
-    ): Array<{ x: LiveExplosive; off: number; half: number }> {
-        const out: Array<{ x: LiveExplosive; off: number; half: number }> = [];
+    ): Array<{ x: LiveExplosive; off: number; half: number; u: Vec2; d: number }> {
+        const out: Array<{ x: LiveExplosive; off: number; half: number; u: Vec2; d: number }> = [];
         for (const x of this.sync(model)) {
             const to = v2.sub(x.c, from);
             const d = v2.length(to);
@@ -191,7 +192,7 @@ export class BlastWatch {
             let off = Math.PI;
             for (const dir of dirs) off = Math.min(off, Math.acos(Math.max(-1, Math.min(1, v2.dot(dir, u)))));
             if (off > half + cone || blastShielded(model, x.o, x.c, from)) continue;
-            out.push({ x, off, half });
+            out.push({ x, off, half, u, d });
         }
         return out;
     }

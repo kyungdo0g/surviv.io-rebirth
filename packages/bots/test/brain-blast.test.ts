@@ -14,7 +14,7 @@ import { BRAIN_PRESETS, type BrainFeatures, withFeatures } from "../src/brain/fe
 import { planFight } from "../src/brain/tactics.ts";
 import { BotController } from "../src/controller.ts";
 import { blastDamage, blastReach, explosiveOf, explosiveTypes } from "../src/knowledge/explosives.ts";
-import { installBlastWatch } from "../src/perception/blasts.ts";
+import { HOT_HP, installBlastWatch } from "../src/perception/blasts.ts";
 import { screenBounds } from "../src/perception/sight.ts";
 import type { SeenObstacle } from "../src/perception/world.ts";
 import { addEnemy, addObstacle, brainOf, faceTo, NOW, type TestWorld, testWorld } from "./brain-world.ts";
@@ -138,6 +138,36 @@ describe("explosive obstacles: cover", () => {
         expect(brain.mem.smart.coverSpot).toBeNull();
     });
 
+    it("a bot fleeing behind a barrel gives the spot up once the barrel is shot (no walking back into the blast)", () => {
+        const w = screenWorld();
+        for (const [id, y] of [
+            [2, 0],
+            [3, 3],
+            [4, -3],
+        ] as const)
+            faceTo(addEnemy(w, id, { x: 22, y }), w.spot);
+        w.model.self.health = 25;
+        w.model.self.inventory.bandage = 5;
+        addObstacle(w, { x: -3, y: 0 }, "barrel_01");
+        const barrel = last(w);
+        const e = explosiveOf(barrel.def)!;
+        const brain = brainOf(w, ["pursuit", "blastAware"]);
+        expect(brain.think(NOW, 0.1).behaviour).toBe("flee");
+        const spot = brain.mem.pursuit.fleeSpot!;
+        expect(v2.distance(spot, centre(barrel))).toBeLessThan(4);
+        w.model.self.pos = v2.copy(spot);
+        // the chasers' bullets land in the barrel: its health falls snapshot after snapshot
+        for (let k = 1; k <= 3; k++) {
+            const t = NOW + k * 0.15;
+            snap(w, t, barrel, 1 - k * 0.05);
+            for (const c of w.model.contacts.values()) c.lastSeen = t;
+            expect(brain.think(t, 0.15).behaviour).toBe("flee");
+            // the kept spot is dropped at the first hit; a new one (if any) lies out of the barrel's hot blast
+            const now = brain.mem.pursuit.fleeSpot;
+            if (now) expect(blastDamage(e, v2.distance(now, centre(barrel)))).toBeLessThan(HOT_HP);
+        }
+    });
+
     it("a badly damaged barrel is no cover at all", () => {
         const { w, e, barrel } = barrelAndCrate();
         w.model.obstacles.pop();
@@ -218,6 +248,24 @@ describe("explosive obstacles: awareness", () => {
         expect(aware.mem.fight.trace.last("blast")?.detail).toMatch(/^hold/);
         // the same tank well off the line: it shoots
         expect(brainOf(tankWorld({ x: 3, y: 4 }), ["blastAware"]).think(NOW, 0.1).fire).toBe(true);
+    });
+
+    it("an enemy standing in front of a barrel is shot: its body takes the bullets aimed past it", () => {
+        for (const [enemy, type, off] of [
+            [4, "barrel_01", 9],
+            [3, "barrel_01", 7],
+            [2.5, "propane_01", 6],
+        ] as const) {
+            const w = screenWorld();
+            faceTo(addEnemy(w, 2, { x: enemy, y: 0 }), w.spot);
+            addObstacle(w, { x: off, y: 0 }, type);
+            const aware = brainOf(w, ["blastAware"]);
+            const intent = aware.think(NOW, 0.1);
+            expect(intent.behaviour).toBe("fight");
+            expect(intent.fire).toBe(true);
+            expect(aware.mem.fight.trace.last("blast")).toBeUndefined();
+        }
+        // (a tank nearer than the enemy, beside the line, is still held: the test above)
     });
 });
 

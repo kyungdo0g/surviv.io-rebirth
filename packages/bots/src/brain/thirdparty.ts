@@ -10,6 +10,7 @@ import { distToSegment } from "../geom.ts";
 import { fightSlot, hasAmmo } from "../knowledge/arsenal.ts";
 import type { Contact } from "../perception/world.ts";
 import { faces } from "./assess.ts";
+import { blastDropsSpot } from "./blast.ts";
 import { findCoverFrom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent, reachable, usableSpot } from "./context.ts";
 import { zonePressure } from "./survival.ts";
@@ -173,7 +174,13 @@ export function planThirdparty(ctx: BrainCtx): Intent {
     const loaded = ctx.guns.filter(hasAmmo);
     const ideal = Math.max(...loaded.map((g) => g.info.idealMax), 15);
     const want = Math.min(40, Math.max(15, ideal));
-    if (!sm.tpSpot || v2.distance(sm.tpSpot, near) > want + 12 || v2.distance(sm.tpSpot, near) < want * 0.5) {
+    // (a spot in the blast of an explosive being shot is given up: blast.ts)
+    if (
+        !sm.tpSpot ||
+        v2.distance(sm.tpSpot, near) > want + 12 ||
+        v2.distance(sm.tpSpot, near) < want * 0.5 ||
+        blastDropsSpot(ctx, sm.tpSpot)
+    ) {
         const ring = v2.add(near, v2.mul(v2.normalizeSafe(v2.sub(me, near)), want));
         sm.tpSpot = findCoverFrom(model, ring, near, 10, (p) => reachable(ctx, p)) ?? usableSpot(ctx, ring, 6);
     }
