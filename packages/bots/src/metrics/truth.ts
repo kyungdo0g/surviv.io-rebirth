@@ -81,7 +81,8 @@ export type Sight = "visible" | "offscreen" | "hidden";
 export function humanSight(game: Game, roofs: RoofIndex, bot: BotController, viewer: Player, target: Player): Sight {
     if (!onHumanScreen(viewer.pos, viewer.zoom, target.pos, BODY_SLACK)) return "offscreen";
     if (!sameLayer(viewer.layer, target.layer)) return "hidden";
-    if (roofs.hides(viewer.pos, target.pos)) return "hidden";
+    // (underground no ceiling hides anything: the client covers the ground floor with the underground fill)
+    if ((viewer.layer & 1) === 0 && roofs.hides(viewer.pos, target.pos)) return "hidden";
     if (game.hiddenInSmoke(viewer, target)) return "hidden";
     if (concealed(bot.bot.model, target.pos, target.layer)) return "hidden";
     return "visible";

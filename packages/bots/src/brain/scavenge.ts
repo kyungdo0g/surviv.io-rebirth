@@ -31,23 +31,27 @@ import type { HeldGun } from "../knowledge/arsenal.ts";
 import { isWeakGun } from "../knowledge/gunTiers.ts";
 import type { SeenObstacle } from "../perception/world.ts";
 import { byThoroughness } from "../persona.ts";
+import { BASEMENT_FURNITURE, inLootedBasement } from "./basement.ts";
 import { addCombatLayer } from "./combat.ts";
 import {
     AIRDROP_LOOT_VALUE,
     clearApproach,
     closestPoint,
+    containerGrid,
     containerValue,
     containerVisible,
     finishSeconds,
     isAirdropLoot,
     meleeBreaks,
     meleeReach,
+    onBotFloor,
     plated,
+    reachableOn,
     standSpots,
     swingLands,
     useReach,
 } from "./containers.ts";
-import { type BrainCtx, emptyIntent, type Intent, reachable } from "./context.ts";
+import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 import { avoidPos } from "./danger.ts";
 import { lootDamping, underThreat } from "./lootRisk.ts";
 import { steadyGoal } from "./steady.ts";
@@ -129,9 +133,9 @@ function opening(ctx: BrainCtx, o: SeenObstacle): boolean {
     return !o.view.dead && !!o.def.airdropCrate && lm.openId === o.view.id && ctx.now < lm.openUntil;
 }
 
-/** Whether a seen obstacle can still be broken open or opened (bestBreakable's filter). */
-export function breakableNow(o: SeenObstacle): boolean {
-    return (breakable(o) || openable(o)) && (o.view.layer & 1) === 0;
+/** Whether a seen obstacle can still be broken open or opened (bestBreakable's filter) on the floor of `layer`. */
+export function breakableNow(o: SeenObstacle, layer = 0): boolean {
+    return (breakable(o) || openable(o)) && (o.view.layer & 1) === (layer & 1);
 }
 
 export interface BreakChoice {
@@ -205,6 +209,8 @@ function committed(ctx: BrainCtx, o: SeenObstacle): boolean {
  */
 function breakGun(ctx: BrainCtx, o: SeenObstacle, spare = false): HeldGun | undefined {
     if (plated(o) || platedNear(ctx, o)) return undefined;
+    // basements: punched only underground (bunker and vault walls send rounds back at the shooter)
+    if (ctx.features.basements && (o.view.layer & 1) === 1) return undefined;
     return ctx.guns.find(
         (g) =>
             g.mag > 0 &&
@@ -250,7 +256,7 @@ export function bestBreakable(ctx: BrainCtx): BreakChoice | null {
     const away = mem.breakTarget ? model.rememberedObstacle(mem.breakTarget, BREAK_OUT_OF_VIEW) : undefined;
     for (const o of away ? [...model.obstacles, away] : model.obstacles) {
         const waiting = opening(ctx, o);
-        if (!(breakable(o) || openable(o) || waiting) || (o.view.layer & 1) !== 0) continue;
+        if (!(breakable(o) || openable(o) || waiting) || !onBotFloor(ctx, o.view.layer)) continue;
         const until = mem.lootBlacklist.get(o.view.id);
         if (until !== undefined && until > now) continue;
         const d = distanceToCollider(self.pos, o.col);
@@ -270,7 +276,7 @@ export function bestBreakable(ctx: BrainCtx): BreakChoice | null {
         const value = waiting ? AIRDROP_LOOT_VALUE : containerValue(o);
         // (the current target is checked too: the old bonus skipped the check and kept bots on unreachable crates; one
         // the bot already damaged is not: it got at it, and a shrunk crate sits deep in the grid's spawn-size footprint)
-        if (!committed(ctx, o) && !reachable(ctx, colliderCenter(o.col), colliderRadius(o.col) + 1.8)) {
+        if (!committed(ctx, o) && !reachableOn(ctx, colliderCenter(o.col), colliderRadius(o.col) + 1.8, o.view.layer)) {
             mem.lootBlacklist.set(o.view.id, now + 30);
             continue;
         }
@@ -331,6 +337,8 @@ export function breakScore(ctx: BrainCtx, choice: BreakChoice | null): number {
     // sweeping a house (BrainFeatures.sweep): its furniture is broken even with a full loadout (thorough personas)
     else if (ctx.persona.lootThoroughness >= 0.5 && inSweptBuilding(ctx, colliderCenter(o.col)))
         s = Math.max(s, SWEEP_FURNITURE * damp);
+    // the basement it went down to loot: its containers are what it came for (basement.ts)
+    else if (inLootedBasement(ctx, o)) s = Math.max(s, BASEMENT_FURNITURE * damp);
     if (committed(ctx, o)) {
         s = Math.min(0.6, s + COMMIT);
         // finishing: the last seconds beat a weak zone score, an item or an air drop run, not a threat (LOOT2)
@@ -458,8 +466,9 @@ function goToStand(ctx: BrainCtx, o: SeenObstacle, intent: Intent, punch = false
     const c = colliderCenter(o.col);
     const out = v2.normalizeSafe(v2.sub(me, c));
     const p = v2.add(closestPoint(o, me), v2.mul(out, 1.3));
-    const cell = ctx.model.nav.nearestWalkable(p, 3, ctx.myComp);
-    intent.goal = cell >= 0 ? ctx.model.nav.center(cell) : p;
+    const grid = containerGrid(ctx, o) ?? ctx.model.nav;
+    const cell = grid.nearestWalkable(p, 3, grid === ctx.model.nav ? ctx.myComp : 0);
+    intent.goal = cell >= 0 ? grid.center(cell) : p;
     intent.arriveDist = 0.3;
 }
 
@@ -470,6 +479,8 @@ export function planBreak(ctx: BrainCtx, choice: BreakChoice): Intent {
     const lm = mem.loot2;
     mem.breakTarget = o.view.id;
     intent.aim = colliderCenter(o.col);
+    // basements: the container's floor guides the path follower
+    if (ctx.features.basements) intent.goalLayer = o.view.layer & 1;
     if (opening(ctx, o)) {
         // opened: it plays its opening for useDelay seconds, then its inner crate appears right here
         intent.stop = true;

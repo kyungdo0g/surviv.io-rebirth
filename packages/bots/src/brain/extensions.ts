@@ -3,6 +3,7 @@
 // memory writes), so a bot with every flag off decides exactly like the baseline brain.
 
 import { airdropScore, planAirdrop } from "./airdrop.ts";
+import { basementScore, planBasement } from "./basement.ts";
 import type { BehaviourName, BrainCtx, Intent } from "./context.ts";
 import { disengageScore, planDisengage } from "./disengage.ts";
 import { planRush, rushScore } from "./early.ts";
@@ -44,4 +45,6 @@ export const EXTENSION_BEHAVIOURS: readonly ExtensionBehaviour[] = [
     { name: "rush", feature: "fistRush", score: rushScore, plan: planRush },
     // bot interactions: puzzles, switches, panels and vault doors, and the rooms they open
     { name: "puzzle", feature: "puzzles", score: puzzleScore, plan: planPuzzle },
+    // owner 2026-10-08: known basements and bunkers looted like players do (the military base's, the Hydra, ...)
+    { name: "basement", feature: "basements", score: basementScore, plan: planBasement },
 ];

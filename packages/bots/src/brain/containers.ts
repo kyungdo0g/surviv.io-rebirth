@@ -3,7 +3,8 @@
 // containers it can see (furniture under the roof of a building it is not in is hidden, like the players and loot
 // there: perception/roofs.ts; furniture it saw from inside is remembered), the value of a container's loot table (the
 // inner crate of an air drop holds the best loot of the match), where to stand to punch one and how long the rest of
-// it takes (LOOT2).
+// it takes (LOOT2). With BrainFeatures.basements, containers on the bot's own floor: underground the ones of the
+// basement it stands in, on that floor's grid (nav/underground.ts).
 import { type Bounds, type Vec2, v2 } from "@rebirth/core";
 import {
     AIRDROP_TIER_SPLITS,
@@ -17,7 +18,7 @@ import {
 } from "@rebirth/defs";
 import { colliderCenter, pointInBounds } from "../geom.ts";
 import type { GunInfo } from "../knowledge/weapons.ts";
-import { sameLayer } from "../nav/cellGrid.ts";
+import { type CellGrid, sameLayer } from "../nav/cellGrid.ts";
 import { roofRegions } from "../perception/roofs.ts";
 import type { SeenObstacle, SelfState, WorldModel } from "../perception/world.ts";
 import { type BrainCtx, reachable } from "./context.ts";
@@ -190,6 +191,9 @@ export function standSpots(ctx: BrainCtx, o: SeenObstacle): Vec2[] {
     const me = ctx.self.pos;
     const model = ctx.model;
     const c = colliderCenter(o.col);
+    // (basements: an underground container's spots lie on its floor's grid)
+    const grid = containerGrid(ctx, o);
+    if (!grid) return [];
     const out: Array<{ p: Vec2; cost: number }> = [];
     for (let k = 0; k < 8; k++) {
         const u = { x: Math.cos((k * Math.PI) / 4), y: Math.sin((k * Math.PI) / 4) };
@@ -197,12 +201,12 @@ export function standSpots(ctx: BrainCtx, o: SeenObstacle): Vec2[] {
         let p: Vec2 | null = null;
         for (const off of STAND_OFFSETS) {
             const q = v2.add(c, v2.mul(u, ext + off));
-            if (model.nav.walkableAt(q)) {
+            if (grid.walkableAt(q)) {
                 p = q;
                 break;
             }
         }
-        if (!p || !reachable(ctx, p, 1)) continue;
+        if (!p || !reachableOn(ctx, p, 1, o.view.layer)) continue;
         if (!model.lineOfFire(p, nearSurface(o, p))) continue;
         out.push({ p, cost: v2.distance(me, p) + (model.lineOfFire(me, p) ? 0 : 6) });
     }
@@ -288,6 +292,8 @@ function roofView(model: WorldModel): RoofView {
  * wall: lazy-loot missed cause 1). Furniture seen from inside stays known after the bot walked out.
  */
 export function containerVisible(ctx: BrainCtx, o: SeenObstacle): boolean {
+    // basements: underground no ceiling hides anything (the client covers the ground floor with the underground fill)
+    if (ctx.features.basements && (ctx.self.layer & 1) === 1) return (o.view.layer & 1) === 1;
     const v = roofView(ctx.model);
     const c = colliderCenter(o.col);
     const id = o.view.id;
@@ -298,4 +304,29 @@ export function containerVisible(ctx: BrainCtx, o: SeenObstacle): boolean {
     }
     if (!v.hidden.some((b) => pointInBounds(c, b))) return true;
     return seenInside.has(id);
+}
+
+/**
+ * Whether a container (or anything) on `layer` is on the bot's floor: the ground floor only without basements (the
+ * bot walks back up from anywhere else), else the floor it stands on (stairs: the floor of their half).
+ */
+export function onBotFloor(ctx: BrainCtx, layer: number): boolean {
+    if (!ctx.features.basements) return (layer & 1) === 0;
+    return (layer & 1) === (ctx.self.layer & 1);
+}
+
+/** The navigation grid of the floor container `o` stands on: the ground grid, or (basements) its underground grid. */
+export function containerGrid(ctx: BrainCtx, o: SeenObstacle): CellGrid | null {
+    if (!ctx.features.basements || (o.view.layer & 1) === 0) return ctx.model.nav;
+    return ctx.model.underground?.regionAt(o.view.pos, 2) ?? null;
+}
+
+/** context.ts reachable for a point on the floor `layer` (basements: underground points through the stairs). */
+export function reachableOn(ctx: BrainCtx, p: Vec2, slack: number, layer: number): boolean {
+    if (!ctx.features.basements || (layer & 1) === 0) return reachable(ctx, p, slack);
+    const ug = ctx.model.underground;
+    const grid = ug?.regionAt(p, 2);
+    if (!ug || !grid) return false;
+    const cell = grid.nearestWalkable(p, slack);
+    return cell >= 0 && ug.canPathTo(ctx.model.nav, ctx.self.pos, ctx.self.layer, grid.center(cell), 1);
 }

@@ -146,7 +146,9 @@ export function steadyCrate(ctx: BrainCtx): BreakChoice | null {
         const id = k.choice.obstacle.view.id;
         const o = ctx.model.obstacleById.get(id) ?? ctx.model.rememberedObstacle(id, CRATE_OUT_OF_VIEW);
         const until = ctx.mem.lootBlacklist.get(k.choice.obstacle.view.id);
-        if (o && breakableNow(o) && !(until !== undefined && until > ctx.now)) {
+        // (basements: a container on the floor the bot stands on; the ground floor without)
+        const floor = ctx.features.basements ? ctx.self.layer : 0;
+        if (o && breakableNow(o, floor) && !(until !== undefined && until > ctx.now)) {
             return { obstacle: o, value: k.choice.value, dist: distanceToCollider(ctx.self.pos, o.col) };
         }
     }
