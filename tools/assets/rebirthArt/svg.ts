@@ -166,10 +166,17 @@ export function floor(
             rect(fr, r.min.x, r.min.y, r.max.x, r.max.y, `fill="${palette[r.floor]?.base}"`) +
             gridLines(fr, r, palette),
     );
-    return svg(
-        fr,
-        rooms.join("") + extra + thresholds(fr, layout, "#00000033") + walls(fr, layout, wallFill, wallOutline),
-    );
+    let walled = thresholds(fr, layout, "#00000033") + walls(fr, layout, wallFill, wallOutline);
+    if (layout.outdoor?.length) {
+        // the floor runs on over the outdoor ground: clip the walls' outlines and the thresholds to the roof frame, or
+        // they would show past the roof's edge on that side
+        const rf = frameOf(layout);
+        const clip =
+            `<defs><clipPath id="roof-frame"><rect x="${f2((rf.ox - fr.ox) * PX)}" y="${f2((fr.oy - rf.oy) * PX)}" ` +
+            `width="${rf.w}" height="${rf.h}"/></clipPath></defs>`;
+        walled = `${clip}<g clip-path="url(#roof-frame)">${walled}</g>`;
+    }
+    return svg(fr, rooms.join("") + extra + walled);
 }
 
 /** A plus sign centred on (x, y): arms `len` long and `width` wide. */
