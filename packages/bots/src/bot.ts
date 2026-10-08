@@ -150,6 +150,7 @@ export class Bot {
             persona: this.persona,
             skill: this.skill,
             personaRng,
+            seed: opts.seed,
         });
         this.follower = new PathFollower(this.rng);
         const human = this.params.motor.model === "human";
@@ -407,7 +408,8 @@ export class Bot {
     private humanKeys(input: PlayerInput, dir: Vec2 | null, stick: KeyStick): void {
         const it = this.steerIntent();
         const pos = this.model.self.pos;
-        const free = (octant: number) => octantFree(pos, octant, this.nearColliders);
+        // (stepping up against a switch on purpose: no sliding off it, Intent.nudge)
+        const free = it.nudge ? () => true : (octant: number) => octantFree(pos, octant, this.nearColliders);
         const fight = it.behaviour === "fight" || it.moveDir !== null;
         // strafing in a gunfight with a gun in hand: stop, shoot, move on
         const gun =

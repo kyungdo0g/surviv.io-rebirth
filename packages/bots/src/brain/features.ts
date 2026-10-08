@@ -77,6 +77,12 @@ export interface BrainFeatures {
     dmrFit: boolean;
     /** experts quick-switch after a shot with a slow-cycling gun (brain/quickSwitch.ts; sim switch rules) */
     quickSwitch: boolean;
+    // bot interactions (the owner's request: bots use the map like players)
+    /**
+     * code puzzles, switches, control panels and vault doors, then the room behind (the "puzzle" behaviour:
+     * brain/puzzle.ts; who knows which code: knowledge/puzzles.ts, its own rng stream)
+     */
+    puzzles: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -109,6 +115,7 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "potatoGuns",
     "dmrFit",
     "quickSwitch",
+    "puzzles",
 ];
 
 export type BrainName = "baseline" | "smart";

@@ -86,6 +86,12 @@ export abstract class CellGrid {
     readonly doorMask: Uint8Array;
     /** usable doors of this grid's floor, by obstacle id */
     readonly doors = new Map<number, NavDoor>();
+    /**
+     * Doors only a switch, a puzzle or a scheduled unlock opens (def `canUse` false or `locked`: the club's secret door,
+     * vault and cell doors, the Twins and arsenal lab doors), by obstacle id: their closed panel is a wall under
+     * doorKey(id) until a snapshot shows them open (or unlocked), like an open door's panel (observeDoor).
+     */
+    readonly sealedDoors = new Set<number>();
     /** one-way door cells: 0, or 1 + the index of their passage direction in `oneWayDirs` */
     readonly oneWay: Uint8Array;
     readonly oneWayDirs: Vec2[] = [];
@@ -102,6 +108,8 @@ export abstract class CellGrid {
     protected comp: Int32Array;
     private changesSinceLabel = 0;
     private queriesSinceLabel = 0;
+    /** a sealed door changed (a vault opened): relabel at the next component query, the room behind joins the map */
+    private relabelNow = false;
 
     constructor(ox: number, oy: number, w: number, h: number, cellSize: number, clearance: number, terrain: number) {
         this.ox = ox;
@@ -165,11 +173,13 @@ export abstract class CellGrid {
         for (let i = 0; i < w * h; i++) if (comp[i] !== 0) comp[i] = find(comp[i]);
         this.changesSinceLabel = 0;
         this.queriesSinceLabel = 0;
+        this.relabelNow = false;
     }
 
     /** Component label of a cell (0 when blocked); relabels first when the labels grew stale. */
     component(idx: number): number {
-        if (this.changesSinceLabel >= 60 && ++this.queriesSinceLabel >= 600) this.labelComponents();
+        if (this.relabelNow || (this.changesSinceLabel >= 60 && ++this.queriesSinceLabel >= 600))
+            this.labelComponents();
         return this.blocked[idx] === 0 || this.tight[idx] !== 0 ? this.comp[idx] : 0;
     }
 
@@ -196,6 +206,12 @@ export abstract class CellGrid {
             this.doorMask[i] = 1;
             if (k) this.oneWay[i] = k;
         });
+    }
+
+    /** Registers a door players cannot open by hand: its closed panel blocks until a snapshot shows it open. */
+    protected addSealedDoor(id: number, col: Collider): void {
+        this.sealedDoors.add(id);
+        this.stamp(doorKey(id), col);
     }
 
     /**
@@ -328,6 +344,14 @@ export abstract class CellGrid {
         this.tight[i] = 0;
     }
 
+    /**
+     * Relabel the components at the next query (something that sealed off a room is gone: the bookshelf in front of
+     * the club's secret door was broken, brain/puzzleRoom.ts).
+     */
+    relabelSoon(): void {
+        this.relabelNow = true;
+    }
+
     isStamped(key: number): boolean {
         return this.stamps.has(key);
     }
@@ -348,7 +372,7 @@ export abstract class CellGrid {
             this.known.add(view.id);
             return;
         }
-        if (view.door && this.doors.has(view.id)) this.observeDoor(view);
+        if (view.door && (this.doors.has(view.id) || this.sealedDoors.has(view.id))) this.observeDoor(view);
         if (this.known.has(view.id)) return;
         this.known.add(view.id);
         const def = obstacleDef(view.type);
@@ -359,21 +383,32 @@ export abstract class CellGrid {
             this.version++;
             return;
         }
+        if (def.door) {
+            this.addSealedDoor(view.id, col);
+            if (view.door) this.observeDoor(view);
+            return;
+        }
         this.stamp(view.id, col);
     }
 
     /**
      * An open door's panel stands across the floor next to its doorway (a hinged door turns a quarter around its hinge,
      * a sliding door moves along the wall): it blocks while open and the doorway itself is free. A closed door that
-     * cannot be used (it opens once, by a switch or a puzzle; locked) blocks like a wall.
+     * cannot be used (it opens once, by a switch or a puzzle; locked) blocks like a wall. Sealed doors (sealedDoors)
+     * start out stamped closed and go through here too, so a puzzle door a snapshot shows open stops being a wall.
      */
     protected observeDoor(view: ObstacleView): void {
         const key = doorKey(view.id);
         const stamped = this.stamps.get(key);
         const door = view.door;
         const blocksClosed = !!door && !door.open && (!door.canUse || door.locked);
+        // (a sealed door moving joins or cuts off a whole room: the component labels must not wait for 60 changes)
+        const sealed = this.sealedDoors.has(view.id);
         if (!door?.open && !blocksClosed) {
-            if (stamped) this.unstamp(key);
+            if (stamped) {
+                this.unstamp(key);
+                if (sealed) this.relabelNow = true;
+            }
             return;
         }
         const def = obstacleDef(view.type);
@@ -382,6 +417,7 @@ export abstract class CellGrid {
         if (stamped && sameCollider(stamped, col)) return;
         if (stamped) this.unstamp(key);
         this.stamp(key, col);
+        if (sealed) this.relabelNow = true;
     }
 
     /** Cell coordinates inside the grid. */

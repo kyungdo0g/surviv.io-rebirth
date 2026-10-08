@@ -61,6 +61,8 @@ export interface BrainProfile {
     persona?: Readonly<PersonaParams>;
     skill?: Readonly<SkillProfile>;
     personaRng?: Rng;
+    /** the bot's seed: the stream of what it learned (puzzle codes, knowledge/puzzles.ts), drawn only when used */
+    seed?: number;
 }
 
 /**
@@ -105,6 +107,8 @@ export class Brain {
         this.persona = profile.persona ?? NEUTRAL;
         this.skill = Object.freeze({ ...(profile.skill ?? skillOf(params)) });
         this.personaRng = profile.personaRng ?? createRng(PERSONA_SALT);
+        // (a number only: the knowledge is drawn from it on first use, by an enabled feature)
+        this.mem.puzzle.seed = profile.seed ?? 0;
     }
 
     context(now: number): BrainCtx {
