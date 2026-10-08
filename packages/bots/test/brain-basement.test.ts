@@ -2,10 +2,11 @@
 // underground? The military base's basement shows no sign of being looted"), on the main map, seed 12345 (no loot
 // spawned: the containers are the loot; alone, the gas waits): what bots know of the map's basements, who goes for
 // them, a looter walking down into the Hydra bunker, breaking its lockers and crates and coming back up, the military
-// base's basement with its vault door opened, a bot that does not go for basements staying up, and what an
-// underground bot sees of a basement lying under a ground building's roof.
+// base's basement with its vault door opened, a bot that does not go for basements staying up, a looter walking out of
+// a basement the next circle leaves outside before the gas comes, and what an underground bot sees of a basement lying
+// under a ground building's roof.
 import { createRng, type Vec2, v2 } from "@rebirth/core";
-import { getMapObjectDef } from "@rebirth/defs";
+import { GameConfig, getMapObjectDef } from "@rebirth/defs";
 import type { Game } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import { BASEMENT_SALT, basementChance, floorPoints } from "../src/brain/basement.ts";
@@ -179,6 +180,50 @@ describe("basements in a game", () => {
         expect(bot.bot.brain.mem.loot2.basementGoer).toBe(false);
         expect(bot.bot.brain.mem.loot2.basementSite).toBe(-1);
     }, 60_000);
+
+    it("a looter down in the Hydra bunker leaves it before the gas comes when the next circle leaves it outside", () => {
+        // (review: no bot may be caught underground by the gas; the real stage times, the first circle announced while the
+        // bot loots, smaller (0.2 of the map instead of 0.45) so its centre, kept well on the map, can leave the whole
+        // floor and its stairs outside it)
+        const stages = GameConfig.gas.stages.map((st, i) => (i === 1 || i === 2 ? { ...st, rad: 0.2 } : st));
+        const game = mainGame({ gasStages: stages });
+        const hydra = "bunker_structure_02";
+        const { p, bot } = botNear(game, hydra, "looter", "expert", true, { x: 0, y: 0 });
+        const s = site(hydra);
+        const b = s.region.bounds;
+        const halfDiag = Math.hypot(b.max.x - b.min.x, b.max.y - b.min.y) / 2;
+        const mapMiddle = { x: game.gas.width / 2, y: game.gas.height / 2 };
+        const toMiddle = v2.normalizeSafe(v2.sub(mapMiddle, s.center), { x: 1, y: 0 });
+        const rad = game.gas.stages[1].rad * game.gas.mapSize;
+        game.gas.chooseCenter = () => v2.add(s.center, v2.mul(toMiddle, rad + halfDiag + 20));
+        let announced = -1;
+        let upAt = -1;
+        let gasBelow = 0;
+        for (let t = 0; t < 180 * SECOND && !p.dead; t++) {
+            bot.update();
+            game.step();
+            const below = (p.layer & 1) === 1 && s.region.onFloor(p.pos, 1);
+            if (announced < 0 && below && bot.bot.brain.mem.loot2.basementBelowAt >= 0) {
+                // looting down there for a while, then the circle is announced
+                if (game.time - bot.bot.brain.mem.loot2.basementBelowAt > 20) {
+                    game.gas.start();
+                    announced = t;
+                    expect(v2.distance(s.center, game.gas.posNew)).toBeGreaterThan(game.gas.radNew + halfDiag);
+                }
+            }
+            if (announced >= 0 && upAt < 0 && p.layer === 0) upAt = t;
+            if (p.layer !== 0 && game.gas.isInGas(p.pos)) gasBelow++;
+            // until the circle has closed in (the waiting and moving stages of the first circle)
+            if (announced >= 0 && game.gas.stage >= 3) break;
+        }
+        expect(announced).toBeGreaterThan(0);
+        // the trip is dropped, the bot walks back up and never stands underground in the gas
+        expect(bot.bot.brain.mem.loot2.basementsDone.has(s.region.id)).toBe(true);
+        expect(upAt).toBeGreaterThan(announced);
+        expect(gasBelow).toBe(0);
+        expect(p.dead).toBe(false);
+        expect(game.gas.stage).toBeGreaterThanOrEqual(3);
+    }, 180_000);
 });
 
 describe("underground perception", () => {
