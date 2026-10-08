@@ -7,19 +7,21 @@
 // - classes: docs/research/items/guns.md "Stat tables by class", the same grouping as @rebirth/defs gunClass()
 //   (assault rifles are the bots' "rifle" class, the potato guns, the bugle and the flare guns are useless);
 // - the Peacemaker (colt45) reaches the main map through the Hardstone (stone_04), so its dual does too;
-// - "everyone wants these" (S): namu.md:319 ("USAS, PKP, M249 같은 OP 무기") and namu.md:253 (golden air drops);
-//   SV-98 and AWM-S next to the M249 among the strongest guns: namu.md:120, namu.md:133; AWM-S hard to aim (bullet
-//   speed 136): namu.md:141; the M1911 "worst gun": namu.md:138;
-// - tiers and F: the corrected population spec (docs/design/bot-population.md, critique section B): F = expert TTK /
-//   beginner TTK from an analytic discrete-TTK model at aim errors 1.6 and 5.4 degrees over each class's fighting
-//   distances (shotguns 5-10 u, SMGs and pistols 5-20, rifles and LMGs 10-35, DMRs and snipers 20-50), shooter moving
-//   half the time, level 1 armour, magazine and reloads included. Lower F = more skill-sensitive. Guns the critique did
-//   not measure (marked "est.") carry an estimate from their class and stats.
-// - survev-only guns (ADR 0003; barrett, ash12, sw500, imbel, spas16 at their survev.wiki.gg stats, the winter skins at
-//   their base gun's tier) carry estimated F values from their class and stats; the PMG-134 (potato_lmg), a potato gun
-//   ("special" in the KB), is an LMG to the bots at its explosion damage since round 5 (report 34), the other potato
-//   guns stay useless. Post-0.8.82 guns that are still not ported (PKM, M134) are not in the defs and not in this
-//   table; the beta launchers (the M79 among them) are their own class since bot round 6 (knowledge/launchers.ts).
+// - tiers and F: docs/design/gun-tiers.md (tools/research/gun-tiers), rebuilt from every gun's final stats. A stat
+//   composite over the kill rate at the class's fighting distances (shotguns 5-10 u, SMGs and pistols 5-20, rifles and
+//   LMGs 10-35, DMRs and snipers 20-50, launchers 15-40), the kill rate across 5-80 u, damage per shot, sustain,
+//   handling and ammo, cut to the previous list's shape. F = expert TTK / beginner TTK at level 1 armour, aim errors
+//   1.6 and 5.4 degrees, shooter moving half the time, magazine and reloads included; lower F = more skill-sensitive.
+//   Explosive guns score by their explosions (the PMG-134 and the potato guns too), single-use guns per pickup;
+// - kept against the stats (gun-tiers.md section 5): the owner's rulings "M249 / PKP on top" (report 12), the Mosin
+//   A and the MK12 / M39 B+ (report 33), "pistols low" (report 12: single pistols B at most, duals A-), and two
+//   behaviour pins, the AK-47 at B (owner item 43) and the M9 at D;
+// - "everyone wants these": namu.md:319 ("USAS, PKP, M249 같은 OP 무기") and namu.md:253 (golden air drops); AWM-S hard
+//   to aim (bullet speed 136): namu.md:141; the M1911 "worst gun": namu.md:138;
+// - the PMG-134 (potato_lmg), a potato gun ("special" in the KB), is an LMG to the bots since round 5 (report 34), the
+//   Spud Gun an SMG and the Potato Cannon a launcher since round 6 (report 42); the beta launchers are their own class
+//   since bot round 6 (knowledge/launchers.ts). Post-0.8.82 guns that are still not ported (PKM, M134) are not in the
+//   defs and not in this table.
 import { GameConfig, GameObjectDefs, type GunDef, gunClass, hasDef } from "@rebirth/defs";
 import type { WeaponClass } from "./weapons.ts";
 
@@ -86,64 +88,69 @@ type Row = [id: string, tier: GunTier, F: number, mainMap: boolean];
 
 // biome-ignore format: a few guns per line keep the table readable
 const ROWS: readonly Row[] = [
-    // LMGs: the M249 and the PKP are the hype guns; the QBB-97 is 20-25% slower at every range (A+, no S-rule)
-    ["m249", "S", 0.5, true], ["pkp", "S", 0.53, true], ["qbb97", "A+", 0.49, true], ["dp28", "A-", 0.54, true],
-    ["bar", "A-", 0.45, true], // est.; survev's main tables drop it (tier_guns, tier_chest, tier_lmgs, air drops)
-    // snipers: AWM-S one-shots chest02 + helmet01 or less (180 x 0.62 x 0.925 = 103); SV-98 always 2 body hits vs lvl 1
-    // (round 5, user report 33: the owner rates the Mosin "strong but not top, needs aim" like the AWM-S: A; it was B)
-    ["awc", "S-aim", 0.14, true], ["sv98", "A+", 0.28, true], ["mosin", "A", 0.34, true], ["scout_elite", "B", 0.26, true],
-    ["blr", "A-", 0.3, false], ["model94", "B", 0.32, false], // est.
-    // DMRs (round 5, user report 33: the owner calls the MK12 and the M39 low-tier DMRs, air drop tier 1 guns: B+; they
-    // were A like the SCAR-H)
-    ["mk12", "B+", 0.28, true], ["m39", "B+", 0.3, true], ["garand", "A", 0.26, true], ["vss", "B", 0.29, true],
+    // tiers and F: docs/design/gun-tiers.md (a stat composite over class-band TTK, range, damage per shot, sustain,
+    // handling and ammo; F = expert / beginner band TTK at level 1 armour, aim error 1.6 / 5.4 degrees). Owner rulings
+    // kept where the stats differ: M249 S (stats A+), Mosin A (C+), MK12 and M39 B+ (A), pistols low.
+    // LMGs: the M249 and the PKP on top (S-rule); the DShK scores with the M249 but is the heaviest gun (9 / 2 u/s)
+    ["m249", "S", 0.57, true], ["pkp", "S", 0.6, true], ["qbb97", "A", 0.56, true], ["dp28", "A-", 0.6, true],
+    ["bar", "B+", 0.44, true], // survev's main tables drop it (tier_guns, tier_chest, tier_lmgs, air drops)
+    // snipers: the AWM-S, Hecate, M200 and Lynx one-shot level 1 and the Barrett two-hits any armour (S-aim). The
+    // Mosin is A by ruling (3 hits through level 1); the SV-98 beats it on every stat, so never below it
+    ["awc", "S-aim", 0.26, true], ["sv98", "A", 0.32, true], ["mosin", "A", 0.33, true], ["scout_elite", "B+", 0.31, true],
+    ["blr", "B", 0.36, false], ["model94", "B-", 0.33, false],
+    // DMRs: the MK12 and the M39 are B+ by ruling; the VSS, Mk45G and Mk 14 score no better than the M39, so B+ too;
+    // the Garand's expert composite just reaches the top band (S-aim)
+    ["mk12", "B+", 0.36, true], ["m39", "B+", 0.39, true], ["garand", "S-aim", 0.32, true], ["vss", "B+", 0.4, true],
     // (round 6 loot handoff: the SVD and the SCAR-SSR reach the classic map in the gold drop, the L86 in tier 1 air drops)
-    ["svd", "A", 0.3, true], ["scarssr", "A", 0.28, true], ["l86", "B+", 0.35, true], ["mkg45", "B+", 0.35, false], // est.
-    // assault rifles
-    ["scar", "A", 0.35, true], ["m4a1", "A", 0.37, true], ["famas", "A-", 0.38, true], ["grozas", "A-", 0.45, true],
-    ["ak47", "B", 0.45, true], ["hk416", "B", 0.47, true], ["groza", "B", 0.49, true],
-    ["an94", "A", 0.36, false], // est.
-    // shotguns: the MP220 needs both shells to land (F 0.44); the M1100 is usable only within ~6 u (3.98 s at 10 u)
-    ["saiga", "A", 0.75, true], ["spas12", "A", 0.68, true], ["m870", "A-", 0.75, true], ["mp220", "A-", 0.44, true],
-    ["m1100", "C", 0.92, true],
+    ["svd", "A", 0.36, true], ["scarssr", "S", 0.41, true], ["l86", "A", 0.4, true], ["mkg45", "B+", 0.37, false],
+    // assault rifles: the AN-94 leads; the SCAR-H's 20-round magazine drops it to B+; the AK-47 is pinned at B (item 43)
+    ["scar", "B+", 0.4, true], ["m4a1", "A-", 0.42, true], ["famas", "A-", 0.44, true], ["grozas", "A-", 0.46, true],
+    ["ak47", "B", 0.48, true], ["hk416", "B", 0.51, true], ["groza", "B", 0.51, true],
+    ["an94", "A+", 0.53, false],
+    // shotguns: the fastest kills at 5-10 u (two shells in 0.2-0.4 s); the slugs and the SPAS guns reach 20-35 u; the
+    // M870's 0.9 s pump and the MP220's two shells cost them
+    ["saiga", "A+", 0.91, true], ["spas12", "A-", 0.83, true], ["m870", "B+", 0.88, true], ["mp220", "B+", 0.58, true],
+    ["m1100", "B", 0.87, true],
     // (round 6 loot handoff: the USAS-12 on the classic map at a very low rate)
-    ["usas", "A+", 0.6, true], ["m1014", "A-", 0.6, false], // est.
-    // SMGs
-    ["vector", "A-", 0.54, true], ["scorpion", "A-", 0.57, true], ["ump9", "B", 0.62, true], ["mp5", "B", 0.6, true],
-    ["mac10", "C+", 0.7, true],
-    ["vector45", "B+", 0.55, false], ["m1a1", "B", 0.62, false], // est.
-    // pistols: the dual P30L beats the AK at every range up to 35 u; .50 AE ammo is scarce
-    ["p30l_dual", "A", 0.55, true], ["ots38_dual", "A-", 0.47, true], ["p30l", "B+", 0.58, true],
-    ["deagle_dual", "B+", 0.47, true], ["deagle", "B", 0.47, true], ["ot38_dual", "B-", 0.46, true],
-    ["m9_dual", "C+", 0.62, true], ["m93r_dual", "C+", 0.56, true], ["m93r", "C", 0.56, true],
-    ["glock_dual", "C", 0.72, true], ["colt45", "C", 0.55, true], ["colt45_dual", "C+", 0.5, true], // dual est.
-    ["ot38", "D", 0.58, true], ["m9", "D", 0.66, true], ["glock", "D", 0.7, true],
-    ["ots38", "C+", 0.5, false], ["m1911_dual", "C", 0.6, false], ["m1911", "D", 0.65, false], // est.
-    // survev-only guns (est.): the Barrett one-shots like the AWM-S family and drops from the classic map's gold drop;
-    // the ASh-12 (31 dmg auto .50) out-trades the SCAR-H up close; the SPAS-16 is a full-auto SPAS-12; the IMD-2 a
-    // light LMG; the S&W 500 a slow .50 revolver
-    ["barrett", "S-aim", 0.16, true], ["ash12", "A+", 0.42, false], ["spas16", "A", 0.66, true],
-    ["imbel", "A-", 0.5, false], ["sw500", "B+", 0.45, false],
-    ["svd_winter", "A", 0.3, false], ["sv98_winter", "A+", 0.28, false], ["awc_winter", "S-aim", 0.14, false],
-    // round 5 (report 34): the PMG-134 (potato maps and potato drops) at its explosion damage, 8.5 x 2 every 0.07 s
-    // from a 150-round never-empty magazine, 70 units of flight; its 8-degree spread and splash forgive aim (est.)
-    ["potato_lmg", "A", 0.55, false],
-    // round 6 (report 42, potato maps only): the Spud Gun, 13-damage potatoes every 0.09 s from a never-empty 30-round
-    // magazine over ~60 u (an SMG with splash, and its hits enlarge the target); the Potato Cannon, a 95-damage
-    // cannonball (blast 3.5-6.5 u) every 1.2 s, 4 per magazine, ~46 u: a launcher (est.)
-    ["potato_smg", "A-", 0.56, false], ["potato_cannon", "B", 0.6, false],
-    // the owner's beta guns (docs/design/new-gun-stats.md; all est. from their class and the sheet's stats and tier)
-    ["ak74", "B", 0.45, true], ["g36c", "B", 0.47, true], ["m16a4", "A-", 0.4, true], ["sig550", "B+", 0.42, true],
-    ["g3", "B+", 0.42, true], ["honeybadger", "A-", 0.45, true],
-    ["fal", "B+", 0.32, true], ["mk14", "A", 0.3, true], ["wa2000", "A+", 0.24, true],
-    ["m200", "S-aim", 0.15, true], ["hecate", "S-aim", 0.13, true], ["lynx", "S-aim", 0.16, true], ["boys", "A", 0.2, true],
-    ["m60", "A", 0.5, true], ["mg42", "A+", 0.5, true], ["dshk", "S", 0.5, true],
-    ["bizon", "B", 0.6, true], ["m1928", "B", 0.6, false], ["asval", "B+", 0.55, true], ["p90", "A-", 0.55, true],
-    ["dp12", "A", 0.66, true], ["aa12", "A+", 0.6, true],
-    ["tec9", "C+", 0.62, true], ["tec9_dual", "B-", 0.58, true], ["vz61", "C+", 0.62, true], ["vz61_dual", "B-", 0.58, true],
-    // bot round 6: the beta launchers (est.: a blast forgives aim, but the rounds are slow and few; the MGL's six
-    // 125-damage grenades lead, the single-use Panzerfaust and M202 trail)
-    ["m79", "B", 0.6, true], ["mgl", "A-", 0.6, true], ["gl06", "B-", 0.6, true], ["rpg7", "B+", 0.55, true],
-    ["panzerfaust", "C+", 0.6, true], ["m202", "B-", 0.6, true],
+    ["usas", "A-", 0.99, true], ["m1014", "S", 0.9, false],
+    // SMGs: the Vector's 46 u range and 7.5 damage drop it to B
+    ["vector", "B", 0.5, true], ["scorpion", "A-", 0.63, true], ["ump9", "B", 0.65, true], ["mp5", "B", 0.63, true],
+    ["mac10", "C+", 0.72, true],
+    ["vector45", "B-", 0.57, false], ["m1a1", "B", 0.67, false],
+    // pistols: low by ruling, single pistols at most B and dual pistols at most A- (the dual DEagle and P30L score A);
+    // the M9 is pinned at D (stats C+) so bots still swap it for any real gun
+    ["p30l_dual", "A-", 0.71, true], ["ots38_dual", "B+", 0.45, true], ["p30l", "B", 0.59, true],
+    ["deagle_dual", "A-", 0.56, true], ["deagle", "B", 0.42, true], ["ot38_dual", "B-", 0.46, true],
+    ["m9_dual", "B", 0.63, true], ["m93r_dual", "B", 0.72, true], ["m93r", "C+", 0.57, true],
+    ["glock_dual", "D", 0.86, true], ["colt45", "C", 0.45, true], ["colt45_dual", "B-", 0.48, true],
+    ["ot38", "D", 0.59, true], ["m9", "D", 0.58, true], ["glock", "D", 0.8, true],
+    ["ots38", "C+", 0.48, false], ["m1911_dual", "C", 0.53, false], ["m1911", "D", 0.63, false],
+    // survev-only guns: the Barrett two-hits any armour (S-aim); the ASh-12's 10-round magazine and 70 u range hold it
+    // at A-; the IMD-2 is a light LMG (B+); the S&W 500 is capped with the pistols; the winter skins as their base gun
+    ["barrett", "S-aim", 0.31, true], ["ash12", "A-", 0.41, false], ["spas16", "S", 0.88, true],
+    ["imbel", "B+", 0.53, false], ["sw500", "B", 0.47, false],
+    ["svd_winter", "A", 0.36, false], ["sv98_winter", "A", 0.32, false], ["awc_winter", "S-aim", 0.26, false],
+    // the PMG-134 (potato maps and potato drops) at its explosion damage, 8.5 x 2 every 0.07 s from a 150-round
+    // magazine (report 34)
+    ["potato_lmg", "A", 0.71, false],
+    // round 6 (report 42, potato maps only): the Spud Gun at its 13-damage blasts, MP5 level (B); the Potato Cannon, a
+    // 95-damage blast every 1.2 s from a 65 u/s lob, 2 hits even on bare players (C)
+    ["potato_smg", "B", 0.68, false], ["potato_cannon", "C", 0.58, false],
+    // the owner's beta guns (docs/design/new-gun-stats.md): the DP-12 is S (two shells in 0.2 s), the WA2000 B (72
+    // damage: 3 hits through level 1)
+    ["ak74", "B+", 0.45, true], ["g36c", "B", 0.47, true], ["m16a4", "A-", 0.47, true], ["sig550", "A-", 0.42, true],
+    ["g3", "B+", 0.43, true], ["honeybadger", "B+", 0.46, true],
+    ["fal", "A", 0.4, true], ["mk14", "B+", 0.4, true], ["wa2000", "B", 0.31, true],
+    ["m200", "S-aim", 0.29, true], ["hecate", "S-aim", 0.23, true], ["lynx", "S-aim", 0.29, true], ["boys", "A-", 0.41, true],
+    ["m60", "A", 0.6, true], ["mg42", "A-", 0.5, true], ["dshk", "A+", 0.56, true],
+    ["bizon", "B", 0.73, true], ["m1928", "B+", 0.74, false], ["asval", "B", 0.52, true], ["p90", "A-", 0.71, true],
+    ["dp12", "S", 0.76, true], ["aa12", "A+", 0.92, true],
+    ["tec9", "B-", 0.67, true], ["tec9_dual", "B+", 0.78, true], ["vz61", "C", 0.66, true], ["vz61_dual", "C+", 0.63, true],
+    // bot round 6: the beta launchers at direct hits on a strafing target, the GL-06's cursor bursts splashing near
+    // misses; the M202's 52-degree fan lands one rocket. The MGL leads (A); against a stationary target the RPG-7 and
+    // M79 score B, the Panzerfaust A-, the M202 A
+    ["m79", "C", 0.72, true], ["mgl", "A", 0.7, true], ["gl06", "A", 0.85, true], ["rpg7", "C+", 0.38, true],
+    ["panzerfaust", "C+", 0.55, true], ["m202", "B", 0.46, true],
 ];
 
 const TIERS = new Map<string, GunTierInfo>();

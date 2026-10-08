@@ -1,0 +1,617 @@
+{
+    "source": "packages/bots/src/knowledge/gunTiers.ts at edd3d24, before the gun-tiers rebuild",
+    "rows": [
+        {
+            "id": "m249",
+            "tier": "S",
+            "F": 0.5,
+            "mainMap": true
+        },
+        {
+            "id": "pkp",
+            "tier": "S",
+            "F": 0.53,
+            "mainMap": true
+        },
+        {
+            "id": "qbb97",
+            "tier": "A+",
+            "F": 0.49,
+            "mainMap": true
+        },
+        {
+            "id": "dp28",
+            "tier": "A-",
+            "F": 0.54,
+            "mainMap": true
+        },
+        {
+            "id": "bar",
+            "tier": "A-",
+            "F": 0.45,
+            "mainMap": true
+        },
+        {
+            "id": "awc",
+            "tier": "S-aim",
+            "F": 0.14,
+            "mainMap": true
+        },
+        {
+            "id": "sv98",
+            "tier": "A+",
+            "F": 0.28,
+            "mainMap": true
+        },
+        {
+            "id": "mosin",
+            "tier": "A",
+            "F": 0.34,
+            "mainMap": true
+        },
+        {
+            "id": "scout_elite",
+            "tier": "B",
+            "F": 0.26,
+            "mainMap": true
+        },
+        {
+            "id": "blr",
+            "tier": "A-",
+            "F": 0.3,
+            "mainMap": false
+        },
+        {
+            "id": "model94",
+            "tier": "B",
+            "F": 0.32,
+            "mainMap": false
+        },
+        {
+            "id": "mk12",
+            "tier": "B+",
+            "F": 0.28,
+            "mainMap": true
+        },
+        {
+            "id": "m39",
+            "tier": "B+",
+            "F": 0.3,
+            "mainMap": true
+        },
+        {
+            "id": "garand",
+            "tier": "A",
+            "F": 0.26,
+            "mainMap": true
+        },
+        {
+            "id": "vss",
+            "tier": "B",
+            "F": 0.29,
+            "mainMap": true
+        },
+        {
+            "id": "svd",
+            "tier": "A",
+            "F": 0.3,
+            "mainMap": true
+        },
+        {
+            "id": "scarssr",
+            "tier": "A",
+            "F": 0.28,
+            "mainMap": true
+        },
+        {
+            "id": "l86",
+            "tier": "B+",
+            "F": 0.35,
+            "mainMap": true
+        },
+        {
+            "id": "mkg45",
+            "tier": "B+",
+            "F": 0.35,
+            "mainMap": false
+        },
+        {
+            "id": "scar",
+            "tier": "A",
+            "F": 0.35,
+            "mainMap": true
+        },
+        {
+            "id": "m4a1",
+            "tier": "A",
+            "F": 0.37,
+            "mainMap": true
+        },
+        {
+            "id": "famas",
+            "tier": "A-",
+            "F": 0.38,
+            "mainMap": true
+        },
+        {
+            "id": "grozas",
+            "tier": "A-",
+            "F": 0.45,
+            "mainMap": true
+        },
+        {
+            "id": "ak47",
+            "tier": "B",
+            "F": 0.45,
+            "mainMap": true
+        },
+        {
+            "id": "hk416",
+            "tier": "B",
+            "F": 0.47,
+            "mainMap": true
+        },
+        {
+            "id": "groza",
+            "tier": "B",
+            "F": 0.49,
+            "mainMap": true
+        },
+        {
+            "id": "an94",
+            "tier": "A",
+            "F": 0.36,
+            "mainMap": false
+        },
+        {
+            "id": "saiga",
+            "tier": "A",
+            "F": 0.75,
+            "mainMap": true
+        },
+        {
+            "id": "spas12",
+            "tier": "A",
+            "F": 0.68,
+            "mainMap": true
+        },
+        {
+            "id": "m870",
+            "tier": "A-",
+            "F": 0.75,
+            "mainMap": true
+        },
+        {
+            "id": "mp220",
+            "tier": "A-",
+            "F": 0.44,
+            "mainMap": true
+        },
+        {
+            "id": "m1100",
+            "tier": "C",
+            "F": 0.92,
+            "mainMap": true
+        },
+        {
+            "id": "usas",
+            "tier": "A+",
+            "F": 0.6,
+            "mainMap": true
+        },
+        {
+            "id": "m1014",
+            "tier": "A-",
+            "F": 0.6,
+            "mainMap": false
+        },
+        {
+            "id": "vector",
+            "tier": "A-",
+            "F": 0.54,
+            "mainMap": true
+        },
+        {
+            "id": "scorpion",
+            "tier": "A-",
+            "F": 0.57,
+            "mainMap": true
+        },
+        {
+            "id": "ump9",
+            "tier": "B",
+            "F": 0.62,
+            "mainMap": true
+        },
+        {
+            "id": "mp5",
+            "tier": "B",
+            "F": 0.6,
+            "mainMap": true
+        },
+        {
+            "id": "mac10",
+            "tier": "C+",
+            "F": 0.7,
+            "mainMap": true
+        },
+        {
+            "id": "vector45",
+            "tier": "B+",
+            "F": 0.55,
+            "mainMap": false
+        },
+        {
+            "id": "m1a1",
+            "tier": "B",
+            "F": 0.62,
+            "mainMap": false
+        },
+        {
+            "id": "p30l_dual",
+            "tier": "A",
+            "F": 0.55,
+            "mainMap": true
+        },
+        {
+            "id": "ots38_dual",
+            "tier": "A-",
+            "F": 0.47,
+            "mainMap": true
+        },
+        {
+            "id": "p30l",
+            "tier": "B+",
+            "F": 0.58,
+            "mainMap": true
+        },
+        {
+            "id": "deagle_dual",
+            "tier": "B+",
+            "F": 0.47,
+            "mainMap": true
+        },
+        {
+            "id": "deagle",
+            "tier": "B",
+            "F": 0.47,
+            "mainMap": true
+        },
+        {
+            "id": "ot38_dual",
+            "tier": "B-",
+            "F": 0.46,
+            "mainMap": true
+        },
+        {
+            "id": "m9_dual",
+            "tier": "C+",
+            "F": 0.62,
+            "mainMap": true
+        },
+        {
+            "id": "m93r_dual",
+            "tier": "C+",
+            "F": 0.56,
+            "mainMap": true
+        },
+        {
+            "id": "m93r",
+            "tier": "C",
+            "F": 0.56,
+            "mainMap": true
+        },
+        {
+            "id": "glock_dual",
+            "tier": "C",
+            "F": 0.72,
+            "mainMap": true
+        },
+        {
+            "id": "colt45",
+            "tier": "C",
+            "F": 0.55,
+            "mainMap": true
+        },
+        {
+            "id": "colt45_dual",
+            "tier": "C+",
+            "F": 0.5,
+            "mainMap": true
+        },
+        {
+            "id": "ot38",
+            "tier": "D",
+            "F": 0.58,
+            "mainMap": true
+        },
+        {
+            "id": "m9",
+            "tier": "D",
+            "F": 0.66,
+            "mainMap": true
+        },
+        {
+            "id": "glock",
+            "tier": "D",
+            "F": 0.7,
+            "mainMap": true
+        },
+        {
+            "id": "ots38",
+            "tier": "C+",
+            "F": 0.5,
+            "mainMap": false
+        },
+        {
+            "id": "m1911_dual",
+            "tier": "C",
+            "F": 0.6,
+            "mainMap": false
+        },
+        {
+            "id": "m1911",
+            "tier": "D",
+            "F": 0.65,
+            "mainMap": false
+        },
+        {
+            "id": "barrett",
+            "tier": "S-aim",
+            "F": 0.16,
+            "mainMap": true
+        },
+        {
+            "id": "ash12",
+            "tier": "A+",
+            "F": 0.42,
+            "mainMap": false
+        },
+        {
+            "id": "spas16",
+            "tier": "A",
+            "F": 0.66,
+            "mainMap": true
+        },
+        {
+            "id": "imbel",
+            "tier": "A-",
+            "F": 0.5,
+            "mainMap": false
+        },
+        {
+            "id": "sw500",
+            "tier": "B+",
+            "F": 0.45,
+            "mainMap": false
+        },
+        {
+            "id": "svd_winter",
+            "tier": "A",
+            "F": 0.3,
+            "mainMap": false
+        },
+        {
+            "id": "sv98_winter",
+            "tier": "A+",
+            "F": 0.28,
+            "mainMap": false
+        },
+        {
+            "id": "awc_winter",
+            "tier": "S-aim",
+            "F": 0.14,
+            "mainMap": false
+        },
+        {
+            "id": "potato_lmg",
+            "tier": "A",
+            "F": 0.55,
+            "mainMap": false
+        },
+        {
+            "id": "potato_smg",
+            "tier": "A-",
+            "F": 0.56,
+            "mainMap": false
+        },
+        {
+            "id": "potato_cannon",
+            "tier": "B",
+            "F": 0.6,
+            "mainMap": false
+        },
+        {
+            "id": "ak74",
+            "tier": "B",
+            "F": 0.45,
+            "mainMap": true
+        },
+        {
+            "id": "g36c",
+            "tier": "B",
+            "F": 0.47,
+            "mainMap": true
+        },
+        {
+            "id": "m16a4",
+            "tier": "A-",
+            "F": 0.4,
+            "mainMap": true
+        },
+        {
+            "id": "sig550",
+            "tier": "B+",
+            "F": 0.42,
+            "mainMap": true
+        },
+        {
+            "id": "g3",
+            "tier": "B+",
+            "F": 0.42,
+            "mainMap": true
+        },
+        {
+            "id": "honeybadger",
+            "tier": "A-",
+            "F": 0.45,
+            "mainMap": true
+        },
+        {
+            "id": "fal",
+            "tier": "B+",
+            "F": 0.32,
+            "mainMap": true
+        },
+        {
+            "id": "mk14",
+            "tier": "A",
+            "F": 0.3,
+            "mainMap": true
+        },
+        {
+            "id": "wa2000",
+            "tier": "A+",
+            "F": 0.24,
+            "mainMap": true
+        },
+        {
+            "id": "m200",
+            "tier": "S-aim",
+            "F": 0.15,
+            "mainMap": true
+        },
+        {
+            "id": "hecate",
+            "tier": "S-aim",
+            "F": 0.13,
+            "mainMap": true
+        },
+        {
+            "id": "lynx",
+            "tier": "S-aim",
+            "F": 0.16,
+            "mainMap": true
+        },
+        {
+            "id": "boys",
+            "tier": "A",
+            "F": 0.2,
+            "mainMap": true
+        },
+        {
+            "id": "m60",
+            "tier": "A",
+            "F": 0.5,
+            "mainMap": true
+        },
+        {
+            "id": "mg42",
+            "tier": "A+",
+            "F": 0.5,
+            "mainMap": true
+        },
+        {
+            "id": "dshk",
+            "tier": "S",
+            "F": 0.5,
+            "mainMap": true
+        },
+        {
+            "id": "bizon",
+            "tier": "B",
+            "F": 0.6,
+            "mainMap": true
+        },
+        {
+            "id": "m1928",
+            "tier": "B",
+            "F": 0.6,
+            "mainMap": false
+        },
+        {
+            "id": "asval",
+            "tier": "B+",
+            "F": 0.55,
+            "mainMap": true
+        },
+        {
+            "id": "p90",
+            "tier": "A-",
+            "F": 0.55,
+            "mainMap": true
+        },
+        {
+            "id": "dp12",
+            "tier": "A",
+            "F": 0.66,
+            "mainMap": true
+        },
+        {
+            "id": "aa12",
+            "tier": "A+",
+            "F": 0.6,
+            "mainMap": true
+        },
+        {
+            "id": "tec9",
+            "tier": "C+",
+            "F": 0.62,
+            "mainMap": true
+        },
+        {
+            "id": "tec9_dual",
+            "tier": "B-",
+            "F": 0.58,
+            "mainMap": true
+        },
+        {
+            "id": "vz61",
+            "tier": "C+",
+            "F": 0.62,
+            "mainMap": true
+        },
+        {
+            "id": "vz61_dual",
+            "tier": "B-",
+            "F": 0.58,
+            "mainMap": true
+        },
+        {
+            "id": "m79",
+            "tier": "B",
+            "F": 0.6,
+            "mainMap": true
+        },
+        {
+            "id": "mgl",
+            "tier": "A-",
+            "F": 0.6,
+            "mainMap": true
+        },
+        {
+            "id": "gl06",
+            "tier": "B-",
+            "F": 0.6,
+            "mainMap": true
+        },
+        {
+            "id": "rpg7",
+            "tier": "B+",
+            "F": 0.55,
+            "mainMap": true
+        },
+        {
+            "id": "panzerfaust",
+            "tier": "C+",
+            "F": 0.6,
+            "mainMap": true
+        },
+        {
+            "id": "m202",
+            "tier": "B-",
+            "F": 0.6,
+            "mainMap": true
+        }
+    ]
+}

@@ -144,33 +144,43 @@ describe("gun tiers", () => {
         expect(gunInfo("pkp")?.idealMax).toBe(gunInfo("ak47")?.idealMax);
     });
 
-    it("holds the corrected tiers: S only M249 / PKP, AWM-S needs aim, pistols low", () => {
+    it("holds the stat-rebuilt tiers (docs/design/gun-tiers.md) with the owner's rulings and the behaviour pins", () => {
         expect([...S_RULE_GUNS].sort()).toEqual(["m249", "pkp"]);
+        // rulings: M249 / PKP on top (the M249 is A+ by its stats alone), AWM-S needs aim
         expect(gunTier("m249")?.tier).toBe("S");
         expect(gunTier("pkp")?.tier).toBe("S");
         expect(gunTier("awc")?.tier).toBe("S-aim");
-        expect(gunTier("qbb97")?.tier).toBe("A+");
-        expect(gunTier("sv98")?.tier).toBe("A+");
+        // stat tiers (gun-tiers.md section 6): the QBB-97 and the SV-98 fell one step, the M1100 rose three (about 10
+        // of its 18 pellets land at 10 u from the muzzle), the CZ-3A1 and the MAC-10 held
+        expect(gunTier("qbb97")?.tier).toBe("A");
+        expect(gunTier("sv98")?.tier).toBe("A");
         expect(gunTier("scorpion")?.tier).toBe("A-");
-        expect(gunTier("ots38_dual")?.tier).toBe("A-");
-        expect(gunTier("p30l")?.tier).toBe("B+");
-        expect(gunTier("p30l_dual")?.tier).toBe("A");
-        expect(gunTier("deagle")?.tier).toBe("B");
-        expect(gunTier("deagle_dual")?.tier).toBe("B+");
-        expect(gunTier("ot38_dual")?.tier).toBe("B-");
-        expect(gunTier("m1100")?.tier).toBe("C");
-        expect(gunTier("colt45")?.tier).toBe("C");
+        expect(gunTier("m1100")?.tier).toBe("B");
         expect(gunTier("mac10")?.tier).toBe("C+");
+        expect(gunTier("dp12")?.tier).toBe("S");
+        expect(gunTier("garand")?.tier).toBe("S-aim");
+        // pistols low (report 12): single pistols B at most, duals A- at most (the dual P30L and DEagle are A by stats)
+        expect(gunTier("p30l")?.tier).toBe("B");
+        expect(gunTier("deagle")?.tier).toBe("B");
+        expect(gunTier("p30l_dual")?.tier).toBe("A-");
+        expect(gunTier("deagle_dual")?.tier).toBe("A-");
+        expect(gunTier("ots38_dual")?.tier).toBe("B+");
+        expect(gunTier("ot38_dual")?.tier).toBe("B-");
+        expect(gunTier("colt45")?.tier).toBe("C");
         // round 5 (user report 33): the Mosin strong but not top (A), the MK12 / M39 low-tier DMRs (B+)
         expect(gunTier("mosin")?.tier).toBe("A");
         expect(gunTier("mk12")?.tier).toBe("B+");
         expect(gunTier("m39")?.tier).toBe("B+");
-        expect(gunRank("mk12")).toBeLessThan(gunRank("scar"));
+        expect(gunRank("mk12")).toBeLessThan(gunRank("garand"));
+        // behaviour pins (gun-tiers.md 2.6): the AK-47 at B (owner item 43) and the M9 at D, against their stats
+        expect(gunTier("ak47")?.tier).toBe("B");
         for (const id of ["ot38", "m9", "glock"]) expect(gunTier(id)?.tier, id).toBe("D");
-        // the user's order: M249 above an AK above an M9; a Mosin is not top tier
+        // the user's order: M249 above an AK above an M9; a Mosin is not top tier and never above the SV-98, which
+        // beats it on every stat
         expect(gunRank("m249")).toBeGreaterThan(gunRank("ak47"));
         expect(gunRank("ak47")).toBeGreaterThan(gunRank("m9"));
-        expect(gunRank("mosin")).toBeLessThan(gunRank("sv98"));
+        expect(gunRank("mosin")).toBeLessThanOrEqual(gunRank("sv98"));
+        expect(gunRank("mosin")).toBeLessThan(gunRank("awc"));
         expect(TIER_ORDER.map((t) => TIER_BASE[t])).toEqual(
             [...TIER_ORDER.map((t) => TIER_BASE[t])].sort((a, b) => a - b),
         );
@@ -178,20 +188,26 @@ describe("gun tiers", () => {
     });
 
     it("weak guns are the C family and D", () => {
-        for (const id of ["m9", "ot38", "glock", "m93r", "mac10", "m1100", "m9_dual", "glock_dual"])
+        for (const id of ["m9", "ot38", "glock", "m93r", "mac10", "glock_dual", "vz61", "colt45"])
             expect(isWeakGun(id), id).toBe(true);
-        for (const id of ["p30l", "deagle", "ot38_dual", "mp5", "m870", "ak47", "mosin"])
+        // the M1100 (B) and the dual M9 (B) left the weak tiers with the stat rebuild (gun-tiers.md section 6)
+        for (const id of ["p30l", "deagle", "ot38_dual", "mp5", "m870", "ak47", "mosin", "m1100", "m9_dual"])
             expect(isWeakGun(id), id).toBe(false);
         expect(isWeakGun("flare_gun")).toBe(true);
     });
 
-    it("skill demand: the AWM-S needs the most, shotguns the least; the fit never rises as skill falls", () => {
+    it("skill demand: the one-shot snipers need the most, shotguns the least; the fit never rises as skill falls", () => {
         const demand = (id: string) => gunTier(id)?.skillDemand ?? -1;
-        expect(demand("awc")).toBe(1);
-        for (const t of tieredGuns()) expect(demand("awc")).toBeGreaterThanOrEqual(t.skillDemand);
+        // gun-tiers.md F: the Hécate (F 0.23) and the AWM-S (0.26) need the most; no gun outside the snipers comes close
+        expect(demand("hecate")).toBe(1);
+        expect(demand("awc")).toBeGreaterThan(0.95);
+        for (const t of tieredGuns())
+            if (t.cls !== "sniper") expect(demand("awc"), t.id).toBeGreaterThan(t.skillDemand);
         expect(demand("m870")).toBe(0);
         expect(demand("saiga")).toBe(0);
-        expect(demand("mp220")).toBeGreaterThan(0.5);
+        // the MP220 needs both shells to land (F 0.58): the most demanding shotgun
+        for (const id of ["m870", "saiga", "spas12", "m1100", "dp12"])
+            expect(demand("mp220"), id).toBeGreaterThan(demand(id));
         expect(demand("mosin")).toBeGreaterThan(demand("ak47"));
         for (const t of tieredGuns()) {
             let last = -1;
@@ -202,9 +218,9 @@ describe("gun tiers", () => {
             }
             expect(skillFit(t.id, 1)).toBe(1);
         }
-        // aim guns take the stronger penalty: a beginner gets 0.4 of an AWM-S, 0.875 of an M249
-        expect(skillFit("awc", 0)).toBeCloseTo(0.4, 6);
-        expect(skillFit("m249", 0)).toBeCloseTo(0.875, 6);
+        // aim guns take the stronger penalty: a beginner gets 0.412 of an AWM-S (demand 0.98), 0.91 of an M249 (0.36)
+        expect(skillFit("awc", 0)).toBeCloseTo(0.412, 6);
+        expect(skillFit("m249", 0)).toBeCloseTo(0.91, 6);
         expect(skillFit("flare_gun", 1)).toBe(0);
     });
 

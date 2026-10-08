@@ -33,7 +33,8 @@ describe("42: potato guns", () => {
         expect(smg?.damage).toBe(13);
         expect(smg?.range).toBe(60);
         expect(smg?.score ?? 0).toBeGreaterThan(0);
-        expect(gunTier("potato_smg")?.tier).toBe("A-");
+        // at its 13-damage blasts it kills at MP5 level (docs/design/gun-tiers.md: TTK 1.42 s at 5-20 u): B
+        expect(gunTier("potato_smg")?.tier).toBe("B");
         const cannon = gunInfo("potato_cannon");
         expect(cannon?.cls).toBe("launcher");
         expect(gunClassOf("potato_cannon")).toBe("launcher");
@@ -41,7 +42,8 @@ describe("42: potato guns", () => {
         expect(spec?.blastDamage).toBe(95);
         expect(spec?.minDist).toBeCloseTo(6.5 + 1 + 2);
         expect(spec?.range ?? 0).toBeGreaterThan(40);
-        expect(gunTier("potato_cannon")?.tier).toBe("B");
+        // a 95-damage blast every 1.2 s from a 65 u/s lob: 2 hits even on bare players (docs/design/gun-tiers.md): C
+        expect(gunTier("potato_cannon")?.tier).toBe("C");
         for (const id of ["flare_gun", "flare_gun_dual", "bugle"]) {
             expect(gunInfo(id)?.cls, id).toBe("useless");
             expect(gunTier(id), id).toBeUndefined();
@@ -119,16 +121,17 @@ describe("43: DMRs for average aim", () => {
     });
 
     it("pins the new desire: average aim wants a DMR above an assault rifle of its tier; experts and beginners less", () => {
-        // NEUTRAL persona; mk12 B+ (62) with F 0.28: skill demand 0.94
-        expect(gunDesire("mk12", taste(0.5))).toBeCloseTo(62 * (1 - 0.6 * 0.44), 1);
+        // NEUTRAL persona; mk12 B+ (62) with F 0.36 (docs/design/gun-tiers.md): skill demand 0.78
+        expect(gunDesire("mk12", taste(0.5))).toBeCloseTo(62 * (1 - 0.6 * 0.28), 1);
         expect(gunDesire("mk12", taste(0.5, { dmrFit: true }))).toBeCloseTo(
-            62 * (1 - 0.3 * 0.44) + DMR_AVERAGE_BONUS,
+            62 * (1 - 0.3 * 0.28) + DMR_AVERAGE_BONUS,
             1,
         );
         expect(gunDesire("mk12", taste(0.5, { dmrFit: true }))).toBeGreaterThan(gunDesire("ak47", taste(0.5)) + 10);
         // the bonus fades out by 0.3 of skill either way: an expert (0.85) and a beginner (0.15) get none
-        expect(gunDesire("mk12", taste(0.85, { dmrFit: true }))).toBeCloseTo(62 * (1 - 0.3 * 0.09), 1);
-        expect(gunDesire("mk12", taste(0.15, { dmrFit: true }))).toBeCloseTo(62 * (1 - 0.3 * 0.79), 1);
+        // (demand 0.78 is under an expert's 0.85: no penalty left)
+        expect(gunDesire("mk12", taste(0.85, { dmrFit: true }))).toBeCloseTo(62, 1);
+        expect(gunDesire("mk12", taste(0.15, { dmrFit: true }))).toBeCloseTo(62 * (1 - 0.3 * 0.63), 1);
         // bolt snipers are unchanged
         expect(gunDesire("mosin", taste(0.5, { dmrFit: true }))).toBe(gunDesire("mosin", taste(0.5)));
     });

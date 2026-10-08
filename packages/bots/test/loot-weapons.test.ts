@@ -58,10 +58,14 @@ describe("gun valuation (desire)", () => {
         w4.model.self.weapons[0].ammo = 0;
         w4.model.self.inventory["9mm"] = 200;
         w4.model.self.inventory["12gauge"] = 0;
-        expect(lootValue(w4.model.self, "m870", undefined, new Set())).toBe(0);
-        expect(lootValue(w4.model.self, "m870", undefined, new Set(["12gauge"]))).toBeGreaterThan(0);
+        expect(lootValue(w4.model.self, "saiga", undefined, new Set())).toBe(0);
+        expect(lootValue(w4.model.self, "saiga", undefined, new Set(["12gauge"]))).toBeGreaterThan(0);
+        // an M870 is not worth the swap even with shells close by: since the stat rebuild (docs/design/gun-tiers.md)
+        // it is B+, one step over the MP5 (B); its 0.9 s pump puts its 5-10 u kill time at 1.04 s against the Saiga's
+        // 0.47, under the upgrade threshold
+        expect(lootValue(w4.model.self, "m870", undefined, new Set(["12gauge"]))).toBe(0);
         // ...and once it holds the empty shotgun with shells lying close by, the MP5 is not taken back
-        w4.model.self.weapons[0] = { type: "m870", ammo: 0 };
+        w4.model.self.weapons[0] = { type: "saiga", ammo: 0 };
         expect(lootValue(w4.model.self, "mp5", undefined, new Set(["12gauge"]))).toBe(0);
         // an S gun out of ammo with none in the bag may go
         w.model.self.weapons[1].ammo = 0;

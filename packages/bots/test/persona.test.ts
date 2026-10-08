@@ -135,7 +135,8 @@ describe("personas", () => {
 
     it("camping needs campiness, a B+ gun and armour", () => {
         expect(mayCamp(PERSONAS.camper, "m249", true)).toBe(true);
-        expect(mayCamp(PERSONAS.camper, "p30l", true)).toBe(true);
+        // the MK12 is B+ by ruling (the P30L, the old example, is B since the stat rebuild)
+        expect(mayCamp(PERSONAS.camper, "mk12", true)).toBe(true);
         expect(mayCamp(PERSONAS.camper, "ak47", true)).toBe(false);
         expect(mayCamp(PERSONAS.camper, "m249", false)).toBe(false);
         expect(mayCamp(PERSONAS.rusher, "m249", true)).toBe(false);
