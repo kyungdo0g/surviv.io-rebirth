@@ -54,7 +54,7 @@ test.describe("cobalt", () => {
         const errors = collectErrors(page);
         await bootMode(page, "/?map=cobalt&seed=2&loot=0");
         await expect.poll(() => page.evaluate(() => (window as any).__rebirth.roleMenu.active)).toBe(true);
-        // the sim's 20 s random class (rules.roles.perkModeRoleSelectTime), shortened so it comes before the menu's own
+        // the server's 25 s random class (rules.roles.perkModeRoleSelectTime), shortened so it comes before the menu's own
         // 20 s countdown confirms the highlighted class
         await page.evaluate(() => {
             (window as any).__rebirth.game.rules.roles.perkModeRoleSelectTime = 3;

@@ -203,6 +203,51 @@ may not touch, the schema number used and open questions.
   potatoMode maps (`match/faction.ts goldCrate`). Schema 17: the two map types take ids in survev order, map ids from
   `crate_17` (926 -> 927) on move up by one or two. Test: `faction.test.ts` "Potato vs Tomato: the gold drop and the
   comeback drop are the potato gold crate".
+- 2. survev server audit: done (commits "survev parity 2a" to "2g"). Five read-only audits compared survev's server
+  (`.survev/server`, c6185e31) with `packages/sim` for planes and air drops, gas, mode rules and swaps, role and perk
+  timing, map spawns and events. Tests: `packages/sim/test/survevParity.test.ts` unless named. The list:
+
+  | # | survev behaviour | status |
+  |---|---|---|
+  | 1 | heavy snowball slows 2 s, heavy potato drops 2 items (explosion defs) | fixed: `rules.modes.throwableHits` built from the defs' `freezeDuration` / `dropRandomLoot` |
+  | 2 | potato swaps use `weaponSourceType \|\| gameSourceType` (the potato in hand for a heavy potato, the MIRV for its bomblets, the gun that shot a barrel) | fixed: `DamageParams.weaponSourceType`, projectiles carry the thrown item |
+  | 3 | no kill swap when the victim's own hit kills it; Lone Survivr keeps its weapons | fixed |
+  | 4 | the Crowbar can be potato-swapped (survev's def has no `noPotatoSwap`) | fixed in the port: survev leaving a gameplay flag out turns it off (`lib/objects.ts SURVEV_ABSENT_IS_OFF`, provenance `survevValues` "absent") |
+  | 5 | a promotion never drops the kit's leftover 1x scope | fixed |
+  | 6 | an empty kit slot fills the gun from the bag (free only with endless ammo or non-bag ammo); the Captain's guns too | fixed: `keepWeapons` removed (`roles.test.ts`) |
+  | 7 | a worn role helmet refuses a helmet picked up by hand | fixed |
+  | 8 | a role of 4+ perks drops the loot perks | knob `rules.perks.roleDropsLootPerks`, off (conflicts.md perk-max-perks-rule) |
+  | 9 | Lone Survivr pings reach the whole faction | fixed |
+  | 10 | any kill credit (a teamkill too) re-checks the kill leader | fixed |
+  | 11 | `canDespawn`: 50v50 role holders never despawn; the start counts downed players, dead teammates of a living side and role holders; no Captain check on player removal | fixed (`match.ts canDespawn`) |
+  | 12 | spawns on beach sand and river banks (only water is refused); 16 u from another group's ground-layer projectile | fixed (`match/spawn.ts`) |
+  | 13 | scheduled drops are not re-rolled into the circle; opened shells still block drops; box pushes take the larger overlap axis; round crates clamp by radius; landing crates crush trees by their canopy box | fixed (`match/planes.ts`, `survevBoxPush`) |
+  | 14 | strike zone centres count players by survev's grid cells (`grid.intersectCollider` has no exact test; the audit's "rad + player radius" was wrong) | fixed (`airstrikes.ts inGridCells`) |
+  | 15 | 50v50: a shot in an enemy's view shows the shooter on the enemy minimap for 1 s | fixed: `rules.roles.factionRevealTime` 1 (0 off); FactionStatus lists revealed enemies after the own faction (schema 18, no layout change); client dots in the enemy colour, 0.1 s fade in, gone 2-2.5 s after they leave the list |
+  | 16 | gas hits inside each player's update, after boost, perks, the downed buffer and bleeding; disconnected players take a flat 22 | fixed / knob `rules.gasDisconnectedDamage` null (conflicts.md gas-escalation) |
+  | 17 | Cobalt: the server's random class waits 25 s, the client confirms the highlighted one at 20 s | fixed (`modes.cobalt.test.ts`, `roles.test.ts`) |
+  | 18 | the Commander's automatic flare fires the flare gun (dual too), indoors too | fixed under the knob, still off (`leaderAutoFlare`) |
+  | 19 | the comeback drop skips circle 0 only | fixed under the knob, still off (`helpLosingTeam`) |
+
+  Decided (conflicts.md; most predate ADR 0003, so worth re-confirming against the survev baseline; each is one rules
+  value away from survev): crush damage 100 through perks (`airdropCrushInstantKill`, survev 1e10); a scheduled gold
+  drop at circle 3 + 2 s and no comeback drop (`factionGoldDrop`, `helpLosingTeam`; survev has only the comeback drop);
+  faction strike waits 24 / 18 s (survev 30 / 21); no time-in-gas ramp (`gasDamageRamp`); 100 HP knocks after the zone
+  closed (`downHealthFinalCircle`, survev 50); no free Savannah 2x scope; the 50v50 promotion schedule
+  (`factionSchedule: "map"` gives survev's seven roles at 50-74 s); Mass Medicate x0.8 (survev x0.75); the loot perk
+  cap at 3 (survev refuses at 4). Not done: survev's 50v50 MVP in the game over (a fork feature that also needs the
+  client's badge); kept: GameOver goes to every player, 50v50 is squads only (survev also has solo 50v50).
+
+  survev bugs not ported: round crates (Cobalt pods, `airdrop_crate_02h`) pulled into boxes by a sign error in its
+  collider push; Trick or Treat? checking `halloween_mystery` instead of the rolled perk and deleting a held loot perk;
+  Combat Stimulants ending also ends Last Breath; the potato Grenadier's Saiga / potato cannon rolled once per server
+  process; a promotion dropping a copy of a same-type backpack or chest; the comeback drop's winners' centre summing
+  connected players but dividing by all living ones (ours: connected players throughout, knob off); the spawn fallback
+  keeping the last invalid candidate (ours: the first valid crowded point). Negligible and left: one-tick offsets of the
+  zone and strobe timers, plane ids 1-255 instead of 1-254.
+
+  For the bots (lead-owned): `Snapshot.factionStatus` now also carries revealed enemies; nothing in `packages/bots`
+  reads it today, but any future reader has to check the member's team.
 - 3. Missing sprites: done; `pnpm assets` reports none. `map-crate-13x` (the snow air drops' opened image): neither
   client ships it; survev opens them on `map-airdrop-02x`, which they now take for `button.useImg` only (new policy key
   `survevSpriteFixes`, provenance `survevSpriteFixes`; the closed images stay the original's). `map-tire-01`,
