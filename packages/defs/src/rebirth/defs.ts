@@ -14,6 +14,7 @@ import {
     HEAVY_BOMB_SPRITE_SCALE,
     IRON_BOMB_RAD_MAX,
 } from "./airstrikeVariants.ts";
+import { rebirthBuildings } from "./buildings.ts";
 import { FRAG_DECAL_TYPE, FRAG_RADIUS_MULT, scaleDefValue } from "./deviations.ts";
 import { newGunDefs } from "./newGuns.ts";
 import { CLUB_VAULT_BOX, clubVaultBox } from "./ownerLoot.ts";
@@ -73,6 +74,7 @@ function scaledDecal(decal: DecalDef, mult: number): DecalDef {
  * - the air drop tier inner crates crate_10t1, crate_10t2, crate_10svt1 and crate_10svt2 (rebirth/airdropLoot.ts);
  * - the club secret room's gun box deposit_box_02_club, deposit_box_02 rolling its gun from tier_club_vault (the
  *   owner, 2026-10-08; rebirth/ownerLoot.ts).
+ * - the rebirth buildings clinic_01, outpost_01r and outpost_01b and their loot_tier_medical (rebirth/buildings.ts).
  */
 export function rebirthOnlyMapObjects(generated: Readonly<Record<string, MapObjectDef>>): Record<string, MapObjectDef> {
     const ironDecal = generated.decal_bomb_iron_explosion as DecalDef;
@@ -82,5 +84,6 @@ export function rebirthOnlyMapObjects(generated: Readonly<Record<string, MapObje
         [FRAG_DECAL_TYPE]: scaledDecal(fragDecal, FRAG_RADIUS_MULT),
         ...airdropTierCrates(generated),
         [CLUB_VAULT_BOX]: clubVaultBox(generated),
+        ...rebirthBuildings(generated),
     };
 }

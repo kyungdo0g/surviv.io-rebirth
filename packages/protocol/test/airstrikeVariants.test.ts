@@ -117,11 +117,16 @@ describe("air strike variants on the wire", () => {
     });
 
     it("the rebirth scorch decals serialize through the map type registry, after every generated type", () => {
+        // then the rebirth buildings (rebirth/buildings.ts)
         expect(rebirthOnlyMapObjectIds).toEqual([
             "decal_bomb_heavy_explosion",
             "decal_frag_large_explosion",
             ...AIRDROP_TIER_CRATES,
             CLUB_VAULT_BOX,
+            "loot_tier_medical",
+            "clinic_01",
+            "outpost_01r",
+            "outpost_01b",
         ]);
         const first = MapObjectRegistry.typeToId("decal_bomb_heavy_explosion");
         expect(first).toBe(MapObjectRegistry.size - rebirthOnlyMapObjectIds.length);

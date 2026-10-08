@@ -19,6 +19,7 @@
         "e2e": "node scripts/e2e.ts",
         "assets": "node tools/assets/import.ts",
         "assets:atlas": "node tools/assets/atlas.ts",
+        "assets:buildings": "node tools/assets/rebirthBuildingArt.ts",
         "dev": "pnpm --filter @rebirth/client dev",
         "server": "pnpm --filter @rebirth/server dev",
         "build": "pnpm --filter @rebirth/client build",

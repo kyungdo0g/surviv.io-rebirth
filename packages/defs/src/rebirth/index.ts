@@ -4,6 +4,7 @@
 // docs/research/rebirth-deviations.md is the cited list.
 import type { ExplosionDef, GameConfigDef, GameObjectDef, LootSpawnDef, MapDef, MapObjectDef } from "../types/index.ts";
 import { AIRDROP_TIER_SPLITS } from "./airdropTiers.ts";
+import { applyRebirthBuildingSpawns } from "./buildings.ts";
 import { rebirthOnlyDefs, rebirthOnlyMapObjects } from "./defs.ts";
 import { applyBalanceDeviations, type DefDeviation } from "./deviations.ts";
 import { applyGunSpeedOverrides } from "./gunSpeeds.ts";
@@ -16,6 +17,7 @@ import { applyRebirthGoldGuns, applyWikiStatOverrides } from "./survevGuns.ts";
 export * from "./airdropLoot.ts";
 export * from "./airdropTiers.ts";
 export * from "./airstrikeVariants.ts";
+export * from "./buildings.ts";
 export { type DefDeviation, FRAG_DECAL_TYPE, FRAG_RADIUS_MULT } from "./deviations.ts";
 export * from "./gunBeta.ts";
 export * from "./gunSpeeds.ts";
@@ -97,9 +99,10 @@ export function applyRebirthGameConfig(generated: GameConfigDef): GameConfigDef 
  * the air drop tier tables (rebirth/newGunLoot.ts, rebirth/airdropLoot.ts), then the rebirth gold guns (the Barrett,
  * the SVD and the SCAR-SSR, rebirth/survevGuns.ts) in the gold drop of main and its seasonal copies, then the owner's
  * 2026-10-08 rows (the classic floor's USAS-12, the bathhouse ring case, the club gun box's table;
- * rebirth/ownerLoot.ts), then the rare crates' throwables with the variant strobes (rebirth/strobeLoot.ts). Checks that
- * every tier inner crate a map can drop and the club's gun box find their tiers in that map's table. `gameObjects`
- * gives the guns' ammo (the floor rule of the new guns and of the club table).
+ * rebirth/ownerLoot.ts), then the rare crates' throwables with the variant strobes (rebirth/strobeLoot.ts), then the
+ * rebirth buildings in their maps' fixed spawns (rebirth/buildings.ts). Checks that every tier inner crate a map can
+ * drop and the club's gun box find their tiers in that map's table. `gameObjects` gives the guns' ammo (the floor rule
+ * of the new guns and of the club table).
  */
 export function applyRebirthMaps(
     generatedMaps: Readonly<Record<string, MapDef>>,
@@ -110,8 +113,8 @@ export function applyRebirthMaps(
         const def = Object.hasOwn(gameObjects, id) ? gameObjects[id] : undefined;
         return def?.type === "gun" ? def.ammo : undefined;
     };
-    const maps = applyStrobeVariantLoot(
-        applyOwnerLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf)), ammoOf),
+    const maps = applyRebirthBuildingSpawns(
+        applyStrobeVariantLoot(applyOwnerLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf)), ammoOf)),
     );
     for (const [name, def] of Object.entries(maps)) {
         // the owner's map objects are in every map's object set: their tiers must resolve everywhere

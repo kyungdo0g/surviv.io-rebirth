@@ -5,15 +5,13 @@
 // Rebirth: an item with a `lootImg.hudTint` (the variant strobes) shows its image multiplied by that colour, drawn once
 // into a canvas (setLootImage shows the plain image until the tinted one is ready).
 import { GameObjectDefs } from "@rebirth/defs";
-import { SPRITES } from "./spriteManifest.ts";
-
-const ASSET_ROOT = "/assets/";
+import { assetUrl, SPRITES } from "./spriteManifest.ts";
 
 /** URL of the image for sprite id `sprite` ("loot-weapon-ak.img"), or "" when the manifest has none. */
 export function spriteUrl(sprite: string | undefined): string {
     const entry = sprite ? SPRITES[sprite] : undefined;
     const file = entry?.svg ?? entry?.path;
-    return file ? ASSET_ROOT + file : "";
+    return file ? assetUrl(file) : "";
 }
 
 /** URL of item `id`'s loot image (untinted). */

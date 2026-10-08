@@ -46,8 +46,10 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * the viewer's faction; no record layout changed.
  * · 19: the owner's club secret room (2026-10-08, rebirth/ownerLoot.ts): the rebirth-only map type deposit_box_02_club
  * follows the air drop tier crates as the last map type; every earlier id keeps its index. No record layout changed.
+ * · 20: the rebirth buildings (the owner, 2026-10-08; rebirth/buildings.ts): the map types loot_tier_medical, clinic_01,
+ * outpost_01r and outpost_01b follow deposit_box_02_club as the last map types. No record layout changed.
  */
-export const PROTOCOL_SCHEMA_VERSION = 19;
+export const PROTOCOL_SCHEMA_VERSION = 20;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

@@ -4,6 +4,8 @@
 // packages/defs rebirth/newGunAssets.ts) where it has no drawing, and the texture store loads that fallback itself if
 // the file is not installed at all, so a new gun never shows the missing-sprite placeholder. The new ammo's ping emotes
 // (ammo-<id>.img) are drawn by the same tool in the original ammo emotes' style, with the generic ammo emote as fallback.
+// The rebirth buildings' floors and roofs (rebirth/buildings.ts) are committed SVGs served from /rebirth/map/
+// (tools/assets/rebirthBuildingArt.ts draws them), so they need no install step.
 import {
     GameObjectDefs,
     NEW_AMMO_IDS,
@@ -11,6 +13,7 @@ import {
     NEW_GUN_LOOT_FALLBACKS,
     newAmmoEmoteTexture,
     newGunIconPath,
+    rebirthBuildingArt,
 } from "@rebirth/defs";
 import type { SpriteEntry } from "./spriteManifest.ts";
 
@@ -19,7 +22,12 @@ const LOOT_ICON_SIZE = [128, 128] as const;
 /** The original generic ammo emote (emote_ammo), shown while a new ammo's own is not installed. */
 const AMMO_EMOTE_FALLBACK = "ammo-box.img";
 
-/** The new guns' loot icon and new ammo emote entries, by sprite id. */
+/** Served URL of a rebirth building image (tools/assets/rebirthBuildingArt.ts rebirthArtFile). */
+export function rebirthBuildingUrl(sprite: string): string {
+    return `/rebirth/map/${sprite.replace(/\.img$/, "")}.svg`;
+}
+
+/** The new guns' loot icon and new ammo emote entries and the rebirth buildings' images, by sprite id. */
 export function rebirthSpriteEntries(): Record<string, SpriteEntry> {
     const out: Record<string, SpriteEntry> = {};
     for (const id of NEW_GUN_IDS) {
@@ -40,6 +48,11 @@ export function rebirthSpriteEntries(): Record<string, SpriteEntry> {
             size: LOOT_ICON_SIZE,
             fallback: AMMO_EMOTE_FALLBACK,
         };
+    }
+    for (const art of rebirthBuildingArt()) {
+        for (const sprite of [art.floor, art.ceiling]) {
+            out[sprite] = { source: "rebirth", path: rebirthBuildingUrl(sprite), size: art.size };
+        }
     }
     return out;
 }

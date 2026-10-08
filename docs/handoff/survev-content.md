@@ -256,6 +256,25 @@ may not touch, the schema number used and open questions.
   `tools/assets/unspawned-defs.json` lists them and the import records them as drawing nothing without a warning;
   `tools/assets/sources.test.ts` checks the list stays true.
 
+## Owner request (2026-10-08): two rebirth buildings
+
+The owner asked for a building of the worker's own design for the normal map and one only for 50v50. Done as rebirth
+additions (`packages/defs/src/rebirth/buildings.ts`, `docs/research/rebirth-deviations.md` "Rebirth buildings"):
+
+- `clinic_01` on `main` (1 fixed spawn): lobby, two treatment rooms that heal 2 HP/s (`healRegions`), a pharmacy with
+  medical loot (new rebirth-only spawner `loot_tier_medical`).
+- `outpost_01r` / `outpost_01b` on `faction` (1 each, on its faction's side by `teamId`): armory with the faction's
+  crate, an M870 mount and ammo, a command room with the blueprint table, bunks; roof in the faction's colour.
+- Floors and roofs are rebirth art: SVGs drawn by `tools/assets/rebirthBuildingArt.ts` (`pnpm assets:buildings`) from
+  the same layouts as the wall obstacles, committed under `apps/client/public/rebirth/map/` and served from there
+  (manifest entries in `apps/client/src/assets/rebirthSprites.ts`; `assetUrl` takes absolute paths). They are the
+  rebirth's own drawings, not original or survev art, so they can be committed; `tools/assets/rebirthBuildingArt.test.ts`
+  keeps them in step with the layouts.
+- Schema 18 (unreleased): the four map types take ids after the air drop tier crates. The main 12345 golden hash moved.
+- Tests: `packages/sim/test/rebirthBuildings.test.ts` (layouts clear of walls, healing, faction sides and crates),
+  map validation counts, `tests/e2e/rebirth-buildings.spec.ts` (screenshots in `__screens__/rebirth-buildings`).
+- For the bots (lead-owned): the 50v50 map gains two buildings, one per side; nothing in `packages/bots` names them.
+
 ## Changes needed in the lead's files
 
 All closed: applied by the lead in 2acdac0 (2026-10-07). Two items differ from the patch here: the coconut and tomato

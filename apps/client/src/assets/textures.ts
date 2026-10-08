@@ -10,9 +10,7 @@
 // sprite's colours instead of multiplying them (the variant strobes' yellow-green art in their red / magenta).
 import { ImageSource, type Sprite, Texture } from "pixi.js";
 import { debugGlobals } from "../globals.ts";
-import { SPRITES } from "./spriteManifest.ts";
-
-const ASSET_ROOT = "/assets/";
+import { assetUrl, SPRITES } from "./spriteManifest.ts";
 
 /** Zoom the rasterization targets: a 1920x1080 screen at the 1x scope radius, 960 / (28 * 16) ~ 2.1. */
 const REFERENCE_ZOOM = 2.1;
@@ -213,7 +211,7 @@ export class TextureStore {
         if (!entry) return this.markMissing(id, "not in the sprite manifest");
         // the original client names it without shipping an image, and drew nothing (survev: Texture.from of an unknown id)
         if (entry.source === "none" || !entry.path) return Texture.EMPTY;
-        const url = ASSET_ROOT + entry.path;
+        const url = assetUrl(entry.path);
         try {
             const isSvg = entry.path.endsWith(".svg");
             let img: HTMLImageElement;

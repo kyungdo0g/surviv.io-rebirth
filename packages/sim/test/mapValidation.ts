@@ -77,7 +77,15 @@ export const MAP_CASES: readonly MapCase[] = [
     {
         map: "main",
         teamModes: [1, 4],
-        required: { club_complex_01: 1, greenhouse_01: 1, bunker_structure_02: 1, warehouse_complex_01: 1, hut_03: 1 },
+        // clinic_01: the rebirth building of the normal map (rebirth/buildings.ts)
+        required: {
+            club_complex_01: 1,
+            greenhouse_01: 1,
+            bunker_structure_02: 1,
+            warehouse_complex_01: 1,
+            hut_03: 1,
+            clinic_01: 1,
+        },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
         custom: chooseTwo,
@@ -273,6 +281,9 @@ export const MAP_CASES: readonly MapCase[] = [
             police_01: 1,
             mansion_structure_01: 1,
             warehouse_complex_01: 1,
+            // the rebirth faction command posts, one per side (rebirth/buildings.ts)
+            outpost_01r: 1,
+            outpost_01b: 1,
         },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
