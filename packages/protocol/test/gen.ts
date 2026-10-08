@@ -307,7 +307,7 @@ export function randGas(rng: Rng, ctx: NetCtx): GasView {
 export function randPlanes(rng: Rng): PlaneView[] {
     return Array.from({ length: rng.bool(0.6) ? 0 : rng.int(1, 4) }, () => ({
         id: rng.int(1, 255),
-        pos: { x: rng.range(-256, 1280), y: rng.range(-256, 1280) },
+        pos: { x: rng.range(-512, 2560), y: rng.range(-512, 2560) },
         dir: randUnit(rng),
         planeType: rng.pick(["airdrop", "airstrike"] as const),
         actionComplete: rng.bool(),
@@ -576,8 +576,8 @@ export function netTolerances(maxExtent = 1024): TolFn {
         "gas.gasT": 1 / 65535 / 2 + 1e-9,
         radOld: 2048 / 65535 / 2 + 1e-9,
         radNew: 2048 / 65535 / 2 + 1e-9,
-        "planes.pos.x": 2048 / 1023 / 2 + 1e-9,
-        "planes.pos.y": 2048 / 1023 / 2 + 1e-9,
+        "planes.pos.x": 3072 / 2047 / 2 + 1e-9,
+        "planes.pos.y": 3072 / 2047 / 2 + 1e-9,
         "planes.dir.x": 0.006,
         "planes.dir.y": 0.006,
         // team status (M6a): 11-bit positions over the map extent, 7-bit health

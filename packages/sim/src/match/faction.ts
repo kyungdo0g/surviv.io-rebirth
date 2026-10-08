@@ -29,7 +29,7 @@ export interface FactionTeam {
 export interface FactionHost {
     readonly options: { mapName: string };
     readonly mapData: { width: number; height: number; shoreInset: number };
-    readonly gas: { readonly circleIdx: number; isInGas(pos: Vec2): boolean };
+    readonly gas: { readonly circleIdx: number; readonly timeScale?: number; isInGas(pos: Vec2): boolean };
     readonly rules: {
         roles: {
             factionStatusInterval: number;
@@ -129,7 +129,9 @@ export class FactionSystem {
     /** A new gas circle: the scheduled gold military drop (conflicts.md faction-gold-drop). */
     onCircle(circleIdx: number): void {
         const gold = this.host.rules.roles.factionGoldDrop;
-        if (gold && gold.circleIdx === circleIdx) this.host.planes.scheduleCrate(this.goldCrate(gold.crate), gold.wait);
+        // the wait stretches with the gas on a map grown by the player cap (Gas.timeScale)
+        const wait = gold ? gold.wait * (this.host.gas.timeScale ?? 1) : 0;
+        if (gold && gold.circleIdx === circleIdx) this.host.planes.scheduleCrate(this.goldCrate(gold.crate), wait);
     }
 
     /** A gold drop crate of this map: potato faction maps drop the potato variant (survev plane.ts:273-278). */

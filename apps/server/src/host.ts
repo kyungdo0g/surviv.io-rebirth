@@ -93,7 +93,11 @@ export class GameHost {
         room.onFlag = (flag) => this.onFlag?.(flag);
         this.rooms.set(room.id, room);
         if (this.config.log) {
-            console.log(`game ${room.id} created (${mapName}, team mode ${teamMode}, seed ${room.game.options.seed})`);
+            const { seed, maxPlayers } = room.game.options;
+            const size = room.game.mapData.width;
+            console.log(
+                `game ${room.id} created (${mapName}, team mode ${teamMode}, seed ${seed}, cap ${maxPlayers}, map ${size})`,
+            );
         }
         return room;
     }

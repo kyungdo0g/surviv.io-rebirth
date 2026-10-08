@@ -4,7 +4,7 @@
 // obstacle timers, building puzzles and scheduled unlocks (M5b), planes, air strikes and air drops, building occupancy,
 // spectators, group spawns and team status (M6a), faction status and role schedules (M7a), then the match results.
 import { type Bounds, type Rng, type Vec2, v2 } from "@rebirth/core";
-import { getMapDef } from "@rebirth/defs";
+import { GameConfig, getMapDef, mapDefForPlayers } from "@rebirth/defs";
 import { type GameApi, type GameOptions, type SpectateActionName, TICK_HZ } from "./api.ts";
 import { BulletSystem } from "./combat/bullets.ts";
 import { applyObstacleDamage, applyPlayerDamage } from "./combat/combat.ts";
@@ -22,6 +22,7 @@ import { EmoteSystem } from "./match/emotes.ts";
 import { EventLog } from "./match/events.ts";
 import { FactionSystem } from "./match/faction.ts";
 import { Gas } from "./match/gas.ts";
+import { gasTimeScale, stretchGasStages } from "./match/gasScale.ts";
 import { canDespawn, Match } from "./match/match.ts";
 import type { CombatObserver } from "./match/observer.ts";
 import { PlaneSystem } from "./match/planes.ts";
@@ -164,7 +165,9 @@ export class Game implements GameApi, SimContext {
         const mode = getMapDef(options.mapName).gameMode;
         // 50v50 always plays in squads inside the factions (the original 50v50 squad queue, survev config)
         if (mode.factionMode) this.options.teamMode = 4;
-        this.generation = init.generation ?? generateMap(options.mapName, options.seed, options.teamMode ?? 1);
+        // a cap above the map's design count grows the map (defs mapDefForPlayers; the same def object otherwise)
+        const mapDef = mapDefForPlayers(options.mapName, options.maxPlayers);
+        this.generation = init.generation ?? generateMap(options.mapName, options.seed, options.teamMode ?? 1, mapDef);
         this.mapData = this.generation.mapData;
         this.world = new World(this.generation);
         this.rng = subRng(options.seed, `game:${options.mapName}`);
@@ -179,7 +182,15 @@ export class Game implements GameApi, SimContext {
         this.smokes = new SmokeSystem(this);
         this.deadBodies = new DeadBodySystem(this.world);
         const gasRng = subRng(options.seed, `gas:${options.mapName}`);
-        this.gas = new Gas(this.mapData.width, this.mapData.height, gasRng, init.gasStages);
+        // a wider map stretches the gas and its schedules (match/gasScale.ts); explicit stages are used as given
+        const gasScale = init.gasStages ? 1 : gasTimeScale(mapDef, getMapDef(options.mapName), options.teamMode ?? 1);
+        this.gas = new Gas(
+            this.mapData.width,
+            this.mapData.height,
+            gasRng,
+            init.gasStages ?? stretchGasStages(GameConfig.gas.stages, gasScale),
+            gasScale,
+        );
         this.planes = new PlaneSystem(this, options.mapName, options.seed);
         this.unlocks = new UnlockSystem(this);
         this.gas.onCircle = (circleIdx) => {
@@ -204,6 +215,7 @@ export class Game implements GameApi, SimContext {
         this.match = new Match(this, {
             sandbox: init.sandbox ?? false,
             minPlayers: init.minPlayers ?? DEFAULT_MIN_PLAYERS,
+            maxPlayers: options.maxPlayers,
         });
         this.spectators = new SpectateSystem(this);
         this.rules.gunBeta = init.gunBeta ?? false;

@@ -12,6 +12,7 @@ import {
     hasMapObjectDef,
     LOOT_BANS,
     type LootTableEntry,
+    type MapDef,
 } from "@rebirth/defs";
 import { type GenerateMapResult, generateMap } from "../src/index.ts";
 
@@ -32,7 +33,8 @@ export interface MapCase {
     softFixed?: readonly string[];
     /** average placement warnings per generated map allowed */
     maxWarnings: number;
-    custom?: (g: GenerateMapResult) => string[];
+    /** extra checks of a generated map (`def`: the def it was generated from) */
+    custom?: (g: GenerateMapResult, def: MapDef) => string[];
 }
 
 /** Bridge-placed and riverside buildings: survev also fails them on some river layouts (generation.md). */
@@ -47,9 +49,10 @@ function countTop(g: GenerateMapResult): Map<string, number> {
 }
 
 /** The random rotation spawns the map def's `choose` of mansion / police / bank (2, 3 on the bigger maps). */
-function chooseOf(map: string) {
-    const want = getMapDef(map).mapGen.randomSpawns[0]?.choose ?? 0;
-    return (g: GenerateMapResult): string[] => {
+/** The random rotation (mansion / police / bank) spawned as many as the map def picks. */
+function chooseOf() {
+    return (g: GenerateMapResult, def: MapDef): string[] => {
+        const want = def.mapGen.randomSpawns[0]?.choose ?? 0;
         const counts = countTop(g);
         const n = ROTATION.filter((t) => counts.has(t)).length;
         return n === want ? [] : [`random rotation spawned ${n} of mansion / police / bank (expected ${want})`];
@@ -97,7 +100,7 @@ export const MAP_CASES: readonly MapCase[] = [
         },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseOf("main"),
+        custom: chooseOf(),
     },
     {
         map: "main_spring",
@@ -106,7 +109,7 @@ export const MAP_CASES: readonly MapCase[] = [
         required: { club_complex_01: 1, greenhouse_01: 1, teahouse_01: 2, warehouse_01: 1, warehouse_03: 1 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseOf("main_spring"),
+        custom: chooseOf(),
     },
     {
         map: "main_summer",
@@ -114,7 +117,7 @@ export const MAP_CASES: readonly MapCase[] = [
         required: { club_complex_01: 1, teahouse_complex_01su: 1, warehouse_01: 1, warehouse_03: 1 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseOf("main_summer"),
+        custom: chooseOf(),
     },
     {
         map: "desert",
@@ -221,7 +224,7 @@ export const MAP_CASES: readonly MapCase[] = [
         required: { shilo_01: 1, club_complex_01: 1, potato_01: 20, potato_02: 20, potato_03: 20 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseOf("potato"),
+        custom: chooseOf(),
     },
     {
         map: "potato_spring",
@@ -271,7 +274,7 @@ export const MAP_CASES: readonly MapCase[] = [
         requiredAnywhere: ["bunker_twins_sublevel_01", "class_shell_03"],
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseOf("cobalt"),
+        custom: chooseOf(),
     },
     {
         map: "turkey",
@@ -279,7 +282,7 @@ export const MAP_CASES: readonly MapCase[] = [
         required: { club_complex_01: 1, squash_01: 10 },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
-        custom: chooseOf("turkey"),
+        custom: chooseOf(),
     },
     {
         map: "faction",
@@ -326,11 +329,11 @@ export interface SeedResult {
     types: Set<string>;
 }
 
-/** Generates one map and checks the case's invariants. */
-export function validateSeed(c: MapCase, seed: number, teamMode: 1 | 2 | 4): SeedResult {
+/** Generates one map (from `def`, the map's own by default) and checks the case's invariants. */
+export function validateSeed(c: MapCase, seed: number, teamMode: 1 | 2 | 4, def?: MapDef): SeedResult {
     let g: GenerateMapResult;
     try {
-        g = generateMap(c.map, seed, teamMode);
+        g = generateMap(c.map, seed, teamMode, def);
     } catch (err) {
         return {
             issues: [`exception: ${err instanceof Error ? err.message : String(err)}`],
@@ -358,7 +361,7 @@ export function validateSeed(c: MapCase, seed: number, teamMode: 1 | 2 | 4): See
         }
     }
     for (const [type, n] of located) if (n < 1) issues.push(`location spawn ${type} failed`);
-    issues.push(...(c.custom?.(g) ?? []));
+    issues.push(...(c.custom?.(g, def ?? getMapDef(c.map)) ?? []));
     return { issues, warnings: g.warnings, types };
 }
 

@@ -447,3 +447,23 @@
 - Every mechanic is an existing hook (panels, sliding doors, heal regions, zoom regions, stairs, the vault door, explosive props); no sim code, sound or particle is new. The 22 map types follow `blockhouse_01b` (protocol schema 22) [src:user/2026-10-08-military-base] [H]
 - Expected loot per base about 23 guns from about 78 rolls, half of them on the surface; the vault's military crate rolls `tier_snipers`, which brings the BLR, the Model 94 and the Mk45G to the classic map; no `rack_01` (its `tier_revolvers` would bring survev's desert-only SW500), no faction crates [src:derived/rebirth-military-base-loot] [src:survev/shared/defs/maps/baseDefs.ts] [M]
 - The base is the largest fixed spawn, so it is placed before the Hydra bunker: on `main` seed 12345 the Hydra moves; over 100 seeds per map every base was placed with no extra regeneration [src:derived/rebirth-military-base-placement] [M]
+
+## Maps follow the player cap (2026-10-08)
+
+> The owner, through the lead: a classic game of 200 players felt small. A game whose player cap (`MAX_PLAYERS`, `FACTION_MAX_PLAYERS` for 50v50) is above its map's design count plays on a larger map. Code: `packages/defs/src/data.ts` (`mapDefForPlayers`), `packages/defs/src/rebirth/mapScale.ts` (`designPlayers`, `playerAreaFactor`, `MAX_PLAYER_AREA_FACTOR`), `packages/sim/src/match/gasScale.ts`, `packages/sim/src/match/match.ts` (`MAX_PLAYERS_IN_GAME`), `apps/server/src/room.ts`, `packages/protocol/src/match.ts`. Tests: `packages/defs/test/mapPlayerScale.test.ts`, `packages/sim/test/playerCap.test.ts`, `apps/server/test/mapCap.test.ts`, `packages/protocol/test/planes.test.ts`.
+
+| rule | value | sources |
+|---|---|---|
+| design count | 100 on a 50v50 map (test_faction included, whose games take the 50v50 cap), else the mode's `maxPlayers` (80 on every map) | [src:user/2026-10-08-map-player-cap] [H] |
+| land area factor | cap / design, at least 1 (the map's own def, unchanged) and at most 2 (from cap 160, 200 on 50v50) | [src:user/2026-10-08-map-player-cap] [src:derived/rebirth-map-player-cap] [H] |
+| side | the map before the rebirth's 1.2 knob × that knob × √factor, rounded once: main 842 / 899 at 80, 928 / 992 at 100, 1144 / 1225 from 160; 50v50 1034 at 100, 1241 at 150, 1415 from 200; maps the knob leaves alone (desert, cobalt, woods ...) up to 972-1040 | [src:user/2026-10-08-map-player-cap] [src:derived/rebirth-map-player-cap] [H] |
+| spawn counts | as for the bigger maps: grass counts grow with the land area, coast, river and bridge spawns and odds keep theirs; now also every one-off stays one and the rebirth buildings keep their counts (one arsenal for its scheduled unlock); the random rotation picks at most its whole pool | [src:user/2026-10-08-map-player-cap] [H] |
+| gas | every stage's duration × s = the map's width / the design width (at most 1.37), rounded to ticks; the waits counted from a circle's start (air drops, air strikes, unlocks, 50v50 promotions and gold drop) × s too | [src:user/2026-10-08-map-player-cap] [src:derived/rebirth-map-player-cap] [H] |
+| players | the sim takes as many as the cap (at least the mode's `maxPlayers`), never more than 255 in a game (the wire's 8-bit player lists and solo group ids) | [src:user/2026-10-08-map-player-cap] [H] |
+| plane positions | 11 bits per axis over −512…2560 (the original's 10 over −512…1536 ends inside a 1415 map's flight band); protocol schema 23 | [src:user/2026-10-08-map-player-cap] [src:survev/shared/net/updateMsg.ts:446-453] [H] |
+
+- The factor stops at 2 so a 200-player classic game keeps players per land area within 1.25 times the 80-player map's and below survev's 80 players on 720 units, a match within about 10 minutes 20 seconds, and the bots' reading of a stretched gas (their clamp is 1.5) right; at 255 players the density is 1.59 times the 80-player map's [src:derived/rebirth-map-player-cap] [M]
+- The gas stretch keeps every gas speed in units per second, and the time per unit a player has to rotate, at the design map's: unstretched, a late joiner on a 1415-unit 50v50 map at 200 would need 13.8 u/s to reach the first circle, more than a player runs (12) [src:derived/rebirth-map-player-cap] [M]
+- At the largest maps every fixed spawn still lands (validation budgets, three seeds of main solo and squads, 50v50, snow and cobalt at cap 255) and buildings per land area stay within 10 % of the design map; air drops and air strikes keep their counts, so there are fewer per player [src:derived/rebirth-map-player-cap] [M]
+- The same seed at another cap gives another map (the server logs the cap and the map's size). The dev sandbox and the bots' scripts pass no cap and play the maps' own sizes [src:user/2026-10-08-map-player-cap] [H]
+

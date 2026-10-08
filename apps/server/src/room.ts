@@ -118,9 +118,11 @@ export class GameRoom {
         this.config = config;
         this.mapName = mapName;
         this.teamMode = teamMode;
-        // rebirth new-gun beta (GUN_BETA): read when the map loot spawns, so it goes in at creation
+        this.capacity = roomCapacity(config, mapName);
+        // rebirth new-gun beta (GUN_BETA): read when the map loot spawns, so it goes in at creation; the room's player
+        // cap grows the map above the map's design count (defs mapDefForPlayers)
         this.game = new Game(
-            { mapName, seed: seed >>> 0, teamMode },
+            { mapName, seed: seed >>> 0, teamMode, maxPlayers: this.capacity },
             { minPlayers: config.minPlayers, gunBeta: config.gunBeta },
         );
         // rebirth 50v50 air strike variants (AIRSTRIKE_VARIANTS; the sim rolls them on faction maps only)
@@ -131,7 +133,6 @@ export class GameRoom {
         this.mapMsg = encodeMapMsg(this.game.mapData);
         this.createdAt = now;
         this.emptySince = now;
-        this.capacity = roomCapacity(config, mapName);
         const botTarget = isFactionMap(mapName) ? config.factionBotFill : config.botFill;
         this.bots =
             botTarget > 0

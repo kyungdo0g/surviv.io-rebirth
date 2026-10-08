@@ -103,6 +103,17 @@ export function applyRebirthGameConfig(generated: GameConfigDef): GameConfigDef 
 }
 
 /**
+ * Whether a map object's fixed spawn count follows the land area when a map grows (rebirth/mapScale.ts): placed on the
+ * grass, not on a bridge, a river bank or the water's edge.
+ */
+export function grassSpawn(mapObjects: Readonly<Record<string, MapObjectDef>>): (type: string) => boolean {
+    return (type) => {
+        const terrain = (mapObjects[type] as { terrain?: Record<string, unknown> } | undefined)?.terrain;
+        return !!terrain?.grass && !terrain.bridge && !terrain.waterEdge && !terrain.nearbyRiver;
+    };
+}
+
+/**
  * The generated map defs with the rebirth loot tables added to copies of their loot tables: the new guns' rows around
  * the air drop tier tables (rebirth/newGunLoot.ts, rebirth/airdropLoot.ts), then the rebirth gold guns (the Barrett,
  * the SVD and the SCAR-SSR, rebirth/survevGuns.ts) in the gold drop of main and its seasonal copies, then the owner's
@@ -129,10 +140,7 @@ export function applyRebirthMaps(
                 applyOwnerLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf)), ammoOf),
             ),
             scales,
-            (type) => {
-                const terrain = (mapObjects[type] as { terrain?: Record<string, unknown> } | undefined)?.terrain;
-                return !!terrain?.grass && !terrain.bridge && !terrain.waterEdge && !terrain.nearbyRiver;
-            },
+            grassSpawn(mapObjects),
         ),
     );
     for (const [name, def] of Object.entries(maps)) {

@@ -41,7 +41,15 @@ export interface MatchOptions {
     sandbox: boolean;
     /** players alive for at least `rules.minActiveTime` needed to start (original: 2, survev isGameStarted) */
     minPlayers: number;
+    /** the game's player cap (GameOptions.maxPlayers): above the mode's maxPlayers it lets that many play */
+    maxPlayers?: number;
 }
+
+/**
+ * Players a game holds at most, the dead included: the wire's player lists count in 8 bits (protocol PlayerInfos,
+ * team and faction status) and solo group ids run out at 255 (protocol teams.ts MAX_GROUP_ID).
+ */
+export const MAX_PLAYERS_IN_GAME = 255;
 
 /** What the match needs from the game. */
 export interface MatchHost {
@@ -94,7 +102,8 @@ export class Match {
         this.options = options;
         const mode = getMapDef(host.options.mapName).gameMode;
         this.killLeaderEnabled = mode.killLeaderEnabled;
-        this.maxPlayers = mode.maxPlayers;
+        // a cap above the mode's maxPlayers lets that many play (on a map grown for them: defs mapDefForPlayers)
+        this.maxPlayers = Math.min(MAX_PLAYERS_IN_GAME, Math.max(mode.maxPlayers, options.maxPlayers ?? 0));
     }
 
     /** Living players in join (id) order. */
@@ -116,12 +125,17 @@ export class Match {
     }
 
     /**
-     * Whether a new player may join: not over, fewer living players than the mode's maximum, and the match started
-     * less than `joinWindowSeconds` ago (survev game.ts canJoin). Sandbox matches always accept joins.
+     * Whether a new player may join: not over, fewer living players than the mode's maximum (or the game's player cap
+     * above it), fewer than MAX_PLAYERS_IN_GAME in the game, and the match started less than `joinWindowSeconds` ago
+     * (survev game.ts canJoin). Sandbox matches always accept joins.
      */
     canJoin(): boolean {
         if (this.options.sandbox) return true;
         if (this.over || this.aliveCount >= this.maxPlayers) return false;
+        // the dead stay in the game: never past what the wire can list
+        let inGame = 0;
+        for (const _ of this.host.players()) inGame++;
+        if (inGame >= MAX_PLAYERS_IN_GAME) return false;
         return !this.started || this.startedSeconds < this.host.rules.joinWindowSeconds;
     }
 
