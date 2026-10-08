@@ -1,6 +1,7 @@
 # ADR 0003: survev master as the gameplay baseline
 
-Status: accepted (2026-10-07). Supersedes points 2-4 of ADR 0002 in part; implemented in stages (below).
+Status: accepted (2026-10-07). Supersedes points 2-4 of ADR 0002 in part; implemented in stages (below), all landed
+by 2026-10-08.
 
 ## Context
 
@@ -19,7 +20,7 @@ is a change of port policy, not a data refresh. The evidence and the full plan a
    survev's own balance changes are no longer reverted. Today the port takes only the content listed in
    `tools/port-survev/policy.json` as survev has it (with its loot placements); every other id keeps the reverted
    0.8.82 values until wave 1. `docs/research/provenance/balance-revert.json` stays as the record of the original
-   values.
+   values. (2026-10-08: every stage has landed, see Stages; `policy.json` now lists the whole survev content.)
 2. **The original 0.8.82 client stays the presentation source**: sprites and atlas frames, sounds where the original
    has them, HUD and UI, l10n strings, and the `lootImg` / `worldImg` / `particle` fields of shared ids. Original ids
    keep their wire indices: they stay the prefix of the registry; survev-only ids follow them, rebirth-only ids come
@@ -46,7 +47,11 @@ is a change of port policy, not a data refresh. The evidence and the full plan a
 | survev content wave, stage 1 | melee `iceaxe`, `cutlass`, `cutlass_gold`, `naginata_daemon`, `karambit_borealis`; throwables `coconut`, `tomato` with their explosions; the `pirate` perk (Gold Cutlass, held while carried); wiki specs where they differ (`packages/defs/src/survev/wikiSpecs.ts`: the two `cookable` flags); protocol schema 12 | done (2026-10-07), `docs/handoff/survev-content.md` |
 | survev content wave, stage 2 | `backpack04`, `backpack04_cloud` (two loot perk slots), `helmet04_captain`, `helmet04_classless`; perks `assume_leadership`, `ap_rounds`, `lifeline`, `combat_stims`, `amped_explosives`, `high_velocity`; roles `captain` (succession on by default) and `classless`; survev's whole 5-level `bagSizes` | done (2026-10-07) |
 | survev content wave, stage 3 | survev's map generation for every map (`survevMapGen`) and survev's defs for nine structures (`survevMapObjects`: the Reserve's desert town, the Chrysanthemum and Twins bunkers, snow red houses and mansion); the Reserve, Oasis, Workshop, Camps, Cloud bunker, Alternate Warehouses, survev's caches and reskins, the crimson air drop; puzzle codes `reserve_vault`, `bunker_twins`, `bunker_chrys_02` | done (2026-10-07) |
-| survev baseline (W1) | every other survev-only id and map object, structure overrides (the Reserve), no balance revert, survev loot and map generation, 5-column bags, perks, roles, buildings, option B | planned (plan section 6) |
+| survev content wave, stage 3d | 50v50: survev's faction spawns, River Town, the Faction Bridge, the 50v50 warehouse, the Silo Shack, the faction caches and reskins, team colours | done (2026-10-07) |
+| survev content wave, stage 4 | 4a: survev's 21 survev-only outfits, 25 emotes and 7 heal / boost effects with their world loot; 4b: loadouts in Join (everything unlocked, no accounts); protocol schema 16 | done (2026-10-07) |
+| survev content wave, stage 5 | option B (point 3): `survevBalance` stops applying `balance-revert.json`; shared ids take survev's gameplay fields; survev's perk numbers, 50v50 outfit sides, obstacle loot | done (2026-10-07) |
+| survev parity wave | survev's server behaviour audited against the sim (19 items fixed or put behind a rules knob, the rest recorded in `docs/research/conflicts.md`); the potato-faction gold drop (schema 17); no sprite without a file; building visuals checked against survev and survev.wiki.gg | done (2026-10-08); the 50v50 video check waits for the owner's video |
+| survev baseline (W1) | every other survev-only id and map object, structure overrides (the Reserve), no balance revert, survev loot and map generation, 5-column bags, perks, roles, buildings, option B | done through the stages above (2026-10-08). Not ported, on purpose: survev's quests and pass (point 6), `outfitHalloweenTree` (the original `outfitTree` renamed: the Halloween loot keeps the original id), and 11 map object defs survev itself never spawns (no map, building, server or client code names them): `class_crate_common_classless`, `class_crate_rare_classless`, `concrete_wall_column_2x8`, `concrete_wall_column_8x3`, `gun_mount_empty`, `button_01`, `stone_08x`, `tree_13x`, `tree_14x`, `cache_04x`, and `loot_tier_barn_melee` (survev's rename of `loot_tier_sledgehammer`, the same drop on every map) |
 
 The port reads `tools/port-survev/policy.json`: `survevOnlyGameObjects` (taken as survev has them, after every original
 id, in survev order), `survevSkins` (the original base def plus the fields survev's skin changes) and
