@@ -691,7 +691,11 @@ numbers are what they are. All TTK values are seconds at 15 u unless noted.
 
 The M79, GL-06 and Milkor MGL are held like a rifle (`handHeld`, owner 2026-10-08: not heavy shoulder-fired launchers):
 the rifle pose with both hands over the gun, on the aim line (`barrelOffset` 0). The RPG-7, Panzerfaust and M202 keep the
-launcher pose on the shoulder (section 6).
+launcher pose on the shoulder (section 6). Their spent 40 mm cases (a big brass case) come out on the reload
+(`caseTiming` reload, as survev's revolvers and MP220), from the breech just in front of the right hand
+(`particle.shellOffset` 0.1 / -0.05 / 0.15 for the M79 / GL-06 / MGL: 1.1 / 0.95 / 1.15 u ahead of the body centre, on
+the aim line): one per reload for the break-action M79 and the single-shot GL-06, one per chamber for the MGL (six for
+an empty cylinder).
 
 #### M79 (`m79`)
 
