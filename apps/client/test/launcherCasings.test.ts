@@ -7,10 +7,11 @@
 import type { Vec2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, type GunDef, HELD_GUN_ART } from "@rebirth/defs";
 import type { PlayerView } from "@rebirth/sim";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { AudioEngine } from "../src/audio/audio.ts";
 import type { BulletSystem } from "../src/fx/bullets.ts";
 import { GameEffects } from "../src/fx/effects.ts";
+import type { Range } from "../src/fx/particleDefs.ts";
 import { ALL_PARTICLE_DEFS } from "../src/fx/particleDefsAll.ts";
 import type { ParticleSystem } from "../src/fx/particles.ts";
 import manifest from "../src/generated/sprite-manifest.json";
@@ -59,6 +60,26 @@ function effects(): { fx: GameEffects; added: Added[] } {
     const audio = { playSound: () => null, stop: () => {} } as unknown as AudioEngine;
     return { fx: new GameEffects(audio, particles, {} as BulletSystem), added };
 }
+
+/**
+ * How far from the body centre a case added at `c` comes to rest after `life` s with `drag`, stepped at `fps` like
+ * fx/particles.ts update (vel *= 1 / (1 + dt * drag), then pos += vel * dt).
+ */
+function restDistance(c: Added, centre: Vec2, drag: number, life: number, fps: number): number {
+    const dt = 1 / fps;
+    const p = { ...c.pos };
+    const v = { ...c.vel };
+    for (let t = 0; t < life - 1e-9; t += dt) {
+        const k = 1 / (1 + dt * drag);
+        v.x *= k;
+        v.y *= k;
+        p.x += v.x * dt;
+        p.y += v.y * dt;
+    }
+    return Math.hypot(p.x - centre.x, p.y - centre.y);
+}
+
+const ends = (r: Range): number[] => (typeof r === "number" ? [r] : [r[0], r[1]]);
 
 function player(id: string, action: "reload" | "none"): PlayerView {
     return {
@@ -137,13 +158,39 @@ describe("hand-held launcher casings", () => {
         expect((manifest as Record<string, unknown>)["part-shell-01.img"]).toBeDefined();
         const start = (d: typeof def) => (typeof d?.scaleStart === "number" ? d.scaleStart : 0);
         const width = (img: string) => (manifest as Record<string, { size?: number[] }>)[img]?.size?.[0] ?? 0;
-        // bigger than the pistol case it reuses, as wide as the shotgun shell (part-shell-03); heavier than both
+        // bigger than the pistol case it reuses, as wide as the shotgun shell (part-shell-03)
         expect(start(def)).toBeGreaterThan(start(ALL_PARTICLE_DEFS["50AE"]) * 1.5);
         expect(ALL_PARTICLE_DEFS["12gauge"]?.image).toEqual(["part-shell-03.img"]);
         expect(width("part-shell-01.img") * start(def)).toBeGreaterThanOrEqual(
             width("part-shell-03.img") * start(ALL_PARTICLE_DEFS["12gauge"]),
         );
-        const minDrag = (d: typeof def) => (typeof d?.drag === "number" ? d.drag : (d?.drag[0] ?? 0));
-        expect(minDrag(def)).toBeGreaterThan(minDrag(ALL_PARTICLE_DEFS["50AE"]));
+    });
+
+    it("the case comes to rest beside the player: never on the body (casings draw over it), short of a shotgun shell", () => {
+        const def = ALL_PARTICLE_DEFS["40mm"];
+        const shotgun = ALL_PARTICLE_DEFS["12gauge"];
+        if (!def || !shotgun) throw new Error("missing casing particle");
+        const pos = { x: 10, y: 20 };
+        const dir = { x: 1, y: 0 };
+        for (const id of LAUNCHERS) {
+            // the throw's random turn at both ends of its +-30 degrees and in the middle (effects.ts casing)
+            for (const random of [0, 0.5, 0.9999]) {
+                const spy = vi.spyOn(Math, "random").mockReturnValue(random);
+                const { fx, added } = effects();
+                fx.actionStart(player(id, "reload"), pos, dir);
+                spy.mockRestore();
+                const [c] = added.filter((a) => a.type === "40mm");
+                if (!c) throw new Error(`${id}: no case`);
+                for (const life of ends(def.life)) {
+                    for (const fps of [20, 60]) {
+                        const at = `${id} random ${random} life ${life} ${fps} fps`;
+                        const rests = ends(def.drag).map((drag) => restDistance(c, pos, drag, life, fps));
+                        const shell = ends(shotgun.drag).map((drag) => restDistance(c, pos, drag, life, fps));
+                        expect(Math.min(...rests), at).toBeGreaterThanOrEqual(GameConfig.player.radius);
+                        expect(Math.max(...rests), at).toBeLessThan(Math.min(...shell));
+                    }
+                }
+            }
+        }
     });
 });
