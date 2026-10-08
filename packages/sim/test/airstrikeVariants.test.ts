@@ -1,8 +1,9 @@
 // Rebirth air strike variants (deliberate deviation requested by the user, docs/research/rebirth-deviations.md):
 // scheduled 50v50 zones roll normal / heavy / carpet from rules.roles.factionAirstrikeVariants on their own seeded
-// stream; heavy zones drop 5 heavy shells per plane whose blast reaches 38 u over a zone grown by 24 u, carpet zones
+// stream; heavy zones drop 5 heavy shells per plane whose blast reaches 47.5 u over a zone grown by 30 u, carpet zones
 // send 6 planes that aim inside 1.4x the radius under a marker that covers every blast; the original strobe and other
-// maps stay normal, and a zone that rolls normal is the original strike.
+// maps stay normal, and a zone that rolls normal is the original strike. The air strike bombs blast x1.25 wider than
+// survev's (owner, 2026-10-08): the iron bomb 6.25-17.5, the heavy shell 17.5-47.5.
 import { createRng, type Vec2, v2 } from "@rebirth/core";
 import {
     AIRSTRIKE_AIM_LEAD,
@@ -78,13 +79,14 @@ function runStrike(game: Game, origin: Vec2, spread: Vec2[] = [0, 1, 2].map((i) 
 }
 
 describe("air strike variants (rebirth)", () => {
-    it("a forced heavy zone grows by 24 u and drops 5 heavy shells per plane, all inside its marker", () => {
+    it("a forced heavy zone grows by 30 u and drops 5 heavy shells per plane, all inside its marker", () => {
         const game = flatMapGame("faction");
         game.rules.roles.factionAirstrikeVariants = { heavy: 1 };
         const origin = clearSpot(100);
         const run = runStrike(game, origin);
         expect(run.zone.variant).toBe("heavy");
-        expect(run.zone.rad).toBe(60 + 24);
+        // the heavy shell's extra reach over an iron bomb: 47.5 - 17.5
+        expect(run.zone.rad).toBe(60 + 30);
         expect(run.planes).toBeGreaterThanOrEqual(3);
         expect(run.planes).toBeLessThanOrEqual(5);
         expect(run.bombTypes).toEqual(new Set(["bomb_heavy"]));
@@ -92,9 +94,14 @@ describe("air strike variants (rebirth)", () => {
         expect(run.log.every((e) => e.type === "explosion_bomb_heavy" && e.damageType === DamageType.Airstrike)).toBe(
             true,
         );
-        expect(getDefOfType("explosion", "explosion_bomb_heavy").rad.max).toBe(38);
+        expect(getDefOfType("explosion", "explosion_bomb_heavy").rad).toEqual({ min: 17.5, max: 47.5 });
         // planes aim inside the map's 60 u, so every shell lands inside the grown marker
         expect(run.log.every((e) => v2.distance(e.pos, run.zone.pos) < run.zone.rad)).toBe(true);
+        // and no shell's blast reaches farther past the marker than an iron bomb's can past a normal marker (a bomb's
+        // reach from its aim point plus its 17.5 u blast)
+        const ironPast =
+            airstrikeBombReach(AIRSTRIKE_VARIANTS.normal) + getDefOfType("explosion", "explosion_bomb_iron").rad.max;
+        for (const e of run.log) expect(v2.distance(e.pos, run.zone.pos) + 47.5 - run.zone.rad).toBeLessThan(ironPast);
     });
 
     it("a heavy shell hurts a player farther away than any iron bomb of the same strike could reach", () => {
@@ -102,21 +109,24 @@ describe("air strike variants (rebirth)", () => {
         const strike = (variant: "normal" | "heavy") => {
             const game = flatMapGame("faction");
             // 17 u along the strip, 24 u to its side: iron bombs land within 4 u (jitter) of the line, so the nearest
-            // is >= 20 u away, beyond explosion_bomb_iron's 14 u (and its shrapnel's 12 u); heavy shells reach 38 u
+            // is >= 20 u away, beyond explosion_bomb_iron's 17.5 u and the 1 u body (and its shrapnel's 12 u); heavy
+            // shells reach 47.5 u
             const victim = addAt(game, v2.add(origin, { x: 17, y: 24 }));
             const log = logExplosions(game);
             game.planes.addAirstrike(origin, { x: 1, y: 0 }, 0, variant);
             steps(game, 600);
             return { victim, log };
         };
+        const ironReach = getDefOfType("explosion", "explosion_bomb_iron").rad.max + GameConfig.player.radius;
+        expect(ironReach).toBe(18.5);
         const iron = strike("normal");
         expect(iron.log.map((e) => e.type)).toEqual(Array(GameConfig.airstrike.bombCount).fill("explosion_bomb_iron"));
-        expect(Math.min(...iron.log.map((e) => v2.distance(e.pos, iron.victim.pos)))).toBeGreaterThan(14 + 1);
+        expect(Math.min(...iron.log.map((e) => v2.distance(e.pos, iron.victim.pos)))).toBeGreaterThan(ironReach);
         expect(iron.victim.damageTaken).toBe(0);
 
         const heavy = strike("heavy");
         expect(heavy.log.map((e) => e.type)).toEqual(Array(5).fill("explosion_bomb_heavy"));
-        expect(Math.min(...heavy.log.map((e) => v2.distance(e.pos, heavy.victim.pos)))).toBeGreaterThan(14 + 1);
+        expect(Math.min(...heavy.log.map((e) => v2.distance(e.pos, heavy.victim.pos)))).toBeGreaterThan(ironReach);
         expect(heavy.victim.dead || heavy.victim.damageTaken > 0).toBe(true);
     });
 
@@ -125,9 +135,9 @@ describe("air strike variants (rebirth)", () => {
         game.rules.roles.factionAirstrikeVariants = { carpet: 1 };
         const run = runStrike(game, clearSpot(100));
         expect(run.zone.variant).toBe("carpet");
-        // planes aim inside 60 x 1.4 = 84 u; the marker adds a bomb's reach, its blast and the body (25.75 + 14 + 1 u,
-        // + 1 u for the wire): 126 u
-        expect(run.zone.rad).toBe(60 * 1.4 + 42);
+        // planes aim inside 60 x 1.4 = 84 u; the marker adds a bomb's reach, its blast and the body (25.75 + 17.5 +
+        // 1 u, + 1 u for the wire, rounded up): 130 u
+        expect(run.zone.rad).toBe(60 * 1.4 + 46);
         expect(run.planes).toBe(6);
         expect(run.zoneTicks * 0.01).toBeCloseTo(12.5, 1);
         expect(run.zone.duration).toBeCloseTo(12.5, 0);
@@ -143,6 +153,7 @@ describe("air strike variants (rebirth)", () => {
         // body (1 u) it reaches within rad.max
         expect(airstrikeBombReach(AIRSTRIKE_VARIANTS.carpet)).toBe(25.75);
         const blast = getDefOfType("explosion", "explosion_bomb_iron").rad.max + GameConfig.player.radius;
+        expect(blast).toBe(17.5 + 1);
         let farthestAim = 0;
         let closestToEdge = Number.POSITIVE_INFINITY;
         let bombs = 0;
@@ -179,8 +190,8 @@ describe("air strike variants (rebirth)", () => {
         game.planes.zones.addZone({ x: 300, y: 300 }, 50, 3, 1.5, 1, "carpet");
         game.planes.zones.addZone({ x: 300, y: 300 }, 50, 3, 1.5, 1, "heavy");
         expect(game.planes.zoneViews().map((z) => [z.variant, z.rad, z.duration])).toEqual([
-            ["carpet", 50 * 1.4 + 42, 1.5 + 2.5 + 6 + 2.5],
-            ["heavy", 74, 1.5 + 2.5 + 3 + 2.5],
+            ["carpet", 50 * 1.4 + 46, 1.5 + 2.5 + 6 + 2.5],
+            ["heavy", 50 + 30, 1.5 + 2.5 + 3 + 2.5],
         ]);
     });
 

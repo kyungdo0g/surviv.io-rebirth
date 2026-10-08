@@ -4,8 +4,9 @@
 //   isAirstrikePing / airstrikePingVariant) is a circle around the marker as wide as the strike lines spread to the
 //   side plus the blast of the variant's bomb (AIRSTRIKE_VARIANTS bombType): the strobe's lines fly 0 / 5 / 5 / 10 / 10
 //   u beside it (sim rules strobeAirstrikeOffset 5 u, survev projectile.ts:194-206), the carpet strobe's 1.4x as far
-//   (0 ... 21 u, 28 with Broken Arrow; defs STROBE_STRIKES offsetMult), plus the bombs' jitter, the iron bomb's 14 u
-//   blast or the heavy shell's 38 u, and the body radius;
+//   (0 ... 21 u, 28 with Broken Arrow; defs STROBE_STRIKES offsetMult), plus the bombs' jitter, the iron bomb's
+//   17.5 u blast or the heavy shell's 47.5 u (the defs' rad.max, x1.25 since the owner's 2026-10-08 strike size), and
+//   the body radius;
 // - a thrown strobe in view is a warning 3 s before its marker (survev's strikeDelay, defs STROBE_STRIKE_DELAY): its
 //   strike lines start at the strobe and run along its flight direction (sim combat/projectiles.ts: every line is a
 //   plane over the strobe, offset sideways, flying the throw direction; its bombs land from the strobe on, bombOffset
@@ -42,7 +43,7 @@ const STEP_SHARE = 0.6;
 
 const blastCache = new Map<string, number>();
 
-/** rad.max of the explosion a throwable makes (0 when it makes none): explosion_bomb_iron 14, the heavy shell 38. */
+/** rad.max of the explosion a throwable makes (0 when it makes none): explosion_bomb_iron 17.5, the heavy shell 47.5. */
 export function bombBlast(type: string): number {
     const hit = blastCache.get(type);
     if (hit !== undefined) return hit;
@@ -71,7 +72,8 @@ function strobeOfVariant(variant: AirstrikeVariant): string {
 
 /**
  * Danger radius around a strike marker of `variant` whose strobe the bot did not see: the lines' sideways spread, the
- * bombs' jitter, the variant bomb's blast and the body radius (normal 5 + 4 + 14 + 1 = 24, heavy 48, carpet 40).
+ * bombs' jitter, the variant bomb's blast and the body radius (normal 5 + 4 + 17.5 + 1 = 27.5, heavy 57.5, carpet
+ * 43.5).
  */
 export function markerRadius(variant: AirstrikeVariant | undefined, brokenArrow = false): number {
     const v = AIRSTRIKE_VARIANTS[variant ?? "normal"];

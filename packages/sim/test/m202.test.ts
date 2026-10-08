@@ -1,10 +1,9 @@
 // The M202 FLASH as the owner specified it (2026-10-08; defs rebirth/newGuns.json, docs/design/new-gun-stats.md
-// 2.8): one trigger pull fires all four rockets in a fixed, evenly spaced fan that bursts at the cursor, then the
+// 2.8): one trigger pull fires all four rockets in a fixed, evenly spaced 60° fan that bursts at the cursor, then the
 // launcher is discarded; the four blasts tile a strip at 15-25 u and kill a level 2 armoured player anywhere across
 // it; the shooter slides about 2 u back, never through a wall; each blast breaks every destructible obstacle (plated
-// ones included) and leaves indestructible walls alone. Each blast stays smaller than an air strike bomb's
-// (explosion_bomb_iron, rad 5-14; user/2026-10-08-faction-feedback): rad 4-11, so the fan narrowed from 60° to 52°,
-// the widest whole-degree fan that keeps both goals.
+// ones included) and leaves indestructible walls alone. The owner keeps this big blast (rad 5-16) and makes the air
+// strike bombs bigger instead (user/2026-10-08-strike-size: explosion_bomb_iron 6.25-17.5).
 import { createRng, math, type Vec2, v2 } from "@rebirth/core";
 import { DamageType, getDefOfType, MapObjectDefs, type ObstacleDef, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
@@ -22,9 +21,7 @@ import {
     steps,
 } from "./combatHelpers.ts";
 
-const FAN = 52;
-/** The four rockets' angles off the aim: outermost to outermost, 52 / 3 degrees apart. */
-const ANGLES = [-26, -26 / 3, 26 / 3, 26];
+const FAN = 60;
 
 /** A shooter facing +x at an open spot (or at `origin` among `obstacles`) with an M202 in hand. */
 function shooter(obstacles: ObstacleSpec[] = [], origin?: Vec2) {
@@ -46,7 +43,7 @@ const rockets = (game: Game) => game.bullets.active.filter((b) => b.bulletType =
 const degOff = (dir: Vec2) => math.rad2deg(Math.atan2(dir.y, dir.x));
 
 describe("M202 FLASH: the volley", () => {
-    it("fires all 4 rockets in one shot, in a fixed fan at -26 / -8.67 / 8.67 / 26 degrees, then is discarded", () => {
+    it("fires all 4 rockets in one shot, in a fixed fan at -30 / -10 / 10 / 30 degrees, then is discarded", () => {
         const def = getDefOfType("gun", "m202");
         expect([def.bulletCount, def.fanAngle, def.shotSpread, def.moveSpread, def.toMouseHit]).toEqual([
             4,
@@ -55,7 +52,7 @@ describe("M202 FLASH: the volley", () => {
             0,
             true,
         ]);
-        for (const i of [0, 1, 2, 3]) expect(fanDeviation(FAN, i, 4)).toBeCloseTo(ANGLES[i], 9);
+        expect([0, 1, 2, 3].map((i) => fanDeviation(FAN, i, 4))).toEqual([-30, -10, 10, 30]);
         const shots: number[][] = [];
         for (const [rng, moving] of [
             [constantRng(0.1), false],
@@ -82,17 +79,18 @@ describe("M202 FLASH: the volley", () => {
         }
         // the same evenly spaced fan whatever the random streams and whether the shooter moves
         for (const s of shots) {
-            expect(s.map((a) => +a.toFixed(6))).toEqual(ANGLES.map((a) => +a.toFixed(6)));
+            expect(s.map((a) => +a.toFixed(6))).toEqual([-30, -10, 10, 30]);
         }
     });
 
     it("the four blasts tile a strip at 15-25 u: no gap between neighbouring full-damage discs", () => {
         const exp = getDefOfType("explosion", "explosion_m202");
-        expect([exp.damage, exp.rad.min, exp.rad.max, exp.obstacleDamage]).toEqual([125, 4, 11, 42]);
-        // smaller than an air strike bomb's blast (user/2026-10-08-faction-feedback)
-        expect(exp.rad.max).toBeLessThan(getDefOfType("explosion", "explosion_bomb_iron").rad.max);
-        // neighbouring rockets 52 / 3 degrees apart burst on an arc around the muzzle, their centres 2 d sin(26 / 3°)
-        // apart: 4.5 u at 15 u, 6.0 u at 20 u, 7.5 u at 25 u
+        expect([exp.damage, exp.rad.min, exp.rad.max, exp.obstacleDamage]).toEqual([125, 5, 16, 42]);
+        // the frag's large scorch mark, drawn for its 15.6 u blast
+        expect(exp.decalType).toBe("decal_frag_large_explosion");
+        // a normal air strike bomb still clearly outsizes it (user/2026-10-08-strike-size)
+        expect(getDefOfType("explosion", "explosion_bomb_iron").rad).toEqual({ min: 6.25, max: 17.5 });
+        // neighbouring rockets 20 degrees apart burst on an arc around the muzzle, their centres 2 d sin(10°) apart
         for (const d of [15, 20, 25]) {
             const gap = 2 * d * Math.sin(math.deg2rad(FAN / 3 / 2));
             expect(gap, `${d} u`).toBeLessThanOrEqual(2 * exp.rad.min);
@@ -100,10 +98,8 @@ describe("M202 FLASH: the volley", () => {
     });
 
     it.each([15, 20, 25])("kills a full-health level 2 armoured player anywhere across the strip at %i u", (d) => {
-        // every FAN / 24 from the aim point (between the inner rockets) to the edge (an outer rocket's line): the inner
-        // rocket's line at 4, between inner and outer at 8; the weakest spot lies at about 10 (21° at 25 u: ~101 damage)
-        for (let k = 0; k <= 12; k++) {
-            const angle = (FAN / 2) * (k / 12);
+        // at the aim point (between the inner rockets), on an inner rocket's line, between inner and outer, on the edge
+        for (const angle of [0, 10, 20, 30]) {
             const { game, p } = shooter();
             const at = v2.add(p.pos, v2.mul(v2.rotate(p.dir, math.deg2rad(angle)), d));
             const t = game.getPlayer(game.addPlayer("target"))!;

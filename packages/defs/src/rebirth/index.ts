@@ -6,7 +6,7 @@ import type { ExplosionDef, GameConfigDef, GameObjectDef, LootSpawnDef, MapDef, 
 import { AIRDROP_TIER_SPLITS } from "./airdropTiers.ts";
 import { applyRebirthBuildingSpawns } from "./buildings.ts";
 import { rebirthOnlyDefs, rebirthOnlyMapObjects } from "./defs.ts";
-import { applyBalanceDeviations, type DefDeviation } from "./deviations.ts";
+import { applyBalanceDeviations, applyMapObjectDeviations, type DefDeviation } from "./deviations.ts";
 import { applyGunSpeedOverrides } from "./gunSpeeds.ts";
 import { applyNewGunLoot } from "./newGunLoot.ts";
 import { applyOwnerLoot, CLUB_VAULT_BOX, clubVaultBuilding, GOLD_BONUS_CRATES, goldBonusCrates } from "./ownerLoot.ts";
@@ -18,7 +18,7 @@ export * from "./airdropLoot.ts";
 export * from "./airdropTiers.ts";
 export * from "./airstrikeVariants.ts";
 export * from "./buildings.ts";
-export { type DefDeviation, FRAG_DECAL_TYPE, FRAG_RADIUS_MULT } from "./deviations.ts";
+export { type DefDeviation, FRAG_DECAL_TYPE, FRAG_RADIUS_MULT, IRON_BOMB_DECAL_TYPE } from "./deviations.ts";
 export * from "./gunBeta.ts";
 export * from "./gunSpeeds.ts";
 export * from "./newGunAssets.ts";
@@ -35,7 +35,7 @@ export interface RebirthDefs {
     gameObjects: Record<string, GameObjectDef>;
     /** generated map objects, then the rebirth-only ones (in registry order) */
     mapObjects: Record<string, MapObjectDef>;
-    /** balance deviations applied to generated defs */
+    /** balance deviations applied to generated defs (game objects, then map objects) */
     deviations: DefDeviation[];
     /** ids of the rebirth-only game objects, appended after every generated id */
     addedGameObjects: string[];
@@ -64,6 +64,7 @@ export function applyRebirthDefs(
         ...applyWikiStatOverrides(gameObjects),
         ...applyGunSpeedOverrides(gameObjects),
         ...applySurvevStrobe(gameObjects),
+        ...applyMapObjectDeviations(mapObjects),
     ];
     // the variant strobes are built from the strobe with its survev strikeDelay
     const addedGameObjects = append(gameObjects, rebirthOnlyDefs(generatedGameObjects, gameObjects));
@@ -72,7 +73,8 @@ export function applyRebirthDefs(
     // included) get the owner's bonus roll (ownerLoot.ts); the generated defs stay as is
     Object.assign(mapObjects, rareThrowableCrates(generatedMapObjects), clubVaultBuilding(generatedMapObjects));
     Object.assign(mapObjects, goldBonusCrates(mapObjects));
-    const addedMapObjects = append(mapObjects, rebirthOnlyMapObjects(generatedMapObjects));
+    // the heavy shell's scorch decal is built from the iron bomb's resized one
+    const addedMapObjects = append(mapObjects, rebirthOnlyMapObjects(generatedMapObjects, mapObjects));
     // every scorch decal an explosion leaves must exist (the rebirth ones point at the rebirth decals)
     for (const [id, def] of Object.entries(gameObjects)) {
         const decal = def.type === "explosion" ? (def as ExplosionDef).decalType : "";

@@ -1,7 +1,7 @@
 // Rebirth air strike variants and blast radii on the client (docs/research/rebirth-deviations.md), against the
 // loopback 50v50 map (?map=faction): a forced heavy-shell zone and a forced carpet zone reach the client with their
 // variant (zone colour, ping tint, announcement), the carpet zone is wider and sends 6 planes, the heavy shells burst
-// at the size of their 38 u radius and leave a matching scorch, a normal zone keeps the original yellow marker without
+// at the size of their 47.5 u radius and leave a matching scorch, a normal zone keeps the original yellow marker without
 // an announcement, and the frag burst and scorch follow its x1.3 radius. Zones are forced through the sandbox Game
 // (window.__rebirth.game.planes.zones.addZone, as m5.spec.ts does). Screenshots go to __screens__/airstrike-variants.
 import { expect, type Page, test } from "@playwright/test";
@@ -97,8 +97,8 @@ test.describe("50v50 air strike variants", () => {
             .toEqual(["heavy"]);
         const zone = (await zoneList(page))[0];
         expect(zone.pos).toEqual(pos);
-        // the shown radius grows by the heavy shells' extra reach (38 - 14)
-        expect(zone.rad).toBe(10 + 24);
+        // the shown radius grows by the heavy shells' extra reach (47.5 - 17.5)
+        expect(zone.rad).toBe(10 + 30);
         expect(await page.evaluate(() => (window as any).__rebirth.fx.airstrikeZones[0].color)).toBe(0xff3c1e);
         await expect
             .poll(() => page.evaluate(() => (window as any).__rebirth.match.announcement))
@@ -116,20 +116,20 @@ test.describe("50v50 air strike variants", () => {
             .poll(() => page.evaluate(() => (window as any).__rebirth.projectileTypesSeen), { timeout: 20_000 })
             .toContain("bomb_heavy");
         await page.screenshot({ path: `${SCREENS}/heavy-falling.png` });
-        // each burst is the iron bomb's (scale 2 for 14 u) grown to the 38 u radius
+        // each burst is the iron bomb's original one (scale 2 for 14 u) grown to the 47.5 u radius
         await page.waitForFunction(() => (window as any).__rebirth.fx.burstScale("explosion_bomb_heavy") > 0, null, {
             timeout: 20_000,
         });
         await page.waitForTimeout(200);
         await page.screenshot({ path: `${SCREENS}/heavy-explosion.png` });
         expect(await page.evaluate(() => (window as any).__rebirth.fx.burstScale("explosion_bomb_heavy"))).toBeCloseTo(
-            (2 * 38) / 14,
+            (2 * 47.5) / 14,
             5,
         );
         expect(await page.evaluate(() => (window as any).__rebirth.fx.particles("explosionBombHeavy"))).toBeGreaterThan(
             0,
         );
-        // the shells leave the heavy scorch mark (the iron bomb's grown by 38 / 14), not the iron bomb's
+        // the shells leave the heavy scorch mark (the iron bomb's grown by 47.5 / 17.5), not the iron bomb's
         await expect.poll(() => decalTypes(page), { timeout: 5_000 }).toContain("decal_bomb_heavy_explosion");
         // the planes keep the map's count (3)
         await expect
@@ -151,8 +151,8 @@ test.describe("50v50 air strike variants", () => {
         await expect
             .poll(async () => (await zoneList(page)).map((z) => z.variant), { timeout: 5_000 })
             .toEqual(["carpet"]);
-        // the carpet planes aim inside 1.4x the radius (14 u) and the marker covers every blast (+42 u)
-        expect((await zoneList(page))[0].rad).toBe(10 * 1.4 + 42);
+        // the carpet planes aim inside 1.4x the radius (14 u) and the marker covers every blast (+46 u)
+        expect((await zoneList(page))[0].rad).toBe(10 * 1.4 + 46);
         expect(await page.evaluate(() => (window as any).__rebirth.fx.airstrikeZones[0].color)).toBe(0xe040ff);
         await expect.poll(() => page.evaluate(() => (window as any).__rebirth.match.announcement)).toBe("대공습 경보");
         expect(await page.evaluate(() => (window as any).__rebirth.fx.pingTint)).toBe(0xe040ff);
@@ -168,7 +168,8 @@ test.describe("50v50 air strike variants", () => {
         await expect
             .poll(() => page.evaluate(() => (window as any).__rebirth.strikePlanesSeen - 0), { timeout: 30_000 })
             .toBe(planesBefore + 6);
-        expect(await page.evaluate(() => (window as any).__rebirth.fx.burstScale("explosion_bomb_iron"))).toBe(2);
+        // the iron bomb's burst grows x1.25 with its blast (14 -> 17.5 u)
+        expect(await page.evaluate(() => (window as any).__rebirth.fx.burstScale("explosion_bomb_iron"))).toBe(2.5);
         await stopKeepAlive();
         expect(errors).toEqual([]);
     });

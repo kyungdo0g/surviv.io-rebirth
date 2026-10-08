@@ -18,7 +18,7 @@
 
 ## Explosion types
 
-> The rebirth deliberately enlarges `explosion_frag` to 6.5–15.6 (×1.3) and adds the heavy air strike shell `explosion_bomb_heavy` (radius 14–38) at the owner's request; this table keeps the original values. See `rebirth-deviations.md`.
+> The rebirth deliberately enlarges `explosion_frag` to 6.5–15.6 (×1.3) and `explosion_bomb_iron` to 6.25–17.5 (×1.25, with its scorch decal) and adds the heavy air strike shell `explosion_bomb_heavy` (radius 17.5–47.5) at the owner's request; this table keeps the original values. See `rebirth-deviations.md`.
 
 | id | damage | obstacle × | rad min–max | shrapnel | source(s) | status | sources |
 |---|---|---|---|---|---|---|---|

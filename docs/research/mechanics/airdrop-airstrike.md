@@ -120,6 +120,8 @@
 | map ping | `ping_airstrike`: yellow `0xeaff00`, 2 s world and 2 s map, shown in the world, sound `ping_airstrike_01` | [src:survev/shared/defs/gameObjects/pingDefs.ts:70-81] [src:fandom/Air_Strike] [H] |
 | potato mode | bombs carry `weaponSourceType "strobe"` so kills swap weapons like a strobe kill | [src:survev/server/src/game/objects/plane.ts:694] [M] |
 
+> The rebirth grows the air strike bombs' blast ×1.25 at the owner's request (2026-10-08): `explosion_bomb_iron` radius 6.25–17.5 with its scorch mark, the rebirth heavy shell 17.5–47.5; damage and shrapnel stay. See `rebirth-deviations.md` "Air strike bomb size".
+
 ## Strobe (player-called air strike)
 
 - `strobe` ("IR Strobe"): throw speed 25, velZ 5, not cookable, does not explode on impact, fuse 13.5 s ending in `explosion_strobe` (1 dmg, ×5 vs obstacles, radius 1.5–2.5, 3 × `shrapnel_strobe` at 3 dmg, range 3) [src:survev/shared/defs/gameObjects/throwableDefs.ts:357-375] [src:survev/shared/defs/gameObjects/explosionsDefs.ts:51-60] [src:kong/relaunch-client-defs] [src:fandom/Strobe] [H]
