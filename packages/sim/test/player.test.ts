@@ -1,7 +1,6 @@
 import { v2 } from "@rebirth/core";
 import { GameConfig, getDefOfType } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { pointInPolygon } from "../src/geom/polygon.ts";
 import {
     emptyInput,
     Game,
@@ -52,9 +51,11 @@ describe("player movement", () => {
         expect(p.helmet).toBe("");
         expect(p.chest).toBe("");
         expect(p.zoom).toBe(GameConfig.scopeZoomRadius.desktop["1xscope"]);
-        // spawned on dry grass
+        // spawned on dry land inside the shore inset (survev canPlayerSpawn: beach sand counts)
         expect(game.world.isOnWater(p.pos, 0)).toBe(false);
-        expect(pointInPolygon(p.pos, game.world.terrain.grass)).toBe(true);
+        const inset = game.mapData.shoreInset;
+        expect(p.pos.x).toBeGreaterThanOrEqual(inset);
+        expect(p.pos.y).toBeLessThanOrEqual(game.mapData.height - inset);
     });
 
     it("moves at moveSpeed + fists equip speed (13 u/s) in a straight line", () => {

@@ -251,7 +251,7 @@ export class Game implements GameApi, SimContext {
         return ++this.eventSeq;
     }
 
-    /** Whether a player may spawn at `pos`: on grass, dry, not inside obstacles or buildings (survev canPlayerSpawn). */
+    /** Whether a player may spawn at `pos`: dry, not inside obstacles or buildings (survev canPlayerSpawn). */
     canPlayerSpawn(pos: Vec2): boolean {
         return canPlayerSpawn(this, pos);
     }

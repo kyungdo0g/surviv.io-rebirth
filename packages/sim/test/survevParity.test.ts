@@ -1,17 +1,20 @@
 // survev server parity (docs/handoff/survev-content.md "Survev parity wave", item 2): behaviours of survev's server
 // that the audit found missing or different. Each case cites the survev source it follows.
-import { v2 } from "@rebirth/core";
+import { createRng, v2 } from "@rebirth/core";
 import { DamageType, GameObjectDefs, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import {
     addPerk,
+    canPlayerSpawn,
     defaultModeRules,
     Game,
     killPlayer,
     type Player,
     pickupLoot,
     randomDropCandidates,
+    randomSpawnPos,
     randomWeaponSwap,
+    terrainSurfaceAt,
 } from "../src/index.ts";
 import { flatGame, giveGun, openSpot, spawnAt, steps } from "./combatHelpers.ts";
 import { cookAndThrow, holdThrowable } from "./fxHelpers.ts";
@@ -260,5 +263,46 @@ describe("kill leader and despawning", () => {
         plain.timeAlive = 0;
         game.disconnectPlayer(plain.id);
         expect(game.getPlayer(plain.id)).toBeUndefined();
+    });
+});
+
+describe("spawn points (survev map.ts getRandomSpawnPos / canPlayerSpawn)", () => {
+    it("beach sand is a spawn point; water is not (survev only refuses isOnWater)", () => {
+        const game = new Game(
+            { mapName: "main", seed: 12345 },
+            { generation: cachedMap("main", 12345), spawnLoot: false },
+        );
+        const { width, height, shoreInset } = game.mapData;
+        let beach: { x: number; y: number } | undefined;
+        for (let x = shoreInset; x < width / 2 && !beach; x += 1) {
+            const pos = { x, y: height / 2 };
+            if (terrainSurfaceAt(game.world.terrain, pos) === "sand" && !game.world.isOnWater(pos, 0)) beach = pos;
+        }
+        expect(beach).toBeDefined();
+        expect(canPlayerSpawn(game, beach!)).toBe(true);
+    });
+
+    it("a spawn point keeps 16 u from an enemy's grenade on the ground layer, not from a teammate's", () => {
+        const game = flatGame();
+        const pos = openSpot(game, 80);
+        const thrower = spawnAt(game, v2.add(pos, { x: 40, y: 0 }));
+        holdThrowable(thrower, "frag", 3);
+        cookAndThrow(game, thrower, 10, 0);
+        const frag = game.projectiles.projectiles.find((p) => p.ownerId === thrower.id)!;
+        expect(frag).toBeDefined();
+        // the only open spot within reach: a box of 1 u around the grenade
+        const near = { min: v2.sub(frag.pos, { x: 0.5, y: 0.5 }), max: v2.add(frag.pos, { x: 0.5, y: 0.5 }) };
+        const rng = createRng(1);
+        const spot = randomSpawnPos(game, rng, null, near);
+        // every candidate is within 16 u of the grenade: none is clear, the first valid one is the fallback
+        expect(v2.distance(spot, frag.pos)).toBeLessThan(16);
+        const far = { min: v2.sub(frag.pos, { x: 30, y: 30 }), max: v2.add(frag.pos, { x: 30, y: 30 }) };
+        for (let i = 0; i < 20; i++) {
+            const p = randomSpawnPos(game, rng, null, far);
+            expect(v2.distance(p, frag.pos)).toBeGreaterThanOrEqual(16);
+        }
+        // the thrower's own group ignores it
+        const own = randomSpawnPos(game, rng, thrower.group, near);
+        expect(v2.distance(own, frag.pos)).toBeLessThan(16);
     });
 });
