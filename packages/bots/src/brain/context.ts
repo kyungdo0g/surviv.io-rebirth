@@ -180,6 +180,12 @@ export class BrainMemory {
     lastThrowPos: Vec2 | null = null;
     lastSmoke = Number.NEGATIVE_INFINITY;
     lastUseObstacle = Number.NEGATIVE_INFINITY;
+    /**
+     * Doors the bot set moving itself, away from where it stands (the doors a puzzle's pieces, a control panel or a
+     * vault door's delay open: brain/puzzle.ts), with the time until which they may still move: when they do, it is
+     * no sign of anyone else (brain/doors.ts)
+     */
+    readonly ownDoors = new Map<number, number>();
     /** goal the path follower could not reach, and until when it is avoided */
     failedGoal: Vec2 | null = null;
     failedUntil = 0;

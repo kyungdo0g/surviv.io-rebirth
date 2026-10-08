@@ -498,6 +498,9 @@ function pressPiece(ctx: BrainCtx, site: PuzzleSite, piece: SitePiece, intent: I
             pm.pressId = piece.id;
             pm.pressedAt = ctx.now;
             pm.pressSeq = seqOf(o);
+            // the doors this press may set moving: the bot knows it is its own doing (no door alert, brain/doors.ts)
+            const until = ctx.now + site.entry.openAfter + DOOR_GRACE;
+            for (const door of site.doors) ctx.mem.ownDoors.set(door.id, until);
         }
         return;
     }

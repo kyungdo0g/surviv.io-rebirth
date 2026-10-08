@@ -94,10 +94,12 @@ export class DoorBrain implements DoorUseSink {
 
     /**
      * Who accounts for a change of door `o` (`before`: its collider before): the bot when it just pressed Use in reach of
-     * it, a friend or an enemy on the screen next to it, else the bot when it stood next to it (an automatic door opening
-     * for it, a punch), else nobody the bot knows of.
+     * it or set it moving from afar (BrainMemory.ownDoors), a friend or an enemy on the screen next to it, else the bot
+     * when it stood next to it (an automatic door opening for it, a punch), else nobody the bot knows of.
      */
     private causeOf(ctx: BrainCtx, o: SeenObstacle, before: Collider): DoorCause {
+        // a door the bot's own switch, panel or vault press set moving (brain/puzzle.ts), however far from it
+        if ((ctx.mem.ownDoors.get(o.view.id) ?? Number.NEGATIVE_INFINITY) >= ctx.now) return "self";
         const reach = useReach(o.def) + CAUSE_MARGIN;
         const shape = this.watch.shape(ctx.model, o);
         const closed = shape?.closedCol ?? o.col;

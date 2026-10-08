@@ -91,6 +91,13 @@ describe("puzzles in a game", () => {
         const t2 = runUntil(game, [bot], () => boxes.every((id) => !alive(game, id)), 40 * SECOND);
         expect(t2).toBeGreaterThan(0);
         expect(alive(game, club.blockers[0].id)).toBe(false);
+        // (with the doors flag on too: the secret door it opened from the switches is its own doing, no door alert
+        // that would end the attempt before the room)
+        const doors = bot.bot.brain.doors;
+        expect(doors).not.toBeNull();
+        const heard = doors?.watch.events.filter((e) => e.id === door.id) ?? [];
+        expect(heard.length).toBeGreaterThan(0);
+        expect(heard.every((e) => e.cause === "self")).toBe(true);
     });
 
     it("a beginner without the club code leaves its switches alone but presses the bathhouse switch", () => {
