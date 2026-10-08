@@ -1,7 +1,7 @@
 // Placement strategies chosen by a definition's terrain flags (survev map.ts genOnGrass, genOnBeach, genOnRiver,
 // genOnRiverShore, genOnWaterEdge, genBridge, genRiverCabin, genLocationSpawn, genFromMapDef, genDensitySpawn).
 import { type Bounds, math, type Vec2, v2 } from "@rebirth/core";
-import { getMapObjectDef, REBIRTH_FRONT_LINE_BUILDINGS } from "@rebirth/defs";
+import { getMapObjectDef, REBIRTH_FRONT_LINE_BUILDINGS, REBIRTH_OWN_HALF_BUILDINGS } from "@rebirth/defs";
 import { boundsInsideBounds } from "../geom/polygon.ts";
 import { rotateOri, toBounds, transformOri } from "../geom/transform.ts";
 import { getBoundingAabb, getBoundingCollider } from "./bounds.ts";
@@ -40,7 +40,12 @@ function teamIdOf(type: string): number | undefined {
 function factionGrassPos(gen: MapGenerator, type: string, spawn: Bounds): Vec2 {
     const teamId = teamIdOf(type);
     let idx: number;
-    if (REBIRTH_FRONT_LINE_BUILDINGS.has(type)) {
+    if (REBIRTH_OWN_HALF_BUILDINGS.has(type) && teamId) {
+        // rebirth home buildings too big for the edge tenth's spawn band (the military bases): their faction's half
+        // without its spawn tenth (Red slices 1-4, Blue 5-8)
+        const half = FACTION_DIVISIONS / 2;
+        idx = teamId === 1 ? gen.rng.int(1, half - 1) : gen.rng.int(half, FACTION_DIVISIONS - 2);
+    } else if (REBIRTH_FRONT_LINE_BUILDINGS.has(type)) {
         // rebirth front-line buildings (packages/defs rebirth/buildings.ts): a neutral one in a tenth touching the
         // river line, a team's in its own two tenths beside it (Red low, Blue high, like the spawn slices)
         const half = FACTION_DIVISIONS / 2;

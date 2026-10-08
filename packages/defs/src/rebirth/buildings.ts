@@ -35,6 +35,12 @@ export const REBIRTH_FRONT_LINE_BUILDINGS: ReadonlySet<string> = new Set([
     ...BLOCKHOUSE_FACTIONS.map((f) => f.id),
 ]);
 
+/**
+ * 50v50 home buildings (sim mapgen placement.ts): a faction's (`teamId`) goes in its own half outside its spawn tenth,
+ * where `teamId` alone would put it on the spawn edge (the military bases are too big for that band).
+ */
+export const REBIRTH_OWN_HALF_BUILDINGS: ReadonlySet<string> = new Set(["military_base_01r", "military_base_01b"]);
+
 /** Sprite ids of every rebirth building image, with their size (the client's sprite manifest entries). */
 export function rebirthBuildingArt(): RebirthBuildingArt[] {
     return [
