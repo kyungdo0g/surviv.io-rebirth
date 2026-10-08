@@ -104,10 +104,14 @@ describe("underground navigation", () => {
             "bunker_structure_05",
             "bunker_structure_08",
             "club_structure_01",
+            // the mansion's cellar: on the rebirth's bigger main map the random rotation spawns all of mansion, police
+            // and bank (packages/defs rebirth/mapScale.ts, choose 3)
+            "mansion_structure_01",
         ]);
         // bridges only have loot stairs
         expect(gen.mapData.objects.some((o) => o.type.startsWith("bridge_"))).toBe(true);
-        expect(ug.portals).toHaveLength(14);
+        // two per structure (the mansion cellar's two stairs among them)
+        expect(ug.portals).toHaveLength(16);
         for (const p of ug.portals) {
             // every portal leads from the main ground area to its underground floor
             expect(p.top && p.bottom).toBeTruthy();
