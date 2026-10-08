@@ -59,13 +59,14 @@ export function scaleMapDef(def: MapDef, k: number, onGrass: (type: string) => b
     const ratio = (variant: Variant) => (landSide(grown, variant) / landSide(def, variant)) ** 2;
     const small = ratio("small");
     const large = ratio("large");
-    // a one-off stays one: a landmark, or the first building of a type that a scheduled unlock opens
-    const grow = (n: number, r: number) => (n === 1 ? 1 : Math.round(n * r));
+    // a one-off stays one (a landmark, or the first building of a type that a scheduled unlock opens): a count of 1,
+    // or 1 on both scale variants; a variant's 1 beside a larger count grows like any other
     const count = (type: string, c: SpawnCount): SpawnCount => {
         if (!onGrass(type)) return c;
-        if (typeof c === "number") return grow(c, large);
+        if (typeof c === "number") return c === 1 ? 1 : Math.round(c * large);
         if ("odds" in c) return c;
-        return { small: grow(c.small, small), large: grow(c.large, large) };
+        if (c.small === 1 && c.large === 1) return c;
+        return { small: Math.round(c.small * small), large: Math.round(c.large * large) };
     };
     return {
         ...grown,

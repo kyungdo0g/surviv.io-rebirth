@@ -2,9 +2,11 @@
 // 50v50) to its game, so a cap above the map's design count plays on a larger map, which the Map message carries; the
 // default caps keep the maps' own sizes.
 import { MsgType, ServerMsgDecoder } from "@rebirth/protocol";
+import { MAX_PLAYERS_IN_GAME } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import { makeConfig } from "../src/config.ts";
-import { GameRoom } from "../src/room.ts";
+import { GameHost } from "../src/host.ts";
+import { GameRoom, type RoomMember } from "../src/room.ts";
 
 /** The map width a client decodes from the room's Map message. */
 function decodedWidth(room: GameRoom): number {
@@ -32,4 +34,23 @@ describe("a room's player cap", () => {
         expect(new GameRoom(config, "faction", 3, 0, 4).game.mapData.width).toBe(1034);
         expect(new GameRoom(makeConfig({ log: false, maxPlayers: 1 }), "main", 3, 0, 1).game.mapData.width).toBe(842);
     });
+
+    it("never lets a game hold more than 255 players, whoever routed or joined", () => {
+        expect(MAX_PLAYERS_IN_GAME).toBe(255);
+        const member: RoomMember = { ack: 0, bufferedAmount: 0, sendFrame: () => {} };
+        const host = new GameHost(makeConfig({ log: false, maxPlayers: 255, botFill: 0 }));
+        const room = host.createRoom("main");
+        // players without a seat: bots or humans who left but stay in the game
+        for (let i = 0; i < 254; i++) room.game.addPlayer(`gone ${i}`);
+        expect([room.isFull, room.canJoin()]).toEqual([false, true]);
+        // a party of 2 no longer fits this game: find_game opens another
+        expect(host.findRoom("main", 1, 2)).not.toBe(room);
+        expect(host.findRoom("main", 1, 1)).toBe(room);
+        room.join(member, "last");
+        expect(room.gamePlayerCount).toBe(255);
+        // full for routing and for a Join that arrives anyway (session.join checks isFull)
+        expect([room.isFull, room.canJoin()]).toEqual([true, false]);
+        expect(host.findRoom("main", 1, 1)).not.toBe(room);
+        for (let i = 0; i < 5; i++) room.tick();
+    }, 60_000);
 });

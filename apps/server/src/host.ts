@@ -4,6 +4,7 @@
 // empty for the grace period. Games are per map and team mode (M6a: duo and squad games).
 import { randomInt } from "node:crypto";
 import { MapDefs } from "@rebirth/defs";
+import { MAX_PLAYERS_IN_GAME } from "@rebirth/sim";
 import type { SuspectFlag } from "./anticheat/match.ts";
 import { effectiveTeamMode, roomCapacity, type ServerConfig } from "./config.ts";
 import { GameRoom, type RoomStats } from "./room.ts";
@@ -77,7 +78,12 @@ export class GameHost {
         let best: GameRoom | null = null;
         for (const room of this.rooms.values()) {
             if (room.mapName !== mapName || room.teamMode !== teamMode || !room.canJoin()) continue;
-            if (room.playerCount + this.tokens.pendingFor(room.id) + seats > capacity) continue;
+            const pending = this.tokens.pendingFor(room.id);
+            if (room.playerCount + pending + seats > capacity) continue;
+            // the game itself holds at most MAX_PLAYERS_IN_GAME (bots and players who left count; a bot leaving for a
+            // human frees one place per join)
+            const botPlace = room.bots?.canMakeRoom() ?? false;
+            if (!botPlace && room.gamePlayerCount + pending + seats > MAX_PLAYERS_IN_GAME) continue;
             // the oldest joinable game fills first (survev gameProcessManager)
             if (!best || room.createdAt < best.createdAt) best = room;
         }

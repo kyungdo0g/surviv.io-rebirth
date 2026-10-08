@@ -106,5 +106,12 @@ describe("maps follow the player cap", () => {
         // grown once from the survev counts by the land area (side less the 2 x 48 shore): small (1048 / 624)² ≈ 2.8,
         // large (1129 / 672)² ≈ 2.8 (survev house_red_01 3 / 4, tree_02 3); the coast's huts keep theirs
         expect(grown).toMatchObject({ house_red_01: { small: 8, large: 11 }, tree_02: 8, hut_01: 3 });
+        // a variant's 1 beside a larger count is not a one-off: solo maps get their warehouses, barns and teahouses too
+        expect(own).toMatchObject({ warehouse_01: { small: 1, large: 3 }, barn_01: { small: 1, large: 4 } });
+        expect(grown).toMatchObject({
+            warehouse_01: { small: 3, large: 6 },
+            barn_01: { small: 3, large: 8 },
+            teahouse_complex_01su: { small: 3, large: 6 },
+        });
     });
 });

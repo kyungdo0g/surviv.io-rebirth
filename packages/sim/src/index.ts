@@ -75,7 +75,7 @@ export {
     loadoutChoices,
     validateLoadout,
 } from "./match/loadout.ts";
-export { KILL_LEADER_ROLE, Match, type MatchOptions, playerStats } from "./match/match.ts";
+export { KILL_LEADER_ROLE, MAX_PLAYERS_IN_GAME, Match, type MatchOptions, playerStats } from "./match/match.ts";
 export type { CombatObserver } from "./match/observer.ts";
 export { type FallingAirdrop, type PlaneState, PlaneSystem } from "./match/planes.ts";
 export { canPlayerSpawn, randomSpawnPos, teammateSpawnPos } from "./match/spawn.ts";
