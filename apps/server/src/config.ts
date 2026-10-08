@@ -104,7 +104,7 @@ export interface ServerConfig {
      * normal, hard)
      */
     botDifficulty: BotDifficultySetting;
-    /** tier weights of "mixed": beginner / intermediate / expert (BOT_SKILL_MIX, default 35 / 45 / 20) */
+    /** tier weights of "mixed": beginner / intermediate / expert (BOT_SKILL_MIX, default 20 / 65 / 15) */
     botSkillMix: Record<SkillTierName, number>;
     /** fill bots get personas (BOT_PERSONAS, default on) */
     botPersonas: boolean;

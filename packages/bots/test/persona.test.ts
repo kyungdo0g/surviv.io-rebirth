@@ -192,7 +192,7 @@ describe("persona and skill determinism", () => {
         expect(pop.players.map((p) => p.name)).toEqual(legacy.players.map((p) => p.name));
         const tiers: Record<string, number> = {};
         for (const p of pop.players) tiers[p.tier] = (tiers[p.tier] ?? 0) + 1;
-        expect(tiers).toEqual({ beginner: 7, intermediate: 9, expert: 4 });
+        expect(tiers).toEqual({ beginner: 4, intermediate: 13, expert: 3 });
         expect(pop.players.every((p) => p.persona !== "neutral")).toBe(true);
         expect(legacy.players.every((p) => p.persona === "neutral")).toBe(true);
         expect(legacy.players.map((p) => p.tier)).toEqual(

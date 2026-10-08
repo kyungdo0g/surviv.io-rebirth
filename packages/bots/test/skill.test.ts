@@ -210,8 +210,8 @@ describe("skill tiers", () => {
         expect(skillSigma(2)).toBe(skillSigma(1));
     });
 
-    it("the server mix is 35 / 45 / 20 and parses from BOT_SKILL_MIX", () => {
-        expect(DEFAULT_SKILL_MIX).toEqual({ beginner: 35, intermediate: 45, expert: 20 });
+    it("the server mix is 20 / 65 / 15 and parses from BOT_SKILL_MIX", () => {
+        expect(DEFAULT_SKILL_MIX).toEqual({ beginner: 20, intermediate: 65, expert: 15 });
         expect(parseSkillMix("35,45,20")).toEqual({ beginner: 35, intermediate: 45, expert: 20 });
         expect(parseSkillMix(" 1, 0 ,3")).toEqual({ beginner: 1, intermediate: 0, expert: 3 });
         for (const bad of ["", "1,2", "1,2,3,4", "a,b,c", "-1,2,3", "0,0,0"])

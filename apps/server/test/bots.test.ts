@@ -53,9 +53,9 @@ describe("config", () => {
         expect(() => loadConfig({ BOT_FILL: "-1" })).toThrow(/BOT_FILL/);
     });
 
-    it("reads the population mix: BOT_SKILL_MIX (35/45/20 by default) and BOT_PERSONAS (on by default)", () => {
+    it("reads the population mix: BOT_SKILL_MIX (20/65/15 by default) and BOT_PERSONAS (on by default)", () => {
         expect(loadConfig({})).toMatchObject({
-            botSkillMix: { beginner: 35, intermediate: 45, expert: 20 },
+            botSkillMix: { beginner: 20, intermediate: 65, expert: 15 },
             botPersonas: true,
         });
         expect(loadConfig({ BOT_SKILL_MIX: "1, 1, 0", BOT_PERSONAS: "off" })).toMatchObject({
@@ -81,7 +81,7 @@ function botsOf(fill: BotFill) {
 }
 
 describe("bot fill population", () => {
-    it("mixed: tiers come from shuffle bags of 20 (7/9/4), each bot's skill inside its band, with personas", () => {
+    it("mixed: tiers come from shuffle bags of 20 (4/13/3), each bot's skill inside its band, with personas", () => {
         const fill = filled(40);
         const bots = botsOf(fill);
         expect(bots).toHaveLength(40);
@@ -96,7 +96,7 @@ describe("bot fill population", () => {
             expect(bot.persona).not.toBe(NEUTRAL);
             personas.add(bot.persona.name);
         }
-        expect(tiers).toEqual({ beginner: 14, intermediate: 18, expert: 8 });
+        expect(tiers).toEqual({ beginner: 8, intermediate: 26, expert: 6 });
         expect(personas.size).toBeGreaterThanOrEqual(5);
     }, 30_000);
 
