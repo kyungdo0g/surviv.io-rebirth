@@ -13,9 +13,11 @@
 //   handling and ammo, cut to the previous list's shape. F = expert TTK / beginner TTK at level 1 armour, aim errors
 //   1.6 and 5.4 degrees, shooter moving half the time, magazine and reloads included; lower F = more skill-sensitive.
 //   Explosive guns score by their explosions (the PMG-134 and the potato guns too), single-use guns per pickup;
-// - kept against the stats (gun-tiers.md section 5): the owner's rulings "M249 / PKP on top" (report 12), the Mosin
-//   A and the MK12 / M39 B+ (report 33), "pistols low" (report 12: single pistols B at most, duals A-), and two
-//   behaviour pins, the AK-47 at B (owner item 43) and the M9 at D;
+// - kept against the stats (gun-tiers.md sections 1a and 5): the owner's rulings "M249 / PKP on top" (report 12),
+//   "pistols low" (report 12: single pistols B at most, duals A-), the Mosin A and the MK12 / M39 B+ (report 33), then
+//   those of 2026-10-08: every DMR and sniper one tier up from the reviewed list (MK12 / M39 A-, Mosin A+; S-aim
+//   stays), the RPG-7 A-, the Panzerfaust B+, the M202 A+; and two behaviour pins, the AK-47 at B (owner item 43) and
+//   the M9 at D. Tiers are shared; a bot's own taste (fire-rate lover, class bias) sits on top (persona.ts);
 // - "everyone wants these": namu.md:319 ("USAS, PKP, M249 같은 OP 무기") and namu.md:253 (golden air drops); AWM-S hard
 //   to aim (bullet speed 136): namu.md:141; the M1911 "worst gun": namu.md:138;
 // - the PMG-134 (potato_lmg), a potato gun ("special" in the KB), is an LMG to the bots since round 5 (report 34), the
@@ -90,19 +92,20 @@ type Row = [id: string, tier: GunTier, F: number, mainMap: boolean];
 const ROWS: readonly Row[] = [
     // tiers and F: docs/design/gun-tiers.md (a stat composite over class-band TTK, range, damage per shot, sustain,
     // handling and ammo; F = expert / beginner band TTK at level 1 armour, aim error 1.6 / 5.4 degrees). Owner rulings
-    // kept where the stats differ: M249 S (stats A+), Mosin A (C+), MK12 and M39 B+ (A), pistols low.
+    // kept where the stats differ: M249 S (stats A+), pistols low; 2026-10-08: every DMR and sniper one tier up (the
+    // MK12 / M39 A-, the Mosin A+), the RPG-7 A-, the Panzerfaust B+, the M202 A+.
     // LMGs: the M249 and the PKP on top (S-rule); the DShK scores with the M249 but is the heaviest gun (9 / 2 u/s)
     ["m249", "S", 0.57, true], ["pkp", "S", 0.6, true], ["qbb97", "A", 0.56, true], ["dp28", "A-", 0.6, true],
     ["bar", "B+", 0.44, true], // survev's main tables drop it (tier_guns, tier_chest, tier_lmgs, air drops)
-    // snipers: the AWM-S, Hecate, M200 and Lynx one-shot level 1 and the Barrett two-hits any armour (S-aim). The
-    // Mosin is A by ruling (3 hits through level 1); the SV-98 beats it on every stat, so never below it
-    ["awc", "S-aim", 0.26, true], ["sv98", "A", 0.32, true], ["mosin", "A", 0.33, true], ["scout_elite", "B+", 0.31, true],
-    ["blr", "B", 0.36, false], ["model94", "B-", 0.33, false],
-    // DMRs: the MK12 and the M39 are B+ by ruling; the VSS, Mk45G and Mk 14 score no better than the M39, so B+ too;
-    // the Garand's expert composite just reaches the top band (S-aim)
-    ["mk12", "B+", 0.36, true], ["m39", "B+", 0.39, true], ["garand", "S-aim", 0.32, true], ["vss", "B+", 0.4, true],
+    // snipers: the AWM-S, Hecate, M200 and Lynx one-shot level 1 and the Barrett two-hits any armour (S-aim). Owner
+    // 2026-10-08: every other sniper one tier up; the Mosin (stats C+: 3 hits through level 1) A+ with the SV-98
+    ["awc", "S-aim", 0.26, true], ["sv98", "A+", 0.32, true], ["mosin", "A+", 0.33, true], ["scout_elite", "A-", 0.31, true],
+    ["blr", "B+", 0.36, false], ["model94", "B", 0.33, false],
+    // DMRs: the MK12 and the M39 are the owner's low DMRs (A- after the 2026-10-08 bump of every DMR and sniper); the
+    // VSS, Mk45G and Mk 14 score no better than the M39, so A- too; the Garand reaches the top band (S-aim)
+    ["mk12", "A-", 0.36, true], ["m39", "A-", 0.39, true], ["garand", "S-aim", 0.32, true], ["vss", "A-", 0.4, true],
     // (round 6 loot handoff: the SVD and the SCAR-SSR reach the classic map in the gold drop, the L86 in tier 1 air drops)
-    ["svd", "A", 0.36, true], ["scarssr", "S", 0.41, true], ["l86", "A", 0.4, true], ["mkg45", "B+", 0.37, false],
+    ["svd", "A+", 0.36, true], ["scarssr", "S", 0.41, true], ["l86", "A+", 0.4, true], ["mkg45", "A-", 0.37, false],
     // assault rifles: the AN-94 leads; the SCAR-H's 20-round magazine drops it to B+; the AK-47 is pinned at B (item 43)
     ["scar", "B+", 0.4, true], ["m4a1", "A-", 0.42, true], ["famas", "A-", 0.44, true], ["grozas", "A-", 0.46, true],
     ["ak47", "B", 0.48, true], ["hk416", "B", 0.51, true], ["groza", "B", 0.51, true],
@@ -129,7 +132,7 @@ const ROWS: readonly Row[] = [
     // at A-; the IMD-2 is a light LMG (B+); the S&W 500 is capped with the pistols; the winter skins as their base gun
     ["barrett", "S-aim", 0.31, true], ["ash12", "A-", 0.41, false], ["spas16", "S", 0.88, true],
     ["imbel", "B+", 0.53, false], ["sw500", "B", 0.47, false],
-    ["svd_winter", "A", 0.36, false], ["sv98_winter", "A", 0.32, false], ["awc_winter", "S-aim", 0.26, false],
+    ["svd_winter", "A+", 0.36, false], ["sv98_winter", "A+", 0.32, false], ["awc_winter", "S-aim", 0.26, false],
     // the PMG-134 (potato maps and potato drops) at its explosion damage, 8.5 x 2 every 0.07 s from a 150-round
     // magazine (report 34)
     ["potato_lmg", "A", 0.71, false],
@@ -140,17 +143,17 @@ const ROWS: readonly Row[] = [
     // damage: 3 hits through level 1)
     ["ak74", "B+", 0.45, true], ["g36c", "B", 0.47, true], ["m16a4", "A-", 0.47, true], ["sig550", "A-", 0.42, true],
     ["g3", "B+", 0.43, true], ["honeybadger", "B+", 0.46, true],
-    ["fal", "A", 0.4, true], ["mk14", "B+", 0.4, true], ["wa2000", "B", 0.31, true],
-    ["m200", "S-aim", 0.29, true], ["hecate", "S-aim", 0.23, true], ["lynx", "S-aim", 0.29, true], ["boys", "A-", 0.41, true],
+    ["fal", "A+", 0.4, true], ["mk14", "A-", 0.4, true], ["wa2000", "B+", 0.31, true],
+    ["m200", "S-aim", 0.29, true], ["hecate", "S-aim", 0.23, true], ["lynx", "S-aim", 0.29, true], ["boys", "A", 0.41, true],
     ["m60", "A", 0.6, true], ["mg42", "A-", 0.5, true], ["dshk", "A+", 0.56, true],
     ["bizon", "B", 0.73, true], ["m1928", "B+", 0.74, false], ["asval", "B", 0.52, true], ["p90", "A-", 0.71, true],
     ["dp12", "S", 0.76, true], ["aa12", "A+", 0.92, true],
     ["tec9", "B-", 0.67, true], ["tec9_dual", "B+", 0.78, true], ["vz61", "C", 0.66, true], ["vz61_dual", "C+", 0.63, true],
     // bot round 6: the beta launchers at direct hits on a strafing target, the GL-06's cursor bursts splashing near
-    // misses; the M202's 52-degree fan lands one rocket. The MGL leads (A); against a stationary target the RPG-7 and
-    // M79 score B, the Panzerfaust A-, the M202 A
-    ["m79", "C", 0.72, true], ["mgl", "A", 0.7, true], ["gl06", "A", 0.85, true], ["rpg7", "C+", 0.38, true],
-    ["panzerfaust", "C+", 0.55, true], ["m202", "B", 0.46, true],
+    // misses. Owner 2026-10-08: the M202 A+ (the endgame comeback gun), the RPG-7 A-, the Panzerfaust B+ (its
+    // downgrade); by stats they are B-, C+ and C+ (A, B and A- against a stationary target)
+    ["m79", "C", 0.72, true], ["mgl", "A", 0.7, true], ["gl06", "A", 0.85, true], ["rpg7", "A-", 0.38, true],
+    ["panzerfaust", "B+", 0.55, true], ["m202", "A+", 0.46, true],
 ];
 
 const TIERS = new Map<string, GunTierInfo>();
@@ -309,4 +312,17 @@ export function perfectTtk(id: string, helmet = "", chest = ""): number {
     const clip = Math.max(1, def.maxClip);
     const reloads = Math.floor((hits - 1) / clip);
     return (hits - 1 - reloads) * cycle + reloads * def.reloadTime;
+}
+
+/**
+ * Rounds a gun fires per second at its cyclic rate (1 / fireDelay; burst guns average the burst cadence: FAMAS, UMP9,
+ * M16A4). 0 for anything that is not a gun. The fire-rate taste (persona.ts fireRateBonus) reads it.
+ */
+export function roundsPerSecond(id: string): number {
+    if (!hasDef(id) || GameObjectDefs[id].type !== "gun") return 0;
+    const def = GameObjectDefs[id] as GunDef;
+    const burst = def.fireMode === "burst" ? Math.max(1, def.burstCount ?? 1) : 1;
+    const cycle =
+        def.fireMode === "burst" ? (def.fireDelay + (burst - 1) * (def.burstDelay ?? 0)) / burst : def.fireDelay;
+    return cycle > 0 ? 1 / cycle : 0;
 }

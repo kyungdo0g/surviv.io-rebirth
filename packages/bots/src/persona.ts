@@ -13,11 +13,12 @@
 // All values are design choices (docs/design/bot-population.md, with the critique's corrections: rusher affinities
 // smg 1.3 / rifle 1.25 / shotgun 1.15 plus a mobility term, rangeScale only for home classes, a marksman complement
 // weight of 0.3 so it carries a DMR plus a sniper, camping only with a B+ gun and armour).
-import type { Rng } from "@rebirth/core";
+import { createRng, type Rng } from "@rebirth/core";
 import {
     carryPenalty,
     gunTier,
     mobilityPenalty,
+    roundsPerSecond,
     S_RULE_GUNS,
     skillFit,
     TIER_BASE,
@@ -75,6 +76,12 @@ export interface PersonaParams {
      * never, today's bot (brain/outfits.ts)
      */
     outfitMix: Readonly<OutfitMix>;
+    /**
+     * Personal gun taste (owner 2026-10-08: "some players take a MAC-10 (Uzi) over an AK-47 because it fires faster";
+     * tiers are not absolute): 1 for a fire-rate lover, whose desire for an automatic gun grows with its rounds per
+     * second (fireRateBonus); 0 or absent for everyone else. Drawn per bot (drawGunTaste), never in a shared persona.
+     */
+    fireRateLove?: number;
 }
 
 /** Weights of the outfit habits (PersonaParams.outfitMix). */
@@ -368,8 +375,77 @@ export function shuffleBag<K extends string>(
 }
 
 /**
+ * Salt of the per-bot gun-taste stream (bot.ts: createRng(seed ^ GUN_TASTE_SALT)), apart from the persona/skill stream,
+ * so the taste draws never shift the skill, camping or outfit draws.
+ */
+export const GUN_TASTE_SALT = 0x3b9f1c27;
+/** Share of the drawn bots (every tier) that love fire rate. */
+export const FIRE_RATE_LOVER_SHARE = 0.22;
+/**
+ * Per-bot class bias: every class affinity x (1 + U(-CLASS_BIAS, CLASS_BIAS)), so loadouts vary between bots. 4 % at
+ * most: it swaps neighbouring tiers across classes, never two (the rat's SMG love leaves its AK-47 5 points over a
+ * MAC-10, which a +-6 % bias could tip).
+ */
+export const CLASS_BIAS = 0.04;
+/**
+ * The fire-rate bonus: FIRE_RATE_K desire per round per second above the AK-47's 10 (fireDelay 0.1), at most
+ * FIRE_RATE_CAP, for SMGs, assault rifles and LMGs (pistols stay backups: "pistols are low"). For a lover a MAC-10 (22.2
+ * rps, +24) outranks an AK-47 and a Vector (26.3 rps, +24) an M4A1 (12.2 rps, +4.4) in five of the seven personas; the
+ * rifleman's rifle affinity and the rusher's mobility weighing (the MAC-10's 11 degrees moving spread) keep the AK
+ * unless the class bias tips it. A MAC-10 stays under an A- rifle except for the SMG-loving rat.
+ */
+const FIRE_RATE_REF = 10;
+const FIRE_RATE_K = 2;
+const FIRE_RATE_CAP = 24;
+const FIRE_RATE_CLASSES: ReadonlySet<WeaponClass> = new Set(["smg", "rifle", "lmg"]);
+/** A fast gun the bot loves this much (bonus) is no weak gun to it (desire.ts: an under-armed bot takes it). */
+export const LIKED_FAST_BONUS = 10;
+
+/**
+ * A bot's own gun taste over its persona (bot.ts, for a drawn non-neutral persona): fire-rate lover with
+ * FIRE_RATE_LOVER_SHARE, and a class bias of up to +-CLASS_BIAS on every class affinity. Draws 1 + 8 numbers from
+ * `rng` (the bot's seeded GUN_TASTE_SALT stream). The S-rule still lifts the M249 and the PKP above every other gun of
+ * this taste (bestNonS reads the same params).
+ */
+export function drawGunTaste(base: Readonly<PersonaParams>, rng: Rng): Readonly<PersonaParams> {
+    const fireRateLove = rng.next() < FIRE_RATE_LOVER_SHARE ? 1 : 0;
+    const aff = {} as Record<WeaponClass, number>;
+    for (const c of ALL_CLASSES) {
+        if (c === "useless") {
+            aff[c] = 0;
+            continue;
+        }
+        aff[c] = base.classAffinity[c] * (1 + CLASS_BIAS * (2 * rng.next() - 1));
+    }
+    return Object.freeze({ ...base, classAffinity: Object.freeze(aff), fireRateLove });
+}
+
+/**
+ * A bot's persona (bot.ts): the named or given one, with the bot's own gun taste drawn over a named, non-neutral
+ * persona from its seeded GUN_TASTE_SALT stream (owner 2026-10-08: tiers are not absolute) unless `taste` is false.
+ * NEUTRAL and explicit parameters never draw one.
+ */
+export function botPersona(
+    p: PersonaName | PersonaParams | undefined,
+    seed: number,
+    taste = true,
+): Readonly<PersonaParams> {
+    const base = personaParams(p);
+    if (typeof p !== "string" || p === "neutral" || !taste) return base;
+    return drawGunTaste(base, createRng(seed ^ GUN_TASTE_SALT));
+}
+
+/** Extra desire a fire-rate lover has for a gun: FIRE_RATE_K per round per second above 10, capped; 0 otherwise. */
+export function fireRateBonus(id: string, p: Readonly<PersonaParams>): number {
+    if (!p.fireRateLove) return 0;
+    const t = gunTier(id);
+    if (!t || !FIRE_RATE_CLASSES.has(t.cls)) return 0;
+    return p.fireRateLove * Math.min(FIRE_RATE_CAP, FIRE_RATE_K * Math.max(0, roundsPerSecond(id) - FIRE_RATE_REF));
+}
+
+/**
  * The persona-and-skill part of a gun's loot desire (0..~100): TIER_BASE x class affinity x (1 - mobility x handicap,
- * at least half the carry share for every persona) x skillFit(s) + favourite, with the S-rule (M249, PKP: 1 above the best non-S gun of this persona and skill). LOOT's
+ * at least half the carry share for every persona) x skillFit(s) + favourite + fire-rate taste, with the S-rule (M249, PKP: 1 above the best non-S gun of this persona and skill). LOOT's
  * desire.ts adds what depends on the moment (ammo, the loadout). 0 for useless guns and non-guns. `dmrFit` (round 6,
  * report 43): DMRs take the milder DMR_FIT_SLOPE.
  */
@@ -387,7 +463,11 @@ function rawDesire(id: string, p: Readonly<PersonaParams>, s: number, dmrFit = f
     if (!t) return 0;
     // every persona minds a gun that slows it just by being carried (the DShK), rushers every handicap
     const mobility = 1 - Math.max(p.mobility * mobilityPenalty(id), CARRY_WEIGHT * carryPenalty(id));
-    return TIER_BASE[t.tier] * p.classAffinity[t.cls] * mobility * skillFit(id, s, dmrFit) + (p.favourites[id] ?? 0);
+    return (
+        TIER_BASE[t.tier] * p.classAffinity[t.cls] * mobility * skillFit(id, s, dmrFit) +
+        (p.favourites[id] ?? 0) +
+        fireRateBonus(id, p)
+    );
 }
 
 const bestCache = new WeakMap<Readonly<PersonaParams>, Map<number, number>>();

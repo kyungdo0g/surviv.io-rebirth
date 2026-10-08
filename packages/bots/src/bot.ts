@@ -26,7 +26,7 @@ import { NavGrid } from "./nav/grid.ts";
 import { installPerception } from "./perception/install.ts";
 import { concealed } from "./perception/sight.ts";
 import { type Contact, WorldModel } from "./perception/world.ts";
-import { PERSONA_SALT, type PersonaName, type PersonaParams, personaParams } from "./persona.ts";
+import { botPersona, PERSONA_SALT, type PersonaName, type PersonaParams } from "./persona.ts";
 import { drawSkill, type SkillProfile, skillOf, skillParams, tierOfSkill } from "./skill.ts";
 
 export interface BotOptions {
@@ -41,6 +41,8 @@ export interface BotOptions {
     sense?: number;
     /** persona name or custom parameters (default NEUTRAL: today's bot) */
     persona?: PersonaName | PersonaParams;
+    /** draw the bot's own gun taste over a named, non-neutral persona (persona.ts botPersona; default true) */
+    taste?: boolean;
     /** seed of the bot's own random stream (aim error, tactics, exploration) */
     seed: number;
     /** brain preset name or custom feature flags (default DEFAULT_BRAIN, "smart") */
@@ -136,7 +138,7 @@ export class Bot {
             opts.skill === undefined
                 ? difficultyParams(opts.difficulty ?? "normal")
                 : skillParams(this.skill.s, this.skill.g, this.skill.tier);
-        this.persona = personaParams(opts.persona);
+        this.persona = botPersona(opts.persona, opts.seed, opts.taste !== false);
         this.features = brainFeatures(opts.brain);
         this.brainName = brainLabel(this.features);
         this.seed = opts.seed;

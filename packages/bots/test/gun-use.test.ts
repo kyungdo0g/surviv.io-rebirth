@@ -121,17 +121,18 @@ describe("43: DMRs for average aim", () => {
     });
 
     it("pins the new desire: average aim wants a DMR above an assault rifle of its tier; experts and beginners less", () => {
-        // NEUTRAL persona; mk12 B+ (62) with F 0.36 (docs/design/gun-tiers.md): skill demand 0.78
-        expect(gunDesire("mk12", taste(0.5))).toBeCloseTo(62 * (1 - 0.6 * 0.28), 1);
+        // NEUTRAL persona; mk12 A- (68: the owner's 2026-10-08 bump of every DMR) with F 0.36
+        // (docs/design/gun-tiers.md): skill demand 0.78
+        expect(gunDesire("mk12", taste(0.5))).toBeCloseTo(68 * (1 - 0.6 * 0.28), 1);
         expect(gunDesire("mk12", taste(0.5, { dmrFit: true }))).toBeCloseTo(
-            62 * (1 - 0.3 * 0.28) + DMR_AVERAGE_BONUS,
+            68 * (1 - 0.3 * 0.28) + DMR_AVERAGE_BONUS,
             1,
         );
         expect(gunDesire("mk12", taste(0.5, { dmrFit: true }))).toBeGreaterThan(gunDesire("ak47", taste(0.5)) + 10);
         // the bonus fades out by 0.3 of skill either way: an expert (0.85) and a beginner (0.15) get none
         // (demand 0.78 is under an expert's 0.85: no penalty left)
-        expect(gunDesire("mk12", taste(0.85, { dmrFit: true }))).toBeCloseTo(62, 1);
-        expect(gunDesire("mk12", taste(0.15, { dmrFit: true }))).toBeCloseTo(62 * (1 - 0.3 * 0.63), 1);
+        expect(gunDesire("mk12", taste(0.85, { dmrFit: true }))).toBeCloseTo(68, 1);
+        expect(gunDesire("mk12", taste(0.15, { dmrFit: true }))).toBeCloseTo(68 * (1 - 0.3 * 0.63), 1);
         // bolt snipers are unchanged
         expect(gunDesire("mosin", taste(0.5, { dmrFit: true }))).toBe(gunDesire("mosin", taste(0.5)));
     });
@@ -146,8 +147,11 @@ describe("43: DMRs for average aim", () => {
         expect(slotToReplaceByDesire(self, taste(0.5, { dmrFit: true }), "mk12")).toBe(WeaponSlot.Secondary);
         expect(gunPickupValue(self, "mk12", taste(0.5))).toBe(0);
         expect(gunPickupValue(self, "mk12", taste(0.5, { dmrFit: true }))).toBeGreaterThan(30);
-        // an expert keeps its AK (no average-aim bonus)
-        expect(gunPickupValue(self, "mk12", taste(0.85, { dmrFit: true }))).toBe(0);
+        // an expert wants it less (no average-aim bonus); since the owner's 2026-10-08 bump the MK12 (A-) is a tier over
+        // the AK (B), so an expert takes it too
+        expect(gunPickupValue(self, "mk12", taste(0.85, { dmrFit: true }))).toBeLessThan(
+            gunPickupValue(self, "mk12", taste(0.5, { dmrFit: true })),
+        );
     });
 });
 

@@ -2,17 +2,19 @@
 
 Status: **applied** (2026-10-08). Rebuilds the bot gun tiers of `packages/bots/src/knowledge/gunTiers.ts` from every
 gun's final stats, at the owner's request ("총 티어 다시 짜라. 종류, 데미지, DPS, 탄창, 탄 퍼짐 등등 스탯을 다
-대조해서"). The owner saw the list; section 7 holds the `ROWS` now in `gunTiers.ts`.
+대조해서"). The owner reviewed the rebuilt list the same day and ruled on the DMRs, snipers and launchers (section 1a).
+Section 7 holds the `ROWS` now in `gunTiers.ts`.
 
 - **Scope.** All 102 guns of the current list: original, survev-only, the owner's beta guns, and since bot round 6 the
   six beta launchers and the three potato guns. The flare guns, bugle and cursed M9 deal no damage and are left out.
 - **Baseline.** "Current" means `gunTiers.ts` as of bot round 6 (owner items 42-44), frozen in
   `tools/research/gun-tiers/baseline.json`. Launchers have their own class there, the potato guns score by explosion
   damage, the DMR fit is milder (`DMR_FIT_SLOPE`), and the USAS, SVD, SCAR-SSR and L86 carry the main-map flag. The
-  stats are those of commit `edd3d24`, which includes the owner's speed pass and the M202 FLASH rework:
+  stats are those of commit `d96246a`, which includes the owner's speed pass and the M202 FLASH rework, plus the
+  M202's later revert to a 60° fan and a 5-16 u blast:
   - the M79, MGL and GL-06 lose their held-speed penalty;
   - the PMG-134 now costs 2 u/s just by being carried;
-  - the M202 fires a fixed 52° fan of four 25 + 125 rockets (blast 4-11 u, below the bomb's).
+  - the M202 fires a fixed 60° fan of four 25 + 125 rockets.
 - **Stats.** `@rebirth/defs` `getDefOfType("gun", id)` and its bullet, explosion, projectile and shrapnel defs, with
   the rebirth layer applied. Armour from `helmet01-02` / `chest01-02`, loot from the main map's tables.
 - **Files.**
@@ -32,9 +34,60 @@ gun's final stats, at the owner's request ("총 티어 다시 짜라. 종류, �
 
 {{TIERLIST}}
 
-59 of the 102 tiered guns move, 26 of them by two steps or more (25 up, 34 down). 47 of the 82 main-map guns move.
-The Spearman correlation between the current tiers and the new composite is 0.77. Section 6 gives every change with
-its reason.
+{{COUNTS}} Section 6 gives every change with its reason.
+
+## 1a. Owner rulings, 2026-10-08
+
+The owner reviewed the rebuilt list the same day. The rulings come last in `score.ts` and override the earlier ones
+(the MK12 / M39 B+ and the Mosin A of report 33):
+
+- **"Every DMR and every sniper moves up one tier."** By the bots' classes `dmr` and `sniper`, winter skins included.
+  S-aim has no higher aim tier and stays, and an S gun stays. So the MK12 and M39 go B+ → A- and the Mosin A → A+.
+  The step counts from the list the owner reviewed (d96246a, frozen in `tools/research/gun-tiers/reviewed-d96246a.json`),
+  so a later stat shift cannot make it two. The Model 94 was B- there and ends at B. Bumping its recomputed tier
+  instead would give B+, two steps: the M202's revert moved the B cut, and its stats alone now read B.
+- **The RPG-7 and the Panzerfaust are "far too low":** RPG-7 A-, Panzerfaust B+.
+- **The M202 FLASH is "overpowered, a near-certain kill, the endgame comeback gun", and the Panzerfaust is its
+  downgrade:** A+, above the Panzerfaust.
+- **"Tiers are not absolute":** some players take a MAC-10 (Uzi) over an AK-47 because it fires faster. This is no tier
+  change but a personal taste on top of the shared tiers (section 1b).
+
+{{OWNER_1008}}
+
+By stats the three launchers sit at B-, C+ and C+ against a strafing target. Against a stationary one they are A, B
+and A- (section 3), the shot bots fire them for.
+
+## 1b. Personal gun taste
+
+The tiers are what everyone agrees on; a bot's own taste sits on top (`packages/bots/src/persona.ts`, `drawGunTaste`).
+Every bot with a drawn (non-neutral) persona draws it once, from its own seeded stream (`seed ^ GUN_TASTE_SALT`), so
+it never shifts the skill, camping or outfit draws.
+
+- **Fire-rate lover**, 22 % of those bots across every skill tier. Desire +2 per round per second above the AK-47's
+  10, at most +24, for SMGs, assault rifles and LMGs; pistols stay backups.
+  - The MAC-10 (22 rps) gets +24, so it outranks the AK-47 for five of the seven personas. The rifleman's rifle love
+    and the rusher's mobility weighing keep the AK unless the class bias tips it.
+  - The Vector (+24) outranks the M4A1 (+4.4) the same way.
+  - A lover may give up a held gun up to two tiers above the one it loves (an AK-47 for a MAC-10). It never gives up
+    an S-rule, S or S-aim gun, and it does not count a loved MAC-10 as "weak".
+- **Class bias** for every such bot: each class affinity x (1 ± up to 4 %). Loadouts vary between bots, but the bias
+  never lifts a gun over one two tiers above it.
+- The S-rule keeps the M249 and the PKP on top for every taste.
+- A bot with the neutral persona or with explicit persona parameters draws no taste. `taste: false` (Bot) and
+  `population.tastes: false` (runner) turn it off.
+
+Measured on 12 seeded population matches (60 bots each, one minute, every bot armed sampled every 5 s), taste off
+against taste on with the same seeds:
+
+| | taste off | taste on |
+|---|---|---|
+| fire-rate lovers | 0 of 720 | 171 of 720 (23.8 %) |
+| SMG in the primary slot | 23.7 % | 25.4 % |
+| an SMG in either slot | 37.4 % | 40.4 % |
+| holding a MAC-10 | 7.6 % | 9.7 % |
+
+The shift is small because only the lovers move and only when a fast gun lies near them; the Vector does not spawn on
+the main map, so it shows up in neither run.
 
 ## 2. Method
 
@@ -92,7 +145,7 @@ bursts, pumps, magazine, reload actions, alt reload, charges) plus the killing b
   - Pellets of one shell share the aim error.
   - The range jitter share (sim `bullets.ts` distAdj) cuts pellets at the end of their range.
 - **Aim error σ.** Expert 1.6°, average 3.5°, beginner 5.4°: the critique's 1.6 / 5.4, with average in between. The
-  `skill.ts` `SKILL_SIGMA` band midpoints (s 0.825 / 0.5 / 0.15 → 1.8 / 3.2 / 6.2°) move five guns one step (2.7).
+  `skill.ts` `SKILL_SIGMA` band midpoints (s 0.825 / 0.5 / 0.15 → 1.8 / 3.2 / 6.2°) move a few guns one step (2.7).
 - **Deliberate aim.** A shooter re-aims between shots, so slow guns land more of them. σ x sqrt((0.5 + 0.1) / (0.5 +
   cycle)), clamped to 0.5-1.1:
   - 1.0 at an assault rifle's 0.1 s (`SKILL_SIGMA` was fitted on 0.1-0.2 s guns);
@@ -156,9 +209,11 @@ median gun". Weights: {{WEIGHTS}}.
   every cut is the midpoint between the last gun in and the first gun out. Cuts: {{THRESHOLDS}}
 - **S-aim.** A top-band gun that needs aim, F ≤ 0.35 (skill demand ≥ 0.8). S stays for top guns that do not.
 - **Rulings** (kept even where the stats differ; section 5):
-  - M249 and PKP S (S-rule); Mosin A; MK12 and M39 B+;
+  - M249 and PKP S (S-rule); Mosin A; MK12 and M39 B+ (report 33);
   - "pistols are low": single pistols at most B, duals at most A-. The current list's highest pistol is the dual P30L
-    at A.
+    at A;
+  - last, the owner rulings of 2026-10-08 (section 1a): every DMR and sniper one tier up (so MK12 / M39 A-, Mosin
+    A+), RPG-7 A-, Panzerfaust B+, M202 A+.
 - **Behaviour pins** (coordinator, after the owner saw the list): the AK-47 stays B and the M9 D against their stats
   (B+, C+). At B+ the AK breaks owner item 43: an average bot with an SMG and an AK must take an MK12 for the AK. At C+
   the M9 stops a bot from swapping it for an AK lying without ammo. Unlike a ruling, a pin sets no scale for its
@@ -189,7 +244,8 @@ median gun". Weights: {{WEIGHTS}}.
 
 The model is stable in σ. Damage per shot is the term that decides most: it separates the alpha guns (snipers,
 shotguns, DMRs, heavy pistols) from the bullet hoses. The closest calls are the Garand's S-aim (0.0005 over the cut),
-the M202's B (0.001 over) and the Model 94's B- (0.001 under), and the SPAS-16's S.
+the Model 94's stat B (0.0006 over; the M202's revert moved the B cut past it; its final tier counts from the
+reviewed B-, section 1a), and the SPAS-16's S.
 
 ## 3. Tier list
 
@@ -208,8 +264,8 @@ gun rescored on its own cuts) gives the right-hand columns:
 
 {{LAUNCHERS}}
 
-The proposal uses the strafing column, like every other gun. If the owner wants launchers valued for the shot they are
-used for, take the stationary column for them: MGL S, M202 A, Panzerfaust A-, RPG-7 / M79 B.
+The stat tiers use the strafing column, like every other gun. The owner's rulings for the M202 (A+), RPG-7 (A-) and
+Panzerfaust (B+) sit at or above the stationary column (section 1a).
 
 ## 4. Reading the big moves
 
@@ -218,21 +274,24 @@ used for, take the stationary column for them: MGL S, M202 A, Panzerfaust A-, RP
     Saiga 0.47. That is the strongest role score of any class but the one-shot snipers.
   - Their range term costs them only a seventh of the weight. The M870 and MP220 fall: the pump (0.9 s) and the
     two-shell load cost them against the automatics.
-- **Bolt actions without a one-shot fall.** 72 damage (Mosin, WA2000) misses the 2-hit kill through level 1 by
-  0.05 HP, so both need 3 hits. The SV-98's 80 damage makes it 2. The BLR has 3 rounds.
+- **Bolt actions without a one-shot fall by stats.** 72 damage (Mosin, WA2000) misses the 2-hit kill through
+  level 1 by 0.05 HP, so both need 3 hits. The SV-98's 80 damage makes it 2. The BLR has 3 rounds. The owner's
+  one-tier bump for every sniper (section 1a) softens it: the WA2000 ends at B+, three tiers under its old A+.
 - **The DShK leaves S.** It kills fastest of the LMGs, but at 9 u/s held and 2 u/s firing its composite equals the
   M249's (0.32 / 0.34).
 - **Launchers split.** The round bursts at the cursor for the GL-06 (B- → A) and the USAS, so their near misses still
   splash. The MGL's six grenades 0.7 s apart keep it on top (A). Single-shot, slow rounds that fly past a strafing
-  target sink: M79 B → C, RPG-7 B+ → C+, Potato Cannon B → C. The single-use M202 (its fan lands one rocket, 150 on a
-  direct hit) rises to B, 0.001 over the cut; the Panzerfaust stays C+. Section 3 shows them against a stationary
-  target.
+  target sink: M79 B → C and Potato Cannon B → C. By stats, the RPG-7 (C+), Panzerfaust (C+) and single-use M202
+  (B-: its fan lands one rocket, 150 on a direct hit) would sink too. The owner ruled them up instead: A-, B+, A+
+  (section 1a).
 - **DMRs cluster.** All 11 score 0.13-0.33, except the SSR at 0.67: the Garand leads, and the MK12 and M39 sit near
   the bottom, as the owner says. The cut between A and B+ runs through the middle of the cluster, so the MK12 / M39
-  ruling also takes the three DMRs that score no better.
+  ruling also takes the three DMRs that score no better. The owner's 2026-10-08 bump then lifts every DMR one tier:
+  the low five to A-, the L86, FAL and SVD to A+.
 - **Assault rifles are flat** (−0.18 to 0.09, AN-94 0.35 apart). Small stat edges move them one step: the SCAR-H's
   20-round magazine, the SIG 550's 1.5° spread.
-- **SMGs.** The Vector's 46 u range and 7.5 damage drop it to B. The Vector (.45) falls to C+.
+- **SMGs.** The Vector's 46 u range and 7.5 damage drop it to B, and the Vector (.45) falls to B-. A fire-rate lover
+  still prefers the Vector to an M4A1 (section 1b).
 - **Pistols.** By stats the dual DEagle and dual P30L are A (TTK under 0.9 s at 5-20 u), the single P30L and DEagle A
   / A-. The dual M9 and M93R reach the MP5's level. The ruling caps them (section 5).
 
@@ -240,9 +299,9 @@ used for, take the stationary column for them: MGL S, M202 A, Panzerfaust A-, RP
 
 {{CONFLICTS}}
 
-Kept as ruled or pinned. Where a ruling is far from the stats (the Mosin: C+ by stats, A by ruling), the bots value
-the gun above what it does for them in a fight. The M249 sits one step under its ruling only because of the
-damage-per-shot term.
+Kept as ruled or pinned; the tier column is the final one, after the owner's 2026-10-08 bump of every DMR and sniper
+(section 1a). Where a ruling is far from the stats (the Mosin: C+ by stats, A+ now), the bots value the gun above what
+it does for them in a fight. The M249 sits one step under its ruling only because of the damage-per-shot term.
 
 ## 6. Changes against the current `gunTiers.ts`
 
@@ -265,28 +324,38 @@ The header's sources now cite this doc for the tiers and F.
 
 ## 8. Bot tests
 
-Applying the `ROWS` failed seven bot tests, all pins of old tiers or F; all 487 pass again. The pins (AK-47 B, M9 D)
-keep the behaviour tests as they were:
+**The rebuild (d96246a).** Applying the rebuilt `ROWS` failed seven bot tests, all pins of old tiers or F values. The
+pins (AK-47 B, M9 D) keep the behaviour tests as they were:
 - `behaviour.test.ts`: a bot with an M9 and an MP5 swaps the M9 for an AK;
 - `metrics.test.ts`: the weapon collector reads an M9 loadout as D;
 - `gun-use.test.ts` item 43: an average bot with an MP5 and an AK takes an MK12 for the AK.
 
-The rest now pin the rebuilt values:
+The pins that moved:
+- `gunTiers.test.ts`: the new stat tiers, the weak-gun lists, and the skill demand (the Hécate now needs the most aim).
+- `gun-use.test.ts`: the Spud Gun B and the Potato Cannon C; the MK12's F 0.36.
+- `loot-weapons.test.ts`: the M870 (B+) is no longer worth swapping in over an MP5 + HK416. The ammo-awareness check
+  moved to the Saiga.
+- `persona.test.ts`: the camping example gun is the MK12.
 
-- `gunTiers.test.ts`:
-  - **Tiers.** The rulings and pins stay. The stat tiers that moved are updated: QBB-97 and SV-98 A, M1100 B, P30L B,
-    duals A-, and so on. The MK12 is now compared with the Garand instead of the SCAR-H (both B+). The Mosin is at or
-    below the SV-98 (both A).
-  - **Weak guns.** The M1100 and the dual M9 left the weak tiers; the vz. 61 and the Peacemaker were added as weak.
-  - **Skill demand.** The Hécate (F 0.23) now needs the most aim; the AWM-S (0.26) stays above every gun outside the
-    snipers. The MP220 is the most demanding shotgun (F 0.58, no longer > 0.5 demand). A beginner's fit is 0.412 for the
-    AWM-S and 0.91 for the M249.
-- `gun-use.test.ts`:
-  - item 42: the Spud Gun is B (was A-) and the Potato Cannon C (was B);
-  - item 43: the MK12's desire pins use F 0.36 (skill demand 0.78).
-- `loot-weapons.test.ts`: the ammo-awareness check uses the Saiga. The M870 with shells close by is no longer worth
-  swapping in over an MP5 + HK416 loadout. It is B+, one step over the MP5, so the assertion is now 0, with a comment.
-- `persona.test.ts`: the camping example gun is the MK12 (B+), not the P30L (now B).
+**The owner rulings and the gun taste (2026-10-08).**
+- `gunTiers.test.ts` pins the rulings:
+  - the Mosin and SV-98 at A+, the MK12 and M39 at A-, the WA2000 at B+, the Garand at S-aim;
+  - the RPG-7 at A-, the Panzerfaust at B+ and the M202 at A+, above the Panzerfaust.
+- `gun-use.test.ts` item 43:
+  - The MK12's desire base is now 68 (A-), and the average bot's AK-for-MK12 swap still passes.
+  - Since the MK12 is a tier over the AK, an expert takes it too, but values it less than the average bot. The test
+    asserts that order instead of the old "an expert keeps its AK".
+- `persona.test.ts`: a named persona now carries the bot's own taste (`botPersona`); the brain's stream is unchanged.
+- New `gun-taste.test.ts`:
+  - A fire-rate lover takes a MAC-10 over an AK-47 and a Vector over an M4A1, empty-handed, with only an M9, and as a
+    swap next to a Mosin. A default bot takes the AK-47 every time.
+  - The taste never reaches past two tiers.
+  - Nobody, of any persona, taste or skill, drops an S-rule gun for a pistol or a fast gun.
+  - About a fifth of the drawn bots love fire rate. The class bias stays within ±4 % and never lifts a gun over one two
+    tiers above it.
+  - The taste is drawn from the bot's own seeded stream: named personas only, deterministic, with an opt-out.
+
+All 749 tests of `packages/bots` and `packages/defs` pass.
 
 ## 9. Limits
 
