@@ -1,7 +1,8 @@
-// The rebirth buildings (packages/defs rebirth/buildings.ts, the owner's request 2026-10-08): the clinic on the normal
-// map, the faction command posts on 50v50. Their layouts are checked as built (furniture clear of the walls and of each
-// other, doors and windows in wall gaps), the clinic's treatment rooms heal, each command post stands on its faction's
-// side with its faction's crate.
+// The rebirth buildings (packages/defs rebirth/buildings.ts, the owner's requests 2026-10-08): the clinic, fire station,
+// library and radio station on the normal map; the faction command posts, the arsenal and the blockhouses on 50v50.
+// Their layouts are checked as built (furniture clear of the walls and of each other, doors, windows and loopholes in
+// wall gaps), the clinic's treatment rooms heal, each command post stands on its faction's side with its faction's
+// crate. The second wave's mechanics are in rebirthBuildingsWave2.test.ts.
 import { type Collider, collider, type Vec2, v2 } from "@rebirth/core";
 import {
     CLINIC_HEAL_RATE,
@@ -16,11 +17,22 @@ import { Game } from "../src/index.ts";
 import { steps } from "./combatHelpers.ts";
 import { cachedMap } from "./helpers.ts";
 
-const BUILDINGS = ["clinic_01", "outpost_01r", "outpost_01b"];
-/** objects that stand outside the walls on purpose */
-const OUTSIDE = /^(bush_|sandbags_)/;
-const WALL = /_wall_ext_/;
-const OPENING = /^house_(door|window)_01$/;
+const BUILDINGS = [
+    "clinic_01",
+    "outpost_01r",
+    "outpost_01b",
+    "firestation_01",
+    "library_01",
+    "radio_station_01",
+    "arsenal_01",
+    "blockhouse_01r",
+    "blockhouse_01b",
+];
+/** objects that stand outside the walls on purpose (porticos, bollards, sandbags, bushes) */
+const OUTSIDE = /^(bush_|sandbags_|bollard_|house_column_)/;
+/** a loophole (brick_wall_ext_3_0_low) fills a wall gap: it is an opening, not a wall */
+const WALL = /_wall_ext_(?!3_0_low)/;
+const OPENING = /^(house_door_0[12]|house_window_01|lab_door_01|lab_door_locked_01|brick_wall_ext_3_0_low)$/;
 
 interface Placed {
     type: string;
@@ -81,14 +93,22 @@ describe("rebirth building layouts", () => {
 });
 
 describe("rebirth buildings in their maps", () => {
-    it("spawn lists: one clinic on main, one command post per faction on 50v50", () => {
+    it("spawn lists: the clinic, fire station, library and radio station on main; per faction a command post and two blockhouses, and the arsenal on 50v50", () => {
         expect(REBIRTH_BUILDING_SPAWNS).toEqual({
-            main: { clinic_01: 1 },
-            faction: { outpost_01r: 1, outpost_01b: 1 },
+            main: { clinic_01: 1, firestation_01: 1, library_01: 1, radio_station_01: 1 },
+            faction: { outpost_01r: 1, outpost_01b: 1, arsenal_01: 1, blockhouse_01r: 2, blockhouse_01b: 2 },
         });
-        for (const seed of [1, 7, 99]) {
-            const gen = cachedMap("main", seed);
-            expect(gen.objects.filter((o) => o.type === "clinic_01")).toHaveLength(1);
+        for (const [map, teamMode] of [
+            ["main", 1],
+            ["faction", 4],
+        ] as const) {
+            for (const seed of [1, 7, 99]) {
+                const gen = cachedMap(map, seed, teamMode);
+                for (const [type, n] of Object.entries(REBIRTH_BUILDING_SPAWNS[map])) {
+                    const placed = gen.objects.filter((o) => o.type === type && o.parentId === 0);
+                    expect([map, seed, type, placed.length]).toEqual([map, seed, type, n]);
+                }
+            }
         }
     });
 

@@ -81,7 +81,7 @@ export const MAP_CASES: readonly MapCase[] = [
     {
         map: "main",
         teamModes: [1, 4],
-        // clinic_01: the rebirth building of the normal map (rebirth/buildings.ts)
+        // the rebirth buildings of the normal map: clinic, fire station, library, radio station (rebirth/buildings.ts)
         required: {
             club_complex_01: 1,
             greenhouse_01: 1,
@@ -89,6 +89,9 @@ export const MAP_CASES: readonly MapCase[] = [
             warehouse_complex_01: 1,
             hut_03: 1,
             clinic_01: 1,
+            firestation_01: 1,
+            library_01: 1,
+            radio_station_01: 1,
         },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
@@ -288,6 +291,10 @@ export const MAP_CASES: readonly MapCase[] = [
             // the rebirth faction command posts, one per side (rebirth/buildings.ts)
             outpost_01r: 1,
             outpost_01b: 1,
+            // the front line: the arsenal and two blockhouses per faction
+            arsenal_01: 1,
+            blockhouse_01r: 2,
+            blockhouse_01b: 2,
         },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,

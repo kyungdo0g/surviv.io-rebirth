@@ -128,6 +128,12 @@ describe("air strike variants on the wire", () => {
             "clinic_01",
             "outpost_01r",
             "outpost_01b",
+            "firestation_01",
+            "library_01",
+            "radio_station_01",
+            "arsenal_01",
+            "blockhouse_01r",
+            "blockhouse_01b",
         ]);
         const first = MapObjectRegistry.typeToId("decal_bomb_heavy_explosion");
         expect(first).toBe(MapObjectRegistry.size - rebirthOnlyMapObjectIds.length);

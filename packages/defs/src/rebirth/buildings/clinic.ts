@@ -9,6 +9,7 @@ import {
     artSize,
     box,
     child,
+    openingChildren,
     type RebirthBuildingArt,
     type RebirthBuildingLayout,
     wallChildren,
@@ -125,8 +126,8 @@ export function clinic(known: (id: string) => boolean): BuildingDef {
             volume: 0.15,
         })),
         mapObjects: [
-            ...wallChildren(L.material, L.walls, known),
-            ...L.openings.map((o) => child(o.type, o.pos.x, o.pos.y, o.ori)),
+            ...wallChildren(L, known),
+            ...openingChildren(L),
             // treatment rooms: a bed, a cabinet or a stand, medical loot
             child("bed_sm_01", -13.4, 6.5),
             child({ drawers_01: 3, drawers_02: 1 }, -8.25, 8.6),

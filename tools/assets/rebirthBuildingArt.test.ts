@@ -11,12 +11,16 @@ describe("rebirth building art", () => {
     it("every floor and roof has a current committed SVG of its sprite size", () => {
         const svgs = rebirthBuildingSvgs();
         for (const art of rebirthBuildingArt()) {
-            for (const sprite of [art.floor, art.ceiling]) {
+            // the floor image is larger than the roof's where an outdoor apron widens it
+            for (const [sprite, size] of [
+                [art.floor, art.floorSize ?? art.size],
+                [art.ceiling, art.size],
+            ] as const) {
                 const file = join(REBIRTH_ART_DIR, rebirthArtFile(sprite));
                 expect(existsSync(file), file).toBe(true);
                 const text = readFileSync(file, "utf8");
                 expect(text, `${file} is stale: rerun tools/assets/rebirthBuildingArt.ts`).toBe(svgs.get(sprite));
-                expect(text).toContain(`width="${art.size[0]}" height="${art.size[1]}"`);
+                expect(text).toContain(`width="${size[0]}" height="${size[1]}"`);
             }
         }
     });

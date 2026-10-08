@@ -50,9 +50,9 @@ export function rebirthSpriteEntries(): Record<string, SpriteEntry> {
         };
     }
     for (const art of rebirthBuildingArt()) {
-        for (const sprite of [art.floor, art.ceiling]) {
-            out[sprite] = { source: "rebirth", path: rebirthBuildingUrl(sprite), size: art.size };
-        }
+        // the floor image is larger than the roof's where an outdoor apron widens it
+        out[art.floor] = { source: "rebirth", path: rebirthBuildingUrl(art.floor), size: art.floorSize ?? art.size };
+        out[art.ceiling] = { source: "rebirth", path: rebirthBuildingUrl(art.ceiling), size: art.size };
     }
     return out;
 }

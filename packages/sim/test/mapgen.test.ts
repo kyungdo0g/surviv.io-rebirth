@@ -8,10 +8,10 @@ import { cachedMap, objectsHash } from "./helpers.ts";
 
 /**
  * Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. Last change: the
- * rebirth's bigger maps (1.2 per side, counts grown with the land area; rebirth/mapScale.ts) and the clinic's lobby
- * props, after the rebirth clinic_01 joined main's fixed spawns (rebirth/buildings.ts).
+ * rebirth's second wave of buildings (fire station, library, radio station; rebirth/buildings/), after the bigger maps
+ * (1.2 per side, counts grown with the land area; rebirth/mapScale.ts).
  */
-const MAIN_12345_HASH = "5be39d930d30f3ad";
+const MAIN_12345_HASH = "534bd6f91c4c7b33";
 
 /** Area an object reserves against other top-level objects (what canSpawn tests against). */
 function footprints(o: GeneratedObject): Collider[] {

@@ -155,6 +155,12 @@ describe("rebirth-only defs", () => {
             "clinic_01",
             "outpost_01r",
             "outpost_01b",
+            "firestation_01",
+            "library_01",
+            "radio_station_01",
+            "arsenal_01",
+            "blockhouse_01r",
+            "blockhouse_01b",
         ]);
         expect(AIRDROP_TIER_CRATES).toEqual(["crate_10t1", "crate_10t2", "crate_10svt1", "crate_10svt2"]);
         expect(Object.keys(MapObjectDefs)).toEqual([...generatedMap, ...rebirthOnlyMapObjectIds]);

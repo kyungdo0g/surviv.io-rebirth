@@ -8,6 +8,7 @@ import {
     artSize,
     box,
     child,
+    openingChildren,
     type RebirthBuildingArt,
     type RebirthBuildingLayout,
     wallChildren,
@@ -88,8 +89,8 @@ export function outpost(faction: (typeof OUTPOST_FACTIONS)[number], known: (id: 
             imgs: [{ sprite: art.ceiling, scale: ART_SCALE, alpha: 1, tint: 0xffffff }],
         },
         mapObjects: [
-            ...wallChildren(L.material, L.walls, known),
-            ...L.openings.map((o) => child(o.type, o.pos.x, o.pos.y, o.ori)),
+            ...wallChildren(L, known),
+            ...openingChildren(L),
             // armory: the faction's crate, a shotgun on the wall, an ammo crate
             child(faction.crate, -8.5, 6.5),
             child("gun_mount_01", -4, 8.1),

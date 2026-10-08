@@ -1,7 +1,7 @@
 // Placement strategies chosen by a definition's terrain flags (survev map.ts genOnGrass, genOnBeach, genOnRiver,
 // genOnRiverShore, genOnWaterEdge, genBridge, genRiverCabin, genLocationSpawn, genFromMapDef, genDensitySpawn).
 import { type Bounds, math, type Vec2, v2 } from "@rebirth/core";
-import { getMapObjectDef } from "@rebirth/defs";
+import { getMapObjectDef, REBIRTH_FRONT_LINE_BUILDINGS } from "@rebirth/defs";
 import { boundsInsideBounds } from "../geom/polygon.ts";
 import { rotateOri, toBounds, transformOri } from "../geom/transform.ts";
 import { getBoundingAabb, getBoundingCollider } from "./bounds.ts";
@@ -40,7 +40,13 @@ function teamIdOf(type: string): number | undefined {
 function factionGrassPos(gen: MapGenerator, type: string, spawn: Bounds): Vec2 {
     const teamId = teamIdOf(type);
     let idx: number;
-    if (teamId) {
+    if (REBIRTH_FRONT_LINE_BUILDINGS.has(type)) {
+        // rebirth front-line buildings (packages/defs rebirth/buildings.ts): a neutral one in a tenth touching the
+        // river line, a team's in its own two tenths beside it (Red low, Blue high, like the spawn slices)
+        const half = FACTION_DIVISIONS / 2;
+        if (!teamId) idx = gen.rng.int(half - 1, half);
+        else idx = teamId === 1 ? gen.rng.int(half - 2, half - 1) : gen.rng.int(half, half + 1);
+    } else if (teamId) {
         idx = FACTION_TEAM_OBJECTS.includes(type)
             ? gen.rng.int((teamId - 1) * (FACTION_DIVISIONS / 2), teamId * (FACTION_DIVISIONS / 2) - 1)
             : (teamId - 1) * (FACTION_DIVISIONS - 1);

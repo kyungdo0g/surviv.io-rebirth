@@ -2,8 +2,12 @@
 // REBIRTH_ART_PX_PER_UNIT in the original buildings' flat style (filled rooms with a floor grid, thick walls with a dark
 // outline, door thresholds, roofs with a parapet and panel seams).
 import {
+    floorFrame,
     REBIRTH_ART_PX_PER_UNIT as PX,
     type RebirthBuildingLayout,
+    type Room,
+    type WallMaterial,
+    wallMaterial,
 } from "../../../packages/defs/src/rebirth/buildings.ts";
 
 /** Floor styles of a building's rooms by name: base colour, grid colour, grid step in world units. */
@@ -17,9 +21,16 @@ export interface Frame {
     h: number;
 }
 
+/** The roof image's frame: the floor box plus the half wall outside it. */
 export function frameOf(layout: RebirthBuildingLayout): Frame {
     const { min, max } = layout.bounds;
     return { ox: min.x - 0.5, oy: max.y + 0.5, w: (max.x - min.x + 1) * PX, h: (max.y - min.y + 1) * PX };
+}
+
+/** The floor image's frame: the roof's, widened by the layout's outdoor rooms (packages/defs floorFrame). */
+export function floorFrameOf(layout: RebirthBuildingLayout): Frame {
+    const { min, max } = floorFrame(layout);
+    return { ox: min.x, oy: max.y, w: (max.x - min.x) * PX, h: (max.y - min.y) * PX };
 }
 
 export const f2 = (v: number) => Number(v.toFixed(2));
@@ -36,7 +47,7 @@ export function rect(fr: Frame, x0: number, y0: number, x1: number, y1: number, 
 export const px = (fr: Frame, x: number) => f2((x - fr.ox) * PX);
 export const py = (fr: Frame, y: number) => f2((fr.oy - y) * PX);
 
-export function gridLines(fr: Frame, room: RebirthBuildingLayout["rooms"][number], palette: FloorPalette): string {
+export function gridLines(fr: Frame, room: Room, palette: FloorPalette): string {
     const s = palette[room.floor];
     if (!s) throw new Error(`rebirth art: no floor style "${room.floor}"`);
     const out: string[] = [];
@@ -49,35 +60,91 @@ export function gridLines(fr: Frame, room: RebirthBuildingLayout["rooms"][number
     return `<path d="${out.join("")}" stroke="${s.grid}" stroke-width="2" fill="none"/>`;
 }
 
-/** The wall rects (1 unit thick around each segment) of a layout, as one outline pass and one fill pass. */
-export function walls(fr: Frame, layout: RebirthBuildingLayout, fill: string, outline: string): string {
+/**
+ * The wall rects (1 unit thick around each segment) of a layout, as one outline pass and one fill pass; `fill` is one
+ * colour or one per wall material (steel walls drawn apart from concrete ones).
+ */
+export function walls(
+    fr: Frame,
+    layout: RebirthBuildingLayout,
+    fill: string | Readonly<Partial<Record<WallMaterial, string>>>,
+    outline: string,
+): string {
     const boxes = layout.walls.map(([x0, y0, x1, y1]) =>
         y0 === y1 ? ([x0, y0 - 0.5, x1, y0 + 0.5] as const) : ([x0 - 0.5, y0, x0 + 0.5, y1] as const),
     );
+    const fillOf = (i: number) => {
+        if (typeof fill === "string") return fill;
+        const material = wallMaterial(layout, layout.walls[i]);
+        const c = fill[material];
+        if (!c) throw new Error(`rebirth art: no wall colour for ${material}`);
+        return c;
+    };
     const out = boxes.map((b) => rect(fr, ...b, `fill="${outline}"`, 3));
-    out.push(...boxes.map((b) => rect(fr, ...b, `fill="${fill}"`)));
+    out.push(...boxes.map((b, i) => rect(fr, ...b, `fill="${fillOf(i)}"`)));
     return out.join("");
 }
 
-/** Door thresholds: a darker strip across each door's gap (doors are 4 units from the hinge, house_door_01). */
-export function thresholds(fr: Frame, layout: RebirthBuildingLayout, color: string): string {
-    const out: string[] = [];
-    for (const o of layout.openings) {
-        if (o.type !== "house_door_01") continue;
-        const { x, y } = o.pos;
-        // ori 0: +y, 1: -x, 2: -y, 3: +x (house_red_01's door oris)
-        const dir = [
+/** Unit direction of an opening's ori (house_red_01's door oris: 0 +y, 1 -x, 2 -y, 3 +x). */
+export function oriDir(ori: number): readonly [number, number] {
+    return (
+        [
             [0, 1],
             [-1, 0],
             [0, -1],
             [1, 0],
-        ][o.ori & 3];
-        const ex = x + dir[0] * 4;
-        const ey = y + dir[1] * 4;
-        const vertical = dir[0] === 0;
-        const b = vertical ? [x - 0.5, y, x + 0.5, ey] : [x, y - 0.5, ex, y + 0.5];
+        ] as const
+    )[ori & 3];
+}
+
+/** Diagonal two-colour stripes filling the world box (hazard marking), `stripe` world units wide. */
+export function hazardBand(
+    fr: Frame,
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    id: string,
+    colors: readonly [string, string] = ["#e2b425", "#26282a"],
+    stripe = 0.5,
+): string {
+    const w = f2(stripe * 2 * PX);
+    const pattern =
+        `<defs><pattern id="${id}" patternUnits="userSpaceOnUse" width="${w}" height="${w}" patternTransform="rotate(45)">` +
+        `<rect width="${w}" height="${w}" fill="${colors[1]}"/><rect width="${f2(stripe * PX)}" height="${w}" fill="${colors[0]}"/>` +
+        "</pattern></defs>";
+    return pattern + rect(fr, x0, y0, x1, y1, `fill="url(#${id})"`);
+}
+
+/**
+ * Door thresholds and loophole sills across each wall gap: a darker strip for hinged doors (4 units from the hinge), a
+ * yellow and black strip for sliding lab doors, a light sill with a dark slot for loopholes (3 units, centred).
+ */
+export function thresholds(fr: Frame, layout: RebirthBuildingLayout, color: string): string {
+    const out: string[] = [];
+    layout.openings.forEach((o, i) => {
+        const { x, y } = o.pos;
+        const [dx, dy] = oriDir(o.ori);
+        const along = dx === 0;
+        if (o.type === "brick_wall_ext_3_0_low") {
+            // centred, 3 long: ori 0 vertical, ori 1 horizontal
+            const vertical = (o.ori & 1) === 0;
+            const b = vertical ? [x - 0.5, y - 1.5, x + 0.5, y + 1.5] : [x - 1.5, y - 0.5, x + 1.5, y + 0.5];
+            out.push(rect(fr, b[0], b[1], b[2], b[3], `fill="#b0a998"`));
+            const s = vertical ? [x - 0.08, y - 1.5, x + 0.08, y + 1.5] : [x - 1.5, y - 0.08, x + 1.5, y + 0.08];
+            out.push(rect(fr, s[0], s[1], s[2], s[3], `fill="#1f2326"`));
+            return;
+        }
+        if (o.type === "house_window_01") return;
+        const ex = x + dx * 4;
+        const ey = y + dy * 4;
+        const b = along ? [x - 0.5, y, x + 0.5, ey] : [x, y - 0.5, ex, y + 0.5];
+        if (o.type === "lab_door_01" || o.type === "lab_door_locked_01") {
+            out.push(hazardBand(fr, b[0], b[1], b[2], b[3], `door-hazard-${i}`));
+            return;
+        }
         out.push(rect(fr, b[0], b[1], b[2], b[3], `fill="${color}"`));
-    }
+    });
     return out.join("");
 }
 
@@ -85,15 +152,16 @@ export function svg(fr: Frame, body: string): string {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${fr.w}" height="${fr.h}" viewBox="0 0 ${fr.w} ${fr.h}">${body}</svg>\n`;
 }
 
+/** A floor image: the outdoor rooms, the rooms with their grids, `extra`, thresholds, then the walls on top. */
 export function floor(
     layout: RebirthBuildingLayout,
     palette: FloorPalette,
-    wallFill: string,
+    wallFill: string | Readonly<Partial<Record<WallMaterial, string>>>,
     wallOutline: string,
     extra = "",
 ): string {
-    const fr = frameOf(layout);
-    const rooms = layout.rooms.map(
+    const fr = floorFrameOf(layout);
+    const rooms = [...(layout.outdoor ?? []), ...layout.rooms].map(
         (r) =>
             rect(fr, r.min.x, r.min.y, r.max.x, r.max.y, `fill="${palette[r.floor]?.base}"`) +
             gridLines(fr, r, palette),
@@ -153,3 +221,13 @@ export function star(fr: Frame, x: number, y: number, r: number, fill: string): 
 }
 
 export const hex = (c: number) => `#${c.toString(16).padStart(6, "0")}`;
+
+/** A circle centred on (x, y), radius `r` in world units. */
+export function circleAt(fr: Frame, x: number, y: number, r: number, attrs: string): string {
+    return `<circle cx="${px(fr, x)}" cy="${py(fr, y)}" r="${f2(r * PX)}" ${attrs}/>`;
+}
+
+/** A polygon through world points. */
+export function polygon(fr: Frame, pts: ReadonlyArray<readonly [number, number]>, attrs: string): string {
+    return `<polygon points="${pts.map(([x, y]) => `${px(fr, x)},${py(fr, y)}`).join(" ")}" ${attrs}/>`;
+}

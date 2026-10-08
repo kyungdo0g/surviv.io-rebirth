@@ -6,9 +6,24 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { CLINIC_ART, OUTPOST_FACTIONS, outpostArt } from "../../packages/defs/src/rebirth/buildings.ts";
+import {
+    ARSENAL_ART,
+    BLOCKHOUSE_FACTIONS,
+    blockhouseArt,
+    CLINIC_ART,
+    FIRESTATION_ART,
+    LIBRARY_ART,
+    OUTPOST_FACTIONS,
+    outpostArt,
+    RADIO_ART,
+} from "../../packages/defs/src/rebirth/buildings.ts";
+import { arsenalCeiling, arsenalFloor } from "./rebirthArt/arsenal.ts";
+import { blockhouseCeiling, blockhouseFloor } from "./rebirthArt/blockhouse.ts";
 import { clinicCeiling, clinicFloor } from "./rebirthArt/clinic.ts";
+import { firestationCeiling, firestationFloor } from "./rebirthArt/firestation.ts";
+import { libraryCeiling, libraryFloor } from "./rebirthArt/library.ts";
 import { outpostCeiling, outpostFloor } from "./rebirthArt/outpost.ts";
+import { radioCeiling, radioFloor } from "./rebirthArt/radio.ts";
 import { hex } from "./rebirthArt/svg.ts";
 
 export const REBIRTH_ART_DIR = "apps/client/public/rebirth/map";
@@ -28,6 +43,20 @@ export function rebirthBuildingSvgs(): Map<string, string> {
         const art = outpostArt(f.teamId);
         out.set(art.floor, outpostFloor());
         out.set(art.ceiling, outpostCeiling(hex(f.color)));
+    }
+    for (const [art, floor, ceiling] of [
+        [FIRESTATION_ART, firestationFloor, firestationCeiling],
+        [LIBRARY_ART, libraryFloor, libraryCeiling],
+        [RADIO_ART, radioFloor, radioCeiling],
+        [ARSENAL_ART, arsenalFloor, arsenalCeiling],
+    ] as const) {
+        out.set(art.floor, floor());
+        out.set(art.ceiling, ceiling());
+    }
+    for (const f of BLOCKHOUSE_FACTIONS) {
+        const art = blockhouseArt(f.teamId);
+        out.set(art.floor, blockhouseFloor());
+        out.set(art.ceiling, blockhouseCeiling(hex(f.color)));
     }
     return out;
 }
