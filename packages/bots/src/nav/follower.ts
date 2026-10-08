@@ -12,10 +12,14 @@
 // of replanning the same path forever; a bot in a blocked cell (pressed against an open door) plans from a free cell it
 // can walk to in a straight line; slow doors are waited for. Grid side: tight cells, unusable doors as walls, one-way
 // doors (nav/cellGrid.ts).
+// Doors (BrainFeatures.doors: a DoorUseSink, the bot's door brain, is given): the retry wait after a Use is per door (a
+// door used on the way out of one room held the next door shut for 0.7 s, and the bot walked into it), a door across
+// the leg after the next waypoint counts as on the way when that waypoint is close (a bend just before a doorway), and
+// every Use is reported to the sink (the door brain tells the bot's own door uses from other players').
 import type { Rng, Vec2 } from "@rebirth/core";
 import { v2 } from "@rebirth/core";
 import { colliderCenter, distanceToCollider, segmentHits } from "../geom.ts";
-import type { WorldModel } from "../perception/world.ts";
+import type { SeenObstacle, WorldModel } from "../perception/world.ts";
 import { findPath } from "./astar.ts";
 import { type CellGrid, sameLayer } from "./cellGrid.ts";
 import { LayeredRoute } from "./layered.ts";
@@ -36,6 +40,13 @@ export type PlanGrid = CellGrid & { planBudget(now: number): number; spendPlanBu
 /** Distance from the player centre within which Interact reaches a door (interactionRad + player radius, minus slack). */
 const DOOR_REACH_SLACK = 0.15;
 const PLAYER_RAD = 1;
+/** Doors feature: the same door is used again after this long at the earliest, any door after DOOR_USE_GAP. */
+const DOOR_RETRY = 0.7;
+const DOOR_USE_GAP = 0.15;
+/** Doors feature: the leg after the next waypoint is checked for doors while that waypoint is this close. */
+const NEXT_LEG_NEAR = 2.5;
+/** Doors feature: a closed door on the way this close is the door ahead (PathFollower.doorAhead). */
+const DOOR_AHEAD = 4;
 /** A straight line is tried before A* for goals this close. */
 const DIRECT_DIST = 60;
 const STUCK_WINDOW = 0.9;
@@ -56,6 +67,21 @@ const START_SEARCH = 4;
 /** A goal this close that a full search cannot reach is not searched for again for UNREACHABLE_MEMORY seconds. */
 const DETOUR_DIST = 30;
 const UNREACHABLE_MEMORY = 10;
+
+/**
+ * A closed door that opens for a bot walking up to it (usable and unlocked: by Use from the follower, or by itself):
+ * with BrainFeatures.doors the human keys (bot.ts) do not treat it as a wall to slide along, so the bot walks up to it
+ * and opens it instead of veering off along the wall before it opens.
+ */
+export function opensOnTheWay(o: SeenObstacle): boolean {
+    const door = o.view.door;
+    return !!door && !!o.def.door && !door.open && door.canUse && !door.locked && !o.view.dead;
+}
+
+/** Told about every door the follower uses (BrainFeatures.doors: brain/doors.ts DoorBrain). */
+export interface DoorUseSink {
+    noteUse(now: number): void;
+}
 
 export class PathFollower {
     goal: Vec2 | null = null;
@@ -90,6 +116,15 @@ export class PathFollower {
     /** plan again at this time (a deferred replan) */
     private replanAt = Number.POSITIVE_INFINITY;
     private readonly rng: Rng;
+    /** BrainFeatures.doors: smarter door use (per-door retry, the next leg) reported here; null: the baseline rule */
+    private readonly doorSink: DoorUseSink | null;
+    /** doors feature: when each door was last used */
+    private readonly doorUses = new Map<number, number>();
+    /**
+     * doors feature: the closed door the path runs into next (within DOOR_AHEAD), 0 for none; the human keys walk up to
+     * it instead of sliding along it (bot.ts)
+     */
+    doorAhead = 0;
     private readonly route = new LayeredRoute();
     /** the destination changed during the current progress window */
     private destChanged = false;
@@ -101,8 +136,14 @@ export class PathFollower {
      */
     ditherEvents = 0;
 
-    constructor(rng: Rng) {
+    constructor(rng: Rng, doorSink: DoorUseSink | null = null) {
         this.rng = rng;
+        this.doorSink = doorSink;
+    }
+
+    /** Doors feature: `o` is the closed door ahead that opens for the bot (the keys walk up to it, bot.ts). */
+    walksInto(o: SeenObstacle): boolean {
+        return o.view.id === this.doorAhead && opensOnTheWay(o);
     }
 
     clear(): void {
@@ -248,6 +289,7 @@ export class PathFollower {
 
     /** Path following on one grid (the layered route runs each leg through it). */
     steerOn(model: WorldModel, grid: PlanGrid, goal: Vec2, now: number, arriveDist = 1): SteerResult {
+        this.doorAhead = 0;
         if (grid !== this.grid) this.useGrid(grid);
         const pos = model.self.pos;
         const dist = v2.distance(pos, goal);
@@ -320,7 +362,13 @@ export class PathFollower {
         if (this.idx < pts.length - 1 && grid.lineWalkable(pos, pts[this.idx + 1])) this.idx++;
         const wp = this.idx < pts.length ? pts[this.idx] : goal;
         const dir = v2.normalizeSafe(v2.sub(wp, pos), { x: 1, y: 0 });
-        const openDoor = this.doorToOpen(model, pos, wp, now);
+        const openDoor = this.doorToOpen(
+            model,
+            pos,
+            wp,
+            now,
+            this.idx + 1 < pts.length ? pts[this.idx + 1] : undefined,
+        );
         this.checkStuck(pos, dir, now);
         const failed = this.failures >= 3 || this.stuckCount >= 5;
         // a failed goal: stand (the brain picks another) rather than jitter at the plan's end
@@ -364,6 +412,7 @@ export class PathFollower {
 
     /** Walks `dir` directly (along stairs), with stuck detection and doors; `wp` is the point it heads for. */
     steerDirect(model: WorldModel, dir: Vec2, wp: Vec2, now: number): SteerResult {
+        this.doorAhead = 0;
         const pos = model.self.pos;
         if (now - this.lastSteer > 0.5) this.checkPos = null;
         this.lastSteer = now;
@@ -427,8 +476,12 @@ export class PathFollower {
         return true;
     }
 
-    /** A closed, usable door in reach that lies ahead on the way to `wp` (and no open door in reach). */
-    private doorToOpen(model: WorldModel, pos: Vec2, wp: Vec2, now: number): number {
+    /**
+     * A closed, usable door in reach that lies ahead on the way to `wp` (and no open door in reach). `next`: the waypoint
+     * after `wp` (BrainFeatures.doors).
+     */
+    private doorToOpen(model: WorldModel, pos: Vec2, wp: Vec2, now: number, next?: Vec2): number {
+        if (this.doorSink) return this.doorToOpenSense(model, pos, wp, now, next, this.doorSink);
         if (now - this.lastDoorUse < 0.7) return 0;
         let candidate = 0;
         let delay = 0;
@@ -453,6 +506,77 @@ export class PathFollower {
         }
         if (candidate) {
             this.lastDoorUse = now;
+            if (delay > 0) {
+                this.doorWaitId = candidate;
+                this.doorWaitUntil = now + delay + 0.5;
+            }
+        }
+        return candidate;
+    }
+
+    /**
+     * doorToOpen with BrainFeatures.doors: the nearest closed, usable, unlocked, hand-opened door in reach that lies ahead
+     * on the way (the next 3 units towards `wp`, or the leg after it when `wp` is close); each door is retried after
+     * DOOR_RETRY, other doors after DOOR_USE_GAP; nothing while an open door is in reach (Use toggles all of them). Also
+     * keeps `doorAhead`: the nearest closed door on the way within DOOR_AHEAD that opens for the bot (opensOnTheWay).
+     */
+    private doorToOpenSense(
+        model: WorldModel,
+        pos: Vec2,
+        wp: Vec2,
+        now: number,
+        next: Vec2 | undefined,
+        sink: DoorUseSink,
+    ): number {
+        let candidate = 0;
+        let delay = 0;
+        let best = Number.POSITIVE_INFINITY;
+        let aheadD = Number.POSITIVE_INFINITY;
+        let openInReach = false;
+        const layer = model.self.layer;
+        const ray = v2.add(pos, v2.mul(v2.normalizeSafe(v2.sub(wp, pos)), 3));
+        const bend = !!next && v2.distance(pos, wp) < NEXT_LEG_NEAR;
+        const gap = now - this.lastDoorUse < DOOR_USE_GAP;
+        for (const o of model.obstacles) {
+            const door = o.view.door;
+            const def = o.def.door;
+            if (!door || !def || o.view.dead || !sameLayer(layer, o.view.layer)) continue;
+            const d = distanceToCollider(pos, o.col);
+            if (d >= DOOR_AHEAD) continue;
+            const inReach = d < def.interactionRad + PLAYER_RAD - DOOR_REACH_SLACK;
+            if (door.open) {
+                openInReach ||= inReach;
+                continue;
+            }
+            if (!door.canUse || door.locked) continue;
+            const toDoor = v2.sub(colliderCenter(o.col), pos);
+            const ahead = v2.dot(toDoor, v2.sub(wp, pos)) > 0;
+            const legAhead = bend && next !== undefined && v2.dot(toDoor, v2.sub(next, pos)) > 0;
+            const onWay =
+                (ahead && segmentHits(o.col, pos, ray)) ||
+                (legAhead && next !== undefined && segmentHits(o.col, wp, next));
+            if (!onWay) continue;
+            if (d < aheadD) {
+                aheadD = d;
+                this.doorAhead = o.view.id;
+            }
+            if (!inReach || def.autoOpen || gap) continue;
+            if (now - (this.doorUses.get(o.view.id) ?? Number.NEGATIVE_INFINITY) < DOOR_RETRY) continue;
+            if (d < best) {
+                best = d;
+                candidate = o.view.id;
+                delay = def.openDelay ?? 0;
+            }
+        }
+        if (openInReach) {
+            // (the closed half of a double door cannot be opened now: the keys slide along it)
+            this.doorAhead = 0;
+            return 0;
+        }
+        if (candidate) {
+            this.lastDoorUse = now;
+            this.doorUses.set(candidate, now);
+            sink.noteUse(now);
             if (delay > 0) {
                 this.doorWaitId = candidate;
                 this.doorWaitUntil = now + delay + 0.5;
