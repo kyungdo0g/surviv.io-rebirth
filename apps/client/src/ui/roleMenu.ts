@@ -167,7 +167,8 @@ export class RoleMenu {
             image,
         );
         const right = el("div", { cls: "ui-role-body-right" });
-        for (const perk of def.perks ?? []) {
+        // the class perks (fixed ids; only survev's Lone Survivr rolls weighted ones)
+        for (const perk of (def.perks ?? []).filter((p): p is string => typeof p === "string")) {
             const icon = el("div", { cls: "ui-role-body-perk-image-icon" });
             icon.style.backgroundImage = `url('${lootImageUrl(perk)}')`;
             const desc = el("div", { cls: "ui-role-body-perk-desc" });

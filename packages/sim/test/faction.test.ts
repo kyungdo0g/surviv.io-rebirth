@@ -3,7 +3,7 @@
 // succession, alive counts and the faction minimap rows, the air strike / gold drop schedules, the comeback drop, and
 // the faction map's team buildings and statues. Values: docs/research/modes/faction.md, items/roles.md, conflicts.md.
 import { type Vec2, v2 } from "@rebirth/core";
-import { DamageType } from "@rebirth/defs";
+import { DamageType, getMapDef, getMapObjectDefOfType } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { Game, type GameInit, type Player, type RoleAnnouncementEvent } from "../src/index.ts";
 import { cachedMap } from "./helpers.ts";
@@ -111,7 +111,7 @@ describe("teams", () => {
 });
 
 describe("match", () => {
-    it("ends when one faction is left; everyone learns the result with both Commanders' stats (faction.md)", () => {
+    it("ends when one faction is left; everyone learns the result with both Commanders' and the MVP's stats", () => {
         const game = factionGame();
         const players = add(game, 6);
         game.step();
@@ -134,7 +134,9 @@ describe("match", () => {
         expect(game.match.winningTeamId).toBe(1);
         const winner = game.getSnapshot(red[2].id).gameOver!;
         expect(winner).toMatchObject({ teamId: 1, teamRank: 1, gameOver: true, winningTeamId: 1 });
-        expect(winner.playerStats.map((s) => s.playerId)).toEqual([red[2].id, red[0].id, blue[0].id]);
+        // the viewer, the Red and Blue Commanders, the MVP: red[1] killed all three Blues
+        expect(red[1].kills).toBe(3);
+        expect(winner.playerStats.map((s) => s.playerId)).toEqual([red[2].id, red[0].id, blue[0].id, red[1].id]);
         const loser = game.getSnapshot(blue[2].id).gameOver!;
         expect(loser).toMatchObject({ teamId: 2, gameOver: true, winningTeamId: 1 });
     });
@@ -152,6 +154,80 @@ describe("match", () => {
         );
         expect(snap.factionStatus?.[0].role).toBe("medic");
         expect(snap.local.team?.length).toBeLessThanOrEqual(4);
+    });
+});
+
+describe("game over: the MVP card (survev gameModeManager.ts:230-276, game.ts:365; rebirth-deviations.md)", () => {
+    /**
+     * Six players (Red p0 p2 p4, Blue p1 p3 p5), both Commanders promoted unless `leaders` is false; `setup` sets kills
+     * and damage, then Blue falls with no kill credit and the game ends.
+     */
+    function endGame(setup: (red: Player[], blue: Player[]) => void, leaders = true) {
+        const game = factionGame();
+        const players = add(game, 6);
+        game.step();
+        game.step();
+        const red = players.filter((p) => p.teamId === 1);
+        const blue = players.filter((p) => p.teamId === 2);
+        if (leaders) {
+            game.roles.promote(red[0], "leader");
+            game.roles.promote(blue[0], "leader");
+        }
+        setup(red, blue);
+        for (const b of blue) if (!b.dead) kill(game, b);
+        expect(game.over).toBe(true);
+        game.step();
+        return { game, red, blue };
+    }
+    const cards = (game: Game, p: Player) => game.getSnapshot(p.id).gameOver?.playerStats.map((s) => s.playerId);
+
+    it("everyone's GameOver lists itself, the Red and Blue Commanders and the MVP, even when the MVP is one of them", () => {
+        const { game, red, blue } = endGame((_, blue) => {
+            blue[1].kills = 4;
+        });
+        // the MVP is a dead player of the losing faction
+        const mvp = blue[1].id;
+        expect(game.match.factionMvp).toBe(blue[1]);
+        const winner = game.getSnapshot(red[2].id).gameOver;
+        expect(winner?.gameOver).toBe(true);
+        expect(winner?.playerStats.map((s) => s.playerId)).toEqual([red[2].id, red[0].id, blue[0].id, mvp]);
+        expect(cards(game, blue[2])).toEqual([blue[2].id, red[0].id, blue[0].id, mvp]);
+        // its own GameOver and a Commander's still list it (survev does)
+        expect(cards(game, blue[1])).toEqual([mvp, red[0].id, blue[0].id, mvp]);
+        expect(cards(game, blue[0])).toEqual([blue[0].id, red[0].id, blue[0].id, mvp]);
+    });
+
+    it("most kills, then most damage dealt; an exact tie goes to the later joiner (survev's reduce)", () => {
+        // equal kills: the earlier joiner keeps it with more damage, the later one takes it with more
+        let r = endGame((red, blue) => {
+            [blue[1].kills, blue[1].damageDealt] = [3, 500];
+            [red[2].kills, red[2].damageDealt] = [3, 300];
+            [red[1].kills, red[1].damageDealt] = [2, 2000];
+        });
+        expect(r.game.match.factionMvp).toBe(r.blue[1]);
+        r = endGame((red, blue) => {
+            [blue[1].kills, blue[1].damageDealt] = [3, 300];
+            [red[2].kills, red[2].damageDealt] = [3, 500];
+        });
+        expect(r.game.match.factionMvp).toBe(r.red[2]);
+        // equal kills and damage: the later joiner
+        r = endGame((red, blue) => {
+            [red[2].kills, red[2].damageDealt] = [2, 400];
+            [blue[2].kills, blue[2].damageDealt] = [2, 400];
+        });
+        expect(r.game.match.factionMvp).toBe(r.blue[2]);
+        // chosen once at game over: later kills change nothing
+        r.red[0].kills = 9;
+        r.game.step();
+        expect(r.game.match.factionMvp).toBe(r.blue[2]);
+    });
+
+    it("no MVP and no Commander cards without both Commanders (survev getFactionMvp)", () => {
+        const { game, red } = endGame((red) => {
+            red[1].kills = 5;
+        }, false);
+        expect(game.match.factionMvp).toBeNull();
+        expect(cards(game, red[2])).toEqual([red[2].id]);
     });
 });
 
@@ -260,8 +336,9 @@ describe("Lone Survivr and succession", () => {
         expect(red.every((r) => r.role === "")).toBe(true);
     });
 
-    it("rules.roles.commanderSuccession: the Lieutenant takes over a dead Commander, keeping its guns (fork Captain)", () => {
+    it("rules.roles.commanderSuccession: the Lieutenant becomes Captain of a dead Commander's team, keeping its guns", () => {
         const game = factionGame();
+        game.rules.roles.commanderSuccession = false;
         const players = add(game, 8);
         game.step();
         const red = players.filter((p) => p.teamId === 1);
@@ -272,9 +349,9 @@ describe("Lone Survivr and succession", () => {
         finish(game, red[0], blue[0]);
         expect(red[0].dead).toBe(true);
         expect(red[1].role).toBe("lieutenant");
-        game.rules.roles.commanderSuccession = true;
+        // on by default (survev's Captain, survev content wave)
         const g2 = factionGame();
-        g2.rules.roles.commanderSuccession = true;
+        expect(g2.rules.roles.commanderSuccession).toBe(true);
         const p2 = add(g2, 8);
         g2.step();
         const r2 = p2.filter((p) => p.teamId === 1);
@@ -283,9 +360,16 @@ describe("Lone Survivr and succession", () => {
         g2.roles.promote(r2[1], "lieutenant");
         finish(g2, r2[0], b2[0]);
         expect(r2[0].dead).toBe(true);
-        expect(r2[1].role).toBe("leader");
+        expect(r2[1].role).toBe("captain");
         expect(r2[1].weaponManager.weapons[1].type).toBe(gun);
-        expect(r2[1].perks).toEqual(["leadership"]);
+        // survev roleDefs.ts:162-193: Assume Leadership and Firepower (kept from the Lieutenant), the captain kit
+        expect(r2[1].perks).toEqual(["firepower", "assume_leadership"]);
+        expect(r2[1].helmet).toBe("helmet04_captain");
+        expect(r2[1].inv.get("8xscope")).toBe(1);
+        expect(r2[1].inv.get("healthkit")).toBeGreaterThanOrEqual(1);
+        g2.step();
+        expect(r2[1].boost).toBeGreaterThanOrEqual(50);
+        expect(r2[1].scale).toBeCloseTo(1.15, 9);
     });
 });
 
@@ -328,6 +412,35 @@ describe("planes", () => {
         expect(game.faction!.sentHelp).toBe(true);
         finish(game, blue[2], red[0]);
         expect(game.planes.zones.zones).toHaveLength(1);
+    });
+
+    // survev plane.ts:273-278: potato factions drop airdrop_crate_04po, whose crate_13po adds potato loot
+    it("Potato vs Tomato: the gold drop and the comeback drop are the potato gold crate", () => {
+        const game = new Game(
+            { mapName: "faction_potato", seed: SEED, teamMode: 4 },
+            { generation: cachedMap("faction_potato", SEED, 4), spawnLoot: false },
+        );
+        game.rules.roles.helpLosingTeam = true;
+        const players = add(game, 14);
+        game.gas.onCircle?.(3);
+        for (let i = 0; i < 201; i++) game.step();
+        expect(game.planes.planes.map((p) => p.crateType)).toContain("airdrop_crate_04po");
+        expect(game.planes.planes.map((p) => p.crateType)).not.toContain("airdrop_crate_04");
+        const count = () => game.planes.planes.filter((p) => p.crateType === "airdrop_crate_04po").length;
+        const before = count();
+        (game.gas as { circleIdx: number }).circleIdx = 1;
+        const red = players.filter((p) => p.teamId === 1);
+        const blue = players.filter((p) => p.teamId === 2);
+        finish(game, blue[0], red[0]);
+        finish(game, blue[1], red[0]);
+        expect(game.faction!.sentHelp).toBe(true);
+        expect(count()).toBe(before + 1);
+        // the inner crate: crate_13po, two tier_airdrop_potato rolls on top of the gold crate's loot
+        const inner = getMapObjectDefOfType("obstacle", "airdrop_crate_04po").destroyType;
+        expect(inner).toBe("crate_13po");
+        const loot = getMapObjectDefOfType("obstacle", "crate_13po").loot;
+        expect(loot[0]).toMatchObject({ tier: "tier_airdrop_potato", min: 2, max: 2 });
+        expect(getMapDef("faction_potato").lootTable.tier_airdrop_potato?.length).toBeGreaterThan(0);
     });
 });
 

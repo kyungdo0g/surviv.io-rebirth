@@ -1,5 +1,6 @@
 // Event-mode knobs (M7b). Values follow docs/research/modes/*.md with their conflict resolutions, cited per field;
 // `game.rules.modes` is a mutable copy.
+import { GameObjectDefs } from "@rebirth/defs";
 
 /** What a snowball / potato hit does to a non-teammate besides its damage (survev explosion.ts). */
 export interface ThrowableHitRule {
@@ -21,10 +22,10 @@ export interface ViewShrinkRule {
 
 export interface ModeRules {
     /**
-     * Snowball and potato hits by explosion type (throwables.md "Snowball": a hit slows the target and makes it drop one
-     * random item; the client defs show the frozen sprites but no duration, open-questions.md freeze-and-drop-effects).
-     * Durations and drop counts are survev's pre-balance values (0.5 s light, 1 s heavy, 1 item; fork 0.2.1 raised the
-     * heavy snowball to 2 s and the heavy potato to 2 items); Spud Gun shots slow for 1 s without a drop.
+     * Snowball and potato hits by explosion type (throwables.md "Snowball": a hit slows the target and makes it drop
+     * random items; the client defs show the frozen sprites but no duration, open-questions.md freeze-and-drop-effects).
+     * Read from the explosion defs' `freezeDuration` / `dropRandomLoot` (survev balance, explosionsDefs.ts: the heavy
+     * snowball slows 2 s, the heavy potato drops 2 items); the PMG-134 shot also shrinks the view.
      */
     throwableHits: Readonly<Record<string, ThrowableHitRule>>;
     /**
@@ -45,18 +46,23 @@ export interface ModeRules {
     cobaltWaitingRoom: boolean;
 }
 
+/** survev explosion.ts:240-242: each PMG-134 shot takes 1.5 off the target's zoom radius */
+const POTATO_LMG_VIEW_SHRINK = 1.5;
+
+/** Every explosion def with a `freezeDuration`: its slow and random drops (survev explosion.ts:209-243). */
+function throwableHitsFromDefs(): Record<string, ThrowableHitRule> {
+    const out: Record<string, ThrowableHitRule> = {};
+    for (const [id, def] of Object.entries(GameObjectDefs)) {
+        if (def.type !== "explosion" || def.freezeDuration === undefined) continue;
+        out[id] = { freeze: def.freezeDuration, dropRandomLoot: def.dropRandomLoot ?? 0 };
+    }
+    if (out.explosion_potato_lmgshot) out.explosion_potato_lmgshot.viewShrink = POTATO_LMG_VIEW_SHRINK;
+    return out;
+}
+
 export function defaultModeRules(): ModeRules {
     return {
-        throwableHits: {
-            explosion_snowball: { freeze: 0.5, dropRandomLoot: 1 },
-            explosion_snowball_heavy: { freeze: 1, dropRandomLoot: 1 },
-            explosion_potato: { freeze: 0.5, dropRandomLoot: 1 },
-            explosion_potato_heavy: { freeze: 1, dropRandomLoot: 1 },
-            explosion_potato_smgshot: { freeze: 1, dropRandomLoot: 0 },
-            // PMG-134 shot (survev-only): slows 0.25 s (wikigg/Petite_Potato "Slowdown duration = 0.25"; survev
-            // explosionsDefs.ts:229 freezeDuration 0.25) and shrinks the view (survev explosion.ts:240-242)
-            explosion_potato_lmgshot: { freeze: 0.25, dropRandomLoot: 0, viewShrink: 1.5 },
-        },
+        throwableHits: throwableHitsFromDefs(),
         viewShrink: { max: 32, duration: 2.5 },
         potatoEmotes: true,
         cobaltWaitingRoom: true,

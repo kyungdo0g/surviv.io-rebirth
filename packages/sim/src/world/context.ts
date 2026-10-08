@@ -5,8 +5,10 @@ import type { GameOptions } from "../api.ts";
 import type { BulletSystem } from "../combat/bullets.ts";
 import type { DamageParams } from "../combat/damage.ts";
 import type { ExplosionSystem } from "../combat/explosions.ts";
+import type { HitLog } from "../combat/hitLog.ts";
 import type { ProjectileSystem } from "../combat/projectiles.ts";
 import type { LootSystem } from "../loot/loot.ts";
+import type { FactionSystem } from "../match/faction.ts";
 import type { Gas } from "../match/gas.ts";
 import type { CombatObserver } from "../match/observer.ts";
 import type { PlaneSystem } from "../match/planes.ts";
@@ -48,10 +50,14 @@ export interface SimContext {
     readonly deadBodies: DeadBodySystem;
     /** red zone (heal regions do not work in the gas, M5b) */
     readonly gas: Gas;
+    /** 50v50 factions (M7a); null or absent outside faction mode */
+    readonly faction?: FactionSystem | null;
     /** simulation time in seconds */
     readonly time: number;
     /** read-only combat notifications for the host (anti-cheat telemetry, M8); null or absent for none */
     readonly observer?: CombatObserver | null;
+    /** damaging player hits, listed to the dealer and the target (rebirth hit feedback); absent in bare test hosts */
+    readonly hitLog?: HitLog;
     getPlayer(id: number): Player | undefined;
     /** Full player damage pipeline: headshot roll, reductions, health, death and drops. */
     damagePlayer(target: Player, params: DamageParams): void;

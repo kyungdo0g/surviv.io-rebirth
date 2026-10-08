@@ -22,6 +22,12 @@ export interface BulletDef {
     skipCollision?: boolean;
     /** explosion id spawned where the bullet hits */
     onHit?: string;
+    /** rebirth (new guns): never ricochets, explodes on metal like on anything else (rockets, the GL-06 round) */
+    noReflect?: boolean;
+    /** rebirth (new guns): the onHit explosion is a dud when the bullet stops before travelling this far */
+    armDistance?: number;
+    /** rebirth (new guns): no ±1 range jitter (as SimRules.noDistAdjBullets) */
+    noDistAdj?: boolean;
 }
 
 export type FireMode = "auto" | "single" | "burst";
@@ -50,7 +56,11 @@ export interface GunDef extends BaseWeaponDef {
     /** bullet fired instead of bulletType when the matching bonus perk (bonus_9mm, bonus_45) is active */
     bulletTypeBonus?: string;
     headshotMult: number;
-    speed: { equip: number; attack: number };
+    /**
+     * rebirth: `carry` applies while the gun sits in either gun slot, summed over both; any gun may have it (the DShK
+     * in its sheet def, the PMG-134 through rebirth/gunSpeeds.ts)
+     */
+    speed: { equip: number; attack: number; carry?: number };
     worldImg: {
         sprite: string;
         scale: Vec2;
@@ -84,6 +94,8 @@ export interface GunDef extends BaseWeaponDef {
         shootAlt?: string;
         reloadAlt?: string;
         fallOff?: number;
+        /** rebirth (new guns): plays when a single-use gun is discarded */
+        discard?: string;
     };
     pullDelay?: number;
     isDual?: boolean;
@@ -110,6 +122,31 @@ export interface GunDef extends BaseWeaponDef {
     toMouseHit?: boolean;
     /** minigun hold pose (survev PMG-134) */
     isMinigun?: boolean;
+    /**
+     * rebirth (new guns, docs/design/new-gun-stats.md 4.2): shots the gun carries; it is never reloaded and its ammo
+     * is pseudo ammo with no bag row (boys_ammo, panzerfaust_ammo, m202_ammo). maxClip = extendedClip = charges.
+     */
+    charges?: number;
+    /** rebirth (new guns): the empty gun leaves its slot fireDelay after its last shot */
+    discardWhenEmpty?: boolean;
+    /** rebirth (new guns, DP-12): shots between pumps; shots inside a pair wait fireDelay */
+    pumpEvery?: number;
+    /** rebirth (new guns, DP-12): the wait after the pumpEvery-th shot (sound.cycle) */
+    pumpDelay?: number;
+    /** rebirth (new guns): spawns only from gold drops; never potato-swapped or role-rolled */
+    goldOnly?: boolean;
+    /**
+     * rebirth (M202 FLASH, owner 2026-10-08): the bulletCount bullets of a shot leave the muzzle together in a fixed,
+     * evenly spaced fan this many degrees wide (outermost to outermost, centred on the aim), with no random spread or
+     * pellet jitter
+     */
+    fanAngle?: number;
+    /** rebirth (M202 FLASH): the shooter slides this far back, against the aim, after a shot (collision-checked) */
+    recoilKnockback?: number;
+    /** rebirth (M202 FLASH): its bullets and their explosions break armour-plated obstacles, as a piercing melee */
+    armorPiercing?: boolean;
+    /** rebirth (M202 FLASH): its bullets and their explosions break stone-plated obstacles, as a piercing melee */
+    stonePiercing?: boolean;
 }
 
 export interface MeleeImg {
@@ -133,6 +170,8 @@ export interface MeleeDef extends BaseWeaponDef, BaseLoadoutItem {
     cleave?: boolean;
     armorPiercing?: boolean;
     stonePiercing?: boolean;
+    /** perk the holder has while the weapon is in its slot (survev Gold Cutlass: pirate; weaponManager.ts setWeapon) */
+    perk?: string;
     attack: {
         offset: Vec2;
         rad: number;
@@ -161,6 +200,10 @@ export interface ThrowableHandImg {
     sprite: string;
     pos?: Vec2;
     scale?: number;
+    /** rebirth: tint of the hand image (the original draws it untinted) */
+    tint?: number;
+    /** rebirth: the client draws the sprite in greyscale under `tint`, so the tint replaces its colours */
+    recolor?: boolean;
 }
 
 export interface ThrowableDef extends BaseWeaponDef {
@@ -184,13 +227,16 @@ export interface ThrowableDef extends BaseWeaponDef {
         randomizeSpinDir?: boolean;
     };
     speed: { equip: number; attack: number };
-    worldImg: { sprite: string; scale: number; tint: number };
+    /** `recolor` (rebirth): the client draws the sprite in greyscale under `tint` (ThrowableHandImg.recolor) */
+    worldImg: { sprite: string; scale: number; tint: number; recolor?: boolean };
     handImg?: Partial<Record<"equip" | "cook" | "throwing", { right: ThrowableHandImg; left: ThrowableHandImg }>>;
     useThrowParticles: boolean;
     sound: { pullPin: string; throwing: string; pickup: string; deploy: string };
     strikeDelay?: number;
     freezeOnImpact?: boolean;
     heavyType?: string;
+    /** held this long (s) the throwable leaves as its `heavyType` (survev weaponManager.ts:1229-1234) */
+    changeTime?: number;
     forceMaxThrowDistance?: boolean;
     emoteId?: number;
     destroyNonCollidables?: boolean;
@@ -215,4 +261,9 @@ export interface ExplosionDef {
     freezeDuration?: number;
     /** survev: sprites drawn over a slowed player (the client draws the map's biome.frozenSprites) */
     frozenSprites?: string[];
+    /** survev coconut: hits on the source's side heal `healAmount` (default 5) and deal no damage */
+    healTeam?: boolean;
+    healAmount?: number;
+    /** survev: random items a hit enemy drops (the simulation reads rules.modes.throwableHits instead) */
+    dropRandomLoot?: number;
 }

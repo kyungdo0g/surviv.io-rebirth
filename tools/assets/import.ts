@@ -8,13 +8,17 @@
 //    file for the rest. The DOM HUD gets survev's SVG of an original frame unless tools/assets/survev-redrawn.json
 //    names it (survev's later redraws);
 // 4. fills sprites the definitions reference without any file from the fandom image dump; ids the original client also
-//    names without shipping an image are recorded as source "none" (the original drew nothing for them).
-// Usage: pnpm assets [--check-only] [--atlas-out research-cache/atlas]
+//    names without shipping an image are recorded as source "none" (the original drew nothing for them);
+// 5. installs the beta new guns' loot icons and sounds from the owner's gitignored assets-user/ (newGunInstall.ts).
+// Usage: pnpm assets [--check-only] [--atlas-out research-cache/atlas] (behind a proxy it restarts itself with
+// NODE_USE_ENV_PROXY=1, tools/envProxy.ts, so the script runs the same in cmd.exe, PowerShell and POSIX shells)
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
+import { ensureEnvProxy } from "../envProxy.ts";
 import type { SpriteIndex } from "./atlasInventory.ts";
+import { installNewGunAssets, summarize } from "./newGunInstall.ts";
 import { pngSize } from "./png.ts";
 import {
     ASSET_DEST,
@@ -32,12 +36,15 @@ import {
 } from "./sources.ts";
 
 const MANIFEST = "apps/client/src/generated/sprite-manifest.json";
+const UNSPAWNED_DEFS = "tools/assets/unspawned-defs.json";
 const DEFS = "packages/defs/src/generated";
 const LIVE = "research-cache/live";
 const KEEP_SURVEV = "tools/assets/keep-survev.json";
 const SURVEV_REDRAWN = "tools/assets/survev-redrawn.json";
 const FANDOM_IMAGES = "research-cache/fandom/images.json";
 const FANDOM_GAPFILL = "assets/fandom-gapfill.json";
+
+ensureEnvProxy();
 
 const { values: args } = parseArgs({
     options: {
@@ -116,13 +123,27 @@ if (!checkOnly && index) {
     }
 }
 
-// 4. gaps: sprites the definitions reference without a file
-const refs = new Set<string>();
-for (const name of ["gameObjects.json", "mapObjects.json", "maps.json"]) {
+// 4. gaps: sprites the definitions reference without a file; map objects no map or building spawns do not count
+const readDefs = (name: string): any => {
     const p = join(DEFS, name);
-    if (existsSync(p)) collectSpriteRefs(JSON.parse(readFileSync(p, "utf8")), refs);
-}
+    return existsSync(p) ? JSON.parse(readFileSync(p, "utf8")) : {};
+};
+const defMapObjects: Record<string, unknown> = readDefs("mapObjects.json");
+const defMaps = readDefs("maps.json");
+// original defs nothing spawns and whose image no client ships (tools/assets/unspawned-defs.json, checked by a test)
+const neverSpawned = new Set(
+    Object.keys(JSON.parse(readFileSync(UNSPAWNED_DEFS, "utf8"))).filter((k) => k !== "$comment"),
+);
+const refs = new Set<string>();
+collectSpriteRefs(readDefs("gameObjects.json"), refs);
+collectSpriteRefs(defMaps, refs);
+for (const [id, def] of Object.entries(defMapObjects)) if (!neverSpawned.has(id)) collectSpriteRefs(def, refs);
+const unusedRefs = new Set<string>();
+for (const id of neverSpawned) collectSpriteRefs(defMapObjects[id], unusedRefs);
 for (const empty of ["none.img", ".img"]) refs.delete(empty);
+// sprites only never-spawned defs name, without a file in either client: recorded as drawing nothing, no warning
+const unusedOnly = [...unusedRefs].filter((r) => !refs.has(r) && !manifest[r]).sort();
+for (const id of unusedOnly) manifest[id] = { source: "none" };
 let missing = [...refs].filter((r) => !manifest[r]).sort();
 
 // fandom image dump: original-game PNG renders uploaded to the wiki
@@ -170,6 +191,12 @@ console.log(
         `(${ORIGINAL_DIR}), ${counts.survev} survev (${keepSurvev.size} kept over an original frame), ` +
         `${counts.fandom} fandom, ${counts.none} none; ${clashes.length} name clashes resolved to svg`,
 );
-console.log(`defs reference ${refs.size} sprites; without a file: ${absent.length} absent in the original too`);
+console.log(
+    `defs reference ${refs.size} sprites; without a file: ${absent.length} absent in the original too; ` +
+        `${unusedOnly.length} only on never-spawned defs (unspawned-defs.json)`,
+);
 if (absent.length) console.log(`absent in the original too: ${absent.join(", ")}`);
 if (missing.length) console.log(`MISSING: ${missing.join(", ")}`);
+
+// 5. the beta new guns (after the original files, which stand in for anything the owner has not supplied)
+if (!checkOnly) for (const line of summarize(installNewGunAssets({ dest: ASSET_DEST }))) console.log(line);

@@ -217,7 +217,7 @@ export class ObjectWorld {
     update(ctx: FrameContext, now: number, view: ViewBounds): void {
         let visible = 0;
         for (const [id, entry] of this.entries) {
-            const pos = this.interp.pos(id, now, entry.data.pos);
+            const pos = this.interp.pos(this.anchorOf(entry.data), now, entry.data.pos);
             const inView = overlaps(entry.render.bounds(pos), view);
             entry.render.setVisible(inView);
             if (!inView) continue;
@@ -230,6 +230,15 @@ export class ObjectWorld {
             }
         }
         this.visibleCount = visible;
+    }
+
+    /**
+     * Whose interpolated position an object is drawn at: a living disguise sticks to its wearer (survev obstacle.ts
+     * isSkin), everything else to itself.
+     */
+    private anchorOf(data: ObjectView): number {
+        if (data.kind !== "obstacle" || data.skinPlayerId === undefined || data.dead) return data.id;
+        return this.entries.has(data.skinPlayerId) ? data.skinPlayerId : data.id;
     }
 
     /** The root container of a player's view (blood splats are parented to it), null when it is not in view. */

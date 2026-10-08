@@ -55,7 +55,10 @@ export function outfitSprites(outfitId: string, out: Map<string, number>): void 
     if (def?.type !== "outfit") return;
     const add = (id: string, scale: number) => out.set(id, Math.max(out.get(id) ?? 0, scale));
     add(def.skinImg.baseSprite, 0.25);
-    add(def.skinImg.handSprite, 0.175);
+    // survev's Aurora and Spring Tree outfits name a left and a right hand (survev player.ts:1530-1532)
+    const hands = def.skinImg.handSprite;
+    if (typeof hands === "string") add(hands, 0.175);
+    else for (const hand of [hands.left, hands.right]) add(hand, 0.175);
     add(def.skinImg.footSprite, 0.45);
     add(def.skinImg.backpackSprite, 0.25);
 }

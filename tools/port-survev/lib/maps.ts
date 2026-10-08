@@ -76,6 +76,11 @@ export const TIER_RENAMES: Record<string, string> = {
     tier_barn_melee: "tier_sledgehammer",
 };
 
+/** Items survev renamed; the loot tables take the original id (survev outfitDefs.ts: `outfitTree` -> `outfitHalloweenTree`). */
+export const ITEM_RENAMES: Record<string, string> = {
+    outfitHalloweenTree: "outfitTree",
+};
+
 export function renameTiers(
     maps: Record<string, any>,
 ): Array<{ id: string; field: string; value: string; reason: string }> {
@@ -93,7 +98,19 @@ export function renameTiers(
                     reason: "survev tier renamed back to the original name",
                 });
             }
-            for (const e of entries) if (TIER_RENAMES[e?.name]) e.name = TIER_RENAMES[e.name];
+            for (const e of entries) {
+                const renamed = TIER_RENAMES[e?.name] ?? ITEM_RENAMES[e?.name];
+                if (!renamed) continue;
+                if (ITEM_RENAMES[e.name]) {
+                    log.push({
+                        id: `${name}.lootTable.${tier}`,
+                        field: e.name,
+                        value: renamed,
+                        reason: "survev item renamed back to the original id",
+                    });
+                }
+                e.name = renamed;
+            }
             table[to && !(to in def.lootTable) ? to : tier] = entries;
         }
         def.lootTable = table;

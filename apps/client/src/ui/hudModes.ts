@@ -50,7 +50,8 @@ export function roleIconUrl(role: string, helmet: string): string {
     if (def.guiImg) return `/assets/${def.guiImg}`;
     const sprite = def.mapIcon?.alive ?? def.mapIndicator?.sprite;
     if (sprite) return spriteUrl(sprite);
-    const perk = def.perks?.[0];
+    // a role's fixed perks (survev's Lone Survivr also rolls weighted ones)
+    const perk = def.perks?.find((p): p is string => typeof p === "string");
     return (perk && lootImageUrl(perk)) || (helmet ? lootImageUrl(helmet) : "");
 }
 

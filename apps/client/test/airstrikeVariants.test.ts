@@ -1,8 +1,9 @@
 // Rebirth air strike variants and blast radii on the client (docs/research/rebirth-deviations.md "Client
 // presentation"): every variant has a distinct zone style (normal keeps the original yellow circle), heavy and carpet
-// zones an announcement in both languages, and explosion bursts follow the def's blast radius (frag x1.3, the heavy
-// shell's own effect).
+// zones an announcement in both languages, and explosion bursts follow the def's blast radius (frag x1.3, the iron
+// bomb x1.25, the heavy shell's own effect).
 import {
+    AIRSTRIKE_BOMB_RADIUS_MULT,
     AIRSTRIKE_VARIANT_IDS,
     AIRSTRIKE_VARIANTS,
     FRAG_RADIUS_MULT,
@@ -99,9 +100,15 @@ describe("explosion visuals follow the blast radius", () => {
         // the MIRV shares the frag's original numbers and effect scale (1)
         expect(explosionVisual("explosion_mirv")?.burstScale).toBe(1);
         expect(explosionVisual("explosion_barrel")?.burstScale).toBe(1);
-        const iron = explosionVisual("explosion_bomb_iron");
-        expect([iron?.effectType, iron?.burstScale, iron?.airstrike]).toEqual(["bomb_iron", 2, true]);
         expect(explosionVisual("explosion_frag")?.airstrike).toBe(false);
+    });
+
+    it("draws the iron bomb's burst x1.25 over the original effect (scale 2 for 14 u), with its blast", () => {
+        const iron = explosionVisual("explosion_bomb_iron");
+        expect([iron?.effectType, iron?.burstScale, iron?.airstrike]).toEqual(["bomb_iron", 2.5, true]);
+        expect(getDefOfType("explosion", "explosion_bomb_iron").rad.max).toBe(14 * AIRSTRIKE_BOMB_RADIUS_MULT);
+        // the iron bomb's shake is the original's, not tied to its radius
+        expect([iron?.effect.shakeStr, iron?.effect.shakeDur, iron?.effect.shakeRange]).toEqual([0.25, 0.4, undefined]);
     });
 
     it("gives the heavy shell its own, radius-sized effect with a stronger shake and a lower, louder boom", () => {
@@ -112,6 +119,8 @@ describe("explosion visuals follow the blast radius", () => {
         expect(heavy.airstrike).toBe(true);
         const rad = getDefOfType("explosion", "explosion_bomb_heavy").rad.max;
         expect(heavy.burstScale).toBeCloseTo((iron.burstScale * rad) / IRON_BOMB_RAD_MAX);
+        // the original iron burst (scale 2 for 14 u) grown to 47.5 u
+        expect(heavy.burstScale).toBeCloseTo((2 * 47.5) / 14, 9);
         expect(heavy.effect.burst.particle).toBe("explosionBombHeavy");
         expect(ALL_PARTICLE_DEFS.explosionBombHeavy).toBeDefined();
         expect(heavy.effect.shakeStr).toBeGreaterThan(iron.effect.shakeStr);

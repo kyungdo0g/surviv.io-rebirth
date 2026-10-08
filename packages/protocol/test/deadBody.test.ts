@@ -72,7 +72,9 @@ describe("DeadBody objects", () => {
         game.step();
         const rest = roundTrip();
         expect(encoder.last.full + encoder.last.part).toBe(0);
-        expect(deadBodies(rest.decoded)[0].pos.x - at.x).toBeCloseTo(2.5, 2);
+        // slid 2.5 units, give or take one 16-bit position step over the map (0.013 on the 842-unit main map)
+        const step = ctx.width / 0xffff;
+        expect(Math.abs(deadBodies(rest.decoded)[0].pos.x - at.x - 2.5)).toBeLessThanOrEqual(step);
     });
 });
 

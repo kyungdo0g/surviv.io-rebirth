@@ -128,6 +128,13 @@ export const PARTICLE_DEFS: Readonly<Record<string, ParticleDef>> = {
     // the potato cannon / spud gun drop a potato wedge, the bugle a music note
     potato_ammo: { ...shell("part-wedge-01.img", [0.5, 0.75], [3, 4], PI * 3, 0.07, 0.04, 0.95), color: 0xffffff },
     bugle_ammo: { ...shell("part-note-02.img", [1.25, 1.3], [3, 4], PI, 0.1, 0.14, 0.5), color: 0xffda00 },
+    // the rebirth's new ammo and single-use guns (beta): the original casing of the nearest calibre
+    "40mm": shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
+    rocket: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
+    "57mm": shell("part-shell-04.img", [0.75, 1], [1.5, 2.5], PI * 2.5, 0.075, 0.045, 0.925),
+    boys_ammo: shell("part-shell-02.img", [0.75, 1], [1.5, 2.5], PI * 2.5, 0.075, 0.045, 0.925),
+    panzerfaust_ammo: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
+    m202_ammo: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
     bloodSplat: {
         image: ["part-splat-01.img", "part-splat-02.img", "part-splat-03.img"],
         life: 0.5,
@@ -148,6 +155,8 @@ export const PARTICLE_DEFS: Readonly<Record<string, ParticleDef>> = {
     leaf: chip("part-leaf-01.img", () => hsv(0, 0, rnd(0.5, 0.75)), tumbling),
     leafPrickly: chip("part-leaf-01sv.img", () => hsv(0, 0, rnd(0.8, 0.85)), tumbling),
     leafRiver: chip("part-leaf-02.img", () => hsv(0, 0, rnd(0.5, 0.75)), tumbling),
+    // survev-only: Cobalt's synthetic bush, bush_07cb (survev particles.ts:992)
+    leafSynthetic: chip("part-leaf-01.img", () => hsv(0.44, 0.8, rnd(0.2, 0.3)), tumbling),
     clothHit: chip("part-cloth-01.img", () => hsv(0, 0, rnd(0.95, 1))),
     glassChip: chip("part-spark-02.img", 0x80d9ff, shard),
     bottleBrownChip: chip("part-spark-02.img", 0x783808, { ...shard, scaleStart: [0.02, 0.04] }),
@@ -155,6 +164,8 @@ export const PARTICLE_DEFS: Readonly<Record<string, ParticleDef>> = {
     bottleWhiteChip: chip("part-spark-02.img", 0xffffff, { ...shard, scaleStart: [0.02, 0.04], alphaStart: 0.75 }),
     greenChip: chip("part-spark-02.img", () => hsv(0.4, 0.18, rnd(0.5, 0.62))),
     goldChip: chip("part-spark-02.img", () => hsv(0.11, 0.84, rnd(0.88, 0.9))),
+    // survev-only: the Reserve's gold toilet (survev particles.ts:1613)
+    toiletGoldChip: chip("part-spark-02.img", () => hsv(0.14, rnd(0.72, 0.86), rnd(0.71, 0.85))),
     redChip: chip("part-spark-02.img", () => hsv(0.98, 1, rnd(0.52, 0.54))),
     potChip: chip("part-spark-02.img", () => hsv(0.06, 0.84, rnd(0.73, 0.77))),
     potatoChip: chip("part-spark-02.img", () => hsv(0.075, 0.43, rnd(0.48, 0.5))),

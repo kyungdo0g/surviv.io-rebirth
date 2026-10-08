@@ -512,6 +512,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -532,7 +537,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -542,12 +547,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -687,6 +687,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -772,9 +777,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -879,12 +889,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -966,6 +976,11 @@
           "name": "dp28",
           "count": 1,
           "weight": 0.55
+        },
+        {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.27
         },
         {
           "name": "mosin",
@@ -1083,6 +1098,11 @@
           "weight": 0.4
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.25
+        },
+        {
           "name": "mp220",
           "count": 1,
           "weight": 0.15
@@ -1101,11 +1121,6 @@
           "name": "m9",
           "count": 1,
           "weight": 0.01
-        },
-        {
-          "name": "hk416",
-          "count": 1,
-          "weight": 0.25
         }
       ],
       "tier_lmgs": [
@@ -1335,7 +1350,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -1350,7 +1365,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -1371,6 +1386,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -1486,6 +1506,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -1519,7 +1544,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -1681,12 +1706,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -1720,7 +1745,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -1864,6 +1889,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -2145,6 +2175,11 @@
           "weight": 0.75
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "mosin",
           "count": 1,
           "weight": 1.5
@@ -2263,10 +2298,15 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.5
+          "weight": 1
         },
         {
           "name": "scarssr",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sv98",
           "count": 1,
           "weight": 1
         },
@@ -2278,12 +2318,12 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 0.3
+          "weight": 1
         },
         {
           "name": "m249",
           "count": 1,
-          "weight": 0.3
+          "weight": 1
         },
         {
           "name": "barrett",
@@ -2293,7 +2333,7 @@
         {
           "name": "awc",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.75
         }
       ],
       "tier_airdrop_ammo": [
@@ -2695,9 +2735,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -3031,6 +3081,7 @@
           "bush_01": 78,
           "cache_06": 12,
           "tree_01": 320,
+          "tree_13": 30,
           "hedgehog_01": 24,
           "container_01": 5,
           "container_02": 5,
@@ -3044,7 +3095,11 @@
       ],
       "fixedSpawns": [
         {
-          "warehouse_01": 2,
+          "warehouse_01": {
+            "small": 1,
+            "large": 2
+          },
+          "warehouse_03": 1,
           "house_red_01": {
             "small": 3,
             "large": 4
@@ -3069,6 +3124,7 @@
           "greenhouse_01": 1,
           "cache_01": 1,
           "cache_02": 1,
+          "cache_04": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -3090,8 +3146,7 @@
             "small": 1,
             "large": 2
           },
-          "stone_04": 1,
-          "club_complex_01": 1
+          "stone_04": 1
         }
       ],
       "randomSpawns": [
@@ -3611,6 +3666,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -3631,7 +3691,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -3641,12 +3701,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -3791,6 +3846,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -3876,9 +3936,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -3983,12 +4048,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -4444,7 +4509,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -4459,7 +4524,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -4480,6 +4545,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -4595,6 +4665,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -4628,7 +4703,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -4790,12 +4865,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -4829,7 +4904,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -4973,6 +5048,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -5814,9 +5894,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -6167,7 +6257,11 @@
       ],
       "fixedSpawns": [
         {
-          "warehouse_01": 2,
+          "warehouse_01": {
+            "small": 1,
+            "large": 2
+          },
+          "warehouse_03": 1,
           "house_red_01": {
             "small": 2,
             "large": 3
@@ -6192,6 +6286,7 @@
           "greenhouse_01": 1,
           "cache_01": 1,
           "cache_02sp": 1,
+          "cache_04": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -6213,8 +6308,7 @@
             "small": 2,
             "large": 3
           },
-          "stone_04": 1,
-          "club_complex_01": 1
+          "stone_04": 1
         }
       ],
       "randomSpawns": [
@@ -6769,6 +6863,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -6789,7 +6888,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -6799,12 +6898,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -6944,6 +7038,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -7029,9 +7128,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -7136,12 +7240,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -7597,7 +7701,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -7612,7 +7716,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -7633,6 +7737,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -7748,6 +7857,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -7781,7 +7895,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -7943,12 +8057,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -7982,7 +8096,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -8126,6 +8240,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -8967,9 +9086,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -9316,7 +9445,11 @@
       ],
       "fixedSpawns": [
         {
-          "warehouse_01": 2,
+          "warehouse_01": {
+            "small": 1,
+            "large": 2
+          },
+          "warehouse_03": 1,
           "house_red_01": {
             "small": 3,
             "large": 4
@@ -9340,6 +9473,8 @@
           },
           "greenhouse_01": 1,
           "cache_01": 1,
+          "cache_02su": 1,
+          "cache_04": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -9361,9 +9496,7 @@
             "small": 1,
             "large": 2
           },
-          "stone_04": 1,
-          "club_complex_01": 1,
-          "cache_02": 1
+          "stone_04": 1
         }
       ],
       "randomSpawns": [
@@ -9482,10 +9615,14 @@
         "crates": [
           {
             "name": "airdrop_crate_01",
-            "weight": 10
+            "weight": 12
           },
           {
             "name": "airdrop_crate_02de",
+            "weight": 1
+          },
+          {
+            "name": "airdrop_crate_05",
             "weight": 1
           }
         ]
@@ -9913,6 +10050,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -9933,7 +10075,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -9943,12 +10085,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -10093,6 +10230,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -10185,7 +10327,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -10265,7 +10407,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
+        },
+        {
+          "name": "mkg45",
+          "count": 1,
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -10721,7 +10868,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -10736,7 +10883,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -10757,6 +10904,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -10872,6 +11024,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -10905,7 +11062,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -11067,12 +11224,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -11106,7 +11263,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -11250,6 +11407,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -11589,6 +11751,11 @@
           "name": "colt45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "mkg45",
+          "count": 1,
+          "weight": 2.5
         }
       ],
       "tier_airdrop_rare": [
@@ -11605,7 +11772,7 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 3
+          "weight": 0.08
         },
         {
           "name": "m249",
@@ -11833,6 +12000,11 @@
           "name": "mkg45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "tier_airdrop_crimson",
+          "count": 1,
+          "weight": 0.22
         }
       ],
       "tier_cattle_crate": [
@@ -11859,7 +12031,7 @@
         {
           "name": "outfitDesertCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.3
         }
       ],
       "tier_cloud_02": [
@@ -12031,9 +12203,24 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "amped_explosives",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "explosive",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -12216,7 +12403,23 @@
         "shoreInset": 8,
         "grassInset": 12,
         "rivers": {
-          "lakes": [],
+          "lakes": [
+            {
+              "odds": 1,
+              "innerRad": 10,
+              "outerRad": 20,
+              "centerObj": "oasis_01",
+              "noRiverObjs": true,
+              "riverMaskRad": 48,
+              "spawnBound": {
+                "pos": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "rad": 300
+              }
+            }
+          ],
           "weights": [
             {
               "weight": 0.1,
@@ -12345,7 +12548,7 @@
           "crate_03": 8,
           "bush_01": 90,
           "tree_06": 220,
-          "tree_05c": 144,
+          "tree_05c": 96,
           "tree_09": 40,
           "hedgehog_01": 12,
           "container_01": 5,
@@ -12360,11 +12563,14 @@
       ],
       "fixedSpawns": [
         {
-          "warehouse_01": 4,
-          "house_red_01": 3,
+          "warehouse_01": 2,
+          "warehouse_03": 1,
+          "house_red_01": 2,
           "house_red_02": 1,
           "barn_01": 1,
+          "barn_02d": 1,
           "cache_01": 1,
+          "cache_02d": 1,
           "bunker_structure_01": {
             "odds": 0.05
           },
@@ -12381,9 +12587,7 @@
           "desert_town_01": 1,
           "desert_town_02": 1,
           "greenhouse_02": 1,
-          "stone_05": 6,
-          "cache_02": 1,
-          "river_town_02": 1
+          "stone_05": 6
         }
       ],
       "randomSpawns": [],
@@ -13118,6 +13322,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -13138,7 +13347,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -13148,12 +13357,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -13293,6 +13497,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -13378,9 +13587,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -13482,7 +13696,7 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
@@ -13569,6 +13783,11 @@
           "name": "dp28",
           "count": 1,
           "weight": 0.55
+        },
+        {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.27
         },
         {
           "name": "mosin",
@@ -13933,7 +14152,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -13948,7 +14167,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -13969,6 +14188,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -14084,6 +14308,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -14117,7 +14346,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -14279,12 +14508,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -14318,7 +14547,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -14462,6 +14691,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -14735,47 +14969,67 @@
         {
           "name": "vector",
           "count": 1,
-          "weight": 1
+          "weight": 2
+        },
+        {
+          "name": "vss",
+          "count": 1,
+          "weight": 2
         },
         {
           "name": "m39",
           "count": 1,
-          "weight": 2.5
+          "weight": 2
         },
         {
           "name": "mk12",
           "count": 1,
-          "weight": 2.5
+          "weight": 2
         },
         {
           "name": "saiga",
           "count": 1,
-          "weight": 1
+          "weight": 2
         },
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 1.5
+          "weight": 2
+        },
+        {
+          "name": "bar",
+          "count": 1,
+          "weight": 2
         },
         {
           "name": "scar",
           "count": 1,
-          "weight": 0.75
+          "weight": 1.5
         },
         {
           "name": "mosin",
           "count": 1,
-          "weight": 2.5
+          "weight": 1
         },
         {
           "name": "qbb97",
           "count": 1,
-          "weight": 1.5
+          "weight": 1
         },
         {
           "name": "deagle",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "ots38_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "garand",
+          "count": 1,
+          "weight": 0.5
         },
         {
           "name": "sv98",
@@ -14792,30 +15046,40 @@
         {
           "name": "scorpion",
           "count": 1,
-          "weight": 5
+          "weight": 3
         },
         {
           "name": "m4a1",
           "count": 1,
-          "weight": 4
+          "weight": 3
         },
         {
-          "name": "awc",
+          "name": "grozas",
           "count": 1,
           "weight": 3
         },
         {
+          "name": "awc",
+          "count": 1,
+          "weight": 2.25
+        },
+        {
           "name": "garand",
           "count": 1,
-          "weight": 6
+          "weight": 2
         },
         {
           "name": "ots38_dual",
           "count": 1,
-          "weight": 4.5
+          "weight": 2
         },
         {
           "name": "spas16",
+          "count": 1,
+          "weight": 2
+        },
+        {
+          "name": "sv98",
           "count": 1,
           "weight": 2
         },
@@ -14830,9 +15094,19 @@
           "weight": 0.5
         },
         {
+          "name": "p30l_dual",
+          "count": 1,
+          "weight": 0.3
+        },
+        {
+          "name": "deagle_dual",
+          "count": 1,
+          "weight": 0.3
+        },
+        {
           "name": "pkp",
           "count": 1,
-          "weight": 0.08
+          "weight": 0.1
         },
         {
           "name": "m249",
@@ -14959,12 +15233,32 @@
         {
           "name": "",
           "count": 1,
-          "weight": 19
+          "weight": 2
+        },
+        {
+          "name": "tier_katanas",
+          "count": 1,
+          "weight": 3
+        },
+        {
+          "name": "naginata",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "fireaxe",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "sledgehammer",
+          "count": 1,
+          "weight": 1
         },
         {
           "name": "pan",
           "count": 1,
-          "weight": 1
+          "weight": 0.5
         }
       ],
       "tier_airdrop_armor": [
@@ -14988,7 +15282,7 @@
         {
           "name": "",
           "count": 1,
-          "weight": 24
+          "weight": 12
         },
         {
           "name": "4xscope",
@@ -15003,7 +15297,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.02
+          "weight": 0.01
         }
       ],
       "tier_katanas": [
@@ -15298,9 +15592,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -15579,9 +15883,9 @@
           "shack_03a": 2,
           "shack_03b": 3,
           "greenhouse_01": 1,
-          "cache_01": 1,
-          "cache_02": 1,
-          "cache_07": 1,
+          "cache_01f": 1,
+          "cache_02f": 1,
+          "cache_07f": 1,
           "mansion_structure_01": 1,
           "bunker_structure_01": {
             "odds": 1
@@ -15594,8 +15898,7 @@
           "mil_crate_02": {
             "odds": 1
           },
-          "tree_02": 3,
-          "river_town_01": 1
+          "tree_02": 3
         }
       ],
       "randomSpawns": [],
@@ -16429,6 +16732,11 @@
           "name": "potato",
           "count": 10,
           "weight": 1
+        },
+        {
+          "name": "tomato",
+          "count": 10,
+          "weight": 1
         }
       ],
       "tier_ammo": [
@@ -16557,6 +16865,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -17427,6 +17740,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -17538,6 +17856,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -17916,6 +18239,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -18452,6 +18780,11 @@
           "name": "potato",
           "count": 30,
           "weight": 0.5
+        },
+        {
+          "name": "tomato",
+          "count": 30,
+          "weight": 0.5
         }
       ],
       "tier_airdrop_melee": [
@@ -18822,9 +19155,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -19705,6 +20048,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -19725,7 +20073,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -19735,12 +20083,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -19880,6 +20223,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -19965,9 +20313,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -20072,12 +20425,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -20546,6 +20899,11 @@
           "weight": 1
         },
         {
+          "name": "outfitTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitStump",
           "count": 1,
           "weight": 1
@@ -20634,6 +20992,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -20749,6 +21112,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -20782,7 +21150,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -20944,12 +21312,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -20983,7 +21351,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -21127,6 +21495,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -21948,9 +22321,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -22284,16 +22667,28 @@
         {
           "junkyard_01": 1,
           "warehouse_01h": 4,
-          "house_red_01h": 7,
+          "house_red_01h": {
+            "small": 2,
+            "large": 3
+          },
+          "house_red_02h": {
+            "small": 2,
+            "large": 3
+          },
           "barn_01h": 1,
           "cache_03": 36,
           "cache_01": 1,
+          "cache_02h": 1,
           "mansion_structure_02": 1,
           "bunker_structure_01": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
           "mil_crate_02": {
             "odds": 0.25
+          },
+          "tree_02h": {
+            "small": 6,
+            "large": 8
           },
           "tree_05": 72,
           "tree_07": 700,
@@ -22305,8 +22700,7 @@
           "table_01": 24,
           "vending_01": 24,
           "woodpile_01": 24,
-          "stone_04": 1,
-          "cache_02": 1
+          "stone_04": 1
         }
       ],
       "randomSpawns": [],
@@ -22870,6 +23264,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -22890,7 +23289,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -22900,12 +23299,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -23043,6 +23437,11 @@
           "name": "m249",
           "count": 1,
           "weight": 0.2
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
         },
         {
           "name": "awc",
@@ -23331,19 +23730,14 @@
           "weight": 0.1
         },
         {
-          "name": "vector",
+          "name": "potato_cannon",
           "count": 1,
-          "weight": 0.4
+          "weight": 0.1
         },
         {
-          "name": "mp220",
+          "name": "potato_smg",
           "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "m9",
-          "count": 1,
-          "weight": 0.01
+          "weight": 0.1
         }
       ],
       "tier_lmgs": [
@@ -23573,7 +23967,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -23588,7 +23982,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -23609,6 +24003,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -23724,6 +24123,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -23757,7 +24161,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -23919,12 +24323,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -23958,7 +24362,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -24102,6 +24506,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -24452,7 +24861,7 @@
         {
           "name": "potato_smg",
           "count": 1,
-          "weight": 0.1
+          "weight": 1
         },
         {
           "name": "potato_lmg",
@@ -24938,9 +25347,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -25337,8 +25756,7 @@
             "large": 2
           },
           "stone_04": 1,
-          "club_complex_01": 1,
-          "shilo_01": 1
+          "club_complex_01": 1
         }
       ],
       "randomSpawns": [
@@ -25910,6 +26328,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -25930,7 +26353,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -25940,12 +26363,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -26088,6 +26506,11 @@
           "name": "m249",
           "count": 1,
           "weight": 0.2
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
         },
         {
           "name": "awc",
@@ -26376,19 +26799,14 @@
           "weight": 0.1
         },
         {
-          "name": "vector",
+          "name": "potato_cannon",
           "count": 1,
-          "weight": 0.4
+          "weight": 0.1
         },
         {
-          "name": "mp220",
+          "name": "potato_smg",
           "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "m9",
-          "count": 1,
-          "weight": 0.01
+          "weight": 0.1
         }
       ],
       "tier_lmgs": [
@@ -26618,7 +27036,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -26633,7 +27051,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -26654,6 +27072,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -26769,6 +27192,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -26802,7 +27230,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -26964,12 +27392,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -27003,7 +27431,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -27147,6 +27575,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -27497,7 +27930,7 @@
         {
           "name": "potato_smg",
           "count": 1,
-          "weight": 0.1
+          "weight": 1
         },
         {
           "name": "potato_lmg",
@@ -27973,9 +28406,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -28308,6 +28751,7 @@
           "crate_03": 8,
           "bush_01": 78,
           "cache_06": 12,
+          "tree_02": 3,
           "tree_07sp": 300,
           "tree_08sp": 30,
           "tree_08spb": 30,
@@ -28317,6 +28761,10 @@
           "potato_01": 50,
           "potato_02": 50,
           "potato_03": 50,
+          "egg_01": 15,
+          "egg_02": 15,
+          "egg_03": 15,
+          "egg_04": 15,
           "container_01": 5,
           "container_02": 5,
           "container_03": 5,
@@ -28377,8 +28825,7 @@
           },
           "stone_04": 1,
           "club_complex_01": 1,
-          "cache_02sp": 1,
-          "shilo_01": 1
+          "cache_02sp": 1
         }
       ],
       "randomSpawns": [
@@ -28940,6 +29387,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -28960,7 +29412,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -28970,12 +29422,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -29000,6 +29447,11 @@
           "name": "crowbar",
           "count": 1,
           "weight": 3
+        },
+        {
+          "name": "iceaxe",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crow_case_skin": [
@@ -29030,15 +29482,30 @@
         {
           "name": "ots38_dual",
           "count": 1,
-          "weight": 1
+          "weight": 1.5
         },
         {
           "name": "flare_gun",
           "count": 1,
-          "weight": 1
+          "weight": 1.5
         },
         {
           "name": "svd_winter",
+          "count": 1,
+          "weight": 1.5
+        },
+        {
+          "name": "762mm",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "snowball",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "scar",
           "count": 1,
           "weight": 1.5
         },
@@ -29055,32 +29522,7 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "colt45",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "45acp",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "painkiller",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m4a1",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 1
+          "weight": 0.75
         }
       ],
       "tier_eye_stone": [
@@ -29125,6 +29567,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -29135,7 +29582,13 @@
           "weight": 0.1
         }
       ],
-      "tier_sledgehammer": [],
+      "tier_sledgehammer": [
+        {
+          "name": "iceaxe",
+          "count": 1,
+          "weight": 1
+        }
+      ],
       "tier_chest_04": [
         {
           "name": "p30l",
@@ -29204,9 +29657,14 @@
           "weight": 0.5
         },
         {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -29311,12 +29769,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -29398,6 +29856,11 @@
           "name": "dp28",
           "count": 1,
           "weight": 0.55
+        },
+        {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.27
         },
         {
           "name": "mosin",
@@ -29767,7 +30230,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitWoodland",
@@ -29775,9 +30238,19 @@
           "weight": 0.3
         },
         {
+          "name": "outfitBlackIce",
+          "count": 1,
+          "weight": 0.2
+        },
+        {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
+        },
+        {
+          "name": "outfitSnow",
+          "count": 1,
+          "weight": 0.15
         },
         {
           "name": "outfitGhillie",
@@ -29798,6 +30271,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -29913,6 +30391,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -29946,7 +30429,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -30108,12 +30591,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -30147,7 +30630,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -30291,6 +30774,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -30788,7 +31276,12 @@
         {
           "name": "",
           "count": 1,
-          "weight": 19
+          "weight": 18
+        },
+        {
+          "name": "iceaxe",
+          "count": 1,
+          "weight": 1
         },
         {
           "name": "pan",
@@ -31127,9 +31620,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -31457,26 +31960,57 @@
           "stone_01x": 350,
           "barrel_01": 76,
           "silo_01": 8,
+          "crate_01x": 38,
+          "crate_02x": 4,
           "crate_03": 8,
           "crate_03x": 1,
+          "bush_01x": 78,
           "cache_06": 12,
+          "tree_10": 300,
+          "tree_11": 20,
           "hedgehog_01": 24,
+          "container_01x": 5,
           "container_02": 5,
           "container_03": 5,
           "container_04": 5,
+          "shack_01x": 7,
+          "outhouse_01x": 5,
           "loot_tier_1": 24,
-          "loot_tier_beach": 4,
-          "crate_02": 4,
-          "bush_01": 78,
-          "tree_01": 320,
-          "container_01": 5,
-          "shack_01": 7
+          "loot_tier_beach": 4
         }
       ],
       "fixedSpawns": [
         {
+          "warehouse_01x": {
+            "small": 1,
+            "large": 2
+          },
+          "warehouse_03x": 1,
+          "house_red_01x": {
+            "small": 3,
+            "large": 4
+          },
+          "house_red_02x": {
+            "small": 3,
+            "large": 4
+          },
+          "barn_01x": {
+            "small": 1,
+            "large": 3
+          },
+          "barn_02x": 1,
+          "hut_01x": 3,
+          "hut_02x": 1,
           "hut_03": 1,
           "shack_03a": 2,
+          "shack_03x": {
+            "small": 2,
+            "large": 3
+          },
+          "greenhouse_02": 1,
+          "cache_01x": 1,
+          "cache_02x": 1,
+          "cache_04": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -31487,40 +32021,34 @@
           "bunker_structure_05": 1,
           "warehouse_complex_01": 1,
           "chest_01": 1,
-          "tree_02": 3,
-          "club_complex_01": 1,
-          "cache_02": 1,
-          "cache_01": 1,
-          "house_red_02": {
-            "small": 3,
-            "large": 4
-          },
-          "barn_01": {
-            "small": 1,
-            "large": 3
-          },
-          "barn_02": 1,
-          "hut_01": 3,
-          "hut_02": 1,
-          "shack_03b": {
-            "small": 2,
-            "large": 3
-          },
-          "greenhouse_01": 1,
-          "chest_03": {
+          "chest_03x": {
             "odds": 0.2
           },
-          "mil_crate_02": {
+          "mil_crate_03": {
             "odds": 0.25
           },
-          "teahouse_complex_01su": {
+          "tree_02": 3,
+          "teahouse_complex_01x": {
             "small": 1,
             "large": 2
           },
-          "stone_04": 1
+          "stone_04x": 3,
+          "camp_01": {
+            "small": 2,
+            "large": 3
+          }
         }
       ],
-      "randomSpawns": [],
+      "randomSpawns": [
+        {
+          "spawns": [
+            "mansion_structure_01x",
+            "police_01x",
+            "bank_01x"
+          ],
+          "choose": 2
+        }
+      ],
       "spawnReplacements": [
         {
           "bridge_lg_01": "bridge_lg_01x",
@@ -31537,22 +32065,7 @@
           "table_02": "table_02x",
           "table_03": "table_03x",
           "tree_01": "tree_10",
-          "warehouse_02": "warehouse_02x",
-          "bank_01": "bank_01x",
-          "barn_01": "barn_01x",
-          "greenhouse_01": "greenhouse_02",
-          "house_red_01": "house_red_01x",
-          "house_red_02": "house_red_02x",
-          "hut_01": "hut_01x",
-          "hut_02": "hut_02x",
-          "mansion_01": "mansion_01x",
-          "outhouse_01": "outhouse_01x",
-          "police_01": "police_01x",
-          "shack_03a": "shack_03x",
-          "warehouse_01": "warehouse_01x",
-          "bush_01": "bush_01x",
-          "chest_03": "chest_03x",
-          "stone_01": "stone_01x"
+          "warehouse_02": "warehouse_02x"
         }
       ],
       "importantSpawns": [
@@ -31857,7 +32370,7 @@
         {
           "name": "tier_medical",
           "count": 1,
-          "weight": 0.6
+          "weight": 0.75
         },
         {
           "name": "tier_throwables",
@@ -31867,7 +32380,7 @@
         {
           "name": "tier_outfits",
           "count": 1,
-          "weight": 0.025
+          "weight": 0.05
         }
       ],
       "tier_scopes": [
@@ -31896,12 +32409,12 @@
         {
           "name": "helmet01",
           "count": 1,
-          "weight": 3
+          "weight": 2.5
         },
         {
           "name": "helmet02",
           "count": 1,
-          "weight": 2
+          "weight": 2.5
         },
         {
           "name": "helmet03",
@@ -31911,12 +32424,12 @@
         {
           "name": "chest01",
           "count": 1,
-          "weight": 3
+          "weight": 2.5
         },
         {
           "name": "chest02",
           "count": 1,
-          "weight": 2
+          "weight": 2.5
         },
         {
           "name": "chest03",
@@ -31928,12 +32441,12 @@
         {
           "name": "backpack01",
           "count": 1,
-          "weight": 3
+          "weight": 2
         },
         {
           "name": "backpack02",
           "count": 1,
-          "weight": 2
+          "weight": 3
         },
         {
           "name": "backpack03",
@@ -32081,6 +32594,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -32101,7 +32619,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -32111,12 +32629,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -32256,6 +32769,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -32303,17 +32821,22 @@
         {
           "name": "dp28",
           "count": 1,
-          "weight": 3.5
+          "weight": 2.75
         },
         {
           "name": "bar",
           "count": 1,
-          "weight": 3
+          "weight": 2.75
         },
         {
           "name": "imbel",
           "count": 1,
           "weight": 2.75
+        },
+        {
+          "name": "m870",
+          "count": 1,
+          "weight": 2.5
         },
         {
           "name": "m1100",
@@ -32323,27 +32846,32 @@
         {
           "name": "mp220",
           "count": 1,
-          "weight": 1.5
+          "weight": 2
         },
         {
           "name": "saiga",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "spas12",
           "count": 1,
-          "weight": 3
+          "weight": 2.5
         },
         {
           "name": "qbb97",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.125
         },
         {
           "name": "pkp",
           "count": 1,
-          "weight": 0.005
+          "weight": 0.007
+        },
+        {
+          "name": "m249",
+          "count": 1,
+          "weight": 0.011
         }
       ],
       "tier_police": [
@@ -32440,6 +32968,11 @@
           "name": "pkp",
           "count": 1,
           "weight": 0.05
+        },
+        {
+          "name": "m249",
+          "count": 1,
+          "weight": 0.05
         }
       ],
       "tier_conch": [
@@ -32484,12 +33017,12 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 0.08
+          "weight": 0.25
         },
         {
           "name": "m249",
           "count": 1,
-          "weight": 1
+          "weight": 0.75
         }
       ],
       "tier_lmgs": [
@@ -32719,7 +33252,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -32734,7 +33267,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -32755,6 +33288,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -32870,6 +33408,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -32903,7 +33446,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -33065,12 +33608,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -33104,7 +33647,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -33248,6 +33791,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -33541,19 +34089,19 @@
         {
           "name": "qbb97",
           "count": 1,
-          "weight": 2
+          "weight": 1
         }
       ],
       "tier_airdrop_rare": [
         {
           "name": "usas",
           "count": 1,
-          "weight": 2
+          "weight": 1.5
         },
         {
           "name": "pkp",
           "count": 1,
-          "weight": 0.08
+          "weight": 0.75
         },
         {
           "name": "m249",
@@ -33690,12 +34238,12 @@
         {
           "name": "",
           "count": 1,
-          "weight": 19
+          "weight": 13
         },
         {
           "name": "stonehammer",
           "count": 1,
-          "weight": 1
+          "weight": 3
         },
         {
           "name": "pan",
@@ -34034,9 +34582,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -34381,20 +34939,24 @@
           "container_03": 2,
           "container_04": 2,
           "shack_01": 2,
-          "outhouse_01": 1,
+          "outhouse_01": 6,
           "loot_tier_1": 36,
           "loot_tier_beach": 8
         }
       ],
       "fixedSpawns": [
         {
-          "barn_01": 3,
+          "barn_01": {
+            "small": 3,
+            "large": 4
+          },
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
-          "cache_01": 1,
-          "cache_02": 1,
+          "cache_01w": 1,
+          "cache_02w": 1,
           "cache_03": 48,
+          "cache_07w": 1,
           "chest_03": {
             "odds": 0.5
           },
@@ -34405,12 +34967,18 @@
           },
           "logging_complex_02": 1,
           "logging_complex_03": 3,
-          "stone_04": 6,
+          "stone_04": {
+            "small": 6,
+            "large": 8
+          },
           "teahouse_01": {
             "small": 2,
             "large": 3
           },
-          "tree_02": 6,
+          "tree_02": {
+            "small": 6,
+            "large": 8
+          },
           "tree_07": 1100,
           "tree_08": 1100,
           "tree_08b": 150,
@@ -34419,8 +34987,7 @@
             "small": 3,
             "large": 4
           },
-          "logging_complex_01": 1,
-          "teapavilion_01w": 1
+          "workshop_complex_01": 1
         }
       ],
       "randomSpawns": [],
@@ -34866,12 +35433,17 @@
         {
           "name": "smoke",
           "count": 1,
-          "weight": 1
+          "weight": 0.75
         },
         {
           "name": "snowball",
           "count": 5,
           "weight": 0.5
+        },
+        {
+          "name": "strobe",
+          "count": 1,
+          "weight": 0.2
         }
       ],
       "tier_ammo": [
@@ -34970,6 +35542,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -34990,7 +35567,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -35000,12 +35577,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -35060,15 +35632,30 @@
         {
           "name": "ots38_dual",
           "count": 1,
-          "weight": 1
+          "weight": 1.5
         },
         {
           "name": "flare_gun",
           "count": 1,
-          "weight": 1
+          "weight": 1.5
         },
         {
           "name": "svd_winter",
+          "count": 1,
+          "weight": 1.5
+        },
+        {
+          "name": "762mm",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "snowball",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "scar",
           "count": 1,
           "weight": 1.5
         },
@@ -35085,32 +35672,7 @@
         {
           "name": "pkp",
           "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "colt45",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "45acp",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "painkiller",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m4a1",
-          "count": 1,
-          "weight": 1
-        },
-        {
-          "name": "m249",
-          "count": 1,
-          "weight": 1
+          "weight": 0.75
         }
       ],
       "tier_eye_stone": [
@@ -35153,6 +35715,11 @@
           "name": "m249",
           "count": 1,
           "weight": 0.2
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
         },
         {
           "name": "awc",
@@ -35227,7 +35794,7 @@
         {
           "name": "mp220",
           "count": 1,
-          "weight": 1.5
+          "weight": 2
         },
         {
           "name": "saiga",
@@ -35347,6 +35914,11 @@
         },
         {
           "name": "pkp",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
+          "name": "m249",
           "count": 1,
           "weight": 0.05
         }
@@ -35544,7 +36116,7 @@
           "weight": 3
         },
         {
-          "name": "stonehammer",
+          "name": "iceaxe",
           "count": 1,
           "weight": 1
         }
@@ -35628,27 +36200,32 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitWoodland",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.3
+        },
+        {
+          "name": "outfitBlackIce",
+          "count": 1,
+          "weight": 0.2
         },
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
+        },
+        {
+          "name": "outfitSnow",
+          "count": 1,
+          "weight": 0.15
         },
         {
           "name": "outfitGhillie",
           "count": 1,
           "weight": 0.01
-        },
-        {
-          "name": "outfitKeyLime",
-          "count": 1,
-          "weight": 0.15
         }
       ],
       "tier_egg_outfits": [
@@ -35664,6 +36241,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -35779,6 +36361,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -35812,7 +36399,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -35974,12 +36561,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -36013,7 +36600,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -36157,6 +36744,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -36560,7 +37152,12 @@
         {
           "name": "",
           "count": 1,
-          "weight": 20
+          "weight": 16
+        },
+        {
+          "name": "outfitSpetsnaz",
+          "count": 1,
+          "weight": 5
         },
         {
           "name": "outfitMeteor",
@@ -36571,11 +37168,6 @@
           "name": "outfitGhillie",
           "count": 1,
           "weight": 0.5
-        },
-        {
-          "name": "outfitHeaven",
-          "count": 1,
-          "weight": 1
         }
       ],
       "tier_airdrop_throwables": [
@@ -36583,6 +37175,11 @@
           "name": "mirv",
           "count": 2,
           "weight": 1
+        },
+        {
+          "name": "strobe",
+          "count": 1,
+          "weight": 0.5
         },
         {
           "name": "snowball",
@@ -36595,6 +37192,11 @@
           "name": "",
           "count": 1,
           "weight": 13
+        },
+        {
+          "name": "iceaxe",
+          "count": 1,
+          "weight": 3
         },
         {
           "name": "pan",
@@ -36933,9 +37535,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -37287,16 +37899,43 @@
       ],
       "fixedSpawns": [
         {
+          "barn_01x": {
+            "small": 3,
+            "large": 4
+          },
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
+          "cache_01w": 1,
           "cache_02w": 1,
           "cache_03": 48,
+          "cache_07w": 1,
+          "camp_01w": {
+            "small": 2,
+            "large": 3
+          },
           "chest_03": {
             "odds": 0.5
           },
           "crate_19": 12,
-          "tree_02": 6,
+          "house_red_01x": {
+            "small": 3,
+            "large": 4
+          },
+          "logging_complex_02x": 1,
+          "logging_complex_03x": 2,
+          "stone_04x": {
+            "small": 6,
+            "large": 8
+          },
+          "teahouse_01x": {
+            "small": 2,
+            "large": 3
+          },
+          "tree_02": {
+            "small": 6,
+            "large": 8
+          },
           "tree_07": 1100,
           "tree_08": 1100,
           "tree_08b": 150,
@@ -37305,18 +37944,7 @@
             "small": 3,
             "large": 4
           },
-          "cache_01": 1,
-          "logging_complex_01": 1,
-          "teapavilion_01w": 1,
-          "logging_complex_02": 1,
-          "logging_complex_03": 3,
-          "barn_01": 3,
-          "teahouse_01": {
-            "small": 2,
-            "large": 3
-          },
-          "stone_04": 6,
-          "house_red_01": 3
+          "workshop_complex_01w": 1
         }
       ],
       "randomSpawns": [],
@@ -37337,18 +37965,8 @@
           "stone_01": "stone_01x",
           "stone_03": "stone_03x",
           "tree_01": "tree_07",
-          "bank_01": "bank_01x",
-          "barn_01": "barn_01x",
-          "greenhouse_01": "greenhouse_02",
-          "house_red_01": "house_red_01x",
-          "house_red_02": "house_red_02x",
-          "hut_01": "hut_01x",
-          "hut_02": "hut_02x",
-          "mansion_01": "mansion_01x",
-          "police_01": "police_01x",
-          "shack_03a": "shack_03x",
-          "cabin_01": "cabin_01x",
-          "shack_02": "shack_02x"
+          "recorder_01": "recorder_08",
+          "recorder_02": "recorder_09"
         }
       ],
       "importantSpawns": [
@@ -37876,6 +38494,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -37896,7 +38519,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -37906,12 +38529,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -38056,6 +38674,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -38128,7 +38751,7 @@
         {
           "name": "mp220",
           "count": 1,
-          "weight": 1.5
+          "weight": 2
         },
         {
           "name": "saiga",
@@ -38248,6 +38871,11 @@
         },
         {
           "name": "pkp",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
+          "name": "m249",
           "count": 1,
           "weight": 0.05
         }
@@ -38529,7 +39157,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -38544,7 +39172,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -38565,6 +39193,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -38680,6 +39313,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -38713,7 +39351,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -38875,12 +39513,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -38914,7 +39552,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -39058,6 +39696,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -39844,9 +40487,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -40213,7 +40866,9 @@
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
+          "cache_01w": 1,
           "cache_02sp": 1,
+          "cache_07w": 1,
           "chest_03": {
             "odds": 0.5
           },
@@ -40239,9 +40894,7 @@
             "small": 3,
             "large": 4
           },
-          "cache_01": 1,
-          "teapavilion_01w": 1,
-          "logging_complex_01sp": 1
+          "workshop_complex_01": 1
         }
       ],
       "randomSpawns": [],
@@ -40775,6 +41428,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -40795,7 +41453,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -40805,12 +41463,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -40950,6 +41603,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -41022,7 +41680,7 @@
         {
           "name": "mp220",
           "count": 1,
-          "weight": 1.5
+          "weight": 2
         },
         {
           "name": "saiga",
@@ -41142,6 +41800,11 @@
         },
         {
           "name": "pkp",
+          "count": 1,
+          "weight": 0.05
+        },
+        {
+          "name": "m249",
           "count": 1,
           "weight": 0.05
         }
@@ -41423,7 +42086,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -41438,7 +42101,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -41459,6 +42122,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -41574,6 +42242,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -41607,7 +42280,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -41769,12 +42442,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -41808,7 +42481,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -41952,6 +42625,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -42738,9 +43416,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -43061,7 +43749,7 @@
       "customSpawnRules": {
         "locationSpawns": [
           {
-            "type": "logging_complex_01",
+            "type": "logging_complex_01su",
             "pos": {
               "x": 0.5,
               "y": 0.5
@@ -43092,10 +43780,17 @@
       ],
       "fixedSpawns": [
         {
-          "barn_01": 3,
+          "barn_01": {
+            "small": 3,
+            "large": 4
+          },
           "bunker_structure_01b": 1,
           "bunker_structure_03": 1,
           "bunker_structure_07": 1,
+          "cache_01w": 1,
+          "cache_02su": 1,
+          "cache_06": 48,
+          "cache_07w": 1,
           "chest_03": {
             "odds": 0.5
           },
@@ -43104,38 +43799,41 @@
             "small": 3,
             "large": 4
           },
-          "stone_04": 6,
+          "logging_complex_02su": 1,
+          "logging_complex_03su": 3,
+          "stone_04": {
+            "small": 6,
+            "large": 8
+          },
           "teahouse_01": {
             "small": 2,
             "large": 3
           },
-          "tree_02": 6,
+          "tree_02": {
+            "small": 6,
+            "large": 8
+          },
+          "tree_07su": 1100,
+          "tree_08su": 1100,
+          "tree_08sub": 150,
           "tree_09": 84,
           "warehouse_01": {
             "small": 3,
             "large": 4
           },
-          "cache_01": 1,
-          "logging_complex_01": 1,
-          "teapavilion_01w": 1,
-          "logging_complex_02": 1,
-          "logging_complex_03": 3,
-          "cache_03": 48,
-          "cache_02w": 1,
-          "tree_07": 1100,
-          "tree_08": 1100,
-          "tree_08b": 150
+          "workshop_complex_01": 1
         }
       ],
       "randomSpawns": [],
       "spawnReplacements": [
         {
-          "tree_01": "tree_07",
+          "tree_01": "tree_07su",
           "crate_02": "crate_19",
           "crate_08": "crate_19",
           "crate_09": "crate_19",
           "recorder_01": "recorder_08",
-          "recorder_02": "recorder_09"
+          "recorder_02": "recorder_09",
+          "tree_07": "tree_07su"
         }
       ],
       "importantSpawns": [
@@ -43434,12 +44132,12 @@
         {
           "name": "helmet01",
           "count": 1,
-          "weight": 9
+          "weight": 4
         },
         {
           "name": "helmet02",
           "count": 1,
-          "weight": 6
+          "weight": 4
         },
         {
           "name": "helmet03",
@@ -43449,12 +44147,12 @@
         {
           "name": "chest01",
           "count": 1,
-          "weight": 15
+          "weight": 6
         },
         {
           "name": "chest02",
           "count": 1,
-          "weight": 6
+          "weight": 4
         },
         {
           "name": "chest03",
@@ -43639,6 +44337,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -43659,7 +44362,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -43669,7 +44372,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -43782,6 +44485,11 @@
           "name": "painkiller",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
         },
         {
           "name": "awc",
@@ -43939,21 +44647,6 @@
           "weight": 0.45
         },
         {
-          "name": "scarssr",
-          "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "awc",
-          "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "sv98",
-          "count": 1,
-          "weight": 0.1
-        },
-        {
           "name": "sw500",
           "count": 1,
           "weight": 0.09
@@ -43962,6 +44655,21 @@
           "name": "barrett",
           "count": 1,
           "weight": 0.06
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.06
+        },
+        {
+          "name": "awc",
+          "count": 1,
+          "weight": 0.06
+        },
+        {
+          "name": "sv98",
+          "count": 1,
+          "weight": 0.09
         }
       ],
       "tier_police": [
@@ -44272,7 +44980,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -44287,7 +44995,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -44308,6 +45016,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -44423,6 +45136,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -44456,7 +45174,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -44543,12 +45261,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -44656,6 +45374,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -44897,11 +45620,6 @@
           "weight": 2.5
         },
         {
-          "name": "sv98",
-          "count": 1,
-          "weight": 0.5
-        },
-        {
           "name": "m9",
           "count": 1,
           "weight": 0.01
@@ -44932,16 +45650,6 @@
           "weight": 0.75
         },
         {
-          "name": "scarssr",
-          "count": 1,
-          "weight": 0.15
-        },
-        {
-          "name": "awc",
-          "count": 1,
-          "weight": 0.15
-        },
-        {
           "name": "sw500",
           "count": 1,
           "weight": 0.25
@@ -44950,6 +45658,21 @@
           "name": "barrett",
           "count": 1,
           "weight": 0.075
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.075
+        },
+        {
+          "name": "awc",
+          "count": 1,
+          "weight": 0.075
+        },
+        {
+          "name": "sv98",
+          "count": 1,
+          "weight": 0.2
         }
       ],
       "tier_airdrop_rare": [
@@ -44959,14 +45682,24 @@
           "weight": 6
         },
         {
+          "name": "sw500",
+          "count": 1,
+          "weight": 2
+        },
+        {
+          "name": "barrett",
+          "count": 1,
+          "weight": 1.5
+        },
+        {
           "name": "awc",
           "count": 1,
-          "weight": 3
+          "weight": 1.5
         },
         {
           "name": "scarssr",
           "count": 1,
-          "weight": 3
+          "weight": 1.5
         },
         {
           "name": "sv98",
@@ -44982,16 +45715,6 @@
           "name": "ots38_dual",
           "count": 1,
           "weight": 4.5
-        },
-        {
-          "name": "sw500",
-          "count": 1,
-          "weight": 2
-        },
-        {
-          "name": "barrett",
-          "count": 1,
-          "weight": 1.5
         }
       ],
       "tier_airdrop_crimson": [
@@ -45427,9 +46150,29 @@
           "name": "bonus_9mm",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "bonus_45",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "amped_explosives",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -45618,13 +46361,29 @@
               "odds": 1,
               "innerRad": 32,
               "outerRad": 48,
-              "centerObj": "crate_02sv_lake",
+              "centerObj": "bunker_structure_10",
               "spawnBound": {
                 "pos": {
                   "x": 0.5,
                   "y": 0.5
                 },
-                "rad": 0
+                "rad": 200
+              },
+              "riverMaskRad": 85
+            },
+            {
+              "odds": 1,
+              "innerRad": 10,
+              "outerRad": 20,
+              "centerObj": "oasis_01sv",
+              "noRiverObjs": true,
+              "riverMaskRad": 48,
+              "spawnBound": {
+                "pos": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "rad": 300
               }
             },
             {
@@ -45658,6 +46417,13 @@
             {
               "weight": 1,
               "widths": [
+                4
+              ]
+            },
+            {
+              "weight": 1,
+              "widths": [
+                4,
                 4
               ]
             }
@@ -45740,10 +46506,10 @@
           "barrel_01": 48,
           "propane_01": 24,
           "stone_07": 6,
-          "crate_01": 50,
-          "crate_02sv": 4,
-          "crate_03": 8,
-          "crate_21b": 2,
+          "crate_01": 70,
+          "crate_02sv": 6,
+          "crate_03": 10,
+          "crate_21b": 3,
           "bush_01sv": 48,
           "tree_01sv": 48,
           "hedgehog_01": 24,
@@ -45754,7 +46520,7 @@
           "container_04": 5,
           "shack_01": 7,
           "outhouse_01": 5,
-          "loot_tier_1": 24,
+          "loot_tier_1": 30,
           "loot_tier_beach": 4
         }
       ],
@@ -45805,12 +46571,14 @@
             "small": 3,
             "large": 4
           },
+          "warehouse_03sv": 1,
           "cache_01sv": 1,
           "cache_02sv": 1,
           "cache_07": 1,
           "bunker_structure_01sv": 1,
           "bunker_structure_03": 1,
           "chest_01": 1,
+          "chest_03sv": 1,
           "mil_crate_05": {
             "small": 6,
             "large": 8
@@ -45822,10 +46590,13 @@
       "spawnReplacements": [
         {
           "tree_01": "tree_01sv",
-          "bush_01": "bush_01sv"
+          "bush_01": "bush_01sv",
+          "stone_03": "stone_03sv"
         }
       ],
-      "importantSpawns": []
+      "importantSpawns": [
+        "club_complex_01"
+      ]
     }
   },
   "cobalt": {
@@ -46388,7 +47159,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -46398,12 +47169,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -46543,6 +47309,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -46635,7 +47406,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -46740,12 +47511,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -47221,6 +47992,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -47332,6 +48108,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -47344,6 +48125,16 @@
           "name": "ot38_dual",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "m93r_dual",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "deagle",
+          "count": 1,
+          "weight": 0.3
         }
       ],
       "tier_guns_common_sniper": [
@@ -47355,7 +48146,12 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
+        },
+        {
+          "name": "scout_elite",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_healer": [
@@ -47368,6 +48164,11 @@
           "name": "m39",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "vss",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_demo": [
@@ -47378,6 +48179,11 @@
         },
         {
           "name": "spas12",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "mp220",
           "count": 1,
           "weight": 0.5
         }
@@ -47402,6 +48208,11 @@
           "name": "famas",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "scar",
+          "count": 1,
+          "weight": 0.4
         }
       ],
       "tier_guns_common_tank": [
@@ -47418,7 +48229,12 @@
         {
           "name": "qbb97",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.25
+        },
+        {
+          "name": "bar",
+          "count": 1,
+          "weight": 0.5
         }
       ],
       "tier_guns_common_classless": [
@@ -47492,12 +48308,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -47509,12 +48325,12 @@
         {
           "name": "sv98",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "awc",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_guns_rare_demo": [
@@ -47531,12 +48347,12 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
-          "name": "mp220",
+          "name": "m1014",
           "count": 1,
-          "weight": 1
+          "weight": 0.15
         }
       ],
       "tier_guns_rare_healer": [
@@ -47553,7 +48369,12 @@
         {
           "name": "garand",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.44
+        },
+        {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.2
         }
       ],
       "tier_guns_rare_assault": [
@@ -47575,7 +48396,7 @@
         {
           "name": "an94",
           "count": 1,
-          "weight": 0.5
+          "weight": 1
         }
       ],
       "tier_guns_rare_tank": [
@@ -47592,7 +48413,7 @@
         {
           "name": "m249",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.2
         }
       ],
       "tier_guns_rare_classless": [
@@ -47672,6 +48493,11 @@
           "name": "splinter",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "lifeline",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_throwables_demo": [
@@ -47691,6 +48517,11 @@
           "name": "bandage",
           "count": 5,
           "weight": 4
+        },
+        {
+          "name": "healthkit",
+          "count": 1,
+          "weight": 6
         }
       ],
       "tier_scavenger_adv": [
@@ -48491,9 +49322,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -48803,6 +49644,7 @@
           "crate_02": 4,
           "crate_03": 8,
           "bush_01cb": 78,
+          "cache_06cb": 12,
           "tree_01cb": 320,
           "hedgehog_01": 24,
           "container_01": 5,
@@ -48839,8 +49681,9 @@
             "small": 2,
             "large": 3
           },
-          "cache_01": 1,
-          "cache_02": 1,
+          "cache_01cb": 1,
+          "cache_02cb": 1,
+          "cache_04cb": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -48857,15 +49700,17 @@
           "mil_crate_02": {
             "odds": 0.25
           },
-          "stone_04": 1,
-          "club_complex_01": 1,
-          "class_shell_01": 40,
-          "cache_log_13": 1,
-          "teahouse_complex_01su": {
+          "teahouse_complex_01cb": {
             "small": 1,
             "large": 2
           },
-          "bunker_structure_09": 1
+          "stone_04": 1,
+          "club_complex_01": 1,
+          "class_shell_01": {
+            "small": 45,
+            "large": 55
+          },
+          "cache_log_13": 1
         }
       ],
       "randomSpawns": [
@@ -49028,7 +49873,7 @@
             "weight": 10
           },
           {
-            "name": "airdrop_crate_02tr",
+            "name": "airdrop_crate_02",
             "weight": 1
           }
         ]
@@ -49451,6 +50296,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -49471,7 +50321,7 @@
         {
           "name": "4xscope",
           "count": 1,
-          "weight": 5
+          "weight": 7.5
         },
         {
           "name": "8xscope",
@@ -49481,12 +50331,7 @@
         {
           "name": "15xscope",
           "count": 1,
-          "weight": 0.1
-        },
-        {
-          "name": "2xscope",
-          "count": 1,
-          "weight": 5
+          "weight": 0.25
         }
       ],
       "tier_chrys_case": [
@@ -49626,6 +50471,11 @@
           "weight": 0.2
         },
         {
+          "name": "scarssr",
+          "count": 1,
+          "weight": 0.1
+        },
+        {
           "name": "awc",
           "count": 1,
           "weight": 0.1
@@ -49718,7 +50568,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.05
         },
         {
           "name": "m39",
@@ -49823,12 +50673,12 @@
         {
           "name": "scout_elite",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         },
         {
           "name": "vss",
           "count": 1,
-          "weight": 0.05
+          "weight": 0.1
         }
       ],
       "tier_police": [
@@ -50284,7 +51134,7 @@
         {
           "name": "outfitCobaltShell",
           "count": 1,
-          "weight": 0.2
+          "weight": 0.3
         },
         {
           "name": "outfitKeyLime",
@@ -50299,7 +51149,7 @@
         {
           "name": "outfitCamo",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "outfitGhillie",
@@ -50320,6 +51170,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -50435,6 +51290,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -50468,7 +51328,7 @@
         {
           "name": "mosin",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.2
         },
         {
           "name": "scout_elite",
@@ -50630,12 +51490,12 @@
         {
           "name": "p30l_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         },
         {
           "name": "deagle_dual",
           "count": 1,
-          "weight": 0.5
+          "weight": 0.75
         }
       ],
       "tier_guns_rare_sniper": [
@@ -50669,7 +51529,7 @@
         {
           "name": "usas",
           "count": 1,
-          "weight": 0.1
+          "weight": 0.15
         },
         {
           "name": "m1014",
@@ -50813,6 +51673,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -51654,9 +52519,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -51981,12 +52856,19 @@
       },
       "densitySpawns": [
         {
-          "stone_01": 350,
+          "squash_01": 25,
+          "squash_02": 12,
+          "stone_01": 200,
           "barrel_01": 76,
-          "silo_01": 8,
+          "silo_01": 9,
           "crate_01": 45,
-          "crate_02": 4,
+          "crate_02": 3,
           "crate_03": 7,
+          "bush_06tr": 70,
+          "cache_03tr": 50,
+          "tree_07": 20,
+          "tree_08": 170,
+          "tree_08b": 4,
           "hedgehog_01": 24,
           "container_01": 5,
           "container_02": 5,
@@ -51994,12 +52876,10 @@
           "container_04": 5,
           "shack_01": 7,
           "outhouse_01": 7,
+          "outhouse_02": 2,
           "loot_tier_1": 24,
           "loot_tier_beach": 4,
-          "cache_06": 12,
-          "bush_01": 78,
-          "tree_01": 320,
-          "squash_01": 25
+          "woodpile_02": 4
         }
       ],
       "fixedSpawns": [
@@ -52022,9 +52902,13 @@
             "large": 3
           },
           "barn_02": 1,
-          "hut_01": 3,
-          "hut_02": 1,
-          "hut_03": 1,
+          "hut_01": 1,
+          "hut_02": {
+            "odds": 0.05
+          },
+          "hut_03": {
+            "odds": 0.05
+          },
           "shack_03a": 2,
           "shack_03b": {
             "small": 2,
@@ -52032,6 +52916,8 @@
           },
           "greenhouse_01": 1,
           "cache_01": 1,
+          "cache_02w": 1,
+          "cache_04": 1,
           "cache_07": 1,
           "bunker_structure_01": {
             "odds": 0.05
@@ -52042,20 +52928,14 @@
           "bunker_structure_05": 1,
           "warehouse_complex_01": 1,
           "chest_01": 1,
+          "chest_03tr": {
+            "odds": 0.2
+          },
           "mil_crate_02": {
             "odds": 0.25
           },
-          "tree_02": 3,
-          "stone_04": 1,
-          "club_complex_01": 1,
-          "cache_02": 1,
-          "chest_03": {
-            "odds": 0.2
-          },
-          "teahouse_complex_01su": {
-            "small": 1,
-            "large": 2
-          }
+          "tree_02": 4,
+          "stone_04": 1
         }
       ],
       "randomSpawns": [
@@ -52069,7 +52949,10 @@
         }
       ],
       "spawnReplacements": [
-        {}
+        {
+          "tree_01": "tree_08",
+          "stone_03": "stone_03tr"
+        }
       ],
       "importantSpawns": [
         "club_complex_01"
@@ -52555,6 +53438,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -53303,6 +54191,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -53414,6 +54307,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -53792,6 +54690,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -54633,9 +55536,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -55308,6 +56221,11 @@
           "name": "mirv",
           "count": 2,
           "weight": 0.05
+        },
+        {
+          "name": "coconut",
+          "count": 3,
+          "weight": 0.4
         }
       ],
       "tier_ammo": [
@@ -55431,6 +56349,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -56008,6 +56931,11 @@
           "name": "hook",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "cutlass",
+          "count": 1,
+          "weight": 2
         }
       ],
       "tier_hatchet": [
@@ -56282,6 +57210,11 @@
           "weight": 0.3
         },
         {
+          "name": "outfitBeachCamo",
+          "count": 1,
+          "weight": 0.25
+        },
+        {
           "name": "outfitGhillie",
           "count": 1,
           "weight": 0.01
@@ -56300,6 +57233,11 @@
         },
         {
           "name": "outfitStone",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "outfitSpringTree",
           "count": 1,
           "weight": 1
         },
@@ -56359,6 +57297,11 @@
           "name": "outfitRoyalFortune",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitParrotfish",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_islander_outfit": [
@@ -56415,6 +57358,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -56793,6 +57741,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -57269,6 +58222,11 @@
           "weight": 8
         },
         {
+          "name": "outfitWave",
+          "count": 1,
+          "weight": 8
+        },
+        {
           "name": "outfitGhillie",
           "count": 1,
           "weight": 0.5
@@ -57276,8 +58234,8 @@
       ],
       "tier_airdrop_throwables": [
         {
-          "name": "",
-          "count": 1,
+          "name": "coconut",
+          "count": 4,
           "weight": 1
         }
       ],
@@ -57286,6 +58244,11 @@
           "name": "",
           "count": 1,
           "weight": 15
+        },
+        {
+          "name": "cutlass",
+          "count": 1,
+          "weight": 4
         },
         {
           "name": "pan",
@@ -57624,9 +58587,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -58588,6 +59561,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -59461,6 +60439,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -59572,6 +60555,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -59950,6 +60938,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -60791,9 +61784,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,
@@ -61604,6 +62607,11 @@
           "name": "",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "outfitFragtastic",
+          "count": 1,
+          "weight": 0.15
         }
       ],
       "tier_chrys_01": [
@@ -62477,6 +63485,11 @@
           "weight": 1
         },
         {
+          "name": "outfitSpringTree",
+          "count": 1,
+          "weight": 1
+        },
+        {
           "name": "outfitBush",
           "count": 1,
           "weight": 1
@@ -62588,6 +63601,11 @@
           "name": "",
           "count": 1,
           "weight": 19
+        },
+        {
+          "name": "outfitCoconut",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_guns_common_scout": [
@@ -62966,6 +63984,11 @@
         },
         {
           "name": "splinter",
+          "count": 1,
+          "weight": 1
+        },
+        {
+          "name": "lifeline",
           "count": 1,
           "weight": 1
         }
@@ -63807,9 +64830,19 @@
           "name": "bonus_45",
           "count": 1,
           "weight": 1
+        },
+        {
+          "name": "high_velocity",
+          "count": 1,
+          "weight": 1
         }
       ],
       "tier_crimson_perks": [
+        {
+          "name": "ap_rounds",
+          "count": 1,
+          "weight": 1
+        },
         {
           "name": "splinter",
           "count": 1,

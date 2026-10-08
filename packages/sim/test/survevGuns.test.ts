@@ -159,8 +159,13 @@ function chiSquare(counts: ReadonlyMap<string, number>, weights: ReadonlyMap<str
 }
 
 describe("seeded loot rolls", () => {
-    // chi-square critical values at p = 0.001 for the tables' degrees of freedom
-    const CRITICAL: Readonly<Record<number, number>> = { 6: 22.46, 7: 24.32, 8: 26.12, 9: 27.88, 10: 29.59 };
+    // chi-square critical values at p = 0.001 for the tables' degrees of freedom (the gold tables grew with survev's
+    // 50v50 table and the rebirth's new guns, rebirth/newGunLoot.ts)
+    // biome-ignore format: one row
+    const CRITICAL: Readonly<Record<number, number>> = {
+        6: 22.46, 7: 24.32, 8: 26.12, 9: 27.88, 10: 29.59, 11: 31.26, 12: 32.91, 13: 34.53, 14: 36.12, 15: 37.7,
+        16: 39.25, 17: 40.79, 18: 42.31, 19: 43.82, 20: 45.31, 21: 46.8, 22: 48.27, 23: 49.73, 24: 51.18, 25: 52.62,
+    };
 
     it.each([
         ["woods", "tier_guns", "imbel", 2.75],

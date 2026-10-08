@@ -1,7 +1,7 @@
 // Gun timings, pellets, bullets, switch delays and move speeds compared with the survev oracle (weapons.json,
 // movement.json). Timings are compared with the 1000 Hz recordings: our cooldowns carry their sub-tick remainder,
 // while survev's fixed-step float residue adds a tick to many 100 Hz intervals (tools/oracle/README.md).
-import { GameConfig, getDefOfType, Input, WeaponSlot } from "@rebirth/defs";
+import { GameConfig, GUN_SPEED_OVERRIDES, getDefOfType, Input, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import type { Game, Player, PlayerInput } from "../src/index.ts";
 import { constantRng, flatGame, giveGun, openSpot, send, spawnAt, steps } from "./combatHelpers.ts";
@@ -215,16 +215,22 @@ describe.skipIf(!hasFixture("weapons"))("oracle: weapons.json", () => {
 describe.skipIf(!hasFixture("movement"))("oracle: movement.json", () => {
     const fixture = loadFixture("movement");
 
-    it("matches the equip speed of every weapon", () => {
+    it("matches the equip speed of every weapon (the owner's speed overrides moved by their own difference)", () => {
         const m = new Mismatches();
         const { game, p } = newShooter();
+        // the rebirth's deliberate speed changes on survev guns (defs rebirth/gunSpeeds.ts: the PMG-134 held is
+        // equip -1 and carry -2 instead of survev's -1.5): the oracle's speed plus that difference
+        const shift = new Map(
+            GUN_SPEED_OVERRIDES.map((o) => [o.id, o.rebirth.equip + (o.rebirth.carry ?? 0) - o.survev.equip]),
+        );
         for (const [kind, speeds] of Object.entries<Record<string, number>>(fixture.perWeapon)) {
             const slot =
                 kind === "gun" ? WeaponSlot.Primary : kind === "melee" ? WeaponSlot.Melee : WeaponSlot.Throwable;
             for (const [id, speed] of Object.entries(speeds)) {
                 p.weaponManager.setWeapon(slot, id, 0);
                 p.weaponManager.curWeapIdx = slot;
-                m.near(`${kind} ${id}`, p.computeSpeed(game.world), speed, 1e-9);
+                const expected = speed + (kind === "gun" ? (shift.get(id) ?? 0) : 0);
+                m.near(`${kind} ${id}`, p.computeSpeed(game.world), expected, 1e-9);
             }
         }
         expect(m.checked).toBeGreaterThan(100);

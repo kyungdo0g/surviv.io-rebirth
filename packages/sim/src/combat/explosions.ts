@@ -18,6 +18,8 @@ import { createMapEntity, type Decal, type Obstacle } from "../world/entities.ts
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
 
+/** Seconds a coconut heal shows the heal effect (survev explosion.ts healEffectTicker). */
+const HEAL_EFFECT_TIME = 0.5;
 /** Largest angular step between two rays (survev: min(acos(1 - (0.75 / rad)^2 / 2), 0.3)). */
 const MAX_RAY_STEP = 0.3;
 /** Rays are at most this far apart at the rim. */
@@ -36,6 +38,8 @@ const MAX_PER_TICK = 4096;
 export interface ExplosionSource {
     /** weapon or projectile that caused it ("frag", "usas", "bomb_iron"); "" for exploding obstacles */
     gameSourceType?: string;
+    /** the weapon it started from (survev weaponSourceType: the thrown item, the gun that shot the barrel) */
+    weaponSourceType?: string;
     /** map object that exploded (barrels); "" otherwise */
     mapSourceType?: string;
     /** defs DamageType: Player, or Airstrike for air strike bombs */
@@ -230,17 +234,25 @@ export class ExplosionSystem {
         }
         // teammates of the source take no damage: the player damage pipeline drops teammate hits (potato explosions'
         // teamDamage false is informational, explosions.md "Friendly fire and credit")
-        // Spud Gun shots enlarge the target, teammates too (survev explosion.ts incrementFat; throwables.md)
-        if (obj.kind === "player" && e.type === "explosion_potato_smgshot") incrementFat(obj);
         // snowball / potato hits slow enemies and make them drop an item before the damage (M7b, modes/frozen.ts)
         if (obj.kind === "player") {
             const source = e.source.sourceId ? this.host.getPlayer(e.source.sourceId) : undefined;
+            const teammate = !!source && source.teamId === obj.teamId;
+            // Spud Gun shots enlarge enemies only (survev explosion.ts:209-238, fork 0.2.31; throwables.md)
+            if (e.type === "explosion_potato_smgshot" && !teammate) incrementFat(obj);
+            // coconuts heal the thrower's side instead of hurting it (survev explosion.ts:214-220, healAmount 7)
+            if (e.def.healTeam && teammate) {
+                if (!obj.dead) obj.health = Math.min(obj.health + (e.def.healAmount ?? 5), 100);
+                obj.healEffectTicker = HEAL_EFFECT_TIME;
+                return;
+            }
             applyThrowableHit(this.host, obj, e.type, dir, source);
         }
         const params = {
             amount: obj.kind === "obstacle" ? damage * e.def.obstacleDamage : damage,
             damageType: e.source.damageType,
             gameSourceType: e.source.gameSourceType ?? "",
+            weaponSourceType: e.source.weaponSourceType ?? "",
             mapSourceType: e.source.mapSourceType ?? "",
             sourceId: e.source.sourceId ?? 0,
             isExplosion: true,
@@ -255,7 +267,12 @@ export class ExplosionSystem {
         const { def } = e;
         if (!def.shrapnelCount || !def.shrapnelType || !hasDef(def.shrapnelType)) return;
         const rng = this.host.fxRng;
-        for (let i = 0; i < def.shrapnelCount; i++) {
+        // Hyperfragmentation: the source's shrapnel x2 count (rounded up), x1.5 damage, x1.4 speed, darker tracer
+        // (survev explosion.ts:146-178)
+        const source = e.source.sourceId ? this.host.getPlayer(e.source.sourceId) : undefined;
+        const amped = source?.hasPerk("amped_explosives") ? this.host.rules.perks.ampedExplosives : undefined;
+        const count = Math.ceil(def.shrapnelCount * (amped?.shrapnelCountMult ?? 1));
+        for (let i = 0; i < count; i++) {
             const varianceT = rng.next();
             this.host.bullets.fire({
                 shooterId: e.source.sourceId ?? 0,
@@ -268,6 +285,9 @@ export class ExplosionSystem {
                 layer: e.layer,
                 varianceT,
                 shotFx: false,
+                damageMult: amped?.shrapnelDamageMult ?? 1,
+                speedMult: amped?.shrapnelSpeedMult ?? 1,
+                saturated: !!amped,
             });
         }
     }

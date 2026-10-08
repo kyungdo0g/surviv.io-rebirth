@@ -13,10 +13,11 @@ import type { Building, Obstacle } from "./entities.ts";
 import { useButton } from "./interact.ts";
 
 /**
- * Puzzle codes (server-only data, survev shared/defs/puzzles.ts). Only the puzzles whose pieces the v0.8.82 client
- * places are listed: survev's `bunker_chrys_02` code (fork 7d063420; the original compartment holds a hand-opened
- * vault, conflicts.md chrys-vault-door-use), `bunker_twins` and `reserve_vault` are fork content. Woods uses its own
- * ten-panel Eye code (maps/puzzles.md CONFLICT woods-eye-code-era).
+ * Puzzle codes (server-only data, survev shared/defs/puzzles.ts). The v0.8.82 client places the pieces of the first
+ * ones; the survev content wave (stage 3) adds survev's Chrysanthemum compartment flower code (`bunker_chrys_02`, fork
+ * 7d063420; the original compartment held a hand-opened vault, conflicts.md chrys-vault-door-use), the Twins bunker's
+ * class code and the Reserve vault's МИХАИЛ switches (pieces 1 2 3 4 2 5: two switches carry И = 2; wikigg The_Reserve
+ * puzzle picture). Woods uses its own ten-panel Eye code (maps/puzzles.md CONFLICT woods-eye-code-era).
  */
 export const PUZZLE_CODES: Readonly<Record<string, readonly string[]>> = {
     bunker_eye_02: ["egg", "hydra", "storm", "conch", "crossing", "hatchet"],
@@ -36,6 +37,9 @@ export const PUZZLE_CODES: Readonly<Record<string, readonly string[]>> = {
     saloon: ["red", "orange", "yellow", "green", "blue", "indigo", "violet"],
     club_01: ["1", "2", "3", "4"],
     club_02: ["1"],
+    bunker_chrys_02: ["flower", "leaves", "moon", "frost"],
+    bunker_twins: ["scout", "sniper", "medic", "demo", "assault", "tank"],
+    reserve_vault: ["1", "2", "3", "4", "2", "5"],
 };
 
 /** Timer comparisons tolerate float drift of summed 0.01 s steps. */

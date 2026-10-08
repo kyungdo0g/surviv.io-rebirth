@@ -1,16 +1,19 @@
 // Explosion effects (survev client/src/objects/explosion.ts; docs/research/mechanics/explosions.md): every
 // ExplosionEvent plays its def's `explosionEffectType`: a burst particle (the expanding fireball), scattered pieces for
-// snowballs and potatoes, the grass or water sound (sfx channel, range x2, muffled on another floor) and water
-// ripples, then shakes the camera for `shakeDur` seconds. Air strike bombs that burst under a roof show no visuals
-// (the original hides them indoors). Visuals go to the explosion's layer, so the renderer hides an explosion on the
-// other floor like every other object; its sound is halved and muffled there by the audio engine.
+// snowballs, potatoes, coconuts and tomatoes, the grass or water sound (sfx channel, range x2, muffled on another
+// floor) and water ripples, then shakes the camera for `shakeDur` seconds. Air strike bombs that burst under a roof
+// show no visuals (the original hides them indoors). Visuals go to the explosion's layer, so the renderer hides an
+// explosion on the other floor like every other object; its sound is halved and muffled there by the audio engine.
 // The scorch mark is a DecalView from the simulation (objects/decal.ts).
 // Rebirth (docs/research/rebirth-deviations.md "Client presentation"): the burst follows the def's blast radius, so an
-// explosion the rebirth layer resized (the frag grenade, x1.3) draws its burst that much bigger than the original
-// effect; the heavy air strike shell (explosion_bomb_heavy) has its own effect, "bomb_heavy", sized from its radius
-// against the iron bomb's, with a lower, louder and farther boom and a stronger, longer shake.
+// explosion the rebirth layer resized (the frag grenade, x1.3; the air strike iron bomb, x1.25) draws its burst that
+// much bigger than the original effect; the heavy air strike shell (explosion_bomb_heavy) has its own effect,
+// "bomb_heavy", sized from its radius against the iron bomb's original one, with a lower, louder and farther boom and
+// a stronger, longer shake (neither shake is tied to the blast radius). The M202 FLASH's rockets
+// (explosion_m202, owner 2026-10-08) have "m202": a big frag burst and by far the strongest, longest and widest shake.
 import type { Vec2 } from "@rebirth/core";
 import {
+    AIRSTRIKE_BOMB_RADIUS_MULT,
     AIRSTRIKE_VARIANTS,
     type ExplosionDef,
     GameObjectDefs,
@@ -69,7 +72,10 @@ function fx(
 
 const scatter = (particle: string, count: number) => ({ particle, count, speed: [5, 25] as const });
 
-/** survev explosion.ts ExplosionEffectDefs (same values as the 0.8.82 client; potato_lmgshot is survev-only) */
+/**
+ * survev explosion.ts ExplosionEffectDefs (same values as the 0.8.82 client; potato_lmgshot, coconut and tomato are
+ * survev-only)
+ */
 const EFFECTS: Readonly<Record<string, EffectDef>> = {
     frag: fx("explosionBurst", 1, "explosion_01", "explosion_02", 10, [0.2, 0.35], 2),
     smoke: fx("explosionBurst", 0, "explosion_smoke_01", "explosion_smoke_01", 10, [0, 0], 6),
@@ -102,18 +108,35 @@ const EFFECTS: Readonly<Record<string, EffectDef>> = {
         scatter: { particle: "potato_smg_impact", count: 1, speed: [5, 20] as const },
     }),
     bomb_iron: fx("explosionBomb", 2, "explosion_01", "explosion_02", 12, [0.25, 0.4], 2),
+    // survev-only coconut and tomato throwables (survev client explosion.ts:672-715): a splat, no burst
+    coconut: fx("", 0.75, "coconut_01", "frag_water_01", 1, [0, 0], 1, { scatter: scatter("coconut_impact", 6) }),
+    tomato: fx("", 0.75, "tomato_01", "frag_water_01", 1, [0, 0], 1, { scatter: scatter("tomato_impact", 4) }),
     /**
-     * Rebirth-only heavy air strike shell: the iron bomb's burst (scale 2 at its 14 u radius) grown to the heavy radius
-     * (38 u: x2.7), a longer warm-tinted burst particle, more ripples, the iron bomb's boom 7 semitones lower, 1.5x as
-     * loud and heard 1.5x as far, and a shake about twice as strong and long, felt 1.75x as far (full within 17.5 u,
-     * none past 70 u; still off with the Screen shake setting).
+     * Rebirth-only heavy air strike shell: the iron bomb's burst (scale 2 at its original 14 u radius, the rebirth's
+     * 17.5 / 1.25) grown to the heavy radius (47.5 u: x3.39, so x2.71 the rebirth iron bomb's x1.25 burst), a longer
+     * warm-tinted burst particle, more ripples, the iron bomb's boom 7 semitones lower, 1.5x as loud and heard 1.5x as
+     * far, and a shake about twice as strong and long, felt 1.75x as far (full within 17.5 u, none past 70 u; still off
+     * with the Screen shake setting).
      */
     bomb_heavy: fx("explosionBombHeavy", 2, "explosion_01", "explosion_02", 20, [0.55, 0.8], 3, {
         detune: -700,
         volume: 1.5,
         range: 3,
-        refRad: IRON_BOMB_RAD_MAX,
+        refRad: IRON_BOMB_RAD_MAX / AIRSTRIKE_BOMB_RADIUS_MULT,
         shakeRange: 1.75,
+    }),
+    /**
+     * Rebirth M202 FLASH rocket (owner, 2026-10-08: "shake like a magnitude-9 earthquake"): the frag's burst drawn for
+     * its 12 u radius (so x1.33 at the rocket's 16 u), the frag's boom a little lower and louder, heard 3x as far, and
+     * a shake of 1.6 world units (the frag's 0.2 x 8, the heavy shell's 0.55 x 2.9) for 1.6 s, felt 3x as far as the
+     * original's (full within 30 u, none past 120 u), fading with distance and time; off with the Screen shake setting.
+     */
+    m202: fx("explosionBurst", 1, "explosion_01", "explosion_02", 16, [1.6, 1.6], 2.5, {
+        detune: -300,
+        volume: 1.3,
+        range: 3,
+        refRad: 12,
+        shakeRange: 3,
     }),
 };
 
@@ -140,7 +163,7 @@ export interface ExplosionVisual {
 /**
  * The visual of an explosion def (null when it has no effect). The burst grows with the def's blast radius over the
  * radius the effect was drawn for: the effect's `refRad`, else the original radius of a def the rebirth resized
- * (frag 12 -> 15.6: x1.3), else the def's own (x1, the original look).
+ * (frag 12 -> 15.6: x1.3; iron bomb 14 -> 17.5: x1.25), else the def's own (x1, the original look).
  */
 export function explosionVisual(type: string): ExplosionVisual | null {
     const def = GameObjectDefs[type] as ExplosionDef | undefined;

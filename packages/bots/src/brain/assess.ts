@@ -4,8 +4,10 @@
 // effective health counts armour, boost and the heals in its bag (usable from cover); the target's comes from the
 // intel estimate and the armour it is seen wearing. Other armed enemies within 25 units add to the incoming damage,
 // a short magazine adds a reload (or a weapon swap), cover within 5 units dampens what the bot takes, teammates next to
-// the target speed up the kill. Both sides are assumed to aim like the bot (its difficulty): what differs is health,
-// armour, weapons, numbers and position. A > 0.3: push; in between: fight at the range where its guns do better
+// the target speed up the kill. Both sides are assumed to aim like the bot (its skill: skill.ts skillSigma, the aim error
+// fitted to the aim bench, against a target strafing as fast as the one seen; bot overhaul F8): what differs is health,
+// armour, weapons, numbers and position. The bot's own time to kill is the one discrete model of knowledge/duel.ts
+// (expectedTtk: whole hits, magazine and reloads), the same one its weapon choice uses (critique C6). A > 0.3: push; in between: fight at the range where its guns do better
 // (rangePreference); A < -0.3: disengage, or peek from cover; A < -1: do not open fire on a target that is not shooting
 // at the bot (holdFire). Tournament diagnostics (hard bots) found the assessment predictive: when the smart bot hit
 // first it won 27% of the exchanges at A < -1, 56% at -1..-0.3, 73% around 0 and 84-91% above 0.3.
@@ -13,15 +15,16 @@ import { type Vec2, v2 } from "@rebirth/core";
 import { fightSlot, hasAmmo } from "../knowledge/arsenal.ts";
 import {
     armourFactor,
+    expectedTtk,
     firedMoving,
     fistClosing,
     fistDps,
-    hitChance,
     rawDps,
-    reloadSeconds,
+    shotsToKill,
 } from "../knowledge/duel.ts";
 import { type GunInfo, gunInfo } from "../knowledge/weapons.ts";
 import type { Contact } from "../perception/world.ts";
+import { skillSigma } from "../skill.ts";
 import { findCover } from "./combat.ts";
 import type { BrainCtx } from "./context.ts";
 import type { BrainFeatures } from "./features.ts";
@@ -76,10 +79,19 @@ export function wantsAssessment(f: Readonly<BrainFeatures>): boolean {
     return f.assess || f.disengage || f.cover || f.thirdparty || f.airdrop;
 }
 
-/** Aim error the assessment assumes for both sides (degrees): the bot's own, against a strafing target. */
-function aimSigma(ctx: BrainCtx): number {
-    const p = ctx.params;
-    return Math.hypot(p.aimErrorDeg, p.aimErrorPerSpeed * STRAFE_SPEED);
+/**
+ * Aim error the assessment assumes for both sides (degrees): the bot's own effective error (skill.ts SKILL_SIGMA, fitted
+ * to the aim bench for the human motor that actually runs; the legacy aimErrorDeg / aimErrorPerSpeed fields described
+ * the old aim), against a target strafing like `t` sideways (half a strafe when unknown).
+ */
+export function aimSigma(ctx: BrainCtx, t?: Contact): number {
+    let strafing = 0.5;
+    if (t) {
+        const to = v2.normalizeSafe(v2.sub(t.pos, ctx.self.pos));
+        const side = Math.abs(to.x * t.vel.y - to.y * t.vel.x);
+        strafing = Math.min(1, side / STRAFE_SPEED);
+    }
+    return skillSigma(ctx.skill.s, strafing);
 }
 
 function reactionMid(ctx: BrainCtx): number {
@@ -114,7 +126,7 @@ function incomingDps(ctx: BrainCtx, e: Contact, sigma: number): number {
 /** Seconds the bot needs to kill `t` with its fight gun at distance `d` (Infinity when it cannot). */
 function timeToKill(ctx: BrainCtx, t: Contact, d: number, health: number, sigma: number) {
     const self = ctx.self;
-    const slot = fightSlot(self, ctx.guns, d);
+    const slot = fightSlot(self, ctx.guns, d, { sigmaDeg: sigma, helmet: t.helmet, chest: t.chest });
     const gun = ctx.guns.find((g) => g.slot === slot && hasAmmo(g));
     if (!gun) {
         // fists: walk up to it first
@@ -122,19 +134,21 @@ function timeToKill(ctx: BrainCtx, t: Contact, d: number, health: number, sigma:
         return { ttk: fistClosing(d) + health / dps, shots: 0, mag: 0 };
     }
     const info = gun.info;
-    const perShot =
-        info.damage *
-        info.def.bulletCount *
-        hitChance(info, d, sigma, firedMoving(info, d)) *
-        armourFactor(t.helmet, t.chest, info.headshotMult);
-    if (perShot <= 1e-6) return { ttk: Number.POSITIVE_INFINITY, shots: 0, mag: gun.mag };
-    const shots = Math.ceil(health / perShot);
-    let ttk = reactionMid(ctx) + (shots - 1) * info.cycle;
+    const o = { sigmaDeg: sigma, helmet: t.helmet, chest: t.chest, health };
+    const shotsF = shotsToKill(info, d, o);
+    if (!Number.isFinite(shotsF)) return { ttk: Number.POSITIVE_INFINITY, shots: 0, mag: gun.mag };
+    const shots = Math.ceil(shotsF);
+    let ttk = expectedTtk(info, gun.mag, gun.reserve, d, o);
     if (gun.mag < shots) {
-        // the magazine runs dry first: swap to the other loaded gun, else reload
+        // the magazine runs dry first: swapping to the other loaded gun may beat the reload
         const other = ctx.guns.find((g) => g !== gun && g.mag > 0);
-        ttk += other ? other.info.def.switchDelay + 0.1 : reloadSeconds(info, shots - gun.mag);
+        if (other) {
+            const left = Math.max(1, health * (1 - gun.mag / shots));
+            const rest = expectedTtk(other.info, other.mag, other.reserve, d, { ...o, health: left });
+            ttk = Math.min(ttk, gun.mag * info.cycle + other.info.def.switchDelay + 0.1 + rest);
+        }
     }
+    ttk += reactionMid(ctx);
     if (self.action.type === "reload") ttk += info.def.reloadTime * 0.5;
     return { ttk, shots, mag: gun.mag };
 }
@@ -242,7 +256,7 @@ export function assess(ctx: BrainCtx, t: Contact): Assessment {
     const { self, model, now } = ctx;
     const me = self.pos;
     const d = v2.distance(me, t.pos);
-    const sigma = aimSigma(ctx);
+    const sigma = aimSigma(ctx, t);
     const intel = model.intel.of(t.id);
     const theirHealth = Math.max(1, intel.estHealth);
     const mine = timeToKill(ctx, t, d, theirHealth, sigma);
@@ -346,7 +360,7 @@ export function rangePreference(ctx: BrainCtx, t: Contact): number {
     const g = enemyGun(ctx, t);
     if (!g) return 0;
     const self = ctx.self;
-    const sigma = aimSigma(ctx);
+    const sigma = aimSigma(ctx, t);
     const d = v2.distance(self.pos, t.pos);
     const ratio = (x: number) => {
         const mine = myDpsAt(ctx, t, x, sigma);

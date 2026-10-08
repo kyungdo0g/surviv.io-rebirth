@@ -141,6 +141,16 @@ export class MapIndicators {
         return this.indicators.size;
     }
 
+    /** map-event pings on the map: their type and icon tint (tests: the rebirth air strike variant colours) */
+    get eventPings(): Array<{ type: string; tint: number }> {
+        const out: Array<{ type: string; tint: number }> = [];
+        for (const ind of this.indicators.values()) {
+            const icon = ind.sprites[0];
+            if (icon && !ind.indicator) out.push({ type: ind.type, tint: icon.sprite.tint });
+        }
+        return out;
+    }
+
     /** team pings on the map (tests) */
     get playerPingCount(): number {
         return this.playerPings.size;

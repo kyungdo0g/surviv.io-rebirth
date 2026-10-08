@@ -1,40 +1,108 @@
 // Staying alive: healing and boosting when hurt and safe (smoke first when an enemy is close, namu.md /팁), rotating
 // into the next safe zone ahead of the red zone (follow the line to the safe zone; run when inside the gas), and
 // fleeing a fight the bot cannot win.
+//
+// BrainFeatures.pursuit (bot overhaul MOVE-3 and MOVE-6) replaces the flight (brain/flight.ts) and adds, for items:
+// - an item use under fire is broken off (Input.Cancel: the sim keeps it running otherwise, and the bot can neither
+//   shoot nor switch while it lasts) when the bot is hit or an armed enemy in view has a line on it, faces it and has
+//   it in reach, unless the use is about to finish; no new heal for 2.5 s after that while the danger lasts;
+// - soda and pills never with a standing enemy in view; when safe (nobody in view, not hit or shot at for 3 s, out of
+//   the gas) the boost bar is kept at 50 or more for every difficulty (user report 16: "use soda / pills when safe";
+//   the easy preset never boosted, boostAbove 0), and a boost then scores 0.28 (above exploring and low-value loot);
+// - the persona's healBias moves the heal threshold (healBelow);
+// - smoke at its own feet before healing only when it cannot fight back (unarmed, or the threat beyond its reach);
+// - the zone score does not jump at the next circle's edge: in no hurry (pressure < 0.3) it ramps up over 25 units
+//   outside the margin (an item a few steps out of the circle no longer flips the bot between the zone and the item
+//   every second: triage house.ts seed 0, zone <-> loot every ~1.5 s for 40 s), and an unarmed bot in the first two
+//   circles arms first (x0.6); the rotation goes round an air strike (brain/strikes.ts) instead of through it, and
+//   round a place the bot was chased out of (brain/danger.ts) while the zone does not press.
 import { type Vec2, v2 } from "@rebirth/core";
-import { GameConfig } from "@rebirth/defs";
+import { GameConfig, Input } from "@rebirth/defs";
 import { type GasView, gasCircle, gasTimeLeft } from "@rebirth/sim";
 import { isMeleeWeapon } from "../knowledge/weapons.ts";
-import type { WorldModel } from "../perception/world.ts";
+import type { Contact, WorldModel } from "../perception/world.ts";
+import { engagingMe, faces } from "./assess.ts";
 import { addCombatLayer, findCover, freeDir } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
+import { dangerAcross } from "./danger.ts";
+import { flightScore, planFlight } from "./flight.ts";
+import { shootRange } from "./pursuit.ts";
+import { inStrike, strikeBlocks } from "./strikes.ts";
 
 /** The last circles close to (nearly) nothing (GameConfig gas stages: radius 0.0225 of the map, then 0). */
 const FINAL_RAD = 3;
 /** Effective rotation speed through terrain and obstacles (u/s; the player runs at 12). */
 const TRAVEL_SPEED = 8.5;
+/** pursuit: the boost bar kept when safe, the score of such a boost, and how long "safe" needs nothing to happen. */
+const SAFE_BOOST = 50;
+const SAFE_BOOST_SCORE = 0.28;
+const SAFE_QUIET = 3;
+/** pursuit: an item use this close to its end is finished even under fire; no new heal this long after a cancel. */
+const USE_FINISH = 0.6;
+const HEAL_HOLD = 2.5;
+/** pursuit: zone score ramp outside the next circle's margin, while the zone does not press. */
+const ZONE_RAMP = 25;
+const ZONE_RAMP_MIN = 0.3;
+const ZONE_NO_HURRY = 0.3;
+const ZONE_UNARMED = 0.6;
+/** pursuit: zone pressure under which the rotation goes round a place the bot was chased out of, this far past it. */
+const ZONE_DETOUR = 0.5;
+const DETOUR_PAD = 5;
+
+/** pursuit: nobody in view, not hit or shot at lately, out of the gas (boosting is free then). */
+function safeNow(ctx: BrainCtx): boolean {
+    const { model, now } = ctx;
+    if (now - model.lastHurt < SAFE_QUIET || model.inGasNow()) return false;
+    if (model.underFire && now - model.underFire.time < SAFE_QUIET) return false;
+    return !ctx.visibleEnemies.some((e) => !e.downed);
+}
 
 /** Heal or boost item to use now, or "" (healthkit when badly hurt, bandages otherwise, boosts when healthy). */
 export function healItem(ctx: BrainCtx): string {
     const { self, params } = ctx;
     const inv = self.inventory;
     const h = self.health;
+    const healBelow = params.healBelow + (ctx.features.pursuit ? ctx.persona.healBias : 0);
     if (h < 100 - 1e-6) {
         if (h < 45 && inv.healthkit > 0) return "healthkit";
-        if (h < params.healBelow + 15 && inv.bandage > 0 && h < 92) return "bandage";
-        if (h < params.healBelow && inv.healthkit > 0) return "healthkit";
+        if (h < healBelow + 15 && inv.bandage > 0 && h < 92) return "bandage";
+        if (h < healBelow && inv.healthkit > 0) return "healthkit";
     }
-    if (self.boost < params.boostAbove) {
+    const boostTo = ctx.features.pursuit && safeNow(ctx) ? Math.max(params.boostAbove, SAFE_BOOST) : params.boostAbove;
+    if (self.boost < boostTo) {
         if (inv.painkiller > 0 && self.boost < 50) return "painkiller";
         if (inv.soda > 0) return "soda";
     }
     return "";
 }
 
+/** pursuit: an armed enemy in view that has the bot in its sights: a line on it, facing it, within its reach. */
+function inSights(ctx: BrainCtx, e: Contact): boolean {
+    if (e.downed || !e.visible) return false;
+    if (isMeleeWeapon(e.activeWeapon) && ctx.now - e.lastArmedAt > 15) return false;
+    if (v2.distance(e.pos, ctx.self.pos) > Math.max(shootRange(ctx), 30)) return false;
+    if (!ctx.model.lineOfFire(e.pos, ctx.self.pos)) return false;
+    return engagingMe(ctx, e) || faces(e, ctx.self.pos, 30);
+}
+
+/** pursuit: the item use under way should be broken off (hit, or in an armed enemy's sights; not about to finish). */
+function useInterrupted(ctx: BrainCtx): boolean {
+    const a = ctx.self.action;
+    if (a.type !== "use" || a.duration - a.time < USE_FINISH) return false;
+    if (ctx.now - ctx.model.lastHurt < 0.5) return true;
+    return ctx.visibleEnemies.some((e) => inSights(ctx, e));
+}
+
+/** pursuit: whether the bot can answer `threat` with its guns from here (else smoke and heal). */
+function canFightBack(ctx: BrainCtx, threat: Contact): boolean {
+    return ctx.armed && v2.distance(threat.pos, ctx.self.pos) <= shootRange(ctx);
+}
+
 /** Utility of healing now (0..1). */
 export function healScore(ctx: BrainCtx): number {
     const { self, params, now, model } = ctx;
-    if (self.action.type === "use") return 0.9;
+    // (pursuit: an interrupted use still wins this think, so planHeal can cancel it)
+    if (self.action.type === "use") return ctx.features.pursuit && useInterrupted(ctx) ? 0.95 : 0.9;
     const item = healItem(ctx);
     if (!item) return 0;
     // endgame (smart brain): once the zone is gone (the last circle closes to nothing) whoever lasts longer in the gas
@@ -46,8 +114,17 @@ export function healScore(ctx: BrainCtx): number {
         if (!fightOn) return 0.98;
     }
     const isHeal = item === "healthkit" || item === "bandage";
-    let s = isHeal ? 0.35 + 0.6 * Math.max(0, (params.healBelow + 10 - self.health) / 100) : 0.2;
-    if (isHeal && self.health < params.healBelow) s = Math.max(s, 0.55);
+    const pursuit = ctx.features.pursuit;
+    if (pursuit) {
+        const standing = ctx.visibleEnemies.some((e) => !e.downed);
+        // never a soda or pills with an enemy in view; no new heal right after one was broken off under fire
+        if (!isHeal && standing) return 0;
+        if (now < ctx.mem.pursuit.healHoldUntil && (standing || now - model.lastHurt < SAFE_QUIET)) return 0;
+    }
+    const healBelow = params.healBelow + (pursuit ? ctx.persona.healBias : 0);
+    let s = isHeal ? 0.35 + 0.6 * Math.max(0, (healBelow + 10 - self.health) / 100) : 0.2;
+    if (isHeal && self.health < healBelow) s = Math.max(s, 0.55);
+    if (pursuit && !isHeal && safeNow(ctx)) s = SAFE_BOOST_SCORE;
     const close = ctx.visibleEnemies.some((e) => v2.distance(e.pos, self.pos) < 30 && !e.downed);
     if (close) s *= self.health < 35 ? 0.6 : 0.25;
     if (now - model.lastHurt < 1.5) s *= 0.6;
@@ -66,9 +143,17 @@ export function planHeal(ctx: BrainCtx): Intent {
     const { self, model, mem, now, rng } = ctx;
     const using = self.action.type === "use";
     const threat = ctx.visibleEnemies.find((e) => !e.downed) ?? ctx.target;
+    if (using && ctx.features.pursuit && useInterrupted(ctx)) {
+        // hit, or in an armed enemy's sights: break the use off and answer (the sim never ends it on its own)
+        intent.actions.push(Input.Cancel);
+        mem.pursuit.healHoldUntil = now + HEAL_HOLD;
+        if (threat) intent.aim = v2.copy(threat.pos);
+        return intent;
+    }
     if (!using) {
-        // an enemy close by: blind it with smoke first, then heal inside
-        if (threat && self.inventory.smoke > 0 && now - mem.lastSmoke > 10 && self.health < 50) {
+        // an enemy close by: blind it with smoke first, then heal inside (pursuit: only when it cannot fight back)
+        const smokeIt = !ctx.features.pursuit || (!!threat && !canFightBack(ctx, threat));
+        if (threat && smokeIt && self.inventory.smoke > 0 && now - mem.lastSmoke > 10 && self.health < 50) {
             mem.lastSmoke = now;
             intent.throwPlan = { item: "smoke", pos: v2.add(self.pos, v2.mul(self.dir, 1.5)), cook: 0.15 };
             return intent;
@@ -114,9 +199,14 @@ function nextMoveDuration(gas: GasView): number {
 
 /** How hard the zone presses the bot to leave (0 inside the safe zone .. >1 late). */
 export function zonePressure(model: WorldModel): number {
+    return zonePressureAt(model, model.self.pos);
+}
+
+/** zonePressure of a bot standing at `p`. */
+export function zonePressureAt(model: WorldModel, p: Vec2): number {
     const gas = model.gas;
     if (!gas || gas.mode === "inactive") return 0;
-    const dist = v2.distance(model.self.pos, gas.posNew);
+    const dist = v2.distance(p, gas.posNew);
     if (dist < gas.radNew) return 0;
     const need = (dist - gas.radNew * 0.6) / TRAVEL_SPEED;
     return need / Math.max(gasTimeLeft(gas) + nextMoveDuration(gas), 1);
@@ -199,13 +289,67 @@ export function zoneScore(ctx: BrainCtx): number {
     const pressure = zonePressure(model);
     if (gas.mode === "moving") return Math.min(0.9, 0.55 + pressure);
     // early circles are weak: finish looting nearby first, but leave with time to spare
-    return Math.min(0.9, 0.2 + 0.8 * pressure + (gas.circleIdx >= 2 ? 0.15 : 0));
+    let s = Math.min(0.9, 0.2 + 0.8 * pressure + (gas.circleIdx >= 2 ? 0.15 : 0));
+    if (ctx.features.pursuit && pressure < ZONE_NO_HURRY) {
+        // no jump at the circle's edge (the item a few steps out flipped the bot between the two every second)
+        s *= Math.min(1, Math.max(ZONE_RAMP_MIN, (dist - (gas.radNew - margin)) / ZONE_RAMP));
+        // unarmed in the first circles: a gun first
+        if (!ctx.armed && gas.circleIdx <= 1) s *= ZONE_UNARMED;
+    }
+    return s;
+}
+
+/**
+ * pursuit: a zone goal clear of air strikes (`goal` turned around the next circle's centre when one covers it or the
+ * way there), and, out of the gas while the zone does not press, a way round a place the bot was chased out of
+ * (brain/danger.ts): a waypoint beside it first (an unarmed bot rotating past the gunman it had just run from fled,
+ * rotated back and fled again, up to five times in a match probe).
+ */
+function clearZoneGoal(ctx: BrainCtx, goal: Vec2): Vec2 {
+    const gas = ctx.model.gas;
+    if (!gas) return goal;
+    if (!ctx.model.inGasNow() && zonePressure(ctx.model) < ZONE_DETOUR) {
+        const a = dangerAcross(ctx, goal);
+        const wp = a ? sideStep(ctx, goal, a) : null;
+        if (wp) return wp;
+    }
+    if (!strikeBlocks(ctx, goal)) return goal;
+    for (const a of [0.6, -0.6, 1.2, -1.2, 1.8, -1.8]) {
+        const cell = ctx.model.nav.nearestWalkable(
+            v2.add(gas.posNew, v2.rotate(v2.sub(goal, gas.posNew), a)),
+            8,
+            ctx.myComp,
+        );
+        if (cell < 0) continue;
+        const p = ctx.model.nav.center(cell);
+        if (!strikeBlocks(ctx, p)) return p;
+    }
+    return goal;
+}
+
+/** A walkable point beside the danger `a` (DETOUR_PAD past its radius, on the side the way to `goal` leans to). */
+function sideStep(ctx: BrainCtx, goal: Vec2, a: { pos: Vec2; rad: number }): Vec2 | null {
+    const me = ctx.self.pos;
+    const dir = v2.normalizeSafe(v2.sub(goal, me));
+    const left = { x: -dir.y, y: dir.x };
+    // the danger to the left of the way: pass it on the right, and the other way round
+    const first = v2.dot(v2.sub(a.pos, me), left) > 0 ? -1 : 1;
+    for (const side of [first, -first]) {
+        const raw = v2.add(a.pos, v2.mul(left, side * (a.rad + DETOUR_PAD)));
+        const cell = ctx.model.nav.nearestWalkable(raw, 6, ctx.myComp);
+        if (cell < 0) continue;
+        const p = ctx.model.nav.center(cell);
+        if (v2.distance(p, a.pos) < a.rad || inStrike(ctx, p) || ctx.model.nav.isWaterAt(p)) continue;
+        return p;
+    }
+    return null;
 }
 
 export function planZone(ctx: BrainCtx): Intent {
     const intent = emptyIntent("zone");
     const jitter = (ctx.self.id % 7) / 7;
     intent.goal = ctx.features.threats ? coolZoneTarget(ctx.model, jitter) : zoneTarget(ctx.model, jitter);
+    if (ctx.features.pursuit) intent.goal = clearZoneGoal(ctx, intent.goal);
     intent.arriveDist = 3;
     addCombatLayer(ctx, intent);
     return intent;
@@ -224,7 +368,8 @@ function threatsOf(ctx: BrainCtx, range: number): BrainCtx["enemies"] {
 }
 
 export function fleeScore(ctx: BrainCtx): number {
-    const s = baseFleeScore(ctx);
+    // pursuit: the reworked flight (brain/flight.ts)
+    const s = ctx.features.pursuit ? flightScore(ctx) : baseFleeScore(ctx);
     // disengage (smart brain): running never beats getting out of the gas (the zone scores 0.93+ there)
     if (ctx.features.disengage && s > 0.6 && ctx.model.inGasNow()) return 0.6;
     return s;
@@ -244,6 +389,7 @@ function baseFleeScore(ctx: BrainCtx): number {
 }
 
 export function planFlee(ctx: BrainCtx): Intent {
+    if (ctx.features.pursuit) return planFlight(ctx);
     const intent = emptyIntent("flee");
     const { self, model, now, mem } = ctx;
     const threats = threatsOf(ctx, 60);

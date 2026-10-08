@@ -7,7 +7,7 @@
 // party key with no auto fill), next to each other; the dummies are enemies, one group each. Emotes go to Game.emote.
 // M7: Cobalt class choices go to Game.selectRole and HUD drops to Game.dropItem.
 // M8: on touch devices the local player joins as a mobile player (AddPlayerOptions.isMobile).
-import { v2 } from "@rebirth/core";
+import { type Vec2, v2 } from "@rebirth/core";
 import { GameObjectDefs, WeaponSlot } from "@rebirth/defs";
 import {
     type AddPlayerOptions,
@@ -47,11 +47,15 @@ export interface LoopbackExtras {
     /**
      * Comma-separated items for the local player: guns go to the primary (then secondary) slot with a full magazine and
      * reserve, bag items (throwables, heals, boosts, scopes) are filled to capacity; the first gun or throwable listed
-     * is equipped (M5: `give=frag`, `give=smoke,4xscope`, `give=bandage`).
+     * is equipped (M5: `give=frag`, `give=smoke,4xscope`, `give=bandage`; a melee weapon takes the melee slot).
      */
     give?: string;
     /** the local player plays with the touch controls (M8; mobile zoom, loot radius and auto loot in the sim) */
     isMobile?: boolean;
+    /** the local player (re)spawns at the first of these where a player can stand (the building showcase) */
+    spawnSpots?: readonly Vec2[];
+    /** the local player's loadout, as Join would carry it (survev content wave stage 4b) */
+    loadout?: AddPlayerOptions["loadout"];
 }
 
 export class LoopbackTransport implements Transport {
@@ -133,7 +137,7 @@ export class LoopbackTransport implements Transport {
 
     /** addPlayer options of the local player: its group, and the touch flag. */
     private localOptions(partySize: number): AddPlayerOptions {
-        const opts = this.localGroup(partySize);
+        const opts: AddPlayerOptions = { ...this.localGroup(partySize), loadout: this.extras.loadout };
         return this.extras.isMobile ? { ...opts, isMobile: true } : opts;
     }
 
@@ -157,6 +161,8 @@ export class LoopbackTransport implements Transport {
     }
 
     private setupLocal(): void {
+        const spot = this.extras.spawnSpots?.find((p) => this.game.canPlayerSpawn(p));
+        if (spot) this.game.teleportPlayer(this.playerId, spot);
         const items = (this.extras.give ?? "").split(",").filter(Boolean);
         const player = this.game.getPlayer(this.playerId);
         if (!items.length || !player) return;
@@ -170,6 +176,9 @@ export class LoopbackTransport implements Transport {
                 if (BAG_ITEMS.includes(def.ammo)) player.inv.give(def.ammo, player.inv.capacity(def.ammo));
                 if (equip < 0) equip = gunSlot;
                 gunSlot = WeaponSlot.Secondary;
+            } else if (def?.type === "melee") {
+                wm.setWeapon(WeaponSlot.Melee, item, 0);
+                if (equip < 0) equip = WeaponSlot.Melee;
             } else if (def && BAG_ITEMS.includes(item)) {
                 player.inv.give(item, player.inv.capacity(item));
                 if (def.type === "throwable" && equip < 0) {

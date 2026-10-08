@@ -1,98 +1,59 @@
-// The engagement against ctx.target: how much fighting matters now (fightScore) and how to fight (planFight: slot by
-// distance, the weapon's preferred range, strafing, cover while reloading, standing still for long shots, going around
-// cover or keeping a grenade distance). The smart brain adds, each behind its flag: the fight assessment (push a won
-// trade, otherwise take the range where its guns beat the enemy's, back off in a lost one, never start a lost one and
-// hold fire on a clearly lost one that is not shooting at the bot),
-// opportunism (press a busy or weakened enemy), cover (peek from cover in a lost trade, hold a building, hold a lost
-// target's angle, flank around the obstacle between: brain/cover.ts, brain/building.ts) and reloading in cover
-// (smartReload).
-import { v2 } from "@rebirth/core";
-import { fightSlot, hasAmmo } from "../knowledge/arsenal.ts";
+// The engagement against ctx.target (planFight: slot by distance, the weapon's preferred range, strafing, cover while
+// reloading, standing still for long shots, going around cover or keeping a grenade distance). How much fighting
+// matters (fightScore) lives in brain/fightScore.ts. The smart brain adds, each behind its flag: the fight assessment
+// (push a won trade, otherwise take the range where its guns beat the enemy's, back off in a lost one, and hold fire on
+// a clearly lost one that is not shooting at the bot), opportunism (press a busy or weakened enemy), cover (peek from
+// cover in a lost trade, hold a building, hold a lost target's angle, flank around the obstacle between:
+// brain/cover.ts, brain/building.ts) and reloading in cover (smartReload). A target out of reach goes through the
+// pursuit seam first (brain/pursuit.ts planChase).
+// Fire and attention (bot overhaul COMBAT-7/8/11/12, both brains): the crosshair tracks a target only while a shot is
+// on or about to be (reaction, exposure, reload); out of reach it glances (Intent.lookAt) while the bot closes in,
+// behind cover it holds the cover's edge, and on a trade the bot holds fire on it does not track at all. A shot from
+// beyond the gun's comfort range is answered (combat.ts engageLimit); outranged and under fire the bot zig-zags in or
+// takes the cover next to it instead of walking straight at the shooter. A whole body behind cover is brain/standoff.ts
+// (frag at once or move, reposition), melee brain/melee.ts. Round 3 (smart, BrainFeatures.cover): a target out of sight
+// is held at the spot it vanished at, prefired there right after it ran into a bush or through a door
+// (brain/lostTarget.ts, item 25), and one that walked into smoke gets sprayed, fragged or its exit held
+// (brain/smokeFight.ts, item 23); a faint body under a canopy is shot in short bursts (brain/faint.ts, item 26).
+import { type Vec2, v2 } from "@rebirth/core";
 import type { GunInfo } from "../knowledge/weapons.ts";
-import { isMeleeWeapon } from "../knowledge/weapons.ts";
+import type { Contact } from "../perception/world.ts";
 import { ADVANTAGE_BAND, holdFire, pushAdvantageOf, rangePreference } from "./assess.ts";
 import { planBuildingHold } from "./building.ts";
-import { canShoot, FRAG_TYPES, findCover, freeDir, leadPoint, MELEE_REACH } from "./combat.ts";
-import { type BrainCtx, emptyIntent, type Intent, nearFailedGoal } from "./context.ts";
-import { flankSpot, holdLostAngle, planCoverPeek } from "./cover.ts";
-import { isBusy, isWeakened } from "./opportunity.ts";
+import {
+    findCover,
+    freeDir,
+    leadPoint,
+    reactedTo,
+    returningFire,
+    type ShotCheck,
+    shotAim,
+    shotCheck,
+    slotAgainst,
+} from "./combat.ts";
+import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
+import { holdLostAngle, planCoverPeek } from "./cover.ts";
+import { faintDropped } from "./faint.ts";
+import { lostAim, prefireCorner } from "./lostTarget.ts";
+import { heldMelee, perceivedOffset, standOff, swingBand } from "./melee.ts";
+import { isBusy } from "./opportunity.ts";
+import { planFightPosition } from "./position.ts";
+import { planChase } from "./pursuit.ts";
 import { smartReloadOn } from "./reload.ts";
-import { zonePressure } from "./survival.ts";
+import { planSmoke } from "./smokeFight.ts";
+import { coverAim, planBlocked } from "./standoff.ts";
 
 /** Cover this close is worth walking to for a reload (smartReload). */
 const RELOAD_COVER = 4;
-/** Zone pressure (survival.ts) under which an unprovoked won fight is still worth taking. */
-const ZONE_CALM = 0.35;
-
-/** Utility of fighting the selected target (0..1). */
-export function fightScore(ctx: BrainCtx): number {
-    const base = baseFightScore(ctx);
-    if (!ctx.features.assess && !ctx.features.opportunism) return base;
-    return smartFightScore(ctx, base);
-}
-
-function baseFightScore(ctx: BrainCtx): number {
-    const t = ctx.target;
-    if (!t) return 0;
-    const d = ctx.targetDist;
-    if (!ctx.armed) {
-        // unarmed: punch back when attacked or when the other one is unarmed too and close; else loot or run
-        if (!t.visible || d > 6) return 0;
-        const attacked = ctx.now - ctx.model.lastHurt < 2;
-        if (attacked) return 0.7;
-        return isMeleeWeapon(t.activeWeapon) && d < 4 ? ctx.params.meleeAggression : 0;
-    }
-    if (!t.visible) return 0.5 * Math.max(0, 1 - (ctx.now - t.lastSeen) / (ctx.params.memory + 0.01));
-    const shootingAtMe = ctx.now - t.lastShotAt < 2;
-    const reach = Math.max(...ctx.guns.filter(hasAmmo).map((g) => g.info.maxEngage), 10);
-    if (d > reach * 1.4 && !shootingAtMe) return 0.35;
-    if (t.downed && ctx.visibleEnemies.some((e) => !e.downed && e !== t)) return 0.5;
-    // in sight behind an obstacle, and the way round it just failed (a wall between, no path): nothing to fight
-    // here; another behaviour moves on (the bot comes back as soon as the target shoots or a shot opens)
-    if (nearFailedGoal(ctx, t.pos) && ctx.now - ctx.model.lastHurt > 3 && !ctx.model.lineOfFire(ctx.self.pos, t.pos))
-        return 0.1;
-    // shot at, or too close to ignore: fight; an enemy that has not noticed the bot is a choice (looting may win)
-    const threatened = shootingAtMe || ctx.now - ctx.model.lastHurt < 3 || d < 12;
-    return threatened ? 0.78 : ctx.params.aggression;
-}
-
-/** Whether the target shot at the bot or hurt it lately, or stands too close to ignore. */
-export function threatened(ctx: BrainCtx): boolean {
-    const t = ctx.target;
-    if (!t) return false;
-    return ctx.now - t.lastShotAt < 2 || ctx.now - ctx.model.lastHurt < 3 || ctx.targetDist < 12;
-}
-
-/** The fight score adjusted by the assessment (assess) and the target's state (opportunism). */
-function smartFightScore(ctx: BrainCtx, base: number): number {
-    const t = ctx.target;
-    if (!t || !ctx.armed || base <= 0) return base;
-    let s = base;
-    const a = ctx.features.assess ? ctx.assessment : null;
-    if (a && !t.downed) {
-        const adv = a.advantage;
-        const push = a.openAdvantage;
-        if (t.visible) {
-            const threat = threatened(ctx);
-            if (push > ADVANTAGE_BAND && (threat || zonePressure(ctx.model) < ZONE_CALM)) {
-                // a trade the bot wins: take it, even against an enemy that has not noticed it (unless the zone presses)
-                s = Math.max(s, threat ? 0.84 : Math.min(0.8, ctx.params.aggression + 0.12 + 0.08 * Math.min(push, 2)));
-            } else if (adv < -ADVANTAGE_BAND && !threat) {
-                // a trade it loses: do not start it
-                s = Math.min(s, 0.25);
-            }
-        } else if (adv < -ADVANTAGE_BAND) {
-            s *= 0.5;
-        } else if (push > ADVANTAGE_BAND) {
-            s = Math.min(0.7, s * 1.25);
-        }
-    }
-    if (ctx.features.opportunism && t.visible && !t.downed && ctx.targetDist < 60) {
-        if (isBusy(ctx, t)) s = Math.max(s, 0.8);
-        else if (isWeakened(ctx, t)) s = Math.max(s, 0.74);
-    }
-    return s;
-}
+/** Out of reach by less than this, about half a second of closing in: the crosshair stays on (the shot is near). */
+const RANGE_SOON = 6;
+/** Outranged and shot at: cover this close is taken (else the bot zig-zags in). */
+const OUTRANGED_COVER = 6;
+/** pursuit: hit this recently, the bot strafes instead of standing still (s). */
+const HIT_STRAFE = 1.5;
+/** pursuit (round 5): a strafe leg lasts this long (s), and the side flips at its end with this chance. */
+const STRAFE_LEG: readonly [number, number] = [0.9, 2.4];
+const STRAFE_FLIP = 0.4;
 
 /** Pressing a target: into the near half of the gun's preferred band. */
 function pressRadial(d: number, info: GunInfo): number {
@@ -117,6 +78,56 @@ function assessedRadial(ctx: BrainCtx, d: number, info: GunInfo, radial: number)
     return radial;
 }
 
+/**
+ * Where the crosshair goes for the shot check's outcome (COMBAT-7): on the target (its exposed edge) while a shot is on
+ * or about to be, on the cover's edge while it hides, only a glance while it is out of reach or the bot holds fire.
+ */
+function attend(ctx: BrainCtx, intent: Intent, t: Contact, check: ShotCheck, hold: boolean, d: number): void {
+    if (hold) {
+        intent.lookAt = v2.copy(t.pos);
+        return;
+    }
+    switch (check.why) {
+        case null:
+        case "reaction":
+        case "exposure":
+        case "empty":
+            intent.aim = shotAim(ctx, t, check);
+            return;
+        case "faint":
+            // between bursts on a faint body: near the guess; given up on: a glance
+            if (faintDropped(ctx, t)) intent.lookAt = v2.copy(t.pos);
+            else intent.aim = shotAim(ctx, t, check);
+            return;
+        case "blocked":
+            intent.aim = coverAim(ctx, t);
+            return;
+        case "range":
+            if (d <= check.limit + RANGE_SOON) intent.aim = shotAim(ctx, t, check);
+            else intent.lookAt = v2.copy(t.pos);
+            return;
+        default:
+            intent.aim = leadPoint(ctx, t);
+    }
+}
+
+/**
+ * Fists or a melee weapon: close in to a human stand-off on where the target seemed to be a moment ago, swing once
+ * reacted when that perceived gap is inside the weapon's reach (melee.ts).
+ */
+function planMelee(ctx: BrainCtx, intent: Intent, t: Contact): Intent {
+    const def = heldMelee(ctx.self);
+    // the shot check draws the reaction time of a new target
+    shotCheck(ctx, t, ctx.targetDist);
+    const rel = perceivedOffset(ctx, t);
+    const seen: Vec2 = v2.add(ctx.self.pos, rel);
+    intent.goal = seen;
+    intent.arriveDist = standOff(def);
+    intent.aim = seen;
+    intent.fire = t.visible && reactedTo(ctx, t) && v2.length(rel) <= swingBand(def);
+    return intent;
+}
+
 /** The engagement against ctx.target. */
 export function planFight(ctx: BrainCtx): Intent {
     const intent = emptyIntent("fight");
@@ -127,26 +138,24 @@ export function planFight(ctx: BrainCtx): Intent {
     const d = ctx.targetDist;
     intent.targetId = t.id;
     mem.targetId = t.id;
-    const slot = fightSlot(self, ctx.guns, d);
+    const slot = slotAgainst(ctx, t, d);
     intent.slot = slot;
     const gun = ctx.guns.find((g) => g.slot === slot);
-    const aimPoint = leadPoint(ctx, t);
-    intent.aim = aimPoint;
     const toT = v2.normalizeSafe(v2.sub(t.pos, me));
 
-    if (!gun) {
-        // fists or melee: charge, swing in reach
-        intent.goal = v2.copy(t.pos);
-        intent.arriveDist = 1.2;
-        intent.fire = d < MELEE_REACH + 0.3 && t.visible;
-        return intent;
-    }
+    if (!gun) return planMelee(ctx, intent, t);
     if (!t.visible) {
-        // cover: hold the last-seen angle instead of walking into it
-        if (features.cover && holdLostAngle(ctx, intent, t)) return intent;
-        // last seen spot: approach carefully, ready to shoot
+        // the last-seen spot: hold its angle from cover, or approach carefully, crosshair on it (smart: on the spot it
+        // vanished at, a smoke stand-off when it walked into smoke, a prefire burst at a bush or door)
+        intent.aim = features.cover ? lostAim(ctx, t) : leadPoint(ctx, t);
+        if (features.cover && planSmoke(ctx, intent, t, gun)) return intent;
+        if (features.cover && holdLostAngle(ctx, intent, t)) {
+            prefireCorner(ctx, intent, t.id);
+            return intent;
+        }
         intent.goal = v2.copy(t.pos);
         intent.arriveDist = 4;
+        if (features.cover) prefireCorner(ctx, intent, t.id);
         return intent;
     }
     // tactics for this engagement (re-rolled for every new target and every few seconds)
@@ -156,9 +165,15 @@ export function planFight(ctx: BrainCtx): Intent {
         mem.useCover = rng.bool(params.coverChance);
         mem.standStill = rng.bool(params.standStillChance);
     }
-    intent.fire = canShoot(ctx, t, d);
+    const check = shotCheck(ctx, t, d);
     // assess: no shot that only opens a clearly lost trade
-    if (intent.fire && holdFire(ctx, t, d)) intent.fire = false;
+    const hold = check.ok && holdFire(ctx, t, d);
+    intent.fire = check.ok && !hold;
+    if (intent.fire) {
+        mem.fight.fireTarget = t.id;
+        mem.fight.fireAt = now;
+    }
+    attend(ctx, intent, t, check, hold, d);
     // cover: take an even fight at range into a building, else peek from cover (reload and heal behind it)
     if (features.cover && (planBuildingHold(ctx, intent, gun) || planCoverPeek(ctx, intent, gun))) return intent;
     const info = gun.info;
@@ -180,27 +195,23 @@ export function planFight(ctx: BrainCtx): Intent {
             return intent;
         }
     }
-    if (!empty && !reloading && !model.lineOfFire(me, t.pos)) {
-        // something stands between: with a grenade, keep a safe throwing distance and let it decide (the explosion
-        // reaches 12 units); without, go around the cover (the path leads past it) until the shot is clear
-        const frags = FRAG_TYPES.some((it) => (self.inventory[it] ?? 0) > 0);
-        if (frags && d < 11) {
-            intent.moveDir = freeDir(model, me, v2.neg(toT));
-            return intent;
-        }
-        if (!frags || d > 26) {
-            // cover: around the obstacle to a spot with a shot (walking straight at the target can stall against it)
-            const flank = features.cover ? flankSpot(ctx, t) : null;
-            intent.goal = flank ?? v2.copy(t.pos);
-            // within the usual stopping distance already (two bots on either side of a tree, a crate or a wall): keep
-            // walking round the obstacle, or both stand facing each other without a shot until the zone comes
-            intent.arriveDist = flank ? 1 : Math.min(Math.max(6, info.idealMin), Math.max(0.5, d - 3));
-            return intent;
-        }
+    if (!empty && !reloading && check.why === "blocked") {
+        // the whole body behind cover: frag at once or move (standoff.ts), never stand waiting
+        planBlocked(ctx, intent, info, d);
+        return intent;
     }
+    // position seam (MOVE, round 3): fight from the edge of cover instead of strafing in the open (brain/position.ts)
+    if (planFightPosition(ctx, intent, gun, d)) return intent;
     if (now >= mem.strafeUntil) {
-        mem.strafeSign = rng.bool() ? 1 : -1;
-        mem.strafeUntil = now + rng.range(0.35, 1.2);
+        if (features.pursuit) {
+            // round 5 (report 36): human strafe legs (the owner's videos: 7 reversals a minute in a typical 10 s
+            // stretch, 21 at the 90th percentile; the old 0.35-1.2 s legs with a fresh side each made 60+)
+            if (rng.next() < STRAFE_FLIP) mem.strafeSign = -mem.strafeSign;
+            mem.strafeUntil = now + rng.range(STRAFE_LEG[0], STRAFE_LEG[1]);
+        } else {
+            mem.strafeSign = rng.bool() ? 1 : -1;
+            mem.strafeUntil = now + rng.range(0.35, 1.2);
+        }
     }
     const perp = v2.mul(v2.perp(toT), mem.strafeSign);
     let radial = 0;
@@ -209,20 +220,41 @@ export function planFight(ctx: BrainCtx): Intent {
     if (features.assess && ctx.assessment) radial = assessedRadial(ctx, d, info, radial);
     else if (features.opportunism && isBusy(ctx, t)) radial = pressRadial(d, info);
     const longShot = d > 20 && info.def.moveSpread >= 2 && info.cls !== "shotgun";
-    if (longShot && mem.standStill && intent.fire && !empty) {
+    // pursuit: being hit, nobody stands still for a steadier shot (a second shooter, or losing the trade standing:
+    // adversarial review, an expert stood still 82% of a 20 u fight and soaked a flanker's fire): it strafes
+    const shotAt = features.pursuit && now - model.lastHurt < HIT_STRAFE;
+    const standStill = mem.standStill && !shotAt;
+    const strafing = mem.strafing || shotAt;
+    if (longShot && standStill && intent.fire && !empty) {
         intent.stop = true;
         return intent;
     }
     if (radial > 0 && d > info.maxEngage * params.rangeMult) {
+        // pursuit seam (MOVE): give up, holster-sprint or otherwise plan the chase; the stub never does
+        if (planChase(ctx, intent, gun)) return intent;
+        // outranged and shot at: the cover next to it, or zig-zag in, not a straight walk into the bullets
+        if (!intent.fire && returningFire(ctx, t)) {
+            const cover = now - model.lastHurt < 2 ? findCover(model, t.pos, OUTRANGED_COVER) : null;
+            if (cover && v2.distance(cover, me) > 0.8) {
+                intent.goal = cover;
+                intent.arriveDist = 0.6;
+                return intent;
+            }
+            const zig = freeDir(model, me, v2.normalize(v2.add(v2.mul(toT, 0.7), v2.mul(perp, 0.7))));
+            if (zig) {
+                intent.moveDir = zig;
+                return intent;
+            }
+        }
         // out of reach: close in along the path
         intent.goal = v2.copy(t.pos);
         intent.arriveDist = info.idealMax * 0.8;
         return intent;
     }
     let move = v2.mul(toT, radial);
-    if (mem.strafing) move = v2.add(move, v2.mul(perp, radial === 0 ? 1 : 0.7));
+    if (strafing) move = v2.add(move, v2.mul(perp, radial === 0 ? 1 : 0.7));
     if (v2.lengthSqr(move) < 1e-6) {
-        intent.stop = mem.standStill;
+        intent.stop = standStill;
         return intent;
     }
     const dir = freeDir(model, me, v2.normalize(move));

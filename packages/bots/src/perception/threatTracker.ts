@@ -1,17 +1,22 @@
 // The real threat board (BrainFeatures.threats; installed by perception/install.ts): everything a player knows beyond
 // the enemies on its screen, built only from its own snapshots, like the original client shows it:
-// - gunfire: every bullet of a non-friendly shooter (the client draws its tracer from the start position and plays the
-//   shot sound there); shooters not on screen become UnseenShooters and ghost contacts;
+// - gunfire: every bullet of a non-friendly shooter whose tracer crosses the screen; a shooter not on screen becomes an
+//   UnseenShooter and a ghost contact at the fuzzy origin the tracer and the shot sound give (perception/bulletSight.ts:
+//   back along the tracer from where it enters the screen, never the exact muzzle; bot overhaul COMBAT-5);
 // - explosions in view, the kill feed (with positions only where the bot last saw the killer or the victim, or the
 //   victim's dead body), teammates' pings (EmoteEvent isPing), the kill leader;
 // - air drops (the "ping_airdrop" map indicator appears when the crate is released and it lands
 //   GameConfig.airdrop.fallTime later; falling crates in view; the crate obstacle once seen), air strikes ("ping_airstrike"
-//   indicators of strobes and 50v50 zones, the zones themselves), planes coming into view, live grenades in view.
+//   and the variant strobes' pings, as wide as the variant's lines and bombs reach: perception/strobes.ts; the 50v50
+//   zones themselves; thrown strobes in view, whose strips are known 3 s before their markers), planes coming into
+//   view, live grenades in view.
 // Events go to a 64-entry ring buffer on the simulation clock; `heat` sums them with a recency weight. Pure and
 // deterministic: no rng, no wall clock.
 import { type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, GameObjectDefs, hasDef } from "@rebirth/defs";
+import { airstrikePingVariant, GameConfig, GameObjectDefs, hasDef, isAirstrikePing } from "@rebirth/defs";
 import type { Snapshot } from "@rebirth/sim";
+import { bulletOrigin } from "./bulletSight.ts";
+import { MARKER_DANGER_TIME, markerRadius, StrobeWatch } from "./strobes.ts";
 import type {
     AirdropIntel,
     DangerZone,
@@ -39,18 +44,13 @@ const MERGE_DIST = 6;
 /** A falling crate crushes what is under it: keep this far from the landing point until it lands. */
 const CRATE_DANGER_RAD = 6;
 const FALL_TIME = GameConfig.airdrop.fallTime;
-/**
- * A strobe or zone strike: bombs fall within a few seconds on a strip of bombCount x bombOffset units ahead of the
- * target (survev plane.ts; sim match/airstrikes.ts): keep about half of it away for the strike window.
- */
-const STRIKE_DANGER_RAD = (GameConfig.airstrike.bombCount * GameConfig.airstrike.bombOffset) / 2 + 4;
-const STRIKE_DANGER_TIME = 6;
+
 /** A plane id unseen this long is a new plane when it shows up again (ids 1..255 are reused). */
 const PLANE_MEMORY = 30;
 /** An air drop is forgotten this long after it landed unless its crate was seen (then until it is opened). */
 const AIRDROP_MEMORY = 180;
 /** Projectiles that explode (brain/brain.ts DANGEROUS), with their explosion radius. */
-const GRENADES = ["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron"] as const;
+const GRENADES = ["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron", "bomb_heavy"] as const;
 const KIND_WEIGHT: Readonly<Record<ThreatKind, number>> = {
     gunfire: 1,
     explosion: 2,
@@ -72,6 +72,9 @@ function explosionRad(throwable: string): number {
             : null;
     return ex?.rad?.max ?? 0;
 }
+
+/** A marker and a zone this close are the same strike (client Minimap.styledPing). */
+const SAME_STRIKE = 2;
 
 const GRENADE_RAD: ReadonlyMap<string, number> = new Map(GRENADES.map((g) => [g, explosionRad(g)]));
 
@@ -120,6 +123,8 @@ export class ThreatTracker implements ThreatBoard {
     private leader: KillLeaderIntel | null = null;
     /** plane ids (reused by the server after a while) and when each was last in view */
     private readonly planes = new Map<number, number>();
+    /** thrown strobes in view: their strike strips, 3 s before their markers (perception/strobes.ts) */
+    private readonly strobes = new StrobeWatch();
 
     heat(pos: Vec2, r: number): number {
         let h = 0;
@@ -177,6 +182,8 @@ export class ThreatTracker implements ThreatBoard {
         this.ingestExplosions(snap);
         this.ingestKills(snap, model);
         this.ingestPings(snap, model);
+        // (thrown strobes before the markers: a marker of a strobe the bot saw thrown is its strip)
+        this.strobes.update(model.projectiles, this.now);
         this.ingestIndicators(snap);
         this.ingestAirdrops(snap, model);
         this.ingestPlanes(snap);
@@ -218,13 +225,14 @@ export class ThreatTracker implements ThreatBoard {
             const sid = b.shooterId;
             // first bullet of a shot only (no extra pellets, no ricochets: their start is not the shooter)
             if (sid === 0 || sid === model.selfId || model.isTeammate(sid) || !b.shotFx || b.reflectCount > 0) continue;
-            const merged = this.recent("gunfire", sid, b.pos);
+            const from = bulletOrigin(b);
+            const merged = this.recent("gunfire", sid, from);
             if (merged) {
                 merged.time = this.now;
-                merged.pos = v2.copy(b.pos);
+                merged.pos = v2.copy(from);
                 merged.weight = Math.min(merged.weight + 0.5, 4);
             } else {
-                this.push("gunfire", b.pos, sid);
+                this.push("gunfire", from, sid);
             }
             const c = model.contacts.get(sid);
             if (c?.visible) {
@@ -233,14 +241,14 @@ export class ThreatTracker implements ThreatBoard {
             }
             let s = this.shooters.get(sid);
             if (!s || this.now - s.lastShot > SHOOTER_LIFE) {
-                s = { id: sid, pos: v2.copy(b.pos), firstShot: this.now, lastShot: this.now, shots: 0, weapon: "" };
+                s = { id: sid, pos: v2.copy(from), firstShot: this.now, lastShot: this.now, shots: 0, weapon: "" };
                 this.shooters.set(sid, s);
             }
-            s.pos = v2.copy(b.pos);
+            s.pos = v2.copy(from);
             s.lastShot = this.now;
             s.shots++;
             s.weapon = b.sourceType;
-            this.report("gunfire", b.pos, sid, b.sourceType, `shot:${sid}`);
+            this.report("gunfire", from, sid, b.sourceType, `shot:${sid}`);
         }
     }
 
@@ -257,9 +265,10 @@ export class ThreatTracker implements ThreatBoard {
         const kills = snap.kills;
         if (!kills?.length) return;
         const bodies = new Map<number, Vec2>();
-        // M9 dead bodies (kind "deadBody") carry the dead player's id; read loosely so older views still type-check
+        // M9 dead bodies (kind "deadBody") carry the dead player's id; read loosely so older views still type-check;
+        // only bodies on the screen (the snapshot's margin is not drawn: bot overhaul COMBAT-1)
         for (const o of snap.objects as ReadonlyArray<{ kind: string; pos: Vec2; playerId?: number }>) {
-            if (o.kind === "deadBody" && o.playerId) bodies.set(o.playerId, o.pos);
+            if (o.kind === "deadBody" && o.playerId && model.onScreen(o.pos)) bodies.set(o.playerId, o.pos);
         }
         for (const k of kills) {
             const killer = k.killerId;
@@ -312,13 +321,26 @@ export class ThreatTracker implements ThreatBoard {
                     crateSeen: Number.NEGATIVE_INFINITY,
                 });
                 this.push("airdrop", ind.pos, 0);
-            } else if (ind.type === "ping_airstrike" && !ind.dead) {
+            } else if (isAirstrikePing(ind.type) && !ind.dead) {
                 if (this.strikes.some((z) => v2.distance(z.pos, ind.pos) < 2 && z.until > this.now)) continue;
+                // a strobe the bot saw thrown: its strip already says where the lines go
+                if (this.strobes.covers(ind.pos)) continue;
+                // a 50v50 zone names its variant on its zone view; a variant strobe's ping names it in its type
+                // (ping_airstrike_heavy / ping_airstrike_carpet, defs rebirth/strobes.ts)
+                const pinged = airstrikePingVariant(ind.type);
+                const variant =
+                    pinged && pinged !== "normal"
+                        ? pinged
+                        : snap.airstrikeZones?.find((z) => v2.distance(z.pos, ind.pos) < SAME_STRIKE)?.variant;
+                // (bot round 6) as wide as the variant's lines spread plus its bomb's blast (perception/strobes.ts); a
+                // 50v50 zone's own circle comes from its zone view (rebuild)
                 this.strikes.push({
                     kind: "airstrike",
                     pos: v2.copy(ind.pos),
-                    rad: STRIKE_DANGER_RAD,
-                    until: this.now + STRIKE_DANGER_TIME,
+                    rad: markerRadius(variant),
+                    until: this.now + MARKER_DANGER_TIME,
+                    strobe: true,
+                    ...(variant && variant !== "normal" ? { variant } : {}),
                 });
                 this.push("airstrike", ind.pos, 0);
             }
@@ -416,9 +438,11 @@ export class ThreatTracker implements ThreatBoard {
             this.reportList.push(r);
         }
         this.strikes = this.strikes.filter((z) => z.until > now);
-        const zones: DangerZone[] = [...this.strikes];
+        const zones: DangerZone[] = [...this.strikes, ...this.strobes.dangers(now)];
         for (const z of snap.airstrikeZones ?? []) {
-            zones.push({ kind: "airstrike", pos: v2.copy(z.pos), rad: z.rad, until: now + z.duration * (1 - z.zoneT) });
+            const until = now + z.duration * (1 - z.zoneT);
+            const variant = z.variant && z.variant !== "normal" ? { variant: z.variant } : {};
+            zones.push({ kind: "airstrike", pos: v2.copy(z.pos), rad: z.rad, until, ...variant });
         }
         for (const d of this.drops) {
             if (!d.landed) zones.push({ kind: "airdrop", pos: d.pos, rad: CRATE_DANGER_RAD, until: d.landsAt });

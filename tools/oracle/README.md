@@ -11,7 +11,7 @@ fixtures record survev's guess. We port data and observed behaviour, never surve
 ## Setup
 
 ```sh
-sh tools/port-survev/fetch.sh            # clone .survev at the pinned commit (once)
+pnpm survev:fetch                        # clone .survev at the pinned commit (once)
 cd .survev && pnpm install --frozen-lockfile --ignore-scripts --filter survev --filter @survev/shared && cd ..
 ```
 

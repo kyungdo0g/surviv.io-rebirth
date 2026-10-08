@@ -19,7 +19,7 @@ export interface SimRules {
      * See docs/research/mechanics/damage-armor.md (CONFLICT headshot-mult-1-rule).
      */
     headshotNeedsMultAboveOne: boolean;
-    /** Cast Ironskin reduction: 0.5 in 0.8.82, 0.45 in survev (damage-armor.md CONFLICT steelskin-reduction) */
+    /** Cast Ironskin reduction: survev's 0.45 (0.5 in 0.8.82; damage-armor.md CONFLICT steelskin-reduction) */
     steelskinReduction: number;
     /** Flak Jacket reduction against non-explosion hits (survev perkDefs.ts flak_jacket.damageReduction) */
     flakJacketReduction: number;
@@ -39,6 +39,11 @@ export interface SimRules {
     /** timeInsideGas only accumulates from this circle on (survev player.ts: circleIdx > 2) */
     gasDamageRampFromCircle: number;
     /**
+     * Gas damage per tick of a disconnected player instead of the stage's (survev player.ts:1654: 22); null keeps the
+     * stage damage (conflicts.md gas-escalation: survev's fork options stay off)
+     */
+    gasDisconnectedDamage: number | null;
+    /**
      * Damage of a landing air drop crate. conflicts.md airdrop-crush-damage: the client-visible
      * GameConfig.airdrop.crushDamage (100) through the Flak Jacket / Cast Ironskin reductions; survev applies 1e10.
      */
@@ -54,6 +59,13 @@ export interface SimRules {
      * crate_10. The server sets it from AIRDROP_TIERS.
      */
     airdropTiers: boolean;
+    /**
+     * Rebirth new-gun beta (deliberate deviation for testing, docs/research/rebirth-deviations.md "New guns"): the new
+     * guns and the survev-only guns are also common floor loot (defs getGunBetaLootTables; each allowed gun at least
+     * twice, loot/gunBeta.ts). Read when loot is rolled, so set it before the map loot spawns (GameInit.gunBeta). The
+     * server sets it from GUN_BETA; off by default.
+     */
+    gunBeta: boolean;
     /** seconds after the start during which players may still join (survev game.ts canJoin: startedTime < 60) */
     joinWindowSeconds: number;
     /** kills needed to become kill leader (GameConfig.player.killLeaderMinKills) */
@@ -97,21 +109,21 @@ export interface SimRules {
     smokeHidesPlayers: boolean;
     smokeRevealDistance: number;
     /**
-     * Sideways offset between a strobe's strike lines (conflicts.md strobe-airstrike-offset: all on the strobe line
-     * for 0.8.82; survev offsets 0 / 5 / 5 / 10 / 10)
+     * Sideways offset between a strobe's strike lines: strike k flies ceil(k / 2) x this beside the strobe, on
+     * alternating sides, 0 / 5 / 5 / 10 / 10 (survev weaponManager.ts:1337-1362, projectile.ts:173-211, the baseline;
+     * conflicts.md strobe-airstrike-offset). 0 puts every line on the strobe, as fandom describes the original. The
+     * carpet strobe spaces its lines 1.4x this (defs STROBE_STRIKES offsetMult).
      */
     strobeAirstrikeOffset: number;
-    /** survev picks the side of the first offset strike at random ("was not in surviv"); off */
+    /** survev picks the side of the first offset strike at random ("was not in surviv"; the baseline): on */
     strobeRandomSide: boolean;
     /**
-     * Broken Arrow's extra strikes are counted when the strike warning appears (fandom; conflicts.md
-     * broken-arrow-check-time) instead of when the strobe is thrown (survev)
+     * Broken Arrow's extra strikes are counted when the strike warning appears (fandom's account of the original)
+     * instead of when the strobe is thrown (survev, the baseline; conflicts.md broken-arrow-check-time): off
      */
     brokenArrowAtPing: boolean;
     /** bullets whose Explosive Rounds use the quieter explosion_rounds_sg (survev bullet useExplosiveRoundsAlt) */
     explosiveRoundsAltBullets: readonly string[];
-    /** Fabricate fills the pack with frag grenades every this many seconds (original rule, fandom Fabricate) */
-    fabricateInterval: number;
     /**
      * Circle and wait overrides of MapDef gameConfig.unlocks timings, by unlocked type (conflicts.md
      * twins-unlock-time: the original twins bunker opened 0:45 into the third waiting phase, circle 2 + 5 s; the ported
@@ -163,17 +175,19 @@ export function defaultRules(): SimRules {
     return {
         headshotChance: GameConfig.player.headshotChance,
         headshotNeedsMultAboveOne: true,
-        steelskinReduction: 0.5,
+        steelskinReduction: 0.45,
         flakJacketReduction: 0.1,
         flakJacketExplosionReduction: 0.9,
         noDistAdjBullets: ["bullet_buckshot", "bullet_flechette", "bullet_frag", "bullet_birdshot"],
         gasDamageRamp: false,
         gasDamageRampRate: 0.025,
         gasDamageRampFromCircle: 3,
+        gasDisconnectedDamage: null,
         airdropCrushDamage: GameConfig.airdrop.crushDamage,
         airdropCrushInstantKill: false,
         airdropCrushArmor: false,
         airdropTiers: true,
+        gunBeta: false,
         joinWindowSeconds: 60,
         killLeaderMinKills: GameConfig.player.killLeaderMinKills,
         minActiveTime: GameConfig.player.minActiveTime,
@@ -187,12 +201,12 @@ export function defaultRules(): SimRules {
         smokeDuration: 16,
         smokeHidesPlayers: true,
         smokeRevealDistance: 5,
-        strobeAirstrikeOffset: 0,
-        strobeRandomSide: false,
-        brokenArrowAtPing: true,
+        strobeAirstrikeOffset: 5,
+        strobeRandomSide: true,
+        brokenArrowAtPing: false,
         explosiveRoundsAltBullets: ["bullet_buckshot", "bullet_flechette", "bullet_frag", "bullet_birdshot"],
-        fabricateInterval: 12,
-        unlockOverrides: { bunker_twins_sublevel_01: { circleIdx: 2, wait: 5 } },
+        // survev balance: the def's survev timing (circle 1 + 30 s) applies (twins-unlock-time; original circle 2 + 5 s)
+        unlockOverrides: {},
         cullOtherFloors: true,
         bleedEscalation: "linear",
         downedDamageBuffer: GameConfig.player.downedDamageBuffer,

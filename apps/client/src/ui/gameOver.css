@@ -251,6 +251,42 @@
     box-shadow: inset 0 -2px #387c79;
 }
 
+/* 50v50 game over: the Commanders' stars and the MVP's ribbon above their cards (game.css .ui-stats-info-player-badge) */
+.ui-stats-info-player-badge {
+    background-size: 56px;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 56px;
+    left: auto;
+    position: absolute;
+    top: -40px;
+    width: 100%;
+}
+
+.ui-stats-info-player-red-leader {
+    background-image: url(/assets/img/gui/star-red.svg);
+}
+
+.ui-stats-info-player-red-ribbon {
+    background-image: url(/assets/img/gui/ribbon-red.svg);
+}
+
+.ui-stats-info-player-blue-leader {
+    background-image: url(/assets/img/gui/star-blue.svg);
+}
+
+.ui-stats-info-player-blue-ribbon {
+    background-image: url(/assets/img/gui/ribbon-blue.svg);
+}
+
+/* phones (game.css mobile block) */
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+    .ui-stats-info-player-badge {
+        background-size: 24px;
+        top: -34px;
+    }
+}
+
 /* faction maps: the red and blue alive counts in the header (survev .ui-stats-header-red-team / -blue-team) */
 .ui-stats-header-red-team {
     color: #cc0000;

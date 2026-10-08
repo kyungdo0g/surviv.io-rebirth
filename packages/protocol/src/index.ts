@@ -7,6 +7,7 @@ export * from "./connection.ts";
 export * from "./constants.ts";
 export * from "./effects.ts";
 export * from "./headless.ts";
+export * from "./hits.ts";
 export * from "./local.ts";
 export * from "./map.ts";
 export * from "./messages.ts";

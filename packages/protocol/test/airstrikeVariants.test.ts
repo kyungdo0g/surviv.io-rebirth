@@ -11,6 +11,7 @@ import {
     airstrikeAimRad,
     airstrikeBombReach,
     airstrikeZoneRad,
+    CLUB_VAULT_BOX,
     GameConfig,
     GameObjectRegistry,
     getDefOfType,
@@ -49,13 +50,14 @@ function roundTrip<T>(write: (w: BitWriter) => void, read: (r: BitReader) => T):
 const near = (a: Vec2, b: Vec2) => expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeLessThan(0.05);
 
 describe("air strike variants on the wire", () => {
-    it("schema 9 (10 since the survev guns) carries the variant of every zone", () => {
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(10);
+    it("schema 9 and later carry the variant of every zone", () => {
+        expect(PROTOCOL_SCHEMA_VERSION).toBeGreaterThanOrEqual(9);
         const zones: AirstrikeZoneView[] = AIRSTRIKE_VARIANT_IDS.map((variant, i) => ({
             id: i + 1,
             variant,
             pos: { x: 100 + i * 50, y: 300 },
-            rad: variant === "heavy" ? 84 : 60,
+            // the 50v50 map's first circle: 60, 90 (heavy: + 47.5 - 17.5) and 130 (carpet: 84 + 46)
+            rad: airstrikeZoneRad(variant, 60),
             duration: variant === "carpet" ? 12.5 : 9.5,
             zoneT: 0.4,
         }));
@@ -94,7 +96,9 @@ describe("air strike variants on the wire", () => {
     });
 
     it("the heavy shell and its explosion serialize through the registry, after every generated type", () => {
-        expect(rebirthOnlyIds).toEqual(["bomb_heavy", "explosion_bomb_heavy"]);
+        // the shell and its explosion first; the rebirth's new guns follow them (newGuns.test.ts), then the variant
+        // strobes (strobes.test.ts)
+        expect(rebirthOnlyIds.slice(0, 2)).toEqual(["bomb_heavy", "explosion_bomb_heavy"]);
         const firstRebirthId = GameObjectRegistry.typeToId("bomb_heavy");
         expect(GameObjectRegistry.idToType(firstRebirthId - 1)).not.toBe("explosion_bomb_heavy");
         expect(GameObjectRegistry.typeToId("explosion_bomb_heavy")).toBe(firstRebirthId + 1);
@@ -114,10 +118,22 @@ describe("air strike variants on the wire", () => {
     });
 
     it("the rebirth scorch decals serialize through the map type registry, after every generated type", () => {
+        // then the rebirth buildings (rebirth/buildings.ts)
         expect(rebirthOnlyMapObjectIds).toEqual([
             "decal_bomb_heavy_explosion",
             "decal_frag_large_explosion",
             ...AIRDROP_TIER_CRATES,
+            CLUB_VAULT_BOX,
+            "loot_tier_medical",
+            "clinic_01",
+            "outpost_01r",
+            "outpost_01b",
+            "firestation_01",
+            "library_01",
+            "radio_station_01",
+            "arsenal_01",
+            "blockhouse_01r",
+            "blockhouse_01b",
         ]);
         const first = MapObjectRegistry.typeToId("decal_bomb_heavy_explosion");
         expect(first).toBe(MapObjectRegistry.size - rebirthOnlyMapObjectIds.length);
@@ -138,16 +154,18 @@ describe("air strike variants on the wire", () => {
         }
     });
 
-    it("the air drop tier crates serialize as obstacles after the rebirth decals", () => {
+    it("the air drop tier crates and the club's gun box (schema 19) serialize as obstacles after the decals", () => {
         const decals = MapObjectRegistry.typeToId("decal_frag_large_explosion");
-        expect(AIRDROP_TIER_CRATES.map((t) => MapObjectRegistry.typeToId(t))).toEqual([
+        expect([...AIRDROP_TIER_CRATES, CLUB_VAULT_BOX].map((t) => MapObjectRegistry.typeToId(t))).toEqual([
             decals + 1,
             decals + 2,
             decals + 3,
             decals + 4,
+            decals + 5,
         ]);
+        expect(PROTOCOL_SCHEMA_VERSION).toBeGreaterThanOrEqual(19);
         const codec = codecOf("obstacle");
-        for (const type of AIRDROP_TIER_CRATES) {
+        for (const type of [...AIRDROP_TIER_CRATES, CLUB_VAULT_BOX]) {
             const view = {
                 id: 9,
                 kind: "obstacle",
@@ -192,6 +210,31 @@ describe("air strike variants on the wire", () => {
             );
             expect(z.rad).toBeGreaterThanOrEqual(airstrikeAimRad("carpet", mapRad) + reach);
             expect(z.rad).toBeLessThan(256);
+        }
+        expect(radii.map((r) => airstrikeZoneRad("carpet", r))).toEqual([130, 123, 116, 109, 102]);
+    });
+
+    it("a heavy zone's radius, as the client reads it, grows by the shell's extra reach over an iron bomb", () => {
+        const extra =
+            getDefOfType("explosion", "explosion_bomb_heavy").rad.max -
+            getDefOfType("explosion", "explosion_bomb_iron").rad.max;
+        expect(extra).toBe(47.5 - 17.5);
+        for (const mapRad of [60, 55, 50, 45, 40]) {
+            const [z] = roundTrip(
+                (w) =>
+                    writeAirstrikeZones(w, ctx, [
+                        {
+                            id: 1,
+                            variant: "heavy",
+                            pos: { x: 1, y: 1 },
+                            rad: airstrikeZoneRad("heavy", mapRad),
+                            duration: 9.5,
+                            zoneT: 0,
+                        },
+                    ]),
+                (r) => readAirstrikeZones(r, ctx),
+            );
+            expect(Math.abs(z.rad - (mapRad + extra))).toBeLessThanOrEqual(0.5);
         }
     });
 });

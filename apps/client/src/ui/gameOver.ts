@@ -10,8 +10,13 @@
 // Play New Game / Spectate buttons.
 // M7 (survev ui.ts getTitleVictoryText / getOverviewElems): faction maps show "Red Team N" and "Blue Team N" (the alive
 // counts) instead of the rank, Turkey maps win with "Winner winner turkey dinner!".
+// 50v50 game over (survev ui.ts:1493-1522, game.css .ui-stats-info-player-badge; the owner's screenshot of the
+// original, docs/research/rebirth-deviations.md): four cards, the player's own, the Red Commander's under a red star,
+// the Blue Commander's under a blue star and the MVP's under a ribbon in its faction's colour; the badges show only once
+// the game is over (GameOver.gameOver), never on a card of a result sent while the factions play on.
 // The end-of-game screen carries the surviv.io logo in the top-left corner (survev ui.ts showStats statsLogo; hidden on
 // the team "You died." screen, showTeamAd); the recordings show it (docs/research/provenance/visual-diff.md).
+import { FactionTeam } from "@rebirth/defs";
 import type { GameOverEvent, PlayerStatsView } from "@rebirth/sim";
 import { HUD_INTERACTIVE_ATTR } from "../input/input.ts";
 import { t } from "../l10n/index.ts";
@@ -48,6 +53,10 @@ export interface GameOverInfo {
     aliveCount: number;
     /** faction maps: the alive counts [Red, Blue] shown in the header (M7) */
     factionAlive?: readonly number[] | null;
+    /** faction maps: the game-over cards carry the Commander and MVP badges */
+    factionMode?: boolean;
+    /** a player's faction (PlayerInfos teamId): the colour of the MVP's ribbon */
+    teamOf?: (id: number) => number;
     /** Turkey map (gameMode.turkeyMode): the turkey victory title (M7) */
     turkeyMode?: boolean;
 }
@@ -58,6 +67,36 @@ interface Timed {
     at: number;
     /** opacity written last */
     shown: string;
+}
+
+/**
+ * Badge class of the 50v50 game-over card at `index` (survev ui.ts:1493-1522): the 2nd card is the Red Commander's,
+ * the 3rd the Blue Commander's, the 4th the MVP's ribbon in the colour of its faction `teamId`; "" for the own card.
+ */
+export function factionBadgeClass(index: number, teamId: number): string {
+    switch (index) {
+        case 1:
+            return "ui-stats-info-player-red-leader";
+        case 2:
+            return "ui-stats-info-player-blue-leader";
+        case 3:
+            return teamId === FactionTeam.Red ? "ui-stats-info-player-red-ribbon" : "ui-stats-info-player-blue-ribbon";
+        default:
+            return "";
+    }
+}
+
+/**
+ * Badge class of card `index` (the stats of `playerId`) on a result screen: only on faction maps and only once the
+ * game is over (survev ui.ts: `factionMode && gameOver`), "" otherwise.
+ */
+export function cardBadgeClass(
+    info: Pick<GameOverInfo, "event" | "factionMode" | "teamOf">,
+    index: number,
+    playerId: number,
+): string {
+    if (!info.factionMode || !info.event.gameOver) return "";
+    return factionBadgeClass(index, info.teamOf?.(playerId) ?? 0);
 }
 
 function el(tag: string, id: string, cls = "", text = ""): HTMLElement {
@@ -158,6 +197,9 @@ export class GameOverScreen {
                     row(t("game-damage-taken"), String(stats.damageTaken)),
                     row(t("game-survived"), humanizeTime(stats.timeAlive)),
                 );
+                // the badge is the card's last child and fades in after its rows (survev)
+                const badge = cardBadgeClass(info, cardIdx, stats.playerId);
+                if (badge) rows.push(el("div", "", `ui-stats-info-player-badge ${badge}`));
             }
             card.append(...rows);
             cards.push(card);

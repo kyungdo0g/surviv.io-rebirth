@@ -2,6 +2,7 @@
 // other players' bullets) with armour and the expected headshot share, watched heals, the drift back up out of sight;
 // what an enemy is busy with, who it fights, whether it just fought.
 import { v2 } from "@rebirth/core";
+import { getDefOfType } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { EnemyIntelTracker, expectedHitDamage } from "../src/perception/enemyIntel.ts";
 import { action, bullet, newModel, ORIGIN, player, SELF, snap } from "./perceptionSnap.ts";
@@ -15,9 +16,12 @@ function setup() {
 
 const EAST = { x: 1, y: 0 };
 
-/** Expected damage of an M9 round (12, falloff 0.7 over 100 units) that stopped after `dist`, headshot unknown. */
+/** M9 round damage: survev's 13 under survev balance (survev bulletDefs.ts bullet_m9; the original client's 12) */
+const M9_DAMAGE = getDefOfType("bullet", "bullet_m9").damage;
+
+/** Expected damage of an M9 round (falloff 0.7 over 100 units) that stopped after `dist`, headshot unknown. */
 function m9Hit(dist: number, helmet = "", chest = ""): number {
-    return expectedHitDamage(12 * (1 - 0.3 * (dist / 100)), "m9", helmet, chest);
+    return expectedHitDamage(M9_DAMAGE * (1 - 0.3 * (dist / 100)), "m9", helmet, chest);
 }
 
 describe("enemy intel", () => {
@@ -36,7 +40,8 @@ describe("enemy intel", () => {
         expect(intel.of(51).estHealth).toBeCloseTo(100 - m9Hit(9, "helmet03", "chest03"), 5);
         // armour cuts the expected damage roughly in half; a headshot chance keeps it above the body-only value
         expect(m9Hit(9, "helmet03", "chest03")).toBeLessThan(m9Hit(9) * 0.6);
-        expect(m9Hit(0)).toBeCloseTo(12 * (0.85 + 0.15 * 2), 5);
+        expect(M9_DAMAGE).toBe(13);
+        expect(m9Hit(0)).toBeCloseTo(13 * (0.85 + 0.15 * 2), 5);
         // the hit report seen again is not a second hit; a miss (no hitPlayer) is none
         model.observe(snap(1.2, { objects, bullets: [hit, bullet(SELF, ORIGIN, EAST)] }));
         expect(intel.of(50).estHealth).toBeCloseTo(100 - m9Hit(9), 5);

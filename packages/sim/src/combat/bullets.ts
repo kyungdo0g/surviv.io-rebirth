@@ -3,6 +3,7 @@
 // they stop. M7a: perk speed / range multipliers and tracer flags, Windwalk (an enemy bullet passing within 5 u of a
 // holder), High-Value Targets (x1.25 against players holding a perk). M9: clipped ranges (USAS-12 `toMouseHit` rounds
 // stop at the cursor), the tracer speed factor in reports, full-range reports of `skipCollision` bullets (flares).
+// Rebirth new guns (docs/design/new-gun-stats.md 4.4): `noReflect`, `armDistance` and `noDistAdj` bullet fields.
 // Behaviour follows survev server/src/game/objects/bullet.ts and docs/research/items/bullets.md "Server simulation".
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { type BulletDef, DamageType, GameConfig, getDefOfType } from "@rebirth/defs";
@@ -51,6 +52,8 @@ export interface FireBulletParams {
     saturated?: boolean;
     thick?: boolean;
     splinter?: boolean;
+    /** AP Rounds (survev-only perk): armour reductions x armorPenetration, obstacle damage x obstacleMult */
+    apRounds?: boolean;
     /** the range is min(def.distance x distanceMult, `distance`) (USAS-12 toMouseHit, M9; survev clipDistance) */
     clipDistance?: boolean;
     distance?: number;
@@ -99,6 +102,7 @@ export interface Bullet {
     readonly saturated: boolean;
     readonly thick: boolean;
     readonly splinter: boolean;
+    readonly apRounds: boolean;
     /** the range was clipped (USAS-12 toMouseHit); ricochets keep a clipped range (M9) */
     readonly clipDistance: boolean;
 }
@@ -169,7 +173,8 @@ export class BulletSystem {
         const reflectCount = p.reflectCount ?? 0;
         const varianceT = p.varianceT ?? 1;
         const variance = 1 + varianceT * def.variance;
-        const noDistAdj = this.ctx.rules.noDistAdjBullets.includes(p.bulletType);
+        // rebirth new guns: the exploding rounds carry their own noDistAdj (new-gun-stats.md 4.4)
+        const noDistAdj = !!def.noDistAdj || this.ctx.rules.noDistAdjBullets.includes(p.bulletType);
         const distAdjIdx = noDistAdj ? DIST_ADJ_STEPS / 2 : this.ctx.combatRng.int(0, DIST_ADJ_STEPS);
         const distAdj = math.remap(distAdjIdx, 0, DIST_ADJ_STEPS, -1, 1);
         // each ricochet divides the range by reflectDistDecay (1.5)
@@ -213,7 +218,8 @@ export class BulletSystem {
             damageType: p.damageType ?? DamageType.Player,
             mapSourceType: p.mapSourceType ?? "",
             onHitFx,
-            canReflect: onHitFx !== "explosion_rounds",
+            // rebirth new guns: rockets and the GL-06 round never ricochet, they explode on metal (`noReflect`)
+            canReflect: !def.noReflect && onHitFx !== "explosion_rounds",
             alive: true,
             reflected: false,
             hitPlayer: false,
@@ -222,6 +228,7 @@ export class BulletSystem {
             speedMult,
             distanceMult,
             saturated: p.saturated ?? false,
+            apRounds: p.apRounds ?? false,
             thick: p.thick ?? false,
             splinter: p.splinter ?? false,
             clipDistance,
@@ -270,7 +277,11 @@ export class BulletSystem {
             // Explosive Rounds peter out at max range; USAS-12 frag rounds still explode
             if (b.onHitFx === "explosion_rounds") b.onHitFx = "";
         }
-        if (!b.alive && !b.reflected && b.onHitFx) this.explodeOnHit(b);
+        if (!b.alive && !b.reflected && b.onHitFx) {
+            // rebirth new guns: a round stopped before its arming distance is a dud (no point-blank rocket suicide)
+            if (b.def.armDistance && b.distanceTraveled < b.def.armDistance) b.onHitFx = "";
+            else this.explodeOnHit(b);
+        }
         if (!b.alive && b.hitPlayer && b.reportTicks[b.reportTicks.length - 1] !== this.tick) {
             b.reportTicks.push(this.tick);
             this.reports.push({ tick: this.tick, bullet: b });
@@ -319,7 +330,9 @@ export class BulletSystem {
             let hit = false;
             if (col.type === "obstacle") {
                 const obstacle = col.obj as Obstacle;
-                this.damages.push({ target: obstacle, params: this.params(b, damage * b.def.obstacleDamage) });
+                // AP Rounds: obstacle damage x1.5 (survev bullet.ts:593-597)
+                const ap = b.apRounds ? this.ctx.rules.perks.apRounds.obstacleMult : 1;
+                this.damages.push({ target: obstacle, params: this.params(b, damage * b.def.obstacleDamage * ap) });
                 if (obstacle.def.reflectBullets) this.reflect(b, col.point, col.normal, obstacle.id);
                 // non-collidable obstacles take the hit but let the bullet pass
                 hit = col.collidable;
@@ -330,6 +343,8 @@ export class BulletSystem {
                     const hvt = !!shooter?.hasPerk("targeting") && target.perks.length > 0;
                     const params = this.params(b, hvt ? damage * this.ctx.rules.perks.targetingDamageMult : damage);
                     params.isExplosion = b.def.shrapnel;
+                    // AP Rounds: armour and damage-reduction perks work at x0.8 (survev bullet.ts:635-637)
+                    if (b.apRounds) params.armorPenetration = this.ctx.rules.perks.apRounds.armorPenetration;
                     this.damages.push({ target: col.obj as Player, params });
                     this.ctx.observer?.onBulletHitPlayer?.(b, target);
                 }
@@ -454,6 +469,7 @@ export class BulletSystem {
             saturated: b.saturated,
             thick: b.thick,
             splinter: b.splinter,
+            apRounds: b.apRounds,
             clipDistance: b.clipDistance,
             distance,
         });
@@ -477,6 +493,7 @@ export class BulletSystem {
             saturated: b.saturated,
             thick: b.thick,
             splinter: b.splinter,
+            apRounds: b.apRounds,
             speedMult: b.def.speed > 0 ? b.speed / b.def.speed : 1,
         };
         if (!b.alive) event.endDist = b.distanceTraveled;

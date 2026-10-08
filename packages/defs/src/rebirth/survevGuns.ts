@@ -5,11 +5,13 @@
 // - WIKI_STAT_OVERRIDES: the fields where the wiki and survev's source differ. The wiki wins (the owner's decision).
 // - the Barrett in the normal gold air drop: survev never spawns it on the classic map (only from the crimson air
 //   drop, 50v50 military gold drops, Savannah tables and the desert pirate table); the owner named it, so the gold drop
-//   of main and its seasonal copies gets it (docs/design/survev-content-and-new-guns.md section 2.1).
+//   of main and its seasonal copies gets it (docs/design/survev-content-and-new-guns.md section 2.1), and with it the
+//   owner's SVD and SCAR-SSR (2026-10-08).
 // Every other stat of these guns equals its wiki infobox (packages/defs/test/survevGuns.test.ts pins them all). The
 // winter skins are the exception, kept on purpose and listed field by field in SKIN_WIKI_GAPS.
 import type { GameObjectDef, LootTableEntry, MapDef } from "../types/index.ts";
 import type { DefDeviation } from "./deviations.ts";
+import { OWNER_LOOT_WEIGHTS } from "./ownerLootWeights.ts";
 
 /** The survev-only guns (survev master c6185e31), in the order survev defines them. */
 export const SURVEV_ONLY_GUNS = ["imbel", "spas16", "barrett", "sw500", "ash12", "potato_lmg"] as const;
@@ -37,11 +39,11 @@ export interface SkinWikiGap {
  * Not applied: the fields where the winter skins differ from survev.wiki.gg and survev's source (sweep of 2026-10-07;
  * every other infobox field matches). The wiki shows each skin as the "World image 2" of its base gun's page, and
  * survev builds it as its base plus that image (defineGunSkin, survev/shared/defs/gameObjects/gunDefs.ts:3643-3663),
- * so a skin hits like its base. Our base guns keep their 0.8.82 values, which survev rebalanced, until the owner
- * confirms option B of ADR 0003 point 3 (shared ids take survev's gameplay values). Giving only the skins the wiki's
- * numbers would put two different SVD-63s with one loot icon on the snow maps, which spawn both, and the SVD's damage
- * is in `bullet_svd`, which the base shares. Option B moves the base guns and closes every gap below.
- * packages/defs/test/survevGuns.test.ts fails when a gap closes or a new one appears, so this list stays exact.
+ * so a skin hits like its base. Survev balance (ADR 0003 option B, tools/port-survev/policy.json survevBalance) gives
+ * the base guns survev's gameplay values, which closed the SVD's headshot multiplier and `bullet_svd` damage and the
+ * SV-98's headshot multiplier; what is left is the barrel length, presentation the bases keep from the original
+ * client (survev lengthened the barrels). packages/defs/test/survevGuns.test.ts fails when a gap closes or a new one
+ * appears, so this list stays exact.
  */
 export const SKIN_WIKI_GAPS: readonly SkinWikiGap[] = [
     {
@@ -53,36 +55,12 @@ export const SKIN_WIKI_GAPS: readonly SkinWikiGap[] = [
         survevRef: "survev/shared/defs/gameObjects/gunDefs.ts:1681",
     },
     {
-        id: "svd_winter",
-        field: "headshotMult",
-        wiki: 1.5,
-        rebirth: 2,
-        wikiRef: "wikigg/SVD-63 (rev 7355): Headshot multiplier = 1.5",
-        survevRef: "survev/shared/defs/gameObjects/gunDefs.ts:1688",
-    },
-    {
-        id: "svd_winter",
-        field: "bullet.damage",
-        wiki: 37,
-        rebirth: 36,
-        wikiRef: "wikigg/SVD-63 (rev 7355): Damage = 37",
-        survevRef: "survev/shared/defs/gameObjects/bulletDefs.ts:200",
-    },
-    {
         id: "sv98_winter",
         field: "barrelLength",
         wiki: 4.1,
         rebirth: 3.5,
         wikiRef: "wikigg/SV-98 (rev 7360): Barrel length = 4.1",
         survevRef: "survev/shared/defs/gameObjects/gunDefs.ts:1533",
-    },
-    {
-        id: "sv98_winter",
-        field: "headshotMult",
-        wiki: 1.25,
-        rebirth: 1.5,
-        wikiRef: "wikigg/SV-98 (rev 7360): Headshot multiplier = 1.25",
-        survevRef: "survev/shared/defs/gameObjects/gunDefs.ts:1540",
     },
     {
         id: "awc_winter",
@@ -168,17 +146,22 @@ export const GOLD_DROP_TABLE = "tier_airdrop_rare";
 /**
  * Rebirth guns added to the gold drop of these maps, with their weight: the Barrett at 1 against survev main's 22.68
  * (garand 6, awc 3, pkp 0.08, m249 0.1, m4a1 4, scorpion 5, ots38_dual 4.5; survev/shared/defs/maps/baseDefs.ts:612),
- * about 1 gold gun in 24. The maps are main and its seasonal copies: spring, summer and snow (the winter one, with
- * awc_winter for the awc). survev builds all three from Main and they keep its "Normal" name and map id
- * (survev/shared/defs/maps/mainSpringDefs.ts:102, mainSummerDefs.ts:99, snowDefs.ts:298). The event maps (Halloween,
- * Turkey, Birthday, Beach, Cobalt) are left out on purpose, although their gold drop is main's: each is a mode of its
- * own with its own name (desc.name), and plan section 2.1 names only the classic map and its seasons.
+ * about 1 gold gun in 24; then the owner's SVD and SCAR-SSR "sometimes" (2026-10-08, user/2026-10-08-loot-speed; their
+ * weights are OWNER_LOOT_WEIGHTS.goldDrop, rebirth/ownerLootWeights.ts): 0.5 each, 1 gold crate in 56 each with the new
+ * guns' gold rows (28.01 in all). survev's classic gold drop has neither (Savannah's has the SCAR-SSR at 1.5,
+ * survev/shared/defs/maps/savannahDefs.ts:110). The maps are main and its seasonal copies: spring, summer and snow (the
+ * winter one, with awc_winter for the awc; its SVD row is the plain SVD, which snow's tier_snipers also holds). survev
+ * builds all three from Main and they keep its "Normal" name and map id (survev/shared/defs/maps/mainSpringDefs.ts:102,
+ * mainSummerDefs.ts:99, snowDefs.ts:298). The event maps (Halloween, Turkey, Birthday, Beach, Cobalt) are left out on
+ * purpose, although their gold drop is main's: each is a mode of its own with its own name (desc.name), and plan
+ * section 2.1 names only the classic map and its seasons.
  */
+const CLASSIC_GOLD_GUNS: Readonly<Record<string, number>> = { barrett: 1, ...OWNER_LOOT_WEIGHTS.goldDrop };
 export const REBIRTH_GOLD_GUNS: Readonly<Record<string, Readonly<Record<string, number>>>> = {
-    main: { barrett: 1 },
-    main_spring: { barrett: 1 },
-    main_summer: { barrett: 1 },
-    snow: { barrett: 1 },
+    main: CLASSIC_GOLD_GUNS,
+    main_spring: CLASSIC_GOLD_GUNS,
+    main_summer: CLASSIC_GOLD_GUNS,
+    snow: CLASSIC_GOLD_GUNS,
 };
 
 /** The maps with the rebirth gold guns appended to copies of their gold tables (the input is never mutated). */

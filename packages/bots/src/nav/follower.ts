@@ -379,6 +379,15 @@ export class PathFollower {
         this.stuckCount = 0;
     }
 
+    /**
+     * The keys were lifted on purpose (round 5, motor/rhythm.ts: a walking pause, a stop to shoot): the progress window
+     * starts again, so a pause is not taken for being stuck (a sidestep and a new plan, the goal failed after five);
+     * stuck counts already made stay.
+     */
+    pauseProgress(): void {
+        this.checkPos = null;
+    }
+
     private checkStuck(pos: Vec2, dir: Vec2, now: number): void {
         if (this.checkPos === null) {
             this.checkPos = v2.copy(pos);

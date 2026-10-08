@@ -45,6 +45,7 @@
 | scale small (solo, duo) / large (squad) | 1.1875 / 1.28125 | [src:survev/shared/defs/maps/baseDefs.ts:816] [H] |
 | extension | 112 | [src:survev/shared/defs/maps/baseDefs.ts:817] [H] |
 | resulting size | 720 × 720 (solo/duo), 768 × 768 (squad) = width·scale + extension | [src:survev/server/src/game/map.ts:283-287, derived/512x1.1875+112] [H] |
+| rebirth size | 842 × 842 (solo/duo), 899 × 899 (squad): scale × 1.2 (`docs/research/rebirth-deviations.md` "Bigger maps") | [src:user/2026-10-08-bigger-maps] [H] |
 | grid tiles (16 units) | 45 (solo/duo), 48 (squad) | [src:fandom/Game_Modes, survev/shared/gameConfig.ts:182] [H] |
 | shoreInset / grassInset | 48 / 18 | [src:survev/shared/defs/maps/baseDefs.ts:818-819] [H] |
 | river width sets (weight: widths) | 0.1:[4], 0.15:[8], 0.25:[8,4], 0.21:[16], 0.09:[16,8], 0.2:[16,8,4], 0.0001:[16,16,8,6,4] | [src:survev/shared/defs/maps/baseDefs.ts:822-833] [H] |

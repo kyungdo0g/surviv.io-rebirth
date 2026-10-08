@@ -11,6 +11,7 @@
 // clientControls.ts (Toggle Minimap, Hide UI) applied to the HUD, the minimap and the match HUD every frame.
 // M9: the map's falling camera particles (cameraEmitters.ts), the world queries behind footsteps, wading, bushes and the
 // ceiling ray scan (worldQuery.ts, handed to the views with their deps), and the map's particle sprites preloaded.
+// Rebirth: the Enhanced hit effects (fx/hitFeedback.ts, user/2026-10-07-hit-feedback), drawn after the camera shake.
 import type { Vec2 } from "@rebirth/core";
 import { GameObjectDefs, getMapDef, Input, MapObjectDefs, type RoleDef } from "@rebirth/defs";
 import {
@@ -33,8 +34,10 @@ import { BulletSystem } from "../fx/bullets.ts";
 import { CameraEmitters } from "../fx/cameraEmitters.ts";
 import { GameEffects } from "../fx/effects.ts";
 import { GasShape, WORLD_GAS_COLOR } from "../fx/gas.ts";
+import { bindHitFx, HitFeedback } from "../fx/hitFeedback.ts";
 import { mapParticleSprites } from "../fx/particleDefsAll.ts";
 import { ParticleSystem } from "../fx/particles.ts";
+import { debugCameraAt } from "../globals.ts";
 import { InputManager } from "../input/input.ts";
 import { DebugHudBind } from "../input/keybinds.ts";
 import { createTerrainGraphics } from "../map/terrain.ts";
@@ -98,6 +101,8 @@ export class GameClient {
     readonly particles: ParticleSystem;
     readonly bullets: BulletSystem;
     readonly effects: GameEffects;
+    /** rebirth Enhanced hit effects (setting enhancedHitFx) */
+    readonly hitFx: HitFeedback;
     readonly gasOverlay = new GasShape(WORLD_GAS_COLOR);
     readonly interactions: InteractionTracker;
     readonly pingIndicator: PingIndicator;
@@ -138,6 +143,7 @@ export class GameClient {
     private readonly debugZoom: number | undefined;
     private readonly ownsAudio: boolean;
     private readonly unbindAudio: () => void = () => {};
+    private readonly unbindHitFx: () => void;
     private destroyed = false;
 
     constructor(app: Application, transport: Transport, textures: TextureStore, opts: ClientOptions = {}) {
@@ -180,6 +186,17 @@ export class GameClient {
             teamMode: () => this.teamPlay.teamMode,
             onLocalRole: () => this.modes.onLocalRole(),
             extraButton: () => this.controls.report?.statsButton() ?? null,
+        });
+        this.hitFx = new HitFeedback({
+            renderer: this.renderer,
+            textures,
+            audio: this.audio,
+            particles: this.particles,
+            camera: this.camera,
+            hudRoot: this.ui.root,
+        });
+        this.unbindHitFx = bindHitFx(this.hitFx, [this.bullets, this.effects], (on) => {
+            this.match.hud.gasFlashEnabled = on;
         });
         this.modes = new ModeUi({
             parent,
@@ -249,6 +266,7 @@ export class GameClient {
             this.local = null;
             this.cameraPlaced = false;
             this.effects.setWorld(this.world, playerId);
+            this.hitFx.setWorld(this.world, playerId);
             return;
         }
         this.map = map;
@@ -284,6 +302,7 @@ export class GameClient {
             surfaceAt: (pos, layer) => surfaceAt(terrainQuery, pos, layer),
             teamOf: (id) => this.match.teamId(id),
             nameOf: (id) => this.match.name(id),
+            effectsOf: (id) => this.match.effectsOf(id),
             worldQueries: queries,
         };
         this.world = new ObjectWorld(deps, this.interp);
@@ -302,6 +321,7 @@ export class GameClient {
             fading,
         });
         this.effects.setWorld(this.world, playerId);
+        this.hitFx.setWorld(this.world, playerId);
         this.bullets.setMap(mapDef);
         this.particles.valueAdjust = mapDef.biome.valueAdjust;
         this.air = new AirSystem({
@@ -346,6 +366,7 @@ export class GameClient {
         const roles = Object.values(GameObjectDefs).filter((d): d is RoleDef => d.type === "role");
         this.audio.preload(["loot_drop_01", ...roles.flatMap((r) => [r.sound.assign, r.sound.dead])], "ui");
         this.audio.preload(["ability_stim_01"], "sfx");
+        this.hitFx.preload();
     }
 
     private onSnapshot(s: Snapshot): void {
@@ -381,6 +402,7 @@ export class GameClient {
             this.localPos.y = me.pos.y;
         }
         this.match.applySnapshot(s, this.localPos);
+        this.hitFx.applySnapshot(s);
         this.modes.applySnapshot(s, this.localId, this.match.spectating);
     }
 
@@ -391,6 +413,7 @@ export class GameClient {
         this.local = null;
         this.interactions.clear();
         if (this.world) this.effects.setWorld(this.world, id);
+        this.hitFx.setActive(id);
     }
 
     get ready(): boolean {
@@ -435,7 +458,8 @@ export class GameClient {
             return;
         }
         this.visualPos = world.visualPos(this.activeId, now) ?? this.localPos;
-        this.camera.follow(dt, this.visualPos, this.debugZoom ?? this.local.zoom, !this.cameraPlaced);
+        const camAt = debugCameraAt() ?? this.visualPos;
+        this.camera.follow(dt, camAt, this.debugZoom ?? this.local.zoom, !this.cameraPlaced);
         this.cameraPlaced = true;
 
         const spectating = this.match.spectating;
@@ -454,6 +478,9 @@ export class GameClient {
         this.cameraFx?.update(dt, this.camera.pos, this.debugZoom ?? this.local.zoom, this.local.layer);
         const ctx = { dt, localPos: this.visualPos, localLayer: this.local.layer, localId: this.activeId };
         world.update(ctx, now, this.camera.viewBounds(CULL_MARGIN));
+        // the structures in view, before anything is placed over the ground (renderer.addOverground)
+        const masks = world.takeStairMasks();
+        if (masks) this.renderer.setStairMasks(masks);
         this.teamPlay.update({
             dt: uiDt,
             now,
@@ -474,10 +501,19 @@ export class GameClient {
         const me = world.get(this.activeId) as PlayerView | undefined;
         if (!spectating) this.interactions.updateDoors(dt, world, me, this.visualPos);
         this.worldFx?.update({ dt, viewerPos: this.visualPos, viewerLayer: this.local.layer });
-        this.minimap?.airstrikeZones.update(uiDt, this.renderer, this.local.layer);
+        this.minimap?.airstrikeZones.update(uiDt, this.renderer);
         this.camera.applyShake();
-        const masks = world.takeStairMasks();
-        if (masks) this.renderer.setStairMasks(masks);
+        this.hitFx.update({
+            dt,
+            now,
+            activePos: this.visualPos,
+            local: this.local,
+            downed: !!me?.downed,
+            cursor: spectating || controls.touch ? null : this.input.mouse,
+            aimDir: me?.dir ?? { x: 1, y: 0 },
+            hudHidden: controls.hudHidden,
+            hudScale: scale,
+        });
         this.renderer.update(dt);
         this.renderGas(now);
         this.pingIndicator.update(uiDt, this.camera);
@@ -547,6 +583,8 @@ export class GameClient {
         this.world?.clear();
         this.air?.clear();
         this.effects.clear();
+        this.unbindHitFx();
+        this.hitFx.destroy();
         this.worldFx?.destroy();
         this.worldFx = null;
         this.cameraFx?.stop();

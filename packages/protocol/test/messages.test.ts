@@ -2,6 +2,7 @@
 // must come back equal within its quantization tolerance.
 import { createRng, type Rng } from "@rebirth/core";
 import { PROTOCOL_HASH } from "@rebirth/defs";
+import { loadoutChoices } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import {
     type ClientMsg,
@@ -27,6 +28,10 @@ import { assertClose, exact } from "./close.ts";
 import { netTolerances, randGameType, randInput, randMap, randMapType, randString } from "./gen.ts";
 
 const CASES = 2000;
+
+function pickOf<T>(rng: Rng, list: readonly T[]): T {
+    return list[rng.int(0, list.length - 1)];
+}
 
 function forCases(seed: number, fn: (rng: Rng, i: number) => void): void {
     const rng = createRng(seed);
@@ -66,8 +71,31 @@ describe("client messages", () => {
                 useTouch: rng.bool(),
                 isMobile: rng.bool(),
                 bot: rng.bool(),
+                // survev content wave stage 4b: survev's loadout at the end
+                loadout: {
+                    outfit: pickOf(rng, loadoutChoices("outfit")),
+                    melee: pickOf(rng, loadoutChoices("melee")),
+                    heal: pickOf(rng, loadoutChoices("heal")),
+                    boost: pickOf(rng, loadoutChoices("boost")),
+                    emotes: Array.from({ length: rng.int(0, 6) }, () => pickOf(rng, loadoutChoices("emote"))),
+                },
             };
             assertClose(clientRoundTrip(msg), msg, exact);
+        });
+    });
+
+    it("Join without a loadout reads back empty ids (the server takes the defaults)", () => {
+        const msg: ClientMsg = {
+            type: MsgType.Join,
+            protocol: 1,
+            name: "a",
+            useTouch: false,
+            isMobile: false,
+            bot: true,
+        };
+        expect(clientRoundTrip(msg)).toEqual({
+            ...msg,
+            loadout: { outfit: "", melee: "", heal: "", boost: "", emotes: [] },
         });
     });
 
@@ -90,14 +118,15 @@ describe("client messages", () => {
         expect([0, 1, 2, 3, 200].map(spectateActionName)).toEqual([null, "begin", "next", "prev", null]);
     });
 
-    it("Emote round-trips (M6a: original layout, positions over 0..1024 with 16 bits, only for pings)", () => {
-        const posTol = 1024 / 65535 / 2 + 1e-9;
+    it("Emote round-trips (M6a: original layout, positions over 0..2048 with 16 bits since schema 21, only for pings)", () => {
+        const posTol = 2048 / 65535 / 2 + 1e-9;
         forCases(31, (rng) => {
             const isPing = rng.bool();
+            // up to past the 1034-unit 50v50 map (the original's 0..1024 clamped there)
             const msg: ClientMsg = {
                 type: MsgType.Emote,
                 emote: isPing
-                    ? { type: randGameType(rng), isPing, pos: { x: rng.range(0, 1024), y: rng.range(0, 1024) } }
+                    ? { type: randGameType(rng), isPing, pos: { x: rng.range(0, 1100), y: rng.range(0, 1100) } }
                     : { type: randGameType(rng), isPing },
             };
             const bytes = encodeClientMsg(msg);
@@ -321,6 +350,26 @@ describe("server messages", () => {
             };
             assertClose(serverRoundTrip(role), role, exact);
         });
+    });
+
+    it("a 50v50 GameOver's four cards round-trip: self, both Commanders, the MVP (listed twice when it is one of them)", () => {
+        const card = (playerId: number, kills: number) => ({
+            playerId,
+            timeAlive: 300,
+            kills,
+            dead: playerId !== 7,
+            damageDealt: kills * 120,
+            damageTaken: 100,
+        });
+        const over: ServerSimpleMsg = {
+            type: MsgType.GameOver,
+            teamId: 2,
+            teamRank: 2,
+            gameOver: true,
+            winningTeamId: 1,
+            playerStats: [card(12, 1), card(7, 3), card(12, 1), card(40, 9)],
+        };
+        assertClose(serverRoundTrip(over), over, exact);
     });
 
     it("Map round-trips within quantization tolerance", () => {

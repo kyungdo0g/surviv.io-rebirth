@@ -129,7 +129,20 @@ describe("game object references", () => {
     });
 
     it("roles and perks", () => {
-        for (const [id, role] of ofType("role")) for (const p of role.perks ?? []) expectRef(`${id}.perks`, p, "perk");
+        for (const [id, role] of ofType("role")) {
+            // survev balance: a role perk may be a weighted choice ({ $weighted: [{ type, weight }] }, Lone Survivr)
+            for (const p of role.perks ?? []) {
+                const choices = typeof p === "string" ? [p] : (p.$weighted ?? []).map((c: { type: string }) => c.type);
+                expect(choices.length, `${id}.perks`).toBeGreaterThan(0);
+                for (const c of choices) expectRef(`${id}.perks`, c, "perk");
+            }
+            // role kits (survev defaultItems), including $byTeam / $weighted alternatives
+            JSON.stringify(role.defaultItems ?? {}, (key, value) => {
+                const itemKey = ["type", "helmet", "chest", "backpack", "outfit"].includes(key);
+                if (itemKey && typeof value === "string" && value !== "") expectRef(`${id}.defaultItems`, value);
+                return value;
+            });
+        }
         for (const [id, def] of Object.entries(gameObjects)) {
             if (def.perk) expectRef(`${id}.perk`, def.perk, "perk");
             if (def.type === "helmet" && def.role) expectRef(`${id}.role`, def.role, "role");
@@ -226,7 +239,7 @@ describe("loot tables", () => {
             for (const entries of Object.values<any[]>(map.lootTable)) {
                 for (const e of entries) {
                     if (!stackable.has(gameObjects[e.name]?.type)) continue;
-                    expect(gameConfig.bagSizes[e.name], `${name}: bagSizes.${e.name}`).toHaveLength(4);
+                    expect(gameConfig.bagSizes[e.name], `${name}: bagSizes.${e.name}`).toHaveLength(5);
                 }
             }
         }

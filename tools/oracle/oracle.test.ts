@@ -38,9 +38,13 @@ describe("fixture metadata", () => {
 
     it("the patch made survev use our values", () => {
         const patch = load("patch");
-        const an94 = patch.gameplayChanges.find((c: any) => c.id === "bullet_an94" && c.path === "damage");
-        expect(an94).toMatchObject({ survev: 20, ours: 17.5 });
-        expect(patch.verification.find((v: any) => v.check.includes("bullet_an94")).actual).toBe(17.5);
+        // survev balance (tools/port-survev policy survevBalance): our AN-94 is survev's 20; the 0.8.82 bonus bullets
+        // are ours only
+        expect(patch.verification.find((v: any) => v.check.includes("bullet_an94")).actual).toBe(
+            ourDefs.bullet_an94.damage,
+        );
+        const bonus = patch.gameplayChanges.find((c: any) => c.id === "mp5" && c.path === "bulletTypeBonus");
+        expect(bonus).toMatchObject({ ours: "bullet_mp5_bonus" });
     });
 });
 
@@ -91,8 +95,8 @@ describe("ttk.json", () => {
     const find = (gun: string, armor: string, distance: number, headshot = "never") =>
         t.guns[gun].find((c: any) => c.armor === armor && c.distance === distance && c.headshot === headshot);
 
-    it("an94 deals ~17.5 per bullet at point blank without armor", () => {
-        expect(find("an94", "none", 5).damagePerHit).toBeCloseTo(17.5, 1);
+    it("an94 deals its bullet's damage at point blank without armor", () => {
+        expect(find("an94", "none", 5).damagePerHit).toBeCloseTo(ourDefs.bullet_an94.damage, 1);
     });
 
     it("hits to kill match the measured damage per hit", () => {
@@ -107,7 +111,8 @@ describe("ttk.json", () => {
 
     it("armor slows kills and headshots speed them up", () => {
         expect(find("ak47", "lvl3", 20).ttk).toBeGreaterThan(find("ak47", "none", 20).ttk);
-        expect(find("mosin", "none", 20, "always").hitsToKill).toBe(1);
+        const mosin = ourDefs.bullet_mosin.damage * ourDefs.mosin.headshotMult;
+        expect(find("mosin", "none", 20, "always").hitsToKill).toBe(Math.ceil(100 / mosin - 1e-9));
         expect(find("m870", "none", 50).outOfRange).toBe(true);
     });
 });

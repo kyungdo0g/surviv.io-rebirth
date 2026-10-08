@@ -118,9 +118,10 @@ export class GameRoom {
         this.config = config;
         this.mapName = mapName;
         this.teamMode = teamMode;
+        // rebirth new-gun beta (GUN_BETA): read when the map loot spawns, so it goes in at creation
         this.game = new Game(
             { mapName, seed: seed >>> 0, teamMode },
-            { minPlayers: config.minPlayers, maxPlayers: roomCapacity(config, mapName) },
+            { minPlayers: config.minPlayers, maxPlayers: roomCapacity(config, mapName), gunBeta: config.gunBeta },
         );
         // rebirth 50v50 air strike variants (AIRSTRIKE_VARIANTS; the sim rolls them on faction maps only)
         this.game.rules.roles.factionAirstrikeVariants = { ...config.airstrikeVariants };
@@ -137,6 +138,8 @@ export class GameRoom {
                 ? new BotFill(this.game, {
                       target: botTarget,
                       difficulty: config.botDifficulty,
+                      skillMix: config.botSkillMix,
+                      personas: config.botPersonas,
                       joinIntervalTicks: Math.round((config.botFillIntervalMs / 1000) * TICK_HZ),
                       seed: seed >>> 0,
                       onError: (err) => {
@@ -202,8 +205,8 @@ export class GameRoom {
             teamMode: this.game.options.teamMode ?? 1,
             playerId,
             started: this.game.started,
-            // the emote loadout (wheel, win and death slots); loadouts are not modelled: the original defaults
-            emotes: [...GameConfig.defaultEmoteLoadout],
+            // the player's validated emote loadout (wheel, win and death slots)
+            emotes: [...(this.game.getPlayer(playerId)?.emoteLoadout ?? GameConfig.defaultEmoteLoadout)],
         });
         w.writeBytes(this.mapMsg);
         return { playerId, frame: w.getBuffer() };

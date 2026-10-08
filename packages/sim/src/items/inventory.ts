@@ -42,7 +42,8 @@ export function gearQuality(id: string): number {
         if (def.perk) quality += 1;
         if (def.role) quality += 1;
     } else if (def.type === "backpack") {
-        quality += 1;
+        // the Experimental Pack's second perk slot makes it better than the Tactical Pack (survev player.ts:791-793)
+        quality += def.maxPerks ?? 1;
     }
     return quality;
 }
@@ -52,6 +53,8 @@ export interface InventoryOwner {
     readonly backpack: string;
     onItemAdded(item: string): void;
     onItemRemoved(item: string): void;
+    /** extra capacity a perk gives (survev inventoryManager.ts getMaxCapacity: Flak Jacket +3 frags, +2 MIRVs) */
+    capacityBonus?(item: string): number;
 }
 
 export class Inventory {
@@ -77,7 +80,9 @@ export class Inventory {
     capacity(item: string): number {
         const sizes = this.sizes[item];
         if (!sizes) return 0;
-        return sizes[Math.min(gearLevel(this.owner.backpack), sizes.length - 1)];
+        return (
+            sizes[Math.min(gearLevel(this.owner.backpack), sizes.length - 1)] + (this.owner.capacityBonus?.(item) ?? 0)
+        );
     }
 
     set(item: string, amount: number): void {

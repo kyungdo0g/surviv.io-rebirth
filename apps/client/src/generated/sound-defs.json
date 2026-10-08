@@ -1115,6 +1115,11 @@
     "volume": 1,
     "maxInstances": 3,
     "canCoalesce": true
+   },
+   "egg_hit_01": {
+    "path": "audio/hits/egg_hit_01.mp3",
+    "volume": 1,
+    "source": "survev"
    }
   },
   "sfx": {
@@ -1586,6 +1591,31 @@
    "feather_01": {
     "path": "audio/sfx/feather_01.mp3",
     "volume": 1
+   },
+   "coconut_01": {
+    "path": "audio/sfx/coconut_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
+   "egg_break_01": {
+    "path": "audio/sfx/egg_break_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
+   "tomato_01": {
+    "path": "audio/sfx/tomato_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
+   "tomato_break_01": {
+    "path": "audio/sfx/tomato_break_01.mp3",
+    "volume": 1,
+    "source": "survev"
+   },
+   "tomato_break_02": {
+    "path": "audio/sfx/tomato_break_01.mp3",
+    "volume": 1,
+    "source": "survev"
    }
   },
   "ambient": {
@@ -1624,6 +1654,16 @@
    "ambient_lab_01": {
     "path": "audio/ambient/ambient_lab_01.mp3",
     "volume": 0.2
+   },
+   "reserve_music_01": {
+    "path": "audio/ambient/reserve_music_01.mp3",
+    "volume": 0.66,
+    "source": "survev"
+   },
+   "reserve_music_02": {
+    "path": "audio/ambient/reserve_music_02.mp3",
+    "volume": 0.66,
+    "source": "survev"
    }
   },
   "ui": {
@@ -1840,6 +1880,12 @@
    "spawn_01": {
     "path": "audio/ui/spawn_01.mp3",
     "volume": 3
+   },
+   "captain_assigned_01": {
+    "path": "audio/ui/captain_assigned_01.mp3",
+    "volume": 2,
+    "source": "survev",
+    "maxInstances": 1
    }
   },
   "music": {
@@ -2127,6 +2173,12 @@
    "sounds": [
     "cluck_01",
     "cluck_02"
+   ]
+  },
+  "egg_hit": {
+   "channel": "hits",
+   "sounds": [
+    "egg_hit_01"
    ]
   }
  }

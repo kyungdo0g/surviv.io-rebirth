@@ -4,7 +4,8 @@
 // Behaviour follows survev server/src/game/objects/player.ts (update: haste / last breath / bugler / gotw / bleed /
 // chatty blocks; kill: takedown, initLastBreath, martyrdom; playBugle) and objects/bullet.ts (windwalk), with the
 // values of rules.perks (perks/perkRules.ts, docs/research/items/perks.md).
-import { DamageType, idsOfType } from "@rebirth/defs";
+import { DamageType, getDef, hasDef, idsOfType } from "@rebirth/defs";
+import { dropPirateBounty } from "../loot/drops.ts";
 import { boostHealAmounts } from "../rules.ts";
 import { gunDef } from "../weapons/weaponManager.ts";
 import type { SimContext } from "../world/context.ts";
@@ -27,6 +28,9 @@ function allEmotes(): string[] {
 
 /** Per-tick perk timers, before the action and movement of the player's tick (survev update order). */
 export function updatePerks(ctx: SimContext, player: Player, dt: number): void {
+    // survev-only Combat Stimulants bonus and Indomitable Spirit effect (survev player.ts:1797-1803, 2128-2133)
+    player.combatStimsTicker = Math.max(0, player.combatStimsTicker - dt);
+    player.lastStandTicker = Math.max(0, player.lastStandTicker - dt);
     const rules = ctx.rules.perks;
     updateHaste(player, dt);
     updateFat(player, dt);
@@ -136,8 +140,14 @@ export function onPerkHolderDeath(ctx: SimContext, player: Player): void {
     }
 }
 
-/** Takedown: a kill of an enemy gives +25 HP, +25 adrenaline and a 3 s haste (knocks do not count) (perks.md). */
-export function onKillCredited(ctx: SimContext, killer: Player): void {
+/**
+ * Takedown: a kill of an enemy gives +25 HP, +25 adrenaline and a 3 s haste (knocks do not count) (perks.md).
+ * Pirate's Bounty: a kill whose final hit is a melee weapon drops the bounty at the victim (survev player.ts:2727).
+ */
+export function onKillCredited(ctx: SimContext, killer: Player, victim?: Player, weapon?: string): void {
+    if (victim && killer.hasPerk("pirate") && weapon && hasDef(weapon) && getDef(weapon).type === "melee") {
+        dropPirateBounty(ctx, victim);
+    }
     if (killer.dead || !killer.hasPerk("takedown")) return;
     const rules = ctx.rules.perks;
     killer.health = Math.min(PLAYER_MAX_HEALTH, killer.health + rules.takedownHealth);

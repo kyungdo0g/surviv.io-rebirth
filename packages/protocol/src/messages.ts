@@ -4,7 +4,7 @@
 // Layouts follow the original 0.8.82 messages (docs/research/engine/netcode.md "Client → server messages" and
 // "Server → client messages"); differences are noted per message.
 import type { BitReader, BitWriter } from "@rebirth/core";
-import type { EmoteRequest, PlayerInput } from "@rebirth/sim";
+import type { EmoteRequest, JoinLoadout, PlayerInput } from "@rebirth/sim";
 import { MsgType, NetLimits } from "./constants.ts";
 import {
     clampUint,
@@ -19,7 +19,10 @@ import {
     writeUnitVec,
 } from "./quant.ts";
 
-/** Client -> server, first message on a connection. survev layout minus the token (it is in the /play URL). */
+/**
+ * Client -> server, first message on a connection. survev layout minus the token (it is in the /play URL), with
+ * survev's loadout at the end (survev content wave stage 4b: outfit, melee, heal, boost game types, then up to 8 emotes).
+ */
 export interface JoinMsg {
     type: typeof MsgType.Join;
     /** must equal PROTOCOL_HASH; read before anything else so a stale client gets `invalid_protocol` */
@@ -29,7 +32,12 @@ export interface JoinMsg {
     useTouch: boolean;
     isMobile: boolean;
     bot: boolean;
+    /** the player's loadout (ids the server validates again; "" or missing fields take the defaults) */
+    loadout?: Partial<JoinLoadout>;
 }
+
+/** survev JoinMsg: s.writeArray(loadout.emotes, 8, ...) */
+const JOIN_EMOTES_MAX = 8;
 
 export function writeJoin(w: BitWriter, m: JoinMsg): void {
     w.writeUint32(m.protocol >>> 0);
@@ -37,18 +45,36 @@ export function writeJoin(w: BitWriter, m: JoinMsg): void {
     w.writeBoolean(m.useTouch);
     w.writeBoolean(m.isMobile);
     w.writeBoolean(m.bot);
+    const l = m.loadout ?? {};
+    writeGameType(w, l.outfit ?? "");
+    writeGameType(w, l.melee ?? "");
+    writeGameType(w, l.heal ?? "");
+    writeGameType(w, l.boost ?? "");
+    const emotes = (l.emotes ?? []).slice(0, JOIN_EMOTES_MAX);
+    writeCount(w, emotes.length, 8);
+    for (const e of emotes) writeGameType(w, e);
 }
 
 export function readJoin(r: BitReader): JoinMsg {
     const protocol = r.readUint32();
     const name = r.readString(NetLimits.PlayerNameMaxBytes);
+    const useTouch = r.readBoolean();
+    const isMobile = r.readBoolean();
+    const bot = r.readBoolean();
+    const outfit = readGameType(r);
+    const melee = readGameType(r);
+    const heal = readGameType(r);
+    const boost = readGameType(r);
+    const emotes: string[] = [];
+    for (let n = Math.min(r.readBits(8), JOIN_EMOTES_MAX); n > 0; n--) emotes.push(readGameType(r));
     return {
         type: MsgType.Join,
         protocol,
         name,
-        useTouch: r.readBoolean(),
-        isMobile: r.readBoolean(),
-        bot: r.readBoolean(),
+        useTouch,
+        isMobile,
+        bot,
+        loadout: { outfit, melee, heal, boost, emotes },
     };
 }
 
@@ -193,8 +219,8 @@ export function readInput(r: BitReader): PlayerInput {
 }
 
 /**
- * Client -> server emote or ping request (M6a; original layout: pos vec 0..1024 16+16 bits, type game type, isPing
- * bit; teams.ts writeEmoteRequest). The position matters for pings only.
+ * Client -> server emote or ping request (M6a; the original layout with the position over 0..2048 since schema 21:
+ * pos vec 16+16 bits, type game type, isPing bit; teams.ts writeEmoteRequest). The position matters for pings only.
  */
 export interface EmoteMsg {
     type: typeof MsgType.Emote;

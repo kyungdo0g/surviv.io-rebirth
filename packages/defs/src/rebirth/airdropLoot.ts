@@ -6,14 +6,15 @@
 //   SCAR-H, Mosin, Saiga-12, Vector, SV-98, QBB-97 and the flare gun on main. Gold (crate_11, tier_airdrop_rare) is
 //   unchanged and stays above it (main, bots' tier list: mean rank 5.3 / 6.0 / 6.9 for tier 1 / 2 / gold);
 // - tier_airdrop_tier1 ("if you farm well you'd get it anyway, occasionally something nice": "low-tier DMRs, the
-//   SPAS-12, guns a little above the AK-47 / Groza") is the low-tier DMRs, the low end of that table (low snipers, the
-//   Desert Eagle), its non-gun entries (woods' MIRV and strobe), a few ground guns a little above the AK-47 / Groza and
-//   the SPAS-12 at lower weights, and a 10 % chance of a tier 2 roll;
+//   SPAS-12, guns a little above the AK-47 / Groza") is the low-tier DMRs (the owner's L86A2 added, 2026-10-08), the
+//   low end of that table (low snipers, the Desert Eagle), its non-gun entries (woods' MIRV and strobe), a few ground
+//   guns a little above the AK-47 / Groza and the SPAS-12 at lower weights, and a 10 % chance of a tier 2 roll;
 // - tier_airdrop_armor_tier1: level 2 gear, level 3 one time in three.
 // The tier 2 inner crate is crate_10 (or crate_10sv) with tier 2 guns; the tier 1 crate is a little leaner.
 import { gunClass, LOOT_BANS } from "../gunClasses.ts";
 import type { LootSpawnDef, LootTableEntry, MapDef, MapObjectDef, ObstacleDef } from "../types/index.ts";
 import { AIRDROP_TIER_BASE_CRATES, AIRDROP_TIER_SPLITS, airdropCrateTier } from "./airdropTiers.ts";
+import { OWNER_LOOT_WEIGHTS } from "./ownerLootWeights.ts";
 
 export const AIRDROP_TIER1_TABLE = "tier_airdrop_tier1";
 export const AIRDROP_TIER2_TABLE = "tier_airdrop_tier2";
@@ -45,6 +46,15 @@ export const AIRDROP_LOW_END_GUNS: readonly string[] = [
 export const AIRDROP_TIER1_ONLY_GUNS: readonly string[] = ["mk12", "m39"];
 /** Their weight in tier 1 against the normal drop: "occasionally something nice", not most tier 1 rolls. */
 export const TIER1_ONLY_WEIGHT_FACTOR = 0.5;
+
+/**
+ * Low-tier DMRs added to tier 1 where the map's normal drop lacks them, with their weight (the owner, 2026-10-08,
+ * user/2026-10-08-loot-speed: "the L86A2 is an air drop gun", a low-tier DMR like the MK12 / M39; its weight is
+ * OWNER_LOOT_WEIGHTS.airdropTier1, rebirth/ownerLootWeights.ts: the MK12's / M39's tier 1 weight on main). They join
+ * like the ground guns below (bans and ground classes hold): Savannah's normal drop already has the L86A2 at 0.75 (low
+ * end, above), and the woods maps and potato have no DMR on their ground.
+ */
+export const AIRDROP_TIER1_ADDED_DMRS: Readonly<Record<string, number>> = OWNER_LOOT_WEIGHTS.airdropTier1;
 
 /**
  * Ground guns added to tier 1 (weight): the SPAS-12 the user named (A) and guns "slightly above the AK-47 / Groza"
@@ -122,10 +132,11 @@ export function airdropTierTables(mapName: string, tables: LootTables): Record<s
     const banned = new Set(LOOT_BANS[mapName] ?? []);
     const groundClasses = new Set([...reachableItems(tables, "tier_guns")].map((g) => gunClass(g)));
     const present = new Set(uncommon.map((e) => e.name));
-    const added = Object.entries(TIER1_ADDED_GUNS)
-        .filter(([g]) => !banned.has(g) && !present.has(g) && groundClasses.has(gunClass(g)))
-        .map(([name, weight]) => ({ name, count: 1, weight }));
-    const core = [...lowEnd, ...nonGuns, ...added];
+    const addable = ([g]: [string, number]) => !banned.has(g) && !present.has(g) && groundClasses.has(gunClass(g));
+    const toRow = ([name, weight]: [string, number]) => ({ name, count: 1, weight });
+    const dmrs = Object.entries(AIRDROP_TIER1_ADDED_DMRS).filter(addable).map(toRow);
+    const added = Object.entries(TIER1_ADDED_GUNS).filter(addable).map(toRow);
+    const core = [...lowEnd, ...nonGuns, ...dmrs, ...added];
     const coreWeight = core.reduce((sum, e) => sum + e.weight, 0);
     const tier1: LootTableEntry[] = [...core];
     if (guns.length > 0) {

@@ -7,13 +7,18 @@
 // and crates next to an armed enemy the bot just ran from are left alone for a while (flee <-> loot), and once the zone
 // presses, loot and crates outside the next circle are not picked (they would start the zone behaviour at once). The
 // loot and crate choices are kept for 0.3 s while the bot moved little (no flip-flopping between near-equal items).
+// With BrainFeatures.pursuit, loot near a fled enemy is left alone only when going for it means walking back towards
+// that enemy (an unarmed bot running from a house may pick up the gun lying behind it: brain/flight.ts safeGun uses
+// the same rule); the place itself is remembered longer by brain/danger.ts. And the zone check reads the pressure at
+// the goal, not at the bot: the bot's own pressure jumps from 0 to ~0.15 as it steps out of a big circle, so an item
+// just outside was picked, dropped and picked again with every step across the edge (triage house.ts seed 0).
 import { type Vec2, v2 } from "@rebirth/core";
 import { distanceToCollider } from "../geom.ts";
 import { isMeleeWeapon } from "../knowledge/weapons.ts";
 import type { BehaviourName, BrainCtx } from "./context.ts";
 import { bestLoot, type LootChoice } from "./explore.ts";
 import { type BreakChoice, bestBreakable, breakableNow } from "./scavenge.ts";
-import { zonePressure } from "./survival.ts";
+import { zonePressure, zonePressureAt } from "./survival.ts";
 
 const WINDOW = 8;
 const SWAPS = 3;
@@ -35,6 +40,8 @@ const PREFERENCE: readonly BehaviourName[] = [
     "thirdparty",
     "assist",
     "regroup",
+    "rally",
+    "advance",
     "hold",
     "explore",
 ];
@@ -93,10 +100,15 @@ export function noteFlight(ctx: BrainCtx): void {
 /** Whether a loot or crate goal at `p` keeps the bot steady: not next to an enemy it just fled, not out of the zone. */
 export function steadyGoal(ctx: BrainCtx, p: Vec2): boolean {
     const { model, now } = ctx;
-    for (const f of ctx.mem.smart.fled)
-        if (now - f.time < FLED_MEMORY && v2.distance(f.pos, p) < FLED_RADIUS) return false;
-    if (model.gas && model.gas.mode !== "inactive" && zonePressure(model) > ZONE_PRESS) {
-        if (!model.insideSafeZone(p, ZONE_MARGIN)) return false;
+    const me = ctx.self.pos;
+    for (const f of ctx.mem.smart.fled) {
+        if (now - f.time >= FLED_MEMORY) continue;
+        const d = v2.distance(f.pos, p);
+        if (d < FLED_RADIUS && (!ctx.features.pursuit || d < v2.distance(f.pos, me) + 2)) return false;
+    }
+    if (model.gas && model.gas.mode !== "inactive" && !model.insideSafeZone(p, ZONE_MARGIN)) {
+        const pressure = ctx.features.pursuit ? zonePressureAt(model, p) : zonePressure(model);
+        if (pressure > ZONE_PRESS) return false;
     }
     return true;
 }
@@ -122,13 +134,17 @@ export function steadyLoot(ctx: BrainCtx): LootChoice | null {
     return choice;
 }
 
+/** A chosen container out of the snapshot for a moment (its path leads around a building) stays chosen (s). */
+const CRATE_OUT_OF_VIEW = 8;
+
 /** bestBreakable, kept for a moment like steadyLoot (while the container is still standing). */
 export function steadyCrate(ctx: BrainCtx): BreakChoice | null {
     const sm = ctx.mem.smart;
     const k = sm.crateChoice;
     if (k && ctx.now - k.at < CHOICE_KEEP && ctx.now >= k.at && v2.distance(k.from, ctx.self.pos) < CHOICE_MOVE) {
         if (!k.choice) return null;
-        const o = ctx.model.obstacleById.get(k.choice.obstacle.view.id);
+        const id = k.choice.obstacle.view.id;
+        const o = ctx.model.obstacleById.get(id) ?? ctx.model.rememberedObstacle(id, CRATE_OUT_OF_VIEW);
         const until = ctx.mem.lootBlacklist.get(k.choice.obstacle.view.id);
         if (o && breakableNow(o) && !(until !== undefined && until > ctx.now)) {
             return { obstacle: o, value: k.choice.value, dist: distanceToCollider(ctx.self.pos, o.col) };

@@ -34,7 +34,13 @@ export function interactableObstacles(ctx: SimContext, player: Player): Obstacle
     for (const obj of ctx.world.query(box, player.scratch)) {
         if (obj.kind !== "obstacle" || obj.dead || obj.interactionRad <= 0) continue;
         if (!sameLayer(obj.layer, player.layer)) continue;
-        // (survev's isVat buttons test the distance to their centre; no v0.8.82 obstacle has isVat)
+        // survev's Augmenting Vat (isVat): the player must stand fully inside it (survev player.ts:3611-3619)
+        if (obj.def.button?.isVat) {
+            if (v2.distance(player.pos, obj.pos) + player.rad < obj.interactionRad * obj.scale) {
+                found.push({ pen: 0, obstacle: obj });
+            }
+            continue;
+        }
         const res = collider.intersect(
             collider.createCircle(player.pos, obj.interactionRad + player.rad),
             obj.collider,
@@ -51,7 +57,9 @@ export function interactableObstacles(ctx: SimContext, player: Player): Obstacle
 export function interactObstacle(ctx: SimContext, obstacle: Obstacle, player: Player | null, auto = false): void {
     if (obstacle.dead) return;
     if (player && !auto && obstacle.interactCooldown > 0) return;
-    // (buttons with roleToPromote, the fork's Augmenting Vat, do not exist in the v0.8.82 defs)
+    // a vat refuses a player who already holds its role (survev obstacle.ts:711-718)
+    const promotes = obstacle.def.button?.roleToPromote;
+    if (player && promotes && player.role === promotes) return;
     if (obstacle.door) interactDoor(ctx, obstacle, player, auto);
     const button = obstacle.button;
     const def = obstacle.def.button;
@@ -78,7 +86,7 @@ export function useObstacle(ctx: SimContext, obstacle: Obstacle, player: Player 
  * puzzle piece switched on reports to its building, recorders play, `destroyOnUse` buttons die after `useDelay`
  * (survev useButton).
  */
-export function useButton(ctx: SimContext, obstacle: Obstacle, _player: Player | null): void {
+export function useButton(ctx: SimContext, obstacle: Obstacle, player: Player | null): void {
     const button = obstacle.button;
     const def = obstacle.def.button;
     if (obstacle.dead || !button || !def || !button.canUse) return;
@@ -107,6 +115,8 @@ export function useButton(ctx: SimContext, obstacle: Obstacle, _player: Player |
             });
         }
     }
+    // survev's Augmenting Vat promotes its user (button roleToPromote "classless", survev obstacle.ts:793-796)
+    if (def.roleToPromote && player) ctx.roles.promote(player, def.roleToPromote);
     if (button.onOff && obstacle.puzzlePiece && building) puzzlePieceToggled(ctx, building, obstacle);
     // recorders only play their recording (maps/puzzles.md "Recorders")
     if (obstacle.type.startsWith("recorder_")) ctx.onRecorderUsed(obstacle);

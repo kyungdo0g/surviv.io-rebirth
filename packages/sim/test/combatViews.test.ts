@@ -66,9 +66,18 @@ describe("outsideOnly guns", () => {
         fireOnce(game, p);
         expect(p.shotSeq).toBe(0);
         expect(p.weapons[WeaponSlot.Primary].ammo).toBe(1);
-        game.teleportPlayer(id, { x: house.pos.x, y: house.pos.y - 40 });
-        send(game, p, {});
-        steps(game, 100);
+        // somewhere outdoors 40 u away (the map's other buildings move with its generation)
+        for (const [dx, dy] of [
+            [0, -40],
+            [0, 40],
+            [-40, 0],
+            [40, 0],
+        ]) {
+            game.teleportPlayer(id, { x: house.pos.x + dx, y: house.pos.y + dy });
+            send(game, p, {});
+            steps(game, 100);
+            if (!p.indoors) break;
+        }
         expect(p.indoors).toBe(false);
         fireOnce(game, p);
         expect(p.shotSeq).toBe(1);

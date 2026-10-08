@@ -9,20 +9,29 @@ export {
     type HitRecord,
     killPlayer,
 } from "./combat/combat.ts";
-export { type ArmorState, canHeadshot, computeDamage, type DamageParams, rollHeadshot } from "./combat/damage.ts";
+export {
+    type ArmorState,
+    armorCovers,
+    canHeadshot,
+    computeDamage,
+    type DamageParams,
+    rollHeadshot,
+} from "./combat/damage.ts";
 export {
     type ExplosionHost,
     type ExplosionReport,
     type ExplosionSource,
     ExplosionSystem,
 } from "./combat/explosions.ts";
+export { HitLog } from "./combat/hitLog.ts";
 export {
     type AddProjectileParams,
     type Projectile,
     type ProjectileHost,
     ProjectileSystem,
 } from "./combat/projectiles.ts";
-export { DEFAULT_MIN_PLAYERS, entityView, Game, type GameInit, VIEW_ASPECT, VIEW_MARGIN, viewBounds } from "./game.ts";
+export { entityView, Game, VIEW_ASPECT, VIEW_MARGIN, viewBounds } from "./game.ts";
+export { DEFAULT_MIN_PLAYERS, type GameInit } from "./gameInit.ts";
 export * from "./input.ts";
 export { BAG_ITEMS, gearLevel, gearQuality, Inventory, SCOPE_LEVELS, THROWABLE_LIST } from "./items/inventory.ts";
 export { destroyTypeOf, dropGun, dropMelee, playerDropLoot, unknownLootTiers } from "./loot/drops.ts";
@@ -32,6 +41,14 @@ export { closestLoot, freeGunSlot, type PickupResult, pickupLoot } from "./loot/
 export { getBoundingCollider } from "./mapgen/bounds.ts";
 export { type GenerateMapResult, generateMap, type SpawnSource, type SpawnStat } from "./mapgen/generate.ts";
 export type { GeneratedObject, LootSpawn } from "./mapgen/generator.ts";
+export {
+    generateShowcase,
+    type ShowcaseEntry,
+    type ShowcaseResult,
+    showcaseEntries,
+    showcaseMapOf,
+    showcaseSpawnSpots,
+} from "./mapgen/showcase.ts";
 export { buildTerrain, createTerrain, type River, type Terrain, terrainToShape } from "./mapgen/terrain.ts";
 export { isTerrainWater, type TerrainSurface, terrainSurfaceAt } from "./mapgen/terrainQuery.ts";
 export {
@@ -41,11 +58,23 @@ export {
     pickAirstrikeVariant,
     type StrikeState,
 } from "./match/airstrikes.ts";
-export { EmoteSystem, updateEmoteThrottle } from "./match/emotes.ts";
+export { DEATH_EMOTE_DELAY, EmoteSystem, updateEmoteThrottle } from "./match/emotes.ts";
 export { damageSourceOf, EventLog } from "./match/events.ts";
 export { FactionSystem, type FactionTeam, living } from "./match/faction.ts";
-export { type CircleChoice, Gas, gasCircle, gasTimeLeft } from "./match/gas.ts";
+export { applyGasDamage, type CircleChoice, Gas, gasCircle, gasTimeLeft } from "./match/gas.ts";
 export { type MapIndicator, MapIndicatorSystem, type TrackedIndicator } from "./match/indicators.ts";
+export {
+    CROSSHAIR_SIZE,
+    CROSSHAIR_STROKE,
+    type Crosshair,
+    defaultLoadout,
+    isLoadoutItem,
+    type JoinLoadout,
+    type Loadout,
+    type LoadoutKind,
+    loadoutChoices,
+    validateLoadout,
+} from "./match/loadout.ts";
 export { KILL_LEADER_ROLE, Match, type MatchOptions, playerStats } from "./match/match.ts";
 export type { CombatObserver } from "./match/observer.ts";
 export { type FallingAirdrop, type PlaneState, PlaneSystem } from "./match/planes.ts";
@@ -88,7 +117,7 @@ export {
 } from "./roles/loadouts.ts";
 export { defaultRoleRules, type RoleRules, type RoleSlot } from "./roles/roleRules.ts";
 export { type RoleHost, RoleSystem } from "./roles/roleSystem.ts";
-export { type PromoteOptions, promoteToRole, removeRole, setHelmet } from "./roles/roles.ts";
+export { promoteToRole, removeRole, setHelmet } from "./roles/roles.ts";
 export { boostHealAmounts, defaultRules, type SimRules } from "./rules.ts";
 export type * from "./view.ts";
 export { fireGun } from "./weapons/gun.ts";
@@ -116,6 +145,7 @@ export {
 export type { SimContext } from "./world/context.ts";
 export { BEHAVIOUR_FIELDS, type FieldStatus } from "./world/coverage.ts";
 export { DeadBody, DeadBodySystem } from "./world/deadBodies.ts";
+export { disguiseOf, setOutfit } from "./world/disguise.ts";
 export {
     autoOpenDoors,
     checkDoorLayer,

@@ -10,21 +10,39 @@ import { Brain } from "./brain/brain.ts";
 import { ClassPicker } from "./brain/classPick.ts";
 import { type BotOrder, emptyIntent, type Intent, type IntentEmote } from "./brain/context.ts";
 import { type BrainFeatures, type BrainName, brainFeatures, brainLabel } from "./brain/features.ts";
-import { ThrowController, TriggerController, throwMouseLen } from "./brain/trigger.ts";
-import { type Difficulty, type DifficultyParams, difficultyParams } from "./difficulty.ts";
+import { fragNoThrowNear } from "./brain/fragMath.ts";
+import { throwBlocker } from "./brain/fragSkill.ts";
+import { QuickSwitch } from "./brain/quickSwitch.ts";
+import { zonePressure } from "./brain/survival.ts";
+import { ThrowController, TriggerController, throwAimPoint, throwMouseLen } from "./brain/trigger.ts";
+import { type Difficulty, type DifficultyParams, difficultyParams, type SkillTierName } from "./difficulty.ts";
 import { angleOf, dirOf, distanceToCollider } from "./geom.ts";
-import { HumanMotor, type MotorGoal } from "./motor/human.ts";
+import { HumanMotor, type MotorGoal, ONSET_SHARE } from "./motor/human.ts";
 import { KeyStick, octantFree, octantKeys, PathCarrot } from "./motor/keys.ts";
 import { AimController, legacyTolerance } from "./motor/legacy.ts";
 import { sameLayer } from "./nav/cellGrid.ts";
 import { PathFollower } from "./nav/follower.ts";
 import { NavGrid } from "./nav/grid.ts";
 import { installPerception } from "./perception/install.ts";
-import { WorldModel } from "./perception/world.ts";
+import { concealed } from "./perception/sight.ts";
+import { type Contact, WorldModel } from "./perception/world.ts";
+import { botPersona, PERSONA_SALT, type PersonaName, type PersonaParams } from "./persona.ts";
+import { drawSkill, type SkillProfile, skillOf, skillParams, tierOfSkill } from "./skill.ts";
 
 export interface BotOptions {
-    /** preset name or custom parameters (default "normal") */
+    /** preset name or custom parameters (default "normal"); ignored when `skill` is given */
     difficulty?: Difficulty | DifficultyParams;
+    /**
+     * skill tier (s drawn in its band, g = s + N(0, 0.2)) or an exact mechanics skill s in 0..1: the parameters are then
+     * composed by skill.ts skillParams instead of a preset (bot overhaul POPULATION-3)
+     */
+    skill?: number | SkillTierName;
+    /** game sense g in 0..1 with a numeric `skill` (default g = s; a tier draws its own) */
+    sense?: number;
+    /** persona name or custom parameters (default NEUTRAL: today's bot) */
+    persona?: PersonaName | PersonaParams;
+    /** draw the bot's own gun taste over a named, non-neutral persona (persona.ts botPersona; default true) */
+    taste?: boolean;
     /** seed of the bot's own random stream (aim error, tactics, exploration) */
     seed: number;
     /** brain preset name or custom feature flags (default DEFAULT_BRAIN, "smart") */
@@ -37,6 +55,25 @@ const SLOT_ACTIONS = [Input.EquipPrimary, Input.EquipSecondary, Input.EquipMelee
 const DIRS: readonly Vec2[] = Array.from({ length: 8 }, (_, k) => dirOf((k * Math.PI) / 4));
 /** Own speed estimates above this are teleports or respawns, not walking (units/s). */
 const MAX_SELF_SPEED = 30;
+/**
+ * A throw being readied is broken off when a standing enemy comes inside the frag's no-throw distance (its blast's
+ * full-damage radius plus 3 in the defs: 8 for the frag; bot overhaul COMBAT-11, brain/fragMath.ts)...
+ * ...or rushes in this fast (u/s) from within ABORT_RUSH_DIST.
+ */
+const ABORT_RUSH = 6;
+const ABORT_RUSH_DIST = 14;
+/** An enemy seen or a hit taken this recently (s): the bot is alert, nothing that follows is a surprise. */
+const CALM_AFTER = 3;
+function isGunSlot(slot: number): boolean {
+    return slot === WeaponSlot.Primary || slot === WeaponSlot.Secondary;
+}
+
+/** A goal this close is lined up on with short key taps (motor/keys.ts StickMode.fine). */
+const FINE_DIST = 2.5;
+/** Zone pressure (brain/survival.ts) above which a rotation is in a hurry: no walking pauses. */
+const ZONE_HURRY = 0.3;
+/** Behaviours that are travel: calm, they get the stop-and-go rhythm of walking (motor/rhythm.ts, round 5). */
+const CALM_TRAVEL = new Set("explore loot break sweep regroup zone airdrop advance rally".split(" "));
 
 export class Bot {
     readonly model: WorldModel;
@@ -47,6 +84,11 @@ export class Bot {
     /** preset the features equal, or "custom" */
     readonly brainName: BrainName | "custom";
     readonly rng: Rng;
+    /** the seed of the bot's own streams (BotOptions.seed) */
+    readonly seed: number;
+    /** the bot's taste (persona.ts) and skill (skill.ts); drawn from their own stream, apart from `rng` */
+    readonly persona: Readonly<PersonaParams>;
+    readonly skill: Readonly<SkillProfile>;
     readonly follower: PathFollower;
     /** the legacy aim (motor model "legacy"), else null */
     readonly aim: AimController | null;
@@ -59,6 +101,8 @@ export class Bot {
     private nearColliders: Collider[] = [];
     readonly trigger: TriggerController;
     readonly throws: ThrowController;
+    /** round 6 (report 44): an expert's quick switch after a slow gun's shot (BrainFeatures.quickSwitch), else null */
+    readonly quick: QuickSwitch | null;
     /** Cobalt class menu (M7b): its own random stream, so the other decisions stay as on any map */
     readonly classPicker: ClassPicker;
     /** class chosen by the last observe(), to send once (Game.selectRole / PerkModeRoleSelect) */
@@ -79,16 +123,34 @@ export class Bot {
     private aimOffset: Vec2 | null = null;
     private selfVel: Vec2 = { x: 0, y: 0 };
     private lastSelf: { pos: Vec2; time: number } | null = null;
+    /** human motor: the reaction to a surprise runs until `reactUntil`; the keys follow `reactIntent` until then */
+    private reactUntil = Number.NEGATIVE_INFINITY;
+    private reactIntent: Intent | null = null;
+    /** WorldModel.lastHurt as of the previous snapshot, and the last snapshot with an enemy in view */
+    private hurtBefore = Number.NEGATIVE_INFINITY;
+    private enemyBefore = Number.NEGATIVE_INFINITY;
 
     constructor(map: MapData, opts: BotOptions) {
-        this.params = difficultyParams(opts.difficulty ?? "normal");
+        // persona and skill draws: their own stream, so they never shift the brain's or the motor's sequences
+        const personaRng = createRng(opts.seed ^ PERSONA_SALT);
+        this.skill = resolveSkill(opts, personaRng);
+        this.params =
+            opts.skill === undefined
+                ? difficultyParams(opts.difficulty ?? "normal")
+                : skillParams(this.skill.s, this.skill.g, this.skill.tier);
+        this.persona = botPersona(opts.persona, opts.seed, opts.taste !== false);
         this.features = brainFeatures(opts.brain);
         this.brainName = brainLabel(this.features);
+        this.seed = opts.seed;
         this.rng = createRng(opts.seed);
         this.model = new WorldModel(map, opts.nav ?? NavGrid.forMap(map));
         this.model.memory = this.params.memory;
         installPerception(this.model, this.features);
-        this.brain = new Brain(this.model, this.params, this.rng, this.features);
+        this.brain = new Brain(this.model, this.params, this.rng, this.features, {
+            persona: this.persona,
+            skill: this.skill,
+            personaRng,
+        });
         this.follower = new PathFollower(this.rng);
         const human = this.params.motor.model === "human";
         // the motor's own stream (like the class picker's): motor noise never shifts the brain's decisions
@@ -99,6 +161,7 @@ export class Bot {
         this.trigger = new TriggerController(this.params, human ? motorRng : this.rng);
         this.throws = new ThrowController();
         this.classPicker = new ClassPicker(map.mapName, createRng(opts.seed ^ 0x2545f491));
+        this.quick = this.features.quickSwitch && this.skill.tier === "expert" ? new QuickSwitch() : null;
     }
 
     /** Overrides the brain (tests, scripted scenarios); null gives control back. */
@@ -123,19 +186,110 @@ export class Bot {
         model.observe(snap);
         this.classChoice = this.classPicker.update(snap);
         this.clock = model.time;
-        if (this.motor) this.trackSelf();
+        this.quick?.observe(this.clock, snap.local.cooldowns?.freeSwitch);
+        // own motion: the human motor's relative targets, and a throw on the run (round 4: ThrowPlan.run)
+        this.trackSelf();
         if (model.self.dead) {
             this.intent = emptyIntent("idle");
             this.moveDir = null;
             return;
         }
+        this.abortThrowWhenRushed();
         const hurt = model.lastHealthLoss === model.time;
-        let sighted = false;
-        for (const c of model.contacts.values())
-            if (c.visible && c.firstSeen === model.time && !c.teammate) sighted = true;
+        let sighted: Contact | null = null;
+        let inView = false;
+        for (const c of model.contacts.values()) {
+            if (c.teammate || c.dead || !c.visible) continue;
+            inView = true;
+            if (c.firstSeen === model.time) sighted ??= c;
+        }
+        // no enemy in view and no hit in the last CALM_AFTER before this snapshot: what happens now is a surprise
+        const calm = model.time - this.enemyBefore >= CALM_AFTER && model.time - this.hurtBefore >= CALM_AFTER;
+        this.hurtBefore = model.lastHurt;
+        if (inView) this.enemyBefore = model.time;
         const due = model.snapshots % this.params.thinkEvery === 0;
-        if (due || hurt || sighted || this.lastThink === Number.NEGATIVE_INFINITY) this.think();
+        if (due || hurt || sighted || this.lastThink === Number.NEGATIVE_INFINITY) {
+            const before = this.intent;
+            // human motor: a surprise (an enemy showing up, a hit out of the blue) is acted on only after a reaction
+            const surprise = this.motor !== null && calm && (sighted !== null || model.lastHurt === model.time);
+            this.think(surprise);
+            if (surprise) this.gateReaction(before, sighted);
+        }
         this.updateSteering();
+    }
+
+    /**
+     * Human motor, surprised in calm (no enemy in view or seen in the last CALM_AFTER): the decision it takes at once
+     * (the brain plans the fight on the very snapshot the enemy shows) reaches the keys and the weapon only after a
+     * human reaction: until then the bot keeps moving as before and does not draw or throw (adversarial review: the gun
+     * came out and the keys changed on the frame the enemy appeared, and only the cursor flick waited, so holstered
+     * travel cost bots nothing). The hands move when the cursor hand does: ONSET_SHARE of the reaction the brain drew for
+     * the new target (else the mean reaction), never before params.onsetFloor (motor/human.ts onsetDelay); to a hit from
+     * nowhere, the mean dodge reaction.
+     */
+    private gateReaction(before: Intent, sighted: Contact | null): void {
+        const mem = this.brain.mem;
+        const p = this.params;
+        let r: number;
+        if (sighted) {
+            const drawn = mem.engagedTarget === sighted.id ? mem.reaction : (p.reactionTime[0] + p.reactionTime[1]) / 2;
+            r = Math.max(ONSET_SHARE * drawn, p.onsetFloor);
+        } else r = (p.dodgeReaction[0] + p.dodgeReaction[1]) / 2;
+        const from = sighted ? sighted.firstSeen : this.model.time;
+        if (from + r <= this.clock) return;
+        this.reactUntil = from + r;
+        this.reactIntent = before;
+    }
+
+    /** The intent the keys follow: the one before a surprise while its reaction lasts (gateReaction), else the latest. */
+    private steerIntent(): Intent {
+        return this.clock < this.reactUntil && this.reactIntent ? this.reactIntent : this.intent;
+    }
+
+    /**
+     * A frag being equipped or cooked while a standing enemy comes within ABORT_NEAR, or rushes in: break the throw off
+     * and fight (COMBAT-11; diagnosis: a started throw ran its ~1-4 s of equip and cook against a rushing human).
+     */
+    private abortThrowWhenRushed(): void {
+        // a smoke is the way out of such a fight: it goes on
+        if (!this.throws.active || this.throws.plan?.item === "smoke") return;
+        const me = this.model.self.pos;
+        const near = fragNoThrowNear(this.throws.plan?.item ?? "frag");
+        // a frag thrown to deny a push, or back at a chaser's path while running (round 4), goes on against the rusher
+        // until it is inside the no-throw distance
+        const reason = this.brain.mem.fight.planReason;
+        const push = reason === "push" || reason === "escape";
+        for (const c of this.model.contacts.values()) {
+            if (!c.visible || c.teammate || c.dead || c.downed) continue;
+            const d = v2.distance(c.pos, me);
+            const closing = v2.dot(c.vel, v2.normalizeSafe(v2.sub(me, c.pos)));
+            if (d < near || (!push && d < ABORT_RUSH_DIST && closing > ABORT_RUSH)) {
+                this.throws.abort(this.clock);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Whether the intent's fire still holds: its target (if any) is still on the screen (it may leave between thinks)
+     * and not just walking under a bush or a canopy (where it is heading as the screen shows it moving).
+     */
+    private fireHolds(): boolean {
+        const it = this.intent;
+        if (!it.fire) return false;
+        const t = it.targetId ? this.model.contacts.get(it.targetId) : undefined;
+        if (!t) return true;
+        if (!t.visible) return false;
+        const ahead = v2.add(t.pos, v2.mul(t.vel, Math.max(0, this.clock - t.lastSeen)));
+        return this.model.revealed(t.id) || !concealed(this.model, ahead, t.layer);
+    }
+
+    /** The intent's target stepped out of cover after its sighting (its exposure clock restarted since). */
+    private reexposed(): boolean {
+        const id = this.intent.targetId;
+        const t = id ? this.model.contacts.get(id) : undefined;
+        const f = this.brain.mem.fight;
+        return !!t && f.expTarget === id && f.expSince > t.firstSeen + 1e-6;
     }
 
     /** Own velocity from consecutive snapshots (human motor: targets move relative to the cursor as the bot walks). */
@@ -149,7 +303,7 @@ export class Bot {
         this.lastSelf = { pos: v2.copy(s.pos), time: this.model.time };
     }
 
-    private think(): void {
+    private think(surprise = false): void {
         const dt = Number.isFinite(this.lastThink) ? this.clock - this.lastThink : 0.1;
         this.lastThink = this.clock;
         this.thinks++;
@@ -157,7 +311,9 @@ export class Bot {
         this.intent = intent;
         for (const a of intent.actions) this.pendingActions.push(a);
         if (intent.useItem) this.pendingUse = intent.useItem;
-        if (intent.throwPlan && !this.throws.active) this.throws.start(intent.throwPlan, this.clock);
+        // (a throw decided while the reaction to a surprise runs waits for a later think)
+        const reacting = surprise || this.clock < this.reactUntil;
+        if (intent.throwPlan && !this.throws.active && !reacting) this.throws.start(intent.throwPlan, this.clock);
         if (intent.emote) this.pendingEmote = emoteRequest(intent.emote);
         if (this.motor) {
             // the brain leads the target by an offset; the hand applies it to the target as it sees it every snapshot
@@ -167,7 +323,7 @@ export class Bot {
     }
 
     private updateSteering(): void {
-        const it = this.intent;
+        const it = this.steerIntent();
         if (this.stick) {
             const self = this.model.self;
             this.nearColliders = [];
@@ -225,12 +381,51 @@ export class Bot {
         input.moveDown = pick.y < -0.3;
     }
 
+    /**
+     * Human motor: travelling with no enemy in view, not hit or shot at for CALM_AFTER and in no hurry (out of the gas):
+     * the keys get the stop-and-go rhythm of calm walking (motor/rhythm.ts).
+     */
+    private calmTravel(it: Intent): boolean {
+        if (!CALM_TRAVEL.has(it.behaviour) || it.moveDir !== null) return false;
+        const m = this.model;
+        if (m.time - m.lastHurt < CALM_AFTER || (m.underFire && m.time - m.underFire.time < CALM_AFTER)) return false;
+        // a rotation in a hurry (in the gas, or the zone pressing: survival.ts) goes on without a pause
+        if (it.behaviour === "zone" && (m.inGasNow() || zonePressure(m) > ZONE_HURRY)) return false;
+        return m.time - this.enemyBefore >= CALM_AFTER;
+    }
+
+    /**
+     * Human motor: getting out of fire from off the screen or out of an air strike: a reversal of the keys comes at
+     * once, as a person's would (a flight keeps the committed reversals: its cover and run goals flip as the threats
+     * move, and quick reversals there made 27 a minute against the videos' 16).
+     */
+    private hurried(it: Intent): boolean {
+        return it.behaviour === "evade" || it.behaviour === "evacuate";
+    }
+
     /** Human motor: the key octant held for the wanted heading (hysteresis, minimum holds; motor/keys.ts). */
     private humanKeys(input: PlayerInput, dir: Vec2 | null, stick: KeyStick): void {
-        const it = this.intent;
+        const it = this.steerIntent();
         const pos = this.model.self.pos;
         const free = (octant: number) => octantFree(pos, octant, this.nearColliders);
-        const k = octantKeys(stick.update(dir, this.clock, it.behaviour === "fight" || it.moveDir !== null, free));
+        const fight = it.behaviour === "fight" || it.moveDir !== null;
+        // strafing in a gunfight with a gun in hand: stop, shoot, move on
+        const gun =
+            isGunSlot(this.model.self.curWeapIdx) && !!this.model.self.weapons[this.model.self.curWeapIdx]?.type;
+        const stutter = it.behaviour === "fight" && it.moveDir !== null && gun;
+        // lining up on a goal a few steps away outside a fight (a crate's corner, an item, a door): short taps
+        const fine = !fight && it.goal !== null && v2.distance(pos, it.goal) < FINE_DIST;
+        const mode = {
+            calm: this.calmTravel(it),
+            urgent: it.urgent === true || this.hurried(it),
+            stutter,
+            fine,
+            engage: it.behaviour === "fight",
+        };
+        const octant = stick.update(dir, this.clock, fight, free, mode);
+        // keys lifted on purpose while there is somewhere to go: no stuck check over the pause (nav/follower.ts)
+        if (dir !== null && octant < 0) this.follower.pauseProgress();
+        const k = octantKeys(octant);
         input.moveRight = k.right;
         input.moveLeft = k.left;
         input.moveUp = k.up;
@@ -261,7 +456,9 @@ export class Bot {
     /** Legacy aim and trigger (unchanged, so legacy runs replay exactly). */
     private aimLegacy(input: PlayerInput, dt: number, aim: AimController): void {
         const self = this.model.self;
-        const throwing = this.throws.active ? this.throws.update(this.clock, self) : null;
+        const throwing = this.throws.active
+            ? this.throws.update(this.clock, self, true, this.selfVel, this.throwPathClear())
+            : null;
         const intent = this.intent;
         const aimPoint = throwing?.aim ?? intent.aim;
         const target = intent.targetId ? this.model.contacts.get(intent.targetId) : undefined;
@@ -280,12 +477,26 @@ export class Bot {
             if (throwing.useItem) input.useItem = throwing.useItem;
         } else {
             const weapon = self.weapons[self.curWeapIdx]?.type ?? "";
-            const want = intent.fire && wanted !== null && aim.onTarget(goal, legacyTolerance(weapon, dist));
+            const want = this.fireHolds() && wanted !== null && aim.onTarget(goal, legacyTolerance(weapon, dist));
             const shot = this.trigger.update(this.clock, want, weapon, dist);
             input.shootStart = shot.shootStart;
             input.shootHold = shot.shootHold;
+            const quick = this.quick?.step(this.clock, self, this.trigger, shot.shootStart);
+            if (quick) this.pendingActions.push(quick);
             this.requestSlot();
         }
+    }
+
+    /**
+     * Whether a checked throw's path (ThrowPlan.check, round 4) is free from where the bot stands now: the line the frag
+     * flies from its hand to the checked point, against the obstacles it has seen. Unchecked throws: always.
+     */
+    private throwPathClear(): boolean {
+        const check = this.throws.active ? this.throws.plan?.check : undefined;
+        if (!check) return true;
+        const self = this.model.self;
+        const item = this.throws.plan?.item ?? "frag";
+        return !throwBlocker(item, self.pos, check.to, this.model.obstacles, self.layer, check.mode);
     }
 
     /** Human motor: the hand moves the cursor towards the goal, the trigger finger fires when it is on target. */
@@ -296,8 +507,8 @@ export class Bot {
         let goal: MotorGoal | null = null;
         let aimPoint: Vec2 | null = null;
         if (plan) {
-            aimPoint = plan.pos;
-            const rel = v2.sub(plan.pos, self.pos);
+            aimPoint = throwAimPoint(plan, self.pos, this.selfVel);
+            const rel = v2.sub(aimPoint, self.pos);
             goal = { kind: "throw", rel, len: throwMouseLen(plan.item, v2.length(rel)) };
         } else if (intent.aim) {
             const target = intent.targetId ? this.model.contacts.get(intent.targetId) : undefined;
@@ -308,7 +519,8 @@ export class Bot {
                 kind: "target",
                 key: target ? target.id : -1,
                 rel: v2.sub(aimPoint, self.pos),
-                vel: target?.visible ? target.vel : { x: 0, y: 0 },
+                // no smooth pursuit of a faint body under a canopy (round 3 item 26: never perfect tracking)
+                vel: target?.visible && !target.faint ? target.vel : { x: 0, y: 0 },
                 at: this.model.time,
                 firstSeen: target?.firstSeen ?? this.model.time,
                 reaction: target && mem.engagedTarget === target.id ? mem.reaction : (lo + hi) / 2,
@@ -319,7 +531,9 @@ export class Bot {
         motor.update({ dt, now: this.clock, zoom: self.zoom, goal, selfVel, moveDir: this.moveDir, lookAt });
         input.toMouseDir = motor.mouseDir;
         input.toMouseLen = motor.mouseLen;
-        const throwing = plan ? this.throws.update(this.clock, self, motor.aimReady) : null;
+        const throwing = plan
+            ? this.throws.update(this.clock, self, motor.aimReady, this.selfVel, this.throwPathClear())
+            : null;
         if (throwing) {
             input.shootStart = throwing.shootStart;
             input.shootHold = throwing.shootHold;
@@ -335,15 +549,21 @@ export class Bot {
             aim: motor.aim,
             aimVel: motor.aimVel,
             acquisition: motor.acquisition,
+            reexposed: this.reexposed(),
         };
-        const shot = this.trigger.updateHuman(this.clock, intent.fire && aimPoint !== null, sense, weapon, dist);
+        const shot = this.trigger.updateHuman(this.clock, this.fireHolds() && aimPoint !== null, sense, weapon, dist);
         input.shootStart = shot.shootStart;
         input.shootHold = shot.shootHold;
+        // round 6 (report 44): a slow gun's click arms an expert's quick switch, sent once the shot shows (quickSwitch.ts)
+        const quick = this.quick?.step(this.clock, self, this.trigger, shot.shootStart);
+        if (quick) this.pendingActions.push(quick);
         this.requestSlot();
     }
 
     /** Asks for the intent's weapon slot (throttled; never re-selects the throwable while holding it). */
     private requestSlot(): void {
+        // (no weapon key before the reaction to a surprise: gateReaction; none while a quick switch holds the other gun)
+        if (this.clock < this.reactUntil || (this.quick && this.clock < this.quick.holdUntil)) return;
         const self = this.model.self;
         const slot = this.intent.slot;
         if (
@@ -354,9 +574,20 @@ export class Bot {
             !(slot === WeaponSlot.Throwable && self.curWeapIdx === WeaponSlot.Throwable)
         ) {
             this.lastSlotRequest = this.clock;
+            this.quick?.noteSwitch(this.clock);
             this.pendingActions.push(SLOT_ACTIONS[slot]);
         }
     }
+}
+
+/** The bot's skill profile: a drawn tier, an exact s (g = sense ?? s), or the preset's (PRESET_SKILL). */
+function resolveSkill(opts: BotOptions, rng: Rng): SkillProfile {
+    const k = opts.skill;
+    if (k === undefined) return skillOf(opts.difficulty ?? "normal");
+    if (typeof k === "string") return drawSkill(rng, k);
+    const s = Math.min(1, Math.max(0, k));
+    const g = Math.min(1, Math.max(0, opts.sense ?? s));
+    return { tier: tierOfSkill(s), s, g };
 }
 
 /** The Emote message for an intent's emote: pings (def type "ping") mark their position, emotes float over the bot. */

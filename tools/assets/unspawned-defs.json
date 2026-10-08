@@ -1,0 +1,6 @@
+{
+    "$comment": "Original map object defs that nothing spawns: no map, building, game object, simulation or server code names them, and neither the original client nor survev ships their image (tools/assets/import.ts records the image as drawing nothing instead of warning). Checked by tools/assets/sources.test.ts.",
+    "tire_01": "map-tire-01.img: an original obstacle no map or building places (not in survev's defs)",
+    "glass_wall_18": "map-wall-glass-18.img: an original glass wall no building uses (not in survev's defs)",
+    "bathhouse_column_2": "map-bathhouse-column-02.img: no building uses it; survev keeps the def with the same missing image"
+}

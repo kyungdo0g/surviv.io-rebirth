@@ -30,7 +30,7 @@
 //   PlayerInfoView.
 // Helpers living next to the contract: `gasCircle(gas)` (current red-zone circle) and `gasTimeLeft(gas)` in
 // match/gas.ts, `damageSourceOf()` in match/events.ts.
-// Match lifecycle knobs are construction options (GameInit in game.ts): the client's loopback passes
+// Match lifecycle knobs are construction options (GameInit in gameInit.ts): the client's loopback passes
 // `{ sandbox: true }` (the match starts on the first step with a single player, never ends and always accepts
 // joins); servers pass `minPlayers`. Until the match starts `gas.mode` is "inactive" ("Waiting for players").
 // Dead players spectate through `Game.spectate(id, "begin" | "next" | "prev")` (the Spectate message).
@@ -49,9 +49,10 @@
 // - Existing fields gain M5 values: PlayerView.anim "cook" / "throw" while a throwable is cooked and thrown;
 //   PlayerView.action and LocalPlayerState.action "use" with the heal/boost item while one is used;
 //   LocalPlayerState.boost decays and heals; LocalPlayerState.zoom is the 1x radius while the player is in smoke
-//   (and 0.5 s after leaving it); MapIndicatorView "ping_airstrike" marks strobe and scheduled air strikes;
-//   PlaneView "airstrike" planes; explosion scorch marks are DecalView objects (some fade after their def
-//   lifetime); KillEvent / DamageSource "explosion" and "airstrike".
+//   (and 0.5 s after leaving it); MapIndicatorView "ping_airstrike" marks strobe and scheduled air strikes
+//   ("ping_airstrike_heavy" / "ping_airstrike_carpet" the rebirth variant strobes'); PlaneView "airstrike" planes;
+//   explosion scorch marks are DecalView objects (some fade after their def lifetime); KillEvent / DamageSource
+//   "explosion" and "airstrike".
 // - Smoke hides players: with `rules.smokeHidesPlayers` (default on) a player whose centre is inside a smoke cloud
 //   is left out of other players' snapshots unless the viewer is within `rules.smokeRevealDistance` (rebirth rule:
 //   the original client only draws the smoke above them). Bullets they fire are still reported.
@@ -128,13 +129,16 @@
 // - Snapshot: `teamAliveCounts` (faction mode only: living players of [Red, Blue], the original AliveCounts message;
 //   `aliveCount` stays their sum) and `factionStatus` (faction mode only: every member of the viewer's faction with
 //   position, dead, downed and role, refreshed every `rules.roles.factionStatusInterval` = 0.5 s like the original
-//   faction PlayerStatus; draw them on the minimap, role holders with their role's `mapIcon`). `local.team` stays the
-//   viewer's squad (group) in faction mode.
+//   faction PlayerStatus; draw them on the minimap, role holders with their role's `mapIcon`; since schema 18 the
+//   enemies revealed by firing follow, for `rules.roles.factionRevealTime` s after the shot (0, off, by default since
+//   the owner's 2026-10-08 feedback): draw them in their faction's colour and fade them out 2-2.5 s after they leave
+//   the list, survev timeUntilHidden). `local.team` stays the viewer's squad (group) in faction mode.
 // - Faction mode (map "faction", 50v50; GameOptions.teamMode 4, the original 50v50 squad queue): PlayerInfoView.teamId
 //   is the faction (1 Red, 2 Blue: tint helmets with `baseTintRed` / `baseTintBlue`, draw the team arm patches) and
 //   groupId the squad. Teammates are the whole faction (no friendly fire, knocks until the faction has nobody
 //   standing), the match ends when one faction is left, GameOverEvent.teamId / winningTeamId are faction ids and its
-//   playerStats list the viewer, then both factions' first Commanders once both exist.
+//   playerStats list the viewer, then both factions' first Commanders once both exist, then the match MVP (most kills,
+//   ties by damage dealt) chosen at game over (survev getGameoverPlayers / getFactionMvp).
 // - Roles: RoleAnnouncementEvent now covers every role (faction roles, Lone Survivr, The Hunted, Cobalt classes) with
 //   `assigned` on promotion and `killed` when the holder dies (`killerId` = its killer). Kill Leader announcements are
 //   unchanged. MapIndicatorView types gain the role id "the_hunted" (pulsing marker following The Hunted) and loot ids
@@ -157,8 +161,15 @@
 // - BulletEvent: `speedMult` (tracer speed over the def speed: the perk speed multiplier times the variance of shrapnel).
 // - USAS-12 (`toMouseHit`) rounds stop at the cursor: their range is cut to `toMouseLen - barrelLength`.
 // - Bullets whose def has `skipCollision` (flares) report their full range as `maxDist`.
+//
+// Survev content wave additions (protocol schema 15; backward compatible in the same way):
+// - BulletEvent: `apRounds` (fired with AP Rounds: the tracer takes the ammo's `apSaturated` colour, survev client
+//   bullet.ts:165-166).
+// - PlayerView: `lastStand` (Indomitable Spirit absorbed a fatal hit within the last second: survev's
+//   lastStandEffect, drawn as the boost effect in blue).
 import type { Vec2 } from "@rebirth/core";
 import type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+import type { HitEvent } from "./viewHits.ts";
 import type {
     AirdropView,
     FactionMemberView,
@@ -176,6 +187,7 @@ import type {
 import type { EmoteEvent, TeamMemberView } from "./viewTeams.ts";
 
 export type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+export type { HitEvent } from "./viewHits.ts";
 export type {
     AirdropView,
     DamageSource,
@@ -278,6 +290,8 @@ export interface PlayerView extends BaseView {
     wearingPan?: boolean;
     /** standing in a building heal region (heal particles) (M5b) */
     healEffect?: boolean;
+    /** Indomitable Spirit absorbed a fatal hit within the last second (survev lastStandEffect) (schema 15) */
+    lastStand?: boolean;
     /** GameObjectDefs role id, "" for none (M7a) */
     role?: string;
     /** perks in pickup / grant order, at most 8 (M7a) */
@@ -341,6 +355,11 @@ export interface ObstacleView extends BaseView {
      * used plays its opening for `button.useDelay` seconds, then dies and its `destroyType` crate appears.
      */
     button?: { onOff: boolean; canUse: boolean; seq: number };
+    /**
+     * An obstacle disguise outfit (`outfit.obstacleType`) worn by this player: drawn over the wearer, following it,
+     * non-collidable (survev isSkin / skinPlayerId).
+     */
+    skinPlayerId?: number;
 }
 
 export interface BuildingView extends BaseView {
@@ -479,6 +498,8 @@ export interface BulletEvent {
     thick?: boolean;
     /** a Splinter Rounds side bullet (small tracer) (M7a) */
     splinter?: boolean;
+    /** fired with AP Rounds: the ammo's apSaturated tracer colour (survev bullet apRounds) (schema 15) */
+    apRounds?: boolean;
     /**
      * tracer speed over the bullet def's speed (M9): the perk speed multiplier (9mm Overpressure) times the variance
      * factor `1 + varianceT * def.variance` (shrapnel); 1 when absent (survev client bullet.ts speed)
@@ -547,6 +568,8 @@ export interface Snapshot {
     teamAliveCounts?: number[];
     /** faction mode: the viewer's faction for the minimap, in id order (M7a) */
     factionStatus?: FactionMemberView[];
+    /** rebirth hit feedback: hits the active player dealt or took since the viewer's previous snapshot, when any */
+    hits?: HitEvent[];
 }
 
 /** Public info of a player (the original PlayerInfos record, without the heal/boost cosmetics). */
@@ -558,6 +581,9 @@ export interface PlayerInfoView {
     groupId: number;
     /** at most 16 UTF-8 bytes on the wire */
     name: string;
+    /** loadout heal / boost particles (heal_effect / boost_effect ids; the original PlayerInfo's heal and boost types) */
+    heal?: string;
+    boost?: string;
 }
 
 /** Terrain polygons derived deterministically from MapData by `buildTerrain(map)` (client and server share it). */

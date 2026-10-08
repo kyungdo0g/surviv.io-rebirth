@@ -36,6 +36,8 @@ export interface LootImg {
     rad?: number;
     /** ammo boxes */
     tintDark?: number;
+    /** rebirth: tint of the image in the DOM HUD (the original HUD never tints; the variant strobes, rebirth/strobes.ts) */
+    hudTint?: number;
 }
 
 export interface MapIndicatorDef {

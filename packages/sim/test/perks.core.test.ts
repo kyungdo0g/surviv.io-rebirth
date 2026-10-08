@@ -24,24 +24,33 @@ function pick(game: Game, p: Player, type: string) {
 }
 
 describe("perk coverage", () => {
-    it("every perk def of the v0.8.82 defs has an implemented effect (perks/coverage.ts)", () => {
+    it("every perk def of the v0.8.82 defs and the ported survev perks has an implemented effect (perks/coverage.ts)", () => {
         const ids = idsOfType("perk");
-        expect(ids).toHaveLength(41);
+        // 41 original perks, then the survev-only ones of tools/port-survev/policy.json
+        expect([...ids.slice(41)].sort()).toEqual([
+            "amped_explosives",
+            "ap_rounds",
+            "assume_leadership",
+            "combat_stims",
+            "high_velocity",
+            "lifeline",
+            "pirate",
+        ]);
         expect(ids.filter((id) => !PERK_EFFECTS[id])).toEqual([]);
         expect(Object.keys(PERK_EFFECTS).sort()).toEqual([...ids].sort());
     });
 });
 
 describe("perk list and size", () => {
-    it("sums the perk sizes and clamps to 0.75..2 (perks.md size table; flak-size 0.2, gotw-values 0.25)", () => {
+    it("sums the perk sizes and clamps to 0.75..2 (perks.md size table; survev flak 0.1, gotw 0.2)", () => {
         const { p } = setup();
         const scales: Array<[string, number]> = [
             ["leadership", 1.25],
             ["steelskin", 1.4],
-            ["flak_jacket", 1.2],
+            ["flak_jacket", 1.1],
             ["small_arms", 0.75],
             ["trick_size", 1.25],
-            ["gotw", 1.25],
+            ["gotw", 1.2],
         ];
         for (const [perk, scale] of scales) {
             addPerk(p, perk);
@@ -52,6 +61,11 @@ describe("perk list and size", () => {
         }
         for (const perk of ["steelskin", "leadership", "trick_size", "gotw", "flak_jacket"]) addPerk(p, perk);
         expect(p.scale).toBe(2);
+        // Flak Jacket: +3 frags and +2 MIRVs of bag room; losing it drops the excess (survev getMaxCapacity)
+        const bag = (item: string) => p.inv.capacity(item);
+        const frags = bag("frag");
+        removePerk(p, "flak_jacket");
+        expect(frags - bag("frag")).toBe(3);
     });
 
     it("Leadership keeps adrenaline at 100 (perks.md leadership minBoost)", () => {

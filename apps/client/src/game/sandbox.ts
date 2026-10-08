@@ -9,14 +9,18 @@
 // address gets the banned text.
 import type { Vec2 } from "@rebirth/core";
 import { DisconnectReason, type ReportResponse, submitReport } from "@rebirth/protocol";
+import { generateShowcase, showcaseSpawnSpots } from "@rebirth/sim";
 import { type Application, UPDATE_PRIORITY } from "pixi.js";
 import { TextureStore } from "../assets/textures.ts";
 import type { AudioEngine } from "../audio/audio.ts";
 import { sharedAudio } from "../audio/shared.ts";
 import { FixtureTransport } from "../dev/fixtures.ts";
+import { mountShowcaseBar, resolveShowcase } from "../dev/showcase.ts";
 import { debugGlobals } from "../globals.ts";
 import { isTouchMode } from "../input/device.ts";
 import { t } from "../l10n/index.ts";
+import { crosshairCursor } from "../menu/crosshair.ts";
+import { joinLoadout, loadLoadout } from "../menu/loadoutStore.ts";
 import { LoopbackTransport } from "../net/loopback.ts";
 import type { Transport } from "../net/transport.ts";
 import { describeDisconnect, WsTransport } from "../net/ws.ts";
@@ -25,10 +29,12 @@ import type { ObstacleRender } from "../objects/obstacle.ts";
 import type { PlayerRender } from "../objects/player.ts";
 import { showToast } from "../ui/toast.ts";
 import { GameClient } from "./client.ts";
+import { exposeHitFx } from "./debugHitFx.ts";
+import { exposeLayerFx } from "./debugLayers.ts";
 import { exposeM7 } from "./debugM7.ts";
 import { exposeM8 } from "./debugM8.ts";
 import { exposeM9 } from "./debugM9.ts";
-import { gasStagesFor } from "./gasStages.ts";
+import { gasStagesFor, noGasStages } from "./gasStages.ts";
 
 export interface SandboxOptions {
     mapName: string;
@@ -43,6 +49,8 @@ export interface SandboxOptions {
     loot?: boolean;
     /** comma-separated items for the local player: guns with full ammo, bag items filled (net/loopback.ts) */
     give?: string;
+    /** rebirth new-gun beta (the server's GUN_BETA): the new and survev-only guns are common floor loot */
+    gunBeta?: boolean;
     /**
      * Loopback match rules: true (default) for the sandbox (starts at once, never ends, always joinable); false for
      * a real match (two players alive for 10 s start it, the last one alive wins).
@@ -52,6 +60,8 @@ export interface SandboxOptions {
     gas?: string;
     /** loopback team mode: 2 duo, 4 squad (M6) */
     teamMode?: 1 | 2 | 4;
+    /** building showcase: a map holding only this building or structure, on its home map, no gas (dev/showcase.ts) */
+    building?: string;
     /** loopback team modes: idle teammates in the local player's group (M6) */
     teammates?: number;
     /** play on a game server instead of the loopback simulation */
@@ -116,6 +126,10 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
     const textures = sharedTextures;
     const touch = isTouchMode();
     const globals = debugGlobals();
+    // the menu's loadout goes out with Join; its crosshair is the cursor over the game (survev content wave stage 4b)
+    const saved = loadLoadout();
+    const loadout = joinLoadout(saved);
+    app.canvas.style.cursor = crosshairCursor(saved.crosshair);
     let transport: Transport;
     let loopback: LoopbackTransport | null = null;
     let ws: WsTransport | null = null;
@@ -140,6 +154,7 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
             region: opts.net.region,
             useTouch: touch,
             isMobile: touch,
+            loadout,
             onDisconnect: (reason) => {
                 const normal = conn.endedNormally;
                 globals.disconnect = { reason, normal, message: describeDisconnect(reason) };
@@ -153,21 +168,28 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
         ws = conn;
         transport = ws;
     } else {
+        const entry = opts.building !== undefined ? resolveShowcase(opts.building) : null;
+        const show = entry ? generateShowcase(entry.type, opts.seed, entry.mapName) : null;
         loopback = new LoopbackTransport(
-            { mapName: opts.mapName, seed: opts.seed, teamMode: opts.teamMode ?? 1 },
+            { mapName: show?.mapName ?? opts.mapName, seed: opts.seed, teamMode: opts.teamMode ?? 1 },
             {
                 init: {
+                    generation: show?.generation,
                     spawnLoot: opts.loot ?? true,
                     sandbox: opts.sandbox ?? true,
-                    gasStages: gasStagesFor(opts.gas),
+                    gasStages: show ? noGasStages() : gasStagesFor(opts.gas),
+                    gunBeta: opts.gunBeta ?? false,
                 },
                 dummies: opts.dummies,
                 teammates: opts.teammates,
                 give: opts.give,
                 isMobile: touch,
+                spawnSpots: show ? showcaseSpawnSpots(show) : undefined,
+                loadout,
             },
         );
         transport = loopback;
+        if (entry && !document.getElementById("showcase-bar")) mountShowcaseBar(entry);
     }
     const lb = loopback;
     const playAgain = (): void => {
@@ -271,6 +293,8 @@ function exposeGlobals(
     exposeM7(client);
     exposeM8(client);
     exposeM9(client);
+    exposeLayerFx(client);
+    exposeHitFx(client, loopback?.game);
     globals.interaction = () => client.interaction;
     globals.audio = {
         get unlocked() {
@@ -491,6 +515,12 @@ function exposeM6(client: GameClient): void {
     globals.playerView = (id: number) => client.world?.get(id) ?? null;
     /** bleed splats a player's view has spawned */
     globals.playerBleeds = (id: number) => (client.world?.renderOf(id) as PlayerRender | undefined)?.bleeds ?? 0;
+    /** the right-hand gun sprite a player's view draws: texture id, drawn length in sprite px (rebirth bar guns) */
+    globals.heldGun = (id: number) => {
+        const sprite = (client.world?.renderOf(id) as any)?.gunR?.container?.children?.[0];
+        if (!sprite?.texture) return null;
+        return { texture: sprite.texture.label as string, height: sprite.texture.height * Math.abs(sprite.scale.y) };
+    };
 }
 
 /** M5 test hooks: explosions, projectiles, smoke, air strike zones, doors, roofs, layers and ambience. */
@@ -506,7 +536,14 @@ function exposeM5(client: GameClient): void {
         get projectiles() {
             const p = client.worldFx?.projectiles;
             return p
-                ? { count: p.count, visible: p.visibleCount, shadows: p.shadowCount, maxPosZ: p.maxPosZ, topZ: p.topZ }
+                ? {
+                      count: p.count,
+                      visible: p.visibleCount,
+                      shadows: p.shadowCount,
+                      maxPosZ: p.maxPosZ,
+                      topZ: p.topZ,
+                      strobes: p.strobes,
+                  }
                 : null;
         },
         get smokes() {
@@ -530,6 +567,10 @@ function exposeM5(client: GameClient): void {
         /** tint of the last map-event ping's edge indicator (rebirth: ping_airstrike takes the zone's colour) */
         get pingTint() {
             return client.pingIndicator.tint;
+        },
+        /** map-event pings on the minimap with their icon tint (rebirth: the variant strobes' pings) */
+        get mapPings() {
+            return client.minimap?.indicators.eventPings ?? [];
         },
         /** burst particle scale last drawn for an explosion type (rebirth: sized from the def radius) */
         burstScale: (type: string) => client.worldFx?.explosions.lastBurstScale.get(type) ?? 0,

@@ -1,7 +1,8 @@
 // M5 particle and emitter definitions: explosion bursts and impacts, water ripples, the pin and lever of a thrown
-// grenade, heal/boost effects (every loadout variant of the 0.8.82 client, M9), chimney smoke, bathhouse steam, bunker
-// bubbles and the roof debris of collapsing buildings. Values are the original client's particle data (survev
-// client/src/objects/particles.ts ParticleDefs and EmitterDefs, checked against the 0.8.82 bundle), ported as data.
+// grenade, heal/boost effects (every loadout variant of the 0.8.82 client, M9, and survev's later ones), chimney and
+// campfire smoke, bathhouse steam, bunker bubbles and the roof debris of collapsing buildings. Values are the original
+// client's particle data (survev client/src/objects/particles.ts ParticleDefs and EmitterDefs, checked against the
+// 0.8.82 bundle), ported as data; the survev-only ones are survev's.
 import { hsv, type ParticleDef, type Range } from "./particleDefs.ts";
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -92,6 +93,12 @@ export const PARTICLE_DEFS_M5: Readonly<Record<string, ParticleDef>> = {
     snowball_impact: impact("part-snow-01.img", () => hsv(0, 0, rnd(0.9, 0.95))),
     potato_impact: impact("part-potato-01.img", () => hsv(0, 0, rnd(0.9, 0.95))),
     potato_smg_impact: impact("part-potato-01.img", 0xffe585),
+    // survev-only coconut and tomato splats (survev particles.ts:2855-2890)
+    coconut_impact: {
+        ...impact("part-coconut-01.img", () => hsv(0, 0, rnd(0.9, 0.95))),
+        image: ["part-coconut-01.img", "part-coconut-02.img", "part-coconut-03.img"],
+    },
+    tomato_impact: impact("part-tomato-01.img", () => hsv(0, 0, rnd(0.9, 0.95))),
     waterRipple: {
         image: ["player-ripple-01.img"],
         zOrd: 10,
@@ -140,6 +147,22 @@ export const PARTICLE_DEFS_M5: Readonly<Record<string, ParticleDef>> = {
         [0.06, 0.08],
     ),
     boost_shuriken: effect("part-boost-shuriken.img", boostColor, [PI, PI * 2], 0, [0.12, 0.14], [0.06, 0.08]),
+    // survev-only heal / boost effects ("Pass 2", survev particles.ts:3004-3300)
+    heal_diamond: effect("part-heal-diamond.img", healColor, 0, 0.25, [0.1, 0.12], [0.05, 0.07]),
+    heal_ankh: effect("part-heal-ankh.img", healColor, [PI * 0.5, PI], 0.25, [0.1, 0.12], [0.05, 0.07]),
+    heal_menacing: effect("part-heal-menacing.img", healColor, 0, 0.25, [0.1, 0.12], [0.05, 0.07]),
+    boost_club: effect("part-boost-club.img", boostColor, [PI * 0.25, PI * 0.5], 0, [0.12, 0.14], [0.06, 0.08]),
+    boost_lightning: effect(
+        "part-boost-lightning.img",
+        boostColor,
+        [PI * 0.25, PI * 0.5],
+        0,
+        [0.12, 0.14],
+        [0.06, 0.08],
+    ),
+    boost_hermes: effect("part-boost-hermes.img", boostColor, [PI * 0.25, PI * 0.5], 0, [0.12, 0.14], [0.06, 0.08]),
+    boost_gearshift_01: effect("part-boost-gearshift-01.img", boostColor, 0, 0, [0.12, 0.14], [0.06, 0.08]),
+    boost_gearshift_02: effect("part-boost-gearshift-02.img", boostColor, [PI, PI * 2], 0, [0.12, 0.14], [0.06, 0.08]),
     // purple crosses around a downed player being revived (0.8.82 updateActionEffect: Revive while downed)
     revive_basic: effect("part-heal-basic.img", () => hsv(0.83, 1, rnd(0.7, 1)), 0, 0.25, [0.1, 0.12], [0.05, 0.07]),
     cabinSmoke: {
@@ -237,6 +260,16 @@ export const EMITTER_DEFS: Readonly<Record<string, EmitterDef>> = {
         angle: PI * 0.1,
         rot: [0, PI * 2],
     },
+    // survev-only: the camps' campfire smoke (survev particles.ts:3520); the camps have no ceiling image, so the
+    // speeds are world units
+    campfire_smoke: {
+        particle: "cabinSmoke",
+        rate: [2, 4],
+        radius: 0,
+        speed: [1, 1.5],
+        angle: PI * 0.1,
+        rot: [0, PI * 2],
+    },
     bathhouse_steam: {
         particle: "bathhouseSteam",
         rate: [2, 3],
@@ -268,5 +301,15 @@ export const EMITTER_DEFS: Readonly<Record<string, EmitterDef>> = {
     boost_star: effectEmitter("boost_star", [0.3, 0.35], [0, PI * 2]),
     boost_naturalize: effectEmitter("boost_naturalize", [0.3, 0.35], [0, PI * 2]),
     boost_shuriken: effectEmitter("boost_shuriken", [0.3, 0.35], [0, PI * 2]),
+    // survev-only heal / boost effects (survev particles.ts:3685-3796); the gearshift runs both of its emitters
+    // (survev healEffectDefs.ts boost_gearshift)
+    heal_diamond: effectEmitter("heal_diamond", [0.3, 0.35], 0),
+    heal_ankh: effectEmitter("heal_ankh", [0.3, 0.35], 0),
+    heal_menacing: effectEmitter("heal_menacing", [0.3, 0.35], 0),
+    boost_club: effectEmitter("boost_club", [0.3, 0.35], [0, PI * 2]),
+    boost_lightning: effectEmitter("boost_lightning", [0.3, 0.35], [0, PI * 2]),
+    boost_hermes: effectEmitter("boost_hermes", [0.3, 0.35], [0, PI * 2]),
+    boost_gearshift_01: effectEmitter("boost_gearshift_01", [0.99, 1], -(PI * 0.25)),
+    boost_gearshift_02: effectEmitter("boost_gearshift_02", [0.3, 0.35], [0, PI * 2]),
     revive_basic: effectEmitter("revive_basic", [0.5, 0.55], 0),
 };

@@ -113,7 +113,21 @@ describe("air strike bombs", () => {
         steps(game, 5);
         expect(bomb.dead).toBe(true);
         expect(log).toHaveLength(0);
-        drop({ x: roof.max.x + 30, y: inside.y });
+        // and it does outside: the first spot east of the roof under no roof at all
+        const roofed = (p: Vec2) =>
+            game.world.buildings.some((b) =>
+                b.zoomRegions.some(
+                    (r) =>
+                        r.zoomIn &&
+                        p.x >= r.zoomIn.min.x - 1 &&
+                        p.x <= r.zoomIn.max.x + 1 &&
+                        p.y >= r.zoomIn.min.y - 1 &&
+                        p.y <= r.zoomIn.max.y + 1,
+                ),
+            );
+        let outside = { x: roof.max.x + 30, y: inside.y };
+        while (roofed(outside)) outside = { x: outside.x + 5, y: outside.y };
+        drop(outside);
         steps(game, 5);
         expect(log.map((e) => e.type)).toEqual(["explosion_bomb_iron"]);
     });

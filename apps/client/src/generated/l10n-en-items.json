@@ -204,6 +204,10 @@
   "potato_heavy": "Potato",
   "potato_cannonball": "Potato Cannon",
   "potato_smgshot": "Spud Gun",
+  "backpack04": "Tactical Pack",
+  "helmet04_captain": "Captain Helmet",
+  "helmet04_classless": "Classless Helmet",
+  "backpack04_cloud": "Experimental Pack",
   "imbel": "IMD-2",
   "spas16": "SPAS-16",
   "barrett": "Barrett M107",
@@ -213,7 +217,22 @@
   "svd_winter": "SVD-63",
   "sv98_winter": "SV-98",
   "awc_winter": "AWM-S",
-  "potato_lmgshot": "PMG-134"
+  "iceaxe": "Ice Axe",
+  "cutlass": "Cutlass",
+  "karambit_borealis": "Karambit Borealis",
+  "naginata_daemon": "Naginata Daemon",
+  "cutlass_gold": "Gold Cutlass",
+  "assume_leadership": "Assume Leadership",
+  "ap_rounds": "AP Rounds",
+  "lifeline": "Indomitable Spirit",
+  "combat_stims": "Combat Stimulants",
+  "pirate": "Pirate's Bounty",
+  "amped_explosives": "Hyperfragmentation",
+  "high_velocity": "High-Velocity Rounds",
+  "captain": "Captain",
+  "potato_lmgshot": "PMG-134",
+  "coconut": "Coconut",
+  "tomato": "Tomato"
  },
  "hud": {
   "m9_dual": "M9",
@@ -255,7 +274,12 @@
   "smoke": "Smoke",
   "strobe": "Strobe",
   "snowball": "Snowball",
-  "potato": "Potato"
+  "potato": "Potato",
+  "karambit_borealis": "Karambit",
+  "naginata_daemon": "Naginata",
+  "cutlass_gold": "Cutlass",
+  "coconut": "Coconut",
+  "tomato": "Tomato"
  },
  "desc": {
   "leadership": "Max adrenaline.</br>Increased size.",
@@ -298,6 +322,13 @@
   "treat_556": "Treat! 5.56mm bullets are darker and deadlier.",
   "treat_762": "Treat! 7.62mm bullets are darker and deadlier.",
   "treat_super": "Super Treat! ALL your bullets are darker and deadlier.",
-  "turkey_shoot": "Gobble, gobble!"
+  "turkey_shoot": "Gobble, gobble!",
+  "assume_leadership": "Half-full adrenaline.</br>Slightly increased size.",
+  "ap_rounds": "Bullets are more effective against armored enemies and obstacles.",
+  "lifeline": "Adrenaline loss slowed. Taking fatal damage consumes adrenaline to mitigate it.",
+  "combat_stims": "Consumables grant a temporary boost to bullet damage and allow them to heal allies.",
+  "pirate": "Melee kills drop additional loot with a small chance for high-quality weapons.",
+  "amped_explosives": "Throwables travel farther and faster. Fragmenting explosives release more powerful shrapnel.",
+  "high_velocity": "All your bullets travel significantly faster & further."
  }
 }

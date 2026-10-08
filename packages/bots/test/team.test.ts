@@ -14,9 +14,9 @@ describe("gas", () => {
         const game = mainGame({ gasStages: FAST_GAS, minPlayers: 1 }, 4);
         game.rules.minActiveTime = 0;
         const party = { group: "zone", autoFill: false, partySize: 4 };
-        // the first safe circle is centred in the south-west (not clamped: 75% of its radius stays on the map); the
-        // north-east corner is outside it
-        const center: Vec2 = { x: 300, y: 300 };
+        // the first safe circle is centred in the south-west (not clamped: 75% of its radius stays on the map, which
+        // gas.ts allows from 0.3375 x the map size in); the north-east corner is outside it
+        const center: Vec2 = { x: 0.34 * game.mapData.width, y: 0.34 * game.mapData.height };
         game.gas.chooseCenter = () => center;
         const grid = NavGrid.forMap(game.mapData);
         const rad = FAST_GAS[1].rad * game.gas.mapSize;

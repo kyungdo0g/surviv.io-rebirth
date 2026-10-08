@@ -1,44 +1,80 @@
 // Utility-based decision making: every think, each behaviour scores how much it matters right now (escape the gas,
 // fight, flee, heal, revive, regroup, loot, explore, plus the extension behaviours its BrainFeatures enable); the best
 // one (with a little hysteresis for the current one) plans the Intent. Weapon handling (slot to carry, reloading when
-// safe), grenade opportunities and dodging are layered on top.
-import type { Rng } from "@rebirth/core";
-import { v2 } from "@rebirth/core";
-import { Input, WeaponSlot } from "@rebirth/defs";
+// safe, holstering: brain/weapons.ts), grenade opportunities and dodging (brain/dodge.ts) are layered on top.
+// Exploring keeps no hysteresis while a container worth breaking is within 6 units or the building it is in is being
+// swept (bot overhaul LOOT-1, both brains: explore's 0.20-0.32 with the bonus outscored every armed bot's crate score,
+// so armed bots walked past crates next to them).
+import { createRng, type Rng, v2 } from "@rebirth/core";
+import { Input } from "@rebirth/defs";
 import type { DifficultyParams } from "../difficulty.ts";
-import { carrySlot, currentGun, hasAmmo, heldGunsWithAmmo } from "../knowledge/arsenal.ts";
+import { hasAmmo, heldGunsWithAmmo } from "../knowledge/arsenal.ts";
+import { POTATO_GUNS } from "../knowledge/gunTiers.ts";
 import type { WorldModel } from "../perception/world.ts";
+import { NEUTRAL, PERSONA_SALT, type PersonaParams } from "../persona.ts";
+import { type SkillProfile, skillOf } from "../skill.ts";
 import { reactToThreats } from "./alert.ts";
 import { assessCached, wantsAssessment } from "./assess.ts";
-import { addCombatLayer, freeDir, selectTarget } from "./combat.ts";
+import { addCombatLayer, selectTarget } from "./combat.ts";
 import { type BehaviourName, type BrainCtx, BrainMemory, emptyIntent, type Intent } from "./context.ts";
+import { noteContested } from "./danger.ts";
 import { noteDeadEnd, planDeadEnd } from "./deadEnd.ts";
 import { updateTrade } from "./disengage.ts";
+import { dodge } from "./dodge.ts";
+import { crateFirstChoice, crateFirstScore } from "./early.ts";
+import { escapeFrag } from "./escapeFrag.ts";
 import { bestLoot, lootScore, planExplore, planLoot } from "./explore.ts";
 import { EXTENSION_BEHAVIOURS } from "./extensions.ts";
+import { factionScores } from "./factionFight.ts";
+import { applyFactionRoles, grenadierThrow } from "./factionRoles.ts";
+import { guardCrossing } from "./factionSquad.ts";
 import { BRAIN_PRESETS, type BrainFeatures } from "./features.ts";
+import { fightScore } from "./fightScore.ts";
 import { manageScope } from "./gear.ts";
 import { grenadeOpportunity, smartGrenade } from "./grenades.ts";
+import { judged } from "./judgement.ts";
 import { planLayerEscape } from "./layers.ts";
-import { manageReload, smartReloadOn } from "./reload.ts";
 import { bestBreakable, breakScore, planBreak } from "./scavenge.ts";
 import { noteChoice, noteFlight, steadyCrate, steadyLoot, steadyScores } from "./steady.ts";
+import { noteStillHit, unpinUnderFire } from "./stillHit.ts";
 import { fleeScore, healScore, planFlee, planHeal, planZone, zoneScore } from "./survival.ts";
-import { fightScore, planFight } from "./tactics.ts";
+import { planSweep, sweepScore } from "./sweep.ts";
+import { planFight } from "./tactics.ts";
 import { planDowned, planRegroup, planRevive, regroupScore, reviveScore } from "./team.ts";
 import { applyTeamplay } from "./teamplay.ts";
+import { manageWeapons } from "./weapons.ts";
 
 /** Bonus of the current behaviour; larger right after switching, so near-equal scores do not flip-flop. */
 const HYSTERESIS = 0.08;
 const COMMIT_BONUS = 0.12;
 const COMMIT_TIME = 1.5;
 const EXPLORE_SCORE = 0.12;
-/** Projectiles worth running from. */
-const DANGEROUS = new Set(["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron"]);
+/** A container this close that is worth breaking takes the hysteresis off exploring. */
+const CRATE_NEAR = 6;
 /** Behaviours the smart brain may throw frags from (the baseline: fight and zone). */
 const SMART_THROW = new Set<BehaviourName>(["fight", "zone", "hold", "disengage"]);
-/** A reload swap keeps the other gun in hand this long (the carry slot does not switch back mid-reload). */
-const SWAP_HOLD = 2.5;
+/** Behaviours that run from a chaser: the smart brain may throw a frag back at its path (round 4, escapeFrag.ts). */
+const ESCAPE_THROW = new Set<BehaviourName>(["flee", "disengage"]);
+
+/** Who the bot is beyond its difficulty: persona, skill profile and their rng stream (Bot fills it; tests may not). */
+export interface BrainProfile {
+    persona?: Readonly<PersonaParams>;
+    skill?: Readonly<SkillProfile>;
+    personaRng?: Rng;
+}
+
+/**
+ * pursuit: kneeling over a teammate while the brain chose something else (an enemy walked in, the bot was hit): get up
+ * (Input.Cancel), or the kneel blocks the fight it chose (no shot, no weapon switch: manageWeapons treats a revive as
+ * busy) and the bot stands there flipping between fight and revive (adversarial review: 4.6-6.5 s per team match).
+ * The rest of this think sees the action as already cancelled, as it will be once the input lands.
+ */
+function leaveRevive(ctx: BrainCtx, intent: Intent): void {
+    const self = ctx.self;
+    if (self.action.type !== "revive" || intent.behaviour === "revive" || self.downed) return;
+    intent.actions.push(Input.Cancel);
+    self.action = { type: "none", item: "", time: 0, duration: 0, targetId: 0 };
+}
 
 export class Brain {
     readonly mem = new BrainMemory();
@@ -47,6 +83,11 @@ export class Brain {
     private readonly rng: Rng;
     /** what this brain knows how to do (default: the baseline brain, every flag off) */
     readonly features: Readonly<BrainFeatures>;
+    /** the bot's taste (persona.ts; NEUTRAL by default) */
+    readonly persona: Readonly<PersonaParams>;
+    /** the bot's skill (skill.ts; the preset's PRESET_SKILL by default) */
+    readonly skill: Readonly<SkillProfile>;
+    private readonly personaRng: Rng;
     /** scores of the last decision (diagnostics) */
     lastScores: Partial<Record<BehaviourName, number>> = {};
 
@@ -55,24 +96,33 @@ export class Brain {
         params: DifficultyParams,
         rng: Rng,
         features: Readonly<BrainFeatures> = BRAIN_PRESETS.baseline,
+        profile: BrainProfile = {},
     ) {
         this.model = model;
         this.params = params;
         this.rng = rng;
         this.features = features;
+        this.persona = profile.persona ?? NEUTRAL;
+        this.skill = Object.freeze({ ...(profile.skill ?? skillOf(params)) });
+        this.personaRng = profile.personaRng ?? createRng(PERSONA_SALT);
     }
 
     context(now: number): BrainCtx {
         const model = this.model;
         const self = model.self;
         const enemies = model.enemies();
-        const guns = heldGunsWithAmmo(self);
+        // (round 6, report 42: the Spud Gun and the Potato Cannon only for a brain that knows them)
+        const all = heldGunsWithAmmo(self);
+        const guns = this.features.potatoGuns ? all : all.filter((g) => !POTATO_GUNS.has(g.info.id));
         const ctx: BrainCtx = {
             model,
             self,
             params: this.params,
             features: this.features,
             rng: this.rng,
+            persona: this.persona,
+            skill: this.skill,
+            personaRng: this.personaRng,
             now,
             mem: this.mem,
             enemies,
@@ -89,8 +139,9 @@ export class Brain {
         if (cell >= 0) ctx.myComp = model.nav.component(cell);
         ctx.target = selectTarget(ctx);
         if (ctx.target) ctx.targetDist = v2.distance(self.pos, ctx.target.pos);
-        // fight assessment: pure arithmetic, only while a feature reads it
-        if (ctx.target && wantsAssessment(this.features)) ctx.assessment = assessCached(ctx, ctx.target);
+        // fight assessment: pure arithmetic, only while a feature reads it; as the bot believes it (judgement.ts: a
+        // beginner's belief error, round 4)
+        if (ctx.target && wantsAssessment(this.features)) ctx.assessment = judged(ctx, assessCached(ctx, ctx.target));
         return ctx;
     }
 
@@ -126,10 +177,14 @@ export class Brain {
         }
 
         if (ctx.features.disengage) updateTrade(ctx);
+        if (ctx.features.pursuit) noteStillHit(ctx);
         if (ctx.features.steady && this.mem.current === "flee") noteFlight(ctx);
         // steadiness: the loot and crate choices hold for a moment (no flip-flopping between near-equal items)
         const loot = ctx.features.steady ? steadyLoot(ctx) : bestLoot(ctx);
-        const crate = ctx.features.steady ? steadyCrate(ctx) : bestBreakable(ctx);
+        // report 41: unarmed with an enemy near, the nearest cheap crate first (early.ts crateFirstChoice)
+        const first = ctx.features.crateFirst ? crateFirstChoice(ctx) : null;
+        const crate = first ?? (ctx.features.steady ? steadyCrate(ctx) : bestBreakable(ctx));
+        const crateScore = crate ? Math.max(breakScore(ctx, crate), first ? crateFirstScore(ctx, first) : 0) : 0;
         const options: Array<[BehaviourName, number, () => Intent]> = [
             ["zone", zoneScore(ctx), () => planZone(ctx)],
             ["fight", fightScore(ctx), () => planFight(ctx)],
@@ -138,21 +193,31 @@ export class Brain {
             ["revive", reviveScore(ctx), () => planRevive(ctx)],
             ["regroup", regroupScore(ctx), () => planRegroup(ctx)],
             ["loot", loot ? lootScore(ctx, loot) : 0, () => (loot ? planLoot(ctx, loot) : planExplore(ctx))],
-            ["break", crate ? breakScore(ctx, crate) : 0, () => (crate ? planBreak(ctx, crate) : planExplore(ctx))],
+            ["break", crateScore, () => (crate ? planBreak(ctx, crate) : planExplore(ctx))],
         ];
+        // house clearing (BrainFeatures.sweep): offered next to the baseline behaviours, like an extension
+        const sweep = ctx.features.sweep ? sweepScore(ctx) : 0;
+        if (ctx.features.sweep) options.push(["sweep", sweep, () => planSweep(ctx)]);
         // behaviours of enabled features only: a disabled one is never scored (no rng draws, no memory writes)
         for (const ext of EXTENSION_BEHAVIOURS) {
             if (ctx.features[ext.feature]) options.push([ext.name, ext.score(ctx), () => ext.plan(ctx)]);
         }
         options.push(["explore", EXPLORE_SCORE, () => planExplore(ctx)]);
+        // 50v50: local numbers, the faction's formation instead of the regroup, role priorities (factionFight.ts)
+        if (ctx.features.faction) factionScores(ctx, options);
         // steadiness: a behaviour locked out after dithering gets its score cut
         if (ctx.features.steady) steadyScores(ctx, options);
         let best = options[options.length - 1];
         let bestScore = Number.NEGATIVE_INFINITY;
         const scores: Partial<Record<BehaviourName, number>> = {};
         const bonus = HYSTERESIS + (now - this.mem.currentSince < COMMIT_TIME ? COMMIT_BONUS : 0);
+        // a crate next to the bot or a house being swept: exploring holds on to nothing (both are worth stopping for);
+        // sweeping never does (it is the filler while in a house: whatever loot or furniture it finds comes first)
+        const exploreFree = (crate !== null && crate.dist < CRATE_NEAR && crateScore > 0) || sweep > 0;
         for (const opt of options) {
-            const s = opt[1] + (opt[0] === this.mem.current ? bonus : 0);
+            const free = opt[0] === "sweep" || (exploreFree && opt[0] === "explore");
+            const held = opt[0] === this.mem.current && !free;
+            const s = opt[1] + (held ? bonus : 0);
             scores[opt[0]] = opt[1];
             if (s > bestScore) {
                 bestScore = s;
@@ -165,89 +230,34 @@ export class Brain {
         if (ctx.features.basements) noteDeadEnd(ctx, intent);
         if (intent.behaviour !== this.mem.current) this.mem.currentSince = now;
         this.mem.current = intent.behaviour;
-        this.manageWeapons(ctx, intent);
+        if (ctx.features.pursuit) {
+            leaveRevive(ctx, intent);
+            // round 5: an armed enemy in the house the bot loots on: the house waits (no in-out loop)
+            noteContested(ctx, intent);
+        }
+        manageWeapons(ctx, intent);
         if (ctx.features.grenades) {
+            // round 4: running from a chaser, a frag thrown back at its path (escapeFrag.ts) comes first
+            if (!intent.throwPlan && ESCAPE_THROW.has(intent.behaviour))
+                intent.throwPlan = escapeFrag(ctx, intent, thinkDt);
             if (!intent.throwPlan && SMART_THROW.has(intent.behaviour)) intent.throwPlan = smartGrenade(ctx, thinkDt);
+            // 50v50: the Grenadier's own explosives (factionRoles.ts)
+            if (!intent.throwPlan && ctx.features.faction && SMART_THROW.has(intent.behaviour))
+                intent.throwPlan = grenadierThrow(ctx, thinkDt);
         } else if (!intent.throwPlan && (intent.behaviour === "fight" || intent.behaviour === "zone")) {
             intent.throwPlan = grenadeOpportunity(ctx, thinkDt);
         }
         if (ctx.features.teamplay) applyTeamplay(ctx, intent);
+        // 50v50: role actions (Commander pings, the bugle, the medic's heals) and the no-solo-crossing rule
+        if (ctx.features.faction) {
+            applyFactionRoles(ctx, intent);
+            guardCrossing(ctx, intent);
+        }
         if (ctx.features.threats) reactToThreats(ctx, intent);
         if (ctx.features.scope) manageScope(ctx, intent);
-        this.dodge(ctx, intent);
+        // pursuit: shot on the spot it stands on: step off it (stillHit.ts)
+        if (ctx.features.pursuit) unpinUnderFire(ctx, intent);
+        dodge(ctx, intent);
         return intent;
-    }
-
-    /** Slot to hold and reloads outside of what the behaviour asked for. */
-    private manageWeapons(ctx: BrainCtx, intent: Intent): void {
-        const { self, mem, now } = ctx;
-        const busy = self.action.type === "use" || self.action.type === "revive";
-        if (busy) {
-            // switching weapons cancels an item use or a revive
-            intent.slot = null;
-            intent.fire = false;
-            return;
-        }
-        if (intent.slot === null) {
-            if (ctx.target?.visible && ctx.armed && intent.behaviour !== "heal") addCombatLayer(ctx, intent);
-            if (intent.slot === null) {
-                const carry = carrySlot(self, ctx.guns);
-                const holdingThrowable = self.curWeapIdx === WeaponSlot.Throwable;
-                let holdingUseless = self.curWeapIdx !== carry && !currentGun(self, ctx.guns)?.mag;
-                // smart reload: the gun swapped in for a top-up stays in hand while it reloads
-                if (holdingUseless && smartReloadOn(ctx) && now - mem.smart.lastSwap < SWAP_HOLD)
-                    holdingUseless = false;
-                if (holdingThrowable || holdingUseless || self.curWeapIdx === WeaponSlot.Melee) intent.slot = carry;
-            }
-        }
-        if (smartReloadOn(ctx)) {
-            manageReload(ctx, intent);
-            return;
-        }
-        // top up the magazine when nobody is in sight
-        const gun = currentGun(self, ctx.guns);
-        const quiet = !ctx.visibleEnemies.some((e) => !e.downed);
-        if (
-            gun &&
-            quiet &&
-            gun.reserve > 0 &&
-            gun.mag < gun.info.def.maxClip * 0.7 &&
-            self.action.type === "none" &&
-            now - mem.lastReloadRequest > 1.5 &&
-            intent.behaviour !== "heal"
-        ) {
-            mem.lastReloadRequest = now;
-            intent.actions.push(Input.Reload);
-        }
-    }
-
-    /** Runs from grenades landing nearby. */
-    private dodge(ctx: BrainCtx, intent: Intent): void {
-        if (!ctx.params.dodgeGrenades || intent.behaviour === "revive") return;
-        const me = ctx.self.pos;
-        let away = { x: 0, y: 0 };
-        for (const p of ctx.model.projectiles) {
-            if (!DANGEROUS.has(p.type)) continue;
-            const d = v2.distance(p.pos, me);
-            if (d > 11) continue;
-            // its own grenade, flying to where it was thrown, is no threat
-            const own = ctx.mem.lastThrowPos;
-            if (own && ctx.now - ctx.mem.lastThrow < 5 && v2.distance(p.pos, own) < v2.distance(me, own)) continue;
-            away = v2.add(away, v2.mul(v2.normalizeSafe(v2.sub(me, p.pos)), 1 / Math.max(d, 1)));
-        }
-        if (ctx.features.threats) {
-            // danger zones of the threat board: grenades about to blow, air strike zones
-            for (const z of ctx.model.threats.dangerZones()) {
-                const d = v2.distance(z.pos, me);
-                if (ctx.now >= z.until || d > z.rad + 2) continue;
-                away = v2.add(away, v2.mul(v2.normalizeSafe(v2.sub(me, z.pos)), 1 / Math.max(d, 1)));
-            }
-        }
-        if (v2.lengthSqr(away) < 1e-9) return;
-        const dir = freeDir(ctx.model, me, v2.normalize(away));
-        if (dir) {
-            intent.moveDir = dir;
-            intent.stop = false;
-        }
     }
 }

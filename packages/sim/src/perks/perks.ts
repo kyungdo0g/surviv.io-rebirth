@@ -5,6 +5,7 @@
 import { math } from "@rebirth/core";
 import { WeaponSlot } from "@rebirth/defs";
 import { isBagItem } from "../items/inventory.ts";
+import { playerDropLoot } from "../loot/drops.ts";
 import { defaultRules, type SimRules } from "../rules.ts";
 import type { HasteName, PerkView } from "../view.ts";
 import { gunDef } from "../weapons/weaponManager.ts";
@@ -66,6 +67,7 @@ export function addPerk(player: Player, type: string, opts: AddPerkOptions = {})
         }
         case "fabricate":
             player.fabricateTicker = 0;
+            player.fabricateQueue = [];
             break;
     }
     recalcScale(player);
@@ -96,6 +98,16 @@ export function removePerk(player: Player, type: string): boolean {
             break;
         case "fabricate":
             player.fabricateTicker = 0;
+            player.fabricateQueue = [];
+            break;
+        case "flak_jacket":
+            // the bag room it gave goes: the excess frags and MIRVs drop (survev enforceMaxCapacity)
+            for (const item of Object.keys(rulesOf(player).perks.flakJacketBonuses)) {
+                const excess = player.inv.get(item) - player.inv.capacity(item);
+                if (excess <= 0) continue;
+                player.inv.set(item, player.inv.capacity(item));
+                if (player.ctx) playerDropLoot(player.ctx, player, item, excess);
+            }
             break;
     }
     recalcScale(player);

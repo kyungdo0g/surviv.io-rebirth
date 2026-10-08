@@ -1,7 +1,8 @@
 // Rebirth-only air strike variants (deliberate rebirth deviation requested by the user, 2026-10-07; not in v0.8.82):
 // the 50v50 scheduled air strike zones roll one of these from `rules.roles.factionAirstrikeVariants` (server env
-// AIRSTRIKE_VARIANTS); strobe-called strikes and survev's comeback strike stay normal. This is the one table the sim,
-// the client and the bots read. docs/research/rebirth-deviations.md lists it with the original values.
+// AIRSTRIKE_VARIANTS); the original strobe's strikes and survev's comeback strike stay normal (the rebirth variant
+// strobes call heavy and carpet strike lines: rebirth/strobes.ts). This is the one table the sim, the client and the
+// bots read. docs/research/rebirth-deviations.md lists it with the original values.
 import gameConfigJson from "../generated/gameConfig.json" with { type: "json" };
 
 /** Variant ids in wire order (protocol AirstrikeZones: 2-bit index into this list). */
@@ -28,8 +29,17 @@ export interface AirstrikeVariantDef {
 }
 
 const STRIKE = gameConfigJson.airstrike;
-/** explosion_bomb_iron rad.max (test/rebirth.test.ts checks it against the def) */
-export const IRON_BOMB_RAD_MAX = 14;
+/**
+ * Air strike bomb blast radius multiplier. Deliberate rebirth deviation requested by the owner (2026-10-08: keep the
+ * M202 FLASH's big blast and make the air strike bombs bigger instead, so a normal bomb clearly outsizes an M202
+ * rocket's 16 u): explosion_bomb_iron rad 5-14 (survev and v0.8.82, the generated def) becomes 6.25-17.5
+ * (rebirth/deviations.ts), with its scorch decal; the heavy shell's 14-38 becomes 17.5-47.5 (HEAVY_BOMB_EXPLOSION).
+ * Damage, obstacle damage and shrapnel stay. Every strike and strobe that drops them follows: the normal and carpet
+ * strikes, the heavy strike and the three strobes.
+ */
+export const AIRSTRIKE_BOMB_RADIUS_MULT = 1.25;
+/** explosion_bomb_iron rad.max in the rebirth: 14 x 1.25 (test/rebirth.test.ts checks it against the def) */
+export const IRON_BOMB_RAD_MAX = 17.5;
 
 /**
  * A plane's aim point is moved back by half its bomb strip plus this lead, so the strip centres on it: survev's
@@ -70,11 +80,12 @@ const ZONE_RAD_WIRE_MARGIN = 1;
 
 /**
  * The carpet marker covers its real danger area (the user, 2026-10-07): every point where one of its blasts can hurt
- * a player. That is the aim radius plus a bomb's reach (25.75 u), the iron bomb's blast (rad.max 14 u, measured to
- * the body) and the player's 1 u radius, plus the wire margin: ceil(25.75 + 14 + 1 + 1) = 42. On the 50v50 map:
- * 84 + 42 = 126 ... 56 + 42 = 98 (normal markers 60 ... 40), under the 256 u limit. Not covered: the 2 stray
- * shrapnel pieces of each bomb (shrapnel_bomb_iron, 10 damage, 12 u range x up to 2.5 with its variance), which can
- * fly up to ~31 u past their blast, as from any explosion.
+ * a player. That is the aim radius plus a bomb's reach (25.75 u), the iron bomb's blast (rad.max 17.5 u since the
+ * owner's x1.25 of 2026-10-08, measured to the body) and the player's 1 u radius, plus the wire margin:
+ * ceil(25.75 + 17.5 + 1 + 1) = 46 (42 with the 14 u blast). On the 50v50 map: 84 + 46 = 130 ... 56 + 46 = 102 (normal
+ * markers 60 ... 40), under the 256 u limit. Not covered: the 2 stray shrapnel pieces of each bomb
+ * (shrapnel_bomb_iron, 10 damage, 12 u range x up to 2.5 with its variance), which can fly up to ~31 u past their
+ * blast, as from any explosion.
  */
 const CARPET_ZONE_RAD_ADD = Math.ceil(
     airstrikeBombReach({ bombCount: STRIKE.bombCount, bombOffset: STRIKE.bombOffset, bombJitter: STRIKE.bombJitter }) +
@@ -85,22 +96,25 @@ const CARPET_ZONE_RAD_ADD = Math.ceil(
 
 /**
  * Heavy shell explosion (`explosion_bomb_heavy`, rebirth-only), derived from explosion_bomb_iron (40 damage, x2 vs
- * obstacles, radius 5-14, 2 shrapnel; docs/research/mechanics/explosions.md):
- * - rad 14-38: about 2.75x the iron bomb's 5-14 ("very large blast" asked by the user; 2.5-3x was the brief). The
- *   min/max ratio stays the iron bomb's ~0.37 so the falloff has the same shape, just wider.
+ * obstacles, radius 5-14 in survev, 2 shrapnel; docs/research/mechanics/explosions.md):
+ * - rad 17.5-47.5: 14-38, about 2.75x the iron bomb's 5-14 ("very large blast" asked by the user, 2026-10-07; 2.5-3x
+ *   was the brief), grown x1.25 with the iron bomb (AIRSTRIKE_BOMB_RADIUS_MULT, the owner, 2026-10-08), so it stays
+ *   ~2.7x the iron bomb's 6.25-17.5. The min/max ratio stays the iron bomb's ~0.37 so the falloff has the same shape,
+ *   just wider.
  * - damage 50 (iron 40): a heavy plane drops 5 shells instead of 20 bombs, so a shell hits harder but the strip is far
  *   less dense. Per plane, summed over the 5 shells 8 u apart at the worst point along the strip, by the distance from
  *   the strip line to the player's centre (the sim's default "step" falloff, damage x (1 - d / rad.max) past rad.min,
- *   measured to the body surface 1 u closer): ~230 on the line, ~200 at 10 u, ~150 at 15 u, ~105 at 20 u, ~75 at
- *   25 u, ~45 at 30 u, ~15 at 35 u, nothing past 39 u. A plane is lethal (100) about 20 u to each side of its line;
- *   the iron strip deals ~360 on its line, ~100 at 10 u, ~50 at 12 u and nothing past 15 u.
+ *   measured to the body surface 1 u closer): ~250 on the line, ~230 at 10 u, ~205 at 15 u, ~135 at 20 u, ~110 at
+ *   25 u, ~85 at 30 u, ~60 at 35 u, ~35 at 40 u, ~10 at 45 u, nothing past 48.5 u. A plane is lethal (100) about 27 u
+ *   to each side of its line (20 u at 14-38); the iron strip deals ~445 on its line, ~190 at 10 u, ~135 at 12 u,
+ *   ~55 at 15 u and nothing past 18.5 u (lethal to ~13 u, 10 u at 5-14).
  * - obstacleDamage 2: the iron bomb's (plated obstacles yield to air strikes either way).
  * - shrapnel 4 x shrapnel_bomb_iron: twice the iron bomb's, for a bigger shell; shrapnel range (12 u) is unchanged.
  */
 export const HEAVY_BOMB_EXPLOSION = {
     damage: 50,
     obstacleDamage: 2,
-    rad: { min: 14, max: 38 },
+    rad: { min: 17.5, max: 47.5 },
     shrapnelCount: 4,
 } as const;
 
@@ -114,8 +128,9 @@ export const HEAVY_BOMB_SPRITE_SCALE = 0.18;
 export const HEAVY_BOMB_EFFECT_TYPE = "bomb_heavy";
 
 /**
- * Scorch decal of the heavy shell (rebirth-only map object, rebirth/defs.ts): decal_bomb_iron_explosion with its sprite
- * grown by the blast radius ratio 38 / 14, so a heavy blast leaves a mark that matches its size.
+ * Scorch decal of the heavy shell (rebirth-only map object, rebirth/defs.ts): the rebirth decal_bomb_iron_explosion
+ * (grown x1.25 with its blast, rebirth/deviations.ts) with its sprite grown by the blast radius ratio 47.5 / 17.5, so a
+ * heavy blast leaves a mark that matches its size.
  */
 export const HEAVY_BOMB_DECAL_TYPE = "decal_bomb_heavy_explosion";
 
@@ -133,8 +148,9 @@ export const AIRSTRIKE_VARIANTS: Readonly<Record<AirstrikeVariant, AirstrikeVari
     /**
      * High-explosive heavy shells ("고폭탄/중폭탄"): 5 shells 8 u apart per plane (a 32 u strip, close to the normal
      * 38 u, so the bomb run takes the same path; fewer, wider spaced shells keep a strike survivable outside the
-     * blast instead of a map wipe), same jitter. The zone grows by 24 u = 38 - 14, the heavy shell's extra reach over
-     * an iron bomb, so the marker covers its danger the way a normal marker covers normal bombs.
+     * blast instead of a map wipe), same jitter. The zone grows by 30 u = 47.5 - 17.5 (24 = 38 - 14 before the
+     * owner's x1.25 of 2026-10-08), the heavy shell's extra reach over an iron bomb, so the marker covers its danger
+     * the way a normal marker covers normal bombs.
      */
     heavy: {
         bombType: "bomb_heavy",
@@ -159,6 +175,17 @@ export const AIRSTRIKE_VARIANTS: Readonly<Record<AirstrikeVariant, AirstrikeVari
         aimRadMult: CARPET_AIM_RAD_MULT,
         zoneRadAdd: CARPET_ZONE_RAD_ADD,
     },
+};
+
+/**
+ * Colour of each variant: its zone marker, its map ping and its strobe (rebirth/strobes.ts). `normal` is the original
+ * ping_airstrike tint and zone colour 0xeaff00 (survev client/src/objects/plane.ts AirstrikeZone); heavy is orange-red,
+ * carpet magenta. The client's zone styles (apps/client ui/airstrikeVariantStyle.ts) read them from here.
+ */
+export const AIRSTRIKE_VARIANT_COLORS: Readonly<Record<AirstrikeVariant, number>> = {
+    normal: 0xeaff00,
+    heavy: 0xff3c1e,
+    carpet: 0xe040ff,
 };
 
 /** Default roll weights of the 50v50 scheduled zones (the user's brief: normal 60 / heavy 25 / carpet 15). */

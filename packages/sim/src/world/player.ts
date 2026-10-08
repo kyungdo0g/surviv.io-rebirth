@@ -8,9 +8,10 @@ import { emptyInput, type PlayerInput } from "../input.ts";
 import { Inventory, type InventoryOwner, SCOPE_LEVELS, THROWABLE_LIST } from "../items/inventory.ts";
 import type { PickupResult } from "../loot/pickup.ts";
 import { updateEmoteThrottle } from "../match/emotes.ts";
+import { applyGasDamage } from "../match/gas.ts";
 import type { Group } from "../match/teams.ts";
 import { trackActivity, updatePerks } from "../perks/effects.ts";
-import type { PerkSource } from "../perks/perks.ts";
+import { type PerkSource, rulesOf } from "../perks/perks.ts";
 import type { AnimType, HasteName, LocalPlayerState, MatchStats, PlayerView } from "../view.ts";
 import { gunDef, TIME_EPS, WeaponManager } from "../weapons/weaponManager.ts";
 import { handleActions } from "./actions.ts";
@@ -66,6 +67,8 @@ export class Player implements InventoryOwner {
     aimLayer = 0;
     /** standing in a building heal region this tick (M5b) */
     healEffect = false;
+    /** seconds the heal effect still shows after a coconut heal (survev player.ts healEffectTicker) */
+    healEffectTicker = 0;
     /** role id ("" for none): faction roles, Lone Survivr, map roles, Cobalt classes (M7a, roles/roles.ts) */
     role = "";
     /** the worn helmet came with the role (it leaves with the role); the role's outfit cannot be swapped (Commander) */
@@ -79,8 +82,13 @@ export class Player implements InventoryOwner {
     readonly weaponManager: WeaponManager;
     readonly inv: Inventory;
     outfit: string = PLAYER.defaultItems.outfit;
+    /** id of the obstacle a disguise outfit puts over the player (world/disguise.ts), 0 for none */
+    disguiseId = 0;
     /** outfit the player joined with: it never drops on death (survev compares with the loadout outfit) */
-    readonly loadoutOutfit: string = PLAYER.defaultItems.outfit;
+    loadoutOutfit: string = PLAYER.defaultItems.outfit;
+    /** loadout heal and boost particles (PlayerInfo; match/playerLoadout.ts) */
+    loadoutHeal = "heal_basic";
+    loadoutBoost = "boost_basic";
     backpack: string = PLAYER.defaultItems.backpack;
     helmet: string = PLAYER.defaultItems.helmet;
     chest: string = PLAYER.defaultItems.chest;
@@ -93,12 +101,18 @@ export class Player implements InventoryOwner {
     readonly haste = { type: "none" as HasteName, ticker: 0, seq: 0 };
     /** seconds of Last Breath left (bonus damage, size, M7a) */
     lastBreathTicker = 0;
+    /** Combat Stimulants (survev-only perk): seconds its bonus still runs after a heal or boost */
+    combatStimsTicker = 0;
+    /** Indomitable Spirit absorbed a fatal hit: seconds its effect still shows (survev lastStandEffectTicker) */
+    lastStandTicker = 0;
     /** Spud Gun hits: extra size, shrinking 2.5 s after the last hit (survev fatModifier / fatTicker, M7a) */
     fat = { mod: 0, ticker: 0 };
     /** snowball / potato hit: slowed for `ticker` s, frozen pose turned by `ori` (M7b, modes/frozen.ts) */
     frozen = { ticker: 0, ori: 0 };
     /** PMG-134 hits: zoom radius taken off the view until `ticker` s pass without a hit (modes/frozen.ts) */
     viewShrink = { amount: 0, ticker: 0 };
+    /** 50v50: seconds the player stays on the enemy faction's minimap after firing in its sight (match/faction.ts) */
+    timeUntilHidden = 0;
     /** Cobalt: no class chosen yet; the player waits (in the Twins bunker) and cannot act or be hurt (M7b) */
     awaitingClass = false;
     /** seconds until the bugle regains a charge (Inspiration), 0 when not recharging */
@@ -126,6 +140,9 @@ export class Player implements InventoryOwner {
     private visionRecoveryTicker = 0;
     /** seconds towards the next Fabricate refill */
     fabricateTicker = 0;
+    /** Fabricate: explosives still to hand out, one every rules.perks.fabricate.giveInterval (survev player.ts:1846) */
+    fabricateQueue: string[] = [];
+    fabricateGiveTicker = 0;
     /** the game this player is in (set by Game.addPlayer; throws need it to spawn projectiles) */
     ctx: SimContext | null = null;
     input: PlayerInput = emptyInput();
@@ -179,8 +196,10 @@ export class Player implements InventoryOwner {
     emoteCounter = 0;
     emoteSoftTicker = 0;
     emoteHardTicker = 0;
-    /** emote wheel (slots 0-3), win and death emotes (GameConfig.defaultEmoteLoadout; no loadouts yet) */
+    /** emote wheel (slots 0-3), win and death emotes (GameConfig.defaultEmoteLoadout, then the Join loadout) */
     readonly emoteLoadout: string[] = [...GameConfig.defaultEmoteLoadout];
+    /** seconds until the death emote once dead (survev sendDeathEmoteTicker); 0 when sent or alive */
+    deathEmoteTicker = 0;
     /** seconds alive (match stats, start condition) */
     timeAlive = 0;
     /** seconds in the gas since entering it, counted from rules.gasDamageRampFromCircle (escalation rule) */
@@ -314,6 +333,11 @@ export class Player implements InventoryOwner {
         this.animTicker = 0;
     }
 
+    /** Flak Jacket: extra frag and MIRV room (survev inventoryManager.ts getMaxCapacity) */
+    capacityBonus(item: string): number {
+        return this.hasPerk("flak_jacket") ? (rulesOf(this).perks.flakJacketBonuses[item] ?? 0) : 0;
+    }
+
     onItemAdded(item: string): void {
         const def = getDef(item);
         const wm = this.weaponManager;
@@ -369,6 +393,10 @@ export class Player implements InventoryOwner {
         if (def.type === "gun" && this.hasPerk("small_arms")) equipSpeed = perks?.smallArmsGunEquipSpeed ?? 1;
         if (equip && this.weaponManager.meleeAttacks.length === 0) speed += equipSpeed;
         if (this.shotSlowdownTimer > 0 && def.speed?.attack !== undefined) speed += def.speed.attack;
+        // rebirth: a heavy gun slows its carrier while it sits in either gun slot, summed over both, held or not (any
+        // gun def's speed.carry: the DShK's -2, docs/design/new-gun-stats.md 4.1, and the PMG-134's -2, defs
+        // rebirth/gunSpeeds.ts); Small Arms changes only the equip term
+        if (!this.downed) speed += this.carrySpeed();
         // One With Nature: faster in water instead of slower (perks.md tree_climbing)
         if (world.isOnWater(this.pos, this.layer)) {
             speed += this.hasPerk("tree_climbing") ? (perks?.treeClimbingWaterSpeed ?? 2) : -PLAYER.waterSpeedPenalty;
@@ -383,6 +411,15 @@ export class Player implements InventoryOwner {
         if (this.shotSlowdownTimer > 0 || busy || (reviver && !survevReviver)) speed *= BUSY_SPEED_MULT;
         if (medic) speed += this.ctx?.rules.fieldMedicSpeedBonus ?? FIELD_MEDIC_SPEED;
         return math.clamp(speed, 1, 10000);
+    }
+
+    /** Sum of the `speed.carry` of the guns in both gun slots (rebirth: DShK, PMG-134; 0 without a heavy gun). */
+    carrySpeed(): number {
+        const w = this.weaponManager.weapons;
+        return (
+            (gunDef(w[WeaponSlot.Primary].type)?.speed.carry ?? 0) +
+            (gunDef(w[WeaponSlot.Secondary].type)?.speed.carry ?? 0)
+        );
     }
 
     /**
@@ -429,12 +466,14 @@ export class Player implements InventoryOwner {
 
         // boost heals and decays before the action and movement (survev player.ts update)
         updateBoost(this, ctx.rules, dt);
-        updateFabricate(this, ctx.rules, dt);
+        updateFabricate(ctx, this, dt);
         // haste, Last Breath, bugle, Gift of the Woods, That Sucks, Gabby Ghost (M7a); That Sucks may kill
         updatePerks(ctx, this, dt);
         if (this.dead) return;
         // revive range, damage buffer, bleeding (may kill), emote throttle (M6a)
         updateDowned(ctx, this, dt);
+        if (this.dead) return;
+        applyGasDamage(ctx, this, dt);
         if (this.dead) return;
         updateEmoteThrottle(this, dt);
         // snowball / potato slowdown (survev update "Projectile slowdown logic")

@@ -4,10 +4,12 @@
 // ticks: a stage of `duration` seconds lasts round(duration * TICK_HZ) ticks, and the tick that starts the match
 // already counts as the first tick of stage 1 (survev advances the stage, then adds that tick's dt).
 import { math, type Rng, type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, GasMode, type GasStage } from "@rebirth/defs";
+import { DamageType, GameConfig, GasMode, type GasStage } from "@rebirth/defs";
 import { TICK_HZ } from "../api.ts";
 import { randomPointInCircle } from "../mapgen/random.ts";
 import type { GasModeName, GasView } from "../view.ts";
+import type { SimContext } from "../world/context.ts";
+import type { Player } from "../world/player.ts";
 
 /** Zone radius before the start, as a fraction of the map size (survev gas.ts constructor: radOld 0.85). */
 const PRE_START_RAD_OLD = 0.85;
@@ -181,4 +183,22 @@ export function gasCircle(gas: GasView): { pos: Vec2; rad: number } {
 /** Seconds left in the current gas stage (the HUD timer shows floor of it as m:ss). */
 export function gasTimeLeft(gas: GasView): number {
     return Math.max(0, gas.duration * (1 - gas.gasT));
+}
+
+/**
+ * Gas damage in a player's update, after its boost, perks, downed buffer and bleeding (survev player.ts:1648-1669):
+ * every damageTickRate seconds, a player outside the circle takes the stage damage (DamageType.Gas ignores armor), a
+ * disconnected one rules.gasDisconnectedDamage when set. timeInsideGas feeds the optional escalation rule.
+ */
+export function applyGasDamage(ctx: SimContext, player: Player, dt: number): void {
+    const { gas, rules } = ctx;
+    if (!gas.isInGas(player.pos)) {
+        player.timeInsideGas = 0;
+        return;
+    }
+    if (gas.circleIdx >= rules.gasDamageRampFromCircle) player.timeInsideGas += dt;
+    if (!gas.doDamage || !(gas.damage > 0)) return;
+    const base = player.disconnected && rules.gasDisconnectedDamage !== null ? rules.gasDisconnectedDamage : gas.damage;
+    const mult = rules.gasDamageRamp ? 1 + rules.gasDamageRampRate * player.timeInsideGas : 1;
+    ctx.damagePlayer(player, { amount: base * mult, damageType: DamageType.Gas, dir: v2.copy(player.dir) });
 }

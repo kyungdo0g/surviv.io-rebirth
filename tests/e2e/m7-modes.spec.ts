@@ -54,7 +54,7 @@ test.describe("cobalt", () => {
         const errors = collectErrors(page);
         await bootMode(page, "/?map=cobalt&seed=2&loot=0");
         await expect.poll(() => page.evaluate(() => (window as any).__rebirth.roleMenu.active)).toBe(true);
-        // the sim's 20 s random class (rules.roles.perkModeRoleSelectTime), shortened so it comes before the menu's own
+        // the server's 25 s random class (rules.roles.perkModeRoleSelectTime), shortened so it comes before the menu's own
         // 20 s countdown confirms the highlighted class
         await page.evaluate(() => {
             (window as any).__rebirth.game.rules.roles.perkModeRoleSelectTime = 3;
@@ -210,7 +210,8 @@ test.describe("korean", () => {
         }
         expect(names).toEqual(["스카우트", "저격수", "메딕", "폭파병", "돌격병", "장갑병"]);
         await page.locator('#ui-role-header .ui-role-option[data-role="healer"]').click();
-        await expect(page.locator(".ui-role-body-perk-name")).toHaveText(["전투 의무병", "윈드워크"]);
+        // survev roleDefs.ts healer: Field Medic + Combat Stimulants (survev balance; Windwalk in v0.8.82)
+        await expect(page.locator(".ui-role-body-perk-name")).toHaveText(["전투 의무병", "전투 각성제"]);
         await page.screenshot({ path: `${SCREENS}/ko-cobalt-menu.png` });
 
         await bootMode(page, "/?map=faction&team=4&dummies=1&loot=0&lang=ko");

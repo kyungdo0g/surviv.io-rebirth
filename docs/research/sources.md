@@ -8,6 +8,7 @@
 | `l10n` | official localization files, survev `client/public/l10n/*.json` | same clone | same commit | H |
 | `fandom` | https://survivio.fandom.com (814 articles) | MediaWiki `api.php` dump into `research-cache/fandom/` (page HTML is behind a Cloudflare challenge) | 2026-10-05 | M |
 | `wikigg` | https://survev.wiki.gg (344 articles, documents survev) | `api.php` dump into `research-cache/wikigg/` | 2026-10-05 | M |
+| `wikigg` (buildings) | the pages of survev.wiki.gg's Template:Building navbox (rev 6955) with every file they use (218: infobox tab images and puzzle pictures) | `research-cache/wikigg-buildings/` (pages.json, files.json, img/) | 2026-10-07 | M |
 | `wp-en` | https://en.wikipedia.org/wiki/Surviv.io | `api.php` | 2026-10-05 | M |
 | `wp-ko` | https://ko.wikipedia.org | `api.php` (rate-limited, 429) | — | M |
 | `namu` | https://namu.wiki (Surviv.io and sub-pages) | WebSearch result snippets only; direct access blocked by a Cloudflare challenge | 2026-10-05 | M, never H alone |

@@ -1,6 +1,7 @@
-// Human movement keys (motor/keys.ts): 8-way keys with hysteresis and minimum holds, quick reversals only in fights,
-// commitment against a flip-flopping heading, sliding round a blocking obstacle, and the path carrot that makes 8-way
-// walking converge on a diagonal leg (zig-zagging like a person tapping two keys) without spamming key changes.
+// Human movement keys (motor/keys.ts): 8-way keys with hysteresis and minimum holds, human reversal holds in fights
+// (quick ones only to dodge), commitment against a flip-flopping heading, the stop-and-go rhythm of calm travel,
+// sliding round a blocking obstacle, and the path carrot that makes 8-way walking converge on a diagonal leg
+// (zig-zagging like a person tapping two keys) without spamming key changes.
 import { createRng, type Vec2, v2 } from "@rebirth/core";
 import { describe, expect, it } from "vitest";
 import { dirOf } from "../src/geom.ts";
@@ -23,37 +24,71 @@ function changes(stick: KeyStick, ticks: number, heading: (t: number) => Vec2 | 
 }
 
 describe("human movement keys", () => {
-    it("keeps an octant until the heading is 10 degrees past its edge", () => {
+    it("keeps an octant until the heading is 15 degrees past its edge", () => {
         const stick = new KeyStick(createRng(1));
         expect(stick.update(dirOf(0), 0)).toBe(0);
-        // 22.5 degrees is the edge between right and up-right: 30 stays, 33 goes (after the minimum hold)
-        expect(stick.update(dirOf(30 * DEG), 1)).toBe(0);
-        expect(stick.update(dirOf(33 * DEG), 2)).toBe(1);
-        expect(stick.update(dirOf(14 * DEG), 3)).toBe(1);
-        expect(stick.update(dirOf(11 * DEG), 4)).toBe(0);
+        // 22.5 degrees is the edge between right and up-right: 36 stays, 39 goes (after the minimum hold)
+        expect(stick.update(dirOf(36 * DEG), 1)).toBe(0);
+        expect(stick.update(dirOf(39 * DEG), 2)).toBe(1);
+        expect(stick.update(dirOf(9 * DEG), 3)).toBe(1);
+        expect(stick.update(dirOf(6 * DEG), 4)).toBe(0);
         expect(stick.update(null, 5)).toBe(-1);
     });
 
-    it("holds every key state at least 80 ms however fast the heading changes", () => {
+    it("holds every key state at least 120 ms however fast the heading changes", () => {
         const stick = new KeyStick(createRng(2));
         // the wanted heading jumps between right and up every tick
         const times = changes(stick, 300, (t) => dirOf(Math.round(t / TICK) % 2 ? 0 : 90 * DEG));
         expect(times.length).toBeGreaterThan(5);
-        for (let i = 1; i < times.length; i++) expect(times[i] - times[i - 1]).toBeGreaterThanOrEqual(0.08 - 1e-9);
+        for (let i = 1; i < times.length; i++) expect(times[i] - times[i - 1]).toBeGreaterThanOrEqual(0.12 - 1e-9);
     });
 
-    it("reverses within ~100 ms in a fight, but not for a heading that flips every decision", () => {
-        // left-right every 90 ms: a strafe flip in a fight is followed, a dithering brain outside fights is not
+    it("reverses after a human hold in a fight, within ~100 ms only to dodge, never for a heading that flips every decision", () => {
+        // left-right every 90 ms: a fight strafes on for 0.4-0.85 s per side (round 5: the owner's videos), a dodge
+        // follows within ~100 ms, a dithering brain outside fights does not move off its first key
         const flip = (t: number) => dirOf(Math.floor(t / 0.09) % 2 ? Math.PI : 0);
-        const fight = changes(new KeyStick(createRng(3)), 200, flip, true);
-        expect(fight.length).toBeGreaterThanOrEqual(15);
-        for (let i = 1; i < fight.length; i++) expect(fight[i] - fight[i - 1]).toBeGreaterThanOrEqual(0.07 - 1e-9);
+        const fight = changes(new KeyStick(createRng(3)), 400, flip, true);
+        expect(fight.length).toBeGreaterThanOrEqual(4);
+        for (let i = 1; i < fight.length; i++) expect(fight[i] - fight[i - 1]).toBeGreaterThanOrEqual(0.4 - 1e-9);
+        const dodge = new KeyStick(createRng(3));
+        const quick: number[] = [];
+        let last = -1;
+        for (let i = 1; i <= 200; i++) {
+            const o = dodge.update(flip(i * TICK), i * TICK, true, undefined, { urgent: true });
+            if (o !== last) quick.push(i * TICK);
+            last = o;
+        }
+        expect(quick.length).toBeGreaterThanOrEqual(15);
         const walk = changes(new KeyStick(createRng(3)), 200, flip, false);
         expect(walk.length).toBeLessThanOrEqual(1);
-        // a reversal that is meant (kept for half a second) still happens
+        // a reversal that is meant (kept for more than half a second) still happens
         const meant = changes(new KeyStick(createRng(4)), 200, (t) => dirOf(t < 1 ? 0 : Math.PI));
         expect(meant.length).toBe(2);
-        expect(meant[1] - 1).toBeLessThan(0.31);
+        expect(meant[1] - 1).toBeLessThan(0.56);
+    });
+
+    it("calm travel lifts the keys now and then; a fight or a hurry never does", () => {
+        const pauses = (calm: boolean, fight: boolean) => {
+            const stick = new KeyStick(createRng(9));
+            let stopped = 0;
+            let stops = 0;
+            let was = 0;
+            for (let i = 1; i <= 6000; i++) {
+                const o = stick.update(dirOf(0), i * TICK, fight, undefined, { calm });
+                if (o < 0) stopped += TICK;
+                if (o < 0 && was >= 0) stops++;
+                was = o;
+            }
+            return { stopped, stops };
+        };
+        const calm = pauses(true, false);
+        // 60 s of calm walking: a stop every few seconds, a few tenths of a second each (the videos: 17 a minute)
+        expect(calm.stops).toBeGreaterThan(8);
+        expect(calm.stops).toBeLessThan(40);
+        expect(calm.stopped / calm.stops).toBeGreaterThan(0.15);
+        expect(calm.stopped / calm.stops).toBeLessThan(0.8);
+        expect(pauses(false, false).stops).toBe(0);
+        expect(pauses(true, true).stops).toBe(0);
     });
 
     it("slides round an obstacle it presses into", () => {

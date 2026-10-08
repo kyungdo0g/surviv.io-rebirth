@@ -31,10 +31,11 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm install --frozen-lo
 COPY . .
 # The original surviv.io art and audio are not in the repository. With WITH_ORIGINAL_ASSETS=1 the build clones survev
 # at the pinned commit and copies them into apps/client/public/assets (needs git and network access to github.com and
-# surviv.io); the default image has none and the client draws placeholders.
+# surviv.io); the default image has none and the client draws placeholders. ffmpeg reads the owner's WebP line-art
+# sheets in assets-user/ (when the build context has them), which pnpm assets cuts into the new guns' loot icons.
 ARG WITH_ORIGINAL_ASSETS=0
 RUN if [ "$WITH_ORIGINAL_ASSETS" = "1" ]; then \
-        apt-get update && apt-get install -y --no-install-recommends git ca-certificates && \
+        apt-get update && apt-get install -y --no-install-recommends git ca-certificates ffmpeg && \
         rm -rf /var/lib/apt/lists/* && \
         pnpm survev:fetch && pnpm assets; \
     fi

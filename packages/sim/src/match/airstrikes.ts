@@ -7,8 +7,8 @@
 // Behaviour follows docs/research/mechanics/airdrop-airstrike.md "Air strikes" (survev objects/plane.ts).
 // Rebirth (deliberate deviation requested by the user, docs/research/rebirth-deviations.md): every zone has a variant
 // (defs AIRSTRIKE_VARIANTS): "normal" is the behaviour above, "heavy" drops 5 heavy shells per plane over a larger
-// zone, "carpet" sends 6 planes that aim inside 1.4x the radius under a marker that covers every blast. Strobe strikes
-// are always normal.
+// zone, "carpet" sends 6 planes that aim inside 1.4x the radius under a marker that covers every blast. The original
+// strobe's strikes are normal; the rebirth variant strobes call heavy and carpet strike lines (combat/projectiles.ts).
 import { type Rng, type Vec2, v2 } from "@rebirth/core";
 import {
     AIRSTRIKE_AIM_LEAD,
@@ -37,6 +37,8 @@ const BOMB_TICKS = 2;
 const DEFAULT_WAIT = 1.5;
 const DEFAULT_DELAY = 1;
 const DEFAULT_PLANES = 3;
+/** survev's grid cell size (server grid.ts:21) */
+const GRID_CELL = 16;
 /** A zone lasts wait + 2.5 + planes x delay + 2.5 s (survev addAirstrikeZone). */
 const ZONE_FINISH_BUFFER = 2.5;
 /** Half of the aim points are near a player of the zone: random offset up to bombCount x bombOffset / 4. */
@@ -59,6 +61,8 @@ export interface StrikeState {
     bombType: string;
     /** player credited (the strobe thrower), 0 for the game */
     ownerId: number;
+    /** the bombs' source type: the strobe that called them, "strobe" for the 50v50 zones (survev dropBomb) */
+    sourceType: string;
 }
 
 interface Zone {
@@ -166,8 +170,9 @@ export function updateStrike(strike: StrikeState, pos: Vec2, target: Vec2, dir: 
             vel: v2.mul(dir, STRIKE.bombVel),
             fuse: getDefOfType("throwable", strike.bombType).fuseTime,
             damageType: DamageType.Airstrike,
-            // potato mode swaps weapons like a strobe kill (survev dropBomb)
-            sourceType: "strobe",
+            // the calling strobe; zone bombs say "strobe", so potato mode swaps weapons like a strobe kill (survev
+            // dropBomb)
+            sourceType: strike.sourceType,
         });
         strike.dropCounter = 0;
     }
@@ -245,7 +250,8 @@ export class AirstrikeZones {
 
     /**
      * Zone centre over a high player density (survev getAirstrikeZonePos): the connected players are shuffled and
-     * the one with the most above-ground players within `rad` wins, stopping once more than a third are covered.
+     * the one with the most above-ground players around it wins, stopping once more than a third are covered. survev
+     * counts what its grid query returns, so "around" is the grid cells under the circle's box (inGridCells).
      */
     zonePos(rad: number): Vec2 {
         let pos = v2.copy(this.host.gas.posNew);
@@ -254,7 +260,7 @@ export class AirstrikeZones {
         let best = 0;
         for (const p of players) {
             let n = 0;
-            for (const q of players) if (q.layer !== 1 && v2.distance(q.pos, p.pos) <= rad) n++;
+            for (const q of players) if (q.layer !== 1 && inGridCells(q, p.pos, rad)) n++;
             if (n > best) {
                 best = n;
                 pos = v2.copy(p.pos);
@@ -323,4 +329,20 @@ export class AirstrikeZones {
             zoneT: Math.min(1, z.elapsed / z.duration),
         }));
     }
+}
+
+/**
+ * Whether survev's grid query of the circle (`center`, `rad`) returns player `q`: the cells under the circle's box
+ * share one with the cells under the player's grid bounds (maxVisualRadius x scale). grid.intersectCollider has no
+ * exact test (survev plane.ts:142-150, grid.ts:101-124).
+ */
+function inGridCells(q: Player, center: Vec2, rad: number): boolean {
+    const cell = (v: number) => Math.floor(v / GRID_CELL);
+    const ext = GameConfig.player.maxVisualRadius * q.scale;
+    return (
+        cell(center.x - rad) <= cell(q.pos.x + ext) &&
+        cell(q.pos.x - ext) <= cell(center.x + rad) &&
+        cell(center.y - rad) <= cell(q.pos.y + ext) &&
+        cell(q.pos.y - ext) <= cell(center.y + rad)
+    );
 }

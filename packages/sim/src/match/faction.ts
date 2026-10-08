@@ -1,11 +1,13 @@
 // 50v50 Faction mode (M7a): the Red (1) and Blue (2) teams above the squads, team assignment (a joiner goes to the
 // team with fewer living players, a party's later members follow its first), spawn bands on the team's side of the
 // river, living counts per team (the original AliveCounts), the faction minimap rows (the original faction
-// PlayerStatus, every 0.5 s), the scheduled gold military drop and survev's comeback drop.
+// PlayerStatus, every 0.5 s) with the enemies revealed by firing, the scheduled gold military drop and survev's
+// comeback drop.
 // Behaviour follows survev server/src/game/game.ts (one team per faction), objects/player.ts getGroupAndTeam /
 // getSmallestTeam, map.ts getSpawnPos (factionModeSplitOri, divideAabb), gameModeManager.ts updateAliveCounts and
 // objects/plane.ts isOneTeamWinning / helpLosingTeam; docs/research/modes/faction.md.
 import { type Bounds, type Vec2, v2 } from "@rebirth/core";
+import { getMapDef } from "@rebirth/defs";
 import type { FactionMemberView } from "../view.ts";
 import type { Player } from "../world/player.ts";
 
@@ -25,14 +27,17 @@ export interface FactionTeam {
 
 /** What the faction system needs from the game. */
 export interface FactionHost {
+    readonly options: { mapName: string };
     readonly mapData: { width: number; height: number; shoreInset: number };
     readonly gas: { readonly circleIdx: number; isInGas(pos: Vec2): boolean };
     readonly rules: {
         roles: {
             factionStatusInterval: number;
+            factionRevealTime: number;
             factionGoldDrop: { circleIdx: number; wait: number; crate: string } | null;
             helpLosingTeam: boolean;
             helpLosingTeamCrate: string;
+            potatoGoldCrate: string;
         };
     };
     readonly planes: {
@@ -60,6 +65,8 @@ export class FactionSystem {
     private readonly host: FactionHost;
     /** faction minimap rows per team, in id order, rebuilt at each refresh and on membership changes */
     private readonly rows = new Map<number, FactionMemberView[]>();
+    /** per team, its members revealed by firing at the last refresh */
+    private readonly revealed = new Map<number, FactionMemberView[]>();
     private statusTicker = Number.POSITIVE_INFINITY;
 
     constructor(host: FactionHost, factions: number, splitOri: 0 | 1) {
@@ -122,11 +129,37 @@ export class FactionSystem {
     /** A new gas circle: the scheduled gold military drop (conflicts.md faction-gold-drop). */
     onCircle(circleIdx: number): void {
         const gold = this.host.rules.roles.factionGoldDrop;
-        if (gold && gold.circleIdx === circleIdx) this.host.planes.scheduleCrate(gold.crate, gold.wait);
+        if (gold && gold.circleIdx === circleIdx) this.host.planes.scheduleCrate(this.goldCrate(gold.crate), gold.wait);
     }
 
-    /** Per tick: the faction minimap rows refresh at the original faction PlayerStatus rate. */
+    /** A gold drop crate of this map: potato faction maps drop the potato variant (survev plane.ts:273-278). */
+    private goldCrate(crate: string): string {
+        return getMapDef(this.host.options.mapName).gameMode.potatoMode ? this.host.rules.roles.potatoGoldCrate : crate;
+    }
+
+    /**
+     * A gun was fired: when a living, connected enemy has the shooter within its view radius, the shooter shows on the
+     * enemy faction's minimap for rules.roles.factionRevealTime (survev weaponManager.ts:1013-1025 timeUntilHidden).
+     */
+    onShot(shooter: Player): void {
+        const time = this.host.rules.roles.factionRevealTime;
+        if (time <= 0) return;
+        for (const t of this.teams) {
+            if (t.id === shooter.teamId) continue;
+            for (const p of t.players) {
+                if (p.dead || p.disconnected || v2.distance(p.pos, shooter.pos) > p.zoom) continue;
+                shooter.timeUntilHidden = time;
+                return;
+            }
+        }
+    }
+
+    /** Per tick: reveal timers run down; the faction minimap rows refresh at the original faction PlayerStatus rate. */
     update(dt: number): void {
+        for (const t of this.teams) {
+            for (const p of t.players)
+                if (p.timeUntilHidden > 0) p.timeUntilHidden = Math.max(0, p.timeUntilHidden - dt);
+        }
         this.statusTicker += dt;
         if (this.statusTicker < this.host.rules.roles.factionStatusInterval - 1e-9) return;
         this.refreshRows();
@@ -135,26 +168,39 @@ export class FactionSystem {
     private refreshRows(): void {
         this.statusTicker = 0;
         for (const t of this.teams) {
-            const rows = [...t.players]
-                .sort((a, b) => a.id - b.id)
-                .map((p) => ({ playerId: p.id, pos: v2.copy(p.pos), dead: p.dead, downed: p.downed, role: p.role }));
-            this.rows.set(t.id, rows);
+            const members = [...t.players].sort((a, b) => a.id - b.id);
+            const row = (p: Player) => ({
+                playerId: p.id,
+                pos: v2.copy(p.pos),
+                dead: p.dead,
+                downed: p.downed,
+                role: p.role,
+            });
+            this.rows.set(t.id, members.map(row));
+            this.revealed.set(t.id, members.filter((p) => p.timeUntilHidden > 0).map(row));
         }
     }
 
-    /** The minimap rows of `player`'s faction, in id order (copies). */
+    /**
+     * The minimap rows of `player`'s faction, then the enemies revealed by firing at the last refresh (survev
+     * getPlayerStatus: `visible` for the own team or timeUntilHidden > 0; hidden enemies carry no data), in id order
+     * (copies).
+     */
     statusView(player: Player): FactionMemberView[] {
         if (this.statusTicker === Number.POSITIVE_INFINITY) this.refreshRows();
-        return (this.rows.get(player.teamId) ?? []).map((r) => ({ ...r, pos: { x: r.pos.x, y: r.pos.y } }));
+        const out = [...(this.rows.get(player.teamId) ?? [])];
+        for (const t of this.teams) if (t.id !== player.teamId) out.push(...(this.revealed.get(t.id) ?? []));
+        return out.map((r) => ({ ...r, pos: { x: r.pos.x, y: r.pos.y } }));
     }
 
     /**
-     * After a kill (survev kill -> isOneTeamWinning / helpLosingTeam, fork flag): once per match, after circle 0, when
+     * After a kill (survev kill -> isOneTeamWinning / helpLosingTeam, fork flag): once per match, outside circle 0, when
      * the connected living gap is at least 10 % of the connected living players or 5, a gold drop lands near the
      * losing team's player farthest from the winners' centre (out of the gas) and an air strike hits the densest group.
      */
     checkHelpLosingTeam(): void {
-        if (!this.host.rules.roles.helpLosingTeam || this.sentHelp || this.host.gas.circleIdx <= 0) return;
+        // survev plane.ts:213 skips circle 0 only (circleIdx == 0)
+        if (!this.host.rules.roles.helpLosingTeam || this.sentHelp || this.host.gas.circleIdx === 0) return;
         const counts = this.teams.map((t) => living(t).filter((p) => !p.disconnected).length);
         const max = Math.max(...counts);
         const min = Math.min(...counts);
@@ -173,7 +219,7 @@ export class FactionSystem {
         for (const p of candidates) if (v2.distance(center, p.pos) > v2.distance(center, far.pos)) far = p;
         const a = this.host.roleRng.range(0, Math.PI * 2);
         const pos = v2.add(far.pos, { x: Math.cos(a) * HELP_DROP_OFFSET, y: Math.sin(a) * HELP_DROP_OFFSET });
-        this.host.planes.addAirdrop(pos, this.host.rules.roles.helpLosingTeamCrate);
+        this.host.planes.addAirdrop(pos, this.goldCrate(this.host.rules.roles.helpLosingTeamCrate));
         this.sentHelp = true;
         const s = HELP_STRIKE;
         const zones = this.host.planes.zones;

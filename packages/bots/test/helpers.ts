@@ -27,6 +27,16 @@ export function cachedMap(mapName: string, seed: number, teamMode: 1 | 2 | 4 = 1
     return gen;
 }
 
+/**
+ * The first object of `type` on a generated map, with orientation `ori` when given. Tests find buildings by type, not
+ * by id or position, so a map generation change that moves objects (survev's map generation) does not break them.
+ */
+export function firstOfType(gen: GenerateMapResult, type: string, ori?: number): GeneratedObject {
+    const o = gen.objects.find((x) => x.type === type && (ori === undefined || x.ori === ori));
+    if (!o) throw new Error(`no ${type}${ori === undefined ? "" : ` with ori ${ori}`} on the map`);
+    return o;
+}
+
 /** Gas stages at 1/8 of the real durations (at least 1 s): the first circles come within seconds. */
 export const FAST_GAS: GasStage[] = GameConfig.gas.stages.map((st, i) =>
     i === 0 ? st : { ...st, duration: Math.max(1, st.duration / 8) },

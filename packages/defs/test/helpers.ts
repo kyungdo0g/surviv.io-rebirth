@@ -27,6 +27,9 @@ export const portPolicy: {
     survevOnlyGameObjects: string[];
     survevSkins: Record<string, string>;
     survevGameConfig: string[];
+    survevMapGen?: boolean;
+    survevBalance?: boolean;
+    survevMapObjects: string[];
 } = JSON.parse(readFileSync(`${REPO_ROOT}tools/port-survev/policy.json`, "utf8"));
 
 /** Every survev-only game object id the port takes (listed ids and skins). */
@@ -36,19 +39,10 @@ export const PORTED_SURVEV_IDS: readonly string[] = [
 ];
 
 /**
- * survev-only items the policy does not take yet (later waves: melee, throwables, packs, perks) and post-0.8.82
- * original guns neither survev nor the owner adds: none may appear anywhere in the ported data.
+ * survev-only items the policy never takes (survev meta content: quests and passes; CLAUDE.md out of scope)
+ * and post-0.8.82 original guns neither survev nor the owner adds: none may appear anywhere in the ported data.
  */
-export const NOT_PORTED_IDS = [
-    "iceaxe",
-    "cutlass",
-    "cutlass_gold",
-    "coconut",
-    "tomato",
-    "backpack04_cloud",
-    "pkm",
-    "m134",
-];
+export const NOT_PORTED_IDS = ["quest_top_duo", "quest_win_any", "pass_survivr2", "pkm", "m134"];
 
 /** Ammo names of special guns that have no ammo def in the original client either. */
 export const PSEUDO_AMMO = new Set(["9mm_cursed", "bugle_ammo"]);

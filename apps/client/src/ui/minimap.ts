@@ -73,6 +73,16 @@ function minimapShapes(def: MapObjectDef): Shape[] {
     return col && map.color !== undefined ? [{ col, scale: map.scale ?? 1, color: map.color }] : [];
 }
 
+/**
+ * The type the map draws for a displayed object: the alternate barns pass for the plain barn (`map.displayType`, which
+ * the server substitutes in survev map.ts genBuilding; objects without `map.display` are never drawn).
+ */
+function shownType(type: string): string {
+    const def = MapObjectDefs[type] as { map?: { displayType?: string } } | undefined;
+    const shown = def?.map?.displayType;
+    return shown && MapObjectDefs[shown] ? shown : type;
+}
+
 function zIdxOf(def: MapObjectDef): number {
     if (def.type === "building") return 750 + (def.zIdx ?? 0);
     return def.type === "obstacle" ? (def.img.zIdx ?? 0) : 0;
@@ -263,7 +273,8 @@ export class Minimap {
 
         const shapes = new Graphics();
         const renders = map.objects
-            .map((obj) => ({ obj, def: MapObjectDefs[obj.type] }))
+            .filter((obj) => (MapObjectDefs[obj.type] as { map?: { display?: boolean } } | undefined)?.map?.display)
+            .map((obj) => ({ obj, def: MapObjectDefs[shownType(obj.type)] }))
             .filter((r) => r.def)
             .map((r) => ({ obj: r.obj, zIdx: zIdxOf(r.def), shapes: minimapShapes(r.def) }))
             .filter((r) => r.shapes.length)

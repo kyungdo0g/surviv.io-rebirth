@@ -3,12 +3,15 @@
 // M7a: perk modifiers (perks/shotPerks.ts), Splinter Rounds side bullets, the bugle's Inspiration and the Commander's
 // flare. M9: USAS-12 (`toMouseHit`) rounds stop at the cursor. Behaviour follows survev
 // server/src/game/weaponManager.ts fireWeapon and docs/research/items/guns.md.
+// Rebirth (the M202 FLASH, owner 2026-10-08; defs rebirth/newGuns.json): a gun with `fanAngle` fires its bullets in a
+// fixed, evenly spaced fan (no random spread or jitter), and `recoilKnockback` slides the shooter back after the shot.
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, getDefOfType } from "@rebirth/defs";
 import type { Bullet } from "../combat/bullets.ts";
 import { playBugle } from "../perks/effects.ts";
 import { shotPerks } from "../perks/shotPerks.ts";
 import type { SimContext } from "../world/context.ts";
+import { knockbackSpeedFor } from "../world/downed.ts";
 import type { Player } from "../world/player.ts";
 import { sameLayer } from "../world/world.ts";
 
@@ -68,11 +71,23 @@ function clipMuzzle(
     return clip;
 }
 
+/** Degrees off the aim of bullet `i` of `count` in a fixed fan `fan` degrees wide, outermost to outermost. */
+export function fanDeviation(fan: number, i: number, count: number): number {
+    return count > 1 ? -fan / 2 + (fan * i) / (count - 1) : 0;
+}
+
 /**
  * Fires the active gun once. `cooldown` is the new weapon cooldown (fireDelay plus the carried remainder), or
- * null to leave it unchanged. Returns true when bullets were fired.
+ * null to leave it unchanged. `force` fires an outdoors-only gun indoors (survev fireWeapon forceFire: the Commander's
+ * automatic flare). Returns true when bullets were fired.
  */
-export function fireGun(ctx: SimContext, player: Player, offHand: boolean, cooldown: number | null): boolean {
+export function fireGun(
+    ctx: SimContext,
+    player: Player,
+    offHand: boolean,
+    cooldown: number | null,
+    force = false,
+): boolean {
     const wm = player.weaponManager;
     const weapon = wm.activeSlot;
     const def = getDefOfType("gun", weapon.type);
@@ -83,7 +98,7 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     if (cooldown !== null) weapon.cooldown = cooldown;
     weapon.recoilTime = def.recoilTime;
     // flare guns refuse to fire indoors (the cooldown is still spent, as in survev)
-    if (def.outsideOnly && player.indoors) return false;
+    if (def.outsideOnly && player.indoors && !force) return false;
 
     const dir = player.dir;
     player.shotSlowdownTimer = def.fireDelay;
@@ -116,11 +131,20 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     const mouseDistance = clipDistance ? Math.max(player.input.toMouseLen - gunLen, 0) : undefined;
     // bullets of this shot, collected only for a host's observer (anti-cheat telemetry, M8)
     const fired: Bullet[] | null = ctx.observer?.onShotFired ? [] : null;
+    const bonus45 = ctx.rules.perks.bonus45;
+    const fan = def.fanAngle;
     for (let i = 0; i < def.bulletCount; i++) {
-        const deviation = firstShotAccuracy ? 0 : rng.range(-0.5, 0.5) * spread;
+        // .45 in the Chamber: an empowered round flies straight, x1.25 damage, x1.2 speed (survev weaponManager.ts:875-885)
+        const empowered = perks.bonus45 && rng.next() < bonus45.empoweredChance;
+        const deviation =
+            fan !== undefined
+                ? fanDeviation(fan, i, def.bulletCount)
+                : firstShotAccuracy || empowered
+                  ? 0
+                  : rng.range(-0.5, 0.5) * spread;
         const shotDir = v2.rotate(dir, math.deg2rad(deviation));
         let start = v2.add(gunPos, v2.mul(dir, gunLen));
-        if (i > 0) {
+        if (i > 0 && fan === undefined) {
             const offset = { x: rng.range(-jitter, jitter), y: rng.range(-jitter, jitter) };
             start = v2.add(start, v2.mul(offset, JITTER_SCALE));
         }
@@ -144,11 +168,12 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
             shotFx: i === 0,
             offHand,
             onHitFx,
-            damageMult: perks.damageMult,
-            speedMult: perks.speedMult,
+            damageMult: perks.damageMult * (empowered ? bonus45.empoweredDamageMult : 1),
+            speedMult: perks.speedMult * (empowered ? bonus45.empoweredSpeedMult : 1),
             distanceMult: perks.distanceMult,
             saturated: perks.saturated,
             thick: perks.thick,
+            apRounds: perks.apRounds,
             clipDistance,
             distance: mouseDistance,
         };
@@ -188,8 +213,14 @@ export function fireGun(ctx: SimContext, player: Player, offHand: boolean, coold
     }
     // projectile guns are all noSplinter, so Splinter never doubles their projectiles (survev would)
     if (weapon.type === "bugle" && player.hasPerk("inspiration")) playBugle(ctx, player);
+    // the M202's recoil: a slide back against the aim, damped like a downed player's knock-back and pushed out of
+    // obstacles every tick by the movement step, so it never passes through a wall (world/downed.ts applyKnockback)
+    if (def.recoilKnockback) {
+        player.knockback = v2.add(player.knockback, v2.mul(dir, -knockbackSpeedFor(def.recoilKnockback)));
+    }
     // the Commander's flare gun may be dropped once fired (survev fireWeapon hasFiredFlare)
     if (def.bulletType === "bullet_flare" && player.role === "leader") player.firedFlare = true;
+    ctx.faction?.onShot(player);
     player.shotSeq++;
     player.shotOffhand = offHand;
     if (fired) ctx.observer?.onShotFired?.(player, weapon.type, fired);

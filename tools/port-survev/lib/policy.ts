@@ -10,6 +10,28 @@ export interface PortPolicy {
     survevSkins: Record<string, string>;
     /** GameConfig dot paths whose value comes from survev (arrays cut to the original's length) */
     survevGameConfig: string[];
+    /**
+     * Map generation as survev has it (survev content wave stage 3): no map-spawn balance reverts, no fork-reskin
+     * revert, no map-generation parts of the event-map fixes (their loot parts stay until the loot stage)
+     */
+    survevMapGen: boolean;
+    /** original map object ids whose survev def replaces the original (structure overrides: the Reserve's town) */
+    survevMapObjects: string[];
+    /**
+     * survev-only map objects only survev's server code spawns (no map def names them), ported with what they reference:
+     * the potato-faction gold drop airdrop_crate_04po (survev server/src/game/objects/plane.ts:273-278)
+     */
+    survevServerMapObjects: string[];
+    /**
+     * original map object id -> dot paths of image fields that take survev's value: the original names an image no
+     * client ships and survev's same def names the art it draws (the snow air drops' opened image)
+     */
+    survevSpriteFixes: Record<string, string[]>;
+    /**
+     * survev balance (survev content wave stage 5, design option B): no balance revert and no event-map fixes; the
+     * original game objects take survev's gameplay fields (lib/objects.ts SURVEV_GAMEPLAY_FIELDS), presentation stays
+     */
+    survevBalance: boolean;
 }
 
 const stringList = (v: unknown, what: string): string[] => {
@@ -18,10 +40,27 @@ const stringList = (v: unknown, what: string): string[] => {
     return v;
 };
 
+const spriteFixes = (v: unknown): Record<string, string[]> => {
+    if (!isPlainObject(v)) throw new Error("policy.json: survevSpriteFixes must map ids to path lists");
+    return Object.fromEntries(
+        Object.entries(v).map(([id, paths]) => [id, stringList(paths, `survevSpriteFixes.${id}`)]),
+    );
+};
+
 /** Parses and checks a policy object (unknown keys other than `$comment` are errors, so typos never pass). */
 export function parsePolicy(raw: unknown): PortPolicy {
     if (!isPlainObject(raw)) throw new Error("policy.json must be an object");
-    const known = new Set(["$comment", "survevOnlyGameObjects", "survevSkins", "survevGameConfig"]);
+    const known = new Set([
+        "$comment",
+        "survevOnlyGameObjects",
+        "survevSkins",
+        "survevGameConfig",
+        "survevMapGen",
+        "survevMapObjects",
+        "survevServerMapObjects",
+        "survevSpriteFixes",
+        "survevBalance",
+    ]);
     const unknown = Object.keys(raw).filter((k) => !known.has(k));
     if (unknown.length) throw new Error(`policy.json: unknown keys ${unknown.join(", ")}`);
     const skins = raw.survevSkins ?? {};
@@ -32,7 +71,17 @@ export function parsePolicy(raw: unknown): PortPolicy {
         survevOnlyGameObjects: stringList(raw.survevOnlyGameObjects ?? [], "survevOnlyGameObjects"),
         survevSkins: skins as Record<string, string>,
         survevGameConfig: stringList(raw.survevGameConfig ?? [], "survevGameConfig"),
+        survevMapGen: raw.survevMapGen === true,
+        survevMapObjects: stringList(raw.survevMapObjects ?? [], "survevMapObjects"),
+        survevServerMapObjects: stringList(raw.survevServerMapObjects ?? [], "survevServerMapObjects"),
+        survevSpriteFixes: spriteFixes(raw.survevSpriteFixes ?? {}),
+        survevBalance: raw.survevBalance === true,
     };
+    for (const key of ["survevMapGen", "survevBalance"] as const) {
+        if (raw[key] !== undefined && typeof raw[key] !== "boolean") {
+            throw new Error(`policy.json: ${key} must be a boolean`);
+        }
+    }
     const twice = policy.survevOnlyGameObjects.filter((id) => id in policy.survevSkins);
     if (twice.length) throw new Error(`policy.json: ${twice.join(", ")} listed both as survev-only and as skins`);
     return policy;

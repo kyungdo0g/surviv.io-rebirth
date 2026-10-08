@@ -95,6 +95,8 @@ const PERK_FIELD = 26;
 const FROZEN_FIELD = PERK_FIELD + 2 * MAX_NET_PERKS;
 /** the action's alternate-reload bit (visual diff: the original Action.ReloadAlt), in the action group */
 const ACTION_ALT_FIELD = FROZEN_FIELD + 2;
+/** Indomitable Spirit's last stand (schema 15: survev lastStandEffect), in the status group */
+const LAST_STAND_FIELD = ACTION_ALT_FIELD + 1;
 
 function codeOf<T extends string>(list: readonly T[], value: T | undefined): number {
     const i = list.indexOf(value ?? list[0]);
@@ -115,11 +117,12 @@ const mapScaleOf = (n: number): number =>
 
 /**
  * Player. Groups: 0 movement (pos, dir), 1 status (layer, dead, downed, wearingPan, healEffect (M5b), haste type and
- * seq (M7a), frozen + frozenOri (M7b; the original `frozen b, frozenOri 2 bits`)), 2 active weapon, 3 gear (role and
- * perks (M7a)), 4 scale, 5 animation, 6 action (its alternate-reload bit, the original Action.ReloadAlt, is the
- * table's last field), 7 last shot. Seq counters are sent mod 2^16 (the original used 3 bits). Perks (the original
- * `perks b + array of {type, droppable}`) are a chain of up to 8 slots: a slot's type is written only when the previous
- * slot holds a perk, its droppable bit only when it holds one itself, so a perkless player costs one empty 10-bit type.
+ * seq (M7a), frozen + frozenOri (M7b; the original `frozen b, frozenOri 2 bits`), survev's lastStandEffect bit
+ * (schema 15, the table's last field)), 2 active weapon, 3 gear (role and perks (M7a)), 4 scale, 5 animation, 6 action
+ * (its alternate-reload bit, the original Action.ReloadAlt, follows the frozen fields), 7 last shot. Seq counters are
+ * sent mod 2^16 (the original used 3 bits). Perks (the original `perks b + array of {type, droppable}`) are a chain
+ * of up to 8 slots: a slot's type is written only when the previous slot holds a perk, its droppable bit only when it
+ * holds one itself, so a perkless player costs one empty 10-bit type.
  */
 export const PlayerCodec: ObjectCodec<PlayerView> = {
     kind: "player",
@@ -140,6 +143,7 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
         ...perkFields(),
         f(1, 1), f(2, 1, FROZEN_FIELD),
         f(1, 6),
+        f(1, 1),
     ],
     groupCount: 8,
     quantize(v, ctx, out) {
@@ -178,6 +182,7 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
         out[FROZEN_FIELD] = b(v.frozen);
         out[FROZEN_FIELD + 1] = v.frozen ? (v.frozenOri ?? 0) & 3 : 0;
         out[ACTION_ALT_FIELD] = b(v.action?.alt);
+        out[LAST_STAND_FIELD] = b(v.lastStand);
     },
     build(id, v, ctx) {
         return {
@@ -206,6 +211,7 @@ export const PlayerCodec: ObjectCodec<PlayerView> = {
             shot: { seq: v[20], offHand: v[21] === 1 },
             wearingPan: v[7] === 1,
             healEffect: v[22] === 1,
+            lastStand: v[LAST_STAND_FIELD] === 1,
             role: gameTypeOf(v[25]),
             perks: perksOf(v),
             haste: { type: fromCode(HASTE_TYPES, v[23], "haste"), seq: v[24] },
@@ -236,9 +242,11 @@ function perksOf(v: readonly number[]): PerkView[] {
 }
 
 /**
- * Obstacle. Static: type, pos, ori, layer, isDoor, isButton. Groups: 0 scale, 1 health (healthT, dead), 2 door
- * state (open, locked, canUse, seq mod 2^16 (M5b)), 3 button state (onOff, canUse, seq mod 2^16; M4). A door that
- * opens or closes moves or turns, which changes static fields: it is sent as a full record (like survev's setDirty).
+ * Obstacle. Static: type, pos, ori, layer, isDoor, isButton, isSkin [+ skinPlayerId u16] (the original full record's
+ * disguise bit and wearer id; survev content wave). Groups: 0 scale, 1 health (healthT, dead), 2 door state (open,
+ * locked, canUse, seq mod 2^16 (M5b)), 3 button state (onOff, canUse, seq mod 2^16; M4). A door that opens or closes
+ * and a disguise that follows its wearer move, which changes static fields: they are sent as a full record (like
+ * survev's setDirty).
  */
 export const ObstacleCodec: ObjectCodec<ObstacleView> = {
     kind: "obstacle",
@@ -252,6 +260,7 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
         f(1, S),
         f(1, 3, 12), f(1, 3, 12), f(SEQ_BITS, 3, 12),
         f(SEQ_BITS, 2, 5),
+        f(1, S), f(16, S, 17),
     ],
     groupCount: 4,
     quantize(v, ctx, out) {
@@ -272,6 +281,8 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
         out[14] = b(v.button?.canUse);
         out[15] = (v.button?.seq ?? 0) & SEQ_MASK;
         out[16] = (v.door?.seq ?? 0) & SEQ_MASK;
+        out[17] = b(v.skinPlayerId !== undefined);
+        out[18] = (v.skinPlayerId ?? 0) & 0xffff;
     },
     build(id, v, ctx) {
         const view: ObstacleView = {
@@ -287,6 +298,7 @@ export const ObstacleCodec: ObjectCodec<ObstacleView> = {
         };
         if (v[5] === 1) view.door = { open: v[9] === 1, locked: v[10] === 1, canUse: v[11] === 1, seq: v[16] };
         if (v[12] === 1) view.button = { onOff: v[13] === 1, canUse: v[14] === 1, seq: v[15] };
+        if (v[17] === 1) view.skinPlayerId = v[18];
         return view;
     },
 };

@@ -62,8 +62,14 @@ describe("PROTOCOL_HASH", () => {
         expect(PROTOCOL_HASH).toBeGreaterThanOrEqual(0);
         expect(PROTOCOL_HASH).toBeLessThan(2 ** 32);
         // 9: rebirth air strike variants (zone variant bits, the heavy shell's game types, the rebirth scorch decals)
-        // and the air drop tier crates; 10: the survev-only guns' game types before the rebirth-only ones
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(10);
+        // and the air drop tier crates; 10: the survev-only guns' game types before the rebirth-only ones; 11: the
+        // rebirth hit feedback's Hits section of the Update message; 12: the rebirth new guns' game types and their
+        // three ammo rows in the bag; 13: the variant strobes (their game types and bag items); 14: the survev content
+        // wave; 15: the AP Rounds bullet bit and the Indomitable Spirit player bit; 16: the Join loadout; 17: the
+        // potato-faction gold drop's map types; 18: the 50v50 shooter minimap reveal; 19: the club secret room's gun box
+        // map type (deposit_box_02_club); 20: the rebirth buildings' map types; 21: the Emote request's 0..2048
+        // positions (the bigger 50v50 map) and the new rebirth buildings' map types
+        expect(PROTOCOL_SCHEMA_VERSION).toBe(21);
         expect(PROTOCOL_HASH).toBe(
             computeProtocolHash(PROTOCOL_SCHEMA_VERSION, GameObjectRegistry.types, MapObjectRegistry.types),
         );

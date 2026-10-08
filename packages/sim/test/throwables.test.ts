@@ -2,7 +2,7 @@
 // flight with bounces, dropping at the feet, inventory and slot cycling, smoke, MIRV splits, strobe air strikes,
 // snowball impacts and the potato guns' projectiles.
 import { createRng, v2 } from "@rebirth/core";
-import { DamageType, GameConfig, Input, WeaponSlot } from "@rebirth/defs";
+import { DamageType, GameConfig, getDefOfType, Input, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { emptyInput, Game } from "../src/index.ts";
 import { giveGun, send, steps } from "./combatHelpers.ts";
@@ -190,7 +190,7 @@ describe("other throwables", () => {
         expect(log.every((e) => e.sourceId === p.id)).toBe(true);
     });
 
-    it("a strobe calls an air strike: ping after strikeDelay, then 3 planes (5 with Broken Arrow) bombing its line", () => {
+    it("a strobe calls an air strike: ping 3 s after the throw, then 3 planes (5 with Broken Arrow) beside its line", () => {
         const origin = clearSpot(200);
         for (const brokenArrow of [false, true]) {
             const { game, p } = fxGame(origin);
@@ -202,6 +202,7 @@ describe("other throwables", () => {
             const strobe = game.projectiles.projectiles[0];
             let pingTick = 0;
             const planeTicks: number[] = [];
+            const targets: { x: number; y: number }[] = [];
             const seenPlanes = new Set<number>();
             for (let i = 0; i < 1200; i++) {
                 game.step();
@@ -210,21 +211,33 @@ describe("other throwables", () => {
                     if (!seenPlanes.has(plane.id)) {
                         seenPlanes.add(plane.id);
                         planeTicks.push(game.tick);
+                        targets.push(v2.sub(plane.target, strobe.pos));
                     }
                 }
             }
-            // strikeDelay 2.5 s (conflicts.md strobe-strike-delay), first plane 1 s later, all within 3 s
-            expect((pingTick - thrown) * 0.01).toBeCloseTo(2.5, 6);
+            // strikeDelay 3 s (survev, the baseline; conflicts.md strobe-strike-delay), first plane 1 s later, all
+            // within 3 s
+            expect((pingTick - thrown) * 0.01).toBeCloseTo(getDefOfType("throwable", "strobe").strikeDelay!, 6);
             const n = brokenArrow ? 5 : 3;
             expect(planeTicks).toHaveLength(n);
             expect((planeTicks[0] - pingTick) * 0.01).toBeCloseTo(1, 6);
             expect(((planeTicks[1] - planeTicks[0]) * 0.01) / (3 / n)).toBeCloseTo(1, 1);
+            // survev's pattern (conflicts.md strobe-airstrike-offset): the first line starts at the strobe, the next
+            // ones 5 and 10 u beside it on alternating sides, all along the throw direction (+x)
+            // (relative to where the strobe lies a tick later: it still creeps forward a little)
+            const expected = [0, -5, 5, -10, 10].slice(0, n);
+            expect(targets.map((t) => Math.round(t.y * 1e3) / 1e3 + 0)).toEqual(expected);
+            for (const t of targets) expect(Math.abs(t.x)).toBeLessThan(1e-3);
             const bombs = log.filter((e) => e.type === "explosion_bomb_iron");
             expect(bombs.length).toBe(n * GameConfig.airstrike.bombCount);
-            // every strike flies along the throw direction over the strobe (no sideways offset by default)
-            for (const b of bombs)
-                expect(Math.abs(b.pos.y - strobe.pos.y)).toBeLessThan(GameConfig.airstrike.bombJitter + 1);
+            for (const b of bombs) {
+                expect(Math.abs(b.pos.y - strobe.pos.y)).toBeLessThan(
+                    (n === 5 ? 10 : 5) + GameConfig.airstrike.bombJitter + 1,
+                );
+            }
             expect(bombs.every((b) => b.damageType === DamageType.Airstrike && b.sourceId === p.id)).toBe(true);
+            // the original strobe's bombs are credited as bomb_iron, as in v0.8.82
+            expect(bombs.every((b) => b.gameSourceType === "bomb_iron")).toBe(true);
         }
     });
 
@@ -238,7 +251,21 @@ describe("other throwables", () => {
         cookAndThrow(game, p, 10);
         untilExplosions(game, 1, 200);
         expect(log[0].type).toBe("explosion_snowball");
-        expect(100 - target.health).toBeCloseTo(2, 9);
+        expect(100 - target.health).toBeCloseTo(getDefOfType("explosion", "explosion_snowball").damage, 9);
+    });
+
+    it("a snowball held 1 s leaves as a heavy snowball; the bag loses a plain one (survev weaponManager.ts:1229)", () => {
+        const origin = clearSpot();
+        const { game, p } = fxGame(origin);
+        const target = game.getPlayer(game.addPlayer("t"))!;
+        game.teleportPlayer(target.id, { x: origin.x + 10, y: origin.y });
+        holdThrowable(p, "snowball", 3);
+        const log = logExplosions(game);
+        cookAndThrow(game, p, 110);
+        untilExplosions(game, 1, 400);
+        expect(log[0].type).toBe("explosion_snowball_heavy");
+        expect(p.inv.get("snowball")).toBe(2);
+        expect(100 - target.health).toBeCloseTo(getDefOfType("explosion", "explosion_snowball_heavy").damage, 9);
     });
 });
 

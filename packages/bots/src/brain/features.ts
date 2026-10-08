@@ -42,6 +42,41 @@ export interface BrainFeatures {
     basements: boolean;
     /** commit to a chosen course: no running back and forth between two goals (flee / zone / loot dithering) */
     steady: boolean;
+    // bot overhaul (stage 0 flags; their code lands in wave 1, so until then they change nothing)
+    /**
+     * patience: give up stalled fights and futile chases, fist-chase give-up, holster sprint (MOVE: pursuit.ts); the
+     * flight, danger memory, survival items and revive memory; round 3: unseen fire (evade.ts), searching a lost
+     * target (search.ts), fighting from cover (position.ts), air strikes (strikes.ts)
+     */
+    pursuit: boolean;
+    /** holster (fists / melee) while travelling with no enemy in sight, draw on sight (LOOT: weapons.ts) */
+    holster: boolean;
+    /** clear houses room by room, weight buildings by loot potential (the "sweep" behaviour, LOOT: sweep.ts) */
+    sweep: boolean;
+    /** put on outfits by persona taste when it is quiet and they lie close (LOOT2: outfits.ts, user report 22) */
+    outfits: boolean;
+    /**
+     * 50v50 (bot round 6): faction perception (perception/factionIntel.ts), the front line, squad cohesion and the
+     * no-solo-crossing rule (brain/factionSquad.ts), push / fall back by local numbers, the faction roles
+     * (brain/factionRoles.ts) and reviving any downed faction member; inert outside faction maps
+     */
+    faction: boolean;
+    // bot round 6, the owner's early-game items (user reports 38-41, every mode)
+    /** early game, unarmed: rush an armed enemy with fists, juking all the way in (brain/early.ts; persona mix) */
+    fistRush: boolean;
+    /** a fist rusher at point blank: swap to melee and fight it out, or keep the gun (brain/early.ts; persona mix) */
+    meleeAnswer: boolean;
+    /** explore the buildings whose loot is likely to hold high-tier guns first (knowledge/buildingValue.ts) */
+    lootRoute: boolean;
+    /** unarmed with an enemy near: break a cheap crate close by and grab its gun first (brain/early.ts) */
+    crateFirst: boolean;
+    // bot round 6, the owner's gun-use items (user reports 42-44, every mode)
+    /** the Spud Gun and the Potato Cannon as real guns, scored by their explosions (knowledge/gunTiers.ts) */
+    potatoGuns: boolean;
+    /** DMRs for average aim: a milder skill penalty than bolt snipers, a long gun of choice (knowledge/desire.ts) */
+    dmrFit: boolean;
+    /** experts quick-switch after a shot with a slow-cycling gun (brain/quickSwitch.ts; sim switch rules) */
+    quickSwitch: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -62,6 +97,18 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "threats",
     "basements",
     "steady",
+    "pursuit",
+    "holster",
+    "sweep",
+    "outfits",
+    "faction",
+    "fistRush",
+    "meleeAnswer",
+    "lootRoute",
+    "crateFirst",
+    "potatoGuns",
+    "dmrFit",
+    "quickSwitch",
 ];
 
 export type BrainName = "baseline" | "smart";

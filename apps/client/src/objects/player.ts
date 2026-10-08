@@ -24,9 +24,11 @@ import {
     type MeleeDef,
     type OutfitDef,
     type ThrowableDef,
+    type ThrowableHandImg,
 } from "@rebirth/defs";
 import type { PlayerView } from "@rebirth/sim";
 import { Container, type Sprite } from "pixi.js";
+import { greySpriteId } from "../assets/textures.ts";
 import type { ViewBounds } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
 import { AnimPlayer, BONE_COUNT, Bone, IDENTITY_POSE, IDLE_POSES, type Pose } from "./anims.ts";
@@ -134,6 +136,7 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private readonly gunR: GunSprites;
     private data!: PlayerView;
     private visualsKey = "";
+    private loadoutKey = "";
     private idlePose = "fists";
     private weapon: WeaponDef | undefined;
     private readonly anim = new AnimPlayer();
@@ -215,11 +218,12 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     }
 
     /** sprites drawn in the hands for the held throwable (tests) */
-    get throwableSprites(): { state: string; left: boolean; right: boolean } {
+    get throwableSprites(): { state: string; left: boolean; right: boolean; rightTint: number } {
         return {
             state: this.throwableState,
             left: this.objectLSprite.visible,
             right: this.objectRSprite.visible,
+            rightTint: this.objectRSprite.tint,
         };
     }
 
@@ -324,8 +328,13 @@ export class PlayerRender implements ObjectRender<PlayerView> {
         this.bodySprite.scale.set(0.25);
 
         const handTint = ghillie ? colors.playerGhillie : skin.handTint;
-        for (const hand of [this.handLSprite, this.handRSprite]) {
-            tex.apply(hand, skin.handSprite, 0.175 * bodyScale);
+        // left / right hand outfits (aurora, spring tree) name one sprite per hand (survev player.ts:1530-1532)
+        const hs = skin.handSprite;
+        for (const [hand, img] of [
+            [this.handLSprite, typeof hs === "string" ? hs : hs.left],
+            [this.handRSprite, typeof hs === "string" ? hs : hs.right],
+        ] as const) {
+            tex.apply(hand, img, 0.175 * bodyScale);
             hand.scale.set(0.175);
             hand.tint = handTint;
         }
@@ -443,16 +452,17 @@ export class PlayerRender implements ObjectRender<PlayerView> {
     private updateThrowableSprites(): void {
         const weapon = this.weapon;
         const imgs = weapon?.type === "throwable" ? weapon.handImg?.[this.throwableState] : undefined;
-        const set = (sprite: Sprite, img: { sprite: string; pos?: Vec2; scale?: number } | undefined) => {
+        const set = (sprite: Sprite, img: ThrowableHandImg | undefined) => {
             const visible = !!img?.sprite && img.sprite !== "none" && !this.data.downed;
             sprite.visible = visible;
             if (!visible || !img) return;
             const scale = img.scale ?? 1;
-            this.deps.textures.apply(sprite, img.sprite, scale);
+            // rebirth: a variant strobe in the hand is recoloured in its variant's colour
+            this.deps.textures.apply(sprite, img.recolor ? greySpriteId(img.sprite) : img.sprite, scale);
             sprite.position.set(img.pos?.x ?? 0, img.pos?.y ?? 0);
             sprite.scale.set(scale);
             sprite.rotation = Math.PI * 0.5;
-            sprite.tint = 0xffffff;
+            sprite.tint = img.tint ?? 0xffffff;
         };
         set(this.objectLSprite, imgs?.left);
         set(this.objectRSprite, imgs?.right);
@@ -516,6 +526,11 @@ export class PlayerRender implements ObjectRender<PlayerView> {
             (view.id === ctx.localId ? 65536 : 0) +
             (view.scale > 1 ? 131072 : 0);
         this.deps.renderer.add(this.container, layer, zOrd, zIdx);
+        const fx = this.deps.effectsOf?.(view.id);
+        if (fx && this.emitters && `${fx.heal},${fx.boost}` !== this.loadoutKey) {
+            this.loadoutKey = `${fx.heal},${fx.boost}`;
+            this.emitters.setLoadout(fx.heal, fx.boost);
+        }
         this.emitters?.update(view, pos, layer, zOrd + 1);
         this.mode.update(view, pos, layer, zOrd, dt);
         this.aura.update(view, local, this.deps.renderer, layer, zOrd, zIdx, ctx.localLayer, dt);

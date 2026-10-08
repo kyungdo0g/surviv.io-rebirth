@@ -3,7 +3,9 @@
 // assets are dropped, so the client never requests a missing file. M9: keeps `canCoalesce` (impact sounds that merge).
 // Sounds the game objects name (gun, melee and throwable `sound` fields) that the original lists lack, i.e. those of
 // the survev-only items the port takes (tools/port-survev/policy.json), come from survev's own list
-// (.survev/client/src/soundDefs.ts) with `source: "survev"`.
+// (.survev/client/src/soundDefs.ts) with `source: "survev"`; so do the sounds survev's map objects name (buildings,
+// music, sound emitters) and survev-only sound groups (egg hits), plus the client effect sounds no def names
+// (EFFECT_SOUNDS).
 // Usage (repo root): node apps/client/scripts/sound-defs.ts [research-cache/live/app.<hash>.js]
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -13,7 +15,13 @@ import { runInNewContext } from "node:vm";
 const LIVE = "research-cache/live";
 const OUT = "apps/client/src/generated/sound-defs.json";
 const DEFS = "packages/defs/src/generated/gameObjects.json";
+const MAP_OBJECTS = "packages/defs/src/generated/mapObjects.json";
 const SURVEV_SOUNDS = ".survev/client/src/soundDefs.ts";
+/**
+ * Sounds the client's own effects play that no game or map object def names: survev's coconut and tomato explosion
+ * effects (survev client/src/objects/explosion.ts:672-715; apps/client/src/fx/explosions.ts).
+ */
+const EFFECT_SOUNDS = ["coconut_01", "tomato_01"];
 /** where the audio files live: the imported client assets, else the survev clone they are copied from */
 const AUDIO_ROOTS = ["apps/client/public/assets", ".survev/client/public"];
 
@@ -76,17 +84,39 @@ for (const [list, sounds] of Object.entries(mod.Sounds)) {
     }
 }
 // sounds the game objects name that no original list has: survev's definition (survev-only items)
-const named = new Set<string>();
+const named = new Set<string>(EFFECT_SOUNDS);
 for (const def of Object.values(JSON.parse(readFileSync(DEFS, "utf8")) as Record<string, { sound?: object }>)) {
     for (const v of Object.values(def.sound ?? {})) if (typeof v === "string" && v) named.add(v);
 }
+// and the sounds the map objects name (survev buildings: obstacle hit / break sounds, doors, buttons, puzzles,
+// interior music, sound emitters), every string under a key containing "sound" but the labels beside them
+const LABEL_KEYS = new Set(["filter", "puzzle", "channel"]);
+const collect = (v: unknown, inSound: boolean): void => {
+    if (typeof v === "string") {
+        if (inSound && v && v !== "none") named.add(v);
+    } else if (Array.isArray(v)) {
+        for (const x of v) collect(x, inSound);
+    } else if (v && typeof v === "object") {
+        for (const [k, x] of Object.entries(v)) {
+            if (!LABEL_KEYS.has(k)) collect(x, inSound || k.toLowerCase().includes("sound"));
+        }
+    }
+};
+collect(JSON.parse(readFileSync(MAP_OBJECTS, "utf8")), false);
 const inOriginal = (name: string) => Object.values(mod.Sounds).some((list) => Object.hasOwn(list, name));
 const survev = existsSync(SURVEV_SOUNDS)
-    ? ((await import(pathToFileURL(resolve(SURVEV_SOUNDS)).href)).default as Pick<SoundModule, "Sounds">)
+    ? ((await import(pathToFileURL(resolve(SURVEV_SOUNDS)).href)).default as Pick<SoundModule, "Sounds" | "Groups">)
     : undefined;
+// a named group (hit sounds) only survev has: its sounds come along
+const groups: SoundModule["Groups"] = { ...mod.Groups };
+for (const name of [...named].sort()) {
+    if (Object.hasOwn(groups, name) || !survev?.Groups?.[name]) continue;
+    groups[name] = survev.Groups[name];
+    for (const s of survev.Groups[name].sounds) named.add(s);
+}
 const fromSurvev: string[] = [];
 for (const name of [...named].sort()) {
-    if (inOriginal(name) || !survev) continue;
+    if (inOriginal(name) || !survev || Object.hasOwn(groups, name)) continue;
     const list = Object.keys(survev.Sounds).find((l) => Object.hasOwn(survev.Sounds[l], name));
     if (!list) continue;
     const def = survev.Sounds[list][name];
@@ -101,10 +131,10 @@ for (const name of [...named].sort()) {
     lists[list][name] = out;
     fromSurvev.push(name);
 }
-const result = { channels: mod.Channels, lists, groups: mod.Groups };
+const result = { channels: mod.Channels, lists, groups };
 writeFileSync(OUT, `${JSON.stringify(result, null, 1)}\n`);
 const count = Object.values(lists).reduce((n, l) => n + Object.keys(l).length, 0);
-console.log(`${count} sounds, ${Object.keys(mod.Groups).length} groups, ${Object.keys(mod.Channels).length} channels`);
+console.log(`${count} sounds, ${Object.keys(groups).length} groups, ${Object.keys(mod.Channels).length} channels`);
 console.log(audioRoot ? `checked against ${audioRoot}` : "audio files not found: existence not checked");
 console.log(`${fromSurvev.length} from survev's list: ${fromSurvev.join(", ")}`);
 if (missing.length) console.log(`dropped ${missing.length} without a file: ${missing.join(", ")}`);

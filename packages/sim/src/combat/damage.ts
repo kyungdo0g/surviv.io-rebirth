@@ -10,6 +10,11 @@ export interface DamageParams {
     damageType: number;
     /** weapon (gun, melee, throwable) that dealt the hit; its headshotMult applies */
     gameSourceType?: string;
+    /**
+     * the weapon the hit started from when that is not `gameSourceType`: the throwable in hand for a heavy potato or a
+     * MIRV's bomblets, the gun that shot an exploding barrel (survev weaponSourceType; potato swaps prefer it)
+     */
+    weaponSourceType?: string;
     /** map object that dealt the hit (exploding barrel, ...) */
     mapSourceType?: string;
     /** explosions and shrapnel never headshot and use the Flak Jacket explosion reduction */
@@ -18,6 +23,8 @@ export interface DamageParams {
     sourceId?: number;
     /** direction of the hit */
     dir?: Vec2;
+    /** every reduction is multiplied by this (AP Rounds 0.8: armour is 80 % as effective; survev player.ts:2447-2452) */
+    armorPenetration?: number;
 }
 
 /** What a target wears, for the reductions. */
@@ -56,6 +63,17 @@ export function rollHeadshot(params: DamageParams, rules: SimRules, rng: Rng): b
 }
 
 /**
+ * Whether the target's armour reduced this hit (rebirth hit feedback, user/2026-10-07-hit-feedback): the helmet on a
+ * headshot, the chest armour on a body hit, as `computeDamage` applies them; gas, bleeding and (unless the knob says
+ * otherwise) air drop crushes skip armour. The helmet's 30 % share on body hits does not count.
+ */
+export function armorCovers(params: DamageParams, headshot: boolean, target: ArmorState, rules: SimRules): boolean {
+    if (params.damageType === DamageType.Gas || params.damageType === DamageType.Bleeding) return false;
+    if (params.damageType === DamageType.Airdrop && !rules.airdropCrushArmor) return false;
+    return reductionOf(headshot ? target.helmet : target.chest) > 0;
+}
+
+/**
  * Damage after headshot multiplier and reductions, before clamping to the remaining health. Each reduction is
  * `damage -= damage * mult`, in the order flak_jacket, steelskin, chest (body hits only), helmet (x1 on the head,
  * x0.3 on the body). Gas and bleeding skip all of it.
@@ -64,7 +82,7 @@ export function computeDamage(params: DamageParams, headshot: boolean, target: A
     let damage = params.amount;
     if (params.damageType === DamageType.Gas || params.damageType === DamageType.Bleeding) return damage;
     const reduce = (mult: number) => {
-        damage -= damage * mult;
+        damage -= damage * mult * (params.armorPenetration ?? 1);
     };
     if (headshot) damage *= headshotMultOf(params.gameSourceType) ?? 1;
     if (target.hasPerk("flak_jacket")) {

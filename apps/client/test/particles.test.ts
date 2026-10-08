@@ -1,10 +1,13 @@
 // Particle coverage (M9): every particle and emitter the generated game data names has a client definition (a missing
 // one silently drew nothing, e.g. obstacle break debris), every definition's sprites are in the sprite manifest, and
-// every emitter spawns a defined particle.
-import { GameObjectDefs, MapDefs, MapObjectDefs } from "@rebirth/defs";
+// every emitter spawns a defined particle; every explosion has an effect whose scattered pieces are defined, and every
+// heal / boost effect resolves to defined emitters.
+import { type ExplosionDef, GameObjectDefs, MapDefs, MapObjectDefs } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
+import { explosionVisual } from "../src/fx/explosions.ts";
 import { ALL_EMITTER_DEFS, ALL_PARTICLE_DEFS } from "../src/fx/particleDefsAll.ts";
 import manifest from "../src/generated/sprite-manifest.json";
+import { effectEmitters } from "../src/objects/playerEmitters.ts";
 
 /** referenced emitters the client deliberately does not define */
 const EMITTER_ALLOWLIST: Readonly<Record<string, string>> = {
@@ -100,6 +103,33 @@ describe("particle coverage", () => {
             }
         }
         expect(missing).toEqual([]);
+    });
+
+    it("plays an effect for every explosion, scattering defined particles", () => {
+        const bad: string[] = [];
+        for (const [id, def] of Object.entries(GameObjectDefs)) {
+            if (def.type !== "explosion") continue;
+            const visual = explosionVisual(id);
+            if (!visual) bad.push(`${id}: no effect "${(def as ExplosionDef).explosionEffectType}"`);
+            else if (visual.effect.scatter && !ALL_PARTICLE_DEFS[visual.effect.scatter.particle]) {
+                bad.push(`${id}: scatter ${visual.effect.scatter.particle}`);
+            }
+        }
+        expect(bad).toEqual([]);
+        // survev's coconut and tomato splats (survev client explosion.ts:672-715)
+        expect(explosionVisual("explosion_coconut")?.effect.scatter).toMatchObject({ particle: "coconut_impact" });
+        expect(explosionVisual("explosion_tomato")?.effect.burst.grass).toBe("tomato_01");
+    });
+
+    it("resolves every heal / boost effect to defined emitters, the default for an unknown one", () => {
+        for (const [id, def] of Object.entries(GameObjectDefs)) {
+            if (def.type !== "heal_effect" && def.type !== "boost_effect") continue;
+            for (const e of effectEmitters(id, def.type)) expect(ALL_EMITTER_DEFS[e], `${id}: ${e}`).toBeDefined();
+        }
+        expect(effectEmitters("boost_gearshift", "boost_effect")).toEqual(["boost_gearshift_01", "boost_gearshift_02"]);
+        expect(effectEmitters("heal_diamond", "heal_effect")).toEqual(["heal_diamond"]);
+        expect(effectEmitters("", "heal_effect")).toEqual(["heal_basic"]);
+        expect(effectEmitters("heal_diamond", "boost_effect")).toEqual(["boost_basic"]);
     });
 
     it("keeps definitions sane", () => {

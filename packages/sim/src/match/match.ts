@@ -4,7 +4,8 @@
 // groups, sends PlayerStats to a player who died while its group plays on and GameOver to every member of a group once
 // it is eliminated or wins. 50v50 (M7a) counts factions (player.teamId): the match starts with two factions ready and
 // ends when one is left; a player who dies while both play on gets PlayerStats, everyone gets the GameOver at the end
-// with both factions' first Commanders in its stats; every role holder's death is announced (RoleAnnouncement).
+// with both factions' first Commanders and the match MVP in its stats (rebirth-deviations.md, the owner's screenshot of
+// the original's four cards); every role holder's death is announced (RoleAnnouncement).
 // Behaviour follows survev server/src/game/game.ts (start, canJoin, checkGameOver), gameModeManager.ts (alive count,
 // isGameStarted, getWinningTeamId, showStatsMsg, getGameoverPlayers, getPlayersSortedByRank) and objects/player.ts
 // (kill, down, promoteToKillLeader, addGameOverMsg); docs/research/ui/hud.md (kill feed, kill leader, death and win
@@ -22,6 +23,15 @@ import type { Group } from "./teams.ts";
 export const KILL_LEADER_ROLE = "kill_leader";
 /** Events are kept this long for viewers that skip snapshots (congested sockets). */
 const EVENT_RETENTION_TICKS = 30 * TICK_HZ;
+
+/**
+ * Whether a disconnecting player leaves the game (survev player.ts:3116-3124 canDespawn): a living, standing player
+ * that joined less than `minActiveTime` ago, but never a 50v50 role holder.
+ */
+export function canDespawn(p: Player, factionMode: boolean, minActiveTime: number): boolean {
+    if (factionMode && p.role) return false;
+    return p.timeAlive < minActiveTime - 1e-9 && !p.dead && !p.downed;
+}
 
 export interface MatchOptions {
     /**
@@ -63,6 +73,11 @@ export class Match {
     winningTeamId = 0;
     winnerIds: number[] = [];
     killLeaderId = 0;
+    /**
+     * 50v50: the match MVP, chosen once at game over (survev game.ts:365 factionsMvp); null before, or without both
+     * Commanders
+     */
+    factionMvp: Player | null = null;
     readonly kills = new EventLog<KillEvent>();
     readonly roles = new EventLog<RoleAnnouncementEvent>();
     readonly results = new EventLog<{ playerId: number; event: GameOverEvent }>();
@@ -131,16 +146,22 @@ export class Match {
     }
 
     /**
-     * Start check, run at the beginning of a tick: the match starts once `minPlayers` living players (team modes:
-     * groups with such a player) have been alive for `minActiveTime` (survev cantDespawnAliveCount > 1), at once in a
-     * sandbox. Returns true on the start.
+     * Start check, run at the beginning of a tick: the match starts once `minPlayers` sides have a player that can no
+     * longer despawn (survev cantDespawnAliveCount > 1), at once in a sandbox. Returns true on the start.
      */
     checkStart(): boolean {
         if (this.started) return false;
         if (!this.options.sandbox) {
-            const minTime = this.host.rules.minActiveTime - 1e-9;
+            // sides with a living player and a member that can no longer despawn (survev cantDespawnAliveCount: a
+            // downed player, a dead teammate and a 50v50 role holder count too)
+            const factionMode = !!getMapDef(this.host.options.mapName).gameMode.factionMode;
+            const alive = new Set(this.living().map((p) => p.teamId));
             const ready = new Set<number>();
-            for (const p of this.host.players()) if (!p.dead && p.timeAlive >= minTime) ready.add(p.teamId);
+            for (const p of this.host.players()) {
+                if (alive.has(p.teamId) && !canDespawn(p, factionMode, this.host.rules.minActiveTime)) {
+                    ready.add(p.teamId);
+                }
+            }
             if (ready.size < Math.max(1, this.options.minPlayers)) return false;
         }
         this.started = true;
@@ -178,8 +199,9 @@ export class Match {
         if (victimWasLeader && victim.role !== "the_hunted") {
             this.logRole({ playerId: victim.id, killerId: sourcePlayer?.id ?? 0, assigned: false, killed: true });
         }
-        const counted = credit && credit !== victim && credit.teamId !== victim.teamId;
-        if (this.killLeaderEnabled && counted) this.updateKillLeader(credit);
+        // any credit re-checks the kill leader, a teamkill too: the dead leader's kills no longer count (survev
+        // player.ts:2869-2891)
+        if (this.killLeaderEnabled && credit) this.updateKillLeader(credit);
         if (victimWasLeader && this.killLeaderId === victim.id) this.killLeaderId = 0;
         this.checkGameOver();
         this.pendingResults.push(victim);
@@ -246,10 +268,30 @@ export class Match {
         if (sides.length > 1) return;
         this.over = true;
         this.overTick = this.host.tick;
+        this.factionMvp = this.pickFactionMvp(removed);
         this.winningTeamId = sides[0] ?? 0;
         this.winnerIds = this.living()
             .filter((p) => p !== removed && p.teamId === this.winningTeamId && this.winningTeamId !== 0)
             .map((p) => p.id);
+    }
+
+    /**
+     * 50v50 MVP once both Commanders exist (survev gameModeManager.ts:253-276 getFactionMvp): the most kills over every
+     * player, dead ones included, in join order; equal kills go to the later player unless the earlier one dealt more
+     * damage (survev's reduce: `best.damageDealt > p.damageDealt ? best : p`). A player leaving at the game over is
+     * already out of survev's list.
+     */
+    private pickFactionMvp(removed?: Player): Player | null {
+        const faction = this.host.faction;
+        if (!faction?.teams.every((t) => t.leader)) return null;
+        let best: Player | null = null;
+        for (const p of this.host.players()) {
+            if (p === removed) continue;
+            if (!best || p.kills > best.kills || (p.kills === best.kills && !(best.damageDealt > p.damageDealt))) {
+                best = p;
+            }
+        }
+        return best;
     }
 
     /**
@@ -294,13 +336,15 @@ export class Match {
 
     /**
      * GameOver for `player` and, in team modes, every member of its group (survev getGameoverPlayers); 50v50: the
-     * player alone, its stats followed by the Red and Blue first Commanders once both exist.
+     * player alone, its stats followed by the Red and Blue first Commanders once both exist, then the MVP once the
+     * game is over (listed even when it is the player or a Commander, as survev does).
      */
     private addGroupResult(player: Player): void {
         const faction = this.host.faction;
         if (faction) {
             const leaders = faction.teams.map((t) => t.leader);
             const stats = leaders.every((l) => l) ? [player, ...(leaders as Player[])] : [player];
+            if (stats.length > 1 && this.factionMvp) stats.push(this.factionMvp);
             this.addResult(player, stats);
             return;
         }

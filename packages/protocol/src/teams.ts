@@ -8,10 +8,11 @@
 //   GroupStatus:  u8 count x {playerId u16, health float 0..100 7 bits, disconnected bit}, align
 //   Emotes:       u8 count x {playerId u16, type game type, itemType game type, isPing bit [+ pos mapPos], align}
 //                 (original record)
-//   Emote (client -> server): pos vec 0..1024 16+16 bits, type game type, isPing bit (original layout)
+//   Emote (client -> server): pos vec 0..2048 16+16 bits (the original: 0..1024; schema 21), type game type, isPing
+//                 bit
 //   FactionStatus (M7a, 50v50): u8 count x {playerId u16, pos 11+11 bits, dead bit, downed bit, hasRole bit [+ role game
 //                 type]}, align: the original faction PlayerStatus records of the viewer's faction (the role rides in
-//                 PlayerStatus records too since M7a)
+//                 PlayerStatus records too since M7a), then the enemies revealed by firing (schema 18)
 import type { BitReader, BitWriter, Vec2 } from "@rebirth/core";
 import type { EmoteEvent, EmoteRequest, FactionMemberView, TeamMemberView } from "@rebirth/sim";
 import {
@@ -32,8 +33,11 @@ import {
 export const TEAM_POS_BITS = 11;
 /** Team member health: 7 bits over 0..100 (original GroupStatus). */
 export const TEAM_HEALTH_BITS = 7;
-/** Emote message positions span 0..1024 (survev net.ts Constants.MaxPosition) with 16 bits per axis. */
-const EMOTE_POS_MAX = 1024;
+/**
+ * Emote message positions span 0..2048 with 16 bits per axis (0.03 unit steps). The original's 0..1024 (survev net.ts
+ * Constants.MaxPosition) clamped pings on the rebirth's 1034-unit 50v50 map (rebirth/mapScale.ts; schema 21).
+ */
+const EMOTE_POS_MAX = 2048;
 const EMOTE_POS_BITS = 16;
 
 /** PlayerStatus wire values per member: playerId, x, y, dead, downed, role. */

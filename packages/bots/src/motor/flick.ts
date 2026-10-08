@@ -17,6 +17,17 @@ export const MT_MIN = 0.08;
 export const MT_MAX = 0.9;
 /** A path that passes closer than this to the player bends away from it (world units). */
 const CLEARANCE = 3;
+/**
+ * A flick whose aim would turn faster than CAP_LO (rad/s) at its peak is slowed to a top speed drawn in CAP_LO..CAP_HI
+ * for that flick (its duration stretched a little: the minimum-jerk speed scales with 1 / mt, the profile stays a bell;
+ * the rest held by the motor's clamp at that speed: capTurnRate). Without it
+ * large flicks ran into the motor's hard 1300 deg/s safety cap and flattened there, the same top speed every time
+ * (adversarial review: a fifth of the fast ticks sat within 30 deg/s of the cap, an input-stream signature). CAP_HI
+ * stays at that safety cap: 1300 deg/s is 39 degrees per input at the 33 Hz a NetworkBot sends, under the server's
+ * 45 degree snap (apps/server anticheat thresholds).
+ */
+const CAP_LO = (1000 * Math.PI) / 180;
+const CAP_HI = (1300 * Math.PI) / 180;
 
 export type FlickKind = "primary" | "correction" | "idle" | "throw";
 
@@ -111,6 +122,40 @@ function clearance(p0: Vec2, k: Vec2, p1: Vec2): number {
     let min = Number.POSITIVE_INFINITY;
     for (let i = 0; i <= 16; i++) min = Math.min(min, v2.length(bezier(p0, k, p1, i / 16)));
     return min;
+}
+
+/** Peak angular speed (rad/s) of the aim direction along a flick path traversed in `mt` (sampled). */
+export function peakTurnRate(p0: Vec2, k: Vec2, p1: Vec2, mt: number): number {
+    const n = 24;
+    let prev = bezier(p0, k, p1, 0);
+    let max = 0;
+    for (let i = 1; i <= n; i++) {
+        const p = bezier(p0, k, p1, minJerk(i / n));
+        let da = Math.atan2(p.y, p.x) - Math.atan2(prev.y, prev.x);
+        while (da > Math.PI) da -= 2 * Math.PI;
+        while (da < -Math.PI) da += 2 * Math.PI;
+        max = Math.max(max, Math.abs(da) / (mt / n));
+        prev = p;
+    }
+    return max;
+}
+
+/** A flick is stretched by at most this factor for its top speed; past it the motor's clamp holds it (capTurnRate). */
+const STRETCH_MAX = 1.25;
+
+/**
+ * The motor's speed limit on a planned flick (see CAP_LO): a flick whose aim would turn faster than CAP_LO at its peak
+ * gets a top speed drawn in CAP_LO..CAP_HI and its duration stretched towards it, by STRETCH_MAX at most (the hand plans
+ * a slower stroke for a big turn; Fitts' law sets the duration of the hand's movement, planFlick); what is still too
+ * fast is held at that flick's own top speed by the motor's clamp. Returns that top speed (rad/s), Infinity for a flick
+ * under CAP_LO (the motor's safety cap applies). The draw happens only for such a flick.
+ */
+export function capTurnRate(rng: Rng, f: Flick): number {
+    const peak = peakTurnRate(f.p0, f.k, f.p1, f.mt);
+    if (peak <= CAP_LO) return Number.POSITIVE_INFINITY;
+    const cap = CAP_LO + (CAP_HI - CAP_LO) * rng.next();
+    if (peak > cap) f.mt *= Math.min(STRETCH_MAX, peak / cap);
+    return cap;
 }
 
 /** Plans a flick: draws its endpoint and duration and shapes its path. */

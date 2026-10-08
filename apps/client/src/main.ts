@@ -8,11 +8,15 @@
 //   zoom, debug is in the query (e.g. /?sandbox=1&map=<name>&seed=<n>). Debug: &debug=1 shows the HUD (F3 toggles it),
 //   &zoom=<radius> overrides the camera zoom radius. Sandbox: &dummies=<n> standing dummies in front of the player,
 //   &loot=0 removes the map loot, &give=<id,...> guns with full ammo and bag items (throwables, heals, boosts, scopes)
-//   filled to capacity, the first gun or throwable equipped. &lang=ko Korean HUD.
+//   filled to capacity, the first gun or throwable equipped (any gun id, the new beta guns included: give=dshk,rpg7).
+//   &beta=1 turns on the new-gun beta (the server's GUN_BETA: new and survev-only guns as common floor loot).
+//   &lang=ko Korean HUD.
 //   Match (M4): the loopback runs a sandbox match (starts at once, never ends) unless &sandbox=0 (a real match: two
 //   players alive for 10 s start it, the last one alive wins); &gas=fast uses a shortened red-zone stage table.
 //   Teams (M6): &team=2|4 makes the loopback a duo / squad game with &teammates=<n> idle teammates in the local
 //   player's group (behind it) and the dummies as enemies.
+//   Building showcase: &building=<type> (or 1 for the first) plays on a map holding only that building or structure,
+//   without gas; [ and ] (or the bar at the top) step through every building the maps spawn (dev/showcase.ts).
 // - Dev pages: /?gallery=<filter>&page=<n> sprite gallery; /?fixture=1 renderer fixture.
 // - Any route: &touch=1 forces the touch controls on, &touch=0 off (else phones, tablets and coarse pointers, M8).
 import "@fontsource/roboto-condensed/400.css";
@@ -45,6 +49,7 @@ const SANDBOX_KEYS = [
     "seed",
     "map",
     "give",
+    "beta",
     "dummies",
     "loot",
     "team",
@@ -53,6 +58,7 @@ const SANDBOX_KEYS = [
     "fixture",
     "zoom",
     "debug",
+    "building",
 ] as const;
 
 function isSandboxRoute(route: URLSearchParams): boolean {
@@ -118,10 +124,12 @@ async function main() {
         dummies: Math.max(0, Math.min(16, Math.floor(Number(route.get("dummies") ?? 0) || 0))),
         loot: route.get("loot") !== "0",
         give: route.get("give") ?? undefined,
+        gunBeta: route.get("beta") === "1",
         sandbox: route.get("sandbox") !== "0",
         gas: route.get("gas") ?? undefined,
         teamMode: teamModeOf(route.get("team")),
         teammates: Math.max(0, Math.min(3, Math.floor(Number(route.get("teammates") ?? 0) || 0))),
+        building: route.get("building") ?? undefined,
         net,
     });
 }
