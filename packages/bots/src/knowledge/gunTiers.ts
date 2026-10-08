@@ -18,9 +18,9 @@
 // - survev-only guns (ADR 0003; barrett, ash12, sw500, imbel, spas16 at their survev.wiki.gg stats, the winter skins at
 //   their base gun's tier) carry estimated F values from their class and stats; the PMG-134 (potato_lmg), a potato gun
 //   ("special" in the KB), is an LMG to the bots at its explosion damage since round 5 (report 34), the other potato
-//   guns stay useless. Post-0.8.82 guns that are still not ported (PKM, M134, M79) are not in the defs and not in
-//   this table.
-import { GameObjectDefs, type GunDef, gunClass, hasDef } from "@rebirth/defs";
+//   guns stay useless. Post-0.8.82 guns that are still not ported (PKM, M134) are not in the defs and not in this
+//   table; the beta launchers (the M79 among them) are their own class since bot round 6 (knowledge/launchers.ts).
+import { GameConfig, GameObjectDefs, type GunDef, gunClass, hasDef } from "@rebirth/defs";
 import type { WeaponClass } from "./weapons.ts";
 
 /** Tiers, best first: S (everyone wants it), S-aim (top, but needs aim), A+ .. D. */
@@ -56,6 +56,14 @@ export const WEAK_TIER: GunTier = "C+";
 /** Skill penalty slope of `skillFit` for aim guns (snipers and DMRs) and for every other gun (critique section B). */
 export const AIM_FIT_SLOPE = 0.6;
 export const FIT_SLOPE = 0.25;
+/**
+ * Bot round 6 (user report 43, BrainFeatures.dmrFit): a semi-auto DMR forgives a missed click (the next round is a
+ * fraction of a second away; the owner, an average aim, plays them), so its slope is half the bolt snipers', which
+ * keep AIM_FIT_SLOPE (awc, barrett, m200, hecate, lynx, sv98, mosin and the other "sniper" class guns).
+ */
+export const DMR_FIT_SLOPE = 0.3;
+/** The potato guns the bots learned to use in round 6 (BrainFeatures.potatoGuns; the PMG-134 since round 5). */
+export const POTATO_GUNS: ReadonlySet<string> = new Set(["potato_cannon", "potato_smg"]);
 
 export interface GunTierInfo {
     id: string;
@@ -88,7 +96,8 @@ const ROWS: readonly Row[] = [
     // DMRs (round 5, user report 33: the owner calls the MK12 and the M39 low-tier DMRs, air drop tier 1 guns: B+; they
     // were A like the SCAR-H)
     ["mk12", "B+", 0.28, true], ["m39", "B+", 0.3, true], ["garand", "A", 0.26, true], ["vss", "B", 0.29, true],
-    ["svd", "A", 0.3, false], ["scarssr", "A", 0.28, false], ["l86", "B+", 0.35, false], ["mkg45", "B+", 0.35, false], // est.
+    // (round 6 loot handoff: the SVD and the SCAR-SSR reach the classic map in the gold drop, the L86 in tier 1 air drops)
+    ["svd", "A", 0.3, true], ["scarssr", "A", 0.28, true], ["l86", "B+", 0.35, true], ["mkg45", "B+", 0.35, false], // est.
     // assault rifles
     ["scar", "A", 0.35, true], ["m4a1", "A", 0.37, true], ["famas", "A-", 0.38, true], ["grozas", "A-", 0.45, true],
     ["ak47", "B", 0.45, true], ["hk416", "B", 0.47, true], ["groza", "B", 0.49, true],
@@ -96,7 +105,8 @@ const ROWS: readonly Row[] = [
     // shotguns: the MP220 needs both shells to land (F 0.44); the M1100 is usable only within ~6 u (3.98 s at 10 u)
     ["saiga", "A", 0.75, true], ["spas12", "A", 0.68, true], ["m870", "A-", 0.75, true], ["mp220", "A-", 0.44, true],
     ["m1100", "C", 0.92, true],
-    ["usas", "A+", 0.6, false], ["m1014", "A-", 0.6, false], // est.
+    // (round 6 loot handoff: the USAS-12 on the classic map at a very low rate)
+    ["usas", "A+", 0.6, true], ["m1014", "A-", 0.6, false], // est.
     // SMGs
     ["vector", "A-", 0.54, true], ["scorpion", "A-", 0.57, true], ["ump9", "B", 0.62, true], ["mp5", "B", 0.6, true],
     ["mac10", "C+", 0.7, true],
@@ -117,6 +127,10 @@ const ROWS: readonly Row[] = [
     // round 5 (report 34): the PMG-134 (potato maps and potato drops) at its explosion damage, 8.5 x 2 every 0.07 s
     // from a 150-round never-empty magazine, 70 units of flight; its 8-degree spread and splash forgive aim (est.)
     ["potato_lmg", "A", 0.55, false],
+    // round 6 (report 42, potato maps only): the Spud Gun, 13-damage potatoes every 0.09 s from a never-empty 30-round
+    // magazine over ~60 u (an SMG with splash, and its hits enlarge the target); the Potato Cannon, a 95-damage
+    // cannonball (blast 3.5-6.5 u) every 1.2 s, 4 per magazine, ~46 u: a launcher (est.)
+    ["potato_smg", "A-", 0.56, false], ["potato_cannon", "B", 0.6, false],
     // the owner's beta guns (docs/design/new-gun-stats.md; all est. from their class and the sheet's stats and tier)
     ["ak74", "B", 0.45, true], ["g36c", "B", 0.47, true], ["m16a4", "A-", 0.4, true], ["sig550", "B+", 0.42, true],
     ["g3", "B+", 0.42, true], ["honeybadger", "A-", 0.45, true],
@@ -126,6 +140,10 @@ const ROWS: readonly Row[] = [
     ["bizon", "B", 0.6, true], ["m1928", "B", 0.6, false], ["asval", "B+", 0.55, true], ["p90", "A-", 0.55, true],
     ["dp12", "A", 0.66, true], ["aa12", "A+", 0.6, true],
     ["tec9", "C+", 0.62, true], ["tec9_dual", "B-", 0.58, true], ["vz61", "C+", 0.62, true], ["vz61_dual", "B-", 0.58, true],
+    // bot round 6: the beta launchers (est.: a blast forgives aim, but the rounds are slow and few; the MGL's six
+    // 125-damage grenades lead, the single-use Panzerfaust and M202 trail)
+    ["m79", "B", 0.6, true], ["mgl", "A-", 0.6, true], ["gl06", "B-", 0.6, true], ["rpg7", "B+", 0.55, true],
+    ["panzerfaust", "C+", 0.6, true], ["m202", "B-", 0.6, true],
 ];
 
 const TIERS = new Map<string, GunTierInfo>();
@@ -134,15 +152,17 @@ const CLASS_OF = new Map<string, WeaponClass>();
 /** Bot weapon class of a gun id from the KB classes (defs gunClass): assault -> rifle, special -> useless. */
 function kbClass(id: string): WeaponClass | undefined {
     if (id === "flare_gun" || id === "flare_gun_dual") return "useless";
-    // the PMG-134 sprays exploding potatoes like an LMG (round 5, report 34; knowledge/weapons.ts PROJECTILE_GUNS)
+    // the PMG-134 sprays exploding potatoes like an LMG (round 5, report 34; knowledge/weapons.ts PROJECTILE_GUNS);
+    // round 6 (report 42): the Spud Gun like an SMG, the Potato Cannon like a launcher (knowledge/launchers.ts)
     if (id === "potato_lmg") return "lmg";
+    if (id === "potato_smg") return "smg";
+    if (id === "potato_cannon") return "launcher";
     const c = gunClass(id);
     if (c === undefined) return undefined;
     if (c === "assault") return "rifle";
     if (c === "special") return "useless";
-    // the rebirth beta launchers (M79, MGL, GL-06, RPG-7, Panzerfaust, M202) until bots learn to aim lobbed and slow
-    // explosive rounds (bot round 6): useless to them, like the potato guns
-    if (c === "launcher") return "useless";
+    // the rebirth beta launchers (M79, MGL, GL-06, RPG-7, Panzerfaust, M202): their own class since bot round 6
+    // (knowledge/launchers.ts; fired at groups, campers and busy targets, never at point blank: brain/launch.ts)
     return c;
 }
 
@@ -201,26 +221,49 @@ export function isWeakGun(id: string): boolean {
 
 /**
  * How well a bot of mechanics skill `s` (0..1) gets on with a gun: 1 - slope * max(0, skillDemand - s), slope
- * AIM_FIT_SLOPE for aim guns, FIT_SLOPE otherwise (people overrate their aim, so the penalty stays mild). 0 without a
- * tier.
+ * AIM_FIT_SLOPE for aim guns, FIT_SLOPE otherwise (people overrate their aim, so the penalty stays mild); with `dmrFit`
+ * (round 6, report 43) DMR_FIT_SLOPE for DMRs. 0 without a tier.
  */
-export function skillFit(id: string, s: number): number {
+export function skillFit(id: string, s: number, dmrFit = false): number {
     const t = TIERS.get(id);
     if (!t) return 0;
-    const slope = t.aim ? AIM_FIT_SLOPE : FIT_SLOPE;
+    const slope = dmrFit && t.cls === "dmr" ? DMR_FIT_SLOPE : t.aim ? AIM_FIT_SLOPE : FIT_SLOPE;
     return 1 - slope * Math.max(0, t.skillDemand - s);
 }
 
+/** Upper bound of mobilityPenalty. */
+export const MOBILITY_MAX = 0.35;
+const MOVE_SPEED = GameConfig.player.moveSpeed;
+
+function speedOf(id: string): { equip: number; attack: number; carry: number } | null {
+    if (!hasDef(id) || GameObjectDefs[id].type !== "gun") return null;
+    const sp = (GameObjectDefs[id] as GunDef & { speed?: { equip?: number; attack?: number; carry?: number } }).speed;
+    return { equip: sp?.equip ?? 0, attack: sp?.attack ?? 0, carry: sp?.carry ?? 0 };
+}
+
 /**
- * Movement handicap of a gun, 0 (none) .. 0.25: its moving spread above 7 degrees (it must stop to hit: DP-28 9,
- * Groza 9, MAC-10 11) plus its slowdown while firing (speed.attack: PKP -5, M249 -4). Rushers weigh it (persona
- * `mobility`).
+ * Movement handicap of a gun, 0 (none) .. MOBILITY_MAX, all read from the defs: its moving spread above 7 degrees (it
+ * must stop to hit: DP-28 9, Groza 9, MAC-10 11), its slowdown while firing (speed.attack: PKP -5, M249 -4), while held
+ * (speed.equip, the launchers' -1 .. -2.5: three quarters of the time) and while merely carried in either gun slot
+ * (speed.carry, the DShK's -2: all the time; sim world/player.ts carrySpeed), the last two as shares of the base move
+ * speed. Rushers weigh it (persona `mobility`); every persona weighs the carry share (carryPenalty).
  */
 export function mobilityPenalty(id: string): number {
-    if (!hasDef(id) || GameObjectDefs[id].type !== "gun") return 0;
+    const sp = speedOf(id);
+    if (!sp) return 0;
     const def = GameObjectDefs[id] as GunDef;
-    const attack = (def as GunDef & { speed?: { attack?: number } }).speed?.attack ?? 0;
-    return Math.min(0.25, Math.max(0, def.moveSpread - 7) / 10 + Math.max(0, -attack) / 40);
+    const spread = Math.max(0, def.moveSpread - 7) / 10;
+    const held = Math.max(0, -sp.attack) / 40 + (0.75 * Math.max(0, -sp.equip)) / MOVE_SPEED;
+    return Math.min(MOBILITY_MAX, spread + held + carryPenalty(id));
+}
+
+/**
+ * Share of the base move speed a gun costs just by being carried (speed.carry: the DShK's -2 is 1/6; 0 for most guns).
+ * The coordinator's loot handoff (bot round 6): carry penalties count wherever the bots weigh move speed.
+ */
+export function carryPenalty(id: string): number {
+    const sp = speedOf(id);
+    return sp ? Math.max(0, -sp.carry) / MOVE_SPEED : 0;
 }
 
 function damageReductionOf(id: string): number {

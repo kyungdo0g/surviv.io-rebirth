@@ -158,7 +158,8 @@ export function grenadeOpportunity(ctx: BrainCtx, thinkDt: number): ThrowPlan | 
     const t = ctx.target;
     if (!t) return null;
     const d = ctx.targetDist;
-    // never inside the blast (the frag's rad.max less 2: 10 units), at most a long throw
+    // never inside the blast (fragMath.ts fragMinDist: explosion_frag rad.max from the defs, plus the body and slack),
+    // at most a long throw
     if (d < fragMinDist(item) || d > FRAG_MAX) return null;
     const hiding = !t.visible && now - t.lastSeen < 2.5;
     const behindCover = t.visible && bodyShot(ctx, t) === null;
@@ -237,7 +238,8 @@ export function smartGrenade(ctx: BrainCtx, thinkDt: number): ThrowPlan | null {
     const t = ctx.target;
     if (!item || !t) return null;
     const d = ctx.targetDist;
-    // never inside the blast (the frag's rad.max less 2: 10 units); beyond a long throw only a beginner's waste
+    // never inside the blast (fragMinDist: explosion_frag rad.max from the defs, plus the body and slack); beyond a
+    // long throw only a beginner's waste
     if (d < fragMinDist(item) || d > WASTE_FAR) return null;
     if (!recallsFrags(ctx, t.id)) return null;
     if (d > FRAG_MAX) return wasteFrag(ctx, item, t, d, thinkDt);

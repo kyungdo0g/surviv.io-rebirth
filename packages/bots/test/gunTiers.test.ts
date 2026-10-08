@@ -15,10 +15,12 @@ import { generateMap } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import {
     bodyHitsToKill,
+    carryPenalty,
     gunClassOf,
     gunRank,
     gunTier,
     isWeakGun,
+    MOBILITY_MAX,
     mobilityPenalty,
     perfectTtk,
     S_RULE_GUNS,
@@ -29,6 +31,7 @@ import {
     tierRank,
 } from "../src/knowledge/gunTiers.ts";
 import { gunInfo } from "../src/knowledge/weapons.ts";
+import { baseDesire, NEUTRAL, PERSONAS } from "../src/persona.ts";
 
 /** Guns a player can hold on the main map: loot tiers of spawned objects and buildings, air drops, duals. */
 function mainMapGuns(): Set<string> {
@@ -74,6 +77,15 @@ function mainMapGuns(): Set<string> {
     return guns;
 }
 
+/**
+ * The round 6 loot handoff (coordinator, defs change by the lead): the USAS-12 at a very low rate, the SVD and the
+ * SCAR-SSR in the gold drop and the L86 in tier 1 air drops reach the classic map; flagged main-map ahead of that defs
+ * change, so they may still be missing from these defs' tables.
+ */
+const PENDING_MAIN: ReadonlySet<string> = new Set(["usas", "svd", "scarssr", "l86"]);
+/** Very rare main-map rolls (the bathhouse ring case: the PMG-134) that stay off-map for desire purposes. */
+const RARE_OFF_MAP: ReadonlySet<string> = new Set(["potato_lmg"]);
+
 describe("gun tiers", () => {
     it("every gun reachable on the main map has a class and a tier; the main-map flag is honest", () => {
         const reachable = mainMapGuns();
@@ -85,17 +97,19 @@ describe("gun tiers", () => {
                 expect(gunTier(id), id).toBeUndefined();
                 continue;
             }
-            expect(gunTier(id)?.mainMap, id).toBe(true);
+            if (!RARE_OFF_MAP.has(id)) expect(gunTier(id)?.mainMap, id).toBe(true);
         }
-        for (const t of tieredGuns()) if (t.mainMap) expect(reachable.has(t.id), t.id).toBe(true);
+        for (const t of tieredGuns())
+            if (t.mainMap && !PENDING_MAIN.has(t.id)) expect(reachable.has(t.id), t.id).toBe(true);
         // the critique's misses: the Scorpion (golden air drop) and the duals
         for (const id of ["scorpion", "ots38_dual", "ot38_dual", "p30l_dual", "deagle_dual", "m93r_dual", "glock_dual"])
             expect(reachable.has(id), id).toBe(true);
     }, 60_000);
 
     it("lists the ported survev-only guns, no unported post-0.8.82 gun; every other gun def is classed", () => {
-        // the M79 arrived with the rebirth beta guns (a launcher: useless to bots for now)
-        expect(gunClassOf("m79")).toBe("useless");
+        // the rebirth beta launchers are their own class since bot round 6 (knowledge/launchers.ts)
+        for (const id of ["m79", "mgl", "gl06", "rpg7", "panzerfaust", "m202"])
+            expect(gunClassOf(id), id).toBe("launcher");
         for (const id of ["pkm", "m134"]) {
             expect(gunTier(id)).toBeUndefined();
             expect(hasDef(id)).toBe(false);
@@ -118,8 +132,10 @@ describe("gun tiers", () => {
     it("classes follow the KB (assault rifles are the bots' rifles, LMGs their own class)", () => {
         for (const t of tieredGuns()) {
             const kb = gunClass(t.id);
-            // (round 5, report 34: the PMG-134, "special" in the KB, is an LMG to the bots)
-            if (t.id === "potato_lmg") expect(t.cls).toBe("lmg");
+            // (round 5, report 34: the PMG-134, "special" in the KB, is an LMG to the bots; round 6, report 42: the Spud
+            // Gun an SMG and the Potato Cannon a launcher)
+            const potato: Record<string, string> = { potato_lmg: "lmg", potato_smg: "smg", potato_cannon: "launcher" };
+            if (potato[t.id]) expect(t.cls, t.id).toBe(potato[t.id]);
             else expect(t.cls, t.id).toBe(kb === "assault" ? "rifle" : kb);
         }
         expect(gunInfo("m249")?.cls).toBe("lmg");
@@ -214,6 +230,21 @@ describe("gun tiers", () => {
         expect(mobilityPenalty("mp5")).toBe(0);
         expect(mobilityPenalty("dp28")).toBeGreaterThan(mobilityPenalty("ak47"));
         expect(mobilityPenalty("pkp")).toBeGreaterThan(mobilityPenalty("m249"));
-        for (const t of tieredGuns()) expect(mobilityPenalty(t.id)).toBeLessThanOrEqual(0.25);
+        for (const t of tieredGuns()) expect(mobilityPenalty(t.id)).toBeLessThanOrEqual(MOBILITY_MAX);
+        // read from the defs: the held (speed.equip) and the carried (speed.carry) slowdowns count too; the RPG-7
+        // (equip -2) is heavier to hold than the M79 (at most -1)
+        expect(mobilityPenalty("rpg7")).toBeGreaterThan(mobilityPenalty("m79"));
+        const speed = (id: string) => (GameObjectDefs[id] as { speed?: { carry?: number } }).speed;
+        for (const t of tieredGuns()) {
+            const carry = speed(t.id)?.carry ?? 0;
+            expect(carryPenalty(t.id), t.id).toBeCloseTo(Math.max(0, -carry) / 12);
+            expect(mobilityPenalty(t.id), t.id).toBeGreaterThanOrEqual(Math.min(MOBILITY_MAX, carryPenalty(t.id)));
+        }
+        // the DShK slows its carrier (-2 of 12): every persona minds it a little, a rusher more
+        expect(carryPenalty("dshk")).toBeCloseTo(2 / 12);
+        expect(baseDesire("dshk", NEUTRAL, 0.75)).toBeLessThan(baseDesire("m249", NEUTRAL, 0.75) + 1e-9);
+        expect(baseDesire("dshk", PERSONAS.rusher, 0.75)).toBeLessThan(
+            baseDesire("dshk", NEUTRAL, 0.75) * PERSONAS.rusher.classAffinity.lmg,
+        );
     });
 });

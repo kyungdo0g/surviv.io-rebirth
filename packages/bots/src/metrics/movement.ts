@@ -35,7 +35,7 @@ const KNEEL_HURT = 10;
 /** A switch back to the behaviour before the last one within this many seconds is a flip (dithering). */
 const FLIP_WINDOW = 3;
 /** Behaviours of a bot heading somewhere on its own (it came back to a contested spot by choice). */
-const APPROACH = new Set(["explore", "loot", "break", "sweep", "airdrop", "zone", "regroup"]);
+const APPROACH = new Set(["explore", "loot", "break", "sweep", "airdrop", "zone", "regroup", "advance", "rally"]);
 
 /** A brain context for team.ts reviveThreat: the bot's model and memory, a scratch random stream. */
 export function threatCtx(bot: BotController): BrainCtx {

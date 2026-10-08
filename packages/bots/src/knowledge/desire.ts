@@ -14,13 +14,17 @@
 import { WeaponSlot } from "@rebirth/defs";
 import type { SelfState } from "../perception/world.ts";
 import { baseDesire, NEUTRAL, type PersonaParams } from "../persona.ts";
-import { gunRank, isWeakGun } from "./gunTiers.ts";
+import { gunRank, isWeakGun, POTATO_GUNS } from "./gunTiers.ts";
 import { type GunInfo, gunInfo, type WeaponClass } from "./weapons.ts";
 
 /** Whose taste a desire is: the bot's persona and mechanics skill s (BrainCtx.persona, BrainCtx.skill.s). */
 export interface Taste {
     persona: Readonly<PersonaParams>;
     s: number;
+    /** round 6 (BrainFeatures.potatoGuns, report 42): the Spud Gun and the Potato Cannon are worth having */
+    potatoGuns?: boolean;
+    /** round 6 (BrainFeatures.dmrFit, report 43): DMRs for average aim */
+    dmrFit?: boolean;
 }
 
 /** A bot without a persona at the normal preset's skill (skill.ts PRESET_SKILL.normal). */
@@ -35,9 +39,21 @@ const REDUNDANT = 15;
 /** A held gun out of ammo, with none of its ammo in the bag, keeps this share of its desire. */
 const DEAD_SHARE = 0.35;
 
+/**
+ * Round 6 (report 43): average aim (the owner's level, the intermediate tier, s around 0.5) takes a DMR as its long gun:
+ * up to this much desire, fading out by DMR_AVERAGE_BAND of skill either way. Snipers rarely drop; a semi-auto DMR is
+ * the long gun such players carry next to a close gun.
+ */
+export const DMR_AVERAGE_BONUS = 12;
+const DMR_AVERAGE_S = 0.5;
+const DMR_AVERAGE_BAND = 0.3;
+
 /** Desire (0..~100) of a gun for this taste; 0 for useless guns and non-guns. */
 export function gunDesire(id: string, taste: Readonly<Taste> = DEFAULT_TASTE): number {
-    return baseDesire(id, taste.persona, taste.s);
+    if (!taste.potatoGuns && POTATO_GUNS.has(id)) return 0;
+    const base = baseDesire(id, taste.persona, taste.s, taste.dmrFit === true);
+    if (!taste.dmrFit || base <= 0 || gunInfo(id)?.cls !== "dmr") return base;
+    return base + DMR_AVERAGE_BONUS * Math.max(0, 1 - Math.abs(taste.s - DMR_AVERAGE_S) / DMR_AVERAGE_BAND);
 }
 
 export type Band = "close" | "long" | "none";

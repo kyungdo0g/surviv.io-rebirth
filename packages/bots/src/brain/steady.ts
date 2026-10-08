@@ -40,6 +40,8 @@ const PREFERENCE: readonly BehaviourName[] = [
     "thirdparty",
     "assist",
     "regroup",
+    "rally",
+    "advance",
     "hold",
     "explore",
 ];

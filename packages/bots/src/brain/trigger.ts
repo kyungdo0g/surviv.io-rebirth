@@ -125,10 +125,26 @@ export class TriggerController {
     private lastFire = false;
     /** click gap after the last melee swing (params.clickDelay) */
     private meleeGap = 0;
+    /** quick switch (report 44, rearm): no single-fire click before this */
+    private notBefore = Number.NEGATIVE_INFINITY;
 
     constructor(params: DifficultyParams, rng: Rng) {
         this.params = params;
         this.rng = rng;
+    }
+
+    /** When the last single-fire or melee click went out (own clock). */
+    get lastClickAt(): number {
+        return this.lastClick;
+    }
+
+    /**
+     * Quick switch (brain/quickSwitch.ts, report 44): the gun in hand changed after a shot; the next single-fire click
+     * may come at `at` (when the switch is over), whatever the last gun's cycle.
+     */
+    rearm(at: number): void {
+        this.lastClick = Number.NEGATIVE_INFINITY;
+        this.notBefore = at;
     }
 
     release(): TriggerOut {
@@ -233,7 +249,7 @@ export class TriggerController {
             let interval = Math.max(gun.fireDelay, 0.05) + this.gap;
             if (dist > 18 && gun.recoilTime < 2 && this.params.name !== "easy")
                 interval = Math.max(interval, gun.recoilTime);
-            if (now - this.lastClick < interval) return { shootStart: false, shootHold: false };
+            if (now - this.lastClick < interval || now < this.notBefore) return { shootStart: false, shootHold: false };
             this.lastClick = now;
             const [lo, hi] = this.params.clickDelay;
             this.gap = this.rng.range(lo, hi);

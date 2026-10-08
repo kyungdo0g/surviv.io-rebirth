@@ -8,6 +8,8 @@ import type { PersonaParams } from "../persona.ts";
 import type { SkillProfile } from "../skill.ts";
 import type { Assessment } from "./assess.ts";
 import { CombatMemory } from "./combatMemory.ts";
+import { EarlyMemory } from "./earlyMemory.ts";
+import { FactionMemory } from "./factionMemory.ts";
 import type { BrainFeatures } from "./features.ts";
 import { LootMemory } from "./lootMemory.ts";
 import { PursuitMemory } from "./pursuitMemory.ts";
@@ -38,7 +40,13 @@ export type BehaviourName =
     // round 3 (BrainFeatures.pursuit, MOVE): answer unseen fire, search a lost target, leave an air strike
     | "evade"
     | "search"
-    | "evacuate";
+    | "evacuate"
+    // 50v50 (BrainFeatures.faction, bot round 6): the squad leader's way to the front (pushing or falling back with
+    // the local numbers), a follower's formation slot
+    | "advance"
+    | "rally"
+    // bot round 6 early game (BrainFeatures.fistRush): an unarmed rush at an armed enemy
+    | "rush";
 
 export interface ThrowPlan {
     /** throwable to use (frag, mirv, smoke) */
@@ -182,6 +190,10 @@ export class BrainMemory {
     readonly fight = new CombatMemory();
     /** futile-engagement clocks, ignore windows, flee and danger state (MOVE: brain/pursuitMemory.ts) */
     readonly pursuit = new PursuitMemory();
+    /** 50v50 objective, formation and role clocks (BrainFeatures.faction: brain/factionMemory.ts) */
+    readonly faction = new FactionMemory();
+    /** early-game rush and melee-answer decisions (BrainFeatures.fistRush / meleeAnswer: brain/early.ts) */
+    readonly early = new EarlyMemory();
 }
 
 export interface BrainCtx {

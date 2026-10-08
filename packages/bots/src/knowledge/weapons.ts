@@ -6,9 +6,13 @@
 // community loadout advice (docs/research/namu.md /팁: a medium-range gun plus a shotgun or SMG).
 import { GameObjectDefs, type GunDef, hasDef } from "@rebirth/defs";
 import { gunClassOf } from "./gunTiers.ts";
+import { launcherSpec } from "./launchers.ts";
 
-/** Weapon classes ("rifle" is the assault rifle; "lmg" the light machine guns, fought like rifles). */
-export type WeaponClass = "shotgun" | "smg" | "rifle" | "lmg" | "dmr" | "sniper" | "pistol" | "useless";
+/**
+ * Weapon classes ("rifle" is the assault rifle; "lmg" the light machine guns, fought like rifles; "launcher" the beta
+ * launchers, bot round 6: knowledge/launchers.ts).
+ */
+export type WeaponClass = "shotgun" | "smg" | "rifle" | "lmg" | "dmr" | "sniper" | "pistol" | "launcher" | "useless";
 
 export interface GunInfo {
     id: string;
@@ -35,8 +39,11 @@ export interface GunInfo {
     score: number;
 }
 
-/** Guns bots never pick up: no damage (flare gun, bugle, potato guns) or ammo outside the bag. */
-const USELESS = new Set(["flare_gun", "flare_gun_dual", "bugle", "potato_cannon", "potato_smg", "m9_cursed"]);
+/**
+ * Guns bots never pick up: no damage (flare guns, the bugle) or ammo outside the bag. The potato guns are guns since
+ * round 6 (report 42; a bot without BrainFeatures.potatoGuns still leaves the Spud Gun and the Potato Cannon alone).
+ */
+const USELESS = new Set(["flare_gun", "flare_gun_dual", "bugle", "m9_cursed"]);
 
 /**
  * Guns whose damage is in a projectile's explosion, not in their bullet (round 5, user report 34): the PMG-134 fires
@@ -46,6 +53,9 @@ const USELESS = new Set(["flare_gun", "flare_gun_dual", "bugle", "potato_cannon"
  */
 const PROJECTILE_GUNS: Readonly<Record<string, { range: number }>> = {
     potato_lmg: { range: 70 },
+    // round 6 (report 42): the Spud Gun's potatoes (85 u/s for ~0.7 s from the 0.5 u launch height: ~60 u); the Potato
+    // Cannon is a launcher (knowledge/launchers.ts)
+    potato_smg: { range: 60 },
 };
 
 /** Damage and speed of the projectile a gun fires (its explosion def's damage, its throw speed), or null. */
@@ -79,6 +89,8 @@ const IDEAL: Readonly<Record<WeaponClass, [number, number, number]>> = {
     lmg: [8, 30, 55],
     dmr: [15, 42, 70],
     sniper: [20, 50, 80],
+    // launchers: idealMin is each one's minimum distance (launchers.ts minDist)
+    launcher: [14, 35, 50],
     useless: [0, 0, 0],
 };
 
@@ -104,17 +116,29 @@ export function gunInfo(id: string): GunInfo | undefined {
         range = PROJECTILE_GUNS[id].range;
         bulletSpeed = proj.speed;
     }
+    // a launcher's round deals its explosion (plus a rocket's own hit), flies at its round's speed (bot round 6)
+    const launcher = launcherSpec(id);
+    if (launcher) {
+        damage = launcher.blastDamage + launcher.hitDamage;
+        range = launcher.range;
+        bulletSpeed = launcher.speed;
+    }
     const useless = USELESS.has(id) || damage <= 0;
     const cls = useless ? "useless" : classify(id, def, range);
     const burst = def.fireMode === "burst" ? (def.burstCount ?? 1) : 1;
     const cycle =
         def.fireMode === "burst" ? (def.fireDelay + (burst - 1) * (def.burstDelay ?? 0)) / burst : def.fireDelay;
     const perShot = damage * def.bulletCount;
-    // pellets spread: a shotgun lands roughly two thirds of them at its fighting range
-    const hitRate = def.bulletCount > 1 ? 0.65 : Math.max(0.35, 1 - (def.shotSpread + def.moveSpread * 0.5) / 30);
+    // pellets spread: a shotgun lands roughly two thirds of them at its fighting range; a launcher's blast forgives aim
+    const hitRate = launcher
+        ? 0.8
+        : def.bulletCount > 1
+          ? 0.65
+          : Math.max(0.35, 1 - (def.shotSpread + def.moveSpread * 0.5) / 30);
     const clip = Math.max(1, def.maxClip);
     const sustained = (clip * perShot * hitRate) / (clip * Math.max(cycle, 0.01) + def.reloadTime);
-    const [idealMin, idealMax, maxEngageBase] = IDEAL[cls];
+    const [idealBase, idealMax, maxEngageBase] = IDEAL[cls];
+    const idealMin = launcher ? launcher.minDist : idealBase;
     const maxEngage = Math.min(maxEngageBase, range * 0.9);
     // longer reach is worth more: it wins fights before they start
     const reach =
@@ -146,9 +170,10 @@ export function gunInfo(id: string): GunInfo | undefined {
     return info;
 }
 
-/** How well a gun fits a fight at `dist` (0 useless .. 1 ideal). */
+/** How well a gun fits a fight at `dist` (0 useless .. 1 ideal; a launcher 0 inside its minimum distance). */
 export function suitability(info: GunInfo, dist: number): number {
     if (info.cls === "useless" || dist > info.range) return 0;
+    if (info.cls === "launcher" && dist < info.idealMin) return 0;
     if (dist < info.idealMin) return 0.7 + 0.3 * (dist / Math.max(info.idealMin, 1e-6));
     if (dist <= info.idealMax) return 1;
     if (dist >= info.maxEngage) return Math.max(0, 0.25 * (1 - (dist - info.maxEngage) / info.maxEngage));

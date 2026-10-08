@@ -6,8 +6,16 @@ import { type Vec2, v2 } from "@rebirth/core";
 import { getMapObjectDef } from "@rebirth/defs";
 import type { Game, Player } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
+import { BRAIN_PRESETS } from "../src/brain/features.ts";
 import { BotController } from "../src/controller.ts";
 import { flatGame, giveGun, mainGame, placePlayer } from "./helpers.ts";
+
+/**
+ * The smart brain without the round-6 early-game answers to an armed player (the fist rush, crate first) and without
+ * loot routing (it walks to a better building than the house the scenario puts the player in).
+ */
+const noEarly = { ...BRAIN_PRESETS.smart, fistRush: false, crateFirst: false, lootRoute: false };
+const rushOnly = { ...BRAIN_PRESETS.smart, lootRoute: false };
 
 function dummies(game: Game, at: Vec2): void {
     for (let k = 0; k < 4; k++) placePlayer(game, `dummy${k}`, v2.add(at, { x: k * 20, y: 0 }));
@@ -72,6 +80,8 @@ describe("MOVE scenarios", () => {
         }
     });
 
+    // (round 6: without the early fist rush and crate first, which answer the same armed player differently: the next
+    // test runs them)
     it("an unarmed bot chased out of a house by an armed player goes elsewhere and does not come back", () => {
         const houses = mainGame().world.buildings.filter((b) => b.type === "house_red_01" || b.type === "house_red_02");
         // three red houses of main 12345 the bot walks into (survev's map generation moved them: at house 4, a
@@ -94,7 +104,7 @@ describe("MOVE scenarios", () => {
             game.loot.addLoot("mp5", v2.add(centre, { x: -1.5, y: 0 }), 0, 1);
             dummies(game, { x: 40, y: 40 });
             const p = placePlayer(game, "bot", v2.add(centre, { x: 22, y: 4 }));
-            const bot = new BotController(game, p.id, { seed: 11 + s });
+            const bot = new BotController(game, p.id, { seed: 11 + s, brain: noEarly });
             let firstFlee = -1;
             let flights = 0;
             let last = "";
@@ -123,6 +133,63 @@ describe("MOVE scenarios", () => {
             expect(flights, `house ${s}`).toBeLessThanOrEqual(2);
             expect(returned, `house ${s}: came back while unarmed`).toBe(-1);
             expect(farthest, `house ${s}`).toBeGreaterThan(25);
+        }
+    }, 20_000);
+
+    // round 6 (user report 38): early in a match a bot may rush the armed player with its fists instead; whichever it
+    // chose, it keeps to it: at most two flights, and no walking back in unarmed after a flight unless it rushes
+    it("with the early fist rush: a rush or a flight, never the flee / come back loop", () => {
+        const houses = mainGame().world.buildings.filter((b) => b.type === "house_red_01" || b.type === "house_red_02");
+        // three red houses of main 12345 the bot walks into (survev's map generation moved them: at house 4, a
+        // house_red_01 at ori 1, the seed-15 bot explores the other way and never meets the player, so s = 7, house 1
+        // with seed 18, replaced it)
+        expect(houses.length).toBe(6);
+        for (const s of [3, 5, 7]) {
+            const game = mainGame({ minPlayers: 99 });
+            const hb = houses[s % houses.length];
+            const def = getMapObjectDef(hb.type);
+            if (def.type !== "building") throw new Error(hb.type);
+            const zone = def.ceiling.zoomRegions.find((r) => r.zoomIn)?.zoomIn;
+            if (zone?.type !== 1) throw new Error("no zoomIn box");
+            let c = { x: (zone.min.x + zone.max.x) / 2, y: (zone.min.y + zone.max.y) / 2 };
+            for (let k = 0; k < (hb.ori ?? 0); k++) c = { x: -c.y, y: c.x };
+            const centre = v2.add(hb.pos, c);
+            // an armed player standing in the house next to a gun on the floor, never shooting (the triage probe)
+            const human = placePlayer(game, "human", v2.add(centre, { x: 1.5, y: 0 }));
+            giveGun(human, "ak47", 90, 0);
+            game.loot.addLoot("mp5", v2.add(centre, { x: -1.5, y: 0 }), 0, 1);
+            dummies(game, { x: 40, y: 40 });
+            const p = placePlayer(game, "bot", v2.add(centre, { x: 22, y: 4 }));
+            const bot = new BotController(game, p.id, { seed: 11 + s, brain: rushOnly });
+            let firstFlee = -1;
+            let flights = 0;
+            let last = "";
+            let returned = -1;
+            let rushed = false;
+            let farthest = 0;
+            for (let i = 0; i < 5000 && !p.dead; i++) {
+                bot.update();
+                still(human);
+                game.step();
+                const t = i / 100;
+                const b = bot.bot.intent.behaviour;
+                if (b === "flee" && last !== "flee") {
+                    flights++;
+                    if (firstFlee < 0) firstFlee = t;
+                }
+                last = b;
+                if (b === "rush") rushed = true;
+                const armed = p.weaponManager.weapons.slice(0, 2).some((w) => !!w.type);
+                const d = v2.distance(p.pos, human.pos);
+                if (firstFlee >= 0 && !armed) {
+                    farthest = Math.max(farthest, d);
+                    if (t > firstFlee + 4 && d < 10 && returned < 0) returned = t;
+                }
+            }
+            // the triage probe on HEAD: 1-14 flights in a row (seed 3: 11, seed 4: 14), walking back in up to 8 times
+            expect(firstFlee >= 0 || rushed, `house ${s}: fled or rushed`).toBe(true);
+            expect(flights, `house ${s}`).toBeLessThanOrEqual(2);
+            if (!rushed) expect(returned, `house ${s}: came back while unarmed`).toBe(-1);
         }
     }, 20_000);
 

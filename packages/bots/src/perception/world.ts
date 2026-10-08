@@ -31,6 +31,7 @@ import { NavGrid } from "../nav/grid.ts";
 import type { UndergroundNav } from "../nav/underground.ts";
 import { AirdropMemory } from "./airdrops.ts";
 import { bulletOrigin, perceiveBullets, type SeenBullet } from "./bulletSight.ts";
+import type { FactionIntel } from "./factionIntel.ts";
 import { canopyAmong, concealedAmong, LOOT_RAD, Reveals } from "./foliage.ts";
 import { type EnemyIntelProvider, NO_INTEL } from "./intel.ts";
 import { LastSeenTracker } from "./lastSeen.ts";
@@ -171,11 +172,10 @@ export class WorldModel {
     intel: EnemyIntelProvider = NO_INTEL;
     /** air drops the snapshots told the bot about, for every brain (perception/airdrops.ts, LOOT) */
     readonly airdrops = new AirdropMemory();
-    /**
-     * Underground navigation (nav/underground.ts): basements and bunkers, null unless installed (BrainFeatures.basements).
-     * With it the path follower plans into and out of underground floors (PathFollower.steer's `goalLayer`).
-     */
+    /** Underground navigation (nav/underground.ts; PathFollower.steer `goalLayer`), null without features.basements */
     underground: UndergroundNav | null = null;
+    /** 50v50 knowledge (perception/factionIntel.ts), null unless BrainFeatures.faction on a faction map */
+    faction: FactionIntel | null = null;
     private obstacleCache = new Map<number, SeenObstacle>();
     private readonly roofCache = new Map<number, Bounds[]>();
     /** the regions of the roofs over someone else's head this snapshot (not over the bot) */
@@ -250,6 +250,7 @@ export class WorldModel {
         this.threats.ingest(snap, this);
         this.intel.ingest(snap, this);
         this.airdrops.ingest(snap, this);
+        this.faction?.ingest(snap, this);
     }
 
     private updateSelf(local: LocalPlayerState, me: PlayerView | undefined): void {

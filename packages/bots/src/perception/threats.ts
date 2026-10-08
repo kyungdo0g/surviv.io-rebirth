@@ -79,6 +79,11 @@ export interface DangerZone {
     until: number;
     /** an air strike zone's variant (AirstrikeZoneView.variant: heavy shells, carpet); absent means normal */
     variant?: AirstrikeVariant;
+    /**
+     * (bot round 6) a strobe's strike: a strike marker seen without its zone, or a thrown strobe's strip; `rad` already
+     * holds the lines' spread and the bombs' blast (perception/strobes.ts), and it never makes a bot detour
+     */
+    strobe?: boolean;
 }
 
 /** An air drop the bot knows about (map indicator, plane, falling crate or the landed crate). */

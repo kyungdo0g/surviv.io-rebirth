@@ -16,6 +16,7 @@ import { blastRadius, strikeDangers } from "../src/brain/strikes.ts";
 import { hasAmmo, heldGunsWithAmmo } from "../src/knowledge/arsenal.ts";
 import { gunRank, gunTier } from "../src/knowledge/gunTiers.ts";
 import { gunInfo } from "../src/knowledge/weapons.ts";
+import { MARKER_DANGER_TIME } from "../src/perception/strobes.ts";
 import { ThreatTracker } from "../src/perception/threatTracker.ts";
 import { addObstacle, brainOf, FixedBoard, NOW, testWorld } from "./brain-world.ts";
 import { newModel, ORIGIN, snap } from "./perceptionSnap.ts";
@@ -42,11 +43,12 @@ describe("air strike variants (reports 27, 32)", () => {
         expect(list[2].rad).toBe(92);
     });
 
-    it("a strike marker takes its zone's variant: heavy shells keep 16 + 38 u away, a carpet strike lasts 12.5 s", () => {
+    it("a strike marker takes its zone's variant: as wide as its lines spread plus its bomb's blast (bot round 6)", () => {
+        // the lines' spread (5 u, the carpet's 21), the bombs' 4 u jitter, the blast (iron 14, heavy 38) and the body
         for (const [variant, rad, time] of [
-            [undefined, 24, 6],
-            ["heavy", 54, 6],
-            ["carpet", 24, 12.5],
+            [undefined, 24, MARKER_DANGER_TIME],
+            ["heavy", 48, MARKER_DANGER_TIME],
+            ["carpet", 40, MARKER_DANGER_TIME],
         ] as const) {
             const model = newModel();
             const board = new ThreatTracker();
@@ -68,7 +70,7 @@ describe("air strike variants (reports 27, 32)", () => {
                 }),
             );
             const marker = board.dangerZones().find((z) => v2.distance(z.pos, pos) < 0.5);
-            expect(marker?.rad, String(variant)).toBe(rad);
+            expect(marker?.rad, String(variant)).toBeCloseTo(rad, 6);
             expect(marker?.until, String(variant)).toBeCloseTo(20 + time, 6);
             const zone = board.dangerZones().find((z) => z.rad === 60);
             expect(zone?.variant).toBe(variant);
@@ -111,8 +113,10 @@ describe("PMG-134 (report 34)", () => {
         expect(pmg?.score).toBeGreaterThan(gunInfo("ak47")?.score ?? 0);
         expect(gunTier("potato_lmg")?.tier).toBe("A");
         expect(gunRank("potato_lmg")).toBeLessThan(gunRank("m249"));
-        // the other potato guns stay useless
-        expect(gunInfo("potato_smg")?.score).toBe(0);
+        // (round 6, report 42: the Spud Gun and the Potato Cannon are real guns too, behind BrainFeatures.potatoGuns;
+        // the flare guns stay useless)
+        expect(gunInfo("potato_smg")?.score ?? 0).toBeGreaterThan(0);
+        expect(gunInfo("flare_gun")?.score).toBe(0);
         // an empty magazine is not "out of ammo": it reloads from nothing
         const w = testWorld();
         w.model.self.weapons[0] = { type: "potato_lmg", ammo: 0 };

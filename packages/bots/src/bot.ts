@@ -12,6 +12,7 @@ import { type BotOrder, emptyIntent, type Intent, type IntentEmote } from "./bra
 import { type BrainFeatures, type BrainName, brainFeatures, brainLabel } from "./brain/features.ts";
 import { fragNoThrowNear } from "./brain/fragMath.ts";
 import { throwBlocker } from "./brain/fragSkill.ts";
+import { QuickSwitch } from "./brain/quickSwitch.ts";
 import { zonePressure } from "./brain/survival.ts";
 import { ThrowController, TriggerController, throwAimPoint, throwMouseLen } from "./brain/trigger.ts";
 import { type Difficulty, type DifficultyParams, difficultyParams, type SkillTierName } from "./difficulty.ts";
@@ -70,7 +71,7 @@ const FINE_DIST = 2.5;
 /** Zone pressure (brain/survival.ts) above which a rotation is in a hurry: no walking pauses. */
 const ZONE_HURRY = 0.3;
 /** Behaviours that are travel: calm, they get the stop-and-go rhythm of walking (motor/rhythm.ts, round 5). */
-const CALM_TRAVEL: ReadonlySet<string> = new Set(["explore", "loot", "break", "sweep", "regroup", "zone", "airdrop"]);
+const CALM_TRAVEL = new Set("explore loot break sweep regroup zone airdrop advance rally".split(" "));
 
 export class Bot {
     readonly model: WorldModel;
@@ -98,6 +99,8 @@ export class Bot {
     private nearColliders: Collider[] = [];
     readonly trigger: TriggerController;
     readonly throws: ThrowController;
+    /** round 6 (report 44): an expert's quick switch after a slow gun's shot (BrainFeatures.quickSwitch), else null */
+    readonly quick: QuickSwitch | null;
     /** Cobalt class menu (M7b): its own random stream, so the other decisions stay as on any map */
     readonly classPicker: ClassPicker;
     /** class chosen by the last observe(), to send once (Game.selectRole / PerkModeRoleSelect) */
@@ -156,6 +159,7 @@ export class Bot {
         this.trigger = new TriggerController(this.params, human ? motorRng : this.rng);
         this.throws = new ThrowController();
         this.classPicker = new ClassPicker(map.mapName, createRng(opts.seed ^ 0x2545f491));
+        this.quick = this.features.quickSwitch && this.skill.tier === "expert" ? new QuickSwitch() : null;
     }
 
     /** Overrides the brain (tests, scripted scenarios); null gives control back. */
@@ -180,6 +184,7 @@ export class Bot {
         model.observe(snap);
         this.classChoice = this.classPicker.update(snap);
         this.clock = model.time;
+        this.quick?.observe(this.clock, snap.local.cooldowns?.freeSwitch);
         // own motion: the human motor's relative targets, and a throw on the run (round 4: ThrowPlan.run)
         this.trackSelf();
         if (model.self.dead) {
@@ -474,6 +479,8 @@ export class Bot {
             const shot = this.trigger.update(this.clock, want, weapon, dist);
             input.shootStart = shot.shootStart;
             input.shootHold = shot.shootHold;
+            const quick = this.quick?.step(this.clock, self, this.trigger, shot.shootStart);
+            if (quick) this.pendingActions.push(quick);
             this.requestSlot();
         }
     }
@@ -545,13 +552,16 @@ export class Bot {
         const shot = this.trigger.updateHuman(this.clock, this.fireHolds() && aimPoint !== null, sense, weapon, dist);
         input.shootStart = shot.shootStart;
         input.shootHold = shot.shootHold;
+        // round 6 (report 44): a slow gun's click arms an expert's quick switch, sent once the shot shows (quickSwitch.ts)
+        const quick = this.quick?.step(this.clock, self, this.trigger, shot.shootStart);
+        if (quick) this.pendingActions.push(quick);
         this.requestSlot();
     }
 
     /** Asks for the intent's weapon slot (throttled; never re-selects the throwable while holding it). */
     private requestSlot(): void {
-        // (no weapon key before the reaction to a surprise: gateReaction)
-        if (this.clock < this.reactUntil) return;
+        // (no weapon key before the reaction to a surprise: gateReaction; none while a quick switch holds the other gun)
+        if (this.clock < this.reactUntil || (this.quick && this.clock < this.quick.holdUntil)) return;
         const self = this.model.self;
         const slot = this.intent.slot;
         if (
@@ -562,6 +572,7 @@ export class Bot {
             !(slot === WeaponSlot.Throwable && self.curWeapIdx === WeaponSlot.Throwable)
         ) {
             this.lastSlotRequest = this.clock;
+            this.quick?.noteSwitch(this.clock);
             this.pendingActions.push(SLOT_ACTIONS[slot]);
         }
     }

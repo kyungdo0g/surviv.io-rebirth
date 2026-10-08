@@ -15,7 +15,7 @@ import { bestGun, isSTier, seesBetterGun, usableGuns } from "./truth.ts";
 import { CHECKPOINTS, type LoadoutSample } from "./types.ts";
 
 /** Behaviours of a bot on its way somewhere (holstering makes it faster: report 17). */
-export const TRAVEL = new Set(["explore", "zone", "loot", "sweep", "regroup", "airdrop"]);
+export const TRAVEL = new Set(["explore", "zone", "loot", "sweep", "regroup", "airdrop", "advance", "rally"]);
 /** Behaviours of a fight (no S-tier pickup expected meanwhile). */
 const FIGHTING = new Set(["fight", "flee", "disengage", "thirdparty", "assist", "guard", "hold"]);
 /** Hurt this recently: not safe. */

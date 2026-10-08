@@ -101,6 +101,8 @@ export function fightSlot(
     let anyAmmo = false;
     for (const g of guns) {
         if (!hasAmmo(g)) continue;
+        // launchers are fired only where they fit (brain/launch.ts): never ranked by their time to kill
+        if (g.info.cls === "launcher") continue;
         anyAmmo = true;
         const ttk = expectedTtk(g.info, g.mag, g.reserve, dist, ttkOpts);
         const cost = habitCost(g.info, dist, ttk + (g.slot === self.curWeapIdx ? 0 : SWITCH_COST));
@@ -110,11 +112,17 @@ export function fightSlot(
             best = g.slot;
         }
     }
-    if (!anyAmmo) return WeaponSlot.Melee;
+    if (!anyAmmo) return launcherOnly(guns, dist);
     // no gun can finish the fight with what it has (out of range, a few rounds left): the old range-band choice
     if (best < 0) return bandSlot(self, guns, dist);
     if (Number.isFinite(curCost) && bestCost >= curCost * KEEP) return self.curWeapIdx;
     return best;
+}
+
+/** Only launchers have ammo: the one that may fire at `dist` (beyond its minimum distance), else melee. */
+function launcherOnly(guns: readonly HeldGun[], dist: number): number {
+    for (const g of guns) if (hasAmmo(g) && g.info.cls === "launcher" && suitability(g.info, dist) > 0) return g.slot;
+    return WeaponSlot.Melee;
 }
 
 /** The class-band choice (suitability, loaded first), the fallback of fightSlot. */
@@ -122,7 +130,7 @@ function bandSlot(self: SelfState, guns: readonly HeldGun[], dist: number): numb
     let best = -1;
     let bestScore = -1;
     for (const g of guns) {
-        if (!hasAmmo(g)) continue;
+        if (!hasAmmo(g) || g.info.cls === "launcher") continue;
         const s = suitability(g.info, dist) * (g.mag > 0 ? 1 : 0.45) + (g.slot === self.curWeapIdx ? 0.05 : 0);
         if (s > bestScore) {
             bestScore = s;
@@ -141,7 +149,9 @@ export function carrySlot(self: SelfState, guns: readonly HeldGun[], taste: Read
     let bestScore = Number.NEGATIVE_INFINITY;
     for (const g of guns) {
         if (!hasAmmo(g)) continue;
-        const s = gunDesire(g.info.id, taste) + (g.slot === self.curWeapIdx ? 3 : 0);
+        // a launcher is drawn for its shot (brain/launch.ts), not carried: its switch is slow and its rounds few
+        const s =
+            gunDesire(g.info.id, taste) + (g.slot === self.curWeapIdx ? 3 : 0) - (g.info.cls === "launcher" ? 40 : 0);
         if (s > bestScore) {
             bestScore = s;
             best = g.slot;

@@ -18,7 +18,7 @@ import type { Contact, WorldModel } from "../perception/world.ts";
 import { FRAG_TYPES, freeDir, obstacleGeom } from "./combat.ts";
 import { type BrainCtx, type Intent, nearFailedGoal, reachable } from "./context.ts";
 import { flankSpot } from "./cover.ts";
-import { fragMinDist } from "./fragMath.ts";
+import { fragMaxDist, fragMinDist } from "./fragMath.ts";
 import { fragGates } from "./grenades.ts";
 
 /** Covered this long: step aside to a spot with a shot (MOVE's futile clock is slower; this breaks short stalls). */
@@ -29,10 +29,10 @@ const REPO_COOLDOWN = 4;
 /** Backing off to a throwing distance lasts at most this long per stand-off (COMBAT-11). */
 const BACK_OFF_CAP = 1.5;
 /**
- * Frags: thrown from the frag's minimum distance (its blast in the defs less 2: 10 units, fragMath.ts) to FRAG_MAX;
- * closer than that plus 1 the bot backs off.
+ * Frags: thrown from the frag's minimum distance (fragMath.ts fragMinDist: its blast in the defs plus the body and
+ * slack) to FRAG_MAX; closer than that plus 1 the bot backs off.
  */
-const FRAG_MAX = 27;
+const FRAG_MAX = fragMaxDist("frag");
 /** Chance a cover stand-off gets a frag: grenadeRate x this (easy 0.25, normal and hard 1). */
 const FRAG_APPETITE = 5;
 /** The crosshair holds the spot the target last showed at for this long, while it stays this close to it. */

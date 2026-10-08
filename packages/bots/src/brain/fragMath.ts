@@ -61,7 +61,7 @@ function throwableOf(item: string): ThrowableDef | undefined {
     return d.type === "throwable" ? d : undefined;
 }
 
-/** The blast of a throwable's explosion (defs explosionType rad: the frag's min 5, max 12), 0/0 for none. */
+/** The blast of a throwable's explosion (defs explosionType rad, e.g. explosion_frag's), 0/0 for none. */
 export function fragBlast(item: string): { min: number; max: number } {
     const t = throwableOf(item);
     const ex = t?.explosionType && hasDef(t.explosionType) ? GameObjectDefs[t.explosionType] : undefined;
@@ -76,7 +76,8 @@ const SHORT_SLACK = 0.5;
 
 /**
  * The nearest a frag is thrown at: its blast's outer radius (damage is measured to the body's surface, sim
- * combat/explosions.ts damageAt) plus the body radius and a little slack, 13.5 for the frag (evaluation F3: at the old
+ * combat/explosions.ts damageAt) plus the body radius and a little slack: explosion_frag rad.max + 1.5, read from the
+ * defs (evaluation F3: at the old
  * outer radius less 2 a frag landing on its aim still hit its thrower; 8.6% of frags did, 1.3 HP per throw).
  */
 export function fragMinDist(item: string): number {

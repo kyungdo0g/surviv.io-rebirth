@@ -81,6 +81,8 @@ export interface StrikeDanger {
     rad: number;
     until: number;
     bomb: boolean;
+    /** a strobe's strike (marker or thrown strobe, perception/strobes.ts): stepped out of, never detoured round */
+    strobe?: boolean;
 }
 
 interface Cached {
@@ -112,7 +114,9 @@ export function strikeDangers(ctx: BrainCtx): readonly StrikeDanger[] {
     const now = ctx.now;
     for (const z of zones) {
         if (z.kind !== "airstrike" || now >= z.until) continue;
-        list.push({ pos: z.pos, rad: z.rad + zoneMargin(z.variant), until: z.until, bomb: false });
+        // (bot round 6) a strobe's danger already holds its bombs' blast (perception/strobes.ts)
+        if (z.strobe) list.push({ pos: z.pos, rad: z.rad, until: z.until, bomb: false, strobe: true });
+        else list.push({ pos: z.pos, rad: z.rad + zoneMargin(z.variant), until: z.until, bomb: false });
     }
     for (const p of model.projectiles) {
         if (!isFallingBomb(p.type)) continue;
@@ -130,13 +134,14 @@ export function inStrike(ctx: BrainCtx, p: Vec2, pad = 0): boolean {
 
 /**
  * Whether a goal at `p` should be left alone for the strikes: in one, or the straight way there crosses one the bot is
- * not already in (one it stands in it is leaving anyway; the goal itself must still be outside).
+ * not already in (one it stands in it is leaving anyway; the goal itself must still be outside). A strobe's strike only
+ * keeps goals out of it: bots never detour for strobes (bot round 6).
  */
 export function strikeBlocks(ctx: BrainCtx, p: Vec2): boolean {
     const me = ctx.self.pos;
     for (const d of strikeDangers(ctx)) {
         if (v2.distance(p, d.pos) < d.rad) return true;
-        if (v2.distance(me, d.pos) >= d.rad && distToSegment(d.pos, me, p) < d.rad) return true;
+        if (!d.strobe && v2.distance(me, d.pos) >= d.rad && distToSegment(d.pos, me, p) < d.rad) return true;
     }
     return false;
 }

@@ -5,8 +5,10 @@
 import { airdropScore, planAirdrop } from "./airdrop.ts";
 import type { BehaviourName, BrainCtx, Intent } from "./context.ts";
 import { disengageScore, planDisengage } from "./disengage.ts";
+import { planRush, rushScore } from "./early.ts";
 import { holdScore, planHold } from "./endgame.ts";
 import { evadeScore, planEvade } from "./evade.ts";
+import { advanceScore, planAdvance, planRally, rallyScore } from "./factionSquad.ts";
 import type { BrainFeature } from "./features.ts";
 import { guardScore, planGuard } from "./guard.ts";
 import { planSearch, searchScore } from "./search.ts";
@@ -34,4 +36,9 @@ export const EXTENSION_BEHAVIOURS: readonly ExtensionBehaviour[] = [
     { name: "evade", feature: "pursuit", score: evadeScore, plan: planEvade },
     { name: "search", feature: "pursuit", score: searchScore, plan: planSearch },
     { name: "evacuate", feature: "pursuit", score: strikeScore, plan: planEvacuate },
+    // bot round 6 (50v50): the squad to the front, followers in formation (inert outside faction maps)
+    { name: "advance", feature: "faction", score: advanceScore, plan: planAdvance },
+    { name: "rally", feature: "faction", score: rallyScore, plan: planRally },
+    // bot round 6, user report 38: early-game fist rushes at armed enemies
+    { name: "rush", feature: "fistRush", score: rushScore, plan: planRush },
 ];

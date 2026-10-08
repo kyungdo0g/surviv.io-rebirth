@@ -9,6 +9,7 @@ import { createRng, type Rng, v2 } from "@rebirth/core";
 import { Input } from "@rebirth/defs";
 import type { DifficultyParams } from "../difficulty.ts";
 import { hasAmmo, heldGunsWithAmmo } from "../knowledge/arsenal.ts";
+import { POTATO_GUNS } from "../knowledge/gunTiers.ts";
 import type { WorldModel } from "../perception/world.ts";
 import { NEUTRAL, PERSONA_SALT, type PersonaParams } from "../persona.ts";
 import { type SkillProfile, skillOf } from "../skill.ts";
@@ -20,9 +21,13 @@ import { noteContested } from "./danger.ts";
 import { noteDeadEnd, planDeadEnd } from "./deadEnd.ts";
 import { updateTrade } from "./disengage.ts";
 import { dodge } from "./dodge.ts";
+import { crateFirstChoice, crateFirstScore } from "./early.ts";
 import { escapeFrag } from "./escapeFrag.ts";
 import { bestLoot, lootScore, planExplore, planLoot } from "./explore.ts";
 import { EXTENSION_BEHAVIOURS } from "./extensions.ts";
+import { factionScores } from "./factionFight.ts";
+import { applyFactionRoles, grenadierThrow } from "./factionRoles.ts";
+import { guardCrossing } from "./factionSquad.ts";
 import { BRAIN_PRESETS, type BrainFeatures } from "./features.ts";
 import { fightScore } from "./fightScore.ts";
 import { manageScope } from "./gear.ts";
@@ -106,7 +111,9 @@ export class Brain {
         const model = this.model;
         const self = model.self;
         const enemies = model.enemies();
-        const guns = heldGunsWithAmmo(self);
+        // (round 6, report 42: the Spud Gun and the Potato Cannon only for a brain that knows them)
+        const all = heldGunsWithAmmo(self);
+        const guns = this.features.potatoGuns ? all : all.filter((g) => !POTATO_GUNS.has(g.info.id));
         const ctx: BrainCtx = {
             model,
             self,
@@ -174,8 +181,10 @@ export class Brain {
         if (ctx.features.steady && this.mem.current === "flee") noteFlight(ctx);
         // steadiness: the loot and crate choices hold for a moment (no flip-flopping between near-equal items)
         const loot = ctx.features.steady ? steadyLoot(ctx) : bestLoot(ctx);
-        const crate = ctx.features.steady ? steadyCrate(ctx) : bestBreakable(ctx);
-        const crateScore = crate ? breakScore(ctx, crate) : 0;
+        // report 41: unarmed with an enemy near, the nearest cheap crate first (early.ts crateFirstChoice)
+        const first = ctx.features.crateFirst ? crateFirstChoice(ctx) : null;
+        const crate = first ?? (ctx.features.steady ? steadyCrate(ctx) : bestBreakable(ctx));
+        const crateScore = crate ? Math.max(breakScore(ctx, crate), first ? crateFirstScore(ctx, first) : 0) : 0;
         const options: Array<[BehaviourName, number, () => Intent]> = [
             ["zone", zoneScore(ctx), () => planZone(ctx)],
             ["fight", fightScore(ctx), () => planFight(ctx)],
@@ -194,6 +203,8 @@ export class Brain {
             if (ctx.features[ext.feature]) options.push([ext.name, ext.score(ctx), () => ext.plan(ctx)]);
         }
         options.push(["explore", EXPLORE_SCORE, () => planExplore(ctx)]);
+        // 50v50: local numbers, the faction's formation instead of the regroup, role priorities (factionFight.ts)
+        if (ctx.features.faction) factionScores(ctx, options);
         // steadiness: a behaviour locked out after dithering gets its score cut
         if (ctx.features.steady) steadyScores(ctx, options);
         let best = options[options.length - 1];
@@ -230,10 +241,18 @@ export class Brain {
             if (!intent.throwPlan && ESCAPE_THROW.has(intent.behaviour))
                 intent.throwPlan = escapeFrag(ctx, intent, thinkDt);
             if (!intent.throwPlan && SMART_THROW.has(intent.behaviour)) intent.throwPlan = smartGrenade(ctx, thinkDt);
+            // 50v50: the Grenadier's own explosives (factionRoles.ts)
+            if (!intent.throwPlan && ctx.features.faction && SMART_THROW.has(intent.behaviour))
+                intent.throwPlan = grenadierThrow(ctx, thinkDt);
         } else if (!intent.throwPlan && (intent.behaviour === "fight" || intent.behaviour === "zone")) {
             intent.throwPlan = grenadeOpportunity(ctx, thinkDt);
         }
         if (ctx.features.teamplay) applyTeamplay(ctx, intent);
+        // 50v50: role actions (Commander pings, the bugle, the medic's heals) and the no-solo-crossing rule
+        if (ctx.features.faction) {
+            applyFactionRoles(ctx, intent);
+            guardCrossing(ctx, intent);
+        }
         if (ctx.features.threats) reactToThreats(ctx, intent);
         if (ctx.features.scope) manageScope(ctx, intent);
         // pursuit: shot on the spot it stands on: step off it (stillHit.ts)

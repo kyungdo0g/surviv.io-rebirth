@@ -6,22 +6,17 @@
 // - explosions in view, the kill feed (with positions only where the bot last saw the killer or the victim, or the
 //   victim's dead body), teammates' pings (EmoteEvent isPing), the kill leader;
 // - air drops (the "ping_airdrop" map indicator appears when the crate is released and it lands
-//   GameConfig.airdrop.fallTime later; falling crates in view; the crate obstacle once seen), air strikes ("ping_airstrike" and the variant strobes' pings
-//   indicators of strobes and 50v50 zones, the zones themselves), planes coming into view, live grenades in view.
+//   GameConfig.airdrop.fallTime later; falling crates in view; the crate obstacle once seen), air strikes ("ping_airstrike"
+//   and the variant strobes' pings, as wide as the variant's lines and bombs reach: perception/strobes.ts; the 50v50
+//   zones themselves; thrown strobes in view, whose strips are known 3 s before their markers), planes coming into
+//   view, live grenades in view.
 // Events go to a 64-entry ring buffer on the simulation clock; `heat` sums them with a recency weight. Pure and
 // deterministic: no rng, no wall clock.
 import { type Vec2, v2 } from "@rebirth/core";
-import {
-    AIRSTRIKE_VARIANTS,
-    type AirstrikeVariant,
-    airstrikePingVariant,
-    GameConfig,
-    GameObjectDefs,
-    hasDef,
-    isAirstrikePing,
-} from "@rebirth/defs";
+import { airstrikePingVariant, GameConfig, GameObjectDefs, hasDef, isAirstrikePing } from "@rebirth/defs";
 import type { Snapshot } from "@rebirth/sim";
 import { bulletOrigin } from "./bulletSight.ts";
+import { MARKER_DANGER_TIME, markerRadius, StrobeWatch } from "./strobes.ts";
 import type {
     AirdropIntel,
     DangerZone,
@@ -49,12 +44,6 @@ const MERGE_DIST = 6;
 /** A falling crate crushes what is under it: keep this far from the landing point until it lands. */
 const CRATE_DANGER_RAD = 6;
 const FALL_TIME = GameConfig.airdrop.fallTime;
-/**
- * A strobe or zone strike: bombs fall within a few seconds on a strip of bombCount x bombOffset units ahead of the
- * target (survev plane.ts; sim match/airstrikes.ts): keep about half of it away for the strike window.
- */
-const STRIKE_DANGER_RAD = (GameConfig.airstrike.bombCount * GameConfig.airstrike.bombOffset) / 2 + 4;
-const STRIKE_DANGER_TIME = 6;
 
 /** A plane id unseen this long is a new plane when it shows up again (ids 1..255 are reused). */
 const PLANE_MEMORY = 30;
@@ -84,23 +73,8 @@ function explosionRad(throwable: string): number {
     return ex?.rad?.max ?? 0;
 }
 
-/** Danger time of a carpet strike's marker (six planes, round 5). */
-const CARPET_DANGER_TIME = 12.5;
 /** A marker and a zone this close are the same strike (client Minimap.styledPing). */
 const SAME_STRIKE = 2;
-
-/**
- * Round 5 (user reports 27, 32): a marker whose strike zone (within 2 u, as Minimap.styledPing matches them) is a
- * variant: heavy shells keep half their strip plus their blast away (16 + 38 u: a heavy plane is lethal about 20 u to
- * each side of its line and hurts out to 39 u), a carpet strike's six planes keep the danger up for 12.5 s.
- */
-function strikeDanger(variant: AirstrikeVariant | undefined): { rad: number; time: number } {
-    const v = AIRSTRIKE_VARIANTS[variant ?? "normal"];
-    if (variant === "heavy")
-        return { rad: ((v.bombCount - 1) * v.bombOffset) / 2 + explosionRad(v.bombType), time: STRIKE_DANGER_TIME };
-    if (variant === "carpet") return { rad: STRIKE_DANGER_RAD, time: CARPET_DANGER_TIME };
-    return { rad: STRIKE_DANGER_RAD, time: STRIKE_DANGER_TIME };
-}
 
 const GRENADE_RAD: ReadonlyMap<string, number> = new Map(GRENADES.map((g) => [g, explosionRad(g)]));
 
@@ -149,6 +123,8 @@ export class ThreatTracker implements ThreatBoard {
     private leader: KillLeaderIntel | null = null;
     /** plane ids (reused by the server after a while) and when each was last in view */
     private readonly planes = new Map<number, number>();
+    /** thrown strobes in view: their strike strips, 3 s before their markers (perception/strobes.ts) */
+    private readonly strobes = new StrobeWatch();
 
     heat(pos: Vec2, r: number): number {
         let h = 0;
@@ -206,6 +182,8 @@ export class ThreatTracker implements ThreatBoard {
         this.ingestExplosions(snap);
         this.ingestKills(snap, model);
         this.ingestPings(snap, model);
+        // (thrown strobes before the markers: a marker of a strobe the bot saw thrown is its strip)
+        this.strobes.update(model.projectiles, this.now);
         this.ingestIndicators(snap);
         this.ingestAirdrops(snap, model);
         this.ingestPlanes(snap);
@@ -345,6 +323,8 @@ export class ThreatTracker implements ThreatBoard {
                 this.push("airdrop", ind.pos, 0);
             } else if (isAirstrikePing(ind.type) && !ind.dead) {
                 if (this.strikes.some((z) => v2.distance(z.pos, ind.pos) < 2 && z.until > this.now)) continue;
+                // a strobe the bot saw thrown: its strip already says where the lines go
+                if (this.strobes.covers(ind.pos)) continue;
                 // a 50v50 zone names its variant on its zone view; a variant strobe's ping names it in its type
                 // (ping_airstrike_heavy / ping_airstrike_carpet, defs rebirth/strobes.ts)
                 const pinged = airstrikePingVariant(ind.type);
@@ -352,12 +332,14 @@ export class ThreatTracker implements ThreatBoard {
                     pinged && pinged !== "normal"
                         ? pinged
                         : snap.airstrikeZones?.find((z) => v2.distance(z.pos, ind.pos) < SAME_STRIKE)?.variant;
-                const danger = strikeDanger(variant);
+                // (bot round 6) as wide as the variant's lines spread plus its bomb's blast (perception/strobes.ts); a
+                // 50v50 zone's own circle comes from its zone view (rebuild)
                 this.strikes.push({
                     kind: "airstrike",
                     pos: v2.copy(ind.pos),
-                    rad: danger.rad,
-                    until: this.now + danger.time,
+                    rad: markerRadius(variant),
+                    until: this.now + MARKER_DANGER_TIME,
+                    strobe: true,
                     ...(variant && variant !== "normal" ? { variant } : {}),
                 });
                 this.push("airstrike", ind.pos, 0);
@@ -456,7 +438,7 @@ export class ThreatTracker implements ThreatBoard {
             this.reportList.push(r);
         }
         this.strikes = this.strikes.filter((z) => z.until > now);
-        const zones: DangerZone[] = [...this.strikes];
+        const zones: DangerZone[] = [...this.strikes, ...this.strobes.dangers(now)];
         for (const z of snap.airstrikeZones ?? []) {
             const until = now + z.duration * (1 - z.zoneT);
             const variant = z.variant && z.variant !== "normal" ? { variant: z.variant } : {};

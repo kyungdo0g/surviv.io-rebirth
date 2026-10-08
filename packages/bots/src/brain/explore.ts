@@ -14,6 +14,7 @@ import { type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, getMapObjectDef, hasDef, hasMapObjectDef, Input } from "@rebirth/defs";
 import type { MapData } from "@rebirth/sim";
 import { colliderBounds, transformCollider } from "../geom.ts";
+import { buildingLootValue } from "../knowledge/buildingValue.ts";
 import type { Taste } from "../knowledge/desire.ts";
 import { lootValue, slotToReplace } from "../knowledge/loot.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
@@ -70,7 +71,10 @@ function nearOpenedDrop(ctx: BrainCtx, p: Vec2): boolean {
 
 /** The bot's taste for loot decisions: its persona and mechanics skill. */
 export function tasteOf(ctx: BrainCtx): Taste {
-    return { persona: ctx.persona, s: ctx.skill.s };
+    // (round 6: only the flags that are on reach the taste, so a bot without them values guns as before)
+    const f = ctx.features;
+    if (!f.potatoGuns && !f.dmrFit) return { persona: ctx.persona, s: ctx.skill.s };
+    return { persona: ctx.persona, s: ctx.skill.s, potatoGuns: f.potatoGuns, dmrFit: f.dmrFit };
 }
 
 export interface LootChoice {
@@ -263,6 +267,15 @@ export function buildingSpots(map: MapData): BuildingSpot[] {
     return spots;
 }
 
+/** Walk (u) a building's good-gun value is worth (knowledge/buildingValue.ts: a warehouse ~0.8, a shack ~0.2). */
+const ROUTE_WEIGHT = 80;
+
+/** The loot-route bonus of building `id` of `type` for this bot: its value x a fixed per-bot spread of 0.6..1.4. */
+export function routeBonus(ctx: BrainCtx, id: number, type: string): number {
+    const spread = 0.6 + (0.8 * ((((ctx.self.id * 73856093) ^ (id * 19349663)) >>> 0) % 1000)) / 1000;
+    return ROUTE_WEIGHT * buildingLootValue(ctx.model.map.mapName, type) * spread;
+}
+
 function pickExploreGoal(ctx: BrainCtx): Vec2 {
     const { model, self, mem, rng } = ctx;
     let best: Vec2 | null = null;
@@ -287,6 +300,8 @@ function pickExploreGoal(ctx: BrainCtx): Vec2 {
         if (ctx.features.threats) cost += (1 / heatPenalty(ctx, b.pos) - 1) * 40;
         // sweep: loot-rich buildings first (a house or a warehouse is worth a longer walk than an outhouse)
         if (ctx.features.sweep) cost -= 4 * buildingPotential(b.type);
+        // report 40: buildings likely to hold good guns first, spread per bot so not everyone stacks on one
+        if (ctx.features.lootRoute) cost -= routeBonus(ctx, b.id, b.type);
         if (cost < bestCost) {
             bestCost = cost;
             best = b.pos;

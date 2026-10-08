@@ -14,7 +14,15 @@
 // smg 1.3 / rifle 1.25 / shotgun 1.15 plus a mobility term, rangeScale only for home classes, a marksman complement
 // weight of 0.3 so it carries a DMR plus a sniper, camping only with a B+ gun and armour).
 import type { Rng } from "@rebirth/core";
-import { gunTier, mobilityPenalty, S_RULE_GUNS, skillFit, TIER_BASE, tieredGuns } from "./knowledge/gunTiers.ts";
+import {
+    carryPenalty,
+    gunTier,
+    mobilityPenalty,
+    S_RULE_GUNS,
+    skillFit,
+    TIER_BASE,
+    tieredGuns,
+} from "./knowledge/gunTiers.ts";
 import type { WeaponClass } from "./knowledge/weapons.ts";
 
 /** Salt of the persona/skill rng stream: createRng(seed ^ PERSONA_SALT) (bot.ts), apart from the brain and motor. */
@@ -76,7 +84,17 @@ export interface OutfitMix {
     never: number;
 }
 
-const ALL_CLASSES: readonly WeaponClass[] = ["smg", "rifle", "lmg", "dmr", "sniper", "shotgun", "pistol", "useless"];
+const ALL_CLASSES: readonly WeaponClass[] = [
+    "smg",
+    "rifle",
+    "lmg",
+    "dmr",
+    "sniper",
+    "shotgun",
+    "pistol",
+    "launcher",
+    "useless",
+];
 
 function affinity(a: Partial<Record<WeaponClass, number>>): Readonly<Record<WeaponClass, number>> {
     const out = {} as Record<WeaponClass, number>;
@@ -350,33 +368,38 @@ export function shuffleBag<K extends string>(
 }
 
 /**
- * The persona-and-skill part of a gun's loot desire (0..~100): TIER_BASE x class affinity x (1 - mobility x handicap)
- * x skillFit(s) + favourite, with the S-rule (M249, PKP: 1 above the best non-S gun of this persona and skill). LOOT's
- * desire.ts adds what depends on the moment (ammo, the loadout). 0 for useless guns and non-guns.
+ * The persona-and-skill part of a gun's loot desire (0..~100): TIER_BASE x class affinity x (1 - mobility x handicap,
+ * at least half the carry share for every persona) x skillFit(s) + favourite, with the S-rule (M249, PKP: 1 above the best non-S gun of this persona and skill). LOOT's
+ * desire.ts adds what depends on the moment (ammo, the loadout). 0 for useless guns and non-guns. `dmrFit` (round 6,
+ * report 43): DMRs take the milder DMR_FIT_SLOPE.
  */
-export function baseDesire(id: string, p: Readonly<PersonaParams>, s: number): number {
-    const raw = rawDesire(id, p, s);
+export function baseDesire(id: string, p: Readonly<PersonaParams>, s: number, dmrFit = false): number {
+    const raw = rawDesire(id, p, s, dmrFit);
     if (raw <= 0 || !S_RULE_GUNS.has(id)) return raw;
-    return Math.max(raw, 1 + bestNonS(p, s));
+    return Math.max(raw, 1 + bestNonS(p, s, dmrFit));
 }
 
-function rawDesire(id: string, p: Readonly<PersonaParams>, s: number): number {
+/** Weight of the carry share (gunTiers carryPenalty) in every persona's desire (bot round 6 loot handoff). */
+const CARRY_WEIGHT = 0.5;
+
+function rawDesire(id: string, p: Readonly<PersonaParams>, s: number, dmrFit = false): number {
     const t = gunTier(id);
     if (!t) return 0;
-    const mobility = 1 - p.mobility * mobilityPenalty(id);
-    return TIER_BASE[t.tier] * p.classAffinity[t.cls] * mobility * skillFit(id, s) + (p.favourites[id] ?? 0);
+    // every persona minds a gun that slows it just by being carried (the DShK), rushers every handicap
+    const mobility = 1 - Math.max(p.mobility * mobilityPenalty(id), CARRY_WEIGHT * carryPenalty(id));
+    return TIER_BASE[t.tier] * p.classAffinity[t.cls] * mobility * skillFit(id, s, dmrFit) + (p.favourites[id] ?? 0);
 }
 
 const bestCache = new WeakMap<Readonly<PersonaParams>, Map<number, number>>();
 
-function bestNonS(p: Readonly<PersonaParams>, s: number): number {
+function bestNonS(p: Readonly<PersonaParams>, s: number, dmrFit: boolean): number {
     let byS = bestCache.get(p);
     if (!byS) bestCache.set(p, (byS = new Map()));
-    const key = Math.round(s * 1000);
+    const key = Math.round(s * 1000) * 2 + (dmrFit ? 1 : 0);
     let best = byS.get(key);
     if (best === undefined) {
         best = 0;
-        for (const g of tieredGuns()) if (!S_RULE_GUNS.has(g.id)) best = Math.max(best, rawDesire(g.id, p, s));
+        for (const g of tieredGuns()) if (!S_RULE_GUNS.has(g.id)) best = Math.max(best, rawDesire(g.id, p, s, dmrFit));
         byS.set(key, best);
     }
     return best;

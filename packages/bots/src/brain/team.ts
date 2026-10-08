@@ -19,6 +19,7 @@ import type { Contact } from "../perception/world.ts";
 import { findCoverFrom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 import { avoidPos } from "./danger.ts";
+import { factionDowned, planSelfRevive } from "./factionRevive.ts";
 import { inStrike, planEvacuate, strikeScore } from "./strikes.ts";
 
 const REVIVE_RANGE = GameConfig.player.reviveRange;
@@ -37,8 +38,12 @@ export function mates(ctx: BrainCtx): Array<TeamMemberView & { at: Vec2 }> {
     return out;
 }
 
-/** The nearest downed teammate. */
+/** The nearest downed teammate (50v50: the downed faction member to revive, factionRevive.ts). */
 export function downedMate(ctx: BrainCtx): (TeamMemberView & { at: Vec2 }) | undefined {
+    if (ctx.features.faction) {
+        const f = factionDowned(ctx);
+        if (f !== null) return f;
+    }
     let best: (TeamMemberView & { at: Vec2 }) | undefined;
     let bestD = Number.POSITIVE_INFINITY;
     for (const m of mates(ctx)) {
@@ -314,6 +319,9 @@ export function planDowned(ctx: BrainCtx): Intent {
         intent.moveDir = out.moveDir;
         return intent;
     }
+    // 50v50: a Medic revives itself (Revivify) when nobody is in its face
+    const selfRevive = ctx.features.faction ? planSelfRevive(ctx) : null;
+    if (selfRevive) return selfRevive;
     if (self.action.type === "revive") {
         // being revived: crawling away would cancel it
         intent.stop = true;
