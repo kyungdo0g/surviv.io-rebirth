@@ -75,6 +75,13 @@ export interface SimRules {
      * instead of staying in the game (survev player.ts canDespawn, GameConfig.player.minActiveTime).
      */
     minActiveTime: number;
+    /**
+     * Rebirth (the owner's ruling, docs/research/rebirth-deviations.md "Start when full"): a game that reaches its
+     * player cap (Match: the living players it takes) starts on the next tick, with at least `minPlayers` sides alive,
+     * instead of waiting for two sides with a player alive `minActiveTime` (survev gameModeManager.ts:47-63,135-137
+     * isGameStarted: cantDespawnAliveCount > 1). false restores survev's wait.
+     */
+    startWhenFull: boolean;
     /** a spectator watching a player that died switches to another one after this many seconds (survev client.ts) */
     spectateSwitchDelay: number;
     /** cooldown of spectate next/prev when not watching teammates (survev client.ts getSpectateCooldown) */
@@ -195,6 +202,7 @@ export function defaultRules(): SimRules {
         joinWindowSeconds: 60,
         killLeaderMinKills: GameConfig.player.killLeaderMinKills,
         minActiveTime: GameConfig.player.minActiveTime,
+        startWhenFull: true,
         spectateSwitchDelay: 2,
         spectateCooldown: 1,
         explosionFalloff: "step",

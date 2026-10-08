@@ -34,7 +34,8 @@ Open a second browser tab to have an opponent, or let bots fill the games: `BOT_
 [Environment variables on Windows](#environment-variables-on-windows)). Bots default to `BOT_DIFFICULTY=mixed`: 35%
 beginner, 45% intermediate and 20% expert bots, each with a persona; `BOT_SKILL_MIX`, `BOT_PERSONAS`, the single tiers
 and the legacy `easy`/`normal`/`hard` presets are in docs/deploy.md. A match starts when two players (`MIN_PLAYERS`)
-have been alive for 10 seconds.
+have been alive for 10 seconds, or at once when the game is full (`START_WHEN_FULL`; before the start the bots join one
+per tick, so a full bot-filled game starts within about a second).
 
 Without `pnpm assets` everything works with placeholder graphics and no sound.
 

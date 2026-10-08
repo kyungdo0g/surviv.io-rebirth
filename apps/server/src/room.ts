@@ -130,6 +130,8 @@ export class GameRoom {
         this.game.rules.roles.factionAirstrikeVariants = { ...config.airstrikeVariants };
         // rebirth air drop tiers (AIRDROP_TIERS; off: the v0.8.82 crate weights and inner crates)
         this.game.rules.airdropTiers = config.airdropTiers;
+        // the owner's ruling: a game at its player cap starts at once (START_WHEN_FULL; off: survev's 10 s wait)
+        this.game.rules.startWhenFull = config.startWhenFull;
         this.cache = new ObjectCache({ width: this.game.mapData.width, height: this.game.mapData.height });
         this.mapMsg = encodeMapMsg(this.game.mapData);
         this.createdAt = now;
@@ -143,6 +145,7 @@ export class GameRoom {
                       skillMix: config.botSkillMix,
                       personas: config.botPersonas,
                       joinIntervalTicks: Math.round((config.botFillIntervalMs / 1000) * TICK_HZ),
+                      startJoinIntervalTicks: Math.round((config.botFillStartIntervalMs / 1000) * TICK_HZ),
                       seed: seed >>> 0,
                       onError: (err) => {
                           if (this.bots?.errors === 1) console.error(`game ${this.id}: a bot failed (dropped):`, err);

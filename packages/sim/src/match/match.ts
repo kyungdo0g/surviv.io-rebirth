@@ -56,7 +56,12 @@ export interface MatchHost {
     readonly tick: number;
     readonly gas: Gas;
     readonly options: { mapName: string };
-    readonly rules: { joinWindowSeconds: number; killLeaderMinKills: number; minActiveTime: number };
+    readonly rules: {
+        joinWindowSeconds: number;
+        killLeaderMinKills: number;
+        minActiveTime: number;
+        startWhenFull: boolean;
+    };
     /** groups (M6a); solo: one per player */
     readonly teams: { readonly teamMode: number; aliveGroups(except?: Player): Group[] };
     /** 50v50 factions (M7a), null on other maps */
@@ -131,12 +136,19 @@ export class Match {
      */
     canJoin(): boolean {
         if (this.options.sandbox) return true;
-        if (this.over || this.aliveCount >= this.maxPlayers) return false;
-        // the dead stay in the game: never past what the wire can list
+        if (this.over || this.full) return false;
+        return !this.started || this.startedSeconds < this.host.rules.joinWindowSeconds;
+    }
+
+    /**
+     * The game takes no more players: as many living players as it takes (the mode's maximum, or the player cap where
+     * it grows the map), or MAX_PLAYERS_IN_GAME in the game, the dead included (never past what the wire can list).
+     */
+    get full(): boolean {
+        if (this.aliveCount >= this.maxPlayers) return true;
         let inGame = 0;
         for (const _ of this.host.players()) inGame++;
-        if (inGame >= MAX_PLAYERS_IN_GAME) return false;
-        return !this.started || this.startedSeconds < this.host.rules.joinWindowSeconds;
+        return inGame >= MAX_PLAYERS_IN_GAME;
     }
 
     private get teamMode(): number {
@@ -159,11 +171,13 @@ export class Match {
 
     /**
      * Start check, run at the beginning of a tick: the match starts once `minPlayers` sides have a player that can no
-     * longer despawn (survev cantDespawnAliveCount > 1), at once in a sandbox. Returns true on the start.
+     * longer despawn (survev cantDespawnAliveCount > 1), at once in a sandbox, and (rules.startWhenFull, the owner's
+     * ruling) at once in a full game with `minPlayers` sides alive. Returns true on the start.
      */
     checkStart(): boolean {
         if (this.started) return false;
         if (!this.options.sandbox) {
+            const need = Math.max(1, this.options.minPlayers);
             // sides with a living player and a member that can no longer despawn (survev cantDespawnAliveCount: a
             // downed player, a dead teammate and a 50v50 role holder count too)
             const factionMode = !!getMapDef(this.host.options.mapName).gameMode.factionMode;
@@ -174,7 +188,9 @@ export class Match {
                     ready.add(p.teamId);
                 }
             }
-            if (ready.size < Math.max(1, this.options.minPlayers)) return false;
+            // a full game no longer waits minActiveTime for its players (rebirth-deviations.md "Start when full")
+            const fullStart = this.host.rules.startWhenFull && this.full && alive.size >= need;
+            if (ready.size < need && !fullStart) return false;
         }
         this.started = true;
         this.startTick = this.host.tick;

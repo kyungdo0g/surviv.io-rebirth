@@ -1,5 +1,6 @@
 // Bot fill (rebirth feature for testing and low-population regions, docs/research/community-ko.md): while a game is
-// joinable, in-process bots join one at a time until the game holds BOT_FILL players; a human joining a game at its
+// joinable, in-process bots join one at a time until the game holds BOT_FILL players (one per tick before the start by
+// default, so a full game starts at once: rebirth-deviations.md "Start when full"); a human joining a game at its
 // target (or at the mode's player limit) takes the seat of a bot that has not fought yet, as long as the original join
 // window is open. Bots are ordinary players (names from a Korean/English list, auto-fill groups in team modes), driven
 // by @rebirth/bots through their own snapshots with a seeded random stream. They never hold a game open: rooms count
@@ -37,8 +38,13 @@ export interface BotFillOptions {
     /** players the game should hold (humans + bots) */
     target: number;
     difficulty: BotDifficultySetting;
-    /** ticks between two bot joins (0: all at once) */
+    /** ticks between two bot joins once the game started (0: one per tick) */
     joinIntervalTicks: number;
+    /**
+     * ticks between two bot joins before the game starts (default joinIntervalTicks); 0 fills one bot per tick, so a
+     * game reaches its cap and starts at once (sim rules.startWhenFull) about a second after it opens
+     */
+    startJoinIntervalTicks?: number;
     /** seed of the bots' names and random streams */
     seed: number;
     /** tier weights of "mixed" (default DEFAULT_SKILL_MIX: 35 / 45 / 20) */
@@ -130,7 +136,9 @@ export class BotFill {
         if (this.options.target <= 0 || game.tick < this.nextJoinTick || !game.canJoin()) return;
         if (this.playersInGame() >= Math.min(this.options.target, this.modeMaxPlayers)) return;
         this.addBot();
-        this.nextJoinTick = game.tick + this.options.joinIntervalTicks;
+        const { joinIntervalTicks, startJoinIntervalTicks } = this.options;
+        this.nextJoinTick =
+            game.tick + (game.started ? joinIntervalTicks : (startJoinIntervalTicks ?? joinIntervalTicks));
     }
 
     /** The next tier of the "mixed" population (a refilled shuffle bag). */

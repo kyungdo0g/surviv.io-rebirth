@@ -483,3 +483,19 @@
 - The drop follows the usual flare rules: it is called where the shot leaves the barrel (not where the flare lands), kept on the map and moved off indestructible obstacles, roofs and other crates; the crate is the map's air drop roll [src:survev/server/src/game/objects/bullet.ts:117-118] [src:survev/server/src/game/objects/plane.ts:298-352] [H]
 - The delay counts from the tick of the promotion, so the scheduled 50v50 Commander (50 s into circle 0) calls its drop about 55 s in. Only the Commander role, which exists only on 50v50 maps, has the timer; `leaderAutoFlare` false restores v0.8.82's manual flare [src:user/2026-10-08-leader-auto-flare] [H]
 - The bots never fire a flare gun on their own (it scores 0 as a weapon), so before this a bot Commander never called its drop; now every Commander does [src:derived/rebirth-bot-flare-score] [H]
+
+## Start when full (2026-10-08)
+
+> The owner, same game: the game held 100 players right away but showed "Waiting for players" instead of starting. Code: `packages/sim/src/rules.ts` (`startWhenFull`), `packages/sim/src/match/match.ts` (`checkStart`, `full`), `apps/server/src/bots.ts` (`startJoinIntervalTicks`), `apps/server/src/config.ts` (`START_WHEN_FULL`, `BOT_FILL_START_INTERVAL_MS`), `apps/server/src/room.ts`. Tests: `packages/sim/test/startWhenFull.test.ts`, `apps/server/test/startFull.test.ts`.
+
+| rule | survev, v0.8.82 (rebirth before) | rebirth | sources |
+|---|---|---|---|
+| start of a game at its player cap (`rules.startWhenFull`, server `START_WHEN_FULL`) | like any game: once two sides (players, groups or factions) have a member alive 10 s (`minActiveTime`), downed, or holding a 50v50 role | on its next tick, with at least `MIN_PLAYERS` sides alive | [src:user/2026-10-08-start-when-full] [src:survev/server/src/game/gameModeManager.ts:47-63] [src:survev/server/src/game/gameModeManager.ts:135-137] [src:survev/server/src/game/game.ts:182-185] [H] |
+| bot fill joins before the start (`BOT_FILL_START_INTERVAL_MS`) | one every `BOT_FILL_INTERVAL_MS` (250 ms) | one per tick (0 ms) | [src:user/2026-10-08-start-when-full] [H] |
+| bot fill joins after the start (`BOT_FILL_INTERVAL_MS`) | 250 ms | 250 ms (unchanged) | [src:user/2026-10-08-start-when-full] [H] |
+
+- survev waits on purpose: a player alive under 10 s despawns when it disconnects, so a game started with two players could end at once. A full game has no such risk, so the owner's ruling is a knob, on by default; off restores survev's wait [src:survev/server/src/game/gameModeManager.ts:47-48] [src:survev/server/src/game/objects/player.ts:3116-3124] [src:user/2026-10-08-start-when-full] [H]
+- "Full" is the cap that closes joins in the sim: as many living players as the game takes (100 on 50v50, the mode's 80 elsewhere, the player cap where it grows the map), or 255 in the game. A game below its cap (a smaller `BOT_FILL`, or humans only) still waits for players alive 10 s [src:user/2026-10-08-start-when-full] [src:user/2026-10-08-map-player-cap] [H]
+- A game opens when find_game creates it. At one bot per tick a bot-filled 50v50 game holds 100 players and starts 99 ticks later (about 1 s; about 2 s at a cap of 200), the first human usually joining within that second; before, it started after 10.26 s with 43 players and took about 25 s to fill (seed 21, the human 0.3 s in) [src:derived/rebirth-start-when-full-fill] [H]
+- The join window is unchanged: joins stay open for 60 s after the start; a full game takes a human by giving up the seat of a fill bot that has not fought yet, and a seat freed later (a young player's despawn) is refilled at the usual 250 ms pace [src:survev/server/src/game/game.ts:344-350] [src:user/2026-10-08-start-when-full] [H]
+- The client needs no change: it shows "Waiting for players" while the gas is inactive, which now ends as soon as the game is full [src:derived/rebirth-start-when-full-fill] [H]
