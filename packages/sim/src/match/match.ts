@@ -97,6 +97,8 @@ export class Match {
     private readonly host: MatchHost;
     private readonly killLeaderEnabled: boolean;
     private readonly maxPlayers: number;
+    /** living players that make the game full for rules.startWhenFull: maxPlayers, or a lower game cap (MAX_PLAYERS) */
+    private readonly startCap: number;
     private nextKilledIndex = 0;
     private readonly resultSent = new Set<number>();
     private readonly statsSent = new Set<number>();
@@ -109,6 +111,9 @@ export class Match {
         this.killLeaderEnabled = def.gameMode.killLeaderEnabled;
         // a cap that grows the map lets that many play (defs mapDefForPlayers, playerLimit)
         this.maxPlayers = Math.min(MAX_PLAYERS_IN_GAME, playerLimit(def, options.maxPlayers));
+        // a cap below the mode's (the server's MAX_PLAYERS seats) does not close joins, but a game that holds that
+        // many is full for the start (rebirth-deviations.md "Start when full")
+        this.startCap = Math.min(this.maxPlayers, Math.max(1, options.maxPlayers ?? this.maxPlayers));
     }
 
     /** Living players in join (id) order. */
@@ -189,7 +194,8 @@ export class Match {
                 }
             }
             // a full game no longer waits minActiveTime for its players (rebirth-deviations.md "Start when full")
-            const fullStart = this.host.rules.startWhenFull && this.full && alive.size >= need;
+            const full = this.full || this.aliveCount >= this.startCap;
+            const fullStart = this.host.rules.startWhenFull && full && alive.size >= need;
             if (ready.size < need && !fullStart) return false;
         }
         this.started = true;

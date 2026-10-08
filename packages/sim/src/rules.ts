@@ -77,9 +77,9 @@ export interface SimRules {
     minActiveTime: number;
     /**
      * Rebirth (the owner's ruling, docs/research/rebirth-deviations.md "Start when full"): a game that reaches its
-     * player cap (Match: the living players it takes) starts on the next tick, with at least `minPlayers` sides alive,
-     * instead of waiting for two sides with a player alive `minActiveTime` (survev gameModeManager.ts:47-63,135-137
-     * isGameStarted: cantDespawnAliveCount > 1). false restores survev's wait.
+     * player cap (Match: the living players it takes, or a lower GameOptions.maxPlayers) starts on the next tick, with
+     * at least `minPlayers` sides alive, instead of waiting for two sides with a player alive `minActiveTime` (survev
+     * gameModeManager.ts:47-63,135-137 isGameStarted: cantDespawnAliveCount > 1). false restores survev's wait.
      */
     startWhenFull: boolean;
     /** a spectator watching a player that died switches to another one after this many seconds (survev client.ts) */

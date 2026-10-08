@@ -77,6 +77,18 @@ describe("a bot-filled 50v50 room", () => {
         expect(room.bots?.errors).toBe(0);
     }, 180_000);
 
+    it("a room whose MAX_PLAYERS is below the mode's 80 starts at once when the bots fill its 30 seats", () => {
+        const room = new GameRoom(makeConfig({ log: false, maxPlayers: 30, botFill: 30 }), "main", 23, 0);
+        expect(room.capacity).toBe(30);
+        let ticks = 0;
+        while (!room.game.started && ticks < 200) {
+            room.tick();
+            ticks++;
+        }
+        expect(ticks).toBeLessThanOrEqual(31);
+        expect(room.game.aliveCount).toBe(30);
+    }, 60_000);
+
     it("with START_WHEN_FULL=0 the full room waits for players alive 10 s, as survev", () => {
         const config = makeConfig({ log: false, factionBotFill: 100, startWhenFull: false });
         const room = new GameRoom(config, "faction", 22, 0, 4);

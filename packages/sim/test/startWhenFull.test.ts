@@ -67,6 +67,23 @@ describe("start when full (the owner's ruling; survev waits for players alive 10
         expect(game.started).toBe(true);
     }, 60_000);
 
+    it("a game capped below the mode's maximum (MAX_PLAYERS 30) starts at once with 30, and joins stay open", () => {
+        const capped = (n: number): Game => {
+            const game = new Game(
+                { mapName: "main", seed: 7, maxPlayers: 30 },
+                { generation: cachedMap("main", 12345), spawnLoot: false },
+            );
+            addPlayers(game, n);
+            game.step();
+            return game;
+        };
+        const full = capped(30);
+        expect(full.started).toBe(true);
+        // the lower cap only counts for the start: the sim still closes joins at the mode's 80 (the server seats 30)
+        expect(full.canJoin()).toBe(true);
+        expect(capped(29).started).toBe(false);
+    });
+
     it("a full game still needs minPlayers sides alive", () => {
         const game = mainGame({ minPlayers: 81 });
         addPlayers(game, 80);
