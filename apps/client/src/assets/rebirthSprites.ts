@@ -5,9 +5,12 @@
 // the file is not installed at all, so a new gun never shows the missing-sprite placeholder. The new ammo's ping emotes
 // (ammo-<id>.img) are drawn by the same tool in the original ammo emotes' style, with the generic ammo emote as fallback.
 // The rebirth buildings' floors and roofs (rebirth/buildings.ts) are committed SVGs served from /rebirth/map/
-// (tools/assets/rebirthBuildingArt.ts draws them), so they need no install step.
+// (tools/assets/rebirthBuildingArt.ts draws them), so they need no install step. The drawn top-down held sprites
+// (packages/defs rebirth/heldGunArt.ts: the AK-47 and four beta rifles, our own art) are committed SVGs too, served from
+// /rebirth/guns/; they have no fallback, since the file always ships.
 import {
     GameObjectDefs,
+    heldGunArt,
     NEW_AMMO_IDS,
     NEW_GUN_IDS,
     NEW_GUN_LOOT_FALLBACKS,
@@ -27,7 +30,15 @@ export function rebirthBuildingUrl(sprite: string): string {
     return `/rebirth/map/${sprite.replace(/\.img$/, "")}.svg`;
 }
 
-/** The new guns' loot icon and new ammo emote entries and the rebirth buildings' images, by sprite id. */
+/** Served URL of a drawn top-down held sprite (packages/defs rebirth/heldGunArt.ts). */
+export function rebirthHeldGunUrl(sprite: string): string {
+    return `/rebirth/guns/${sprite.replace(/\.img$/, "")}.svg`;
+}
+
+/**
+ * The new guns' loot icon and new ammo emote entries, the rebirth buildings' images and the drawn held sprites, by
+ * sprite id.
+ */
 export function rebirthSpriteEntries(): Record<string, SpriteEntry> {
     const out: Record<string, SpriteEntry> = {};
     for (const id of NEW_GUN_IDS) {
@@ -53,6 +64,9 @@ export function rebirthSpriteEntries(): Record<string, SpriteEntry> {
         // the floor image is larger than the roof's where an outdoor apron widens it
         out[art.floor] = { source: "rebirth", path: rebirthBuildingUrl(art.floor), size: art.floorSize ?? art.size };
         out[art.ceiling] = { source: "rebirth", path: rebirthBuildingUrl(art.ceiling), size: art.size };
+    }
+    for (const art of heldGunArt()) {
+        out[art.sprite] = { source: "rebirth", path: rebirthHeldGunUrl(art.sprite), size: art.size };
     }
     return out;
 }

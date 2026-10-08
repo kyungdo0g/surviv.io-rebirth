@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="188" viewBox="0 0 48 188">
+  <!-- SIG SG 550 held sprite, own art (surviv.io-rebirth): top-down view, barrel up, butt flush at the bottom. -->
+  <!-- folding stock seen from above (mostly under the right hand): solid olive strut with the darker cheek rest, butt pad flush -->
+  <rect x="16" y="148" width="16" height="30" fill="#4f5b39" stroke="#000" stroke-width="8"/>
+  <rect x="22" y="152" width="4" height="22" fill="#3c4a2e"/>
+  <rect x="10" y="180" width="28" height="8" rx="2" fill="#000"/>
+  <!-- hinge, knuckle on the right (the stock folds to the right) -->
+  <rect x="15" y="134" width="18" height="10" fill="#000"/>
+  <circle cx="34" cy="139" r="4" fill="#000"/>
+  <!-- dark-steel receiver, top rib = highlight strip -->
+  <path d="M15 89h18v40l-2 2H17l-2-2z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="22" y="94" width="4" height="28" fill="#8f8f8f"/>
+  <!-- charging handle on the right: arm and round knob (under the left hand in game) -->
+  <rect x="32" y="90" width="8" height="6" fill="#000"/>
+  <circle cx="40" cy="93" r="4" fill="#000"/>
+  <!-- rotary diopter drum at the rear -->
+  <rect x="13" y="124" width="22" height="11" rx="2" fill="#000"/>
+  <circle cx="24" cy="129.5" r="3" fill="none" stroke="#8f8f8f" stroke-width="3"/>
+  <!-- long olive handguard, three vent slots on the centre line -->
+  <path d="M16 45h16l2 2v38H14V47z" fill="#4f5b39" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M24 51v8M24 61v8M24 71v8" stroke="#000" stroke-width="3"/>
+  <!-- folded bipod (identity): yoke behind the gas block, legs parallel to the bore in the handguard's side channels -->
+  <path d="M13 20h4v42h-4zM31 20h4v42h-4z" fill="#000"/>
+  <rect x="13" y="18" width="22" height="4" rx="1" fill="#000"/>
+  <rect x="10" y="58" width="6" height="6" rx="2" fill="#000"/>
+  <rect x="32" y="58" width="6" height="6" rx="2" fill="#000"/>
+  <!-- barrel, gas block with the hooded front sight (post), flash hider with two slots -->
+  <rect x="20" y="8" width="8" height="34" fill="#000"/>
+  <rect x="15" y="9" width="18" height="10" rx="1" fill="#000"/>
+  <rect x="22" y="11" width="4" height="4" fill="#8f8f8f"/>
+  <rect x="17" y="1" width="14" height="9" rx="2" fill="#000"/>
+  <rect x="20" y="2" width="2" height="6" fill="#8f8f8f"/>
+  <rect x="26" y="2" width="2" height="6" fill="#8f8f8f"/>
+</svg>

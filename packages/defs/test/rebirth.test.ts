@@ -21,6 +21,7 @@ import {
     HEAVY_BOMB_DECAL_TYPE,
     HEAVY_BOMB_EFFECT_TYPE,
     HEAVY_BOMB_EXPLOSION,
+    heldGunArt,
     IRON_BOMB_DECAL_TYPE,
     IRON_BOMB_RAD_MAX,
     isAirstrikeBomb,
@@ -64,8 +65,49 @@ describe("rebirth balance deviations", () => {
             "potato_lmg.barrelLength",
             "potato_lmgshot.throwPhysics.velZ",
             "potato_lmg.speed",
+            "ak47.worldImg",
             "decal_bomb_iron_explosion.img.scale",
         ]);
+    });
+
+    it("the AK-47 holds its own drawn top-down sprite (presentation only), the generated JSON keeps the bar", () => {
+        expect(gameObjects.ak47.worldImg).toEqual({
+            sprite: "gun-long-01.img",
+            scale: { x: 0.5, y: 0.435 },
+            tint: 0x622a12,
+            leftHandOffset: { x: 2.8, y: 0 },
+            recoil: 1.33,
+        });
+        const ak47 = getDefOfType("gun", "ak47");
+        expect(ak47.worldImg).toEqual({
+            sprite: "gun-ak47-01.img",
+            scale: { x: 0.5, y: 0.5 },
+            tint: 0xffffff,
+            leftHandOffset: { x: 2.8, y: 0 },
+            recoil: 1.33,
+        });
+        // nothing else changes: the gun plays and fires as before
+        expect({ ...ak47, worldImg: gameObjects.ak47.worldImg }).toEqual(gameObjects.ak47);
+        expect(rebirthDeviations.filter((d) => d.id === "ak47")).toEqual([
+            {
+                id: "ak47",
+                field: "worldImg",
+                original: { sprite: "gun-long-01.img", scale: { x: 0.5, y: 0.435 }, tint: 0x622a12 },
+                rebirth: { sprite: "gun-ak47-01.img", scale: { x: 0.5, y: 0.5 }, tint: 0xffffff },
+                reason: "owner: own top-down held sprite instead of the tinted bar (presentation only)",
+            },
+        ]);
+        expect(heldGunArt()).toEqual([
+            { id: "ak47", sprite: "gun-ak47-01.img", size: [48, 172] },
+            { id: "g36c", sprite: "gun-g36c-01.img", size: [48, 136] },
+            { id: "m16a4", sprite: "gun-m16a4-01.img", size: [48, 220] },
+            { id: "sig550", sprite: "gun-sig550-01.img", size: [48, 188] },
+            { id: "g3", sprite: "gun-g3-01.img", size: [48, 190] },
+        ]);
+        // the beta rifles keep the balance sheet's bar in their defs (the client switches them, heldGun.ts)
+        for (const id of ["g36c", "m16a4", "sig550", "g3"]) {
+            expect(getDefOfType("gun", id).worldImg.sprite, id).toMatch(/^gun-(med|long)-01\.img$/);
+        }
     });
 
     it("the frag scorch mark grows x1.3 with its blast; the MIRV keeps the original decal", () => {

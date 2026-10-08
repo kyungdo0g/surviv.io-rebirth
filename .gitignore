@@ -20,6 +20,7 @@ playwright-report/
 
 # original surviv.io art/audio, copied locally from the survev clone by `pnpm assets` (not redistributed)
 apps/client/public/assets/
+# (apps/client/public/rebirth/ is the rebirth's own art, committed: map/ building images, guns/ top-down held sprites)
 # e2e screenshots contain original art too
 tests/e2e/__screens__/
 

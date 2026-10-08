@@ -8,6 +8,7 @@ import { applyRebirthBuildingSpawns } from "./buildings.ts";
 import { rebirthOnlyDefs, rebirthOnlyMapObjects } from "./defs.ts";
 import { applyBalanceDeviations, applyMapObjectDeviations, type DefDeviation } from "./deviations.ts";
 import { applyGunSpeedOverrides } from "./gunSpeeds.ts";
+import { applyHeldGunArt } from "./heldGunArt.ts";
 import { applyRebirthMapScale, REBIRTH_MAP_SCALE } from "./mapScale.ts";
 import { applyNewGunLoot } from "./newGunLoot.ts";
 import { applyOwnerLoot, CLUB_VAULT_BOX, clubVaultBuilding, GOLD_BONUS_CRATES, goldBonusCrates } from "./ownerLoot.ts";
@@ -22,6 +23,7 @@ export * from "./buildings.ts";
 export { type DefDeviation, FRAG_DECAL_TYPE, FRAG_RADIUS_MULT, IRON_BOMB_DECAL_TYPE } from "./deviations.ts";
 export * from "./gunBeta.ts";
 export * from "./gunSpeeds.ts";
+export * from "./heldGunArt.ts";
 export * from "./mapScale.ts";
 export * from "./newGunAssets.ts";
 export * from "./newGunLoot.ts";
@@ -65,6 +67,7 @@ export function applyRebirthDefs(
         ...applyBalanceDeviations(gameObjects),
         ...applyWikiStatOverrides(gameObjects),
         ...applyGunSpeedOverrides(gameObjects),
+        ...applyHeldGunArt(gameObjects),
         ...applySurvevStrobe(gameObjects),
         ...applyMapObjectDeviations(mapObjects),
     ];

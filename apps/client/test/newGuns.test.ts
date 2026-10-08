@@ -1,5 +1,6 @@
 // The rebirth's beta new guns on the client (2026-10-07): loot icons from the owner's sheets with an original fallback
-// (assets/rebirthSprites.ts), held sprites as plain bars sized by the barrel length (objects/heldGun.ts), sounds from
+// (assets/rebirthSprites.ts), held sprites as plain bars sized by the barrel length or, for the drawn ones, their own
+// committed top-down SVG (objects/heldGun.ts, packages/defs rebirth/heldGunArt.ts), sounds from
 // the owner's clips with the donor's original as fallback (audio/rebirthSounds.ts), the new ammo's HUD colours
 // (ui/hudAmmo.ts) and the new-gun effects (fx/newGunFx.ts: DP-12 pump, discard, launch smoke and rocket trails).
 import { existsSync } from "node:fs";
@@ -10,6 +11,7 @@ import {
     type GunDef,
     getDefOfType,
     gunClass,
+    HELD_GUN_ART,
     Input,
     NEW_AMMO_EMOTES,
     NEW_AMMO_IDS,
@@ -32,6 +34,8 @@ import { AMMO_COLORS } from "../src/ui/hudAmmo.ts";
 const ASSETS = join(import.meta.dirname, "../public/assets");
 const HAVE_ASSETS = existsSync(join(ASSETS, "audio"));
 const gun = (id: string) => GameObjectDefs[id] as GunDef;
+/** Guns with a drawn top-down held sprite (packages/defs rebirth/heldGunArt.ts). */
+const DRAWN = new Set<string>(Object.keys(HELD_GUN_ART));
 const ORIGINAL_PLAYERS = (generatedSounds.lists as Record<string, Record<string, { path: string }>>).players;
 
 describe("new guns: loot icons", () => {
@@ -55,6 +59,7 @@ describe("new guns: loot icons", () => {
 describe("new guns: held sprites", () => {
     it("without own art, every new gun holds a bar drawn from an original bar sprite, as long as its barrel", () => {
         for (const id of NEW_GUN_IDS) {
+            if (DRAWN.has(id)) continue;
             const def = gun(id);
             const img = heldGunImage(def);
             expect(SPRITES[ownHeldSprite(id)], id).toBeUndefined();
@@ -71,9 +76,59 @@ describe("new guns: held sprites", () => {
         }
     });
 
+    it("a drawn new gun holds its own top-down sprite at 0.5 in its own colours, with the sheet's hands", () => {
+        const drawnNew = NEW_GUN_IDS.filter((id) => DRAWN.has(id));
+        expect(drawnNew).toEqual(["g36c", "m16a4", "sig550", "g3"]);
+        for (const id of drawnNew) {
+            const def = gun(id);
+            const img = heldGunImage(def);
+            const sprite = `gun-${id}-01.img`;
+            expect(ownHeldSprite(id)).toBe(sprite);
+            expect(img, id).toEqual({
+                ...def.worldImg,
+                sprite,
+                scale: { x: 0.5, y: 0.5 },
+                tint: 0xffffff,
+                magImg: undefined,
+            });
+            // the balance sheet's bar stays in the def (rebirth/newGuns.json); hands, gun offset and recoil are kept
+            expect(isBarSprite(def.worldImg.sprite), id).toBe(true);
+            expect(img.leftHandOffset, id).toEqual(def.worldImg.leftHandOffset);
+            expect(img.gunOffset, id).toEqual(def.worldImg.gunOffset);
+            expect(img.recoil, id).toBe(def.worldImg.recoil);
+            expect(SPRITES[sprite], id).toEqual({
+                source: "rebirth",
+                path: `/rebirth/guns/gun-${id}-01.svg`,
+                size: HELD_GUN_ART[id as keyof typeof HELD_GUN_ART],
+            });
+        }
+        expect(gun("m16a4").worldImg).toMatchObject({ leftHandOffset: { x: 12, y: 0 }, gunOffset: { x: -8, y: 0 } });
+    });
+
+    it("the AK-47 holds its drawn sprite through its def (a presentation deviation), hands and recoil unchanged", () => {
+        const ak47 = gun("ak47");
+        expect(heldGunImage(ak47)).toBe(ak47.worldImg);
+        expect(ak47.worldImg).toEqual({
+            sprite: "gun-ak47-01.img",
+            scale: { x: 0.5, y: 0.5 },
+            tint: 0xffffff,
+            leftHandOffset: { x: 2.8, y: 0 },
+            recoil: 1.33,
+        });
+        expect(SPRITES["gun-ak47-01.img"]).toEqual({
+            source: "rebirth",
+            path: "/rebirth/guns/gun-ak47-01.svg",
+            size: [48, 172],
+        });
+        // the other original guns keep their own sprites
+        expect(gun("ak74").worldImg.sprite).toBe("gun-long-01.img");
+        expect(gun("mosin").worldImg.sprite).toBe("gun-long-01.img");
+    });
+
     it("keeps the sheet's own bars, turns borrowed art into a long bar by class, leaves other guns alone", () => {
         expect(heldGunImage(gun("ak74"))).toBe(gun("ak74").worldImg);
         expect(heldGunImage(gun("ak47"))).toBe(gun("ak47").worldImg);
+        expect(heldGunImage(gun("ak47")).sprite).toBe("gun-ak47-01.img");
         expect(heldGunImage(gun("barrett"))).toBe(gun("barrett").worldImg);
         const rpg = heldGunImage(gun("rpg7"));
         expect(gun("rpg7").worldImg.sprite).toBe("gun-potato-cannon-01.img");
