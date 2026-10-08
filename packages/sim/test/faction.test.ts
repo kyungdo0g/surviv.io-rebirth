@@ -111,7 +111,7 @@ describe("teams", () => {
 });
 
 describe("match", () => {
-    it("ends when one faction is left; everyone learns the result with both Commanders' stats (faction.md)", () => {
+    it("ends when one faction is left; everyone learns the result with both Commanders' and the MVP's stats", () => {
         const game = factionGame();
         const players = add(game, 6);
         game.step();
@@ -134,7 +134,9 @@ describe("match", () => {
         expect(game.match.winningTeamId).toBe(1);
         const winner = game.getSnapshot(red[2].id).gameOver!;
         expect(winner).toMatchObject({ teamId: 1, teamRank: 1, gameOver: true, winningTeamId: 1 });
-        expect(winner.playerStats.map((s) => s.playerId)).toEqual([red[2].id, red[0].id, blue[0].id]);
+        // the viewer, the Red and Blue Commanders, the MVP: red[1] killed all three Blues
+        expect(red[1].kills).toBe(3);
+        expect(winner.playerStats.map((s) => s.playerId)).toEqual([red[2].id, red[0].id, blue[0].id, red[1].id]);
         const loser = game.getSnapshot(blue[2].id).gameOver!;
         expect(loser).toMatchObject({ teamId: 2, gameOver: true, winningTeamId: 1 });
     });
@@ -152,6 +154,80 @@ describe("match", () => {
         );
         expect(snap.factionStatus?.[0].role).toBe("medic");
         expect(snap.local.team?.length).toBeLessThanOrEqual(4);
+    });
+});
+
+describe("game over: the MVP card (survev gameModeManager.ts:230-276, game.ts:365; rebirth-deviations.md)", () => {
+    /**
+     * Six players (Red p0 p2 p4, Blue p1 p3 p5), both Commanders promoted unless `leaders` is false; `setup` sets kills
+     * and damage, then Blue falls with no kill credit and the game ends.
+     */
+    function endGame(setup: (red: Player[], blue: Player[]) => void, leaders = true) {
+        const game = factionGame();
+        const players = add(game, 6);
+        game.step();
+        game.step();
+        const red = players.filter((p) => p.teamId === 1);
+        const blue = players.filter((p) => p.teamId === 2);
+        if (leaders) {
+            game.roles.promote(red[0], "leader");
+            game.roles.promote(blue[0], "leader");
+        }
+        setup(red, blue);
+        for (const b of blue) if (!b.dead) kill(game, b);
+        expect(game.over).toBe(true);
+        game.step();
+        return { game, red, blue };
+    }
+    const cards = (game: Game, p: Player) => game.getSnapshot(p.id).gameOver?.playerStats.map((s) => s.playerId);
+
+    it("everyone's GameOver lists itself, the Red and Blue Commanders and the MVP, even when the MVP is one of them", () => {
+        const { game, red, blue } = endGame((_, blue) => {
+            blue[1].kills = 4;
+        });
+        // the MVP is a dead player of the losing faction
+        const mvp = blue[1].id;
+        expect(game.match.factionMvp).toBe(blue[1]);
+        const winner = game.getSnapshot(red[2].id).gameOver;
+        expect(winner?.gameOver).toBe(true);
+        expect(winner?.playerStats.map((s) => s.playerId)).toEqual([red[2].id, red[0].id, blue[0].id, mvp]);
+        expect(cards(game, blue[2])).toEqual([blue[2].id, red[0].id, blue[0].id, mvp]);
+        // its own GameOver and a Commander's still list it (survev does)
+        expect(cards(game, blue[1])).toEqual([mvp, red[0].id, blue[0].id, mvp]);
+        expect(cards(game, blue[0])).toEqual([blue[0].id, red[0].id, blue[0].id, mvp]);
+    });
+
+    it("most kills, then most damage dealt; an exact tie goes to the later joiner (survev's reduce)", () => {
+        // equal kills: the earlier joiner keeps it with more damage, the later one takes it with more
+        let r = endGame((red, blue) => {
+            [blue[1].kills, blue[1].damageDealt] = [3, 500];
+            [red[2].kills, red[2].damageDealt] = [3, 300];
+            [red[1].kills, red[1].damageDealt] = [2, 2000];
+        });
+        expect(r.game.match.factionMvp).toBe(r.blue[1]);
+        r = endGame((red, blue) => {
+            [blue[1].kills, blue[1].damageDealt] = [3, 300];
+            [red[2].kills, red[2].damageDealt] = [3, 500];
+        });
+        expect(r.game.match.factionMvp).toBe(r.red[2]);
+        // equal kills and damage: the later joiner
+        r = endGame((red, blue) => {
+            [red[2].kills, red[2].damageDealt] = [2, 400];
+            [blue[2].kills, blue[2].damageDealt] = [2, 400];
+        });
+        expect(r.game.match.factionMvp).toBe(r.blue[2]);
+        // chosen once at game over: later kills change nothing
+        r.red[0].kills = 9;
+        r.game.step();
+        expect(r.game.match.factionMvp).toBe(r.blue[2]);
+    });
+
+    it("no MVP and no Commander cards without both Commanders (survev getFactionMvp)", () => {
+        const { game, red } = endGame((red) => {
+            red[1].kills = 5;
+        }, false);
+        expect(game.match.factionMvp).toBeNull();
+        expect(cards(game, red[2])).toEqual([red[2].id]);
     });
 });
 

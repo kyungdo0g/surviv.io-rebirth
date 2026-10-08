@@ -62,8 +62,9 @@ describe("launchers fire the sheet's explosions", () => {
             explosion_gl06: [100, 4, 10, 6, 1.1],
             explosion_rpg7: [150, 6, 14, 12, 0.9],
             explosion_panzerfaust: [140, 4, 9, 4, 0.9],
-            // the owner's M202 rework (2026-10-08; new-gun-stats.md 2.8, packages/sim/test/m202.test.ts)
-            explosion_m202: [125, 5, 16, 0, 42],
+            // the owner's M202 rework (2026-10-08, radius 4-11 since the faction feedback; new-gun-stats.md 2.8,
+            // packages/sim/test/m202.test.ts)
+            explosion_m202: [125, 4, 11, 0, 42],
         };
         for (const [id, want] of Object.entries(sheet)) {
             const e = getDefOfType("explosion", id);

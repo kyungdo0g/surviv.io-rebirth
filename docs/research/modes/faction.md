@@ -43,8 +43,10 @@
 - Each faction is split into sub-squads of up to 4 (the queue's team size); regular pings only reach the sub-squad, while Commander pings reach the whole faction [src:wikigg/50v50_mode] [src:fandom/Changelog] [H]
 - The whole faction is shown on the minimap, alive, knocked or dead; faction player-status updates are sent every 0.5 s instead of 0.25 s [src:wikigg/50v50_mode] [src:survev/shared/net/updateMsg.ts:726-731] [H]
 - Enemies appear on your minimap for 1 s (`timeUntilHidden`) after they fire while an enemy is within that enemy's view distance (fork reconstruction) [src:survev/server/src/game/weaponManager.ts:1013-1024] [src:survev/server/src/game/objects/player.ts:3654] [M]
+- The rebirth shows no such reveal: the owner, who played the original, says enemies are visible only while on screen; `rules.roles.factionRevealTime` defaults to 0 and 1 restores survev's reveal (`rebirth-deviations.md` "Owner's 50v50 feedback") [src:user/2026-10-08-faction-feedback] [H]
 - Win condition: last faction with living players; the alive counter shows two numbers, one per faction [src:survev/server/src/game/gameModeManager.ts:128-131] [src:survev/server/src/game/gameModeManager.ts:145-150] [H]
 - Game-over screen lists the player, both Commanders and (fork) a match MVP = most kills, ties broken by damage dealt [src:survev/server/src/game/gameModeManager.ts:230-249] [src:survev/server/src/game/gameModeManager.ts:253-276] [M]
+- The rebirth lists the MVP too, with survev's badges (red star, blue star, the MVP's ribbon in its faction colour): the owner's screenshot of the original 50v50 win screen shows these four cards (`rebirth-deviations.md` "Owner's 50v50 feedback") [src:user/2026-10-08-faction-feedback] [src:survev/client/src/ui/ui.ts:1493-1522] [H]
 - Grenades stopped damaging teammates in the same update that added 50v50 (0.7.0) [src:changelog/0.7.0] [H]
 - Bleeding out escalates per knock: survev multiplies the 2 HP/s bleed by `downedCount × 1.25` (2.5, 5, 7.5 … HP per 1 s tick) only on maps with `bleedDamageMult` ≠ 1, i.e. Faction [src:survev/shared/defs/maps/factionDefs.ts:245-246] [src:survev/server/src/game/objects/player.ts:1614-1621] [src:survev/shared/gameConfig.ts:206] [H]
 - Fandom only says you bleed out faster the more times you were downed; wiki.gg says each knock drains 25 % faster than the previous one [src:fandom/50v50_Map] [src:wikigg/50v50_mode] [M]
@@ -218,6 +220,7 @@
 ## Open questions
 
 - Exact time of the v0.8.82 scheduled gold military drop (fandom marks it unknown) [src:fandom/50v50_Map] [L]
-- Whether v0.8.82 revealed firing enemies on the minimap the way survev's 1 s `timeUntilHidden` does; wiki.gg only says teammates can see if allies are in a fight. The rebirth follows survev (the survev baseline, a rules knob) [src:survev/server/src/game/weaponManager.ts:1013-1024] [src:wikigg/50v50_mode] [L]
+- Whether v0.8.82 revealed firing enemies on the minimap the way survev's 1 s `timeUntilHidden` does; wiki.gg only says teammates can see if allies are in a fight [src:survev/server/src/game/weaponManager.ts:1013-1024] [src:wikigg/50v50_mode] [L]
+- resolved for the rebirth by the owner (2026-10-08), who played the original: no reveal, enemies show only on screen; `rules.roles.factionRevealTime` 0 by default, the knob stays (open-questions.md `faction-minimap-reveal`) [src:user/2026-10-08-faction-feedback] [H]
 - The fork v0.0.18 note "normal crates increased from 38 to 55" does not match survev's current `crate_01: 38`; which value the fork actually uses over time is unclear [src:survev/client/public/changelogRec.html:508] [src:survev/shared/defs/maps/factionDefs.ts:439] [L]
 - Original 50v50 loot weights for `tier_guns` / `tier_airdrop_uncommon` are only known from survev's pre-fork reconstruction (marked estimates in places) [src:derived/survev@4b291f4d:shared/defs/maps/factionDefs.ts] [L]

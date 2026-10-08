@@ -2229,7 +2229,7 @@
                     "deploy": "m202_switch_01",
                     "discard": "m202_discard_01"
                 },
-                "fanAngle": 60,
+                "fanAngle": 52,
                 "recoilKnockback": 2,
                 "armorPiercing": true,
                 "stonePiercing": true
@@ -2259,13 +2259,13 @@
                     "damage": 125,
                     "obstacleDamage": 42,
                     "rad": {
-                        "min": 5,
-                        "max": 16
+                        "min": 4,
+                        "max": 11
                     },
                     "shrapnelCount": 0,
                     "shrapnelType": "",
                     "explosionEffectType": "m202",
-                    "decalType": "decal_frag_large_explosion"
+                    "decalType": "decal_frag_explosion"
                 }
             },
             "throwables": {}

@@ -223,7 +223,7 @@ may not touch, the schema number used and open questions.
   | 12 | spawns on beach sand and river banks (only water is refused); 16 u from another group's ground-layer projectile | fixed (`match/spawn.ts`) |
   | 13 | scheduled drops are not re-rolled into the circle; opened shells still block drops; box pushes take the larger overlap axis; round crates clamp by radius; landing crates crush trees by their canopy box | fixed (`match/planes.ts`, `survevBoxPush`) |
   | 14 | strike zone centres count players by survev's grid cells (`grid.intersectCollider` has no exact test; the audit's "rad + player radius" was wrong) | fixed (`airstrikes.ts inGridCells`) |
-  | 15 | 50v50: a shot in an enemy's view shows the shooter on the enemy minimap for 1 s | fixed: `rules.roles.factionRevealTime` 1 (0 off); FactionStatus lists revealed enemies after the own faction (schema 18, no layout change); client dots in the enemy colour, 0.1 s fade in, gone 2-2.5 s after they leave the list |
+  | 15 | 50v50: a shot in an enemy's view shows the shooter on the enemy minimap for 1 s | fixed: `rules.roles.factionRevealTime` 1 (0 off; the default is 0 since the owner's 2026-10-08 feedback, rebirth-deviations.md); FactionStatus lists revealed enemies after the own faction (schema 18, no layout change); client dots in the enemy colour, 0.1 s fade in, gone 2-2.5 s after they leave the list |
   | 16 | gas hits inside each player's update, after boost, perks, the downed buffer and bleeding; disconnected players take a flat 22 | fixed / knob `rules.gasDisconnectedDamage` null (conflicts.md gas-escalation) |
   | 17 | Cobalt: the server's random class waits 25 s, the client confirms the highlighted one at 20 s | fixed (`modes.cobalt.test.ts`, `roles.test.ts`) |
   | 18 | the Commander's automatic flare fires the flare gun (dual too), indoors too | fixed under the knob, still off (`leaderAutoFlare`) |
@@ -235,8 +235,9 @@ may not touch, the schema number used and open questions.
   faction strike waits 24 / 18 s (survev 30 / 21); no time-in-gas ramp (`gasDamageRamp`); 100 HP knocks after the zone
   closed (`downHealthFinalCircle`, survev 50); no free Savannah 2x scope; the 50v50 promotion schedule
   (`factionSchedule: "map"` gives survev's seven roles at 50-74 s); Mass Medicate x0.8 (survev x0.75); the loot perk
-  cap at 3 (survev refuses at 4). Not done: survev's 50v50 MVP in the game over (a fork feature that also needs the
-  client's badge); kept: GameOver goes to every player, 50v50 is squads only (survev also has solo 50v50).
+  cap at 3 (survev refuses at 4). Done since (owner, 2026-10-08): survev's 50v50 MVP in the game over with the client's
+  Commander stars and MVP ribbon; kept: GameOver goes to every player, 50v50 is squads only (survev also has solo
+  50v50).
 
   survev bugs not ported: round crates (Cobalt pods, `airdrop_crate_02h`) pulled into boxes by a sign error in its
   collider push; Trick or Treat? checking `halloween_mystery` instead of the rolled perk and deleting a held loot perk;

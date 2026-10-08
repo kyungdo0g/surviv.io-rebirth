@@ -351,6 +351,26 @@ describe("server messages", () => {
         });
     });
 
+    it("a 50v50 GameOver's four cards round-trip: self, both Commanders, the MVP (listed twice when it is one of them)", () => {
+        const card = (playerId: number, kills: number) => ({
+            playerId,
+            timeAlive: 300,
+            kills,
+            dead: playerId !== 7,
+            damageDealt: kills * 120,
+            damageTaken: 100,
+        });
+        const over: ServerSimpleMsg = {
+            type: MsgType.GameOver,
+            teamId: 2,
+            teamRank: 2,
+            gameOver: true,
+            winningTeamId: 1,
+            playerStats: [card(12, 1), card(7, 3), card(12, 1), card(40, 9)],
+        };
+        assertClose(serverRoundTrip(over), over, exact);
+    });
+
     it("Map round-trips within quantization tolerance", () => {
         forCases(13, (rng) => {
             const map = randMap(rng);

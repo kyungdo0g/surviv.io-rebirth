@@ -807,7 +807,7 @@ numbers are what they are. All TTK values are seconds at 15 u unless noted.
 
 | Field | Value | Bullet | Value |
 |---|---|---|---|
-| Gun type | Rocket launcher (4 tubes, one volley in a fixed 60° fan bursting at the cursor, single use) | Damage | 4 x (25 + 125 explosion (rad 5-16)) |
+| Gun type | Rocket launcher (4 tubes, one volley in a fixed 52° fan bursting at the cursor, single use) | Damage | 4 x (25 + 125 explosion (rad 4-11)) |
 | Ammo | none (1 charge = 4 rockets) | Falloff | 1 |
 | Fire mode | Single | Headshot multiplier | 1 |
 | Player speed | -2.5 | Obstacle multiplier | bullet x2, explosion x42 (5250 at the centre) |
@@ -818,13 +818,13 @@ numbers are what they are. All TTK values are seconds at 15 u unless noted.
 | Reload time | none (discarded when empty) | Sustained DPS / magazine damage | 1200 / 600 |
 | Fire delay | 0.5 (single use) | Speed carried / held / firing | 12 / 9.5 / 4.75 |
 | Switch delay | 1.1 | Volley kill, A2 at full health, anywhere across the strip at 15 / 20 / 25 u | yes / yes / yes |
-| Standing / moving spread | 0 / 0 (fixed fan: -30 / -10 / 10 / 30°) | Self-damage free from | 17 u cursor distance (15 u: about 24 HP unarmoured; 12 u and nearer kills the shooter) |
+| Standing / moving spread | 0 / 0 (fixed fan: -26 / -8.67 / 8.67 / 26°) | Self-damage free from | 11.5 u cursor distance (10 u: about 51 HP unarmoured; 9 u and nearer kills the shooter or leaves it a few HP, down to 7.3 u; nearer, the rockets do not arm) |
 | Barrel length | 2.2 | Recoil slide | 2 u back, against the aim |
 
 - **Placement (owner, 2026-10-08):** T1 0.05, T2 0.05 ("barely ever"), gold main gun 0.25 ("occasionally", 1 gold crate in 112) and the gold crates' bonus roll 0.1 against nothing 0.9 ("sometimes", 1 gold crate in 10; `OWNER_LOOT_WEIGHTS` in `packages/defs/src/rebirth/ownerLootWeights.ts`). No floor.
 - **References:** `rpg7`, `usas` (rounds that stop at the cursor).
 - **Real weapon:** M202A1 FLASH: four 66 mm rockets, 12 kg loaded, 114 m/s (Wikipedia). Incendiary effect deferred.
-- **Why (owner, 2026-10-08):** the endgame comeback weapon, a near-certain kill. One trigger pull fires all four rockets together in a fixed, evenly spaced 60° fan (no random spread, no pellet jitter; the beta fired the four at once with a random ±3° deviation each, ±5° moving, and random start offsets) that bursts at the cursor (`toMouseHit`, as the USAS-12 and GL-06). Neighbouring rockets are 20° apart, so their blast centres sit 2 d sin 10° apart: 5.2 u at 15 u, 6.9 u at 20 u, 8.7 u at 25 u, never more than the 10 u at which the full-damage discs (rad.min 5) would part, so the strip tiles with no gap from 15 to 25 u. Each blast deals 125 (two full ones kill a full-health A2 player: 2 x 125 x 0.546 = 136.5) with a 16 u reach (the rebirth frag's 15.6 is the next biggest); a level 2 armoured player anywhere across the strip at 15-25 u dies (`packages/sim/test/m202.test.ts`). Explosion obstacle multiplier x42: one blast's full 5250 breaks every destructible obstacle (the toughest: the bunker glass wall `glass_wall_12_2` 5000, the potato silo 2500, the tyre 1500), plated ones included (`armorPiercing` / `stonePiercing`: the ammo crates `crate_04` / `crate_06`, the plated stones, statues, safes and `stone_wall_int_4`); indestructible obstacles (`destructible: false`: building exterior walls) stay whole. Destructible walls are the interior walls (house, cabin, barn, bank, police, mansion, hut, Reserve), shack and grassy walls, glass walls and archway columns. The shooter slides 2 u back (`recoilKnockback`, a damped slide pushed out of obstacles every tick). Its explosion has its own client effect, `m202`: a 1.6 u camera shake for 1.6 s, felt to 120 u (full within 30 u), off with the Screen shake setting.
+- **Why (owner, 2026-10-08):** the endgame comeback weapon, a near-certain kill. One trigger pull fires all four rockets together in a fixed, evenly spaced 52° fan (no random spread, no pellet jitter; the beta fired the four at once with a random ±3° deviation each, ±5° moving, and random start offsets) that bursts at the cursor (`toMouseHit`, as the USAS-12 and GL-06). Each blast deals 125 (two full ones kill a full-health A2 player: 2 x 125 x 0.546 = 136.5) with an 11 u reach, smaller than an air strike bomb's (`explosion_bomb_iron`, rad 5-14), as the owner asked in the 50v50 feedback of 2026-10-08 (it was rad 5-16 in a 60° fan before). Neighbouring rockets are 52 / 3 = 17.3° apart, so their blast centres sit 2 d sin 8.67° apart: 4.5 u at 15 u, 6.0 u at 20 u, 7.5 u at 25 u, never more than the 8 u at which the full-damage discs (rad.min 4) would part, so the strip tiles with no gap from 15 to 25 u. A level 2 armoured player anywhere across the strip at 15-25 u dies (`packages/sim/test/m202.test.ts`): the weakest spot, 25 u out between an inner and an outer rocket, still takes about 101. The gap rule alone would allow 55°, but at 53° that spot takes about 91 and the player lives, so 52° is the widest whole-degree fan that keeps both goals. Explosion obstacle multiplier x42: one blast's full 5250 breaks every destructible obstacle (the toughest: the bunker glass wall `glass_wall_12_2` 5000, the potato silo 2500, the tyre 1500), plated ones included (`armorPiercing` / `stonePiercing`: the ammo crates `crate_04` / `crate_06`, the plated stones, statues, safes and `stone_wall_int_4`); indestructible obstacles (`destructible: false`: building exterior walls) stay whole. Destructible walls are the interior walls (house, cabin, barn, bank, police, mansion, hut, Reserve), shack and grassy walls, glass walls and archway columns. The shooter slides 2 u back (`recoilKnockback`, a damped slide pushed out of obstacles every tick). Its explosion has its own client effect, `m202`: a 1.6 u camera shake for 1.6 s, felt to 120 u (full within 30 u), off with the Screen shake setting.
 
 ## 3. Class ladders (survev baseline + new guns, TTK against armour)
 
@@ -1027,7 +1027,7 @@ over both slots (two DShKs: carry -4). Small Arms replaces only the equip term (
 |---|---|---|---|---|---|---|---|
 | Boys | 7 | 1 | `boys_ammo` | 7 | none | discarded after its fire delay (1.5 s) | ignoreEndlessAmmo, noPotatoSwap |
 | Panzerfaust | 1 | 1 rocket | `panzerfaust_ammo` | 1 | none | discarded after 0.5 s | ignoreEndlessAmmo, launcher flags |
-| M202 FLASH | 1 | 4 rockets (bulletCount 4 in a fixed 60° fan, no jitter) | `m202_ammo` | 1 | none | discarded after 0.5 s | ignoreEndlessAmmo, launcher flags, recoil slide 2 u |
+| M202 FLASH | 1 | 4 rockets (bulletCount 4 in a fixed 52° fan, no jitter) | `m202_ammo` | 1 | none | discarded after 0.5 s | ignoreEndlessAmmo, launcher flags, recoil slide 2 u |
 
 A dropped single-use gun keeps its remaining charges server-side; Firepower cannot add shots (integrity test
 `extendedClip === maxClip === charges`); bots scale desire by `clip / charges`.
@@ -1049,7 +1049,7 @@ A dropped single-use gun keeps its remaining charges server-side; Firepower cann
 | gl06 | airburst at cursor | 10 / 100 | 4-10 | 6 x 20 | 120 | 45 / 60 | 4 u | 100 % / 73 % / 15 % / 0 % | 12.1 u | 13 u |
 | rpg7 | rocket (bullet) | 60 / 150 | 6-14 | 12 x 20 | 375 | 85 / 120 | 5 u | 100 % / 100 % / 100 % / 100 % | 16.1 u | 17 u |
 | panzerfaust | rocket (bullet) | 80 / 140 | 4-9 | 4 x 20 | 526 | 35 / 40 | 4 u | 100 % / 100 % / 100 % / 100 % | 11.1 u | 12 u |
-| m202 | 4 rockets in a fixed 60° fan, bursting at the cursor | 25 / 125 (x4) | 5-16 | none | 5300 | 55 / 75 (or the cursor) | 5 u | volley: A2 dead anywhere across the strip at 15-25 u | 17 u | 18 u |
+| m202 | 4 rockets in a fixed 52° fan, bursting at the cursor | 25 / 125 (x4) | 4-11 | none | 5300 | 55 / 75 (or the cursor) | 5 u | volley: A2 dead anywhere across the strip at 15-25 u | 11.5 u | 14 u |
 
 - Explosions use the sim's step falloff (full damage inside `rad.min`, then x (1 - s / rad.max)); armour reduces
   explosions as body hits (A2 takes 54.6 %); teammates are immune, the shooter is not.
@@ -1162,6 +1162,7 @@ Every problem and correction raised by the cross-class balance stage and the two
 | Launcher Player speed (owner, 2026-10-08) | applied | m79 -1 -> 0, gl06 -1 -> 0, mgl -1.5 -> 0; rpg7 -2, panzerfaust -1.5, m202 -2.5 kept | Owner: every launcher slows its holder except the M79, GL-06 and Milkor (`user/2026-10-08-loot-speed`); held 12 u/s, firing 6. |
 | M202 incendiary | decided | deferred | Needs a burning-area mechanic; explosion only for v1. |
 | M202 volley (owner, 2026-10-08) | applied | random spread 6 / 4 and jitter 0.5 -> fixed 60° fan bursting at the cursor; explosion 50 rad 3.5-9 x1.1 -> 125 rad 5-16 x42 (plated obstacles too); 2 u recoil slide; own `m202` effect with the strongest shake | The endgame comeback weapon: a near-certain kill on anyone caught in the salvo, one-shotting trees, stones, crates and destructible walls. |
+| M202 blast (owner, 2026-10-08, 50v50 feedback) | applied | explosion rad 5-16 -> 4-11 (damage 125 and x42 kept); fan 60° -> 52°; self-damage free from 17 u -> 11.5 u; bot min range 19 u -> 14 u (derived) | The owner expects each rocket's blast to be smaller than an air strike bomb's (rad 5-14). 52° is the widest whole-degree fan that still tiles the 15-25 u strip and kills an A2 player anywhere on it. |
 | M202 / Panzerfaust loot (owner, 2026-10-08) | applied | M202 T1 0 -> 0.05, T2 0.2 -> 0.05, gold 0.25 kept + gold bonus roll 0.1; Panzerfaust floor 0.02 (main, Desert) -> 0.2 on every flare gun floor | The M202 barely ever in normal drops, sometimes a gold bonus; the Panzerfaust, a downgraded M202, from ordinary loot. |
 | 40 mm in ammo crates | decided | no | Launchers stay scarce; their ammo comes with them. |
 | MGL fire delay | decided | 0.7 (real 0.33) | A readable volley for a gold area weapon. |

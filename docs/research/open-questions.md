@@ -677,7 +677,7 @@
 
 - Whether v0.8.82 revealed firing enemies on the minimap the way survev's 1 s `timeUntilHidden` does; wiki.gg only says teammates can see if allies are in a fight [src:survev/server/src/game/weaponManager.ts:1013-1024] [src:wikigg/50v50_mode] [L]
 - proposed handling: rule 5: keep survev's current value or behaviour as a config knob until a primary source settles it [src:derived/readme-precedence] [L]
-- status: implemented as survev has it (`rules.roles.factionRevealTime` 1 s, 0 turns it off; survev parity wave) [src:survev/server/src/game/weaponManager.ts:1013-1024] [H]
+- status: resolved for the rebirth by the owner (2026-10-08), who played the original: enemies show only while on screen, so the rebirth shows no reveal (`rules.roles.factionRevealTime` 0 by default); the knob and its code stay, 1 restores survev's 1 s reveal (implemented in the survev parity wave; `rebirth-deviations.md` "Owner's 50v50 feedback") [src:user/2026-10-08-faction-feedback] [src:survev/server/src/game/weaponManager.ts:1013-1024] [H]
 - files: `modes/faction.md` [src:derived/kb-crossref] [H]
 
 ## faction-crate-count-note

@@ -3986,7 +3986,7 @@
                     "deploy": "m202_switch_01",
                     "discard": "m202_discard_01"
                 },
-                "fanAngle": 60,
+                "fanAngle": 52,
                 "recoilKnockback": 2,
                 "armorPiercing": true,
                 "stonePiercing": true
@@ -4016,13 +4016,13 @@
                     "damage": 125,
                     "obstacleDamage": 42,
                     "rad": {
-                        "min": 5,
-                        "max": 16
+                        "min": 4,
+                        "max": 11
                     },
                     "shrapnelCount": 0,
                     "shrapnelType": "",
                     "explosionEffectType": "m202",
-                    "decalType": "decal_frag_large_explosion"
+                    "decalType": "decal_frag_explosion"
                 }
             },
             "throwables": {},
@@ -4043,7 +4043,7 @@
                 }
             },
             "infobox": {
-                "gunType": "Rocket launcher (4 tubes, one fixed 60° fan volley at the cursor, single use)",
+                "gunType": "Rocket launcher (4 tubes, one fixed 52° fan volley at the cursor, single use)",
                 "ammo": "none (1 charge = 4 rockets)",
                 "fireMode": "Single",
                 "playerSpeed": -2.5,
@@ -4058,7 +4058,7 @@
                 "movingSpread": 0,
                 "barrelLength": 2.2,
                 "bullet": {
-                    "damage": "4 x (25 + 125 explosion (rad 5-16))",
+                    "damage": "4 x (25 + 125 explosion (rad 4-11))",
                     "falloff": 1,
                     "headshotMultiplier": 1,
                     "obstacleMultiplier": "bullet x2, explosion x42",
@@ -4068,7 +4068,7 @@
                     "maxObstacleDps": "42400"
                 },
                 "suppressed": false,
-                "fanAngle": 60,
+                "fanAngle": 52,
                 "recoilKnockback": 2
             },
             "metrics": {

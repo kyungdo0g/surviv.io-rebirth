@@ -3,7 +3,8 @@
 // (Snapshot.factionStatus, refreshed every 0.5 s) is a small dot in the team colour (red 0xcc0000, blue 0x007eff) at
 // 0.75x; role holders show their role's map icon (Commander star, Medic cross) at 1.25x on top; downed members the
 // downed icon and dead ones a skull (a dead Commander its leader skull) at 1.25x and 60 % alpha. The group's own members
-// are minimapTeam.ts's dots. 50v50 enemies revealed by firing (survev timeUntilHidden) come in the same rows: they show
+// are minimapTeam.ts's dots. 50v50 enemies revealed by firing (survev timeUntilHidden; the server's
+// rules.roles.factionRevealTime, off by default since the owner's 2026-10-08 feedback) come in the same rows: they show
 // in their own faction's colour, fade in over 0.1 s and, once no longer listed, stay 2 s and fade out by 2.5 s (survev
 // client/src/objects/player.ts:2740-2759 timeSinceVisible / timeSinceUpdate).
 import { GameConfig } from "@rebirth/defs";

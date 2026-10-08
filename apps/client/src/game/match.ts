@@ -297,6 +297,8 @@ export class MatchUi implements PlayerNames {
             teamMode: this.opts.teamMode?.() ?? 1,
             nameOf: (id) => this.name(id),
             factionAlive: this.mode.factionMode ? (s.teamAliveCounts ?? this.teamAliveCounts) : null,
+            factionMode: this.mode.factionMode,
+            teamOf: (id) => this.teamId(id),
             turkeyMode: this.mode.turkeyMode,
         });
         const won = ev.winningTeamId !== 0 && ev.winningTeamId === ev.teamId;

@@ -356,15 +356,30 @@ describe("50v50: firing reveals the shooter (survev weaponManager.ts:1013-1025, 
     const ids = (game: Game, viewer: Player) =>
         (game.getSnapshot(viewer.id).factionStatus ?? []).map((m) => m.playerId);
 
-    it("a shot in an enemy's view puts the shooter on the enemy faction's rows for 1 s; out of view it does not", () => {
+    /** A Red shooter with an M9 facing away from a Blue enemy that stands within its own view radius of it. */
+    function inSight() {
         const { game, red, blue } = faction();
         const [shooter] = red;
         const [enemy] = blue;
-        // the enemy stands within its own view radius of the shooter
         game.teleportPlayer(enemy.id, v2.add(shooter.pos, { x: enemy.zoom - 5, y: 0 }));
         giveGun(shooter, "m9");
         shooter.dir = { x: 0, y: 1 };
         game.setInput(shooter.id, { ...shooter.input, toMouseDir: { x: 0, y: 1 } });
+        return { game, red, blue, shooter, enemy };
+    }
+
+    it("off by default in the rebirth: a shot in an enemy's view reveals nothing (user/2026-10-08-faction-feedback)", () => {
+        const { game, shooter, enemy } = inSight();
+        expect(game.rules.roles.factionRevealTime).toBe(0);
+        fireOnce(game, shooter);
+        expect(shooter.timeUntilHidden).toBe(0);
+        steps(game, 50);
+        expect(ids(game, enemy)).not.toContain(shooter.id);
+    });
+
+    it("the knob on (survev's 1 s): a shot in an enemy's view puts the shooter on the enemy faction's rows for 1 s; out of view it does not", () => {
+        const { game, blue, shooter, enemy } = inSight();
+        game.rules.roles.factionRevealTime = 1;
         fireOnce(game, shooter);
         expect(shooter.timeUntilHidden).toBeGreaterThan(0.9);
         steps(game, 50);

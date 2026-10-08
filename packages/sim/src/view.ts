@@ -130,14 +130,15 @@
 //   `aliveCount` stays their sum) and `factionStatus` (faction mode only: every member of the viewer's faction with
 //   position, dead, downed and role, refreshed every `rules.roles.factionStatusInterval` = 0.5 s like the original
 //   faction PlayerStatus; draw them on the minimap, role holders with their role's `mapIcon`; since schema 18 the
-//   enemies revealed by firing follow, for `rules.roles.factionRevealTime` s after the shot: draw them in their
-//   faction's colour and fade them out 2-2.5 s after they leave the list, survev timeUntilHidden). `local.team` stays
-//   the viewer's squad (group) in faction mode.
+//   enemies revealed by firing follow, for `rules.roles.factionRevealTime` s after the shot (0, off, by default since
+//   the owner's 2026-10-08 feedback): draw them in their faction's colour and fade them out 2-2.5 s after they leave
+//   the list, survev timeUntilHidden). `local.team` stays the viewer's squad (group) in faction mode.
 // - Faction mode (map "faction", 50v50; GameOptions.teamMode 4, the original 50v50 squad queue): PlayerInfoView.teamId
 //   is the faction (1 Red, 2 Blue: tint helmets with `baseTintRed` / `baseTintBlue`, draw the team arm patches) and
 //   groupId the squad. Teammates are the whole faction (no friendly fire, knocks until the faction has nobody
 //   standing), the match ends when one faction is left, GameOverEvent.teamId / winningTeamId are faction ids and its
-//   playerStats list the viewer, then both factions' first Commanders once both exist.
+//   playerStats list the viewer, then both factions' first Commanders once both exist, then the match MVP (most kills,
+//   ties by damage dealt) chosen at game over (survev getGameoverPlayers / getFactionMvp).
 // - Roles: RoleAnnouncementEvent now covers every role (faction roles, Lone Survivr, The Hunted, Cobalt classes) with
 //   `assigned` on promotion and `killed` when the holder dies (`killerId` = its killer). Kill Leader announcements are
 //   unchanged. MapIndicatorView types gain the role id "the_hunted" (pulsing marker following The Hunted) and loot ids

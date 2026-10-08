@@ -87,7 +87,8 @@ export interface RoleRules {
     factionStatusInterval: number;
     /**
      * seconds a shot in an enemy's view shows the shooter on the enemy faction's minimap (survev weaponManager.ts:1024
-     * timeUntilHidden 1; 0 turns it off: open-questions.md faction-minimap-reveal keeps survev's behaviour as a knob)
+     * timeUntilHidden 1). Rebirth default 0, off: the owner played the original, where enemies show only on screen
+     * (user/2026-10-08-faction-feedback; open-questions.md faction-minimap-reveal); 1 restores survev's reveal.
      */
     factionRevealTime: number;
     /**
@@ -139,7 +140,7 @@ export function defaultRoleRules(): RoleRules {
         helpLosingTeamCrate: "airdrop_crate_04",
         potatoGoldCrate: "airdrop_crate_04po",
         factionStatusInterval: 0.5,
-        factionRevealTime: 1,
+        factionRevealTime: 0,
         perkModeRoleSelectTime: GameConfig.player.perkModeRoleSelectDuration + 5,
     };
 }

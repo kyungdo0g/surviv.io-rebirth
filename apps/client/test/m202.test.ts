@@ -9,10 +9,11 @@ import { Camera } from "../src/render/camera.ts";
 describe("M202 FLASH explosion", () => {
     const m202 = explosionVisual("explosion_m202");
 
-    it("has its own effect, its burst drawn for its 16 u radius, an original boom", () => {
+    it("has its own effect, its burst drawn for its 11 u radius, an original boom", () => {
         if (!m202) throw new Error("no visual");
         expect(m202.effectType).toBe("m202");
-        expect(m202.burstScale).toBeCloseTo(16 / 12, 9);
+        // smaller than an air strike bomb's blast (rad.max 14; user/2026-10-08-faction-feedback)
+        expect(m202.burstScale).toBeCloseTo(11 / 12, 9);
         expect(explosionSounds()).toContain(m202.effect.burst.grass);
     });
 

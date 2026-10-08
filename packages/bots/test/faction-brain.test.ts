@@ -51,8 +51,10 @@ describe("faction perception", () => {
         fb.fileStatus([row(40, at, { downed: true })], NOW + 1.5, teamOf);
         expect(fb.events.map((e) => e.kind)).toEqual(["knock"]);
         expect(w.fi.downedAllies().map((r) => r.playerId)).toEqual([40]);
-        // sim schema 18: an enemy shooter revealed on the minimap for 1 s rides in the same rows: a front event where it
-        // fired, never an ally (not even downed); a row of unknown team is skipped
+        // sim schema 18: an enemy shooter revealed on the minimap rides in the same rows when the server turns the
+        // reveal on (rules.roles.factionRevealTime, survev's 1 s; the rebirth default 0 sends none since the owner's
+        // 2026-10-08 feedback): a front event where it fired, never an ally (not even downed); a row of unknown team is
+        // skipped
         const shooter = v2.add(SPOT, { x: 80, y: -20 });
         fb.fileStatus(
             [row(40, at, { downed: true }), row(70, shooter, { downed: true }), row(71, shooter)],

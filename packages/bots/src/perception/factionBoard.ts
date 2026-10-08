@@ -1,10 +1,11 @@
 // What a 50v50 faction and a squad legitimately share (bot round 6), kept once per game instead of once per bot:
 // - FactionBoard (one per faction): the faction minimap (Snapshot.factionStatus: every member's position, knock,
 //   death and role, refreshed every 0.5 s; docs/research/modes/faction.md "Teams and match rules"; and since sim
-//   schema 18 the enemy shooters it reveals for 1 s), the knocks and deaths it shows, the kill feed's kills by faction members, Commander pings (they reach the whole faction:
-//   items/roles.md, survev client.ts:588-616) and the living counts (AliveCounts). Every member's snapshot carries the
-//   same rows, so whichever bot sees a newer refresh first files it for all; the front estimate from them is computed
-//   once per FRONT_EVERY per faction.
+//   schema 18 the enemy shooters it reveals while the server's rules.roles.factionRevealTime is on, off by default),
+//   the knocks and deaths it shows, the kill feed's kills by faction members, Commander pings (they reach the whole
+//   faction: items/roles.md, survev client.ts:588-616) and the living counts (AliveCounts). Every member's snapshot
+//   carries the same rows, so whichever bot sees a newer refresh first files it for all; the front estimate from them
+//   is computed once per FRONT_EVERY per faction.
 // - SquadBoard (one per squad): what the squadmates see (the enemies on each one's screen, as a squad shares them by
 //   voice) and the squad's own pings (regular pings reach only the squad).
 // Boards live in a registry per MapData: in-process bots of one game share one MapData; a networked bot gets its own
@@ -89,8 +90,9 @@ export class FactionBoard {
     /**
      * Files a factionStatus refresh: knocks and deaths since the previous one become front events. Since sim schema 18
      * the rows also carry the enemies revealed by firing (a shooter an enemy could see shows on the other faction's
-     * minimap for 1 s, survev timeUntilHidden), with no team field: `teamOf` (PlayerInfos) tells them apart. A
-     * revealed enemy is a front event where it fired, never a member; a row of unknown team is skipped.
+     * minimap for rules.roles.factionRevealTime, survev timeUntilHidden 1 s; the rebirth's default 0 sends none), with
+     * no team field: `teamOf` (PlayerInfos) tells them apart. A revealed enemy is a front event where it fired, never
+     * a member; a row of unknown team is skipped.
      */
     fileStatus(rows: readonly FactionMemberView[], time: number, teamOf: (id: number) => number | undefined): void {
         if (time - this.statusTime < STATUS_EVERY) return;
