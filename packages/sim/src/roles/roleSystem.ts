@@ -11,7 +11,7 @@ import { type FactionSystem, living } from "../match/faction.ts";
 import type { TrackedIndicator } from "../match/indicators.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
-import { type PromoteOptions, promoteToRole, removeRole, swapClasslessPerk } from "./roles.ts";
+import { promoteToRole, removeRole, swapClasslessPerk } from "./roles.ts";
 
 /** What the role system needs from the game. */
 export interface RoleHost extends SimContext {
@@ -113,8 +113,8 @@ export class RoleSystem {
     }
 
     /** Promotes `player` (announced); a team's first Commander is remembered for the game over (survev Team.leader). */
-    promote(player: Player, role: string, opts: PromoteOptions = {}): void {
-        promoteToRole(this.host, player, role, opts);
+    promote(player: Player, role: string): void {
+        promoteToRole(this.host, player, role);
         if (role === "leader" && this.faction) {
             const team = this.faction.team(player.teamId);
             if (team && !team.leader) team.leader = player;
@@ -168,11 +168,6 @@ export class RoleSystem {
         this.faction.checkHelpLosingTeam();
     }
 
-    /** A player left the game: a faction team may have lost its Commander. */
-    onPlayerRemoved(player: Player): void {
-        if (this.faction) this.checkSuccession(player.teamId, player);
-    }
-
     /**
      * Lone Survivr (survev checkAndApplyLastMan): once per team, when at most `lastManCount` of its living players are
      * standing and connected and the game no longer accepts joins, they become Lone Survivrs.
@@ -189,17 +184,18 @@ export class RoleSystem {
 
     /**
      * rules.roles.commanderSuccession: once per team, the first standing Lieutenant of a team left without a Commander
-     * becomes its Captain, keeping its weapons (survev group.ts checkAndApplyCaptain, on every knock and kill).
+     * becomes its Captain; the Captain's kit has no weapons, so its guns are filled from the bag (survev group.ts
+     * checkAndApplyCaptain, on every knock and kill).
      */
-    private checkSuccession(teamId: number, leaving?: Player): void {
+    private checkSuccession(teamId: number): void {
         const team = this.faction?.team(teamId);
         if (!team || !this.rules.commanderSuccession || this.succeeded.has(teamId)) return;
-        const alive = living(team).filter((p) => p !== leaving && !p.disconnected);
+        const alive = living(team).filter((p) => !p.disconnected);
         if (alive.some((p) => p.role === "leader")) return;
         const lt = alive.find((p) => p.role === "lieutenant" && !p.downed);
         if (!lt) return;
         this.succeeded.add(teamId);
-        this.promote(lt, "captain", { keepWeapons: true });
+        this.promote(lt, "captain");
     }
 
     /**

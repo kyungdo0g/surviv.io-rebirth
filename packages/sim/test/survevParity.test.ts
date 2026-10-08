@@ -3,9 +3,19 @@
 import { v2 } from "@rebirth/core";
 import { DamageType, GameObjectDefs, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { defaultModeRules, type Game, type Player, randomDropCandidates, randomWeaponSwap } from "../src/index.ts";
-import { flatGame, openSpot, spawnAt, steps } from "./combatHelpers.ts";
+import {
+    addPerk,
+    defaultModeRules,
+    Game,
+    killPlayer,
+    type Player,
+    pickupLoot,
+    randomDropCandidates,
+    randomWeaponSwap,
+} from "../src/index.ts";
+import { flatGame, giveGun, openSpot, spawnAt, steps } from "./combatHelpers.ts";
 import { cookAndThrow, holdThrowable } from "./fxHelpers.ts";
+import { cachedMap } from "./helpers.ts";
 
 /** A flat game on `mapName` with a killer and a victim 10 units apart. */
 function duel(mapName: string): { game: Game; killer: Player; victim: Player } {
@@ -113,5 +123,142 @@ describe("potato swap pool", () => {
         const melee = killer.weaponManager.weapons[WeaponSlot.Melee].type;
         expect(melee).not.toBe("crowbar");
         expect(GameObjectDefs[melee]?.type).toBe("melee");
+    });
+});
+
+/** A 50v50 game with `n` players (half per faction, squads of 4) that already started. */
+function faction(n = 8): { game: Game; red: Player[]; blue: Player[] } {
+    const game = new Game(
+        { mapName: "faction", seed: 7, teamMode: 4 },
+        { generation: cachedMap("faction", 7, 4), spawnLoot: false },
+    );
+    game.rules.minActiveTime = 0;
+    const players = Array.from({ length: n }, (_, i) => game.getPlayer(game.addPlayer(`p${i}`))!);
+    game.step();
+    return { game, red: players.filter((p) => p.teamId === 1), blue: players.filter((p) => p.teamId === 2) };
+}
+
+function finish(game: Game, target: Player, source: Player): void {
+    const hit = () =>
+        game.damagePlayer(target, {
+            amount: 1000,
+            damageType: DamageType.Player,
+            sourceId: source.id,
+            dir: v2.create(1, 0),
+        });
+    hit();
+    if (!target.downed) return;
+    steps(game, 12);
+    hit();
+}
+
+describe("promotions (survev player.ts promoteToRole)", () => {
+    it("never drop the kit's leftover 1x scope (survev inventoryManager.ts:154)", () => {
+        const { game, killer: p } = duel("main");
+        expect(p.inv.get("1xscope")).toBe(1);
+        game.roles.promote(p, "lieutenant");
+        game.roles.promote(p, "recon");
+        expect([...game.loot.items.values()].some((l) => l.type === "1xscope")).toBe(false);
+    });
+
+    it("a role helmet is never swapped for one picked up by hand (survev player.ts:3861)", () => {
+        const { game, killer: p } = duel("main");
+        game.roles.promote(p, "lieutenant");
+        expect(p.hasRoleHelmet).toBe(true);
+        const roleHelmet = p.helmet;
+        const loot = game.loot.addLoot("helmet04", p.pos, p.layer, 1)!;
+        expect(pickupLoot(game, p, loot)).toBe("betterItemEquipped");
+        expect(p.helmet).toBe(roleHelmet);
+    });
+
+    it("rules.perks.roleDropsLootPerks: a role of 4 or more perks drops the loot perks (off by default)", () => {
+        const { game, killer: p } = duel("main");
+        addPerk(p, "bonus_9mm", { droppable: true });
+        game.roles.promote(p, "last_man");
+        expect(p.hasPerk("bonus_9mm")).toBe(true);
+        const other = duel("main");
+        other.game.rules.perks.roleDropsLootPerks = true;
+        addPerk(other.killer, "bonus_9mm", { droppable: true });
+        other.game.roles.promote(other.killer, "last_man");
+        expect(other.killer.hasPerk("bonus_9mm")).toBe(false);
+        expect([...other.game.loot.items.values()].some((l) => l.type === "bonus_9mm")).toBe(true);
+    });
+
+    it("the Captain's guns are filled from the bag (its kit has no weapons; survev group.ts:172)", () => {
+        const { game, red, blue } = faction();
+        game.roles.promote(red[0], "leader");
+        game.roles.promote(red[1], "lieutenant");
+        giveGun(red[1], "ak47", { ammo: 5, reserve: 20 });
+        finish(game, red[0], blue[0]);
+        expect(red[1].role).toBe("captain");
+        expect([red[1].weaponManager.weapons[WeaponSlot.Primary].ammo, red[1].inv.get("762mm")]).toEqual([25, 0]);
+    });
+
+    it("a Lone Survivr's pings reach the whole faction (survev client.ts:607-615)", () => {
+        const { game, red } = faction(10);
+        const [a, ...rest] = red;
+        const mate = rest.find((p) => p.groupId !== a.groupId);
+        expect(mate).toBeDefined();
+        game.roles.promote(a, "last_man");
+        game.emote(a.id, { type: "ping_danger", isPing: true, pos: v2.copy(a.pos) });
+        game.step();
+        expect((game.getSnapshot(mate!.id).emotes ?? []).map((e) => e.type)).toContain("ping_danger");
+    });
+});
+
+describe("kill leader and despawning", () => {
+    it("a teamkill re-checks the kill leader: the dead leader no longer counts (survev player.ts:2869-2891)", () => {
+        const game = flatGame();
+        Object.assign(game.options, { mapName: "main" });
+        const pos = openSpot(game);
+        const [a, b, c] = [0, 1, 2].map((i) => spawnAt(game, v2.add(pos, { x: i * 8, y: 0 })));
+        game.rules.killLeaderMinKills = 1;
+        [a.kills, b.kills, c.kills] = [3, 1, 2];
+        game.match.killLeaderId = a.id;
+        // a teammate's credit (friendly fire never reaches here through damage; survev credits one through e.g. a
+        // finish after a knock)
+        c.teamId = a.teamId;
+        a.lastDamagedBy = c.id;
+        killPlayer(game, a, { amount: 1000, damageType: DamageType.Player, sourceId: c.id });
+        expect(a.dead).toBe(true);
+        // no kill counted for the teamkill, but c is now the living player with the most kills
+        expect(c.kills).toBe(2);
+        expect(game.match.killLeaderId).toBe(c.id);
+    });
+
+    it("the start waits for sides with a player that can no longer despawn: a role holder or a downed one", () => {
+        // survev gameModeManager.ts:49-63 cantDespawnAliveCount, player.ts:3116-3124 canDespawn
+        const game = new Game(
+            { mapName: "faction", seed: 7, teamMode: 4 },
+            { generation: cachedMap("faction", 7, 4), spawnLoot: false },
+        );
+        game.rules.minActiveTime = 10;
+        const players = Array.from({ length: 8 }, (_, i) => game.getPlayer(game.addPlayer(`p${i}`))!);
+        const red = players.filter((p) => p.teamId === 1);
+        const blue = players.filter((p) => p.teamId === 2);
+        game.step();
+        expect(game.match.started).toBe(false);
+        game.roles.promote(red[0], "medic");
+        game.step();
+        expect(game.match.started).toBe(false);
+        game.damagePlayer(blue[0], { amount: 1000, damageType: DamageType.Player, sourceId: red[1].id });
+        expect(blue[0].downed).toBe(true);
+        game.step();
+        expect(game.match.started).toBe(true);
+    });
+
+    it("a 50v50 role holder never despawns on disconnect (survev canDespawn)", () => {
+        const { game, red } = faction();
+        game.rules.minActiveTime = 10;
+        const fresh = red[0];
+        fresh.timeAlive = 0;
+        game.roles.promote(fresh, "medic");
+        game.disconnectPlayer(fresh.id);
+        expect(game.getPlayer(fresh.id)).toBeDefined();
+        expect(fresh.disconnected).toBe(true);
+        const plain = red[1];
+        plain.timeAlive = 0;
+        game.disconnectPlayer(plain.id);
+        expect(game.getPlayer(plain.id)).toBeUndefined();
     });
 });

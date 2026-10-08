@@ -22,7 +22,7 @@ import { EmoteSystem } from "./match/emotes.ts";
 import { EventLog } from "./match/events.ts";
 import { FactionSystem } from "./match/faction.ts";
 import { Gas } from "./match/gas.ts";
-import { Match } from "./match/match.ts";
+import { canDespawn, Match } from "./match/match.ts";
 import type { CombatObserver } from "./match/observer.ts";
 import { PlaneSystem } from "./match/planes.ts";
 import { applyLoadout } from "./match/playerLoadout.ts";
@@ -303,7 +303,6 @@ export class Game implements GameApi, SimContext {
         this.world.remove(player);
         removeDisguise(this, player);
         this.spectators.remove(id);
-        this.roles.onPlayerRemoved(player);
         // a revive in progress ends with the player
         player.cancelAction();
         this.teams.remove(player);
@@ -312,13 +311,13 @@ export class Game implements GameApi, SimContext {
     }
 
     /**
-     * The player's client left. A living, standing player that joined less than `rules.minActiveTime` ago despawns; any
-     * other player stays in the game, idle (survev client.ts onClose / player.ts canDespawn: not downed).
+     * The player's client left. A living, standing player that joined less than `rules.minActiveTime` ago despawns, but
+     * a 50v50 role holder; any other player stays in the game, idle (survev client.ts onClose / player.ts canDespawn).
      */
     disconnectPlayer(id: number): void {
         const player = this.playerMap.get(id);
         if (!player) return;
-        if (!player.dead && !player.downed && player.timeAlive < this.rules.minActiveTime - 1e-9) {
+        if (canDespawn(player, !!getMapDef(this.options.mapName).gameMode.factionMode, this.rules.minActiveTime)) {
             this.removePlayer(id);
             return;
         }

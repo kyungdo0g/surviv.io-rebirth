@@ -103,6 +103,11 @@ export interface PerkRules {
      * (conflicts.md perk-max-perks-rule: the 3 HUD slots; the fork refuses at 4). Holding a droppable perk swaps it.
      */
     lootPerkCap: number;
+    /**
+     * A promotion to a role of 4 or more perks drops every droppable loot perk first (the fork's HUD rule, survev
+     * player.ts:945-953; conflicts.md perk-max-perks-rule keeps it behind this flag, off)
+     */
+    roleDropsLootPerks: boolean;
     /** perks beyond the original net limit (net.ts MaxPerks 8) are ignored */
     maxPerks: number;
     /**
@@ -205,6 +210,7 @@ export function defaultPerkRules(): PerkRules {
         martyrdomMaxVel: 5,
         martyrdomRoles: ["grenadier", "demo"],
         lootPerkCap: 3,
+        roleDropsLootPerks: false,
         maxPerks: 8,
         firepowerExcess: "delete",
         scavengerTiers: { scavenger: "tier_world", scavenger_adv: "tier_scavenger_adv" },

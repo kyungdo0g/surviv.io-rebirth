@@ -13,6 +13,9 @@ import type { EmoteEvent, EmoteRequest } from "../view.ts";
 import type { Player } from "../world/player.ts";
 import { EventLog } from "./events.ts";
 
+/** roles whose pings reach the whole faction (survev server client.ts:607-615) */
+const TEAM_PING_ROLES: ReadonlySet<string> = new Set(["leader", "captain", "last_man"]);
+
 const PLAYER = GameConfig.player;
 /** Emote wheel slots a regular emote must come from (survev emoteFromMsg: slots 0-3). */
 const WHEEL_SLOTS = 4;
@@ -162,8 +165,8 @@ export class EmoteSystem {
             groupId: player.groupId,
             teamId: player.teamId,
             teamOnly,
-            // survev's Captain pings the whole team like the Commander (survev server client.ts:607-615)
-            teamPing: event.isPing && (player.role === "leader" || player.role === "captain"),
+            // survev's Captain and Lone Survivr ping the whole team like the Commander (survev server client.ts:607-615)
+            teamPing: event.isPing && TEAM_PING_ROLES.has(player.role),
         });
     }
 

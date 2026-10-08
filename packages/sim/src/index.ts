@@ -117,7 +117,7 @@ export {
 } from "./roles/loadouts.ts";
 export { defaultRoleRules, type RoleRules, type RoleSlot } from "./roles/roleRules.ts";
 export { type RoleHost, RoleSystem } from "./roles/roleSystem.ts";
-export { type PromoteOptions, promoteToRole, removeRole, setHelmet } from "./roles/roles.ts";
+export { promoteToRole, removeRole, setHelmet } from "./roles/roles.ts";
 export { boostHealAmounts, defaultRules, type SimRules } from "./rules.ts";
 export type * from "./view.ts";
 export { fireGun } from "./weapons/gun.ts";
