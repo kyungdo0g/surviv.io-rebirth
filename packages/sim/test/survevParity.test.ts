@@ -5,6 +5,7 @@ import { DamageType, GameObjectDefs, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import {
     addPerk,
+    applyGasDamage,
     canPlayerSpawn,
     defaultModeRules,
     Game,
@@ -379,5 +380,33 @@ describe("50v50: firing reveals the shooter (survev weaponManager.ts:1013-1025, 
         steps(game, 30);
         fireOnce(game, shooter);
         expect(shooter.timeUntilHidden).toBe(0);
+    });
+});
+
+describe("gas (survev player.ts:1648-1669)", () => {
+    /** A flat game whose gas covers everything and deals `damage` this tick. */
+    function gassed(damage: number): { game: Game; p: Player } {
+        const game = flatGame();
+        const p = spawnAt(game, openSpot(game));
+        game.gas.isInGas = () => true;
+        game.gas.damage = damage;
+        game.gas.doDamage = true;
+        return { game, p };
+    }
+
+    it("rules.gasDisconnectedDamage: a disconnected player takes survev's flat 22 (off by default)", () => {
+        const { game, p } = gassed(5);
+        p.disconnected = true;
+        applyGasDamage(game, p, 0.01);
+        expect(100 - p.health).toBeCloseTo(5, 9);
+        game.rules.gasDisconnectedDamage = 22;
+        applyGasDamage(game, p, 0.01);
+        expect(100 - p.health).toBeCloseTo(27, 9);
+    });
+
+    it("runs in the player's own update, after its boost, perks, downed buffer and bleeding", () => {
+        const { game, p } = gassed(7);
+        p.update(game, 0.01);
+        expect(100 - p.health).toBeCloseTo(7, 9);
     });
 });

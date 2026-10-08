@@ -1871,6 +1871,7 @@
 - A: 20 s on the client menu [src:survev/shared/gameConfig.ts:228] [src:fandom/Cobalt_Map] [H]
 - B: survev server fallback after 25 s [src:survev/server/src/game/objects/player.ts:231] [H]
 - proposed resolution: 20 s, assign the highlighted or a random class [src:derived/readme-precedence] [M]
+- rebirth (survev parity wave): the client confirms the highlighted class at 20 s, the server's random fallback waits 25 s like survev so that choice arrives first [src:survev/server/src/game/objects/player.ts:225-231] [src:survev/server/src/game/objects/player.ts:1497-1503] [H]
 - files: `modes/cobalt.md` (`cobalt-role-timeout`) [src:derived/kb-crossref] [H]
 
 ## desert-pkp-airdrop-rare

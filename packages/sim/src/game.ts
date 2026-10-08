@@ -4,7 +4,7 @@
 // obstacle timers, building puzzles and scheduled unlocks (M5b), planes, air strikes and air drops, building occupancy,
 // spectators, group spawns and team status (M6a), faction status and role schedules (M7a), then the match results.
 import { type Bounds, type Rng, type Vec2, v2 } from "@rebirth/core";
-import { DamageType, getMapDef } from "@rebirth/defs";
+import { getMapDef } from "@rebirth/defs";
 import { type GameApi, type GameOptions, type SpectateActionName, TICK_HZ } from "./api.ts";
 import { BulletSystem } from "./combat/bullets.ts";
 import { applyObstacleDamage, applyPlayerDamage } from "./combat/combat.ts";
@@ -426,23 +426,6 @@ export class Game implements GameApi, SimContext {
         this.loot.wakeAround(bounds, layer);
     }
 
-    /**
-     * Gas damage at the start of a player's tick (survev player.ts update): every damageTickRate seconds, players
-     * outside the circle take the stage damage (DamageType.Gas ignores armor). timeInsideGas feeds the optional
-     * escalation rule.
-     */
-    private applyGas(player: Player, dt: number): void {
-        const gas = this.gas;
-        if (!gas.isInGas(player.pos)) {
-            player.timeInsideGas = 0;
-            return;
-        }
-        if (gas.circleIdx >= this.rules.gasDamageRampFromCircle) player.timeInsideGas += dt;
-        if (!gas.doDamage || !(gas.damage > 0)) return;
-        const mult = this.rules.gasDamageRamp ? 1 + this.rules.gasDamageRampRate * player.timeInsideGas : 1;
-        this.damagePlayer(player, { amount: gas.damage * mult, damageType: DamageType.Gas, dir: v2.copy(player.dir) });
-    }
-
     step(): void {
         const dt = 1 / TICK_HZ;
         // reports made during this step belong to the tick it completes
@@ -451,11 +434,7 @@ export class Game implements GameApi, SimContext {
         this.hitLog.tick = this.tickCount + 1;
         this.match.checkStart();
         this.gas.update();
-        for (const player of this.playerMap.values()) {
-            if (player.dead) continue;
-            player.timeAlive += dt;
-            this.applyGas(player, dt);
-        }
+        for (const player of this.playerMap.values()) if (!player.dead) player.timeAlive += dt;
         for (const player of this.playerMap.values()) {
             player.update(this, dt);
             updateDisguise(this, player);

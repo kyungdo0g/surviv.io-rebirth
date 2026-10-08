@@ -81,7 +81,7 @@ export class RoleSystem {
         const gameMode = this.map.gameMode;
         for (const p of this.host.players()) {
             if (p.dead) continue;
-            // Cobalt: a player who did not choose gets a random class (conflicts.md cobalt-role-timeout: 20 s)
+            // Cobalt: a player who did not choose gets a random class (survev's 25 s server fallback)
             if (gameMode.perkMode && !p.role && p.timeAlive >= this.rules.perkModeRoleSelectTime - 1e-9) {
                 const classes = gameMode.perkModeRoles ?? [];
                 if (classes.length > 0) {

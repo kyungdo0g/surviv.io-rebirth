@@ -1,5 +1,5 @@
 // Cobalt class selection (M7b, modes/classSelect.ts): players wait in the Twins bunker without a class, cannot act or be
-// hurt, and move to a surface spawn point once they have one (chosen or after 20 s); class pods follow the opener's
+// hurt, and move to a surface spawn point once they have one (chosen, or the server's random one after 25 s); class pods follow the opener's
 // class. docs/research/modes/cobalt.md "Class selection and spawning" / "Class pods".
 import { v2 } from "@rebirth/core";
 import { DamageType, GameConfig, getMapDef, getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
@@ -62,10 +62,10 @@ describe("Cobalt class menu waiting room", () => {
         expect(p.health).toBeLessThan(GameConfig.player.health);
     });
 
-    it("without a choice a random class comes after 20 s, with the move to the surface", () => {
+    it("without a choice a random class comes after the server's 25 s (the client confirms at 20 s), with the move to the surface", () => {
         const game = cobaltGame();
         const p = add(game, "idle");
-        steps(game, 1999);
+        steps(game, 2499);
         expect(p.awaitingClass).toBe(true);
         steps(game, 2);
         expect(CLASSES).toContain(p.role);

@@ -239,7 +239,7 @@ describe("The Hunted (Savannah)", () => {
 });
 
 describe("Cobalt classes", () => {
-    it("a class is chosen once from the map's perkModeRoles, else given at random after 20 s (cobalt-role-timeout)", () => {
+    it("a class is chosen once from the map's perkModeRoles, else given at random after the server's 25 s (cobalt-role-timeout)", () => {
         const gen = cachedMap("cobalt", 5);
         const Game = flatGame().constructor as typeof import("../src/index.ts").Game;
         const game = new Game(
@@ -264,6 +264,8 @@ describe("Cobalt classes", () => {
         game.emote(b.id, { type: "emote_thumbsup", isPing: false });
         expect(game.getSnapshot(b.id).emotes).toEqual([]);
         steps(game, 2001);
+        expect(b.role).toBe("");
+        steps(game, 500);
         expect(getMapDef("cobalt").gameMode.perkModeRoles).toContain(b.role);
     });
 });

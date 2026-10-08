@@ -61,7 +61,7 @@ export {
 export { DEATH_EMOTE_DELAY, EmoteSystem, updateEmoteThrottle } from "./match/emotes.ts";
 export { damageSourceOf, EventLog } from "./match/events.ts";
 export { FactionSystem, type FactionTeam, living } from "./match/faction.ts";
-export { type CircleChoice, Gas, gasCircle, gasTimeLeft } from "./match/gas.ts";
+export { applyGasDamage, type CircleChoice, Gas, gasCircle, gasTimeLeft } from "./match/gas.ts";
 export { type MapIndicator, MapIndicatorSystem, type TrackedIndicator } from "./match/indicators.ts";
 export {
     CROSSHAIR_SIZE,

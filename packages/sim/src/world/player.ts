@@ -8,6 +8,7 @@ import { emptyInput, type PlayerInput } from "../input.ts";
 import { Inventory, type InventoryOwner, SCOPE_LEVELS, THROWABLE_LIST } from "../items/inventory.ts";
 import type { PickupResult } from "../loot/pickup.ts";
 import { updateEmoteThrottle } from "../match/emotes.ts";
+import { applyGasDamage } from "../match/gas.ts";
 import type { Group } from "../match/teams.ts";
 import { trackActivity, updatePerks } from "../perks/effects.ts";
 import { type PerkSource, rulesOf } from "../perks/perks.ts";
@@ -470,6 +471,8 @@ export class Player implements InventoryOwner {
         if (this.dead) return;
         // revive range, damage buffer, bleeding (may kill), emote throttle (M6a)
         updateDowned(ctx, this, dt);
+        if (this.dead) return;
+        applyGasDamage(ctx, this, dt);
         if (this.dead) return;
         updateEmoteThrottle(this, dt);
         // snowball / potato slowdown (survev update "Projectile slowdown logic")

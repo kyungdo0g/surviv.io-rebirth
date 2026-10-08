@@ -1,7 +1,7 @@
 // Role and 50v50 knobs (M7a). Promotion timing, role loadouts and the faction schedule were server-side in the
 // original; values follow docs/research/items/roles.md and modes/faction.md with their conflict resolutions, each
 // cited per line. `game.rules.roles` is a mutable copy.
-import { type AirstrikeVariant, DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS } from "@rebirth/defs";
+import { type AirstrikeVariant, DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS, GameConfig } from "@rebirth/defs";
 
 /** One promotion slot of the 50v50 schedule: one of `roles` (picked once per game) at `wait` s into `circleIdx`. */
 export interface RoleSlot {
@@ -90,7 +90,12 @@ export interface RoleRules {
      * timeUntilHidden 1; 0 turns it off: open-questions.md faction-minimap-reveal keeps survev's behaviour as a knob)
      */
     factionRevealTime: number;
-    /** Cobalt: a player without a class gets a random one after this many seconds (conflicts.md cobalt-role-timeout) */
+    /**
+     * Cobalt: a player without a class gets a random one after this many seconds, survev's server safety net: the
+     * client confirms the highlighted class itself after GameConfig.player.perkModeRoleSelectDuration (20 s), the
+     * server waits 5 s more so that choice arrives first (survev player.ts:225-231, 1497-1503; conflicts.md
+     * cobalt-role-timeout)
+     */
     perkModeRoleSelectTime: number;
 }
 
@@ -135,6 +140,6 @@ export function defaultRoleRules(): RoleRules {
         potatoGoldCrate: "airdrop_crate_04po",
         factionStatusInterval: 0.5,
         factionRevealTime: 1,
-        perkModeRoleSelectTime: 20,
+        perkModeRoleSelectTime: GameConfig.player.perkModeRoleSelectDuration + 5,
     };
 }
