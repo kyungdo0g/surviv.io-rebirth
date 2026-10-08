@@ -769,9 +769,7 @@
                     "reload": "wa2000_reload_01",
                     "pickup": "gun_pickup_01",
                     "empty": "empty_fire_02",
-                    "deploy": "wa2000_switch_01",
-                    "cycle": "wa2000_cycle_01",
-                    "pull": "wa2000_pull_01"
+                    "deploy": "wa2000_switch_01"
                 }
             },
             "bullets": {
@@ -2122,8 +2120,8 @@
                     "damage": 80,
                     "obstacleDamage": 5,
                     "falloff": 1,
-                    "distance": 40,
-                    "speed": 35,
+                    "distance": 60,
+                    "speed": 70,
                     "variance": 0,
                     "shrapnel": false,
                     "tracerColor": "rocket",
@@ -2412,8 +2410,7 @@
                     "empty": "empty_fire_02",
                     "deploy": "hecate_switch_01",
                     "cycle": "hecate_cycle_01",
-                    "pull": "hecate_pull_01",
-                    "fallOff": 3
+                    "pull": "hecate_pull_01"
                 }
             },
             "bullets": {
@@ -2495,10 +2492,7 @@
                     "reload": "lynx_reload_01",
                     "pickup": "gun_pickup_01",
                     "empty": "empty_fire_02",
-                    "deploy": "lynx_switch_01",
-                    "cycle": "lynx_cycle_01",
-                    "pull": "lynx_pull_01",
-                    "fallOff": 3
+                    "deploy": "lynx_switch_01"
                 }
             },
             "bullets": {
@@ -2591,11 +2585,11 @@
             "bullets": {
                 "bullet_boys": {
                     "type": "bullet",
-                    "damage": 96,
+                    "damage": 130,
                     "obstacleDamage": 4,
                     "falloff": 0.95,
                     "distance": 350,
-                    "speed": 165,
+                    "speed": 190,
                     "variance": 0,
                     "shrapnel": false,
                     "tracerColor": "50AE",

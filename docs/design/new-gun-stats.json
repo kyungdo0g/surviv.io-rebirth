@@ -773,7 +773,7 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-sig550.png",
-                    "fallback": "loot-weapon-hk416.img"
+                    "fallback": "loot-weapon-an94.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-sig550-01.png (optional; replaces the fallback)",
@@ -1207,7 +1207,7 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-fal.png",
-                    "fallback": "loot-weapon-m39.img"
+                    "fallback": "loot-weapon-mk12.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-fal-01.png (optional; replaces the fallback)",
@@ -1471,9 +1471,7 @@
                     "reload": "wa2000_reload_01",
                     "pickup": "gun_pickup_01",
                     "empty": "empty_fire_02",
-                    "deploy": "wa2000_switch_01",
-                    "cycle": "wa2000_cycle_01",
-                    "pull": "wa2000_pull_01"
+                    "deploy": "wa2000_switch_01"
                 }
             },
             "bullets": {
@@ -1497,18 +1495,16 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-wa2000.png",
-                    "fallback": "loot-weapon-sv98.img"
+                    "fallback": "loot-weapon-svd.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-wa2000-01.png (optional; replaces the fallback)",
                     "fallback": "gun-long-01.img (plain bar, tint 0x5C4033)"
                 },
                 "sounds": {
-                    "wa2000_01": "sv98_01",
-                    "wa2000_reload_01": "sv98_reload_01",
-                    "wa2000_switch_01": "sv98_cycle_01",
-                    "wa2000_cycle_01": "sv98_cycle_01",
-                    "wa2000_pull_01": "sv98_pull_01"
+                    "wa2000_01": "svd_01",
+                    "wa2000_reload_01": "svd_reload_01",
+                    "wa2000_switch_01": "svd_switch_01"
                 }
             },
             "infobox": {
@@ -1651,9 +1647,9 @@
                     "fallback": "gun-short-01.img (plain bar, tint 0x2A2A2A)"
                 },
                 "sounds": {
-                    "tec9_01": "m93r_01",
+                    "tec9_01": "m9_01",
                     "tec9_reload_01": "m93r_reload_01",
-                    "tec9_switch_01": "m93r_switch_01"
+                    "tec9_switch_01": "m9_switch_01"
                 }
             },
             "infobox": {
@@ -1790,7 +1786,7 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-tec9-dual.png",
-                    "fallback": "loot-weapon-m9-dual.img"
+                    "fallback": "loot-weapon-m93r-dual.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-tec9-01.png (optional; replaces the fallback)",
@@ -3169,7 +3165,7 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-m79.png",
-                    "fallback": "loot-weapon-potato-cannon.img"
+                    "fallback": "loot-weapon-m79-drawn.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-m79-01.png (optional; replaces the fallback)",
@@ -3177,8 +3173,8 @@
                 },
                 "sounds": {
                     "m79_01": "potato_cannon_01",
-                    "m79_reload_01": "potato_cannon_reload_01",
-                    "m79_switch_01": "potato_cannon_switch_01"
+                    "m79_reload_01": "flare_gun_reload_01",
+                    "m79_switch_01": "usas_switch_01"
                 }
             },
             "infobox": {
@@ -3325,7 +3321,7 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-mgl.png",
-                    "fallback": "loot-weapon-potato-cannon.img"
+                    "fallback": "loot-weapon-mgl-drawn.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-mgl-01.png (optional; replaces the fallback)",
@@ -3333,8 +3329,8 @@
                 },
                 "sounds": {
                     "mgl_01": "potato_cannon_01",
-                    "mgl_reload_01": "potato_cannon_reload_01",
-                    "mgl_switch_01": "potato_cannon_switch_01"
+                    "mgl_reload_01": "m1014_reload_01",
+                    "mgl_switch_01": "usas_switch_01"
                 }
             },
             "infobox": {
@@ -3498,7 +3494,7 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-gl06.png",
-                    "fallback": "loot-weapon-potato-cannon.img"
+                    "fallback": "loot-weapon-gl06-drawn.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-gl06-01.png (optional; replaces the fallback)",
@@ -3670,16 +3666,16 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-rpg7.png",
-                    "fallback": "loot-weapon-potato-cannon.img"
+                    "fallback": "loot-weapon-rpg7-drawn.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-rpg7-01.png (optional; replaces the fallback)",
                     "fallback": "gun-potato-cannon-01.img (from potato_cannon)"
                 },
                 "sounds": {
-                    "rpg7_01": "potato_cannon_01",
+                    "rpg7_01": "flare_gun_01",
                     "rpg7_reload_01": "potato_cannon_reload_01",
-                    "rpg7_switch_01": "potato_cannon_switch_01"
+                    "rpg7_switch_01": "barrett_switch_01"
                 }
             },
             "infobox": {
@@ -3812,8 +3808,8 @@
                     "damage": 80,
                     "obstacleDamage": 5,
                     "falloff": 1,
-                    "distance": 40,
-                    "speed": 35,
+                    "distance": 60,
+                    "speed": 70,
                     "variance": 0,
                     "shrapnel": false,
                     "tracerColor": "rocket",
@@ -3845,15 +3841,15 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-panzerfaust.png",
-                    "fallback": "loot-weapon-potato-cannon.img"
+                    "fallback": "loot-weapon-panzerfaust-drawn.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-panzerfaust-01.png (optional; replaces the fallback)",
                     "fallback": "gun-potato-cannon-01.img (from potato_cannon)"
                 },
                 "sounds": {
-                    "panzerfaust_01": "potato_cannon_01",
-                    "panzerfaust_switch_01": "potato_cannon_switch_01",
+                    "panzerfaust_01": "barrett_01",
+                    "panzerfaust_switch_01": "barrett_switch_01",
                     "panzerfaust_discard_01": "gun_pickup_01"
                 }
             },
@@ -3877,8 +3873,8 @@
                     "falloff": 1,
                     "headshotMultiplier": 1,
                     "obstacleMultiplier": "bullet x5, explosion x0.9",
-                    "distance": 40,
-                    "speed": 35,
+                    "distance": 60,
+                    "speed": 70,
                     "maxDps": "440 (single use)",
                     "maxObstacleDps": "1052"
                 },
@@ -3893,10 +3889,10 @@
                 "magazineDamage": 220,
                 "fullReload": null,
                 "speedCarriedHeldFiring": [12, 10.5, 5.25],
-                "ttkBody15": [0.331, 0.331, 0.331, 0.331],
+                "ttkBody15": [0.166, 0.166, 0.166, 0.166],
                 "stkBody15": [1, 1, 1, 1],
-                "eStand15A2": 0.331,
-                "eStand40A2": 1.046,
+                "eStand15A2": 0.166,
+                "eStand40A2": 0.523,
                 "eMove40A2": null,
                 "eStand100A2": null
             }
@@ -4028,15 +4024,15 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-m202.png",
-                    "fallback": "loot-weapon-potato-cannon.img"
+                    "fallback": "loot-weapon-m202-drawn.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-m202-01.png (optional; replaces the fallback)",
                     "fallback": "gun-potato-cannon-01.img (from potato_cannon)"
                 },
                 "sounds": {
-                    "m202_01": "potato_cannon_01",
-                    "m202_switch_01": "potato_cannon_switch_01",
+                    "m202_01": "usas_01",
+                    "m202_switch_01": "m249_switch_01",
                     "m202_discard_01": "gun_pickup_01"
                 }
             },
@@ -4178,7 +4174,7 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-m200.png",
-                    "fallback": "loot-weapon-sv98.img"
+                    "fallback": "loot-weapon-scout.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-m200-01.png (optional; replaces the fallback)",
@@ -4305,8 +4301,7 @@
                     "empty": "empty_fire_02",
                     "deploy": "hecate_switch_01",
                     "cycle": "hecate_cycle_01",
-                    "pull": "hecate_pull_01",
-                    "fallOff": 3
+                    "pull": "hecate_pull_01"
                 }
             },
             "bullets": {
@@ -4337,8 +4332,8 @@
                     "fallback": "gun-awc-01.img (from awc)"
                 },
                 "sounds": {
-                    "hecate_01": "awc_01",
-                    "hecate_reload_01": "awc_reload_01",
+                    "hecate_01": "barrett_01",
+                    "hecate_reload_01": "barrett_reload_01",
                     "hecate_switch_01": "awc_cycle_01",
                     "hecate_cycle_01": "awc_cycle_01",
                     "hecate_pull_01": "awc_pull_01"
@@ -4455,10 +4450,7 @@
                     "reload": "lynx_reload_01",
                     "pickup": "gun_pickup_01",
                     "empty": "empty_fire_02",
-                    "deploy": "lynx_switch_01",
-                    "cycle": "lynx_cycle_01",
-                    "pull": "lynx_pull_01",
-                    "fallOff": 3
+                    "deploy": "lynx_switch_01"
                 }
             },
             "bullets": {
@@ -4482,18 +4474,16 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-lynx.png",
-                    "fallback": "loot-weapon-awc.img"
+                    "fallback": "loot-weapon-sv98.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-lynx-01.png (optional; replaces the fallback)",
                     "fallback": "gun-awc-01.img (from awc)"
                 },
                 "sounds": {
-                    "lynx_01": "awc_01",
-                    "lynx_reload_01": "awc_reload_01",
-                    "lynx_switch_01": "awc_cycle_01",
-                    "lynx_cycle_01": "awc_cycle_01",
-                    "lynx_pull_01": "awc_pull_01"
+                    "lynx_01": "barrett_01",
+                    "lynx_reload_01": "barrett_reload_01",
+                    "lynx_switch_01": "barrett_switch_01"
                 }
             },
             "infobox": {
@@ -4618,11 +4608,11 @@
             "bullets": {
                 "bullet_boys": {
                     "type": "bullet",
-                    "damage": 96,
+                    "damage": 130,
                     "obstacleDamage": 4,
                     "falloff": 0.95,
                     "distance": 350,
-                    "speed": 165,
+                    "speed": 190,
                     "variance": 0,
                     "shrapnel": false,
                     "tracerColor": "50AE",
@@ -4643,7 +4633,7 @@
                     "fallback": "gun-long-01.img (from mosin)"
                 },
                 "sounds": {
-                    "boys_01": "mosin_01",
+                    "boys_01": "sv98_01",
                     "boys_switch_01": "mosin_cycle_01",
                     "boys_cycle_01": "mosin_cycle_01",
                     "boys_pull_01": "mosin_pull_01",
@@ -4666,30 +4656,30 @@
                 "movingSpread": 5,
                 "barrelLength": 4.2,
                 "bullet": {
-                    "damage": "96",
+                    "damage": "130",
                     "falloff": 0.95,
                     "headshotMultiplier": 1.25,
                     "obstacleMultiplier": "4",
                     "distance": 350,
-                    "speed": 165,
-                    "maxDps": "64 (single use)",
-                    "maxObstacleDps": "256"
+                    "speed": 190,
+                    "maxDps": "86.7 (single use)",
+                    "maxObstacleDps": "346.7"
                 },
                 "suppressed": false
             },
             "metrics": {
                 "shotInterval": 1.5,
                 "rpm": 40,
-                "maxDps": 64,
-                "maxObstacleDps": 256,
-                "sustainedDps": 64,
-                "magazineDamage": 672,
+                "maxDps": 86.7,
+                "maxObstacleDps": 346.7,
+                "sustainedDps": 86.7,
+                "magazineDamage": 910,
                 "fullReload": null,
                 "speedCarriedHeldFiring": [12, 10.5, 3.75],
-                "ttkBody15": [1.559, 1.559, 1.559, 3.059],
-                "stkBody15": [2, 2, 2, 3],
-                "eStand15A2": 1.559,
-                "eStand40A2": 1.711,
+                "ttkBody15": [0.052, 1.552, 1.552, 1.552],
+                "stkBody15": [1, 2, 2, 2],
+                "eStand15A2": 1.552,
+                "eStand40A2": 1.683,
                 "eMove40A2": null,
                 "eStand100A2": null
             }
@@ -4790,16 +4780,16 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-m60.png",
-                    "fallback": "loot-weapon-pkp.img"
+                    "fallback": "loot-weapon-m249.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-m60-01.png (optional; replaces the fallback)",
                     "fallback": "gun-pkp-top-01.img (from pkp)"
                 },
                 "sounds": {
-                    "m60_01": "pkp_01",
-                    "m60_reload_01": "pkp_reload_01",
-                    "m60_switch_01": "pkp_switch_01"
+                    "m60_01": "m249_01",
+                    "m60_reload_01": "m249_reload_01",
+                    "m60_switch_01": "m249_switch_01"
                 }
             },
             "infobox": {
@@ -5095,16 +5085,16 @@
             "assets": {
                 "lootImg": {
                     "file": "assets-user/img/loot/loot-weapon-dshk.png",
-                    "fallback": "loot-weapon-pkp.img"
+                    "fallback": "loot-weapon-dp28.img"
                 },
                 "worldImg": {
                     "file": "assets-user/img/guns/gun-dshk-01.png (optional; replaces the fallback)",
                     "fallback": "gun-pkp-top-01.img (from pkp)"
                 },
                 "sounds": {
-                    "dshk_01": "pkp_01",
-                    "dshk_reload_01": "pkp_reload_01",
-                    "dshk_switch_01": "pkp_switch_01"
+                    "dshk_01": "dp28_01",
+                    "dshk_reload_01": "m249_reload_01",
+                    "dshk_switch_01": "dp28_switch_01"
                 }
             },
             "infobox": {

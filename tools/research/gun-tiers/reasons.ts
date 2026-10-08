@@ -68,7 +68,7 @@ export const REASON: Record<string, string> = {
     mgl: "six 125-damage grenades 0.7 s apart, a direct hit kills level 1, and no speed penalty since the owner's speed pass: TTK 2.2 s at 15-40 u, 2.1 kills per load; S against a stationary target",
     m202: "four 25 + 125 rockets in a fixed 60° fan (blast 5-16 u), one of them on target; a direct hit (150) kills level 1 but not level 2, so a pickup kills 42 % of the time at average aim over 15-40 u (66 % against a stationary target) before the backup gun takes over: stats B-",
     panzerfaust:
-        "one 80 + 140 rocket at 35 u/s, then the tube is gone: a strafing target steps out of it, so a pickup kills 32 % of the time at average aim over 15-40 u (59 % against a stationary target): stats C+",
+        "one 80 + 140 rocket at 35 u/s (scored before the owner's 70 u/s of 2026-10-08, not rescored), then the tube is gone: a strafing target steps out of it, so a pickup kills 32 % of the time at average aim over 15-40 u (59 % against a stationary target): stats C+",
     m79: "one 125-damage grenade per 2.6 s, lobbed at 40 u/s: a direct hit kills level 1, but a strafing target mostly steps out of the lob (a miss flies on to 52 u): TTK 5.6 s at 15-40 u; B against a stationary target",
     rpg7: "one-hit kill on any armour, but one 85 u/s rocket per 3.8 s, only the 4 that come with it, and a miss flies on to 120 u: TTK 5.3 s at 15-40 u against a strafing target (B against a stationary one): stats C+",
     potato_cannon:

@@ -84,6 +84,8 @@
 - Channels (volume, range in world units): activePlayer 0.5/48, otherPlayers 0.5/48, hits 0.4/48, sfx 1/48, ambient 1/1, ui 0.75/48, music 1/1 (type music) — identical in the original [src:survev/client/src/soundDefs.ts:2117-2160] [src:derived/survev@8715a605:client/js/app.js:36542-36584] [H]
 - Airdrop and airstrike sounds carry extra range: airdrop `soundRangeMult` 2.5 (max 92), airstrike 18 (max 48, falloff 1.25) [src:survev/shared/gameConfig.ts:282-305] [H]
 - Volume sliders: master, SFX ("sound") and music, each 0–1 (added 0.3.1) [src:survev/client/src/config.ts:105-107] [src:changelog/0.3.1] [H]
+- Master volume: the CreateJS engine starts at 0.5, but the client sets it to the config's `masterVolume` (default 1) at startup and on every change, so at default settings the master gain is 1 into the compressor [src:survev/client/src/audioManager.ts:58] [src:survev/client/src/main.ts:408] [src:survev/client/src/main.ts:543] [src:survev/client/src/config.ts:105] [H]
+- Instance limit: each sound is registered per channel (name + channel) with `maxInstances` (16 when its def gives none); a play past the limit stops that sound's instance with the earliest stop time and starts, and only a full pool of 128 instances refuses a play [src:survev/client/src/audioManager.ts:148] [src:survev/client/src/lib/createJS.ts:588] [src:survev/client/src/lib/createJS.ts:680-690] [src:survev/client/src/lib/createJS.ts:664-676] [H]
 
 ## Sound inventory
 

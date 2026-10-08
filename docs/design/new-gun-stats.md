@@ -56,12 +56,12 @@ ammo, loot).
 | `mgl` | Milkor MGL | launcher | 40mm | 0 + 125e+shr | 86 | 6/6 | 1 per 1 | 178.6 | 0.3 / 1 / 1 / 1 | gold 0.5 |
 | `gl06` | GL-06 | launcher | 40mm | 10 + 100e+shr | 26.1 (1 per 2.3 s) | 1/1 | 2 | 366.7 | 0.27 / 2.57 / 2.57 / 2.57 | floor 0.02, T1 0.5 |
 | `rpg7` | RPG-7 | launcher | rocket | 60 + 150e+shr | 15.8 (1 per 3.8 s) | 1/1 | 3.5 | 700 | 0.14 / 0.14 / 0.14 / 3.94 | gold 0.5 |
-| `panzerfaust` | Panzerfaust | launcher | none | 80 + 140e+shr | single use | 1 (single use) | none (discarded when empty) | 440 | 0.33 / 0.33 / 0.33 / 0.33 | floor 0.2 (owner), T1 0.5 |
+| `panzerfaust` | Panzerfaust | launcher | none | 80 + 140e+shr | single use | 1 (single use) | none (discarded when empty) | 440 | 0.17 / 0.17 / 0.17 / 0.17 | floor 0.2 (owner), T1 0.5 |
 | `m202` | M202 FLASH | launcher | none | 4 x (25 + 125e) | single use | 1 (single use) | none (discarded when empty) | 1200 | 0.22 / 0.22 / 0.22 / 0.22 | T1 0.05, T2 0.05, gold 0.25 + bonus 0.1 (owner) |
 | `m200` | M200 Intervention | sniper | 7.62mm | 115 | 38 | 7/9 | 3.5 | 71.9 | 0.05 / 1.65 / 1.65 / 1.65 | T2 0.25, gold 0.5 |
 | `hecate` | Hécate II | sniper | .50 AE | 160 | 34 | 7/9 | 4 | 91.4 | 0.05 / 0.05 / 1.8 / 1.8 | gold 0.5 |
 | `lynx` | Lynx | sniper | .50 AE | 118 | 50 | 5/6 | 4.2 | 98.3 | 0.05 / 1.25 / 1.25 / 1.25 | gold 0.5 |
-| `boys` | Boys AT Rifle | sniper | none | 96 | 40 | 7 (single use) | none (discarded when empty) | 64 | 1.56 / 1.56 / 1.56 / 3.06 | T2 0.75 |
+| `boys` | Boys AT Rifle | sniper | none | 130 | 40 | 7 (single use) | none (discarded when empty) | 86.7 | 0.05 / 1.55 / 1.55 / 1.55 | T2 0.75 |
 | `m60` | M60 | lmg | 7.62mm | 16 | 545 | 100/150 | 6.5 | 145.5 | 0.74 / 1.07 / 1.29 / 1.51 | floor 0.02, T2 1 |
 | `mg42` | MG 42 | lmg | 7.62mm | 11 | 968 | 50/75 | 4 | 177.4 | 0.65 / 0.9 / 1.09 / 1.27 | floor 0.005, T2 0.75 |
 | `dshk` | DShK | lmg | 7.62mm | 34 | 500 | 30/30 | 7.5 | 283.3 | 0.32 / 0.56 / 0.68 / 0.8 | gold 0.08 |
@@ -597,24 +597,24 @@ numbers are what they are. All TTK values are seconds at 15 u unless noted.
 
 | Field | Value | Bullet | Value |
 |---|---|---|---|
-| Gun type | Anti-tank rifle (bolt action, single use: 7 shots) | Damage | 96 |
+| Gun type | Anti-tank rifle (bolt action, single use: 7 shots) | Damage | 130 |
 | Ammo | none (7 charges) | Falloff | 0.95 |
 | Fire mode | Single | Headshot multiplier | 1.25 |
 | Player speed | -1.5 | Obstacle multiplier | 4 |
 | Recoil speed | -3 | Distance | 350 |
-| Carry speed (rebirth) | 0 | Speed | 165 |
-| Magazine capacity | 7 charges, no extension | Max DPS | 64 (single use) |
-| Ammo spawn | 0 | Max obstacle DPS | 256 |
-| Reload time | none (discarded when empty) | Sustained DPS / magazine damage | 64 / 672 |
+| Carry speed (rebirth) | 0 | Speed | 190 |
+| Magazine capacity | 7 charges, no extension | Max DPS | 86.7 (single use) |
+| Ammo spawn | 0 | Max obstacle DPS | 346.7 |
+| Reload time | none (discarded when empty) | Sustained DPS / magazine damage | 86.7 / 910 |
 | Fire delay | 1.5 (40 rpm) | Speed carried / held / firing | 12 / 10.5 / 3.75 |
-| Switch delay | 1 | TTK body A0 / A1 / A2 / A3 | 1.56 / 1.56 / 1.56 / 3.06 |
-| Standing / moving spread | 1.5 / 5 | E[TTK] A2: stand 15 / 40 / 100 u, move 40 u | 1.56 / 1.71 / ∞, ∞ |
+| Switch delay | 1 | TTK body A0 / A1 / A2 / A3 | 0.05 / 1.55 / 1.55 / 1.55 |
+| Standing / moving spread | 1.5 / 5 | E[TTK] A2: stand 15 / 40 / 100 u, move 40 u | 1.55 / 1.68 / ∞, ∞ |
 | Barrel length | 4.2 |  |  |
 
 - **Placement:** T2 0.75 (tier band T2). Sniper class. Tier 2 only.
 - **References:** `barrett`, `sv98`, `mosin`.
 - **Real weapon:** Boys anti-tank rifle: .55 Boys, bolt action, 5-round box, 747 m/s, 16 kg (Wikipedia); owner: 7 shots, then discarded.
-- **Why:** 96 damage puts it on the Barrett's thresholds (2 / 2 / 2 / 3 hits): 1.56 s against A2, twice as fast as the SV-98. Seven shots with no reload, then the rifle is discarded (at most 3 armoured kills). Review: out of tier 1 and the floor; tier 2 only.
+- **Why:** 96 damage put it on the Barrett's thresholds (2 / 2 / 2 / 3 hits): 1.56 s against A2, twice as fast as the SV-98. Seven shots with no reload, then the rifle is discarded (at most 3 armoured kills). Review: out of tier 1 and the floor; tier 2 only. Owner, 2026-10-08: "the Boys is too weak" (보이스가 너무 약하고): 130 damage at 190 u/s, between the Lynx (118) and the Hécate II (160) and a little slower than the .50s, so one body hit kills an unarmoured player and two any armour (1 / 2 / 2 / 2).
 
 ### 2.7 LMGs
 
@@ -797,8 +797,8 @@ an empty cylinder).
 | Ammo | none (1 charge) | Falloff | 1 |
 | Fire mode | Single | Headshot multiplier | 1 |
 | Player speed | -1.5 | Obstacle multiplier | bullet x5, explosion x0.9 |
-| Recoil speed | 0 | Distance | 40 |
-| Carry speed (rebirth) | 0 | Speed | 35 |
+| Recoil speed | 0 | Distance | 60 |
+| Carry speed (rebirth) | 0 | Speed | 70 |
 | Magazine capacity | 1 charge, no extension | Max DPS | 440 (single use) |
 | Ammo spawn | 0 | Max obstacle DPS | 1052 |
 | Reload time | none (discarded when empty) | Sustained DPS / magazine damage | 440 / 220 |
@@ -810,7 +810,7 @@ an empty cylinder).
 - **Placement:** floor 0.2 on every map but the potato modes whose floor has the flare gun (owner, 2026-10-08: "a downgraded M202 from ordinary loot", a little above the flare gun's 0.145; it was 0.02 on main and Desert only), T1 0.5 (tier band T1).
 - **References:** `rpg7`.
 - **Real weapon:** Panzerfaust 60: single-shot disposable launcher, 6.8 kg, 45 m/s, effective 60 m (Wikipedia).
-- **Why:** One sure kill for tier 1: an 80 + 140 rocket at 35 u/s and 40 u kills any armour on a direct hit and breaks any obstacle (526), then the tube is discarded. Slow enough to dodge at range (7.4 u of strafe over 25 u). Tier 1 weight cut 1.0 -> 0.5.
+- **Why:** One sure kill for tier 1: an 80 + 140 rocket kills any armour on a direct hit and breaks any obstacle (526), then the tube is discarded. Tier 1 weight cut 1.0 -> 0.5. Owner, 2026-10-08: "the Panzerfaust's rocket is slow": 35 -> 70 u/s and 40 -> 60 u (the real Panzerfaust 60's effective range), still below the RPG-7's 85 u/s and 120 u; a runner still steps 4.3 u aside over 25 u, so it can be dodged at range.
 
 #### M202 FLASH (`m202`)
 
@@ -942,7 +942,7 @@ direct hit, no shrapnel (section 4.4 has the shrapnel model).
 | model94 | floor | 44 | 86 | 8 | 4 | 62.9 / 36.7 | 1.47 / 2.17 / 2.87 / 3.57 | 2.49 | 2.69 | 4.16 | 4.27 | 12 / 6 |
 | blr | floor | 56 | 75 | 3 | 1.7 | 70 / 41 | 0.86 / 1.66 / 4.16 / 4.16 | 3.18 | 3.36 | 5.34 | 4.93 | 12 / 6 |
 | scout_elite | T1 | 56 | 60 | 5 | 2.6 | 56 / 36.8 | 1.06 / 2.06 / 3.06 / 3.06 | 2.66 | 2.81 | 2.81 | 3.2 | 12 / 8.5 |
-| **boys** | T2 | 96 | 40 | 7 | - | 64 / - | 1.56 / 1.56 / 1.56 / 3.06 | 1.56 | 1.71 | ∞ | ∞ | 10.5 / 3.75 |
+| **boys** | T2 | 130 | 40 | 7 | - | 86.7 / - | 0.05 / 1.55 / 1.55 / 1.55 | 1.55 | 1.68 | ∞ | ∞ | 10.5 / 3.75 |
 | **wa2000** | T2 | 72 | 55 | 5 | 3.3 | 65.5 / 40.9 | 1.16 / 2.26 / 2.26 / 3.36 | 2.23 | 2.37 | 3.1 | 2.69 | 11.5 / 4.75 |
 | sv98 | T2 | 80 | 40 | 10 | 2.7 | 53.3 / 45.2 | 1.56 / 1.56 / 3.06 / 3.06 | 2.64 | 2.78 | 3.25 | 3.11 | 12 / 6 |
 | mosin | T2 | 72 | 34 | 5 | 3 | 41.1 / 30.6 | 1.81 / 3.56 / 3.56 / 5.31 | 3.52 | 3.66 | 5.23 | 4 | 12 / 6 |
@@ -970,7 +970,7 @@ direct hit, no shrapnel (section 4.4 has the shrapnel model).
 
 | gun | tier | dmg | rpm | mag | reload | max / sust DPS | TTK body 15u A0/1/2/3 | E stand 15u A2 | E stand 40u A2 | E move 40u A2 | E stand 100u A2 | speed |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **panzerfaust** | T1 | 80+140e | single | 1 | - | 440 / - | 0.33 / 0.33 / 0.33 / 0.33 | 0.33 | 1.05 | ∞ | ∞ | 10.5 / 5.25 |
+| **panzerfaust** | T1 | 80+140e | single | 1 | - | 440 / - | 0.17 / 0.17 / 0.17 / 0.17 | 0.17 | 0.52 | ∞ | ∞ | 10.5 / 5.25 |
 | **gl06** | T1 | 10+100e | 26.1 | 1 | 2 | 366.7 / 47.8 | 0.27 / 2.57 / 2.57 / 2.57 | 2.57 | 3.12 | 3.88 | ∞ | 12 / 6 |
 | **m79** | T2 (T1) | 0+125e | 23.1 | 1 | 2.3 | 416.7 / 48.1 | 0.3 / 2.9 / 2.9 / 2.9 | 2.9 | 4.25 | 6.64 | ∞ | 12 / 6 |
 | **rpg7** | gold | 60+150e | 15.8 | 1 | 3.5 | 700 / 55.3 | 0.14 / 0.14 / 0.14 / 3.94 | 0.14 | 0.43 | 1.63 | 1.14 | 10 / 5 |
@@ -1057,7 +1057,7 @@ A dropped single-use gun keeps its remaining charges server-side; Firepower cann
 | mgl | lob (m79_grenade) | 0 / 125 | 5-12 | 12 x 20 | 139 | 40 / 52 | none (as the original) | 100 % / 99 % / 87 % / 53 % | 14.1 u | 15 u |
 | gl06 | airburst at cursor | 10 / 100 | 4-10 | 6 x 20 | 120 | 45 / 60 | 4 u | 100 % / 73 % / 15 % / 0 % | 12.1 u | 13 u |
 | rpg7 | rocket (bullet) | 60 / 150 | 6-14 | 12 x 20 | 375 | 85 / 120 | 5 u | 100 % / 100 % / 100 % / 100 % | 16.1 u | 17 u |
-| panzerfaust | rocket (bullet) | 80 / 140 | 4-9 | 4 x 20 | 526 | 35 / 40 | 4 u | 100 % / 100 % / 100 % / 100 % | 11.1 u | 12 u |
+| panzerfaust | rocket (bullet) | 80 / 140 | 4-9 | 4 x 20 | 526 | 70 / 60 | 4 u | 100 % / 100 % / 100 % / 100 % | 11.1 u | 12 u |
 | m202 | 4 rockets in a fixed 60° fan, bursting at the cursor | 25 / 125 (x4) | 5-16 | none | 5300 | 55 / 75 (or the cursor) | 5 u | volley: A2 dead anywhere across the strip at 15-25 u | 17 u | 18 u |
 
 - Explosions use the sim's step falloff (full damage inside `rad.min`, then x (1 - s / rad.max)); armour reduces
@@ -1132,6 +1132,11 @@ Every problem and correction raised by the cross-class balance stage and the two
 | WA2000 strength in tier 2 | applied | damage 75 -> 72, fire delay 0.9 -> 1.1 | It beat both tier 2 bolt rifles at every armour level and range; now the SV-98 wins on A1 and is close on A3. |
 | WA2000 magazine | applied | 6 / 8 / 30 -> 5 / 6 / 25 | The .300 Win Mag WA2000 the stats model holds 5 rounds; no TTK change. |
 | Boys placement | applied | tier 1 1.0 -> 0, floor 0.01 -> 0; tier 2 0.75 kept; damage 96 kept | Barrett thresholds (2 / 2 / 2 / 3) from a tier 1 crate were too strong; the realistic per-shot damage stays. |
+| Boys damage / speed (owner, 2026-10-08) | applied | 96 -> 130, 165 -> 190 u/s | Owner: "the Boys is too weak". The weakest and slowest heavy rifle (M200 115, Lynx 118, Hécate 160 at 207-214 u/s) now one-shots an unarmoured body and needs 2 hits on any armour (A3 3 -> 2); still 7 shots, tier 2 only (rebirth-deviations.md "Guns overhaul"). |
+| Panzerfaust speed (owner, 2026-10-08) | applied | 35 -> 70 u/s, range 40 -> 60 u | Owner: "the Panzerfaust's rocket is slow". It was the slowest projectile in the game; it stays below the RPG-7 (85 u/s, 120 u) and the M202, its upgrade. |
+| Hécate II / Lynx sound fallOff (2026-10-08) | applied | 3 -> none | Copied from the suppressed AWM-S; both are unsuppressed .50 rifles, whose shots were silent beyond about 22 u. |
+| WA2000 / Lynx cycle and pull sounds (2026-10-08) | dropped | `sound.cycle` / `sound.pull` removed | Both are semi-automatic (no `pullDelay`), so the client never plays them. |
+| Stand-in art and sound (2026-10-08) | applied | every `assets.lootImg.fallback` distinct and of the gun's class (the six launchers: our own drawn icons, `loot-weapon-<id>-drawn.img`); sound donors of the same class and action | Without the owner's files the RPG-7 and the M202 showed the same potato cannon icon and every launcher played the potato cannon (rebirth-deviations.md "Guns overhaul"). |
 | Boys: 7 shots from one magazine | decided | no reload pause | Owner: 7 shots, then discarded. |
 | New ids in gunClasses.ts | applied (implementation rule) | all 30 ids + 2 duals before `applyRebirthMapDefs` step 1; test that main tier 2 holds the tier 2 rows | Otherwise tier 2 rows land in tier 1. |
 | M1928 fire delay | applied | 0.095 -> 0.087 (690 rpm) | A tier 1 SMG was slower than the floor AK-47 up close; now 1.35 s against 1.41. |

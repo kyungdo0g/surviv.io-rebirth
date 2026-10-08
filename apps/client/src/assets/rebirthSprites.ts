@@ -1,8 +1,10 @@
 // Sprite manifest entries of the rebirth's beta new guns (2026-10-07): each gun's loot icon (its def's lootImg.sprite,
 // loot-weapon-<id>.img) is the owner's line art cut from the sheets by tools/assets/newGuns.ts into
-// img/rebirth/ (gitignored, like all art). The tool writes a copy of the sheet's fallback icon (an original gun's,
-// packages/defs rebirth/newGunAssets.ts) where it has no drawing, and the texture store loads that fallback itself if
-// the file is not installed at all, so a new gun never shows the missing-sprite placeholder. The new ammo's ping emotes
+// img/rebirth/ (gitignored, like all art). Where it has no drawing the tool writes the gun's fallback icon instead
+// (packages/defs rebirth/newGunAssets.ts: an original gun's of the same class, or for the six launchers our own drawn
+// icon, committed under /rebirth/loot/ as `loot-weapon-<id>-drawn.img`), and the texture store and the HUD
+// (hudImages.ts) load that fallback themselves if the file is not installed at all, so a new gun never shows the
+// missing-sprite placeholder or a broken image. The new ammo's ping emotes
 // (ammo-<id>.img) are drawn by the same tool in the original ammo emotes' style, with the generic ammo emote as fallback.
 // The rebirth buildings' floors and roofs (rebirth/buildings.ts) are committed SVGs served from /rebirth/map/
 // (tools/assets/rebirthBuildingArt.ts draws them), so they need no install step. The drawn top-down held sprites
@@ -12,6 +14,9 @@
 // committed SVGs too, served from /rebirth/guns/, each at its own logical size; they have no fallback, since the file
 // always ships.
 import {
+    DRAWN_LOOT_ICONS,
+    drawnLootIconSprite,
+    drawnLootIconUrl,
     GameObjectDefs,
     heldGunArt,
     heldGunArtEmpty,
@@ -56,6 +61,9 @@ export function rebirthSpriteEntries(): Record<string, SpriteEntry> {
             size: LOOT_ICON_SIZE,
             fallback: NEW_GUN_LOOT_FALLBACKS[id],
         };
+    }
+    for (const id of DRAWN_LOOT_ICONS) {
+        out[drawnLootIconSprite(id)] = { source: "rebirth", path: drawnLootIconUrl(id), size: LOOT_ICON_SIZE };
     }
     for (const ammo of NEW_AMMO_IDS) {
         const sprite = newAmmoEmoteTexture(ammo);

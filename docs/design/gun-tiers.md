@@ -307,7 +307,7 @@ reviewed B-, section 1a), and the SPAS-16's S.
 The full grouped list is table 1. Every gun's numbers are in [gun-tiers-stats.md](gun-tiers-stats.md).
 
 **Launchers against a stationary target.** The composite scores every gun against a target strafing at 3.5 u/s. That
-target steps out of slow rounds: Panzerfaust 35 u/s, M79 40, M202 55, RPG-7 85. Bots fire launchers at groups,
+target steps out of slow rounds: Panzerfaust 35 u/s (70 since 2026-10-08), M79 40, M202 55, RPG-7 85. Bots fire launchers at groups,
 campers and busy targets (`brain/launch.ts`), which hold still. The same composite with no dodge (`DODGE=0`, every
 gun rescored on its own cuts) gives the right-hand columns:
 
@@ -392,7 +392,7 @@ otherwise. The composite is the stat score: S cut 0.383, A+ 0.321, A 0.132.
 | L86A2 (`l86`) | B+ | A+ | +3 | 0.28 | an MK12 with 25 damage and a 30-round magazine: TTK 3.17 s at 20-50 u (MK12 3.82), 1.9 kills per magazine. Owner ruling 2026-10-08: A → A+ (section 1a). |
 | FN FAL (`fal`) | B+ | A+ | +3 | 0.21 | 26 damage at 0.18 s: 4 hits on bare players, TTK 3.54 s at 20-50 u, ahead of the MK12 / M39 in role and range. Owner ruling 2026-10-08: A → A+ (section 1a). |
 | WA2000 (`wa2000`) | A+ | B+ | -3 | -0.18 | 72 damage misses the 2-hit kill through level 1 by 0.05 HP (72 x 0.75 x 0.925 = 49.95): 3 hits 1.1 s apart, perfect 1.9 s, TTK 6.2 s at 20-50 u; 5 rounds of scarce .50 AE, 11.5 / 4.75 u/s. Owner ruling 2026-10-08: B → B+ (section 1a). |
-| Panzerfaust (`panzerfaust`) | C+ | B+ | +3 | -0.36 | one 80 + 140 rocket at 35 u/s, then the tube is gone: a strafing target steps out of it, so a pickup kills 32 % of the time at average aim over 15-40 u (59 % against a stationary target): stats C+. Owner ruling 2026-10-08: C+ → B+ (section 1a). |
+| Panzerfaust (`panzerfaust`) | C+ | B+ | +3 | -0.36 | one 80 + 140 rocket at 35 u/s (scored before the owner's 70 u/s of 2026-10-08, not rescored), then the tube is gone: a strafing target steps out of it, so a pickup kills 32 % of the time at average aim over 15-40 u (59 % against a stationary target): stats C+. Owner ruling 2026-10-08: C+ → B+ (section 1a). |
 | M1100 (`m1100`) | C | B | +3 | -0.23 | the critique's 3.98 s at 10 u does not reproduce: pellets start at the muzzle (barrel 3.15 u), so about 10 of the 18 land at 10 u (34 damage a shell) and 16 at 5 u: TTK 0.87 s at 5-10 u; nothing past 20 u (range 25) |
 | Potato Cannon (`potato_cannon`) (off-map) | B | C | -3 | -0.59 | a 95-damage blast every 1.2 s from a 65 u/s lob: 2 hits even on bare players, TTK 5.3 s at 15-40 u, and 9 u/s held |
 | M79 (`m79`) | B | C | -3 | -0.53 | one 125-damage grenade per 2.6 s, lobbed at 40 u/s: a direct hit kills level 1, but a strafing target mostly steps out of the lob (a miss flies on to 52 u): TTK 5.6 s at 15-40 u; B against a stationary target |

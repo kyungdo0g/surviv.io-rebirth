@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- GL-06 loot icon, own art: telescopic rod stock, long top rail with a large sight, fat 40 mm barrel. -->
+  <path d="M16.44 104.6L40.8 80.24L44.28 83.72L19.92 108.08Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M23.98 112.14L48.34 87.78L51.24 90.68L26.88 115.04Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M10.64 105.76L15.86 100.54L32.1 116.78L26.88 122Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M54.14 81.98L60.52 75.6L70.96 91.84L64.58 98.22Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M60.52 74.44L62.26 72.7L67.48 76.76L73.28 70.96L69.22 65.74L70.96 64L76.76 70.96L67.48 80.24Z" fill="#323232"/>
+  <path d="M60.52 53.56L108.08 6L117.36 15.28L69.8 62.84Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M106.34 8.9L108.08 7.16L116.2 15.28L114.46 17.02Z" fill="#323232"/>
+  <path d="M34.42 78.5L61.1 51.82L72.7 63.42L46.02 90.1Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M35.58 70.38L92.42 13.54L96.48 17.6L39.64 74.44Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M61.1 44.86L75.02 30.94L68.06 23.98L56.46 35.58Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M67.48 28.04L69.22 26.3L72.7 29.78L70.96 31.52Z" fill="#323232"/>
+</svg>

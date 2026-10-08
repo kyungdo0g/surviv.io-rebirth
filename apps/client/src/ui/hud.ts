@@ -12,7 +12,7 @@
 // updateAnimationWidth); Hide UI hides the whole HUD (`setHidden`). The pie timer moved to pieTimer.ts.
 import { GameConfig, GameObjectDefs, type GunDef, Input } from "@rebirth/defs";
 import { type LocalPlayerState, mapBagSizes } from "@rebirth/sim";
-import { lootImageUrl, preloadLootTints, setLootImage } from "../assets/hudImages.ts";
+import { lootImageUrl, preloadLootTints, setLootImage, watchRebirthImages } from "../assets/hudImages.ts";
 import { hudItemName, itemName, t } from "../l10n/index.ts";
 import "./hud.css";
 import "./hudSm.css";
@@ -145,6 +145,8 @@ export class Hud {
         this.cb = cb;
         // rebirth: draw the tinted weapon slot icons (the variant strobes) before they are first shown
         preloadLootTints();
+        // rebirth: a new gun's slot shows its fallback icon while `pnpm assets` has not installed the owner's
+        watchRebirthImages();
         this.root = el("div", { id: "ui-game" });
         this.root.append(
             this.buildScopes(),

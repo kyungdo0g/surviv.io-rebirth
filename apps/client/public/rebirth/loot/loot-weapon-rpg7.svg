@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- RPG-7 loot icon, own art: tube with venturi bell, wooden heat shield, two grips, optic, PG-7 warhead. -->
+  <path d="M6 110.13L19.76 102.31L25.69 108.24L17.87 122Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M18.95 103.66L90.17 32.44L95.56 37.83L24.34 109.05Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M59.41 77.22L64.27 72.36L72.36 85.85L67.51 90.71Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M64.81 70.74L66.43 69.13L70.74 73.44L68.59 74.52Z" fill="#323232"/>
+  <path d="M72.36 64.27L76.68 59.95L84.77 71.28L80.46 75.6Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M40.8 78.03L63.46 55.37L72.63 64.54L49.97 87.2Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M45.93 74.52L47.54 72.9L55.1 80.46L53.48 82.07Z" fill="#323232"/>
+  <path d="M58.33 62.11L59.95 60.49L67.51 68.05L65.89 69.67Z" fill="#323232"/>
+  <path d="M50.78 65.35L53.48 62.65L55.64 64.81L52.94 67.51Z" fill="#323232"/>
+  <path d="M42.15 64.27L51.86 54.56L57.26 59.95L47.54 69.67Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M44.85 64.81L46.47 63.19L48.62 65.35L47 66.97Z" fill="#323232"/>
+  <path d="M89.9 34.33L96.37 27.85L100.15 31.63L93.67 38.1Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M94.48 27.04L95.83 19.76L103.93 11.67L113.1 7.89L119.84 6L122 6L122 8.16L120.11 14.9L116.33 24.07L108.24 32.17L100.96 33.52Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M97.99 19.76L99.61 18.14L109.86 28.39L108.24 30.01Z" fill="#323232"/>
+</svg>

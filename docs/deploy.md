@@ -19,8 +19,8 @@ with Vite.
 
 ```sh
 pnpm install
-pnpm survev:fetch                  # optional, with the next line: the original art and audio (not in the repository)
-pnpm assets
+pnpm survev:fetch                  # the original art and audio (not in the repository): needed for any sound
+pnpm assets                        # run again after every pull: it installs the new guns' icons and sounds too
 pnpm start                         # builds the client, then serves it and the game on http://127.0.0.1:8001
 ```
 
@@ -33,13 +33,18 @@ buttons and the party lobby).
 `pnpm survev:fetch` clones survev at the pinned commit into `.survev` and extracts the original client definitions
 into `research-cache/` (needs git and network access to github.com and surviv.io).
 
-The owner's art and sound for the new guns (beta) live in the gitignored `assets-user/`: the line-art sheets in
-`assets-user/source/2026-10-07-sheets/` and the recorded clips in `assets-user/audio/guns/` (see its `MANIFEST.md`).
-`pnpm assets` installs them last (`tools/assets/newGuns.ts`): it cuts each gun's loot icon out of the sheets (label
-removed, white background made transparent, fitted like the original icons; reading the WebP sheets needs `ffmpeg` and
-`ffprobe` on the PATH) and copies the clips; whatever is missing falls back to an original gun's icon or sound, so the
-game never shows a placeholder for them. After adding or changing files there, `node tools/assets/newGuns.ts`
-reinstalls just those. The guns are held as plain bars until top-down sprites (`gun-<id>-01`) exist.
+The owner's art and sound for the new guns (beta) live in the gitignored `assets-user/` (copy that folder into the
+repository root; git never brings it): the line-art sheets in `assets-user/source/2026-10-07-sheets/` and the recorded
+clips in `assets-user/audio/guns/` (see its `MANIFEST.md`). Run `pnpm assets` after every pull: it installs them last
+(`tools/assets/newGuns.ts`): it cuts each gun's loot icon out of the sheets (label removed, white background made
+transparent, fitted like the original icons) and levels each clip to the original guns of its class (reload clips are
+fitted to the reload time). Reading the WebP sheets and levelling the clips need `ffmpeg` and `ffprobe` on the PATH
+(Windows: `winget install ffmpeg`, then a new terminal); without them the clips are copied as they are. Whatever is
+missing gets a stand-in, so the game never shows a placeholder or plays nothing for them: the launchers our own drawn
+icons, the other guns an original gun's icon of the same class, and an original gun's sound of the same kind. The last
+lines of the output say what came from where (also `apps/client/public/assets/rebirth-new-guns.json`) and warn when
+`assets-user/` or ffmpeg is missing. After adding or changing files there, `node tools/assets/newGuns.ts` reinstalls
+just those.
 
 ## Docker
 

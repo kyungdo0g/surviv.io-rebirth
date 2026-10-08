@@ -101,6 +101,9 @@ const REBIRTH_ITEMS: Readonly<Record<string, string>> = {
 const rebirthHudItems: Readonly<Record<string, string>> = {
     strobe_heavy: "Heavy",
     strobe_carpet: "Carpet",
+    // the new dual pistols show the single's name, like the original duals ("M9", "G18C")
+    tec9_dual: "TEC-9",
+    vz61_dual: "vz. 61",
 };
 
 /** "game-<id>" item names */
