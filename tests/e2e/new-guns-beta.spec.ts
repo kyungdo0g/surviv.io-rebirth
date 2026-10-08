@@ -277,7 +277,7 @@ test.describe("new guns (beta) in the sandbox", () => {
         expect(errors).toEqual([]);
     });
 
-    test("Boys AT rifle: 7 rounds of 96, no reload, then discarded: the slot empties and the AK-74 is drawn", async ({
+    test("Boys AT rifle: 7 rounds at the sheet's damage, no reload, then discarded: the slot empties, the AK-74 drawn", async ({
         page,
     }) => {
         test.setTimeout(90_000);
