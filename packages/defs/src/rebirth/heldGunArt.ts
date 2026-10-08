@@ -1,18 +1,26 @@
 // Top-down held sprites drawn for the rebirth (the owner, 2026-10-08: "draw only 5 first", then the snipers and DMRs,
-// then the SMGs and machine pistols): our own art, minimal hand-written SVGs committed under
-// apps/client/public/rebirth/guns/gun-<id>-01.svg and served at /rebirth/guns/, like the rebirth buildings' images
-// (buildings.ts rebirthBuildingArt). Each is the gun seen from straight above, barrel up, butt flush with the bottom
-// edge, drawn at worldImg.scale 0.5 in its own colours (tint white): the rifles and SMGs 48 px wide like the original
-// rifle and SMG sprites (gun-m4a1-01, gun-famas-01, gun-vector-01), the bolt snipers and the sniper bullpups 60 like
-// gun-awc-01 and gun-scarssr-01, the pistol class 40, centre line x 20 (the original pistol frames are 56 wide, their
-// art at most 40). The width moves nothing in game: the anchor is the bottom centre.
+// then the SMGs and machine pistols, then two shotguns and three machine guns, the MG 42 and the DShK "menacing"): our
+// own art, minimal hand-written SVGs committed under apps/client/public/rebirth/guns/gun-<id>-01.svg and served at
+// /rebirth/guns/, like the rebirth buildings' images (buildings.ts rebirthBuildingArt). Each is the gun seen from
+// straight above, barrel up, butt flush with the bottom edge, drawn at worldImg.scale 0.5 in its own colours (tint
+// white). The frame width follows the class: the rifles, SMGs and shotguns 48 px like the original rifle, SMG and
+// shotgun sprites (gun-m4a1-01, gun-famas-01, gun-vector-01, gun-saiga-01), the bolt snipers and the sniper bullpups 60
+// like gun-awc-01 and gun-scarssr-01, the pistol class 40, centre line x 20 (the original pistol frames are 56 wide,
+// their art at most 40), the M60 and MG 42 80 and the DShK 88, centre line x 40 / 44, so the ammo box or belt on the
+// left, the bipod and the DShK's spade grips fit on both sides of the centre line. The width moves nothing in game: the
+// anchor is the bottom centre, and the client rasterises each sprite at its logical size.
+// The belt guns draw their box and belt into the one sprite, under the receiver's outline: the original belt guns'
+// bottom sprite (worldImg.magImg, gun-pkp-bot-01) is drawn at the same 0.25 body px per sprite px under the gun and
+// both hands, so it would look the same; an own sprite carries no magImg (apps/client objects/heldGun.ts), which also
+// keeps the balance sheet's borrowed gun-pkp-bot-01 off them.
 // The client's sprite manifest lists them (apps/client assets/rebirthSprites.ts); a beta new gun switches to its own
 // sprite as soon as the manifest has it (apps/client objects/heldGun.ts), and the AK-47, an original gun, gets it here
 // as a presentation deviation of its worldImg. A dual pistol is never listed: it holds its single's sprite in each hand
 // (heldGun.ts ownHeldSprite strips "_dual", so tec9_dual draws gun-tec9-01 through the tec9 entry). Hands and recoil
-// stay as they were: the sprites are drawn to sit under the existing grips; only the bullpups' own sprites get survev's
-// bullpup gun offset (HELD_GUN_ART_GUN_OFFSET), the P90's is held with the hands under it
-// (HELD_GUN_ART_HANDS_BELOW) and the AS Val's left hand moves back onto its forend (HELD_GUN_ART_LEFT_HAND_OFFSET).
+// stay as they were: the sprites are drawn to sit under the existing grips (the machine guns keep the PKP's left hand
+// 12.5 the sheet gave them); only the bullpups' own sprites get survev's bullpup gun offset (HELD_GUN_ART_GUN_OFFSET),
+// the P90's is held with the hands under it (HELD_GUN_ART_HANDS_BELOW) and the AS Val's left hand moves back onto its
+// forend (HELD_GUN_ART_LEFT_HAND_OFFSET).
 // Bars on purpose (owner, 2026-10-08), never add them here: the Mk 14 EBR ("Mk 14 EBR만 막대기로"), the Thompson M1928
 // ("Thompson M1928 막대기") and the Škorpion vz. 61 and its dual ("Škorpion vz. 61 막대기").
 // docs/research/rebirth-deviations.md "Top-down held sprites".
@@ -36,15 +44,21 @@ export const HELD_GUN_ART = {
     asval: [48, 152],
     p90: [48, 116],
     tec9: [40, 116],
+    dp12: [48, 140],
+    aa12: [48, 194],
+    m60: [80, 212],
+    mg42: [80, 218],
+    dshk: [88, 250],
 } as const satisfies Readonly<Record<string, readonly [number, number]>>;
 
 export type HeldGunArtId = keyof typeof HELD_GUN_ART;
 
 /**
- * The gun offset (body px) an own sprite is held with where it differs from the def's: the bullpups WA2000, Lynx and
- * P90, whose sprites are drawn for survev's bullpup offset (-8, 0) (.survev/shared/defs/gameObjects/gunDefs.ts famas,
- * qbb97, groza, grozas); the balance sheet gave them none, which would float the butt in front of the body and put the
- * right hand on the butt plate (the P90's 116 px sprite would end 10 body px past the bullet origin instead of 2).
+ * The gun offset (body px) an own sprite is held with where it differs from the def's: the bullpups WA2000, Lynx, P90
+ * and DP-12, whose sprites are drawn for survev's bullpup offset (-8, 0) (.survev/shared/defs/gameObjects/gunDefs.ts
+ * famas, qbb97, groza, grozas); the balance sheet gave them none, which would float the butt in front of the body and
+ * put the right hand on the butt plate (the P90's 116 px sprite would end 10 body px past the bullet origin instead
+ * of 2).
  * Client-only, like all of worldImg (objects/playerGun.ts); rebirth/newGuns.json and its bar keep the sheet's values.
  * Keyed by gun id: the client applies an entry to the own sprite only, so it acts once the gun is in HELD_GUN_ART.
  */
@@ -52,6 +66,7 @@ export const HELD_GUN_ART_GUN_OFFSET: Readonly<Partial<Record<string, { x: numbe
     wa2000: { x: -8, y: 0 },
     lynx: { x: -8, y: 0 },
     p90: { x: -8, y: 0 },
+    dp12: { x: -8, y: 0 },
 };
 
 /**

@@ -16,7 +16,7 @@ const FORBIDDEN =
     /<(text|image|linearGradient|radialGradient|filter|script|foreignObject|style|mask|use)\b|sodipodi|inkscape|xlink:href/i;
 
 describe("drawn top-down held sprites", () => {
-    it("the drawn guns: the AK-47 and 14 beta rifles, snipers, DMRs, SMGs and machine pistols", () => {
+    it("the drawn guns: the AK-47 and 19 beta rifles, snipers, DMRs, SMGs, machine pistols, shotguns and MGs", () => {
         expect(Object.keys(HELD_GUN_ART)).toEqual([
             "ak47",
             "g36c",
@@ -33,6 +33,11 @@ describe("drawn top-down held sprites", () => {
             "asval",
             "p90",
             "tec9",
+            "dp12",
+            "aa12",
+            "m60",
+            "mg42",
+            "dshk",
         ]);
         // bars on purpose (owner); a dual pistol is never listed, it shares its single's sprite
         for (const id of ["mk14", "m1928", "vz61", "vz61_dual", "tec9_dual"]) {
@@ -51,6 +56,24 @@ describe("drawn top-down held sprites", () => {
         expect(img.leftHandOffset).toEqual({ x: 0, y: 0 });
         expect(SPRITES[img.sprite]?.path).toBe("/rebirth/guns/gun-tec9-01.svg");
         expect(SPRITES["gun-tec9_dual-01.img"]).toBeUndefined();
+    });
+
+    it("the belt guns draw box and belt into their one sprite: no magImg, the sheet's PKP bottom sprite left off", () => {
+        for (const id of ["m60", "mg42", "dshk"]) {
+            const def = GameObjectDefs[id] as GunDef;
+            // the balance sheet borrowed the PKP's top and bottom sprites (rebirth/newGuns.json)
+            expect(def.worldImg.magImg?.sprite, id).toBe("gun-pkp-bot-01.img");
+            const img = heldGunImage(def);
+            expect(img.sprite, id).toBe(`gun-${id}-01.img`);
+            expect(img.magImg, id).toBeUndefined();
+            expect(img.leftHandOffset, id).toEqual({ x: 12.5, y: 0 });
+            // no bottom sprite of our own (STYLE 12.2: a later one would be a gun-<id>-bot-01 entry and file)
+            expect(SPRITES[`gun-${id}-bot-01.img`], id).toBeUndefined();
+            expect(existsSync(join(PUBLIC, `rebirth/guns/gun-${id}-bot-01.svg`)), id).toBe(false);
+        }
+        // the frames hold the box or belt, the bipod and the spade grips on both sides of the centre line
+        expect([HELD_GUN_ART.m60[0], HELD_GUN_ART.mg42[0], HELD_GUN_ART.dshk[0]]).toEqual([80, 80, 88]);
+        expect([HELD_GUN_ART.dp12[0], HELD_GUN_ART.aa12[0]]).toEqual([48, 48]);
     });
 
     it("each committed SVG exists at its served path, at its declared size, minimal and small", () => {

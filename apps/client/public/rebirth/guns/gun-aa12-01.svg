@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="194" viewBox="0 0 48 194">
+  <!-- Atchisson AA-12 held sprite, own art (surviv.io-rebirth): seen from above, barrel up, butt flush at the bottom. -->
+  <!-- one-piece slab body from the butt to the front sight; chamfered front corners -->
+  <path d="M17 16h14l4 4v168l-2 2H15l-2-2V20z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <!-- stock part: darker panel across the full inner width from the seam back, round rear cap, butt plate -->
+  <rect x="17" y="132" width="14" height="50" fill="#454545"/>
+  <circle cx="24" cy="180" r="5" fill="#000"/>
+  <rect x="9" y="188" width="30" height="6" rx="2" fill="#000"/>
+  <!-- highlight strip along the receiver top; seams at the ejection window front and where the stock part begins -->
+  <rect x="21" y="26" width="6" height="84" fill="#8f8f8f"/>
+  <path d="M13 81h22M13 130h22" stroke="#000" stroke-width="4"/>
+  <!-- rear sight with its notch -->
+  <rect x="17" y="116" width="14" height="8" rx="1" fill="#000"/>
+  <rect x="22" y="118" width="4" height="3" fill="#555555"/>
+  <!-- charging knob sticking out on the left -->
+  <path d="M6 75h7" stroke="#000" stroke-width="5"/>
+  <rect x="1" y="69" width="8" height="12" rx="2" fill="#000"/>
+  <!-- short barrel stub with its crown; front sight with a grey post -->
+  <rect x="19" y="2" width="10" height="16" fill="#000"/>
+  <rect x="18" y="0" width="12" height="5" rx="1" fill="#000"/>
+  <rect x="16" y="16" width="16" height="8" rx="1" fill="#000"/>
+  <rect x="22" y="18" width="4" height="4" fill="#8f8f8f"/>
+</svg>

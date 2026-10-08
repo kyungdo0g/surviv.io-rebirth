@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="218" viewBox="0 0 80 218">
+  <!-- MG 42 held sprite, own art: seen from above, barrel up; flared booster, slotted jacket, barbed folded bipod, brass belt left. -->
+  <!-- bakelite stock tapering to a rounded butt (under the right hand in game) -->
+  <path d="M29 186h22l-2 20q0 8-8 8h-2q-8 0-8-8z" fill="#4a3a30" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="37" y="192" width="6" height="16" fill="#35281f"/>
+  <!-- receiver with a dark centre recess -->
+  <rect x="28" y="148" width="24" height="40" rx="2" fill="#4b5057" stroke="#000" stroke-width="8"/>
+  <rect x="37" y="158" width="6" height="24" fill="#363a40"/>
+  <!-- feed tray under the front of the cover; its empty-link exit lip sticks out on the right -->
+  <rect x="22" y="120" width="42" height="8" rx="1" fill="#000"/>
+  <!-- belt on the left: link band, brass rounds parallel to the bore, pointed copper bullets forward -->
+  <path d="M3 127l3-6 3 6 3-6 3 6 3-6 3 6h7v15H3z" fill="#000" stroke="#000" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M6 129v10M12 129v10M18 129v10" stroke="#c9a04a" stroke-width="4"/>
+  <path d="M4 129l2-4 2 4zM10 129l2-4 2 4zM16 129l2-4 2 4z" fill="#8a5a2a"/>
+  <!-- feed cover: widest part of the body, the cold highlight strip; tray block where the belt enters on the left -->
+  <rect x="26" y="122" width="28" height="28" rx="2" fill="#4b5057" stroke="#000" stroke-width="8"/>
+  <rect x="37" y="126" width="6" height="20" fill="#a3b1c0"/>
+  <rect x="20" y="126" width="6" height="16" fill="#000"/>
+  <!-- cocking handle, right -->
+  <path d="M56 152h6" stroke="#000" stroke-width="5"/>
+  <rect x="60" y="146" width="8" height="12" rx="2" fill="#000"/>
+  <!-- tapered barrel jacket with a single column of oval slots -->
+  <path d="M31 24h18l2 96H29z" fill="#4b5057" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M40 41v6M40 55v6M40 69v6M40 83v6M40 97v6M40 111v6" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+  <!-- rear sight block and barrel latch (right), under the left hand -->
+  <rect x="33" y="116" width="14" height="8" fill="#000"/>
+  <rect x="55" y="104" width="6" height="14" rx="1" fill="#000"/>
+  <!-- folded bipod: legs along the jacket, barbed feet flaring out and back (the left one shows beside the hand) -->
+  <path d="M21 32h4l-2 52h-4zM55 32h4l2 52h-4z" fill="#000"/>
+  <polygon points="19,77 23,77 23,90 8,101 6,98" fill="#000"/>
+  <polygon points="61,77 57,77 57,90 72,101 74,98" fill="#000"/>
+  <!-- bipod collar behind the booster (front sight base) -->
+  <rect x="20" y="27" width="40" height="8" rx="2" fill="#000"/>
+  <!-- ribbed booster housing with three holes, flaring muzzle cone -->
+  <path d="M25 9h30v3h-2v2h2v3h-2v2h2v9H25v-9h2v-2h-2v-3h2v-2h-2z" fill="#000"/>
+  <circle cx="32" cy="22.5" r="2.5" fill="#6a7078"/>
+  <circle cx="40" cy="22.5" r="2.5" fill="#6a7078"/>
+  <circle cx="48" cy="22.5" r="2.5" fill="#6a7078"/>
+  <path d="M27 0h26l-6 10H33z" fill="#000"/>
+</svg>

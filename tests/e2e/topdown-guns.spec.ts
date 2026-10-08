@@ -4,9 +4,11 @@
 // gun offset) are held with their own committed SVG from /rebirth/guns/, at 0.25 x the sprite's logical size, in their
 // own colours, with no missing sprite and no console error; so are the SMGs and machine pistols (the P90 with the
 // bullpup offset and both hands under it, the AS Val with its left hand on the forend, the dual TEC-9 with the TEC-9's
-// sprite in each hand); then all fifteen drawn guns, the dual TEC-9 and the original M4A1, AWM-S, Vector (a bar),
-// Scorpion and P30L for comparison are held at the size the default zoom of a 1920 x 1080 screen draws them (1x scope:
-// radius 28 over 960 px, the same 2.14 camera zoom as radius 18.67 over the 640 px of the test's 1280 x 720 page, which
+// sprite in each hand); so are the shotguns and machine guns (the DP-12 with the bullpup offset, the belt guns with
+// box and belt in their one sprite and no magazine sprite, all with the sheet's left hands); then all twenty drawn
+// guns, the dual TEC-9 and the original M4A1, AWM-S, Vector (a bar), Scorpion, P30L, Saiga and PKP (with its box
+// sprite) for comparison are held at the size the default zoom of a 1920 x 1080 screen draws them (1x scope: radius
+// 28 over 960 px, the same 2.14 camera zoom as radius 18.67 over the 640 px of the test's 1280 x 720 page, which
 // renders much faster), facing right. Hooks: window.__rebirth (game, player, client, heldGun, missingSprites).
 // Screenshots: __screens__/topdown-guns.
 import { expect, type Page, test } from "@playwright/test";
@@ -31,12 +33,17 @@ const DRAWN: Readonly<Record<string, number>> = {
     asval: 152,
     p90: 116,
     tec9: 116,
+    dp12: 140,
+    aa12: 194,
+    m60: 212,
+    mg42: 218,
+    dshk: 250,
 };
 /** The dual pistols that hold a drawn sprite: their single's, one in each hand (objects/heldGun.ts ownHeldSprite). */
 const DRAWN_DUALS = ["tec9_dual"] as const;
 /**
- * The originals held next to them for comparison, by the texture they hold: their own sprite, or the Vector's
- * gun-med-01 bar (it has no held sprite of its own in 0.8.82).
+ * The originals held next to them for comparison, by the texture they hold: their own sprite (the PKP's top one, its
+ * box a second sprite under it), or the Vector's gun-med-01 bar (it has no held sprite of its own in 0.8.82).
  */
 const ORIGINALS: Readonly<Record<string, string>> = {
     m4a1: "gun-m4a1-01.img",
@@ -44,6 +51,8 @@ const ORIGINALS: Readonly<Record<string, string>> = {
     vector: "gun-med-01.img",
     scorpion: "gun-scorpion-01.img",
     p30l: "gun-p30l-01.img",
+    saiga: "gun-saiga-01.img",
+    pkp: "gun-pkp-top-01.img",
 };
 
 /** The held sprite a gun draws (a dual pistol its single's). */
@@ -82,7 +91,7 @@ async function hold(page: Page, gun: string, texture: string): Promise<void> {
 async function gunBox(page: Page): Promise<{ x: number; y: number; width: number; height: number }> {
     return page.evaluate(() => {
         const r = (window as any).__rebirth;
-        const sprite = r.client.world.renderOf(r.player.id).gunR.container.children[0];
+        const sprite = r.client.world.renderOf(r.player.id).gunR.barrel;
         const b = sprite.getBounds();
         return { x: Math.floor(b.x), y: Math.floor(b.y), width: Math.ceil(b.width), height: Math.ceil(b.height) };
     });
@@ -240,10 +249,88 @@ test.describe("top-down held sprites", () => {
         expect(errors).toEqual([]);
     });
 
-    test("all drawn guns and five originals for comparison at the 1080p default zoom, facing right", async ({
+    test("shotguns and machine guns: own SVG, the DP-12 bullpup offset, box and belt in the one sprite", async ({
         page,
     }) => {
-        test.setTimeout(480_000);
+        const errors = collectErrors(page);
+        const fetched: string[] = [];
+        page.on("response", (res) => {
+            if (res.url().includes("/rebirth/guns/") && res.ok()) fetched.push(new URL(res.url()).pathname);
+        });
+        await boot(page, "/?sandbox=1&map=main&seed=1&loot=0&give=dp12&zoom=12");
+        await faceRight(page);
+        // a colour only the drawn sprite has, and neither the grass nor the hands (the shotguns' bars are tinted brown
+        // and dark grey, the machine guns' near-black): the DP-12's grey polymer (its thin highlight strip is mostly
+        // under the left hand), the AA-12's grey highlight strip, the M60's steel receiver (its OD box is too close to
+        // the grass's shades), the MG 42's cold blue-grey highlight, the DShK's lit radiator fins
+        for (const [gun, colour] of [
+            ["dp12", 0x484848],
+            ["aa12", 0x8f8f8f],
+            ["m60", 0x555555],
+            ["mg42", 0xa3b1c0],
+            ["dshk", 0x6a7078],
+        ] as const) {
+            await hold(page, gun, textureOf(gun));
+            // the left hand at rest: the sheet's offset (the machine guns keep the PKP's 12.5)
+            const lho = { dp12: 7, aa12: 8, m60: 12.5, mg42: 12.5, dshk: 12.5 }[gun];
+            await expect
+                .poll(() =>
+                    page.evaluate(() => {
+                        const r = (window as any).__rebirth;
+                        return r.client.world.renderOf(r.player.id).handL.position.x as number;
+                    }),
+                )
+                .toBeCloseTo(lho, 1);
+            await page.waitForTimeout(400);
+            const state = await page.evaluate(() => {
+                const r = (window as any).__rebirth;
+                const view = r.client.world.renderOf(r.player.id);
+                return {
+                    height: r.heldGun(r.player.id).height as number,
+                    tint: view.gunR.barrel.tint as number,
+                    shown: view.gunR.container.children.filter((c: any) => c.visible).length as number,
+                    magTop: view.gunR.magTop as boolean,
+                    posR: { x: view.gunR.container.position.x as number, y: view.gunR.container.position.y as number },
+                    leftVisible: view.gunL.container.visible as boolean,
+                    gunOverHand: view.handR.children.at(-1) === view.gunR.container,
+                    handL: { x: view.handL.position.x as number, y: view.handL.position.y as number },
+                };
+            });
+            // 0.25 x the logical height, give or take the raster's rounding up to whole texels (textures.ts: at 0.75
+            // texels per px the AA-12's 194 px become 146 texels, so the texture reports 194.67)
+            expect(state.height, gun).toBeCloseTo(DRAWN[gun]! * 0.25, 0);
+            expect(state.tint, gun).toBe(0xffffff);
+            // the barrel sprite only: no magazine sprite (the sheet's borrowed gun-pkp-bot-01 stays off the belt guns)
+            expect(state.shown, gun).toBe(1);
+            expect(state.magTop, gun).toBe(false);
+            expect(state.leftVisible, gun).toBe(false);
+            // the hand offset (-4.25, -1.75), plus survev's bullpup (-8, 0) for the DP-12's own sprite
+            expect(state.posR.x, gun).toBeCloseTo(-4.25 + (gun === "dp12" ? -8 : 0), 6);
+            expect(state.posR.y, gun).toBeCloseTo(-1.75, 6);
+            expect(state.gunOverHand, gun).toBe(false);
+            expect(state.handL.x, gun).toBeCloseTo(lho, 1);
+            expect(state.handL.y, gun).toBeCloseTo(0, 1);
+            const png = await page.screenshot({ clip: await gunBox(page), path: `${SCREENS}/${gun}-close.png` });
+            expect(pixelsNear(png, colour, 16), `${gun}: ${colour.toString(16)} pixels`).toBeGreaterThan(20);
+            expect(pixelsNear(png, 0xff00ff, 30), `${gun}: placeholder pixels`).toBe(0);
+        }
+        expect(fetched).toEqual(
+            expect.arrayContaining([
+                "/rebirth/guns/gun-dp12-01.svg",
+                "/rebirth/guns/gun-aa12-01.svg",
+                "/rebirth/guns/gun-m60-01.svg",
+                "/rebirth/guns/gun-mg42-01.svg",
+                "/rebirth/guns/gun-dshk-01.svg",
+            ]),
+        );
+        expect(await missing(page)).toEqual([]);
+        expect(errors).toEqual([]);
+    });
+
+    test("all drawn guns and seven originals for comparison at the 1080p default zoom, facing right", async ({
+        page,
+    }) => {
+        test.setTimeout(600_000);
         const errors = collectErrors(page);
         await boot(page, `/?sandbox=1&map=main&seed=1&loot=0&give=ak47&zoom=${(28 * 640) / 960}`);
         await faceRight(page);
@@ -257,7 +344,8 @@ test.describe("top-down held sprites", () => {
                 const r = (window as any).__rebirth;
                 return r.worldToScreen(r.visualPos(r.player.id)) as { x: number; y: number };
             });
-            // wide enough for the longest sniper (the Boys: muzzle ~70 body px = 150 screen px ahead of the centre)
+            // wide enough for the longest guns (the Boys' muzzle ~70 body px = 150 screen px ahead of the centre, the
+            // DShK's ~3 body px further)
             const png = await page.screenshot({
                 path: `${SCREENS}/${gun}.png`,
                 clip: { x: Math.round(me.x) - 80, y: Math.round(me.y) - 60, width: 290, height: 120 },

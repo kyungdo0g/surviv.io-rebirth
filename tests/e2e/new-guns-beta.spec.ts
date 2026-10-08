@@ -1,5 +1,6 @@
 // The owner's new guns (beta, 2026-10-07) in the loopback sandbox: one gun per class from ?give=<gun> is held as a
-// plain bar sized by its barrel (no top-down art yet), fires at a dummy, and every body hit deals the balance sheet's
+// plain bar sized by its barrel, or by its own top-down sprite once one is drawn (packages/defs rebirth/heldGunArt.ts;
+// tests/e2e/topdown-guns.spec.ts checks those in detail), fires at a dummy, and every body hit deals the balance sheet's
 // damage (docs/design/new-gun-stats.json; the falloff over the distance the bullet travelled, as the sim applies it).
 // The RPG-7's rocket hits for its direct damage, then explodes, trailing and puffing smoke; the Boys AT rifle fires its
 // 7 rounds and is discarded (the slot empties, the discard sound plays); the DShK slows its carrier. Also: the owner's
@@ -11,6 +12,7 @@
 // Screenshots: __screens__/new-guns-beta.
 import { readFileSync } from "node:fs";
 import { expect, type Page, test } from "@playwright/test";
+import { HELD_GUN_ART, type HeldGunArtId } from "../../packages/defs/src/rebirth/heldGunArt.ts";
 import { decodePng } from "../../tools/assets/png.ts";
 import { boot, collectErrors, killFeed } from "./m4-helpers.ts";
 
@@ -175,21 +177,28 @@ async function heldGun(page: Page): Promise<{ texture: string; height: number } 
 
 test.describe("new guns (beta) in the sandbox", () => {
     for (const s of SAMPLE) {
-        test(`${s.gun}: held as a bar, named, each body hit deals the sheet's ${sheetDamage(s.gun)}`, async ({
+        test(`${s.gun}: held (bar or own sprite), named, each body hit deals the sheet's ${sheetDamage(s.gun)}`, async ({
             page,
         }) => {
             const errors = collectErrors(page);
             const dummy = await sandbox(page, s.gun, "&zoom=14");
             expect(await page.evaluate(() => (window as any).__rebirth.local.weapons[0].type)).toBe(s.gun);
             await expect(page.locator("#ui-weapon-id-1 .ui-weapon-name")).toHaveText(s.name);
-            // a plain bar (an original bar sprite, never the placeholder), 11-15 sprite px per unit of barrel
+            // a drawn gun: its own top-down sprite at 0.25 x its logical height (give or take the raster's whole
+            // texels); else a plain bar (an original bar sprite, never the placeholder), 11-15 sprite px per unit of
+            // barrel
+            const drawn: readonly [number, number] | undefined = HELD_GUN_ART[s.gun as HeldGunArtId];
             await expect
                 .poll(async () => (await heldGun(page))?.texture, { timeout: 5_000 })
-                .toMatch(/^gun-(short|med|long)-01\.img$/);
+                .toMatch(drawn ? `gun-${s.gun}-01.img` : /^gun-(short|med|long)-01\.img$/);
             const held = (await heldGun(page))!;
-            const perUnit = held.height / SHEET.guns[s.gun].gun.barrelLength;
-            expect(perUnit, s.gun).toBeGreaterThan(10.5);
-            expect(perUnit, s.gun).toBeLessThan(15);
+            if (drawn) {
+                expect(held.height, s.gun).toBeCloseTo(drawn[1] * 0.25, 0);
+            } else {
+                const perUnit = held.height / SHEET.guns[s.gun].gun.barrelLength;
+                expect(perUnit, s.gun).toBeGreaterThan(10.5);
+                expect(perUnit, s.gun).toBeLessThan(15);
+            }
             await recordHits(page, dummy);
             await recordSounds(page);
             await aimAt(page, dummy);

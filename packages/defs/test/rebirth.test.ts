@@ -117,11 +117,27 @@ describe("rebirth balance deviations", () => {
             { id: "asval", sprite: "gun-asval-01.img", size: [48, 152] },
             { id: "p90", sprite: "gun-p90-01.img", size: [48, 116] },
             { id: "tec9", sprite: "gun-tec9-01.img", size: [40, 116] },
+            { id: "dp12", sprite: "gun-dp12-01.img", size: [48, 140] },
+            { id: "aa12", sprite: "gun-aa12-01.img", size: [48, 194] },
+            { id: "m60", sprite: "gun-m60-01.img", size: [80, 212] },
+            { id: "mg42", sprite: "gun-mg42-01.img", size: [80, 218] },
+            { id: "dshk", sprite: "gun-dshk-01.img", size: [88, 250] },
         ]);
         // the beta guns keep the balance sheet's held image in their defs (the client switches them, heldGun.ts): its
-        // bar, or the AWM-S art it borrowed for the Hecate II and the Lynx; the own sprites' overrides are client-only
-        for (const id of ["g36c", "m16a4", "sig550", "g3", "fal", "wa2000", "m200", "boys", "bizon", "asval", "p90"]) {
+        // bar, or the AWM-S art it borrowed for the Hecate II and the Lynx, or the PKP's for the belt guns; the own
+        // sprites' overrides are client-only
+        for (const id of [
+            ...["g36c", "m16a4", "sig550", "g3", "fal", "wa2000", "m200", "boys"],
+            ...["bizon", "asval", "p90", "dp12", "aa12"],
+        ]) {
             expect(getDefOfType("gun", id).worldImg.sprite, id).toMatch(/^gun-(med|long)-01\.img$/);
+        }
+        for (const id of ["m60", "mg42", "dshk"]) {
+            expect(getDefOfType("gun", id).worldImg, id).toMatchObject({
+                sprite: "gun-pkp-top-01.img",
+                leftHandOffset: { x: 12.5, y: 0 },
+                magImg: { sprite: "gun-pkp-bot-01.img" },
+            });
         }
         for (const id of ["tec9", "tec9_dual"])
             expect(getDefOfType("gun", id).worldImg.sprite, id).toBe("gun-short-01.img");
@@ -130,10 +146,11 @@ describe("rebirth balance deviations", () => {
             wa2000: { x: -8, y: 0 },
             lynx: { x: -8, y: 0 },
             p90: { x: -8, y: 0 },
+            dp12: { x: -8, y: 0 },
         });
         expect(HELD_GUN_ART_HANDS_BELOW).toEqual({ p90: true });
         expect(HELD_GUN_ART_LEFT_HAND_OFFSET).toEqual({ asval: { x: 4, y: 0 } });
-        for (const id of ["wa2000", "lynx", "p90"]) {
+        for (const id of ["wa2000", "lynx", "p90", "dp12"]) {
             expect(getDefOfType("gun", id).worldImg.gunOffset, id).toBeUndefined();
         }
         expect(getDefOfType("gun", "p90").worldImg.handsBelow).toBeUndefined();

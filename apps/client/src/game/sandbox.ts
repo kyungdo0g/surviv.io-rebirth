@@ -517,7 +517,8 @@ function exposeM6(client: GameClient): void {
     globals.playerBleeds = (id: number) => (client.world?.renderOf(id) as PlayerRender | undefined)?.bleeds ?? 0;
     /** the right-hand gun sprite a player's view draws: texture id, drawn length in sprite px (rebirth bar guns) */
     globals.heldGun = (id: number) => {
-        const sprite = (client.world?.renderOf(id) as any)?.gunR?.container?.children?.[0];
+        // the barrel sprite, not the container's first child: a magazine drawn under the gun goes first (the PKP's box)
+        const sprite = (client.world?.renderOf(id) as any)?.gunR?.barrel;
         if (!sprite?.texture) return null;
         return { texture: sprite.texture.label as string, height: sprite.texture.height * Math.abs(sprite.scale.y) };
     };
