@@ -149,19 +149,31 @@ export interface LevelResult {
     gainDb: number;
 }
 
+/** The two ffmpeg steps levelClip runs (a test replaces them). */
+export interface ClipTools {
+    process: (src: string, dest: string, p: Processing) => void;
+    measure: (file: string) => number | undefined;
+}
+
+const FFMPEG_TOOLS: ClipTools = { process: processClip, measure: measureLoudness };
+
 /**
  * Levels `src` into `dest` so its file loudness reaches `want` LUFS (keeping any tempo / end in `fit`); returns
  * undefined when the source cannot be measured. A clip already within LEVEL_TOLERANCE that needs no fitting is copied
  * as it is; any other is written, measured again and corrected three times at most, since re-encoding (the encoder's
- * low-pass takes some of the K-weighted top end) and the limiter on a raised clip shift its loudness.
+ * low-pass takes some of the K-weighted top end) and the limiter on a raised clip shift its loudness. The corrections
+ * need not converge (the soft clipper switches on with any raise, and the limiter flattens a hot clip), so the pass
+ * that came closest is the one written: the Mk 14 switch reached 0.28 LU from its target on its second pass and
+ * ended 0.68 LU off on its fourth, the AA-12 shot 0.55 on its third and 0.85 on its fourth.
  */
 export function levelClip(
     src: string,
     dest: string,
     want: number,
     fit: Pick<Processing, "tempo" | "endAt"> = { tempo: 1 },
+    tools: ClipTools = FFMPEG_TOOLS,
 ): LevelResult | undefined {
-    const before = measureLoudness(src);
+    const before = tools.measure(src);
     if (before === undefined) return undefined;
     const clamp = (g: number) => Math.max(-MAX_GAIN_DB, Math.min(MAX_GAIN_DB, g));
     if (Math.abs(want - before) <= LEVEL_TOLERANCE && fit.tempo === 1 && fit.endAt === undefined) {
@@ -169,14 +181,21 @@ export function levelClip(
         return { before, after: before, gainDb: 0 };
     }
     let gainDb = clamp(want - before);
-    processClip(src, dest, { ...fit, gainDb });
-    let after = measureLoudness(dest) ?? before + gainDb;
+    tools.process(src, dest, { ...fit, gainDb });
+    let after = tools.measure(dest) ?? before + gainDb;
+    let best = { gainDb, after };
     for (let pass = 0; pass < 3 && Math.abs(want - after) > PASS_TOLERANCE; pass++) {
         const next = clamp(gainDb + (want - after));
         if (next === gainDb) break;
         gainDb = next;
-        processClip(src, dest, { ...fit, gainDb });
-        after = measureLoudness(dest) ?? after;
+        tools.process(src, dest, { ...fit, gainDb });
+        after = tools.measure(dest) ?? after;
+        if (Math.abs(want - after) < Math.abs(want - best.after)) best = { gainDb, after };
+    }
+    if (best.gainDb !== gainDb) {
+        gainDb = best.gainDb;
+        tools.process(src, dest, { ...fit, gainDb });
+        after = tools.measure(dest) ?? best.after;
     }
     return { before, after, gainDb: Number(gainDb.toFixed(2)) };
 }

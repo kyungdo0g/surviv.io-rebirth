@@ -151,6 +151,27 @@ describe("sound roles and loudness targets", () => {
         expect(fitReload(7.01, 4)).toEqual({ tempo: MAX_TEMPO, endAt: 4 });
         expect(fitReload(2, 0)).toEqual({ tempo: 1 });
     });
+
+    it("the levelling passes need not converge: the closest one is written, not the last", () => {
+        // the Mk 14 switch clip's curve (review, 2026-10-08): -14.3 LUFS, no soft clip up to 0 dB of gain (the limiter
+        // alone takes 2.8 LU off), the soft clipper's jump above it; target -16.18
+        const curve = (g: number) => (g > 0 ? -15.9 + 0.6 * g : -17.1 + 0.53 * g);
+        const written: number[] = [];
+        let last = 0;
+        const tools = {
+            process: (_src: string, _dest: string, p: { gainDb: number }) => {
+                written.push(p.gainDb);
+                last = p.gainDb;
+            },
+            measure: (file: string) => (file === "src.mp3" ? -14.3 : Number(curve(last).toFixed(2))),
+        };
+        const res = levelClip("src.mp3", "dest.mp3", -16.18, { tempo: 1 }, tools)!;
+        // passes: -1.88 -> -18.1, 0.04 -> -15.88, -0.26 -> -17.24, 0.8 -> -15.42; the second is the closest
+        expect(written).toHaveLength(5);
+        expect(written.at(-1)).toBeCloseTo(0.04, 6);
+        expect(res.gainDb).toBe(0.04);
+        expect(res.after).toBeCloseTo(-15.88, 2);
+    });
 });
 
 describe.runIf(hasFfmpeg())("levelling a clip (ffmpeg)", () => {
@@ -173,7 +194,8 @@ describe.runIf(hasFfmpeg())("levelling a clip (ffmpeg)", () => {
         src,
     ]);
 
-    it("lowers and raises a clip to its target within 0.6 LU, and fits its length", () => {
+    // up to a dozen ffmpeg runs: the default 5 s timed out once with the other test files running in parallel
+    it("lowers and raises a clip to its target within 0.6 LU, and fits its length", { timeout: 60_000 }, () => {
         const before = measureLoudness(src)!;
         expect(before).toBeLessThan(-5);
         for (const want of [before - 4, before + 4]) {
