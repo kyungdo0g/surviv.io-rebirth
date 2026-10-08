@@ -77,7 +77,7 @@ export const FIRESTATION_LAYOUT: RebirthBuildingLayout = {
         { min: { x: 3.5, y: -1 }, max: { x: 19.5, y: 12.5 }, floor: "crew" },
         { min: { x: 13.5, y: 6.5 }, max: { x: 19.5, y: 12.5 }, floor: "tower" },
     ],
-    outdoor: [{ min: { x: -19.5, y: -17.5 }, max: { x: 3.5, y: -12.5 }, floor: "apron" }],
+    outdoor: [{ min: { x: -20, y: -17.5 }, max: { x: 3.5, y: -12.5 }, floor: "apron" }],
 };
 
 export const FIRESTATION_ART: RebirthBuildingArt = layoutArt(
@@ -96,7 +96,7 @@ export function firestation(known: (id: string) => boolean): BuildingDef {
         map: {
             display: true,
             shapes: [
-                { collider: box(-19.5, -17.5, 3.5, -13), color: 0x5f6366 },
+                { collider: box(-20, -17.5, 3.5, -13), color: 0x5f6366 },
                 { collider: box(-20, -13, 20, 13), color: 0xcf2e28 },
                 { collider: box(-17, -13, -9, -11), color: 0xf2b705 },
                 { collider: box(-6, -13, 2, -11), color: 0xf2b705 },
@@ -112,7 +112,7 @@ export function firestation(known: (id: string) => boolean): BuildingDef {
                 { type: "tile", collision: [box(3.5, -12.5, 19.5, -1)] },
                 { type: "house", collision: [box(3.5, -1, 19.5, 12.5)] },
                 { type: "container", collision: [box(13.5, 6.5, 19.5, 12.5)] },
-                { type: "asphalt", collision: [box(-19.5, -17.5, 3.5, -12.5)] },
+                { type: "asphalt", collision: [box(-20, -17.5, 3.5, -12.5)] },
             ],
             imgs: [
                 {

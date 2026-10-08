@@ -115,8 +115,17 @@ test.describe("rebirth buildings", () => {
             await boot(page, `/?building=${type}&seed=1&zoom=${zoom}`);
             expect(await page.evaluate(() => (window as any).__rebirth.showcase.mapName)).toBe(map);
             await standAt(page, type, outside[0], outside[1]);
+            // the camera on the building, not the player, for the whole roof (window.__rebirth.cameraAt)
+            await page.evaluate((type) => {
+                const r = (window as any).__rebirth;
+                const root = r.game.generation.objects.find((o: any) => o.parentId === 0 && o.type === type);
+                r.cameraAt = { x: root.pos.x, y: root.pos.y };
+            }, type);
             await page.waitForTimeout(1500);
             await page.screenshot({ path: `${SCREENS}/${type}-outside.png` });
+            await page.evaluate(() => {
+                (window as any).__rebirth.cameraAt = undefined;
+            });
             await standAt(page, type, inside[0], inside[1]);
             await page.waitForTimeout(1500);
             await page.screenshot({ path: `${SCREENS}/${type}-inside.png` });
