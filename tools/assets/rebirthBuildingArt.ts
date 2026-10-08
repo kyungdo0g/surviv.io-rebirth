@@ -22,6 +22,7 @@ import { blockhouseCeiling, blockhouseFloor } from "./rebirthArt/blockhouse.ts";
 import { clinicCeiling, clinicFloor } from "./rebirthArt/clinic.ts";
 import { firestationCeiling, firestationFloor } from "./rebirthArt/firestation.ts";
 import { libraryCeiling, libraryFloor } from "./rebirthArt/library.ts";
+import { militarySvgs } from "./rebirthArt/military/index.ts";
 import { outpostCeiling, outpostFloor } from "./rebirthArt/outpost.ts";
 import { radioCeiling, radioFloor } from "./rebirthArt/radio.ts";
 import { hex } from "./rebirthArt/svg.ts";
@@ -58,6 +59,7 @@ export function rebirthBuildingSvgs(): Map<string, string> {
         out.set(art.floor, blockhouseFloor());
         out.set(art.ceiling, blockhouseCeiling(hex(f.color)));
     }
+    for (const [sprite, text] of militarySvgs()) out.set(sprite, text);
     return out;
 }
 

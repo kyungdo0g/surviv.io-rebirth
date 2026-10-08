@@ -89,8 +89,9 @@ describe("MOVE scenarios", () => {
         // with seed 18, replaced it)
         expect(houses.length).toBe(8);
         // three red houses of main 12345 the bot walks into (the rebirth's bigger map: 8 red houses; at house 5 the bot
-        // explores the other way and never meets the player, so s = 6 replaced it)
-        for (const s of [3, 6, 7]) {
+        // explores the other way and never meets the player, so s = 6 replaced it; the military base moved the houses
+        // again, so s = 1, 4, 6)
+        for (const s of [1, 4, 6]) {
             const game = mainGame({ minPlayers: 99 });
             const hb = houses[s % houses.length];
             const def = getMapObjectDef(hb.type);
@@ -147,8 +148,9 @@ describe("MOVE scenarios", () => {
         // with seed 18, replaced it)
         expect(houses.length).toBe(8);
         // three red houses of main 12345 the bot walks into (the rebirth's bigger map: 8 red houses; at house 5 the bot
-        // explores the other way and never meets the player, so s = 6 replaced it)
-        for (const s of [3, 6, 7]) {
+        // explores the other way and never meets the player, so s = 6 replaced it; the military base moved the houses
+        // again, so s = 1, 4, 6)
+        for (const s of [1, 4, 6]) {
             const game = mainGame({ minPlayers: 99 });
             const hb = houses[s % houses.length];
             const def = getMapObjectDef(hb.type);

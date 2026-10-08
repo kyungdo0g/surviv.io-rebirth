@@ -11,8 +11,8 @@ import {
     child,
     layoutArt,
     openingChildren,
-    type RebirthBuildingArt,
     type RebirthBuildingLayout,
+    type RoofedBuildingArt,
     wallChildren,
 } from "./layout.ts";
 
@@ -57,7 +57,7 @@ export const ARSENAL_LAYOUT: RebirthBuildingLayout = {
     ],
 };
 
-export const ARSENAL_ART: RebirthBuildingArt = layoutArt(
+export const ARSENAL_ART: RoofedBuildingArt = layoutArt(
     ARSENAL_LAYOUT,
     "map-building-arsenal-floor-01.img",
     "map-building-arsenal-ceiling-01.img",

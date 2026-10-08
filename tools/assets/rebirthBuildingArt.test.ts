@@ -12,10 +12,11 @@ describe("rebirth building art", () => {
         const svgs = rebirthBuildingSvgs();
         for (const art of rebirthBuildingArt()) {
             // the floor image is larger than the roof's where an outdoor apron widens it
-            for (const [sprite, size] of [
+            const images: Array<readonly [string, readonly [number, number]]> = [
                 [art.floor, art.floorSize ?? art.size],
-                [art.ceiling, art.size],
-            ] as const) {
+            ];
+            if (art.ceiling) images.push([art.ceiling, art.size]);
+            for (const [sprite, size] of images) {
                 const file = join(REBIRTH_ART_DIR, rebirthArtFile(sprite));
                 expect(existsSync(file), file).toBe(true);
                 const text = readFileSync(file, "utf8");

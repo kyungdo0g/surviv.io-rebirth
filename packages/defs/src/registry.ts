@@ -51,8 +51,10 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * · 21: bigger maps and more rebirth buildings (the owner, 2026-10-08; rebirth/mapScale.ts, rebirth/buildings): the
  * Emote request's position spans 0..2048 (was the original's 0..1024, which clamped pings on the 1034-unit 50v50
  * map); the new rebirth map types follow outpost_01b as the last map types.
+ * · 22: the military bases (the owner, 2026-10-08; rebirth/buildings/military): 22 map types follow blockhouse_01b as
+ * the last map types. No record layout changed.
  */
-export const PROTOCOL_SCHEMA_VERSION = 21;
+export const PROTOCOL_SCHEMA_VERSION = 22;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

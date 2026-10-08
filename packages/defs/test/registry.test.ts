@@ -68,8 +68,8 @@ describe("PROTOCOL_HASH", () => {
         // wave; 15: the AP Rounds bullet bit and the Indomitable Spirit player bit; 16: the Join loadout; 17: the
         // potato-faction gold drop's map types; 18: the 50v50 shooter minimap reveal; 19: the club secret room's gun box
         // map type (deposit_box_02_club); 20: the rebirth buildings' map types; 21: the Emote request's 0..2048
-        // positions (the bigger 50v50 map) and the new rebirth buildings' map types
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(21);
+        // positions (the bigger 50v50 map) and the new rebirth buildings' map types; 22: the military bases' map types
+        expect(PROTOCOL_SCHEMA_VERSION).toBe(22);
         expect(PROTOCOL_HASH).toBe(
             computeProtocolHash(PROTOCOL_SCHEMA_VERSION, GameObjectRegistry.types, MapObjectRegistry.types),
         );

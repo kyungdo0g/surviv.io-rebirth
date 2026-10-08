@@ -10,8 +10,8 @@ import {
     box,
     child,
     openingChildren,
-    type RebirthBuildingArt,
     type RebirthBuildingLayout,
+    type RoofedBuildingArt,
     wallChildren,
 } from "./layout.ts";
 
@@ -63,7 +63,7 @@ export const CLINIC_LAYOUT: RebirthBuildingLayout = {
     ],
 };
 
-export const CLINIC_ART: RebirthBuildingArt = {
+export const CLINIC_ART: RoofedBuildingArt = {
     floor: "map-building-clinic-floor-01.img",
     ceiling: "map-building-clinic-ceiling-01.img",
     size: artSize(CLINIC_LAYOUT),

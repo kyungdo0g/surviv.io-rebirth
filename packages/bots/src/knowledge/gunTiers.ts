@@ -100,12 +100,13 @@ const ROWS: readonly Row[] = [
     // snipers: the AWM-S, Hecate, M200 and Lynx one-shot level 1 and the Barrett two-hits any armour (S-aim). Owner
     // 2026-10-08: every other sniper one tier up; the Mosin (stats C+: 3 hits through level 1) A+ with the SV-98
     ["awc", "S-aim", 0.26, true], ["sv98", "A+", 0.32, true], ["mosin", "A+", 0.33, true], ["scout_elite", "A-", 0.31, true],
-    ["blr", "B+", 0.36, false], ["model94", "B", 0.33, false],
+    // (the military base's vault crate rolls tier_snipers: the BLR, the Model 94 and the Mk45G reach the classic map)
+    ["blr", "B+", 0.36, true], ["model94", "B", 0.33, true],
     // DMRs: the MK12 and the M39 are the owner's low DMRs (A- after the 2026-10-08 bump of every DMR and sniper); the
     // VSS, Mk45G and Mk 14 score no better than the M39, so A- too; the Garand reaches the top band (S-aim)
     ["mk12", "A-", 0.36, true], ["m39", "A-", 0.39, true], ["garand", "S-aim", 0.32, true], ["vss", "A-", 0.4, true],
     // (round 6 loot handoff: the SVD and the SCAR-SSR reach the classic map in the gold drop, the L86 in tier 1 air drops)
-    ["svd", "A+", 0.36, true], ["scarssr", "S", 0.41, true], ["l86", "A+", 0.4, true], ["mkg45", "A-", 0.37, false],
+    ["svd", "A+", 0.36, true], ["scarssr", "S", 0.41, true], ["l86", "A+", 0.4, true], ["mkg45", "A-", 0.37, true],
     // assault rifles: the AN-94 leads; the SCAR-H's 20-round magazine drops it to B+; the AK-47 is pinned at B (item 43)
     ["scar", "B+", 0.4, true], ["m4a1", "A-", 0.42, true], ["famas", "A-", 0.44, true], ["grozas", "A-", 0.46, true],
     ["ak47", "B", 0.48, true], ["hk416", "B", 0.51, true], ["groza", "B", 0.51, true],

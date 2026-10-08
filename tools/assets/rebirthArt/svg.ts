@@ -148,26 +148,38 @@ export function thresholds(fr: Frame, layout: RebirthBuildingLayout, color: stri
     return out.join("");
 }
 
-export function svg(fr: Frame, body: string): string {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${fr.w}" height="${fr.h}" viewBox="0 0 ${fr.w} ${fr.h}">${body}</svg>\n`;
+/** An SVG of the frame; `ppu` below PX draws it smaller (the same drawing, `ppu` pixels per world unit). */
+export function svg(fr: Frame, body: string, ppu = PX): string {
+    const w = f2((fr.w * ppu) / PX);
+    const h = f2((fr.h * ppu) / PX);
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${fr.w} ${fr.h}">${body}</svg>\n`;
 }
 
-/** A floor image: the outdoor rooms, the rooms with their grids, `extra`, thresholds, then the walls on top. */
+/** The frame of a world box centred on (cx, cy), `w` x `h` units. */
+export function boxFrame(cx: number, cy: number, w: number, h: number): Frame {
+    return { ox: cx - w / 2, oy: cy + h / 2, w: w * PX, h: h * PX };
+}
+
+/**
+ * A floor image: the outdoor rooms, the rooms with their grids, `extra`, thresholds, then the walls on top; `view` draws
+ * only that window of it (one image of a floor split in several).
+ */
 export function floor(
     layout: RebirthBuildingLayout,
     palette: FloorPalette,
     wallFill: string | Readonly<Partial<Record<WallMaterial, string>>>,
     wallOutline: string,
     extra = "",
+    view?: Frame,
 ): string {
-    const fr = floorFrameOf(layout);
+    const fr = view ?? floorFrameOf(layout);
     const rooms = [...(layout.outdoor ?? []), ...layout.rooms].map(
         (r) =>
             rect(fr, r.min.x, r.min.y, r.max.x, r.max.y, `fill="${palette[r.floor]?.base}"`) +
             gridLines(fr, r, palette),
     );
     let walled = thresholds(fr, layout, "#00000033") + walls(fr, layout, wallFill, wallOutline);
-    if (layout.outdoor?.length) {
+    if (layout.outdoor?.length && !view) {
         // the floor runs on over the outdoor ground: clip the walls' outlines and the thresholds to the roof frame, or
         // they would show past the roof's edge on that side
         const rf = frameOf(layout);

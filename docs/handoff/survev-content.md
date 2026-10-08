@@ -310,6 +310,24 @@ additions (`packages/defs/src/rebirth/buildings.ts`, `docs/research/rebirth-devi
   `nav.basements.test.ts` expects the mansion cellar (choose 3), `move-scenarios.test.ts` expects 8 red houses and
   uses houses 3, 6 and 7.
 
+## Owner request (2026-10-08, last): the military base
+
+- `packages/defs/src/rebirth/buildings/military/`: one structure per base (`military_base_01` on main,
+  `military_base_01r` / `_01b` on 50v50 in their own half, `REBIRTH_OWN_HALF_BUILDINGS`), the walled compound with the
+  parade ground, HQ, reviewing stand, infirmary (heal wards with the clinic's effect), armory, storehouse, garage,
+  gatehouse and two towers on layer 0, a 72 x 50 basement (Command, Magazine, vault, depot, motor pool, a sapper tunnel)
+  on layer 1, five stairs. Parts are authored in the compound frame (`part.ts` `fromWorld`); long walls are runs split
+  into the existing wall lengths (`hRun` / `vRun`); `structure.ts` builds the 22 defs (schema 22) and lists the images
+  (one roofless art record each). Only existing hooks: no sim change beyond the placement rule already merged.
+- Art: `tools/assets/rebirthArt/military/` (a drawer per sprite, `index.ts` dispatches; `svg()` takes a pixels-per-unit
+  for the 16 px markings and 8 px dark roofs). 49 SVGs (43 + the red and blue HQ roofs, stand roofs and emblems).
+- Tests: `packages/sim/test/militaryBase.test.ts` (structure data and the mechanics in the real sim on main 12345 and
+  both faction 7 bases), `rebirthBuildings.test.ts` (the 19 buildings' layouts), map validation, the golden hash (the
+  base is placed before the Hydra, which moves on main 12345), e2e.
+- For the bots (lead-owned, sent as a patch): `nav.basements.test.ts` adds `military_base_01` (21 portals),
+  `move-scenarios.test.ts` uses houses 1, 4 and 6, `knowledge/gunTiers.ts` marks the BLR, Model 94 and Mk45G as main-map
+  guns (the vault's `mil_crate_05` rolls `tier_snipers`).
+
 ## Changes needed in the lead's files
 
 All closed: applied by the lead in 2acdac0 (2026-10-07). Two items differ from the patch here: the coconut and tomato
