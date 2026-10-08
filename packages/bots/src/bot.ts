@@ -150,8 +150,9 @@ export class Bot {
             persona: this.persona,
             skill: this.skill,
             personaRng,
+            seed: opts.seed,
         });
-        this.follower = new PathFollower(this.rng);
+        this.follower = new PathFollower(this.rng, this.brain.doors);
         const human = this.params.motor.model === "human";
         // the motor's own stream (like the class picker's): motor noise never shifts the brain's decisions
         const motorRng = createRng(opts.seed ^ 0x9e3779b9);
@@ -327,9 +328,10 @@ export class Bot {
         if (this.stick) {
             const self = this.model.self;
             this.nearColliders = [];
+            // (doors: the closed door the path runs into is walked up to and opened, not slid along: walksInto)
             for (const o of this.model.obstacles)
                 if (o.blocksMove && sameLayer(self.layer, o.view.layer) && distanceToCollider(self.pos, o.col) < 3)
-                    this.nearColliders.push(o.col);
+                    if (!this.follower.walksInto(o)) this.nearColliders.push(o.col);
         }
         if (it.stop) {
             this.moveDir = null;

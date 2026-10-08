@@ -77,6 +77,13 @@ export interface BrainFeatures {
     dmrFit: boolean;
     /** experts quick-switch after a shot with a slow-cycling gun (brain/quickSwitch.ts; sim switch rules) */
     quickSwitch: boolean;
+    // bot interactions (task 50: "bots open and close doors like players")
+    /**
+     * doors: open the doors on the way without stopping against them (nav/follower.ts), close the door behind when
+     * staying in a building to loot, heal or hold, never on a following teammate, step out of doorways, and take a door
+     * heard or found opened as a sign of someone (brain/doors.ts, brain/doorClose.ts, perception/doorWatch.ts)
+     */
+    doors: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -109,6 +116,7 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "potatoGuns",
     "dmrFit",
     "quickSwitch",
+    "doors",
 ];
 
 export type BrainName = "baseline" | "smart";
