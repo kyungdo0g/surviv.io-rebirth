@@ -8,6 +8,7 @@ import {
     AIRSTRIKE_VARIANTS,
     airstrikeBombReach,
     airstrikeZoneRad,
+    CLUB_VAULT_BOX,
     DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS,
     FRAG_DECAL_TYPE,
     FRAG_RADIUS_MULT,
@@ -53,11 +54,13 @@ describe("rebirth balance deviations", () => {
                 rebirth: FRAG_DECAL_TYPE,
             }),
         ]);
-        // the other deviations are the survev guns' wiki stats (survevGuns.test.ts); survev's strobe strikeDelay is
-        // already the generated one under survev balance (strobes.test.ts)
+        // the other deviations are the survev guns' wiki stats (survevGuns.test.ts) and the owner's PMG-134 move speed
+        // (gunSpeeds.ts, ownerLoot.test.ts); survev's strobe strikeDelay is already the generated one under survev
+        // balance (strobes.test.ts)
         expect(rebirthDeviations.filter((d) => d.id !== "explosion_frag").map((d) => `${d.id}.${d.field}`)).toEqual([
             "potato_lmg.barrelLength",
             "potato_lmgshot.throwPhysics.velZ",
+            "potato_lmg.speed",
         ]);
     });
 
@@ -97,9 +100,15 @@ describe("rebirth-only defs", () => {
         expect(Object.keys(GameObjectDefs)).toEqual([...generated, ...rebirthOnlyIds]);
         expect(generated.map((id) => GameObjectRegistry.typeToId(id))).toEqual(generated.map((_, i) => i + 1));
         for (const id of rebirthOnlyIds) expect(Object.hasOwn(gameObjects, id)).toBe(false);
-        // the rebirth scorch decals and air drop tier crates likewise come after every generated map object
+        // the rebirth scorch decals, air drop tier crates and the club's gun box (ownerLoot.ts) likewise come after
+        // every generated map object
         const generatedMap = Object.keys(mapObjects);
-        expect(rebirthOnlyMapObjectIds).toEqual([HEAVY_BOMB_DECAL_TYPE, FRAG_DECAL_TYPE, ...AIRDROP_TIER_CRATES]);
+        expect(rebirthOnlyMapObjectIds).toEqual([
+            HEAVY_BOMB_DECAL_TYPE,
+            FRAG_DECAL_TYPE,
+            ...AIRDROP_TIER_CRATES,
+            CLUB_VAULT_BOX,
+        ]);
         expect(AIRDROP_TIER_CRATES).toEqual(["crate_10t1", "crate_10t2", "crate_10svt1", "crate_10svt2"]);
         expect(Object.keys(MapObjectDefs)).toEqual([...generatedMap, ...rebirthOnlyMapObjectIds]);
         expect(generatedMap.map((id) => MapObjectRegistry.typeToId(id))).toEqual(generatedMap.map((_, i) => i + 1));

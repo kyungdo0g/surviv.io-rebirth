@@ -23,7 +23,11 @@
             "goldOnly",
             "ignoreEndlessAmmo",
             "speed.carry",
-            "sound.discard"
+            "sound.discard",
+            "fanAngle",
+            "recoilKnockback",
+            "armorPiercing",
+            "stonePiercing"
         ],
         "bullet": ["noReflect", "armDistance", "noDistAdj (or rules.noDistAdjBullets)"]
     },
@@ -186,7 +190,7 @@
                 "p90": 0.02,
                 "m79": 0.02,
                 "gl06": 0.02,
-                "panzerfaust": 0.02,
+                "panzerfaust": 0.2,
                 "m60": 0.02,
                 "mg42": 0.005
             },
@@ -205,7 +209,8 @@
                 "asval": 1.5,
                 "m79": 0.5,
                 "gl06": 0.5,
-                "panzerfaust": 0.5
+                "panzerfaust": 0.5,
+                "m202": 0.05
             },
             "tier_airdrop_uncommon_appended": {
                 "honeybadger": 0.75,
@@ -214,7 +219,7 @@
                 "p90": 1.5,
                 "dp12": 1,
                 "m79": 1,
-                "m202": 0.2,
+                "m202": 0.05,
                 "m200": 0.25,
                 "boys": 0.75,
                 "m60": 1,
@@ -231,7 +236,7 @@
                 "lynx": 0.5,
                 "dshk": 0.08
             },
-            "tier2RollRule": "after appending tier 1 rows: tier_airdrop_tier2 weight = sum(tier_airdrop_tier1 entries) * 0.1 / 0.9 (main: 2.307)",
+            "tier2RollRule": "after appending tier 1 rows: tier_airdrop_tier2 weight = sum(tier_airdrop_tier1 entries) * 0.1 / 0.9 (main: 2.307 on the sheet; 2.451 with the owner's L86A2 and M202 rows of 2026-10-08)",
             "tier_ammo_crate": {
                 "57mm": {
                     "weight": 0.5,
@@ -3031,7 +3036,7 @@
                 "projType": "m79_grenade",
                 "headshotMult": 1,
                 "speed": {
-                    "equip": -1,
+                    "equip": 0,
                     "attack": 0
                 },
                 "ignoreEndlessAmmo": true,
@@ -3180,7 +3185,7 @@
                 "gunType": "Grenade launcher (break action, lobbed 40 mm frag)",
                 "ammo": "40mm (teal, new)",
                 "fireMode": "Single",
-                "playerSpeed": -1,
+                "playerSpeed": 0,
                 "carrySpeed": 0,
                 "recoilSpeed": 0,
                 "magazineCapacity": "1 (ext 1)",
@@ -3211,7 +3216,7 @@
                 "sustainedDps": 48.1,
                 "magazineDamage": 125,
                 "fullReload": 2.3,
-                "speedCarriedHeldFiring": [12, 11, 5.5],
+                "speedCarriedHeldFiring": [12, 12, 6],
                 "ttkBody15": [0.3, 2.9, 2.9, 2.9],
                 "stkBody15": [1, 2, 2, 2],
                 "eStand15A2": 2.9,
@@ -3258,7 +3263,7 @@
                 "projType": "m79_grenade",
                 "headshotMult": 1,
                 "speed": {
-                    "equip": -1.5,
+                    "equip": 0,
                     "attack": 0
                 },
                 "lootImg": {
@@ -3337,7 +3342,7 @@
                 "gunType": "Grenade launcher (6-round revolver)",
                 "ammo": "40mm (teal, new)",
                 "fireMode": "Single",
-                "playerSpeed": -1.5,
+                "playerSpeed": 0,
                 "carrySpeed": 0,
                 "recoilSpeed": 0,
                 "magazineCapacity": "6 (ext 6)",
@@ -3368,7 +3373,7 @@
                 "sustainedDps": 73.5,
                 "magazineDamage": 750,
                 "fullReload": 6,
-                "speedCarriedHeldFiring": [12, 10.5, 5.25],
+                "speedCarriedHeldFiring": [12, 12, 6],
                 "ttkBody15": [0.298, 0.997, 0.997, 0.997],
                 "stkBody15": [1, 2, 2, 2],
                 "eStand15A2": 0.997,
@@ -3414,7 +3419,7 @@
                 "bulletType": "bullet_gl06",
                 "headshotMult": 1,
                 "speed": {
-                    "equip": -1,
+                    "equip": 0,
                     "attack": 0
                 },
                 "ignoreEndlessAmmo": true,
@@ -3511,7 +3516,7 @@
                 "gunType": "Grenade launcher (single shot, 40 mm airburst at the cursor)",
                 "ammo": "40mm (teal, new)",
                 "fireMode": "Single",
-                "playerSpeed": -1,
+                "playerSpeed": 0,
                 "carrySpeed": 0,
                 "recoilSpeed": 0,
                 "magazineCapacity": "1 (ext 1)",
@@ -3542,7 +3547,7 @@
                 "sustainedDps": 47.8,
                 "magazineDamage": 110,
                 "fullReload": 2,
-                "speedCarriedHeldFiring": [12, 11, 5.5],
+                "speedCarriedHeldFiring": [12, 12, 6],
                 "ttkBody15": [0.269, 2.569, 2.569, 2.569],
                 "stkBody15": [1, 2, 2, 2],
                 "eStand15A2": 2.569,
@@ -3727,7 +3732,7 @@
             "id": "panzerfaust",
             "gunClass": "launcher",
             "placementMain": {
-                "floor": 0.02,
+                "floor": 0.2,
                 "t1": 0.5
             },
             "mapRules": "As the M79.",
@@ -3902,10 +3907,12 @@
             "id": "m202",
             "gunClass": "launcher",
             "placementMain": {
-                "t2": 0.2,
-                "gold": 0.25
+                "t1": 0.05,
+                "t2": 0.05,
+                "gold": 0.25,
+                "goldBonus": 0.1
             },
-            "mapRules": "No floor.",
+            "mapRules": "No floor. Gold bonus roll on every map but potato (owner, 2026-10-08).",
             "gun": {
                 "name": "M202 FLASH",
                 "type": "gun",
@@ -3931,11 +3938,12 @@
                 "barrelLength": 2.2,
                 "barrelOffset": 0,
                 "recoilTime": 10000000000,
-                "moveSpread": 4,
-                "shotSpread": 6,
+                "moveSpread": 0,
+                "shotSpread": 0,
                 "bulletCount": 4,
-                "jitter": 0.5,
+                "jitter": 0,
                 "bulletType": "bullet_m202",
+                "toMouseHit": true,
                 "headshotMult": 1,
                 "speed": {
                     "equip": -2.5,
@@ -3977,7 +3985,11 @@
                     "empty": "empty_fire_01",
                     "deploy": "m202_switch_01",
                     "discard": "m202_discard_01"
-                }
+                },
+                "fanAngle": 60,
+                "recoilKnockback": 2,
+                "armorPiercing": true,
+                "stonePiercing": true
             },
             "bullets": {
                 "bullet_m202": {
@@ -4001,16 +4013,16 @@
             "explosions": {
                 "explosion_m202": {
                     "type": "explosion",
-                    "damage": 50,
-                    "obstacleDamage": 1.1,
+                    "damage": 125,
+                    "obstacleDamage": 42,
                     "rad": {
-                        "min": 3.5,
-                        "max": 9
+                        "min": 5,
+                        "max": 16
                     },
                     "shrapnelCount": 0,
                     "shrapnelType": "",
-                    "explosionEffectType": "barrel",
-                    "decalType": "decal_frag_small_explosion"
+                    "explosionEffectType": "m202",
+                    "decalType": "decal_frag_large_explosion"
                 }
             },
             "throwables": {},
@@ -4031,7 +4043,7 @@
                 }
             },
             "infobox": {
-                "gunType": "Rocket launcher (4 tubes, one volley, single use)",
+                "gunType": "Rocket launcher (4 tubes, one fixed 60° fan volley at the cursor, single use)",
                 "ammo": "none (1 charge = 4 rockets)",
                 "fireMode": "Single",
                 "playerSpeed": -2.5,
@@ -4042,28 +4054,30 @@
                 "reloadTime": "none (discarded when empty)",
                 "fireDelay": "0.5 (single use)",
                 "switchDelay": 1.1,
-                "standingSpread": 6,
-                "movingSpread": 4,
+                "standingSpread": 0,
+                "movingSpread": 0,
                 "barrelLength": 2.2,
                 "bullet": {
-                    "damage": "4 x (25 + 50 explosion (rad 3.5-9))",
+                    "damage": "4 x (25 + 125 explosion (rad 5-16))",
                     "falloff": 1,
                     "headshotMultiplier": 1,
-                    "obstacleMultiplier": "bullet x2, explosion x1.1",
+                    "obstacleMultiplier": "bullet x2, explosion x42",
                     "distance": 75,
                     "speed": 55,
-                    "maxDps": "600 (single use)",
-                    "maxObstacleDps": "840"
+                    "maxDps": "1200 (single use)",
+                    "maxObstacleDps": "42400"
                 },
-                "suppressed": false
+                "suppressed": false,
+                "fanAngle": 60,
+                "recoilKnockback": 2
             },
             "metrics": {
                 "shotInterval": 0.5,
                 "rpm": null,
-                "maxDps": 600,
-                "maxObstacleDps": 840,
-                "sustainedDps": 600,
-                "magazineDamage": 300,
+                "maxDps": 1200,
+                "maxObstacleDps": 42400,
+                "sustainedDps": 1200,
+                "magazineDamage": 600,
                 "fullReload": null,
                 "speedCarriedHeldFiring": [12, 9.5, 4.75],
                 "ttkBody15": [0.215, 0.215, 0.215, 0.215],

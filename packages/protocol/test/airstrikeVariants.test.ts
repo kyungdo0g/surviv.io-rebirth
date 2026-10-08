@@ -11,6 +11,7 @@ import {
     airstrikeAimRad,
     airstrikeBombReach,
     airstrikeZoneRad,
+    CLUB_VAULT_BOX,
     GameConfig,
     GameObjectRegistry,
     getDefOfType,
@@ -120,6 +121,7 @@ describe("air strike variants on the wire", () => {
             "decal_bomb_heavy_explosion",
             "decal_frag_large_explosion",
             ...AIRDROP_TIER_CRATES,
+            CLUB_VAULT_BOX,
         ]);
         const first = MapObjectRegistry.typeToId("decal_bomb_heavy_explosion");
         expect(first).toBe(MapObjectRegistry.size - rebirthOnlyMapObjectIds.length);
@@ -140,16 +142,18 @@ describe("air strike variants on the wire", () => {
         }
     });
 
-    it("the air drop tier crates serialize as obstacles after the rebirth decals", () => {
+    it("the air drop tier crates and the club's gun box (schema 19) serialize as obstacles after the decals", () => {
         const decals = MapObjectRegistry.typeToId("decal_frag_large_explosion");
-        expect(AIRDROP_TIER_CRATES.map((t) => MapObjectRegistry.typeToId(t))).toEqual([
+        expect([...AIRDROP_TIER_CRATES, CLUB_VAULT_BOX].map((t) => MapObjectRegistry.typeToId(t))).toEqual([
             decals + 1,
             decals + 2,
             decals + 3,
             decals + 4,
+            decals + 5,
         ]);
+        expect(PROTOCOL_SCHEMA_VERSION).toBeGreaterThanOrEqual(19);
         const codec = codecOf("obstacle");
-        for (const type of AIRDROP_TIER_CRATES) {
+        for (const type of [...AIRDROP_TIER_CRATES, CLUB_VAULT_BOX]) {
             const view = {
                 id: 9,
                 kind: "obstacle",

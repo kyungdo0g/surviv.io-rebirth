@@ -181,11 +181,22 @@ export function completeRevive(ctx: SimContext, reviver: Player): void {
     standUp(target);
 }
 
+/** Damping rate of a knock-back slide (survev update: vel damped by 1 / (1 + 4 dt)). */
+const KNOCKBACK_DECAY = 4;
+
+/**
+ * Initial speed of a knock-back slide that covers `distance` units: the damped steps sum to speed / KNOCKBACK_DECAY
+ * (rebirth: the M202 FLASH's recoil, weapons/gun.ts).
+ */
+export function knockbackSpeedFor(distance: number): number {
+    return distance * KNOCKBACK_DECAY;
+}
+
 /** Knock-back slide of a freshly downed player (survev update: vel damped by 1 / (1 + 4 dt), stops under 0.01). */
 export function applyKnockback(player: Player, dt: number): Vec2 | null {
     const kb = player.knockback;
     if (Math.abs(kb.x) <= 0.01 && Math.abs(kb.y) <= 0.01) return null;
-    const damp = 1 / (1 + dt * 4);
+    const damp = 1 / (1 + dt * KNOCKBACK_DECAY);
     player.knockback = { x: kb.x * damp, y: kb.y * damp };
     return v2.mul(player.knockback, dt);
 }

@@ -4,7 +4,7 @@
 // enlarged blasts (the heavy shell, the x1.3 frag grenade) and the tier 1 / tier 2 inner crates of the normal air drop
 // (rebirth/airdropTiers.ts, airdropLoot.ts); then the owner's new guns with their ammo, bullets and explosions
 // (rebirth/newGuns.ts, the beta of 2026-10-07); then the variant strobes and their air strike pings
-// (rebirth/strobes.ts).
+// (rebirth/strobes.ts). The owner's club gun box (2026-10-08, rebirth/ownerLoot.ts) follows the air drop crates.
 import type { DecalDef, ExplosionDef, GameObjectDef, MapObjectDef, PingDef, ThrowableDef } from "../types/index.ts";
 import { airdropTierCrates } from "./airdropLoot.ts";
 import {
@@ -16,6 +16,7 @@ import {
 } from "./airstrikeVariants.ts";
 import { FRAG_DECAL_TYPE, FRAG_RADIUS_MULT, scaleDefValue } from "./deviations.ts";
 import { newGunDefs } from "./newGuns.ts";
+import { CLUB_VAULT_BOX, clubVaultBox } from "./ownerLoot.ts";
 import { airstrikePingDefs, strobeVariantDefs } from "./strobes.ts";
 
 /**
@@ -69,7 +70,9 @@ function scaledDecal(decal: DecalDef, mult: number): DecalDef {
  *   leaves (both originals draw map-barrel-res-01 at 0.2): `decal_bomb_heavy_explosion` is decal_bomb_iron_explosion
  *   x 38 / 14 (0.2 -> ~0.543), left by explosion_bomb_heavy; `decal_frag_large_explosion` is decal_frag_explosion
  *   x 1.3 (0.2 -> 0.26), left by the rebirth frag grenade (rebirth/deviations.ts); the MIRV keeps decal_frag_explosion.
- * - the air drop tier inner crates crate_10t1, crate_10t2, crate_10svt1 and crate_10svt2 (rebirth/airdropLoot.ts).
+ * - the air drop tier inner crates crate_10t1, crate_10t2, crate_10svt1 and crate_10svt2 (rebirth/airdropLoot.ts);
+ * - the club secret room's gun box deposit_box_02_club, deposit_box_02 rolling its gun from tier_club_vault (the
+ *   owner, 2026-10-08; rebirth/ownerLoot.ts).
  */
 export function rebirthOnlyMapObjects(generated: Readonly<Record<string, MapObjectDef>>): Record<string, MapObjectDef> {
     const ironDecal = generated.decal_bomb_iron_explosion as DecalDef;
@@ -78,5 +81,6 @@ export function rebirthOnlyMapObjects(generated: Readonly<Record<string, MapObje
         [HEAVY_BOMB_DECAL_TYPE]: scaledDecal(ironDecal, HEAVY_BOMB_EXPLOSION.rad.max / IRON_BOMB_RAD_MAX),
         [FRAG_DECAL_TYPE]: scaledDecal(fragDecal, FRAG_RADIUS_MULT),
         ...airdropTierCrates(generated),
+        [CLUB_VAULT_BOX]: clubVaultBox(generated),
     };
 }

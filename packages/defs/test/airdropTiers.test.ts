@@ -245,7 +245,8 @@ describe("air drop tier tables", () => {
                     !AIRDROP_TIER1_ONLY_GUNS.includes(e.name) && !AIRDROP_LOW_END_GUNS.includes(e.name),
             ),
         );
-        // the new guns' tier 1 rows join after the derivation, and the tier 2 roll is weighed again: (12.76 + 8) / 9
+        // the owner's L86A2 joins the low-tier DMRs (2026-10-08); the new guns' tier 1 rows (with the owner's M202
+        // 0.05) join after the derivation, and the tier 2 roll is weighed again: (14.01 + 8.05) / 9
         expect(names(AIRDROP_TIER1_TABLE)).toEqual([
             "mk12:1.25",
             "m39:1.25",
@@ -253,16 +254,17 @@ describe("air drop tier tables", () => {
             "m9:0.01",
             "scout_elite:2.5",
             "vss:2.5",
+            "l86:1.25",
             "spas12:1",
             "famas:1",
             "grozas:1",
             "dp28:0.75",
             "m870:0.5",
             ...Object.entries(NEW_GUN_TIER1).map(([name, weight]) => `${name}:${weight}`),
-            `${AIRDROP_TIER2_TABLE}:2.306667`,
+            `${AIRDROP_TIER2_TABLE}:2.451111`,
         ]);
         // the ground guns added by the derivation weigh less than the low end (the new guns' rows come on top: the
-        // sheet's tier 1 band, 8 of 20.76)
+        // sheet's tier 1 band and the owner's M202, 8.05 of 22.06)
         const inUncommon = (e: LootTableEntry) =>
             maps.main.lootTable.tier_airdrop_uncommon.some((u: LootTableEntry) => u.name === e.name);
         const derived = core(t[AIRDROP_TIER1_TABLE]).filter((e) => !Object.hasOwn(NEW_GUN_TIER1, e.name));
@@ -328,8 +330,18 @@ describe("air drop tier tables", () => {
             expect(meanRank(tier1), name).toBeLessThan(meanRank(tier2));
             if (name === "savannah")
                 expect(shareAtLeast(tier1, A_PLUS), name).toBeLessThan(shareAtLeast(tier2, A_PLUS));
-            // tier 1's own guns are at most A (the SPAS-12): A+ and better only through its tier 2 roll
-            expect(shareAtLeast(core(t[AIRDROP_TIER1_TABLE]), A_PLUS), name).toBe(0);
+            // tier 1's own guns are at most A (the SPAS-12): A+ and better only through its tier 2 roll, but the M202
+            // FLASH the owner puts in both tiers "barely ever" (0.05, OWNER_LOOT_WEIGHTS.m202; under 1 % of tier 1,
+            // woods' small tier 1 the most)
+            const ownTier1 = core(t[AIRDROP_TIER1_TABLE]);
+            expect(
+                shareAtLeast(
+                    ownTier1.filter((e) => e.name !== "m202"),
+                    A_PLUS,
+                ),
+                name,
+            ).toBe(0);
+            expect(shareAtLeast(ownTier1, A_PLUS), name).toBeLessThan(0.01);
             // every tier table entry is something the map can hold: no banned item (savannah)
             const banned = new Set(LOOT_BANS[name] ?? []);
             for (const tier of [AIRDROP_TIER1_TABLE, AIRDROP_TIER2_TABLE, AIRDROP_TIER1_ARMOR_TABLE]) {
@@ -422,6 +434,7 @@ describe("air drop tier tables", () => {
             "m79",
             "gl06",
             "panzerfaust",
+            "m202",
         ]);
         expect(sv[AIRDROP_TIER2_TABLE].map((e) => e.name)).toContain("scar");
         const desert = core(getMapDef("desert").lootTable[AIRDROP_TIER1_TABLE]).map((e) => e.name);
@@ -443,6 +456,7 @@ describe("air drop tier tables", () => {
             "m79",
             "gl06",
             "panzerfaust",
+            "m202",
         ]);
     });
 });

@@ -78,11 +78,10 @@ function mainMapGuns(): Set<string> {
 }
 
 /**
- * The round 6 loot handoff (coordinator, defs change by the lead): the USAS-12 at a very low rate, the SVD and the
- * SCAR-SSR in the gold drop and the L86 in tier 1 air drops reach the classic map; flagged main-map ahead of that defs
- * change, so they may still be missing from these defs' tables.
+ * Main-map guns this test's reach walk cannot see: the L86A2 drops only from the tier 1 air drop's inner crate
+ * (rebirth/airdropLoot.ts AIRDROP_TIER1_ADDED_DMRS), which mainMapGuns() does not follow.
  */
-const PENDING_MAIN: ReadonlySet<string> = new Set(["usas", "svd", "scarssr", "l86"]);
+const UNWALKED_MAIN: ReadonlySet<string> = new Set(["l86"]);
 /** Very rare main-map rolls (the bathhouse ring case: the PMG-134) that stay off-map for desire purposes. */
 const RARE_OFF_MAP: ReadonlySet<string> = new Set(["potato_lmg"]);
 
@@ -100,7 +99,7 @@ describe("gun tiers", () => {
             if (!RARE_OFF_MAP.has(id)) expect(gunTier(id)?.mainMap, id).toBe(true);
         }
         for (const t of tieredGuns())
-            if (t.mainMap && !PENDING_MAIN.has(t.id)) expect(reachable.has(t.id), t.id).toBe(true);
+            if (t.mainMap && !UNWALKED_MAIN.has(t.id)) expect(reachable.has(t.id), t.id).toBe(true);
         // the critique's misses: the Scorpion (golden air drop) and the duals
         for (const id of ["scorpion", "ots38_dual", "ot38_dual", "p30l_dual", "deagle_dual", "m93r_dual", "glock_dual"])
             expect(reachable.has(id), id).toBe(true);

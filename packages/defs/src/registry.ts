@@ -44,8 +44,10 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * airdrop_crate_04po take ids in survev order among the survev-only ones (map ids from crate_17 on move up).
  * · 18: the faction status (FactionStatus) also lists the enemies revealed by firing (survev timeUntilHidden), after
  * the viewer's faction; no record layout changed.
+ * · 19: the owner's club secret room (2026-10-08, rebirth/ownerLoot.ts): the rebirth-only map type deposit_box_02_club
+ * follows the air drop tier crates as the last map type; every earlier id keeps its index. No record layout changed.
  */
-export const PROTOCOL_SCHEMA_VERSION = 18;
+export const PROTOCOL_SCHEMA_VERSION = 19;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

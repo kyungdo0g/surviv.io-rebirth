@@ -1,5 +1,6 @@
 // Where the survev-only guns spawn on every map: survev's own placements on the maps we have (the port keeps them,
-// tools/port-survev/lib/survevLoot.ts) plus the rebirth Barrett in the classic gold drop (rebirth/survevGuns.ts).
+// tools/port-survev/lib/survevLoot.ts) plus the rebirth Barrett in the classic gold drop (rebirth/survevGuns.ts) and
+// the owner's PMG-134 in the bathhouse ring case (rebirth/ownerLoot.ts).
 // "Reachable" follows what each map can hand out (test/reach.ts). Placements that survev has in tables nothing on our
 // maps reaches yet are pinned too: they become live with the later survev waves (the Pirate's Bounty kills, Cobalt's
 // common Classless crate, 50v50's gold military crate); the crimson air drop and the Reserve came with stage 3.
@@ -9,6 +10,7 @@ import {
     getMapDef,
     MapDefs,
     NEW_GUN_GOLD,
+    OWNER_LOOT_WEIGHTS,
     REBIRTH_GOLD_GUNS,
     SURVEV_GUN_SKINS,
     SURVEV_ONLY_GUNS,
@@ -20,14 +22,19 @@ const GUNS = [...SURVEV_ONLY_GUNS, ...Object.keys(SURVEV_GUN_SKINS)];
 
 /** The rebirth's SPAS-16 in the normal drop (tier 2) of main, its seasonal copies and Desert (rebirth/newGunLoot.ts). */
 const SPAS16_TIER2 = ["tier_airdrop_tier2 1", "tier_airdrop_uncommon 1"];
+/**
+ * The owner's PMG-134 in the bathhouse ring case (case_07) of every map with the bathhouse but the potato modes
+ * (rebirth/ownerLoot.ts, 2026-10-08); Savannah's bans keep it (a "special" gun, not an LMG: gunClasses.ts).
+ */
+const PMG_RING_CASE = ["tier_ring_case 0.001"];
 
 /** Every reachable placement: map -> gun -> ["<table> <weight>"] (sources: survev's map defs at c6185e31). */
 const REACHABLE: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {
     // rebirth: the Barrett in the gold drop (crate_11) of the classic map and its seasonal copies (snow below), and
     // the SPAS-16 in the tier 2 slot of the dropped SPAS-15 (docs/design/new-gun-stats.md section 5)
-    main: { barrett: ["tier_airdrop_rare 1"], spas16: SPAS16_TIER2 },
-    main_spring: { barrett: ["tier_airdrop_rare 1"], spas16: SPAS16_TIER2 },
-    main_summer: { barrett: ["tier_airdrop_rare 1"], spas16: SPAS16_TIER2 },
+    main: { barrett: ["tier_airdrop_rare 1"], spas16: SPAS16_TIER2, potato_lmg: PMG_RING_CASE },
+    main_spring: { barrett: ["tier_airdrop_rare 1"], spas16: SPAS16_TIER2, potato_lmg: PMG_RING_CASE },
+    main_summer: { barrett: ["tier_airdrop_rare 1"], spas16: SPAS16_TIER2, potato_lmg: PMG_RING_CASE },
     // the 50v50 military crate (crate_12: 2 x tier_airdrop_rare), survev/shared/defs/maps/factionDefs.ts:343-353
     faction: {
         barrett: ["tier_airdrop_rare 0.5"],
@@ -44,6 +51,7 @@ const REACHABLE: Readonly<Record<string, Readonly<Record<string, readonly string
     snow: {
         barrett: ["tier_airdrop_rare 1"],
         spas16: SPAS16_TIER2,
+        potato_lmg: PMG_RING_CASE,
         svd_winter: ["tier_eye_block 1.5"],
         sv98_winter: [
             "tier_airdrop_tier2 0.5",
@@ -56,27 +64,45 @@ const REACHABLE: Readonly<Record<string, Readonly<Record<string, readonly string
         awc_winter: ["tier_airdrop_rare 3", "tier_eye_block 0.75"],
     },
     // woods: the IMD-2 on the ground like the BAR, the SPAS-16 in the normal drop (survev woodsDefs.ts:76, :137)
-    woods: { imbel: ["tier_guns 2.75"], spas16: ["tier_airdrop_tier2 1", "tier_airdrop_uncommon 1"] },
+    woods: {
+        imbel: ["tier_guns 2.75"],
+        spas16: ["tier_airdrop_tier2 1", "tier_airdrop_uncommon 1"],
+        potato_lmg: PMG_RING_CASE,
+    },
     woods_snow: {
         imbel: ["tier_guns 2.75"],
         spas16: ["tier_airdrop_tier2 1", "tier_airdrop_uncommon 1"],
+        potato_lmg: PMG_RING_CASE,
         svd_winter: ["tier_eye_block 1.5"],
         sv98_winter: ["tier_eye_block 1"],
         awc_winter: ["tier_eye_block 0.75"],
     },
     woods_spring: { imbel: ["tier_guns 2.75"], spas16: ["tier_airdrop_tier2 1", "tier_airdrop_uncommon 1"] },
-    woods_summer: { imbel: ["tier_guns 2.75"], spas16: ["tier_airdrop_tier2 1", "tier_airdrop_uncommon 1"] },
+    woods_summer: {
+        imbel: ["tier_guns 2.75"],
+        spas16: ["tier_airdrop_tier2 1", "tier_airdrop_uncommon 1"],
+        potato_lmg: PMG_RING_CASE,
+    },
     // savannah: the Barrett and the S&W 500 everywhere, rare (survev/shared/defs/maps/savannahDefs.ts:74-107)
     savannah: {
         barrett: ["tier_airdrop_rare 1.5", "tier_airdrop_tier2 0.075", "tier_airdrop_uncommon 0.075", "tier_guns 0.06"],
         sw500: ["tier_airdrop_rare 2", "tier_airdrop_tier2 0.25", "tier_airdrop_uncommon 0.25", "tier_guns 0.09"],
+        potato_lmg: PMG_RING_CASE,
     },
     // cobalt: Tank and Demo class pods, Master Scavenger kills (survev/shared/defs/maps/baseDefs.ts:464, 494, 548), and
     // since survev's Twins bunker (survev content wave stage 3) the Classless rare crate
     cobalt: {
         imbel: ["tier_guns_common_tank 0.5"],
         spas16: ["tier_guns_rare_classless 1", "tier_guns_rare_demo 0.4", "tier_scavenger_adv 1"],
+        potato_lmg: PMG_RING_CASE,
     },
+    // Halloween, Turkey and Beach: only the owner's ring case (their gold drop is main's but without the rebirth guns)
+    halloween: { potato_lmg: PMG_RING_CASE },
+    turkey: { potato_lmg: PMG_RING_CASE },
+    beach: { potato_lmg: PMG_RING_CASE },
+    // the test maps have main's buildings
+    test_normal: { potato_lmg: PMG_RING_CASE },
+    test_faction: { potato_lmg: PMG_RING_CASE },
     // desert (survev content wave stage 3): the crimson air drop and the Reserve's Gold Crimson Case
     // (tier_airdrop_crimson), the Reserve's wine racks (tier_revolvers; survev desertDefs.ts), and the rebirth SPAS-16
     // in the normal drop's tier 2 slot
@@ -100,6 +126,10 @@ const LATER_WAVES: Readonly<Record<string, { guns: readonly string[]; source: st
     tier_guns_rare_demo: { guns: ["spas16"], source: "Cobalt Demo class pods (other maps' copies)" },
     tier_scavenger_adv: { guns: ["spas16"], source: "Master Scavenger (other maps' copies)" },
     tier_airdrop_potato: { guns: ["potato_lmg"], source: "potato-mode crates (other maps' copies)" },
+    tier_ring_case: {
+        guns: ["potato_lmg"],
+        source: "the owner's ring case on maps without the bathhouse (desert, 50v50, woods spring, birthday)",
+    },
 };
 
 describe("survev-only guns: loot placements", () => {
@@ -120,8 +150,10 @@ describe("survev-only guns: loot placements", () => {
                 }
             }
         }
-        // Halloween, Turkey, Birthday and Beach hand out none of them yet
-        for (const name of ["halloween", "turkey", "birthday", "beach"]) expect(REACHABLE[name]).toBeUndefined();
+        // Halloween, Turkey and Beach hand out only the ring case's PMG-134 (the owner's, 2026-10-08), Birthday none
+        for (const name of ["halloween", "turkey", "beach"])
+            expect(REACHABLE[name]).toEqual({ potato_lmg: PMG_RING_CASE });
+        expect(REACHABLE.birthday).toBeUndefined();
     });
 
     it("Potato vs Tomato's Lone Survivr carries the PMG-134 40 % of the time (survev factionPotatoDefs)", () => {
@@ -130,7 +162,7 @@ describe("survev-only guns: loot placements", () => {
         expect(options).toContain('{"type":"potato_lmg","ammo":150,"fillInv":false,"weight":0.4}');
     });
 
-    it("the rebirth Barrett: gold drop of main and its seasonal copies only, absent from the generated JSON", () => {
+    it("the rebirth Barrett, the owner's SVD and SCAR-SSR: gold drop of main and its seasonal copies only", () => {
         expect(GOLD_DROP_TABLE).toBe("tier_airdrop_rare");
         expect(Object.keys(REBIRTH_GOLD_GUNS)).toEqual(["main", "main_spring", "main_summer", "snow"]);
         // the event maps share main's gold drop but are modes of their own: left out on purpose (rebirth/survevGuns.ts)
@@ -142,14 +174,20 @@ describe("survev-only guns: loot placements", () => {
                 name,
             ).toBe(false);
         }
+        expect(OWNER_LOOT_WEIGHTS.goldDrop).toEqual({ svd: 0.5, scarssr: 0.5 });
         for (const name of Object.keys(REBIRTH_GOLD_GUNS)) {
             const gold = getMapDef(name).lootTable[GOLD_DROP_TABLE];
-            expect(gold.at(-1)).toEqual({ name: "barrett", count: 1, weight: 1 });
-            // survev main's gold drop totals 22.68 (survev/shared/defs/maps/baseDefs.ts:612): 1 roll in 23.68, and
-            // 1 in 27.01 with the new guns' gold rows (3.33, rebirth/newGunLoot.ts; new-gun-stats.md section 5)
+            expect(gold.slice(-3)).toEqual([
+                { name: "barrett", count: 1, weight: 1 },
+                { name: "svd", count: 1, weight: 0.5 },
+                { name: "scarssr", count: 1, weight: 0.5 },
+            ]);
+            // survev main's gold drop totals 22.68 (survev/shared/defs/maps/baseDefs.ts:612): 1 roll in 23.68 with the
+            // Barrett, 1 in 27.01 with the new guns' gold rows (3.33, rebirth/newGunLoot.ts; new-gun-stats.md section
+            // 5), and 28.01 with the owner's SVD and SCAR-SSR
             const newGold = Object.values(NEW_GUN_GOLD).reduce((s, w) => s + w, 0);
             expect(newGold).toBeCloseTo(3.33, 9);
-            expect(gold.reduce((s, e) => s + e.weight, 0)).toBeCloseTo(23.68 + newGold, 6);
+            expect(gold.reduce((s, e) => s + e.weight, 0)).toBeCloseTo(23.68 + newGold + 1, 6);
             expect(generatedMaps[name].lootTable[GOLD_DROP_TABLE].map((e: { name: string }) => e.name)).not.toContain(
                 "barrett",
             );

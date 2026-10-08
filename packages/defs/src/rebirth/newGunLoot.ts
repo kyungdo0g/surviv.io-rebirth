@@ -14,9 +14,13 @@
 import { gunClass, LOOT_BANS } from "../gunClasses.ts";
 import type { LootTableEntry, MapDef } from "../types/index.ts";
 import { AIRDROP_TIER1_TABLE, AIRDROP_TIER2_TABLE, applyAirdropTierTables, TIER1_TIER2_SHARE } from "./airdropLoot.ts";
+import { OWNER_LOOT_WEIGHTS } from "./ownerLootWeights.ts";
 import { GOLD_DROP_TABLE } from "./survevGuns.ts";
 
-/** Floor (main tier_guns) weights. */
+/**
+ * Floor (main tier_guns) weights. The Panzerfaust's floor row (the sheet's 0.02) is the owner's since 2026-10-08:
+ * OWNER_LOOT_WEIGHTS.panzerfaustFloor on every map whose floor has the flare gun (rebirth/ownerLoot.ts).
+ */
 export const NEW_GUN_FLOOR: Readonly<Record<string, number>> = {
     ak74: 1.5,
     g36c: 1.2,
@@ -32,7 +36,6 @@ export const NEW_GUN_FLOOR: Readonly<Record<string, number>> = {
     p90: 0.02,
     m79: 0.02,
     gl06: 0.02,
-    panzerfaust: 0.02,
     m60: 0.02,
     mg42: 0.005,
 };
@@ -41,7 +44,7 @@ export const NEW_GUN_SHOTGUN_FLOOR: Readonly<Record<string, number>> = { dp12: 0
 /** Floor rows of the Desert only (classic and 50v50 maps carry no .45 ACP). */
 export const NEW_GUN_DESERT_FLOOR: Readonly<Record<string, number>> = { m1928: 0.5 };
 export const DESERT_FLOOR_MAPS: readonly string[] = ["desert"];
-/** tier_airdrop_tier1 weights, appended after the derivation. */
+/** tier_airdrop_tier1 weights, appended after the derivation (the M202's is the owner's, 2026-10-08). */
 export const NEW_GUN_TIER1: Readonly<Record<string, number>> = {
     m16a4: 1,
     sig550: 1,
@@ -52,8 +55,9 @@ export const NEW_GUN_TIER1: Readonly<Record<string, number>> = {
     m79: 0.5,
     gl06: 0.5,
     panzerfaust: 0.5,
+    m202: OWNER_LOOT_WEIGHTS.m202.airdropTier1,
 };
-/** tier_airdrop_uncommon weights (tier 2), appended before the derivation. */
+/** tier_airdrop_uncommon weights (tier 2), appended before the derivation (the M202's is the owner's, 2026-10-08). */
 export const NEW_GUN_TIER2: Readonly<Record<string, number>> = {
     honeybadger: 0.75,
     mk14: 0.75,
@@ -61,7 +65,7 @@ export const NEW_GUN_TIER2: Readonly<Record<string, number>> = {
     p90: 1.5,
     dp12: 1,
     m79: 1,
-    m202: 0.2,
+    m202: OWNER_LOOT_WEIGHTS.m202.airdropTier2,
     m200: 0.25,
     boys: 0.75,
     m60: 1,
@@ -70,12 +74,12 @@ export const NEW_GUN_TIER2: Readonly<Record<string, number>> = {
 /** survev's SPAS-16 takes the dropped SPAS-15's tier 2 slot on main, its seasonal copies and Desert (sheet 5). */
 export const SPAS16_TIER2_WEIGHT = 1;
 export const SPAS16_TIER2_MAPS: readonly string[] = ["main", "main_spring", "main_summer", "snow", "desert"];
-/** Gold drop (tier_airdrop_rare) weights. */
+/** Gold drop (tier_airdrop_rare) weights (the M202's main gun weight is the owner's table's, 2026-10-08). */
 export const NEW_GUN_GOLD: Readonly<Record<string, number>> = {
     aa12: 0.5,
     mgl: 0.5,
     rpg7: 0.5,
-    m202: 0.25,
+    m202: OWNER_LOOT_WEIGHTS.m202.goldMain,
     m200: 0.5,
     hecate: 0.5,
     lynx: 0.5,

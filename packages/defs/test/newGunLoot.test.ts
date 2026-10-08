@@ -9,6 +9,7 @@ import {
     AIRDROP_TIER2_TABLE,
     DESERT_FLOOR_MAPS,
     FLOOR_LAUNCHER_MAPS,
+    GOLD_BONUS_TABLE,
     GOLD_DROP_TABLE,
     GUN_BETA_FLOOR_COPIES,
     GUN_BETA_FLOOR_SHARE,
@@ -28,6 +29,8 @@ import {
     NEW_GUN_IDS,
     NEW_GUN_TIER1,
     NEW_GUN_TIER2,
+    OWNER_LOOT_WEIGHTS,
+    RING_CASE_TABLE,
     TIER1_TIER2_SHARE,
 } from "../src/index.ts";
 import { maps as generatedMaps, REPO_ROOT } from "./helpers.ts";
@@ -49,28 +52,37 @@ describe("new guns on main: the sheet's rows", () => {
     const main = sheet.loot.main;
 
     it("floor, shotgun floor, tier 1, tier 2 and gold rows", () => {
-        expect(added("main", "tier_guns")).toEqual(main.tier_guns);
+        // the owner's USAS-12 joins main's floor after the sheet's rows (ownerLoot.ts, 2026-10-08)
+        expect(added("main", "tier_guns")).toEqual({ ...main.tier_guns, ...OWNER_LOOT_WEIGHTS.classicFloor });
+        expect(newRows("main", "tier_guns")).toEqual(main.tier_guns);
         expect(added("main", "tier_shotguns")).toEqual(main.tier_shotguns);
         expect(added("main", "tier_airdrop_uncommon")).toEqual(main.tier_airdrop_uncommon_appended);
         const { spas16: _, ...tier2 } = main.tier_airdrop_uncommon_appended;
         expect(NEW_GUN_TIER2).toEqual(tier2);
         expect(NEW_GUN_TIER1).toEqual(main.tier_airdrop_tier1_appended);
         expect(NEW_GUN_GOLD).toEqual(main.tier_airdrop_rare_appended);
-        // the gold drop: the new rows, then the Barrett overlay (survevGuns.ts)
-        expect(added("main", GOLD_DROP_TABLE)).toEqual({ ...main.tier_airdrop_rare_appended, barrett: 1 });
-        expect(total(getMapDef("main").lootTable[GOLD_DROP_TABLE])).toBeCloseTo(27.01, 6);
+        // the gold drop: the new rows, then the Barrett overlay with the owner's SVD and SCAR-SSR (survevGuns.ts)
+        expect(added("main", GOLD_DROP_TABLE)).toEqual({
+            ...main.tier_airdrop_rare_appended,
+            barrett: 1,
+            svd: 0.5,
+            scarssr: 0.5,
+        });
+        expect(total(getMapDef("main").lootTable[GOLD_DROP_TABLE])).toBeCloseTo(28.01, 6);
         expect(added("desert", "tier_guns").m1928).toBe(main.desert_tier_guns.m1928);
         expect(added("main", "tier_ammo_crate")).toEqual({ "57mm": main.tier_ammo_crate["57mm"].weight });
         expect(getMapDef("main").lootTable.tier_ammo_crate.at(-1)).toEqual({ name: "57mm", count: 50, weight: 0.5 });
     });
 
-    it("tier 1 gets its rows after the derivation and keeps a 10 % tier 2 roll (main 2.306667)", () => {
+    it("tier 1 gets its rows after the derivation and keeps a 10 % tier 2 roll (main 2.451111)", () => {
         const t1 = getMapDef("main").lootTable[AIRDROP_TIER1_TABLE];
         expect(Object.fromEntries(t1.filter((e) => NEW.has(e.name)).map((e) => [e.name, e.weight]))).toEqual(
             main.tier_airdrop_tier1_appended,
         );
-        expect(t1.at(-1)).toEqual({ name: AIRDROP_TIER2_TABLE, count: 1, weight: 2.306667 });
-        expect(total(t1.slice(0, -1))).toBeCloseTo(20.76, 6);
+        // the sheet's 20.76 (and its roll 2.306667) plus the owner's L86A2 1.25 (airdropLoot.ts) and M202 0.05
+        // (OWNER_LOOT_WEIGHTS.m202, 2026-10-08)
+        expect(t1.at(-1)).toEqual({ name: AIRDROP_TIER2_TABLE, count: 1, weight: 2.451111 });
+        expect(total(t1.slice(0, -1))).toBeCloseTo(20.76 + 1.25 + 0.05, 6);
         for (const name of Object.keys(MapDefs)) {
             const t = getMapDef(name).lootTable[AIRDROP_TIER1_TABLE];
             if (!t) continue;
@@ -98,9 +110,12 @@ describe("new guns on every map: map rules", () => {
                 const at = `${map} ${tier} ${e.name}`;
                 expect(banned.has(e.name), at).toBe(false);
                 if (getDefOfType("gun", e.name).goldOnly) expect(tier, at).toBe(GOLD_DROP_TABLE);
-                if (tier === "tier_guns" && gunClass(e.name) === "launcher")
+                // launchers lie on the floor of main and Desert only, but the owner's Panzerfaust (2026-10-08): every
+                // map whose floor has the flare gun (ownerLoot.ts)
+                if (tier === "tier_guns" && gunClass(e.name) === "launcher" && e.name !== "panzerfaust")
                     expect(FLOOR_LAUNCHER_MAPS, at).toContain(map);
-                // the new guns sit only in the tables the hook writes
+                // the new guns sit only in the tables the hook writes, the M79 in the owner's ring case and the M202 in
+                // the gold crates' bonus roll (ownerLoot.ts, 2026-10-08)
                 expect(
                     [
                         "tier_guns",
@@ -109,6 +124,8 @@ describe("new guns on every map: map rules", () => {
                         AIRDROP_TIER1_TABLE,
                         AIRDROP_TIER2_TABLE,
                         GOLD_DROP_TABLE,
+                        ...(e.name === "m79" ? [RING_CASE_TABLE] : []),
+                        ...(e.name === "m202" ? [GOLD_BONUS_TABLE] : []),
                     ],
                     at,
                 ).toContain(tier);
@@ -150,7 +167,8 @@ describe("new guns on every map: map rules", () => {
     });
 
     it("Savannah: pistols, quality 0 SMGs, DMRs and snipers; no new shotgun, LMG, assault rifle or AS Val / P90", () => {
-        expect(newRows("savannah", "tier_guns")).toEqual({ fal: 0.1, tec9: 3, vz61: 2, bizon: 3 });
+        // and the owner's Panzerfaust (its floor has the flare gun)
+        expect(newRows("savannah", "tier_guns")).toEqual({ fal: 0.1, tec9: 3, vz61: 2, bizon: 3, panzerfaust: 0.2 });
         expect(Object.keys(newRows("savannah", "tier_airdrop_uncommon"))).toEqual([
             "mk14",
             "wa2000",
@@ -178,10 +196,16 @@ describe("new guns on every map: map rules", () => {
             expect(newRows(map, "tier_guns").m1928, map).toBeUndefined();
         }
         for (const map of FLOOR_LAUNCHER_MAPS) {
-            expect(newRows(map, "tier_guns"), map).toMatchObject({ m79: 0.02, gl06: 0.02, panzerfaust: 0.02 });
+            expect(newRows(map, "tier_guns"), map).toMatchObject({ m79: 0.02, gl06: 0.02, panzerfaust: 0.2 });
         }
         expect(newRows("halloween", "tier_guns").m79).toBeUndefined();
-        expect(newRows("faction", "tier_guns").panzerfaust).toBeUndefined();
+        expect(newRows("faction", "tier_guns").m79).toBeUndefined();
+        // the owner's Panzerfaust (0.2) lies wherever the flare gun does, but in the potato modes (ownerLoot.ts)
+        expect(newRows("faction", "tier_guns").panzerfaust).toBe(0.2);
+        expect(newRows("halloween", "tier_guns").panzerfaust).toBe(0.2);
+        for (const map of ["woods", "potato", "faction_potato", "birthday"]) {
+            expect(newRows(map, "tier_guns").panzerfaust, map).toBeUndefined();
+        }
     });
 
     it("maps without a table get no row: 50v50, Potato vs Tomato and Cobalt have no tier 1; potato's gold is potatoes", () => {
