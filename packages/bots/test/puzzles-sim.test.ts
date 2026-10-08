@@ -2,13 +2,16 @@
 // an expert next to the club presses its switches in the круг order, breaks the bookshelf hiding the secret door and
 // the deposit boxes in the vault; a beginner who never learned the club code leaves its switches alone but presses the
 // bathhouse's single switch, and the ring-case vault opens; anyone uses the police cell panel and the bank vault door;
-// a bot at work walks off the moment an enemy shows up and stays off while it is around. Owner: bot interactions.
+// a bot at work walks off the moment an enemy shows up and stays off while it is around; in the greenhouse bunker, the
+// last room (behind a glass wall, no route) is given up at once instead of walked at along the glass. Owner: bot
+// interactions.
 import { type Vec2, v2 } from "@rebirth/core";
 import type { Game } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import { BRAIN_PRESETS } from "../src/brain/features.ts";
 import { floorGrid, type PuzzleSite, pieceFront, puzzleSites } from "../src/brain/puzzleSites.ts";
 import { BotController } from "../src/controller.ts";
+import { distanceToCollider, obstacleCollider, obstacleDef } from "../src/geom.ts";
 import { drawPuzzleKnowledge } from "../src/knowledge/puzzles.ts";
 import { installPerception } from "../src/perception/install.ts";
 import { WorldModel } from "../src/perception/world.ts";
@@ -178,4 +181,40 @@ describe("puzzles in a game", () => {
         expect(more).toBe(0);
         expect(doorOpen(game, club.doors[0].id)).toBe(false);
     });
+
+    it("gives the greenhouse bunker's room behind the glass up at once instead of sliding along the glass", () => {
+        // move-slide: an expert who knows both chrys codes presses 一二三四, then the planters, and loots compartment 2;
+        // compartment 3 lies behind a glass wall (only breaking it lets a player in) with no route on the grid: the bot
+        // walked straight at the room's middle and slid along the glass for 30 s, until the room stage ran out
+        const game = mainGame();
+        const sub = site(game, "bunker_chrys_sublevel_01");
+        const comp = site(game, "bunker_chrys_compartment_01");
+        expect(comp.rooms.length).toBe(2);
+        const behind = comp.rooms[1];
+        const glassSpawn = game.mapData.objects
+            .filter((o) => o.type === "glass_wall_12")
+            .sort((a, b) => v2.distance(a.pos, behind.center) - v2.distance(b.pos, behind.center))[0];
+        const def = obstacleDef("glass_wall_12");
+        if (!glassSpawn || !def) throw new Error("no glass wall");
+        const glass = obstacleCollider(def, glassSpawn.pos, glassSpawn.ori, glassSpawn.scale);
+        const bot = botAt(game, sub, "expert", 3);
+        const pm = bot.bot.brain.mem.puzzle;
+        const t = runUntil(game, [bot], () => pm.site === comp.index && pm.stage === "room", 50 * SECOND);
+        expect(t).toBeGreaterThan(0);
+        expect(pm.known?.has("bunker_chrys_01")).toBe(true);
+        let done = -1;
+        let atGlass = 0;
+        for (let i = 0; i < 15 * SECOND; i++) {
+            bot.update();
+            game.step();
+            const me = game.getPlayer(bot.playerId);
+            if (me && me.layer === 1 && distanceToCollider(me.pos, glass) < 2.5) atGlass++;
+            if (done < 0 && pm.finished.has(comp.index)) done = i;
+        }
+        // compartment 2 looted and compartment 3 given up within seconds; at the glass for a moment only
+        expect(done).toBeGreaterThan(0);
+        expect(done).toBeLessThan(8 * SECOND);
+        expect(atGlass).toBeLessThan(3 * SECOND);
+        expect(pm.site).not.toBe(comp.index);
+    }, 60_000);
 });

@@ -4,7 +4,7 @@
 import { v2 } from "@rebirth/core";
 import { describe, expect, it } from "vitest";
 import { endgameActive, holdScore, holdSpotScore, planHold } from "../src/brain/endgame.ts";
-import { healScore } from "../src/brain/survival.ts";
+import { healScore, zoneScore } from "../src/brain/survival.ts";
 import { PERSONAS } from "../src/persona.ts";
 import {
     addEnemy,
@@ -135,6 +135,29 @@ describe("endgame", () => {
         expect(healScore(ctxOf(w, []))).toBeLessThan(0.5);
         // not while the last enemy shoots it from close by
         addEnemy(w, 2, { x: 15, y: 0 });
+        expect(healScore(ctxOf(w, ["endgame"]))).toBeLessThan(0.9);
+    });
+
+    it("once the zone is gone, the zone behaviour gives way, and a heal to an enemy kneeling in a revive in reach", () => {
+        // the 50v50 endgame stall: held at 0.97 plus its hysteresis, "zone" pinned the last players to the centre
+        const w = testWorld();
+        giveGun(w, 0, "ak47");
+        setGas(w, { x: 30, y: 0 }, 0, "moving");
+        w.model.gas!.radOld = 0;
+        w.model.gas!.damage = 22;
+        expect(zoneScore(ctxOf(w, ["endgame"]))).toBeLessThan(0.6);
+        expect(zoneScore(ctxOf(w, []))).toBeGreaterThan(0.95);
+        // while the last circle still closes in, the zone keeps its urgency
+        w.model.gas!.radOld = 40;
+        w.model.gas!.gasT = 0.5;
+        expect(zoneScore(ctxOf(w, ["endgame"]))).toBeGreaterThan(0.95);
+        w.model.gas!.radOld = 0;
+        // a downed enemy that only bleeds out leaves time to heal; one reviving itself (Revivify) is finished first
+        w.model.self.health = 60;
+        w.model.self.inventory.bandage = 3;
+        const medic = addEnemy(w, 2, { x: 15, y: 0 }, { downed: true });
+        expect(healScore(ctxOf(w, ["endgame"]))).toBeGreaterThan(0.97);
+        medic.reviving = true;
         expect(healScore(ctxOf(w, ["endgame"]))).toBeLessThan(0.9);
     });
 });

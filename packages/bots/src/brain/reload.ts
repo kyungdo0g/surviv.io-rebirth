@@ -12,6 +12,7 @@ import type { Contact } from "../perception/world.ts";
 import { enemyGun } from "./assess.ts";
 import type { BrainCtx, Intent } from "./context.ts";
 import { isBusy } from "./opportunity.ts";
+import { shootRange } from "./pursuit.ts";
 
 /** Enemies farther than this that broke line of sight leave time for a reload. */
 const SAFE_DIST = 25;
@@ -69,6 +70,13 @@ export function manageReload(ctx: BrainCtx, intent: Intent): void {
     if (gun.reserve <= 0 || gun.mag >= maxClip) return;
     // never with an enemy in line of fire while rounds remain
     if (exposedTo.length && gun.mag > 0) return;
+    // nor with an enemy kneeling in a revive within reach (a self reviving Medic, or a teammate reviving it): finish it
+    // first, it stands up again otherwise (the 50v50 endgame: a top-up after a kill let the last Medic get back up)
+    if (
+        gun.mag > 0 &&
+        ctx.visibleEnemies.some((e) => e.downed && e.reviving && v2.distance(e.pos, self.pos) <= shootRange(ctx))
+    )
+        return;
     let want: boolean;
     if (standing.length === 0) {
         // nobody in sight: the usual top-up, and a full one right after a kill once things calmed down

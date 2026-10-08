@@ -71,14 +71,19 @@ function open(ctx: BrainCtx, room: SiteRoom, id: number): boolean {
 
 /**
  * The first room not looked into yet (loot lies on its floor: the club vault's machete) or with something left to
- * break, or null. A room the path follower just failed to reach counts as looked into.
+ * break, or null. A room the path follower just failed to reach from outside it is given up with everything in it: the
+ * greenhouse bunker's compartment 3 lies behind a glass wall (only breaking it lets a player in), and its case and
+ * crates, taken as still standing while the bot is not in the room, kept the bot walking at it for the rest of the
+ * stage (move-slide: 30 s along the glass).
  */
 function currentRoom(ctx: BrainCtx, site: PuzzleSite): SiteRoom | null {
     const pm = ctx.mem.puzzle;
     const failed = ctx.mem.failedGoal;
     site.rooms.forEach((r, i) => {
         const gaveUp = !!failed && ctx.now < ctx.mem.failedUntil && pointInBounds(failed, grow(r.bounds, 2));
-        if (insideRoom(ctx, r) || gaveUp) pm.visited.add(i);
+        const inside = insideRoom(ctx, r);
+        if (inside || gaveUp) pm.visited.add(i);
+        if (gaveUp && !inside) for (const id of r.containers) pm.roomSkip.add(id);
     });
     for (let i = 0; i < site.rooms.length; i++) {
         const r = site.rooms[i];

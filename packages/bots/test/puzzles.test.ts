@@ -273,6 +273,7 @@ describe("puzzle doors in the navigation", () => {
                 trajectory: h.digest("hex"),
                 nav,
                 map: game.mapData,
+                game,
             };
         };
         const quiet = run(false);
@@ -282,9 +283,9 @@ describe("puzzle doors in the navigation", () => {
         // the cells stay walls in its grid, and it walks exactly as when nobody touched the panel
         expect(pressed.cutOff).toBe(true);
         expect(pressed.trajectory).toBe(quiet.trajectory);
-        // its own grid, the plain one (the cells stamped under the door's own id), apart from the puzzle bots'
-        expect(pressed.nav).toBe(NavGrid.forMap(pressed.map));
-        expect(pressed.nav).not.toBe(NavGrid.forMap(pressed.map, { sealedDoors: true }));
+        // its own grid, its game's plain one (the cells stamped under the door's own id), apart from the puzzle bots'
+        expect(pressed.nav).toBe(NavGrid.forMap(pressed.map, { game: pressed.game }));
+        expect(pressed.nav).not.toBe(NavGrid.forMap(pressed.map, { sealedDoors: true, game: pressed.game }));
         expect(pressed.nav.learnsSealed).toBe(false);
         expect(pressed.nav.sealedDoors.size).toBe(0);
     }, 60_000);

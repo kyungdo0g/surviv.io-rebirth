@@ -1586,7 +1586,7 @@
                 "type": "gun",
                 "quality": 1,
                 "fireMode": "single",
-                "caseTiming": "shoot",
+                "caseTiming": "reload",
                 "ammo": "40mm",
                 "isLauncher": true,
                 "handHeld": true,
@@ -1641,8 +1641,7 @@
                 },
                 "particle": {
                     "shellScale": 1,
-                    "shellOffset": -1,
-                    "shellOffsetY": 1
+                    "shellOffset": 0.1
                 },
                 "sound": {
                     "shoot": "m79_01",
@@ -1801,8 +1800,7 @@
                 },
                 "particle": {
                     "shellScale": 1,
-                    "shellOffset": -1,
-                    "shellOffsetY": 1
+                    "shellOffset": 0.15
                 },
                 "sound": {
                     "shoot": "mgl_01",
@@ -1892,8 +1890,7 @@
                 },
                 "particle": {
                     "shellScale": 1,
-                    "shellOffset": -1,
-                    "shellOffsetY": 1
+                    "shellOffset": -0.05
                 },
                 "sound": {
                     "shoot": "gl06_01",

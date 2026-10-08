@@ -143,7 +143,7 @@ export class Bot {
         this.brainName = brainLabel(this.features);
         this.seed = opts.seed;
         this.rng = createRng(opts.seed);
-        this.model = new WorldModel(map, opts.nav ?? NavGrid.forMap(map, { sealedDoors: this.features.puzzles }));
+        this.model = new WorldModel(map, opts.nav ?? NavGrid.forBrain(map, this.features));
         this.model.memory = this.params.memory;
         installPerception(this.model, this.features);
         this.brain = new Brain(this.model, this.params, this.rng, this.features, {
