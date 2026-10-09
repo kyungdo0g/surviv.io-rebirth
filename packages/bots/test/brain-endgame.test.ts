@@ -2,8 +2,9 @@
 // scored (cover within 6 units, closeness to the centre, no water, threat heat), the hold behaviour's score and its
 // rotation in hops of at most 30 units, and the scanning crosshair while holding.
 import { v2 } from "@rebirth/core";
+import { getMapDef, mapWidth } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { endgameActive, holdScore, holdSpotScore, planHold } from "../src/brain/endgame.ts";
+import { endgameActive, endgameThresholds, holdScore, holdSpotScore, planHold } from "../src/brain/endgame.ts";
 import { healScore, zoneScore } from "../src/brain/survival.ts";
 import { PERSONAS } from "../src/persona.ts";
 import {
@@ -20,6 +21,17 @@ import {
 } from "./brain-world.ts";
 
 describe("endgame", () => {
+    it("scales the endgame thresholds with map width", () => {
+        const design = getMapDef("main");
+        const designWidth = mapWidth(design, "large");
+        expect(endgameThresholds("main", designWidth)).toEqual({ smallCircle: 80, fewAliveCircle: 150 });
+        const scale = 1225 / designWidth;
+        expect(endgameThresholds("main", 1225)).toEqual({
+            smallCircle: 80 * scale,
+            fewAliveCircle: 150 * scale,
+        });
+    });
+
     it("applies with ten players or fewer in a closing zone, or a next circle under 80 units", () => {
         const w = testWorld();
         expect(endgameActive(ctxOf(w, ["endgame"]))).toBe(false);

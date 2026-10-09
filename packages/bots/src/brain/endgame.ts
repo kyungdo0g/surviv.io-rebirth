@@ -1,5 +1,6 @@
 // Endgame positioning (BrainFeatures.endgame, the "hold" behaviour): once ten players or fewer are left (with the next
-// circle under 150 units), or the next circle is small (radius < 80), wandering and looting lose to holding a strong spot. The bot scores spots inside the
+// circle under 150 units at design width), or the next circle is small (radius < 80 at design width), wandering and looting lose to holding a strong spot. These
+// radius thresholds scale with map width. The bot scores spots inside the
 // next circle (searched at most every 2 s, among the obstacles it can see): bullet-blocking obstacles within 6 units
 // (cover on several sides), closeness to the circle centre (the zone will not push it out), no water, little threat
 // heat; it rotates there early in hops of at most 30 units from cover to cover, then holds, scanning around with its
@@ -12,6 +13,7 @@
 // armour (persona.ts mayCamp): the zone still comes first (spots are inside the next circle), and an under-armed camper
 // keeps moving.
 import { type Vec2, v2 } from "@rebirth/core";
+import { getMapDef, mapWidth } from "@rebirth/defs";
 import { hasAmmo } from "../knowledge/arsenal.ts";
 import { gunRank } from "../knowledge/gunTiers.ts";
 import { mayCamp } from "../persona.ts";
@@ -22,6 +24,16 @@ import { onLeash } from "./team.ts";
 const ALIVE_LIMIT = 10;
 const SMALL_CIRCLE = 80;
 const FEW_ALIVE_CIRCLE = 150;
+
+/** Endgame radius thresholds scaled to the played map width, relative to its design-size small/large variant. */
+export function endgameThresholds(mapName: string, width: number): { smallCircle: number; fewAliveCircle: number } {
+    const def = getMapDef(mapName);
+    const smallWidth = mapWidth(def, "small");
+    const largeWidth = mapWidth(def, "large");
+    const designWidth = Math.abs(width - smallWidth) < Math.abs(width - largeWidth) ? smallWidth : largeWidth;
+    const scale = width / designWidth;
+    return { smallCircle: SMALL_CIRCLE * scale, fewAliveCircle: FEW_ALIVE_CIRCLE * scale };
+}
 const SEARCH_EVERY = 2;
 const COVER_RADIUS = 6;
 const HOP = 30;
@@ -64,7 +76,11 @@ export function endgameActive(ctx: BrainCtx): boolean {
     const gas = ctx.model.gas;
     if (!gas || gas.mode === "inactive") return false;
     const alive = ctx.model.aliveCount;
-    return (alive > 0 && alive <= ALIVE_LIMIT && gas.radNew < FEW_ALIVE_CIRCLE) || gas.radNew < SMALL_CIRCLE;
+    const thresholds = endgameThresholds(ctx.model.map.mapName, ctx.model.map.width);
+    return (
+        (alive > 0 && alive <= ALIVE_LIMIT && gas.radNew < thresholds.fewAliveCircle) ||
+        gas.radNew < thresholds.smallCircle
+    );
 }
 
 /** How good a spot is to hold (higher is better), -Infinity when it is unusable. */
