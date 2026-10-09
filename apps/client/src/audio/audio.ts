@@ -118,6 +118,8 @@ export class AudioEngine {
     private volumes: Volumes = { master: 1, sound: 1, music: 1 };
     private buses: AudioBuses | null = null;
     private readonly buffers = new Map<string, AudioBuffer>();
+    /** Actual decoded URL by requested path; differs when a rebirth sound falls back to its donor. */
+    private readonly loadedFiles = new Map<string, string>();
     private readonly loading = new Map<string, Promise<AudioBuffer | null>>();
     private readonly failed = new Set<string>();
     /** playing instances by sound name + channel (survev registers each sound per channel) */
@@ -223,10 +225,16 @@ export class AudioEngine {
                     .then((data) => ctx.decodeAudioData(data));
             // a rebirth sound whose file is not installed plays its donor's original (soundDefs.ts soundFallback)
             const fallback = soundFallback(path);
+            let loadedFile = path;
             promise = fetchDecode(path)
-                .catch((err) => (fallback ? fetchDecode(fallback) : Promise.reject(err)))
+                .catch((err) => {
+                    if (!fallback) throw err;
+                    loadedFile = fallback;
+                    return fetchDecode(fallback);
+                })
                 .then((buffer) => {
                     this.buffers.set(path, buffer);
+                    this.loadedFiles.set(path, loadedFile);
                     return buffer;
                 })
                 .catch((err) => {
@@ -254,6 +262,12 @@ export class AudioEngine {
     isLoaded(name: string, channel: string): boolean {
         const def = soundDef(name, channel);
         return !!def && this.buffers.has(def.path);
+    }
+
+    /** Whether the named sound's own file decoded (not just a donor fallback). Used by e2e diagnostics. */
+    isLoadedExact(name: string, channel: string): boolean {
+        const def = soundDef(name, channel);
+        return !!def && this.loadedFiles.get(def.path) === def.path;
     }
 
     /** Updates the reverb send for the listener layer (call every frame). */
