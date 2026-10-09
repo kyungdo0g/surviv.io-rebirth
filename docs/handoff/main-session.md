@@ -53,6 +53,11 @@ docs/handoff/wip/2026-10-08-unfinished.patch`, then finish, measure and review e
 - **50v50 seed-11 endgame**: fixed (`2585deb`, knock at 50 HP once the zone has closed). The 50v50 test runs seeds 11
   and 12.
 
+- **Bots break what blocks them indoors** (owner, 2026-10-09): when a breakable obstacle (crate, barrel, furniture,
+  a breakable wall or door) blocks a bot's route *inside* a building, the bot breaks it and walks through instead of
+  turning back or getting stuck. Outdoors it keeps walking around. Start from the nav (`packages/bots/src/nav`: freed
+  cells already relabel at once since `1008af5`) and the crate-break deadlock fix (task #34).
+
 ## Owner setup notes
 
 - The owner's art and recordings live only in the gitignored `assets-user/` (the repository is public). They were sent
