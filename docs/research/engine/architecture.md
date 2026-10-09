@@ -45,6 +45,7 @@
 ## Match lifecycle
 
 - A game starts once more than one player (solo), group (duo/squad) or team (50v50) has a member who can no longer despawn; players can despawn during their first 10 s alive (`minActiveTime`) unless downed/dead or holding a 50v50 role [src:survev/server/src/game/gameModeManager.ts:46-63] [src:survev/server/src/game/gameModeManager.ts:135-137] [src:survev/server/src/game/objects/player.ts:3116-3123] [src:survev/shared/gameConfig.ts:192] [H]
+- The rebirth also starts a game at once when it reaches its player cap (`rules.startWhenFull`, the owner's ruling; `rebirth-deviations.md` "Start when full") [src:user/2026-10-08-start-when-full] [H]
 - On start the gas advances to its first stage [src:survev/server/src/game/game.ts:182-186] [H]
 - A game that has not started and has had no connected player for 30 s stops itself [src:survev/server/src/game/game.ts:187-201] [H]
 - New players can join while alive players < map `maxPlayers` (80; 100 for 50v50), the game is not over and less than 60 s have passed since start [src:survev/server/src/game/game.ts:344-350] [src:survev/shared/defs/maps/factionDefs.ts:98] [H]

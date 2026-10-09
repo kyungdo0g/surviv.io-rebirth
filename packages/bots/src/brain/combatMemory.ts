@@ -13,7 +13,7 @@ import type { Vec2 } from "@rebirth/core";
 /** One combat decision worth a look afterwards (tests, match diagnostics). */
 export interface CombatTraceEntry {
     t: number;
-    kind: "cook" | "unseen" | "smoke" | "prefire" | "faint" | "cover" | "frag" | "judge";
+    kind: "cook" | "unseen" | "smoke" | "prefire" | "faint" | "cover" | "frag" | "judge" | "blast";
     detail: string;
 }
 

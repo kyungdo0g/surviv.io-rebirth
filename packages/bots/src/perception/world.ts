@@ -36,7 +36,7 @@ import { canopyAmong, concealedAmong, LOOT_RAD, Reveals } from "./foliage.ts";
 import { type EnemyIntelProvider, NO_INTEL } from "./intel.ts";
 import { LastSeenTracker } from "./lastSeen.ts";
 import { segmentHitsCollider } from "./rays.ts";
-import { roofRegions } from "./roofs.ts";
+import { roofsSeen } from "./roofs.ts";
 import { emptySelf, type SelfState } from "./selfState.ts";
 import { screenBounds } from "./sight.ts";
 import { NO_THREATS, type ThreatBoard } from "./threats.ts";
@@ -323,7 +323,7 @@ export class WorldModel {
         this.buildings = [];
         for (const o of snap.objects) if (o.kind === "building") this.buildings.push(o);
         const selfPos = this.self.pos;
-        const roofs = roofRegions(this.buildings, this.roofCache).filter(
+        const roofs = roofsSeen(this.buildings, this.roofCache, this.self.layer, !!this.underground).filter(
             (r) => !r.regions.some((b) => pointInBounds(selfPos, b)),
         );
         this.roofBoxes = [];

@@ -53,7 +53,9 @@ export class UnlockSystem {
     /** The gas entered circle `circleIdx` (a waiting stage started): schedules that circle's unlocks. */
     onCircle(circleIdx: number): void {
         for (const t of unlockTimings(this.ctx.world.mapData.mapName, this.ctx.rules)) {
-            if (t.circleIdx === circleIdx) this.scheduled.push({ type: t.type, stagger: t.stagger, time: t.wait });
+            // the wait stretches with the gas on a map grown by the player cap (Gas.timeScale)
+            const time = t.wait * (this.ctx.gas.timeScale ?? 1);
+            if (t.circleIdx === circleIdx) this.scheduled.push({ type: t.type, stagger: t.stagger, time });
         }
     }
 

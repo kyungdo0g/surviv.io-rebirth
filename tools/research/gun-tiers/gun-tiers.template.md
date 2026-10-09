@@ -258,7 +258,7 @@ reviewed B-, section 1a), and the SPAS-16's S.
 The full grouped list is table 1. Every gun's numbers are in [gun-tiers-stats.md](gun-tiers-stats.md).
 
 **Launchers against a stationary target.** The composite scores every gun against a target strafing at 3.5 u/s. That
-target steps out of slow rounds: Panzerfaust 35 u/s, M79 40, M202 55, RPG-7 85. Bots fire launchers at groups,
+target steps out of slow rounds: Panzerfaust 35 u/s (70 since 2026-10-08), M79 40, M202 55, RPG-7 85. Bots fire launchers at groups,
 campers and busy targets (`brain/launch.ts`), which hold still. The same composite with no dodge (`DODGE=0`, every
 gun rescored on its own cuts) gives the right-hand columns:
 

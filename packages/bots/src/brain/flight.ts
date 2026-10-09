@@ -22,6 +22,7 @@ import { gunInfo, isMeleeWeapon } from "../knowledge/weapons.ts";
 import type { Contact, SeenLoot } from "../perception/world.ts";
 import { fleeHealth } from "../persona.ts";
 import { enemyGun, engagingMe, faces } from "./assess.ts";
+import { blastDropsSpot } from "./blast.ts";
 import { addCombatLayer, findCoverFrom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent, nearFailedGoal, reachable } from "./context.ts";
 import { dangerToLeave, inDangerBuilding, noteDanger } from "./danger.ts";
@@ -270,7 +271,8 @@ export function planFlight(ctx: BrainCtx): Intent {
         // hunted (it comes at the bot): run, through cover on the way at most; else cover to hide behind and hold
         const hunted = primary.visible && closingSpeed(ctx, primary) > HUNTING;
         let spot = pm.fleeSpot;
-        const stale = !spot || now > pm.fleeSpotUntil || nearFailedGoal(ctx, spot);
+        // (a spot behind an explosive being shot is no hiding place: blast.ts)
+        const stale = !spot || now > pm.fleeSpotUntil || nearFailedGoal(ctx, spot) || blastDropsSpot(ctx, spot);
         if (stale || (spot && model.lineOfFire(primary.pos, spot))) {
             spot = flightCover(ctx, primary, away);
             pm.fleeSpot = spot;

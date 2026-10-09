@@ -38,7 +38,8 @@ export function promoteToRole(ctx: SimContext, player: Player, role: string): vo
     const def = getDefOfType("role", role);
     const rules = ctx.rules.roles;
     if (role === "leader") {
-        // the Commander's flare gun is locked until fired; the fork fires it after 15 s (role-leader-auto-flare)
+        // the Commander's flare gun is locked until fired; it fires itself after leaderAutoFlareDelay (the owner's 5 s,
+        // the fork's 15 s: role-leader-auto-flare)
         player.firedFlare = !rules.leaderFlareLocked;
         player.flareTimer = rules.leaderAutoFlareDelay;
     }

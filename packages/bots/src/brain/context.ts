@@ -49,7 +49,9 @@ export type BehaviourName =
     // bot round 6 early game (BrainFeatures.fistRush): an unarmed rush at an armed enemy
     | "rush"
     // bot interactions (BrainFeatures.puzzles): code puzzles, switches, control panels, vault doors and their rooms
-    | "puzzle";
+    | "puzzle"
+    // basements and bunkers (BrainFeatures.basements): down a known basement's stairs and through its rooms
+    | "basement";
 
 export interface ThrowPlan {
     /** throwable to use (frag, mirv, smoke) */

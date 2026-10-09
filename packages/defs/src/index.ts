@@ -19,6 +19,7 @@ import type {
 
 export * from "./constants.ts";
 export {
+    mapDefForPlayers,
     rebirthDeviations,
     rebirthOnlyIds,
     rebirthOnlyMapObjectIds,

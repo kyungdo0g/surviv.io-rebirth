@@ -6,20 +6,30 @@
 // owner's later decisions (MANIFEST.md "Owner decisions", round 2): the Mk 14 EBR fires like the MK12 SPR and
 // switches / reloads like the Mk 20 SSR (whose def plays the SCAR files), the AS Val and the AK-47 reload like the new
 // AK-74 (so its donor is the AK-47's reload), the TEC-9 reloads like the G18C.
+// Guns overhaul (owner, 2026-10-08: "none of my images are used; the RPG-7 and the M202 show the same icon"): every
+// stand-in is a gun of the same class and action. No two new guns share a stand-in icon: the six launchers show our
+// own drawn icons (DRAWN_LOOT_ICONS), the others an original's of their class and look. In sound the launchers part
+// ways (the 40 mm launchers the potato cannon's thump, the RPG-7 the flare gun's rocket whoosh, the Panzerfaust the
+// Barrett's blast, the M202 the USAS-12's explosive boom); the semi-automatic WA2000 and Lynx sound like the SVD and
+// the Barrett M107, the bolt-action Hécate II has the Barrett's report with the AWM-S bolt, the TEC-9 the
+// semi-automatic M9's, the M60 the belt-fed M249's, the DShK the DP-28's.
 
-/** The sheet's fallback loot icon of each new gun (an original gun's icon), drawn while the owner's is missing. */
+/**
+ * The fallback loot icon of each new gun, drawn while the owner's is missing: an original or survev gun of the same
+ * class and look, or for the launchers our own drawing (DRAWN_LOOT_ICONS).
+ */
 export const NEW_GUN_LOOT_FALLBACKS: Readonly<Record<string, string>> = {
     ak74: "loot-weapon-ak.img",
     g36c: "loot-weapon-hk416.img",
     m16a4: "loot-weapon-famas.img",
-    sig550: "loot-weapon-hk416.img",
+    sig550: "loot-weapon-an94.img",
     g3: "loot-weapon-scar.img",
     honeybadger: "loot-weapon-m4a1.img",
-    fal: "loot-weapon-m39.img",
+    fal: "loot-weapon-mk12.img",
     mk14: "loot-weapon-m39.img",
-    wa2000: "loot-weapon-sv98.img",
+    wa2000: "loot-weapon-svd.img",
     tec9: "loot-weapon-m93r.img",
-    tec9_dual: "loot-weapon-m9-dual.img",
+    tec9_dual: "loot-weapon-m93r-dual.img",
     vz61: "loot-weapon-glock.img",
     vz61_dual: "loot-weapon-glock-dual.img",
     bizon: "loot-weapon-mp5.img",
@@ -28,20 +38,36 @@ export const NEW_GUN_LOOT_FALLBACKS: Readonly<Record<string, string>> = {
     p90: "loot-weapon-vector.img",
     dp12: "loot-weapon-m870.img",
     aa12: "loot-weapon-saiga.img",
-    m79: "loot-weapon-potato-cannon.img",
-    mgl: "loot-weapon-potato-cannon.img",
-    gl06: "loot-weapon-potato-cannon.img",
-    rpg7: "loot-weapon-potato-cannon.img",
-    panzerfaust: "loot-weapon-potato-cannon.img",
-    m202: "loot-weapon-potato-cannon.img",
-    m200: "loot-weapon-sv98.img",
+    m79: "loot-weapon-m79-drawn.img",
+    mgl: "loot-weapon-mgl-drawn.img",
+    gl06: "loot-weapon-gl06-drawn.img",
+    rpg7: "loot-weapon-rpg7-drawn.img",
+    panzerfaust: "loot-weapon-panzerfaust-drawn.img",
+    m202: "loot-weapon-m202-drawn.img",
+    m200: "loot-weapon-scout.img",
     hecate: "loot-weapon-awc.img",
-    lynx: "loot-weapon-awc.img",
+    lynx: "loot-weapon-sv98.img",
     boys: "loot-weapon-mosin.img",
-    m60: "loot-weapon-pkp.img",
+    m60: "loot-weapon-m249.img",
     mg42: "loot-weapon-pkp.img",
-    dshk: "loot-weapon-pkp.img",
+    dshk: "loot-weapon-dp28.img",
 };
+
+/**
+ * New guns whose fallback loot icon is our own drawing (tools/assets/rebirthArt/lootIcons.ts; no original or survev
+ * icon shows a launcher): sprite `loot-weapon-<id>-drawn.img`, a committed SVG served from /rebirth/loot/.
+ */
+export const DRAWN_LOOT_ICONS: readonly string[] = ["m79", "mgl", "gl06", "rpg7", "panzerfaust", "m202"];
+
+/** Sprite id of a drawn fallback loot icon ("rpg7" -> "loot-weapon-rpg7-drawn.img"). */
+export function drawnLootIconSprite(id: string): string {
+    return `loot-weapon-${id}-drawn.img`;
+}
+
+/** Served URL of a drawn fallback loot icon ("rpg7" -> "/rebirth/loot/loot-weapon-rpg7.svg"). */
+export function drawnLootIconUrl(id: string): string {
+    return `/rebirth/loot/loot-weapon-${id}.svg`;
+}
 
 /**
  * Every sound a new gun names that the original lists lack -> the original sound that plays when the owner's clip is
@@ -74,15 +100,13 @@ export const NEW_GUN_SOUND_DONORS: Readonly<Record<string, string>> = {
     mk14_01: "mk12_01",
     mk14_reload_01: "scar_reload_01",
     mk14_switch_01: "scar_switch_01",
-    wa2000_01: "sv98_01",
-    wa2000_reload_01: "sv98_reload_01",
-    wa2000_switch_01: "sv98_cycle_01",
-    wa2000_cycle_01: "sv98_cycle_01",
-    wa2000_pull_01: "sv98_pull_01",
-    tec9_01: "m93r_01",
+    wa2000_01: "svd_01",
+    wa2000_reload_01: "svd_reload_01",
+    wa2000_switch_01: "svd_switch_01",
+    tec9_01: "m9_01",
     // owner (MANIFEST.md round 1): TEC-9 reload = the original G18C reload, so the dual TEC-9's is the dual G18C's
     tec9_reload_01: "glock_reload_01",
-    tec9_switch_01: "m93r_switch_01",
+    tec9_switch_01: "m9_switch_01",
     tec9_reload_02: "glock_reload_02",
     vz61_01: "glock_01",
     vz61_reload_01: "glock_reload_01",
@@ -110,52 +134,50 @@ export const NEW_GUN_SOUND_DONORS: Readonly<Record<string, string>> = {
     aa12_reload_01: "saiga_reload_01",
     aa12_switch_01: "saiga_switch_01",
     m79_01: "potato_cannon_01",
-    m79_reload_01: "potato_cannon_reload_01",
-    m79_switch_01: "potato_cannon_switch_01",
+    m79_reload_01: "flare_gun_reload_01",
+    m79_switch_01: "usas_switch_01",
     mgl_01: "potato_cannon_01",
-    mgl_reload_01: "potato_cannon_reload_01",
-    mgl_switch_01: "potato_cannon_switch_01",
+    mgl_reload_01: "m1014_reload_01",
+    mgl_switch_01: "usas_switch_01",
     gl06_01: "potato_cannon_01",
     gl06_reload_01: "potato_cannon_reload_01",
     gl06_switch_01: "potato_cannon_switch_01",
-    rpg7_01: "potato_cannon_01",
+    rpg7_01: "flare_gun_01",
     rpg7_reload_01: "potato_cannon_reload_01",
-    rpg7_switch_01: "potato_cannon_switch_01",
-    panzerfaust_01: "potato_cannon_01",
-    panzerfaust_switch_01: "potato_cannon_switch_01",
+    rpg7_switch_01: "barrett_switch_01",
+    panzerfaust_01: "barrett_01",
+    panzerfaust_switch_01: "barrett_switch_01",
     panzerfaust_discard_01: "gun_pickup_01",
-    m202_01: "potato_cannon_01",
-    m202_switch_01: "potato_cannon_switch_01",
+    m202_01: "usas_01",
+    m202_switch_01: "m249_switch_01",
     m202_discard_01: "gun_pickup_01",
     m200_01: "sv98_01",
     m200_reload_01: "sv98_reload_01",
     m200_switch_01: "sv98_cycle_01",
     m200_cycle_01: "sv98_cycle_01",
     m200_pull_01: "sv98_pull_01",
-    hecate_01: "awc_01",
-    hecate_reload_01: "awc_reload_01",
+    hecate_01: "barrett_01",
+    hecate_reload_01: "barrett_reload_01",
     hecate_switch_01: "awc_cycle_01",
     hecate_cycle_01: "awc_cycle_01",
     hecate_pull_01: "awc_pull_01",
-    lynx_01: "awc_01",
-    lynx_reload_01: "awc_reload_01",
-    lynx_switch_01: "awc_cycle_01",
-    lynx_cycle_01: "awc_cycle_01",
-    lynx_pull_01: "awc_pull_01",
-    boys_01: "mosin_01",
+    lynx_01: "barrett_01",
+    lynx_reload_01: "barrett_reload_01",
+    lynx_switch_01: "barrett_switch_01",
+    boys_01: "sv98_01",
     boys_switch_01: "mosin_cycle_01",
     boys_cycle_01: "mosin_cycle_01",
     boys_pull_01: "mosin_pull_01",
     boys_discard_01: "gun_pickup_01",
-    m60_01: "pkp_01",
-    m60_reload_01: "pkp_reload_01",
-    m60_switch_01: "pkp_switch_01",
+    m60_01: "m249_01",
+    m60_reload_01: "m249_reload_01",
+    m60_switch_01: "m249_switch_01",
     mg42_01: "pkp_01",
     mg42_reload_01: "pkp_reload_01",
     mg42_switch_01: "pkp_switch_01",
-    dshk_01: "pkp_01",
-    dshk_reload_01: "pkp_reload_01",
-    dshk_switch_01: "pkp_switch_01",
+    dshk_01: "dp28_01",
+    dshk_reload_01: "m249_reload_01",
+    dshk_switch_01: "dp28_switch_01",
 };
 
 /**

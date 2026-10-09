@@ -49,7 +49,12 @@ export interface RoleRules {
      * perk but Martyrdom (survev perkDefs.ts:166-182 PerkProperties.classless.perkPool)
      */
     classlessPerkPool: readonly string[];
-    /** the Commander's flare gun fires itself after 15 s (conflicts.md role-leader-auto-flare: fork 0.1.2, off) */
+    /**
+     * The Commander's flare gun fires itself `leaderAutoFlareDelay` s after the promotion unless it was fired by then:
+     * survev's fork (0.1.2) after 15 s (conflicts.md role-leader-auto-flare; survev player.ts:885-888, 1478-1495).
+     * Rebirth (the owner's ruling, rebirth-deviations.md "The Commander's automatic flare"): on, after 5 s. The
+     * Commander exists only on 50v50 maps; false leaves the flare to the player (v0.8.82).
+     */
     leaderAutoFlare: boolean;
     leaderAutoFlareDelay: number;
     /** the Commander's flare gun cannot be dropped or swapped out before it was fired (survev weaponManager) */
@@ -130,8 +135,8 @@ export function defaultRoleRules(): RoleRules {
             "firepower",
             "bonus_assault",
         ],
-        leaderAutoFlare: false,
-        leaderAutoFlareDelay: 15,
+        leaderAutoFlare: true,
+        leaderAutoFlareDelay: 5,
         leaderFlareLocked: true,
         factionAirstrikeWaits: { 2: 24, 4: 18 },
         factionAirstrikeVariants: { ...DEFAULT_AIRSTRIKE_VARIANT_WEIGHTS },

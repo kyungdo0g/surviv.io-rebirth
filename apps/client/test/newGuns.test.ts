@@ -7,6 +7,8 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { BitReader, BitWriter } from "@rebirth/core";
 import {
+    DRAWN_LOOT_ICONS,
+    drawnLootIconUrl,
     GameObjectDefs,
     type GunDef,
     getDefOfType,
@@ -27,7 +29,9 @@ import {
 import { emptyLocalState, LOCAL_ALL_DIRTY, quantizeLocal, readLocal, writeLocal } from "@rebirth/protocol";
 import { type BulletEvent, emptyInput, Game, generateMap, type LocalPlayerState, type PlayerInput } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
+import { installPlan } from "../../../tools/assets/newGunInstall.ts";
 import { SPRITES, type SpriteEntry } from "../src/assets/spriteManifest.ts";
+import { rebirthSoundDefs } from "../src/audio/rebirthSounds.ts";
 import { soundDef, soundFallback } from "../src/audio/soundDefs.ts";
 import { cycleSoundAfterShot, discardedGuns, LauncherFx, pumpedShot } from "../src/fx/newGunFx.ts";
 import type { ParticleSystem } from "../src/fx/particles.ts";
@@ -35,7 +39,8 @@ import generatedSounds from "../src/generated/sound-defs.json";
 import { barLength, hasEmptyHeldImage, heldGunImage, isBarSprite, ownHeldSprite } from "../src/objects/heldGun.ts";
 import { AMMO_COLORS } from "../src/ui/hudAmmo.ts";
 
-const ASSETS = join(import.meta.dirname, "../public/assets");
+const PUBLIC = join(import.meta.dirname, "../public");
+const ASSETS = join(PUBLIC, "assets");
 const HAVE_ASSETS = existsSync(join(ASSETS, "audio"));
 const gun = (id: string) => GameObjectDefs[id] as GunDef;
 /** Guns with a drawn top-down held sprite (packages/defs rebirth/heldGunArt.ts). */
@@ -54,7 +59,7 @@ const holdsDrawn = (id: string) => DRAWN.has(id.replace(/_dual$/, ""));
 const ORIGINAL_PLAYERS = (generatedSounds.lists as Record<string, Record<string, { path: string }>>).players;
 
 describe("new guns: loot icons", () => {
-    it("each is the owner's icon under img/rebirth, falling back to an original gun's icon", () => {
+    it("each is the owner's icon under img/rebirth, falling back to an original's or, for a launcher, our drawing", () => {
         for (const id of NEW_GUN_IDS) {
             const sprite = gun(id).lootImg.sprite;
             const entry = SPRITES[sprite];
@@ -62,12 +67,35 @@ describe("new guns: loot icons", () => {
             expect(entry?.path).toBe(`img/rebirth/${sprite.replace(".img", "")}.png`);
             expect(entry?.fallback).toBe(NEW_GUN_LOOT_FALLBACKS[id]);
             const fallback = SPRITES[entry!.fallback!];
-            expect(fallback?.source, entry!.fallback).toBe("original-0.8.82");
-            // tools/assets/newGuns.ts installs a file for every icon (the owner's cut, or a copy of the fallback)
+            if (DRAWN_LOOT_ICONS.includes(id)) {
+                // our own art, committed and served from /rebirth/loot/ (no install step)
+                expect(fallback, id).toEqual({ source: "rebirth", path: drawnLootIconUrl(id), size: [128, 128] });
+                expect(existsSync(join(PUBLIC, fallback!.path!)), fallback!.path).toBe(true);
+            } else {
+                expect(fallback?.source, entry!.fallback).toBe("original-0.8.82");
+            }
+            // tools/assets/newGuns.ts installs a file for every icon (the owner's cut, or the fallback)
             if (HAVE_ASSETS && existsSync(join(ASSETS, "img/rebirth"))) {
                 expect(existsSync(join(ASSETS, entry!.path!)), entry!.path).toBe(true);
             }
         }
+    });
+
+    it("the installer writes every rebirth file the client requests under /assets/ (icons, emotes, sounds)", () => {
+        const plan = installPlan();
+        const planned = new Set([...plan.icons, ...plan.emotes, ...plan.sounds]);
+        const requested: string[] = [];
+        for (const entry of Object.values(SPRITES)) {
+            // committed rebirth art is named by its absolute URL and ships with the client
+            if (entry.source === "rebirth" && entry.path && !entry.path.startsWith("/")) requested.push(entry.path);
+        }
+        for (const list of ["players", "ui"]) {
+            for (const def of Object.values(rebirthSoundDefs(generatedSounds.lists)[list] ?? {}))
+                requested.push(def.path);
+        }
+        expect(requested.length).toBeGreaterThan(NEW_GUN_IDS.length + 90);
+        for (const path of requested) expect(planned.has(path), path).toBe(true);
+        expect(requested.length).toBe(planned.size);
     });
 });
 
@@ -312,7 +340,8 @@ describe("new guns: sounds", () => {
         for (const id of NEW_GUN_IDS) {
             for (const [field, name] of Object.entries(gun(id).sound)) {
                 if (typeof name !== "string" || !name) continue;
-                const def = soundDef(name, field === "pickup" ? "ui" : "activePlayer");
+                // the pickup and the discard of a spent tube play on the pickups' ui channel
+                const def = soundDef(name, field === "pickup" || field === "discard" ? "ui" : "activePlayer");
                 expect(def, `${id}.sound.${field}: ${name}`).toBeDefined();
                 if (field === "pickup" || name.startsWith("empty_fire")) continue;
                 expect(def!.path).toBe(`audio/rebirth/guns/${name}.mp3`);

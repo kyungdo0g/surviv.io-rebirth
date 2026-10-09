@@ -6,6 +6,9 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
     CHARGE_AMMO_IDS,
+    DRAWN_LOOT_ICONS,
+    drawnLootIconSprite,
+    drawnLootIconUrl,
     GameConfig,
     GameObjectDefs,
     type GunDef,
@@ -326,14 +329,25 @@ describe("new guns: art and sound fallbacks (src/rebirth/newGunAssets.ts)", () =
         for (const donor of Object.values(NEW_GUN_SOUND_DONORS)) expect(NEW_GUN_SOUND_DONORS[donor]).toBeUndefined();
     });
 
-    it("every new gun has a fallback loot icon: an original gun's", () => {
+    it("every new gun has its own fallback loot icon: a gun's of its class, or for a launcher our own drawing", () => {
         expect(Object.keys(NEW_GUN_LOOT_FALLBACKS)).toEqual(NEW_GUN_IDS);
-        const iconsOfOtherGuns = new Set(
-            Object.entries(GameObjectDefs)
-                .filter(([id, d]) => d.type === "gun" && !NEW_GUN_IDS.includes(id))
-                .map(([, d]) => (d as GunDef).lootImg.sprite),
+        const otherGuns = Object.entries(GameObjectDefs).filter(
+            ([id, d]) => d.type === "gun" && !NEW_GUN_IDS.includes(id),
         );
-        for (const [id, icon] of Object.entries(NEW_GUN_LOOT_FALLBACKS))
-            expect(iconsOfOtherGuns.has(icon), id).toBe(true);
+        const classOfIcon = new Map(otherGuns.map(([id, d]) => [(d as GunDef).lootImg.sprite, gunClass(id)]));
+        // the closest look where the class has none: the SVD for the semi-automatic WA2000, the VSS for the AS Val
+        const lookAlike: Record<string, string> = { wa2000: "dmr", asval: "dmr" };
+        for (const [id, icon] of Object.entries(NEW_GUN_LOOT_FALLBACKS)) {
+            if (DRAWN_LOOT_ICONS.includes(id)) {
+                expect(icon, id).toBe(drawnLootIconSprite(id));
+                continue;
+            }
+            expect(classOfIcon.has(icon), `${id}: ${icon}`).toBe(true);
+            expect(classOfIcon.get(icon), `${id}: ${icon}`).toBe(lookAlike[id] ?? gunClass(id));
+        }
+        // owner, 2026-10-08: the RPG-7 and the M202 showed the same icon; now no two new guns share one
+        expect(new Set(Object.values(NEW_GUN_LOOT_FALLBACKS)).size).toBe(NEW_GUN_IDS.length);
+        expect(DRAWN_LOOT_ICONS).toEqual(NEW_GUN_IDS.filter((id) => gunClass(id) === "launcher"));
+        expect(drawnLootIconUrl("rpg7")).toBe("/rebirth/loot/loot-weapon-rpg7.svg");
     });
 });

@@ -1,7 +1,13 @@
 // Small WebAudio engine playing the original mp3s with the original mixing rules (survev
 // client/src/audioManager.ts; docs/research/ui/audiovisual-style.md "Sound engine"):
-//   volume = channel volume x sound volume x base 0.5 x master 0.5, and for positional sounds on any channel but
-//   the local player's x (1 - d / range)^(1 + 2 fallOff), pan = horizontal offset / range; other layers x 0.5.
+//   volume = channel volume x sound volume x base 0.5 x the Master slider (1 by default), and for positional sounds on
+//   any channel but the local player's x (1 - d / range)^(1 + 2 fallOff), pan = horizontal offset / range; other
+//   layers x 0.5. The master gain feeds a default DynamicsCompressor before the speakers (survev lib/createJS.ts:457-460;
+//   survev's CreateJS volume 0.5 of audioManager.ts:58 is replaced at startup by the config's masterVolume 1:
+//   main.ts:408 onConfigModified -> :543 setMasterVolume, config.ts:105).
+// Instances: at most `maxInstances` of a sound per channel play at once (survev audioManager.ts:148 registers each
+// sound as name + channel); one more stops the instance that ends soonest and starts (createJS.ts:680-690 "kill the
+// oldest instance"; 16 without a def value, :588), and at most 128 play in all (createJS.ts:27 kMaxInstances).
 // The AudioContext is only created on the first user gesture (autoplay policy). Files load lazily on first use (or
 // through `preload`) and are cached; a sound whose file is still loading plays only if it arrives promptly (or
 // whenever it arrives, for `late` sounds such as loops). Looping and moving sources (planes, falling crates) keep
@@ -21,15 +27,24 @@ import { Channels, soundDef, soundFallback, soundGroup } from "./soundDefs.ts";
 
 const ASSET_ROOT = "/assets/";
 const BASE_VOLUME = 0.5;
-const MASTER_VOLUME = 0.5;
 /** quieter sounds are not started (survev AudioManagerMinAllowedVolume) */
 const MIN_VOLUME = 0.003;
 const DIFF_LAYER_MULT = 0.5;
 /** a lazily loaded sound still plays if its file arrived within this many ms of the request */
 const LATE_PLAY_MS = 200;
-const MAX_INSTANCES = 64;
+/** survev createJS kMaxInstances: sounds playing at once in all */
+const MAX_INSTANCES = 128;
+/** instances of one sound on one channel when its def names no maxInstances (survev createJS.ts:588) */
+const DEFAULT_SOUND_INSTANCES = 16;
 /** survev createJS kCoalesceTime: instances ending this close together merge */
 const COALESCE_TIME = 0.03;
+
+/** a playing instance of a sound, counted against its per-channel limit */
+interface Instance {
+    handle: SoundHandle;
+    /** context time at which it ends (Infinity for a loop) */
+    stopTime: number;
+}
 
 /** a playing instance of a canCoalesce sound */
 interface CoalesceTarget {
@@ -94,6 +109,8 @@ export interface Volumes {
 export class AudioEngine {
     private ctx: AudioContext | null = null;
     private master: GainNode | null = null;
+    /** between the master gain and the speakers (survev createJS.ts:457-460) */
+    private compressor: DynamicsCompressorNode | null = null;
     /** every channel but music (the SFX volume) */
     private soundBus: GainNode | null = null;
     /** the music channel (the Music volume) */
@@ -103,7 +120,10 @@ export class AudioEngine {
     private readonly buffers = new Map<string, AudioBuffer>();
     private readonly loading = new Map<string, Promise<AudioBuffer | null>>();
     private readonly failed = new Set<string>();
-    private readonly playing = new Map<string, number>();
+    /** playing instances by sound name + channel (survev registers each sound per channel) */
+    private readonly instances = new Map<string, Instance[]>();
+    /** instances stopped to make room for a new play of the same sound (tests, debug) */
+    evicted = 0;
     private readonly coalescing = new Map<string, CoalesceTarget[]>();
     /** plays merged into a playing instance (tests, debug) */
     coalesced = 0;
@@ -155,7 +175,7 @@ export class AudioEngine {
     }
 
     private applyGains(): void {
-        if (this.master) this.master.gain.value = this.muted ? 0 : MASTER_VOLUME * this.volumes.master;
+        if (this.master) this.master.gain.value = this.muted ? 0 : this.volumes.master;
         if (this.soundBus) this.soundBus.gain.value = this.volumes.sound;
         if (this.musicBus) this.musicBus.gain.value = this.volumes.music;
     }
@@ -171,7 +191,9 @@ export class AudioEngine {
             try {
                 this.ctx = new AudioContext();
                 this.master = this.ctx.createGain();
-                this.master.connect(this.ctx.destination);
+                this.compressor = this.ctx.createDynamicsCompressor();
+                this.master.connect(this.compressor);
+                this.compressor.connect(this.ctx.destination);
                 this.soundBus = this.ctx.createGain();
                 this.soundBus.connect(this.master);
                 this.musicBus = this.ctx.createGain();
@@ -276,9 +298,7 @@ export class AudioEngine {
         if (volume <= MIN_VOLUME && !opts.ignoreMinAllowable && !opts.startSilent) return null;
         const buffer = this.buffers.get(def.path);
         if (buffer && def.canCoalesce && !opts.loop && this.coalesce(name, buffer, volume, pan)) return null;
-        if ((this.playing.get(name) ?? 0) >= (def.maxInstances ?? MAX_INSTANCES) || this.active >= MAX_INSTANCES) {
-            return null;
-        }
+        if (this.active >= MAX_INSTANCES) return null;
 
         const handle: SoundHandle = { name, source: null, stopped: false };
         if (buffer) {
@@ -358,32 +378,60 @@ export class AudioEngine {
         if (this.buses && opts.pos && opts.filter !== "none" && opts.channel !== "ambient")
             panner.connect(this.buses.reverb);
         const name = handle.name;
-        this.playing.set(name, (this.playing.get(name) ?? 0) + 1);
+        const channelName = opts.channel ?? "activePlayer";
+        const key = `${name}|${channelName}`;
+        const delay = (opts.delay ?? 0) / 1000;
+        const offset = opts.offset ? opts.offset % buffer.duration : 0;
+        const rate = opts.detune ? 2 ** (opts.detune / 1200) : 1;
+        const instance: Instance = {
+            handle,
+            stopTime: opts.loop
+                ? Number.POSITIVE_INFINITY
+                : ctx.currentTime + delay + (buffer.duration - offset) / rate,
+        };
+        const list = this.instances.get(key) ?? [];
+        this.makeRoom(list, soundDef(name, channelName)?.maxInstances ?? DEFAULT_SOUND_INSTANCES);
+        list.push(instance);
+        this.instances.set(key, list);
         this.active++;
         let target: CoalesceTarget | null = null;
-        if (soundDef(name, opts.channel ?? "activePlayer")?.canCoalesce && !opts.loop) {
+        if (soundDef(name, channelName)?.canCoalesce && !opts.loop) {
             target = { handle, stopTime: ctx.currentTime + buffer.duration, volume, pan };
-            const list = this.coalescing.get(name) ?? [];
-            list.push(target);
-            this.coalescing.set(name, list);
+            const targets = this.coalescing.get(name) ?? [];
+            targets.push(target);
+            this.coalescing.set(name, targets);
         }
         source.onended = () => {
-            this.playing.set(name, Math.max(0, (this.playing.get(name) ?? 1) - 1));
+            const at = list.indexOf(instance);
+            if (at >= 0) list.splice(at, 1);
             this.active = Math.max(0, this.active - 1);
             source.disconnect();
             handle.source = null;
             if (target) {
-                const list = this.coalescing.get(name);
-                const i = list?.indexOf(target) ?? -1;
-                if (list && i >= 0) list.splice(i, 1);
+                const targets = this.coalescing.get(name);
+                const i = targets?.indexOf(target) ?? -1;
+                if (targets && i >= 0) targets.splice(i, 1);
             }
         };
-        const offset = opts.offset ? opts.offset % buffer.duration : 0;
-        source.start(ctx.currentTime + (opts.delay ?? 0) / 1000, Math.max(0, offset));
+        source.start(ctx.currentTime + delay, Math.max(0, offset));
         handle.source = source;
         handle.gain = gain;
         handle.panner = panner;
         this.started++;
+    }
+
+    /**
+     * Stops instances of a sound until fewer than `max` play: the one that ends soonest first (survev createJS.ts:680-690
+     * stops the instance with the earliest stop time and plays the new one, where a full sound used to drop the play).
+     */
+    private makeRoom(list: Instance[], max: number): void {
+        while (list.length >= Math.max(1, max)) {
+            let soonest = 0;
+            for (let i = 1; i < list.length; i++) if (list[i].stopTime < list[soonest].stopTime) soonest = i;
+            const [inst] = list.splice(soonest, 1);
+            this.evicted++;
+            this.stop(inst.handle);
+        }
     }
 
     /** Where a sound goes: the music bus, the club or muffled EQ, or straight to the SFX bus. */

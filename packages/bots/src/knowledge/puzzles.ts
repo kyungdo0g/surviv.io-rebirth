@@ -236,6 +236,17 @@ const SPECS: readonly PuzzleSpec[] = [
         value: 60,
         source: "desert bank vault door: used by hand, opens 4.1 s later",
     },
+    {
+        building: "military_bunker_vault_01",
+        kind: "door",
+        lore: "obvious",
+        use: "vault_door_main",
+        rooms: [{ building: "military_bunker_vault_01" }],
+        value: 75,
+        source:
+            "the military base's basement vault: the bank vault door, used by hand, opens 4.1 s later (rebirth " +
+            "military base, docs/research/rebirth-deviations.md; packages/defs rebirth/buildings/military/bunker.ts)",
+    },
 ];
 
 function obstacle(type: string): ObstacleDef | undefined {

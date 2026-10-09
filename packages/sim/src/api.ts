@@ -13,6 +13,12 @@ export interface GameOptions {
     seed: number;
     /** 1 solo (default), 2 duo, 4 squad (M6a: groups, knocks and revives) */
     teamMode?: 1 | 2 | 4;
+    /**
+     * The game's player cap (the server's MAX_PLAYERS / FACTION_MAX_PLAYERS). Above the map's design count the map is
+     * larger (defs mapDefForPlayers), its gas and schedules slower (match/gasScale.ts) and that many may play; absent:
+     * the map's own size and maxPlayers.
+     */
+    maxPlayers?: number;
 }
 
 /** Spectate requests of a dead player (the original Spectate message: Begin, Next, Prev). */

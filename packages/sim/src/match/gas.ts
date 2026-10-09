@@ -34,6 +34,8 @@ export class Gas {
     /** (width + height) / 2: stage radii are fractions of it */
     readonly mapSize: number;
     readonly stages: readonly GasStage[];
+    /** how much the stages are stretched for a map grown by the player cap (match/gasScale.ts; 1 otherwise) */
+    readonly timeScale: number;
     /** GasMode value */
     mode: number = GasMode.Inactive;
     stage = 0;
@@ -61,7 +63,18 @@ export class Gas {
     private damageTicker = 0;
     private readonly damageTickTicks: number;
 
-    constructor(width: number, height: number, rng: Rng, stages: readonly GasStage[] = GameConfig.gas.stages) {
+    /**
+     * `timeScale`: how much the stages are stretched (match/gasScale.ts, a map grown by the player cap; 1 otherwise): the
+     * waits counted from a circle's start (air drops and strikes, unlocks, promotions) stretch by it too.
+     */
+    constructor(
+        width: number,
+        height: number,
+        rng: Rng,
+        stages: readonly GasStage[] = GameConfig.gas.stages,
+        timeScale = 1,
+    ) {
+        this.timeScale = timeScale;
         this.width = width;
         this.height = height;
         this.mapSize = (width + height) / 2;

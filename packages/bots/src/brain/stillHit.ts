@@ -6,11 +6,14 @@
 // spot gets off it. This layer watches every think:
 // - a spot where the bot stood for STILL_MIN and lost BURN_HP or more to fire without shooting back is "burned" for
 //   BURN_TIME (trading shots from a spot is the fight's business: it strafes when hit, tactics.ts): the cover
-//   searches skip spots near it (burned(), read by evade.ts, disengage.ts, cover.ts and position.ts);
+//   searches skip spots near it (burned(), read by evade.ts, disengage.ts, cover.ts and position.ts), and a spot held
+//   there is given up; a spot in the blast of an exploding obstacle being shot or badly damaged counts as burned too
+//   (BrainFeatures.blastAware: brain/blast.ts), so a bot hiding behind a barrel leaves it once the barrel is hit;
 // - while burned, an intent that would leave the bot standing gets a short sideways juke instead (0.45-0.8 s legs,
 //   across the line to the shooter as it seems to be), so the next think finds a better spot or fights from the move.
 // Kneeling over a teammate and being downed are left to their own rules (team.ts).
 import { type Vec2, v2 } from "@rebirth/core";
+import { blastHot } from "./blast.ts";
 import { freeDir } from "./combat.ts";
 import type { BrainCtx, Intent } from "./context.ts";
 
@@ -55,10 +58,11 @@ export function noteStillHit(ctx: BrainCtx): void {
     }
 }
 
-/** Whether `p` lies on a spot the bot was just shot on (see the header). */
+/** Whether `p` lies on a spot the bot was just shot on, or in the blast of an explosive being shot (see the header). */
 export function burned(ctx: BrainCtx, p: Vec2): boolean {
     const b = ctx.mem.pursuit.burned;
-    return !!b && ctx.now < b.until && v2.distance(b.pos, p) < BURN_RAD;
+    if (b && ctx.now < b.until && v2.distance(b.pos, p) < BURN_RAD) return true;
+    return ctx.features.blastAware && blastHot(ctx, p);
 }
 
 /** Where the fire seems to come from: the last close bullet, else the target, else the nearest visible enemy. */

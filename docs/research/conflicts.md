@@ -886,6 +886,7 @@
 - A: no automatic flare in v0.8.82 (fandom only lists a fully loaded Flare Gun; the auto-fire is announced as new in fork 0.1.2) [src:fandom/Commander] [M]
 - B: fork auto-fire after 15 s [src:survev/client/public/changelogRec.html:436] [src:survev/server/src/game/objects/player.ts:885-888] [H]
 - proposed resolution: manual only (fork flag) [src:derived/readme-precedence] [M]
+- status: resolved for the rebirth by the owner (2026-10-08): on, after 5 s instead of the fork's 15 s (`rules.roles.leaderAutoFlare`, `leaderAutoFlareDelay`; false restores the manual flare; `rebirth-deviations.md` "The Commander's automatic flare") [src:user/2026-10-08-leader-auto-flare] [src:survev/server/src/game/objects/player.ts:1478-1495] [H]
 - files: `items/roles.md` (`role-leader-auto-flare`) [src:derived/kb-crossref] [H]
 
 ## role-desert-lt-helmet

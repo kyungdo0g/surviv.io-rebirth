@@ -16,8 +16,8 @@ Requirements: Node 22.18+, pnpm 10 (`corepack enable`, on Windows in a terminal 
 
 ```sh
 pnpm install
-pnpm survev:fetch   # optional, with the next line: the original art and audio (not in this repository; git + network)
-pnpm assets         # copies them into apps/client/public/assets
+pnpm survev:fetch   # the original art and audio (not in this repository; git + network); needed for sound
+pnpm assets         # copies them into apps/client/public/assets (run again after every pull)
 pnpm server         # game server on http://127.0.0.1:8001 (restarts on changes)
 pnpm dev            # in a second terminal: client dev server on http://127.0.0.1:5173 (proxies /api, /play, /team_v2)
 ```
@@ -34,7 +34,8 @@ Open a second browser tab to have an opponent, or let bots fill the games: `BOT_
 [Environment variables on Windows](#environment-variables-on-windows)). Bots default to `BOT_DIFFICULTY=mixed`: 35%
 beginner, 45% intermediate and 20% expert bots, each with a persona; `BOT_SKILL_MIX`, `BOT_PERSONAS`, the single tiers
 and the legacy `easy`/`normal`/`hard` presets are in docs/deploy.md. A match starts when two players (`MIN_PLAYERS`)
-have been alive for 10 seconds.
+have been alive for 10 seconds, or at once when the game is full (`START_WHEN_FULL`; before the start the bots join one
+per tick, so a full bot-filled game starts within about a second).
 
 Without `pnpm assets` everything works with placeholder graphics and no sound.
 
@@ -74,8 +75,8 @@ the survev-only guns (Barrett M107, ASh-12, S&W 500, IMD-2, SPAS-16) common floo
 at least twice per map
 (`/?beta=1` in the dev sandbox, `/?give=rpg7,dshk` to hold any gun). They are held as plain bars for now; their loot
 icons and sounds come from the owner's gitignored `assets-user/` (`pnpm assets`, or `node tools/assets/newGuns.ts`
-alone), with original guns' icons and sounds wherever a file is missing. Every variable is listed in
-[`docs/deploy.md`](docs/deploy.md#environment-variables).
+alone), with stand-ins wherever a file is missing (our own launcher icons, original guns' icons and sounds). Every
+variable is listed in [`docs/deploy.md`](docs/deploy.md#environment-variables).
 
 ### Environment variables on Windows
 

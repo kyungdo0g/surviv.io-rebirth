@@ -99,6 +99,8 @@ function finish(ctx: BrainCtx, id: number): void {
 export function sweepScore(ctx: BrainCtx): number {
     const { model, self, now } = ctx;
     const lm = ctx.mem.loot2;
+    // basements: underground the ground floor's rooms above are not where the bot is (a sweep waits until it is back)
+    if (ctx.features.basements && (self.layer & 1) === 1) return 0;
     const here = buildingAt(model, self.pos);
     if (here && here.id !== lm.sweepId && !lm.swept.has(here.id)) {
         lm.sweepId = here.id;

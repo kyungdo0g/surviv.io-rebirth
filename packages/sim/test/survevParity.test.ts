@@ -426,7 +426,7 @@ describe("gas (survev player.ts:1648-1669)", () => {
     });
 });
 
-describe("the Commander's automatic flare (rules.roles.leaderAutoFlare, off; survev player.ts:1478-1495)", () => {
+describe("the Commander's automatic flare (rules.roles.leaderAutoFlare; survev player.ts:1478-1495)", () => {
     it("draws the flare gun and fires it through the gun path", () => {
         const { game, red } = faction();
         game.rules.roles.leaderAutoFlare = true;

@@ -1,7 +1,7 @@
 // Typed access to the original sound definitions (src/generated/sound-defs.json, scripts/sound-defs.ts): sound
 // lists with per-sound volumes, the channels that play them, and the random sound groups (impacts, footsteps).
-// The rebirth's beta new guns add their sounds to the "players" list (rebirthSounds.ts), each with the donor's original
-// file as a `fallback`.
+// The rebirth's beta new guns add their sounds to their donors' lists (rebirthSounds.ts: the players list, the discard
+// sounds the ui list), each with the donor's original file as a `fallback`.
 import defsJson from "../generated/sound-defs.json";
 import { rebirthSoundDefs } from "./rebirthSounds.ts";
 
@@ -36,9 +36,12 @@ interface SoundDefsFile {
 }
 
 const GENERATED = defsJson as SoundDefsFile;
+const REBIRTH = rebirthSoundDefs(GENERATED.lists);
 const DEFS: SoundDefsFile = {
     ...GENERATED,
-    lists: { ...GENERATED.lists, players: { ...GENERATED.lists.players, ...rebirthSoundDefs(GENERATED.lists) } },
+    lists: Object.fromEntries(
+        Object.entries(GENERATED.lists).map(([name, list]) => [name, { ...list, ...REBIRTH[name] }]),
+    ),
 };
 const FALLBACKS = new Map<string, string>();
 for (const list of Object.values(DEFS.lists)) {

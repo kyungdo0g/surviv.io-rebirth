@@ -16,6 +16,7 @@ import { Input } from "@rebirth/defs";
 import { fightSlot, type HeldGun } from "../knowledge/arsenal.ts";
 import type { Contact } from "../perception/world.ts";
 import { ADVANTAGE_BAND, faces, pushAdvantageOf } from "./assess.ts";
+import { blastExposed, blastHot } from "./blast.ts";
 import { findCover, findCoverFrom, heldSlot, returningFire } from "./combat.ts";
 import { type BrainCtx, type Intent, nearFailedGoal, reachable } from "./context.ts";
 import { lostAim } from "./lostTarget.ts";
@@ -51,6 +52,8 @@ const BRAWL_COOLDOWN = 3;
 const START_DIST = 12;
 /** ...and not running at the bot faster than this (u/s). */
 const RUSH_SPEED = 4;
+/** A cover spot out of the explosives' hard blasts this much farther than the reach beats one next to an explosive. */
+const BLAST_EXTRA = 3;
 
 function endCover(sm: SmartMemory): void {
     sm.cover = "none";
@@ -106,6 +109,27 @@ export function peekSpot(ctx: BrainCtx, spot: Vec2, target: Vec2): Vec2 | null {
 }
 
 /**
+ * A cover spot from `threat` within `reach` of the bot that it can get to and was not shot on (findCoverFrom), passing
+ * `accept`. Exploding obstacles (BrainFeatures.blastAware; owner, 2026-10-08): a spot behind or next to an explosive
+ * (deep in its blast: brain/blast.ts blastExposed) is taken only when no other lies within BLAST_EXTRA more.
+ */
+function coverWithin(ctx: BrainCtx, threat: Vec2, reach: number, accept?: (p: Vec2) => boolean): Vec2 | null {
+    const me = ctx.self.pos;
+    const ok = (p: Vec2, lim: number) =>
+        v2.distance(p, me) <= lim && reachable(ctx, p, 1) && !burned(ctx, p) && (!accept || accept(p));
+    const spot = findCoverFrom(ctx.model, me, threat, reach + 4, (p) => ok(p, reach));
+    if (!spot || !ctx.features.blastAware || !blastExposed(ctx, spot)) return spot;
+    const clear = findCoverFrom(
+        ctx.model,
+        me,
+        threat,
+        reach + BLAST_EXTRA + 4,
+        (p) => ok(p, reach + BLAST_EXTRA) && !blastExposed(ctx, p),
+    );
+    return clear ?? spot;
+}
+
+/**
  * The cover state machine for the visible target (called by planFight while the feature is on); returns false when
  * the bot should fight in the open instead (brawl range, a trade it clearly wins, no cover, caps reached).
  */
@@ -143,13 +167,7 @@ export function planCoverPeek(ctx: BrainCtx, intent: Intent, gun: HeldGun): bool
         // mid-exchange, walking far to cover only eats bullets: then only cover a few steps away
         const engaged = now - t.lastShotAt < 2 || now - model.lastHurt < 2;
         const reach = engaged ? ENGAGED_COVER : COVER_DIST;
-        const spot = findCoverFrom(
-            model,
-            me,
-            t.pos,
-            reach + 4,
-            (p) => v2.distance(p, me) <= reach && reachable(ctx, p, 1) && !nearFailedGoal(ctx, p) && !burned(ctx, p),
-        );
+        const spot = coverWithin(ctx, t.pos, reach, (p) => !nearFailedGoal(ctx, p));
         if (!spot) return false;
         sm.coverTarget = t.id;
         sm.coverSince = now;
@@ -166,13 +184,7 @@ export function planCoverPeek(ctx: BrainCtx, intent: Intent, gun: HeldGun): bool
     }
     // the spot must still shield from where the target stands now
     if (!sm.coverSpot || model.bodyLineOfFire(t.pos, sm.coverSpot) || burned(ctx, sm.coverSpot)) {
-        const spot = findCoverFrom(
-            model,
-            me,
-            t.pos,
-            ENGAGED_COVER + 4,
-            (p) => v2.distance(p, me) <= ENGAGED_COVER && reachable(ctx, p, 1) && !burned(ctx, p),
-        );
+        const spot = coverWithin(ctx, t.pos, ENGAGED_COVER);
         if (!spot) {
             endCover(sm);
             return false;
@@ -308,7 +320,11 @@ export function holdLostAngle(ctx: BrainCtx, intent: Intent, t: Contact): boolea
     }
     if (now - sm.holdAngleSince > HOLD_ANGLE_CAP) return false;
     const me = ctx.self.pos;
-    const keep = sm.coverSpot && v2.distance(sm.coverSpot, me) < 3 && !model.bodyLineOfFire(t.pos, sm.coverSpot);
+    const keep =
+        sm.coverSpot &&
+        v2.distance(sm.coverSpot, me) < 3 &&
+        !model.bodyLineOfFire(t.pos, sm.coverSpot) &&
+        !(ctx.features.blastAware && blastHot(ctx, sm.coverSpot));
     const spot = keep ? sm.coverSpot : findCover(model, t.pos, 6);
     if (spot && v2.distance(spot, me) > 0.6) {
         intent.goal = v2.copy(spot);

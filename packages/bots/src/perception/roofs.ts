@@ -40,3 +40,18 @@ export function roofRegions(buildings: readonly BuildingView[], cache: Map<numbe
     }
     return out;
 }
+
+/**
+ * The roofs a bot on `layer` sees (WorldModel): roofRegions, but none underground once it navigates basements
+ * (`basements`): there the client covers the ground floor, ceilings and all, with its underground fill
+ * (apps/client/src/render/layerRules.ts; perception/drawn.ts), so a basement's loot and players under a ground
+ * building's footprint show to every bot down there, not only to one under the same footprint.
+ */
+export function roofsSeen(
+    buildings: readonly BuildingView[],
+    cache: Map<number, Bounds[]>,
+    layer: number,
+    basements: boolean,
+): Roof[] {
+    return basements && (layer & 1) === 1 ? [] : roofRegions(buildings, cache);
+}

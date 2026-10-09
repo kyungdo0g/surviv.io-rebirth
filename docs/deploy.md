@@ -19,8 +19,8 @@ with Vite.
 
 ```sh
 pnpm install
-pnpm survev:fetch                  # optional, with the next line: the original art and audio (not in the repository)
-pnpm assets
+pnpm survev:fetch                  # the original art and audio (not in the repository): needed for any sound
+pnpm assets                        # run again after every pull: it installs the new guns' icons and sounds too
 pnpm start                         # builds the client, then serves it and the game on http://127.0.0.1:8001
 ```
 
@@ -33,13 +33,18 @@ buttons and the party lobby).
 `pnpm survev:fetch` clones survev at the pinned commit into `.survev` and extracts the original client definitions
 into `research-cache/` (needs git and network access to github.com and surviv.io).
 
-The owner's art and sound for the new guns (beta) live in the gitignored `assets-user/`: the line-art sheets in
-`assets-user/source/2026-10-07-sheets/` and the recorded clips in `assets-user/audio/guns/` (see its `MANIFEST.md`).
-`pnpm assets` installs them last (`tools/assets/newGuns.ts`): it cuts each gun's loot icon out of the sheets (label
-removed, white background made transparent, fitted like the original icons; reading the WebP sheets needs `ffmpeg` and
-`ffprobe` on the PATH) and copies the clips; whatever is missing falls back to an original gun's icon or sound, so the
-game never shows a placeholder for them. After adding or changing files there, `node tools/assets/newGuns.ts`
-reinstalls just those. The guns are held as plain bars until top-down sprites (`gun-<id>-01`) exist.
+The owner's art and sound for the new guns (beta) live in the gitignored `assets-user/` (copy that folder into the
+repository root; git never brings it): the line-art sheets in `assets-user/source/2026-10-07-sheets/` and the recorded
+clips in `assets-user/audio/guns/` (see its `MANIFEST.md`). Run `pnpm assets` after every pull: it installs them last
+(`tools/assets/newGuns.ts`): it cuts each gun's loot icon out of the sheets (label removed, white background made
+transparent, fitted like the original icons) and levels each clip to the original guns of its class (reload clips are
+fitted to the reload time). Reading the WebP sheets and levelling the clips need `ffmpeg` and `ffprobe` on the PATH
+(Windows: `winget install ffmpeg`, then a new terminal); without them the clips are copied as they are. Whatever is
+missing gets a stand-in, so the game never shows a placeholder or plays nothing for them: the launchers our own drawn
+icons, the other guns an original gun's icon of the same class, and an original gun's sound of the same kind. The last
+lines of the output say what came from where (also `apps/client/public/assets/rebirth-new-guns.json`) and warn when
+`assets-user/` or ffmpeg is missing. After adding or changing files there, `node tools/assets/newGuns.ts` reinstalls
+just those.
 
 ## Docker
 
@@ -93,14 +98,15 @@ directory (`/app` in the image).
 |---|---|---|
 | `MAP_NAME` | `main` | map of games when find_game names none, and of party games |
 | `MODES` | Solo, Duo, Squad of `MAP_NAME` | the three play buttons, `map:teamMode,...` (e.g. `main:1,main:2,desert:4`; a map without `:n` plays its event queue) |
-| `MAX_PLAYERS` | `80` | players per game |
-| `FACTION_MAX_PLAYERS` | `100` | players per 50v50 game |
+| `MAX_PLAYERS` | `80` | players per game; above a map's design count (80) the game plays on a larger map, √(cap / 80) times per side up to √2 (from 160), with its gas and schedules stretched as much, and lets that many play, never more than 255 (docs/research/rebirth-deviations.md "Maps follow the player cap"). The bot fill (`BOT_FILL`) goes up to the cap as well; at or below the design count nothing changes |
+| `FACTION_MAX_PLAYERS` | `100` | players per 50v50 game; above 100 the map grows the same way (√2 from 200) |
 | `AIRSTRIKE_VARIANTS` | `normal:60,heavy:25,carpet:15` | rebirth: roll weights of each scheduled 50v50 air strike zone's variant, `variant[:weight],...` (`normal` the v0.8.82 strike; `heavy` 5 heavy shells per plane with a 17.5-47.5 u blast over a zone 30 u larger; `carpet` 6 planes instead of 3-5, aiming over 1.4x the radius under a marker that covers every blast). Weights are plain decimals from 0 to 1000000; unlisted variants get 0, a variant without a weight gets 1; `normal` turns the variants off. The original strobe's strikes are always normal; the rebirth variant strobes (`strobe_heavy`, `strobe_carpet`) are loot and call their own variant whatever this says (no knob; docs/research/rebirth-deviations.md "Variant strobes") |
 | `AIRDROP_TIERS` | `on` | rebirth: `on` makes every normal air drop a tier 1 or a tier 2 drop (the same grey shell; once opened its crate shows one silver star or two blue stars), early drops mostly tier 1 and late drops mostly tier 2, the gold drop as rare as in v0.8.82; `off` restores the v0.8.82 drops. Snow and savannah split their normal shells too; 50v50, Cobalt and every gold or special crate are unchanged (docs/research/rebirth-deviations.md "Air drop tiers") |
 | `GUN_BETA` | `off` | rebirth: `on` (or `1` / `true`, in any case) makes the owner's new guns (beta: AK-74 ... DShK, launchers included) and survev's Barrett M107, ASh-12, S&W 500, IMD-2 and SPAS-16 common floor loot on every map, so they can be found and tried: every gun the map allows lies on its floor at least twice, and they also take half of the floor gun rolls; the map's loot bans still hold (Savannah: no shotguns, LMGs or assault rifles; Woods: only shotguns, LMGs and launchers). The new guns' own placements (air drop tiers, gold drop) apply either way. Read when a game is created. In the dev sandbox the same is `/?beta=1`, and `/?give=<gun id>` gives any gun (docs/research/rebirth-deviations.md "New guns (beta)") |
 | `MAX_GAMES` | `16` | games this process runs at once (find_game answers 503 `full` beyond) |
 | `MIN_PLAYERS` | `2` | living players (groups in team modes) a game needs to start |
 | `JOIN_MIN_ALIVE` | `0` | a started game takes no new human once fewer than this many players live (`0`: off); the newcomer gets a fresh game |
+| `START_WHEN_FULL` | `1` | rebirth: a game that reaches its player cap (`MAX_PLAYERS`, `FACTION_MAX_PLAYERS` for 50v50) starts at once; `0` restores survev's rule, which waits until two players (groups, factions) have been alive for 10 s however full the game is (docs/research/rebirth-deviations.md "Start when full") |
 | `GAME_OVER_GRACE_MS` | `1800` | a finished game closes this long after the winner is decided |
 | `EMPTY_GAME_GRACE_MS` | `30000` | a game without human players is removed after this long |
 | `DEBUG_SPAWN_TOGETHER` | `0` | testing aid: joiners spawn next to the game's first player |
@@ -125,7 +131,8 @@ region's server origin (`regions`: `""` for the answering server), and the clien
 | `BOT_DIFFICULTY` | `mixed` | `mixed`: each bot's skill tier is drawn from `BOT_SKILL_MIX` (shuffle bags of 20, so small games get the mix too) and each bot draws its own skill inside the tier's band; `beginner`, `intermediate` or `expert`: every bot in that tier; `easy`, `normal` or `hard`: the legacy fixed presets (a beginner now misses clearly more than `easy`; see docs/design/bot-population.md) |
 | `BOT_SKILL_MIX` | `35,45,20` | weights of beginner, intermediate and expert bots for `BOT_DIFFICULTY=mixed` |
 | `BOT_PERSONAS` | `on` | `on` / `off` (also `1`/`0`, `true`/`false`): fill bots get personas (rusher 22%, rifleman 30%, marksman 14%, camper 10%, looter 14%, rat 10%) that shape their weapon taste, range, aggression, chasing, looting and risk; `off`: every bot plays the neutral persona |
-| `BOT_FILL_INTERVAL_MS` | `250` | time between two bot joins |
+| `BOT_FILL_INTERVAL_MS` | `250` | time between two bot joins once the game started (late joins in its 60 s join window) |
+| `BOT_FILL_START_INTERVAL_MS` | `0` | time between two bot joins before the game starts; `0` is one bot per tick, so a game the bots fill to its cap is full and started about a second after it opens (2 s at a cap of 200) |
 
 ### Limits
 

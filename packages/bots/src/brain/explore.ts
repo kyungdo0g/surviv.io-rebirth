@@ -284,16 +284,32 @@ export function routeBonus(ctx: BrainCtx, id: number, type: string): number {
     return ROUTE_WEIGHT * buildingLootValue(ctx.model.map.mapName, type) * spread;
 }
 
+/**
+ * The ground component the bot explores from: its own, or underground (basements) the one the stairs of the basement it
+ * stands in come up in (the ground cell under an underground bot means nothing).
+ */
+function exploreComp(ctx: BrainCtx): number {
+    const ug = ctx.model.underground;
+    if (!ctx.features.basements || ctx.self.layer === 0 || !ug) return ctx.myComp;
+    const region = ug.regionAt(ctx.self.pos, 2) ?? ug.portalAt(ctx.self.pos, 1.5)?.region;
+    const top = region?.portals.find((p) => p.top)?.top;
+    const cell = top ? ctx.model.nav.nearestWalkable(top, 3) : -1;
+    return cell >= 0 ? ctx.model.nav.component(cell) : ctx.myComp;
+}
+
 function pickExploreGoal(ctx: BrainCtx): Vec2 {
     const { model, self, mem, rng } = ctx;
     let best: Vec2 | null = null;
     let bestId = 0;
     let bestCost = Number.POSITIVE_INFINITY;
     const roam = ctx.persona.roamRadius;
+    const comp = exploreComp(ctx);
+    // (basements: underground, a building right overhead is not one the bot is in)
+    const below = ctx.features.basements && (self.layer & 1) === 1;
     for (const b of buildingSpots(model.map)) {
         if (mem.visited.has(b.id)) continue;
         const d = v2.distance(self.pos, b.pos);
-        if (d < 6) {
+        if (d < 6 && !below) {
             // sweep: visited once swept to the end (brain/sweep.ts marks it)
             if (!sweepPending(ctx, b.id)) mem.visited.add(b.id);
             continue;
@@ -317,7 +333,7 @@ function pickExploreGoal(ctx: BrainCtx): Vec2 {
         }
     }
     if (best) {
-        const cell = model.nav.nearestWalkable(best, 6, ctx.myComp);
+        const cell = model.nav.nearestWalkable(best, 6, comp);
         if (cell >= 0) {
             const spot = model.nav.center(cell);
             if (v2.distance(spot, self.pos) >= 4) return spot;
@@ -335,7 +351,7 @@ function pickExploreGoal(ctx: BrainCtx): Vec2 {
         const p = v2.add(self.pos, v2.mul({ x: Math.cos(angle), y: Math.sin(angle) }, rng.range(25, 70)));
         // (danger memory: not back into a place it was just chased out of; evaluation F7, the flee-and-return cycles)
         if (!model.insideSafeZone(p, 5) || avoidPos(ctx, p)) continue;
-        const cell = model.nav.nearestWalkable(p, 6, ctx.myComp);
+        const cell = model.nav.nearestWalkable(p, 6, comp);
         if (cell >= 0 && !model.nav.isWaterAt(p)) return model.nav.center(cell);
     }
     return model.gas && model.gas.mode !== "inactive" ? v2.copy(model.gas.posNew) : v2.copy(self.pos);

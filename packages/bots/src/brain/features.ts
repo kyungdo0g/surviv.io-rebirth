@@ -89,6 +89,19 @@ export interface BrainFeatures {
      * brain/puzzle.ts; who knows which code: knowledge/puzzles.ts, its own rng stream)
      */
     puzzles: boolean;
+    // exploding obstacles (owner, 2026-10-08: "bots take cover behind explosive barrels as if they did not know")
+    /**
+     * barrels, propane tanks, power boxes and every other obstacle that explodes (knowledge/explosives.ts) are poor
+     * cover and their blasts poor spots: the cover searches prefer anything else and never hide behind one being shot
+     * or badly damaged, a bot deep in the blast of one being shot steps out of it, and no bot fires shots that would
+     * soon set one off next to itself (perception/blasts.ts, brain/blast.ts)
+     */
+    blastAware: boolean;
+    /**
+     * intermediate and expert bots shoot an explosive next to an enemy when they stand outside its blast and it would
+     * break within a moment (brain/barrelShot.ts)
+     */
+    barrelShot: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -123,6 +136,8 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "quickSwitch",
     "doors",
     "puzzles",
+    "blastAware",
+    "barrelShot",
 ];
 
 export type BrainName = "baseline" | "smart";

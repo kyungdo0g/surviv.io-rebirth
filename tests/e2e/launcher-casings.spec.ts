@@ -62,8 +62,15 @@ async function freezeAfterCase(page: Page, after: number): Promise<void> {
     }, after);
 }
 
-/** Waits until no 40 mm case is alive (a slow headless frame rate can run the particles behind the clock). */
+/**
+ * Ends the particles still alive (the last case, the launch smoke) and waits until no 40 mm case is left. A loaded
+ * machine renders headless frames so slowly (each frame's dt capped at 0.1 s) that a case's 0.5-0.75 s life could
+ * outlast a 10 s wait.
+ */
 async function casesGone(page: Page): Promise<void> {
+    await page.evaluate(() => {
+        for (const p of (window as any).__rebirth.client.particles.particles) p.ticker = p.delay + p.life;
+    });
     await expect
         .poll(
             () =>
@@ -115,13 +122,24 @@ async function hold(page: Page, gun: string, ammo: number): Promise<void> {
             page.evaluate(() => (window as any).__rebirth.heldGun((window as any).__rebirth.player.id)?.texture),
         )
         .toBe(`gun-${gun}-01.img`);
-    // the switch delay (at most 1 s) shows in the local cooldowns only a few snapshots later: let it run out
-    await page.waitForTimeout(1300);
+    // let the switch delay (at most 1 s) run out in the simulation: the loopback steps it once per rendered frame
+    // (dt capped), so on a loaded machine it can take several seconds; the local cooldowns show it a few snapshots later
+    await expect
+        .poll(
+            () =>
+                page.evaluate(() => {
+                    const r = (window as any).__rebirth;
+                    return r.game.getPlayer(r.player.id).weaponManager.activeSlot.cooldown <= 0;
+                }),
+            { timeout: 30_000 },
+        )
+        .toBe(true);
+    await page.waitForTimeout(300);
 }
 
 /** Waits until the held gun's clip holds `ammo` rounds (a reload has ended). */
 async function clipIs(page: Page, ammo: number): Promise<void> {
-    await expect.poll(() => clipAmmo(page), { timeout: 10_000 }).toBe(ammo);
+    await expect.poll(() => clipAmmo(page), { timeout: 30_000 }).toBe(ammo);
 }
 
 /** Rounds in the held gun's clip (the local state). */
@@ -140,11 +158,14 @@ async function fire(page: Page): Promise<void> {
     const start = await clipAmmo(page);
     for (let attempt = 0; attempt < 5; attempt++) {
         await expect
-            .poll(() =>
-                page.evaluate(() => {
-                    const l = (window as any).__rebirth.local;
-                    return l.cooldowns?.weapons?.[l.curWeapIdx] ?? 0;
-                }),
+            .poll(
+                () =>
+                    page.evaluate(() => {
+                        const l = (window as any).__rebirth.local;
+                        return l.cooldowns?.weapons?.[l.curWeapIdx] ?? 0;
+                    }),
+                // the loopback sim steps once per rendered frame (dt capped): a loaded machine can take seconds
+                { timeout: 20_000 },
             )
             .toBe(0);
         await page.waitForTimeout(100);
@@ -168,7 +189,7 @@ async function reloadUntilCase(page: Page, count: number): Promise<void> {
     for (let attempt = 0; attempt < 5; attempt++) {
         await page.keyboard.press("r");
         const dropped = await expect
-            .poll(async () => (await cases(page)).length, { timeout: 2000 })
+            .poll(async () => (await cases(page)).length, { timeout: 5000 })
             .toBe(count)
             .then(
                 () => true,
@@ -203,7 +224,7 @@ test.describe("hand-held launcher casings", () => {
     test("M79, GL-06 and MGL drop their spent 40 mm case from the breech on the reload, not on the shot", async ({
         page,
     }) => {
-        test.setTimeout(150_000);
+        test.setTimeout(300_000);
         const errors = collectErrors(page);
         await boot(page, "/?sandbox=1&map=main&seed=1&loot=0&give=m79&zoom=10");
         await faceRight(page);

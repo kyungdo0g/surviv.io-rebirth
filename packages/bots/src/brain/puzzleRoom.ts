@@ -71,10 +71,10 @@ function open(ctx: BrainCtx, room: SiteRoom, id: number): boolean {
 
 /**
  * The first room not looked into yet (loot lies on its floor: the club vault's machete) or with something left to
- * break, or null. A room the path follower just failed to reach from outside it is given up with everything in it: the
- * greenhouse bunker's compartment 3 lies behind a glass wall (only breaking it lets a player in), and its case and
- * crates, taken as still standing while the bot is not in the room, kept the bot walking at it for the rest of the
- * stage (move-slide: 30 s along the glass).
+ * break, or null. A room the path follower just failed to reach from outside it, while the bot's grids show no way to
+ * it, is given up with everything in it: the greenhouse bunker's compartment 3 lies behind a glass wall (only breaking
+ * it lets a player in), and its case and crates, taken as still standing while the bot is not in the room, kept the bot
+ * walking at it for the rest of the stage (move-slide: 30 s along the glass).
  */
 function currentRoom(ctx: BrainCtx, site: PuzzleSite): SiteRoom | null {
     const pm = ctx.mem.puzzle;
@@ -83,13 +83,28 @@ function currentRoom(ctx: BrainCtx, site: PuzzleSite): SiteRoom | null {
         const gaveUp = !!failed && ctx.now < ctx.mem.failedUntil && pointInBounds(failed, grow(r.bounds, 2));
         const inside = insideRoom(ctx, r);
         if (inside || gaveUp) pm.visited.add(i);
-        if (gaveUp && !inside) for (const id of r.containers) pm.roomSkip.add(id);
+        if (failed && gaveUp && !inside && cutOff(ctx, failed, r.layer))
+            for (const id of r.containers) pm.roomSkip.add(id);
     });
     for (let i = 0; i < site.rooms.length; i++) {
         const r = site.rooms[i];
         if (!pm.visited.has(i) || r.containers.some((id) => open(ctx, r, id))) return r;
     }
     return null;
+}
+
+/**
+ * Whether the bot's grids show no way to `p` on the floor `layer` now. Another failure keeps the room (move-slide
+ * review): a goal that failed while the doors were shut (forgetVerdicts clears only those within 12 of a room's middle,
+ * and the bathhouse vault reaches 15 out), one on the floor above an underground room (room bounds are flat), a bot held
+ * up once on the way in. With a stale failure in its far corner, the bathhouse vault and the greenhouse bunker's sublevel
+ * were given up untouched (0 of 9 and 0 of 5 containers broken, against 7 and 4 without the give-up).
+ */
+function cutOff(ctx: BrainCtx, p: Vec2, layer: number): boolean {
+    const ug = ctx.model.underground;
+    if (ug) return !ug.canPathTo(ctx.model.nav, ctx.self.pos, ctx.self.layer, p, layer);
+    // (no underground navigation: no underground site either, puzzle.ts)
+    return !ctx.model.nav.reachable(ctx.self.pos, p);
 }
 
 function grow(b: SiteRoom["bounds"], m: number): SiteRoom["bounds"] {

@@ -22,9 +22,12 @@ import { parseRegionServers, REGION_ID } from "./regions.ts";
 export interface ServerConfig {
     port: number;
     host: string;
-    /** players per game (survev maxPlayers 80) */
+    /**
+     * players per game (survev maxPlayers 80); above a map's design count (80) the map grows with it (defs
+     * mapDefForPlayers: up to twice the land area, from 160)
+     */
     maxPlayers: number;
-    /** players per 50v50 game (the faction map's maxPlayers, 100; M7a) */
+    /** players per 50v50 game (the faction map's maxPlayers, 100; M7a); above 100 the map grows (up to 200) */
     factionMaxPlayers: number;
     /**
      * Rebirth: roll weights of the 50v50 scheduled air strike variants (AIRSTRIKE_VARIANTS
@@ -80,6 +83,11 @@ export interface ServerConfig {
     minPlayers: number;
     /** a started game takes no new human once fewer than this many players live (0: off) */
     joinMinAlive: number;
+    /**
+     * Rebirth (the owner's ruling, START_WHEN_FULL, default on): a game that reaches its player cap starts at once
+     * instead of waiting for players alive 10 s (sim rules.startWhenFull)
+     */
+    startWhenFull: boolean;
     /** a game is closed (its clients disconnected) this long after a winner was decided (survev: 1.8 s) */
     gameOverGraceMs: number;
     /** party lobby sockets per IP (survev teamMenu: 5) */
@@ -110,8 +118,14 @@ export interface ServerConfig {
     botSkillMix: Record<SkillTierName, number>;
     /** fill bots get personas (BOT_PERSONAS, default on) */
     botPersonas: boolean;
-    /** milliseconds between two bot joins (bots trickle in like players; 0: all at once) */
+    /** milliseconds between two bot joins once the game started (bots trickle in like players; 0: one per tick) */
     botFillIntervalMs: number;
+    /**
+     * milliseconds between two bot joins before the game starts (BOT_FILL_START_INTERVAL_MS, default 0: one per tick,
+     * so a bot-filled game reaches its cap and starts within about a second; the owner's ruling, rebirth-deviations.md
+     * "Start when full")
+     */
+    botFillStartIntervalMs: number;
     /** bearer token of the /api/admin/* routes (M8); null disables them */
     adminToken: string | null;
     /** anti-cheat thresholds (M8, anticheat/thresholds.ts); null with ANTICHEAT=0 (no telemetry) */
@@ -196,6 +210,7 @@ const EnvSchema = z.object({
     DEBUG_SPAWN_TOGETHER: bool.default(false),
     MIN_PLAYERS: z.coerce.number().int().min(1).max(255).default(2),
     JOIN_MIN_ALIVE: z.coerce.number().int().min(0).max(255).default(0),
+    START_WHEN_FULL: bool.default(true),
     GAME_OVER_GRACE_MS: z.coerce.number().int().min(0).default(1800),
     PARTY_MAX_CONNECTIONS_PER_IP: z.coerce.number().int().min(1).default(5),
     PARTY_MAX_MSGS_PER_SECOND: z.coerce.number().int().min(1).default(50),
@@ -224,6 +239,7 @@ const EnvSchema = z.object({
         .transform((v) => v === "1" || v === "true" || v === "on")
         .default(true),
     BOT_FILL_INTERVAL_MS: z.coerce.number().int().min(0).default(250),
+    BOT_FILL_START_INTERVAL_MS: z.coerce.number().int().min(0).default(0),
     ADMIN_TOKEN: z.string().min(16, { message: "at least 16 characters" }).optional(),
     ANTICHEAT: bool.default(true),
     ANTICHEAT_FLAG_SCORE: z.coerce.number().min(1).max(100).optional(),
@@ -292,6 +308,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         debugSpawnTogether: e.DEBUG_SPAWN_TOGETHER,
         minPlayers: e.MIN_PLAYERS,
         joinMinAlive: e.JOIN_MIN_ALIVE,
+        startWhenFull: e.START_WHEN_FULL,
         gameOverGraceMs: e.GAME_OVER_GRACE_MS,
         partyMaxConnectionsPerIp: e.PARTY_MAX_CONNECTIONS_PER_IP,
         partyMaxMsgsPerSecond: e.PARTY_MAX_MSGS_PER_SECOND,
@@ -305,6 +322,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         botSkillMix: e.BOT_SKILL_MIX ?? { ...DEFAULT_SKILL_MIX },
         botPersonas: e.BOT_PERSONAS,
         botFillIntervalMs: e.BOT_FILL_INTERVAL_MS,
+        botFillStartIntervalMs: e.BOT_FILL_START_INTERVAL_MS,
         adminToken: e.ADMIN_TOKEN ?? null,
         antiCheat: e.ANTICHEAT ? loadThresholds(e.ANTICHEAT_CONFIG, e.ANTICHEAT_FLAG_SCORE) : null,
         suspectsFile: e.SUSPECTS_FILE ? resolve(e.SUSPECTS_FILE) : null,

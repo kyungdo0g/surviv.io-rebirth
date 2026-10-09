@@ -32,6 +32,7 @@ import type { BulletScene, BulletSystem } from "./bullets.ts";
 import type { PlayerHitListener } from "./hitFeedback.ts";
 import { cycleSoundAfterShot, discardedGuns, LauncherFx, pumpedShot } from "./newGunFx.ts";
 import type { ParticleSystem } from "./particles.ts";
+import { GunSwitchSound } from "./switchSound.ts";
 
 /** players draw at zOrd 18; casings go just above them */
 const PLAYER_Z_ORD = 18;
@@ -116,8 +117,10 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
     private prevLocal: LocalPlayerState | null = null;
     private readonly actionSounds = new Map<number, SoundHandle | null>();
     private cycleSound: SoundHandle | null = null;
-    /** a gun switch within this window plays the gun's full deploy sound (survev gunSwitchCooldown) */
-    private gunSwitchCooldown = 0;
+    /** which sound a local gun switch plays (survev gunSwitchCooldown, fireDelay and deployFull) */
+    private readonly switching = new GunSwitchSound();
+    /** every gun's shot and reload sounds were queued for loading (survev preloads every sound) */
+    private preloadedGuns = false;
     private dryFired = false;
     /** weapon set whose sounds were last preloaded */
     private preloadKey = "";
@@ -202,7 +205,7 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         this.activeLayer = layer;
         this.audio.cameraPos = cameraPos;
         this.audio.activeLayer = layer;
-        this.gunSwitchCooldown -= dt;
+        this.switching.update(dt);
         this.bullets.update(dt, this);
         this.launchers.update(dt);
         this.particles.update(dt);
@@ -229,8 +232,9 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
     private localChanges(prev: LocalPlayerState, cur: LocalPlayerState): void {
         const prevWeap = prev.weapons[prev.curWeapIdx]?.type ?? "";
         const curWeap = cur.weapons[cur.curWeapIdx]?.type ?? "";
-        if (prev.curWeapIdx !== cur.curWeapIdx || prevWeap !== curWeap) this.switchSound(curWeap);
-        for (const def of discardedGuns(prev, cur)) this.audio.playSound(def.sound.discard);
+        if (prev.curWeapIdx !== cur.curWeapIdx || prevWeap !== curWeap) this.switchSound(cur, prev.curWeapIdx);
+        // a spent tube or rifle thrown away sounds like a pickup, on the pickups' ui channel
+        for (const def of discardedGuns(prev, cur)) this.audio.playSound(def.sound.discard, { channel: "ui" });
 
         // one pickup sound per snapshot: a new weapon, else new gear, else a grown inventory stack
         let picked = "";
@@ -257,21 +261,30 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         this.preloadWeapons(cur);
     }
 
-    private switchSound(weapon: string): void {
+    private switchSound(cur: LocalPlayerState, lastIdx: number): void {
+        const weapon = cur.weapons[cur.curWeapIdx]?.type ?? "";
         const def = weapon ? GameObjectDefs[weapon] : undefined;
         if (!def) return;
         if (def.type === "melee" || def.type === "throwable") {
             this.audio.playSound(def.sound.deploy, { channel: "sfx", pos: this.cameraPos, fallOff: 3 });
         } else if (def.type === "gun") {
-            let sound = "gun_switch_01";
-            if (this.gunSwitchCooldown > 0) sound = def.sound.deploy;
-            else this.gunSwitchCooldown = GameConfig.player.freeSwitchCooldown;
+            const sound = this.switching.switchTo(
+                weapon,
+                def,
+                cur.curWeapIdx,
+                lastIdx,
+                gunDef(cur.weapons[lastIdx]?.type ?? ""),
+            );
             this.audio.stop(this.cycleSound);
             this.cycleSound = this.audio.playSound(sound);
         }
     }
 
-    /** Loads the sounds of the local loadout so their first play is not dropped. */
+    /**
+     * Loads the sounds of the local loadout so their first play is not dropped, then once every gun's shot and reload
+     * sounds, which survev preloads with every other sound (audioManager.ts preloadSounds), so another player's first
+     * shot with a gun is not lost to a file still loading.
+     */
     preloadWeapons(local: LocalPlayerState): void {
         const key = local.weapons.map((w) => w.type).join();
         if (key === this.preloadKey) return;
@@ -283,6 +296,14 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         }
         this.audio.preload(names);
         this.audio.preload(names, "sfx");
+        this.audio.preload(names, "ui");
+        if (this.preloadedGuns) return;
+        this.preloadedGuns = true;
+        const guns: string[] = [];
+        for (const def of Object.values(GameObjectDefs)) {
+            if (def.type === "gun") guns.push(def.sound.shoot, def.sound.reload, def.sound.deploy);
+        }
+        this.audio.preload(guns);
     }
 
     private isLocal(player: PlayerView): boolean {
@@ -324,6 +345,7 @@ export class GameEffects implements PlayerFx, ObstacleFx, BulletScene {
         if (!def) return;
         // bolt-action and pump guns cycle after the shot, or play the pull when the clip ran dry (survev shot.ts);
         // the DP-12 only after the shots the sim pumped, a single-use gun's last shot neither (newGunFx.ts)
+        if (this.isLocal(player)) this.switching.shot(def);
         if (this.isLocal(player) && def.fireMode === "single" && def.pullDelay && this.local) {
             const slot = this.local.curWeapIdx;
             const ammoLeft = this.local.weapons[slot]?.ammo ?? 0;

@@ -10,7 +10,7 @@
 // isGameStarted, getWinningTeamId, showStatsMsg, getGameoverPlayers, getPlayersSortedByRank) and objects/player.ts
 // (kill, down, promoteToKillLeader, addGameOverMsg); docs/research/ui/hud.md (kill feed, kill leader, death and win
 // screens).
-import { DamageType, getMapDef } from "@rebirth/defs";
+import { DamageType, getMapDef, playerLimit } from "@rebirth/defs";
 import { TICK_HZ } from "../api.ts";
 import type { DamageParams } from "../combat/damage.ts";
 import type { GameOverEvent, KillEvent, KillLeaderView, PlayerStatsView, RoleAnnouncementEvent } from "../view.ts";
@@ -41,16 +41,27 @@ export interface MatchOptions {
     sandbox: boolean;
     /** players alive for at least `rules.minActiveTime` needed to start (original: 2, survev isGameStarted) */
     minPlayers: number;
-    /** raises the map mode's player cap (never lowers it); servers pass MAX_PLAYERS */
+    /** the game's player cap (GameOptions.maxPlayers): where it grows the map, that many play (defs playerLimit) */
     maxPlayers?: number;
 }
+
+/**
+ * Players a game holds at most, the dead included: the wire's player lists count in 8 bits (protocol PlayerInfos,
+ * team and faction status) and solo group ids run out at 255 (protocol teams.ts MAX_GROUP_ID).
+ */
+export const MAX_PLAYERS_IN_GAME = 255;
 
 /** What the match needs from the game. */
 export interface MatchHost {
     readonly tick: number;
     readonly gas: Gas;
     readonly options: { mapName: string };
-    readonly rules: { joinWindowSeconds: number; killLeaderMinKills: number; minActiveTime: number };
+    readonly rules: {
+        joinWindowSeconds: number;
+        killLeaderMinKills: number;
+        minActiveTime: number;
+        startWhenFull: boolean;
+    };
     /** groups (M6a); solo: one per player */
     readonly teams: { readonly teamMode: number; aliveGroups(except?: Player): Group[] };
     /** 50v50 factions (M7a), null on other maps */
@@ -85,7 +96,9 @@ export class Match {
     readonly statsResults = new EventLog<{ playerId: number; stats: PlayerStatsView }>();
     private readonly host: MatchHost;
     private readonly killLeaderEnabled: boolean;
-    readonly maxPlayers: number;
+    private readonly maxPlayers: number;
+    /** living players that make the game full for rules.startWhenFull: maxPlayers, or a lower game cap (MAX_PLAYERS) */
+    private readonly startCap: number;
     private nextKilledIndex = 0;
     private readonly resultSent = new Set<number>();
     private readonly statsSent = new Set<number>();
@@ -94,9 +107,13 @@ export class Match {
     constructor(host: MatchHost, options: MatchOptions) {
         this.host = host;
         this.options = options;
-        const mode = getMapDef(host.options.mapName).gameMode;
-        this.killLeaderEnabled = mode.killLeaderEnabled;
-        this.maxPlayers = Math.max(mode.maxPlayers, options.maxPlayers ?? 0);
+        const def = getMapDef(host.options.mapName);
+        this.killLeaderEnabled = def.gameMode.killLeaderEnabled;
+        // a cap that grows the map lets that many play (defs mapDefForPlayers, playerLimit)
+        this.maxPlayers = Math.min(MAX_PLAYERS_IN_GAME, playerLimit(def, options.maxPlayers));
+        // a cap below the mode's (the server's MAX_PLAYERS seats) does not close joins, but a game that holds that
+        // many is full for the start (rebirth-deviations.md "Start when full")
+        this.startCap = Math.min(this.maxPlayers, Math.max(1, options.maxPlayers ?? this.maxPlayers));
     }
 
     /** Living players in join (id) order. */
@@ -118,13 +135,25 @@ export class Match {
     }
 
     /**
-     * Whether a new player may join: not over, fewer living players than the mode's maximum, and the match started
-     * less than `joinWindowSeconds` ago (survev game.ts canJoin). Sandbox matches always accept joins.
+     * Whether a new player may join: not over, fewer living players than the mode's maximum (or the game's player cap
+     * where it grows the map), fewer than MAX_PLAYERS_IN_GAME in the game, and the match started less than
+     * `joinWindowSeconds` ago (survev game.ts canJoin). Sandbox matches always accept joins.
      */
     canJoin(): boolean {
         if (this.options.sandbox) return true;
-        if (this.over || this.aliveCount >= this.maxPlayers) return false;
+        if (this.over || this.full) return false;
         return !this.started || this.startedSeconds < this.host.rules.joinWindowSeconds;
+    }
+
+    /**
+     * The game takes no more players: as many living players as it takes (the mode's maximum, or the player cap where
+     * it grows the map), or MAX_PLAYERS_IN_GAME in the game, the dead included (never past what the wire can list).
+     */
+    get full(): boolean {
+        if (this.aliveCount >= this.maxPlayers) return true;
+        let inGame = 0;
+        for (const _ of this.host.players()) inGame++;
+        return inGame >= MAX_PLAYERS_IN_GAME;
     }
 
     private get teamMode(): number {
@@ -147,11 +176,13 @@ export class Match {
 
     /**
      * Start check, run at the beginning of a tick: the match starts once `minPlayers` sides have a player that can no
-     * longer despawn (survev cantDespawnAliveCount > 1), at once in a sandbox. Returns true on the start.
+     * longer despawn (survev cantDespawnAliveCount > 1), at once in a sandbox, and (rules.startWhenFull, the owner's
+     * ruling) at once in a full game with `minPlayers` sides alive. Returns true on the start.
      */
     checkStart(): boolean {
         if (this.started) return false;
         if (!this.options.sandbox) {
+            const need = Math.max(1, this.options.minPlayers);
             // sides with a living player and a member that can no longer despawn (survev cantDespawnAliveCount: a
             // downed player, a dead teammate and a 50v50 role holder count too)
             const factionMode = !!getMapDef(this.host.options.mapName).gameMode.factionMode;
@@ -162,7 +193,10 @@ export class Match {
                     ready.add(p.teamId);
                 }
             }
-            if (ready.size < Math.max(1, this.options.minPlayers)) return false;
+            // a full game no longer waits minActiveTime for its players (rebirth-deviations.md "Start when full")
+            const full = this.full || this.aliveCount >= this.startCap;
+            const fullStart = this.host.rules.startWhenFull && full && alive.size >= need;
+            if (ready.size < need && !fullStart) return false;
         }
         this.started = true;
         this.startTick = this.host.tick;

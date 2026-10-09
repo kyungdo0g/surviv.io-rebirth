@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- M79 loot icon, own art: wooden stock and forend, short fat break-open 40 mm barrel, leaf sight. -->
+  <path d="M68.01 61.06L95.81 33.26L98.48 40.21L74.96 63.73Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M55.71 57.32L107.03 6L115.59 14.55L64.27 65.87Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M104.89 9.21L107.03 7.07L114.52 14.55L112.38 16.69Z" fill="#323232"/>
+  <path d="M99.01 9.74L101.15 7.6L103.82 10.28L101.69 12.41Z" fill="#323232"/>
+  <path d="M61.59 52.51L64.8 49.3L59.99 42.35L56.78 45.56Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M55.18 77.1L56.78 75.49L62.66 79.24L67.47 74.42L63.73 68.54L65.34 66.94L70.68 74.42L62.66 82.44Z" fill="#323232"/>
+  <path d="M59.46 72.82L61.06 71.22L64.27 75.49L62.66 76.03Z" fill="#323232"/>
+  <path d="M14.55 101.69L45.56 72.82L47.7 70.68L55.18 78.17L50.9 82.44L36.47 116.12L32.73 119.86Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M43.95 71.22L57.85 57.32L66.94 66.41L53.04 80.3Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M12.41 103.82L15.09 101.15L33.26 119.33L30.59 122Z" fill="#323232"/>
+</svg>

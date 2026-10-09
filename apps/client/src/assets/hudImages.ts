@@ -4,14 +4,61 @@
 // except where survev's SVG is different art (tools/assets/survev-redrawn.json): those keep the original frame.
 // Rebirth: an item with a `lootImg.hudTint` (the variant strobes) shows its image multiplied by that colour, drawn once
 // into a canvas (setLootImage shows the plain image until the tinted one is ready).
+// Rebirth art that `pnpm assets` installs (the new guns' loot icons, the new ammo's ping emotes) has a `fallback` sprite
+// (rebirthSprites.ts), as in the world's texture store: `watchRebirthImages` checks each such file once at startup and
+// from then on resolves a missing one to its fallback, and swaps the fallback into any <img> whose file fails to load,
+// so a HUD slot never shows a broken image while the art is not installed.
 import { GameObjectDefs } from "@rebirth/defs";
 import { assetUrl, SPRITES } from "./spriteManifest.ts";
 
+/** Rebirth sprites whose installed file failed to load: they resolve to their fallback. */
+const missing = new Set<string>();
+
 /** URL of the image for sprite id `sprite` ("loot-weapon-ak.img"), or "" when the manifest has none. */
 export function spriteUrl(sprite: string | undefined): string {
-    const entry = sprite ? SPRITES[sprite] : undefined;
+    let entry = sprite ? SPRITES[sprite] : undefined;
+    if (sprite && entry?.fallback && missing.has(sprite)) entry = SPRITES[entry.fallback];
     const file = entry?.svg ?? entry?.path;
     return file ? assetUrl(file) : "";
+}
+
+/** Documents already watched (the HUD is rebuilt for every game). */
+const watched = new WeakSet<Document>();
+
+/** The rebirth sprites with a fallback, by the absolute URL of their own file. */
+function fallbackSprites(base: string): Map<string, string> {
+    const out = new Map<string, string>();
+    for (const [id, entry] of Object.entries(SPRITES)) {
+        if (entry.source !== "rebirth" || !entry.fallback || !entry.path) continue;
+        out.set(new URL(assetUrl(entry.svg ?? entry.path), base).href, id);
+    }
+    return out;
+}
+
+/**
+ * Checks once that every rebirth image with a fallback is installed (resolving the missing ones to their fallback
+ * from then on) and swaps the fallback into any <img> of `doc` whose rebirth file fails to load.
+ */
+export function watchRebirthImages(doc: Document = document): void {
+    if (watched.has(doc)) return;
+    watched.add(doc);
+    const byUrl = fallbackSprites(doc.baseURI);
+    doc.addEventListener(
+        "error",
+        (e) => {
+            const img = e.target;
+            if (!(img instanceof HTMLImageElement)) return;
+            const id = byUrl.get(img.src);
+            if (!id) return;
+            missing.add(id);
+            const url = spriteUrl(id);
+            if (url && img.src !== new URL(url, doc.baseURI).href) img.src = url;
+        },
+        true,
+    );
+    for (const [url, id] of byUrl) {
+        loadImage(url).catch(() => missing.add(id));
+    }
 }
 
 /** URL of item `id`'s loot image (untinted). */

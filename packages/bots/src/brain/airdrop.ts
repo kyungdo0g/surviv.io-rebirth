@@ -18,6 +18,7 @@ import { type Vec2, v2 } from "@rebirth/core";
 import { distanceToCollider } from "../geom.ts";
 import type { SeenObstacle, WorldModel } from "../perception/world.ts";
 import { byThoroughness } from "../persona.ts";
+import { blastDropsSpot } from "./blast.ts";
 import { addCombatLayer, findCoverFrom } from "./combat.ts";
 import { containerValue, isAirdropLoot, NORMAL_SHELL_VALUE } from "./containers.ts";
 import { type BrainCtx, emptyIntent, type Intent, reachable, usableSpot } from "./context.ts";
@@ -205,7 +206,8 @@ export function planAirdrop(ctx: BrainCtx): Intent {
             sm.airdropState = d > CRUSH_RAD + 2 || now >= sm.airdropSince ? "loot" : "approach";
             if (sm.airdropState === "approach") intent.stop = true;
         } else {
-            if (!sm.airdropSpot) {
+            // (a spot in the blast of an explosive being shot is given up: blast.ts)
+            if (!sm.airdropSpot || blastDropsSpot(ctx, sm.airdropSpot)) {
                 const want = Math.min(STAND_MAX, Math.max(STAND_MIN, d * 0.5));
                 const ring = v2.add(drop, v2.mul(v2.normalizeSafe(v2.sub(me, drop)), want));
                 sm.airdropSpot =

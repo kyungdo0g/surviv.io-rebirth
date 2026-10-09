@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Panzerfaust loot icon, own art: bare tube, flip-up sight and trigger, oversized teardrop warhead. -->
+  <path d="M6 117.09L83.52 39.57L88.43 44.48L10.91 122Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M7.64 117.09L9.28 115.45L12.55 118.72L10.91 120.36Z" fill="#323232"/>
+  <path d="M27.29 99.07L57.86 68.5L59.5 70.14L28.93 100.71Z" fill="#7e7e7e"/>
+  <path d="M57.59 61.68L61.95 57.31L64.14 59.5L59.77 63.86Z" fill="#323232"/>
+  <path d="M64.96 58.13L69.32 53.76L64.14 46.4L60.32 50.22Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M83.24 41.48L88.7 36.02L91.98 39.3L86.52 44.76Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M87.06 36.57L87.61 29.47L89.79 21.83L95.52 14.46L102.89 8.73L111.63 6.55L118.72 6L121.45 6.55L122 9.28L121.45 16.37L119.27 25.11L113.54 32.48L106.17 38.21L98.53 40.39L91.43 40.94Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M89.79 25.11L91.43 23.47L104.53 36.57L102.89 38.21Z" fill="#323232"/>
+</svg>

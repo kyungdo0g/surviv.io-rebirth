@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Milkor MGL loot icon, own art: skeleton stock, six-round cylinder, short barrel, front grip, reflex sight. -->
+  <path d="M10.03 105.35L34.73 82.8L40.1 88.17L32.05 116.63L26.68 122Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M19.69 103.2L33.12 89.78L29.36 108.57Z" fill="#323232"/>
+  <path d="M43.86 88.7L49.77 82.8L59.44 97.83L53.53 103.74Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M32.58 82.8L45.47 69.91L54.06 78.5L41.18 91.39Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M70.71 45.74L110.45 6L117.97 13.52L78.23 53.26Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M108.84 8.69L110.45 7.07L116.9 13.52L115.29 15.13Z" fill="#323232"/>
+  <path d="M88.97 42.52L94.34 37.15L103.47 49.5L98.1 54.87Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M39.56 66.15L65.34 40.37L83.6 58.63L57.82 84.41Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M45.74 65.88L65.07 46.55L66.69 48.16L47.35 67.49Z" fill="#323232"/>
+  <path d="M51.11 71.25L70.44 51.92L72.06 53.53L52.72 72.86Z" fill="#323232"/>
+  <path d="M56.48 76.62L75.81 57.29L77.43 58.9L58.09 78.23Z" fill="#323232"/>
+  <path d="M36.88 59.17L52.99 43.06L57.82 47.89L41.71 64Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M39.03 59.17L40.64 57.56L43.32 60.24L41.71 61.85Z" fill="#323232"/>
+</svg>

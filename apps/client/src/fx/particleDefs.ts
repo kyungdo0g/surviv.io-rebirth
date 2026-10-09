@@ -132,8 +132,10 @@ export const PARTICLE_DEFS: Readonly<Record<string, ParticleDef>> = {
     bugle_ammo: { ...shell("part-note-02.img", [1.25, 1.3], [3, 4], PI, 0.1, 0.14, 0.5), color: 0xffda00 },
     // the rebirth's new ammo and single-use guns (beta): the original casing of the nearest calibre
     // 40 mm: a big straight brass case (the pistol case sprite at 1.9x the 9 mm's size: as wide as the shotgun shell,
-    // a little shorter), heavy enough to drop beside the breech (drag 5-6, not the shotgun shell's 1-2)
-    "40mm": shell("part-shell-01.img", [0.5, 0.75], [5, 6], PI * 2, 0.12, 0.06, 0.95),
+    // a little shorter). Drag 3-3.5 (the low half of the pistol case's 3-4; the shotgun shell's is 1-2): thrown back
+    // from the breech on the reload it stops beside the player, 1.1 to 2.8 u from the body centre, never on the body
+    // (casings draw over players; drag 5-6 left a third of them lying on it)
+    "40mm": shell("part-shell-01.img", [0.5, 0.75], [3, 3.5], PI * 2, 0.12, 0.06, 0.95),
     rocket: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
     "57mm": shell("part-shell-04.img", [0.75, 1], [1.5, 2.5], PI * 2.5, 0.075, 0.045, 0.925),
     boys_ammo: shell("part-shell-02.img", [0.75, 1], [1.5, 2.5], PI * 2.5, 0.075, 0.045, 0.925),

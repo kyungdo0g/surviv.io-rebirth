@@ -304,6 +304,9 @@ export const koHudItems: Readonly<Record<string, string>> = {
     flare_gun_dual: "신호탄 총",
     colt45_dual: "피스메이커",
     m1911_dual: "M1911",
+    // rebirth: the new dual pistols show the single's name, like the original duals
+    tec9_dual: "TEC-9",
+    vz61_dual: "스코르피온 vz. 61",
     knuckles_rusted: "너클즈",
     knuckles_heroic: "너클즈",
     karambit_rugged: "카람빗",

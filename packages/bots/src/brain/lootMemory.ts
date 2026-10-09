@@ -1,7 +1,8 @@
 // Looting state (bot overhaul LOOT, BrainMemory.loot2): container progress and budgets, containers remembered from
 // inside their building, the air drop being opened, the house being swept, the off-hand reload swap and holstering,
-// the outfit habit (LOOT2).
-// Written only by LOOT's code paths (scavenge.ts, containers.ts, airdrop.ts, sweep.ts, weapons.ts, explore.ts).
+// the outfit habit (LOOT2), the basement trip (BrainFeatures.basements).
+// Written only by LOOT's code paths (scavenge.ts, containers.ts, airdrop.ts, sweep.ts, weapons.ts, explore.ts,
+// basement.ts).
 import type { Vec2 } from "@rebirth/core";
 import type { OutfitTaste } from "./outfits.ts";
 
@@ -67,6 +68,25 @@ export class LootMemory {
     sweepWalked = 0;
     /** buildings swept to the end */
     readonly swept = new Set<number>();
+
+    // basements and bunkers (basement.ts, BrainFeatures.basements)
+    /** whether this bot heads for basements at all (drawn once from its own stream), null until drawn */
+    basementGoer: boolean | null = null;
+    /** underground grid id of the basement it is on its way to or looting (-1 none), and its trips so far */
+    basementSite = -1;
+    basementTrips = 0;
+    /** when it next looks for a basement to go to */
+    basementCheckAt = 0;
+    /** seconds spent in the basement behaviour since the trip began, and the game time of the last update */
+    basementWalked = 0;
+    basementTracked = 0;
+    /** game time it first stood on the basement's floor (-1 not yet) */
+    basementBelowAt = -1;
+    /** the floor's waypoints left (rooms to walk through), and the basement seconds spent on the current one */
+    basementPoints: Vec2[] = [];
+    basementPointWalked = 0;
+    /** basements done (looted, left or given up) */
+    readonly basementsDone = new Set<number>();
 
     // outfits (outfits.ts: LOOT2, user report 22)
     /** the bot's outfit habit and ranked list, drawn once from the persona stream when it first sees an outfit */

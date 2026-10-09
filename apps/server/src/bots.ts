@@ -1,5 +1,6 @@
 // Bot fill (rebirth feature for testing and low-population regions, docs/research/community-ko.md): while a game is
-// joinable, in-process bots join one at a time until the game holds BOT_FILL players; a human joining a game at its
+// joinable, in-process bots join one at a time until the game holds BOT_FILL players (one per tick before the start by
+// default, so a full game starts at once: rebirth-deviations.md "Start when full"); a human joining a game at its
 // target (or at the mode's player limit) takes the seat of a bot that has not fought yet, as long as the original join
 // window is open. Bots are ordinary players (names from a Korean/English list, auto-fill groups in team modes), driven
 // by @rebirth/bots through their own snapshots with a seeded random stream. They never hold a game open: rooms count
@@ -23,6 +24,7 @@ import {
     shuffleBag,
 } from "@rebirth/bots";
 import { createRng, type Rng } from "@rebirth/core";
+import { getMapDef, playerLimit } from "@rebirth/defs";
 import type { Game } from "@rebirth/sim";
 
 /** BOT_DIFFICULTY: a legacy preset, a skill tier, or "mixed" (the tier mix of BOT_SKILL_MIX). */
@@ -36,8 +38,13 @@ export interface BotFillOptions {
     /** players the game should hold (humans + bots) */
     target: number;
     difficulty: BotDifficultySetting;
-    /** ticks between two bot joins (0: all at once) */
+    /** ticks between two bot joins once the game started (0: one per tick) */
     joinIntervalTicks: number;
+    /**
+     * ticks between two bot joins before the game starts (default joinIntervalTicks); 0 fills one bot per tick, so a
+     * game reaches its cap and starts at once (sim rules.startWhenFull) about a second after it opens
+     */
+    startJoinIntervalTicks?: number;
     /** seed of the bots' names and random streams */
     seed: number;
     /** tier weights of "mixed" (default DEFAULT_SKILL_MIX: 35 / 45 / 20) */
@@ -61,6 +68,7 @@ export class BotFill {
     private readonly bagRng: Rng;
     private skillBag: SkillTierName[] = [];
     private personaBag: PersonaName[] = [];
+    private readonly modeMaxPlayers: number;
     private nextJoinTick = 0;
     private added = 0;
     /** bot exceptions caught (the bot stops being controlled) */
@@ -71,6 +79,8 @@ export class BotFill {
         this.options = options;
         this.rng = createRng(options.seed ^ 0x2c1b3c6d);
         this.bagRng = createRng(options.seed ^ 0x1b873593);
+        // a player cap that grows the map (defs mapDefForPlayers) fills that far, else the mode's maxPlayers
+        this.modeMaxPlayers = playerLimit(getMapDef(game.options.mapName), game.options.maxPlayers);
         for (const p of game.players()) this.names.add(p.name);
     }
 
@@ -124,16 +134,11 @@ export class BotFill {
         for (const id of this.botIds) if (!this.game.getPlayer(id)) this.botIds.delete(id);
         const game = this.game;
         if (this.options.target <= 0 || game.tick < this.nextJoinTick || !game.canJoin()) return;
-        if (this.playersInGame() >= Math.min(this.options.target, this.game.match.maxPlayers)) return;
+        if (this.playersInGame() >= Math.min(this.options.target, this.modeMaxPlayers)) return;
         this.addBot();
-        this.nextJoinTick = game.tick + this.options.joinIntervalTicks;
-        // a zero interval fills the game to its target at once instead of one bot per tick
-        while (
-            this.options.joinIntervalTicks <= 0 &&
-            game.canJoin() &&
-            this.playersInGame() < Math.min(this.options.target, this.game.match.maxPlayers)
-        )
-            this.addBot();
+        const { joinIntervalTicks, startJoinIntervalTicks } = this.options;
+        this.nextJoinTick =
+            game.tick + (game.started ? joinIntervalTicks : (startJoinIntervalTicks ?? joinIntervalTicks));
     }
 
     /** The next tier of the "mixed" population (a refilled shuffle bag). */
@@ -167,18 +172,18 @@ export class BotFill {
         this.botIds.add(bot.playerId);
     }
 
-    /** A bot whose seat a human may take: alive, standing, and (once the match started) not in a fight yet. */
+    /** Whether a human may take bot `id`'s seat: alive, standing, and (once the match started) not in a fight yet. */
+    private canLeave(id: number): boolean {
+        const p = this.game.getPlayer(id);
+        if (!p || p.dead || p.downed) return false;
+        return !this.game.started || (p.kills === 0 && p.damageDealt === 0 && p.damageTaken === 0);
+    }
+
+    /** The bot whose seat the next human takes (the latest that may leave); none once the join window closed. */
     private replaceable(): number | undefined {
         if (!this.joinWindowOpen()) return undefined;
-        const started = this.game.started;
         let pick: number | undefined;
-        for (const id of this.botIds) {
-            const p = this.game.getPlayer(id);
-            if (!p || p.dead || p.downed) continue;
-            if (started && (p.kills > 0 || p.damageDealt > 0 || p.damageTaken > 0)) continue;
-            // the most recent bot leaves first
-            if (pick === undefined || id > pick) pick = id;
-        }
+        for (const id of this.botIds) if (this.canLeave(id) && (pick === undefined || id > pick)) pick = id;
         return pick;
     }
 
@@ -188,13 +193,24 @@ export class BotFill {
     }
 
     /**
+     * How many bots could leave for humans now (0 once the join window closed): each join frees at most one, so
+     * find_game routes no more joins past MAX_PLAYERS_IN_GAME than this.
+     */
+    replaceableCount(): number {
+        if (!this.joinWindowOpen()) return 0;
+        let n = 0;
+        for (const id of this.botIds) if (this.canLeave(id)) n++;
+        return n;
+    }
+
+    /**
      * A human is about to join: when the game is at its fill target or at the mode's player limit, a bot leaves to make
      * room. Returns whether a bot left.
      */
     makeRoom(): boolean {
         const game = this.game;
         const atTarget = this.options.target > 0 && this.playersInGame() >= this.options.target;
-        const atLimit = game.aliveCount >= this.game.match.maxPlayers;
+        const atLimit = game.aliveCount >= this.modeMaxPlayers;
         if (!atTarget && !atLimit) return false;
         const id = this.replaceable();
         if (id === undefined) return false;

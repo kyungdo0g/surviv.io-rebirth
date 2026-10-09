@@ -1,6 +1,6 @@
 // Role scheduling and the rules that hand roles out (M7a): the 50v50 promotion schedule (one random eligible,
 // non-AFK player per team), Lone Survivr when a team is down to its last standing players, the optional Commander
-// succession, The Hunted (Savannah's kill leader), the Woods King's kill pings, Cobalt classes, the fork's automatic
+// succession, The Hunted (Savannah's kill leader), the Woods King's kill pings, Cobalt classes, the automatic
 // Commander flare, and the minimap indicators of roles and indicator loot.
 // Behaviour follows survev server/src/game/objects/player.ts (PlayerBarn.update scheduled roles, scheduleRoleAssignments,
 // promoteToKillLeader, kill), group.ts (Team.checkAndApplyLastMan / checkAndApplyCaptain) and
@@ -55,17 +55,19 @@ export class RoleSystem {
     onCircle(circleIdx: number): void {
         if (!this.faction) return;
         const schedule = this.rules.factionSchedule;
+        // the waits stretch with the gas on a map grown by the player cap (Gas.timeScale)
+        const stretch = this.host.gas.timeScale ?? 1;
         if (schedule === "map") {
             for (const t of this.map.gameConfig.roles?.timings ?? []) {
                 if (t.circleIdx === circleIdx)
-                    this.scheduled.push({ role: t.role, ticks: Math.round(t.wait * TICK_HZ) });
+                    this.scheduled.push({ role: t.role, ticks: Math.round(t.wait * stretch * TICK_HZ) });
             }
             return;
         }
         for (const slot of schedule) {
             if (slot.circleIdx !== circleIdx || slot.roles.length === 0) continue;
             const role = slot.roles.length === 1 ? slot.roles[0] : this.host.roleRng.pick(slot.roles);
-            this.scheduled.push({ role, ticks: Math.round(slot.wait * TICK_HZ) });
+            this.scheduled.push({ role, ticks: Math.round(slot.wait * stretch * TICK_HZ) });
         }
     }
 
@@ -136,14 +138,16 @@ export class RoleSystem {
         return true;
     }
 
-    /** The fork's automatic Commander flare (conflicts.md role-leader-auto-flare, off by default). */
     /**
-     * The fork's automatic flare (rules.roles.leaderAutoFlare, off): the Commander draws its flare gun and fires it,
-     * indoors too, then a downed one goes back to its melee weapon (survev player.ts:1478-1495).
+     * The automatic flare (rules.roles.leaderAutoFlare; the owner's 5 s, survev's fork 15 s): a living Commander that
+     * has not fired its flare gun draws it and fires it the way it faces, indoors too, then a downed one goes back to
+     * its melee weapon (survev player.ts:1478-1495, fireWeapon forceFire). The air drop is called where the shot
+     * leaves the barrel, kept on the map and moved off what it overlaps like any flare's (gun.ts, planes.addAirdrop).
      */
     private autoFlare(player: Player, dt: number): void {
         player.flareTimer -= dt;
-        if (player.flareTimer > 0) return;
+        // fires on the tick the delay is up (the summed 0.01 s steps may leave a rounding residue)
+        if (player.flareTimer > 1e-9) return;
         player.firedFlare = true;
         player.flareTimer = 0;
         const wm = player.weaponManager;

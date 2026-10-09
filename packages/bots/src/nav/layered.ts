@@ -2,7 +2,10 @@
 // underground grids of nav/underground.ts. Down: ground A* to a stair portal's top point, walk down along the stair axis
 // (the simulation switches the player 0 -> 2 -> 3 -> 1 on the way), then local A* on the underground grid. Up: local A*
 // to the portal's bottom point, along the stair axis back up, then ground A*. The portal is chosen once per destination
-// (cheapest ground distance plus underground distance field) and kept while the bot follows it.
+// (cheapest ground distance plus underground distance field) and kept while the bot follows it. Stairs whose top the
+// bot could not get to, or that it could not walk, are left alone for a while and others picked (the military base's
+// armory stairs: entered through the hall's west door, the door's open panel cuts the landing off; the bot stood at the
+// panel for a minute).
 import { type Vec2, v2 } from "@rebirth/core";
 import type { WorldModel } from "../perception/world.ts";
 import type { PathFollower, SteerResult } from "./follower.ts";
@@ -14,6 +17,8 @@ const PORTAL_REACH = 1.2;
 const REPICK_SHIFT = 4;
 /** Ground distances are weighted a little above straight-line distance (paths bend). */
 const GROUND_DETOUR = 1.25;
+/** Stairs the bot failed to reach or walk are avoided this long (s) when there are others. */
+const AVOID_TIME = 30;
 
 const FAILED: SteerResult = Object.freeze({ dir: null, openDoor: 0, arrived: false, failed: true }) as SteerResult;
 
@@ -27,10 +32,27 @@ export class LayeredRoute {
     private portal: StairPortal | null = null;
     private goal: Vec2 | null = null;
     private goalLayer = 0;
+    /** portal id -> game time until which it is avoided (kept across clear: the failure is the stairs', not the goal's) */
+    private readonly avoided = new Map<number, number>();
 
     clear(): void {
         this.portal = null;
         this.goal = null;
+    }
+
+    /** Whether portal `p` is being avoided at `now`. */
+    private avoids(p: StairPortal, now: number): boolean {
+        const until = this.avoided.get(p.id);
+        return until !== undefined && now < until;
+    }
+
+    /** A leg towards or along portal `p` failed: leave it alone for a while (another is picked next time). */
+    private fail(p: StairPortal, r: SteerResult, now: number): SteerResult {
+        if (r.failed) {
+            this.avoided.set(p.id, now + AVOID_TIME);
+            this.portal = null;
+        }
+        return r;
     }
 
     /**
@@ -66,19 +88,19 @@ export class LayeredRoute {
             // on the stairs: on down or back up, whichever floor the route needs next
             const p = ug.portalAt(pos, 1.5) ?? this.portal;
             if (!p) return null;
-            return this.walkStairs(f, model, p, wantUnder && goalRegion === p.region ? 1 : -1, now);
+            return this.fail(p, this.walkStairs(f, model, p, wantUnder && goalRegion === p.region ? 1 : -1, now), now);
         }
 
         if (layer === 0) {
             // ground -> underground
             const region = goalRegion as UndergroundGrid;
-            const p = this.portal?.region === region ? this.portal : this.pickEntry(model, region, goal);
+            const p = this.portal?.region === region ? this.portal : this.pickEntry(model, region, goal, now);
             if (!p?.top) return FAILED;
             this.portal = p;
             if (v2.distance(pos, p.top) < PORTAL_REACH || onStair(p, pos, 0.3))
-                return this.walkStairs(f, model, p, 1, now);
+                return this.fail(p, this.walkStairs(f, model, p, 1, now), now);
             const r = f.steerOn(model, model.nav, p.top, now, PORTAL_REACH * 0.7);
-            return r.arrived ? this.walkStairs(f, model, p, 1, now) : r;
+            return this.fail(p, r.arrived ? this.walkStairs(f, model, p, 1, now) : r, now);
         }
 
         // underground (layer 1)
@@ -89,14 +111,16 @@ export class LayeredRoute {
             return f.steerOn(model, here, goal, now, arriveDist);
         }
         const p =
-            this.portal && this.portal.region === here ? this.portal : this.pickExit(model, ug, here, goal, wantUnder);
+            this.portal && this.portal.region === here
+                ? this.portal
+                : this.pickExit(model, ug, here, goal, wantUnder, now);
         if (!p?.bottom) return FAILED;
         this.portal = p;
         if (v2.distance(pos, p.bottom) < PORTAL_REACH || onStair(p, pos, 0.3)) {
-            return this.walkStairs(f, model, p, -1, now);
+            return this.fail(p, this.walkStairs(f, model, p, -1, now), now);
         }
         const r = f.steerOn(model, here, p.bottom, now, PORTAL_REACH * 0.7);
-        return r.arrived ? this.walkStairs(f, model, p, -1, now) : r;
+        return this.fail(p, r.arrived ? this.walkStairs(f, model, p, -1, now) : r, now);
     }
 
     /** Along the stair axis, down (sign 1) or up (sign -1), steering back onto the centre line. */
@@ -112,8 +136,8 @@ export class LayeredRoute {
         return f.steerDirect(model, dir, wp, now);
     }
 
-    /** The stairs into `region` that make the shortest walk from the bot to `goal`. */
-    private pickEntry(model: WorldModel, region: UndergroundGrid, goal: Vec2): StairPortal | null {
+    /** The stairs into `region` that make the shortest walk from the bot to `goal` (avoided ones only when alone). */
+    private pickEntry(model: WorldModel, region: UndergroundGrid, goal: Vec2, now: number): StairPortal | null {
         const pos = model.self.pos;
         let best: StairPortal | null = null;
         let bestCost = Number.POSITIVE_INFINITY;
@@ -121,7 +145,7 @@ export class LayeredRoute {
             if (!p.top || !p.bottom || !model.nav.reachable(pos, p.top)) continue;
             const under = region.costToPortal(p, goal);
             if (!Number.isFinite(under)) continue;
-            const cost = v2.distance(pos, p.top) * GROUND_DETOUR + under;
+            const cost = v2.distance(pos, p.top) * GROUND_DETOUR + under + (this.avoids(p, now) ? 1e6 : 0);
             if (cost < bestCost) {
                 bestCost = cost;
                 best = p;
@@ -137,6 +161,7 @@ export class LayeredRoute {
         here: UndergroundGrid,
         goal: Vec2,
         goalUnder: boolean,
+        now: number,
     ): StairPortal | null {
         const pos = model.self.pos;
         const target = goalUnder ? ug.regionAt(goal, 1.5) : null;
@@ -156,7 +181,7 @@ export class LayeredRoute {
             } else {
                 rest = model.nav.reachable(p.top, goal, 3) ? v2.distance(p.top, goal) * GROUND_DETOUR : 1e6;
             }
-            const cost = under + rest;
+            const cost = under + rest + (this.avoids(p, now) ? 1e6 : 0);
             if (cost < bestCost) {
                 bestCost = cost;
                 best = p;
