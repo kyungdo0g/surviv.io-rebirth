@@ -20,8 +20,6 @@ export interface GameInit {
      * shows "Waiting for players").
      */
     minPlayers?: number;
-    /** raises the map mode's player cap (never lowers it); the server passes its MAX_PLAYERS */
-    maxPlayers?: number;
     /** gas stage table (default GameConfig.gas.stages; tools and tests use shorter ones) */
     gasStages?: readonly GasStage[];
     /** rebirth new-gun beta (rules.gunBeta, server GUN_BETA): set before the map loot spawns (default false) */
