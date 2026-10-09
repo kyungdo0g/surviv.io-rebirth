@@ -315,6 +315,7 @@ function exposeGlobals(
         get loaded() {
             return client.audio.loadedCount;
         },
+        isLoadedExact: (name: string, channel: string) => client.audio.isLoadedExact(name, channel),
     };
     globals.minimap = {
         get rect() {

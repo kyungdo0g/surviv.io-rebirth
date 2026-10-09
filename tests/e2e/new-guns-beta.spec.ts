@@ -100,6 +100,40 @@ async function sounds(page: Page): Promise<string[]> {
     return page.evaluate(() => (window as any).__rebirth.soundLog as string[]);
 }
 
+/** The HUD image completed with real pixels; fallback art is fine, a broken browser image is not. */
+async function expectWeaponIconLoaded(page: Page, gun: string): Promise<void> {
+    await expect
+        .poll(
+            () =>
+                page.locator("#ui-weapon-id-1 .ui-weapon-image").evaluate((img: HTMLImageElement) => ({
+                    complete: img.complete,
+                    naturalWidth: img.naturalWidth,
+                    src: img.currentSrc,
+                    id: img.dataset.lootId,
+                })),
+            { timeout: 10_000 },
+        )
+        .toMatchObject({ complete: true, naturalWidth: expect.any(Number), id: gun });
+    const image = await page.locator("#ui-weapon-id-1 .ui-weapon-image").evaluate((img: HTMLImageElement) => ({
+        naturalWidth: img.naturalWidth,
+        src: img.currentSrc,
+    }));
+    expect(image.naturalWidth, `${gun} HUD image should load`).toBeGreaterThan(0);
+    expect(image.src, `${gun} HUD image should have a resolved URL`).not.toBe("");
+}
+
+async function expectShotSoundDecoded(page: Page, sound: string, gun: string): Promise<void> {
+    await expect
+        .poll(
+            () => page.evaluate((name) => (window as any).__rebirth.audio.isLoadedExact(name, "activePlayer"), sound),
+            {
+                timeout: 10_000,
+                message: `${gun} should decode its own shot audio file, not the donor fallback`,
+            },
+        )
+        .toBe(true);
+}
+
 /** Aims at the dummy (re-aiming while the camera settles) until the local player faces it. */
 async function aimAt(page: Page, dummy: number): Promise<void> {
     const deadline = Date.now() + 10_000;
@@ -184,6 +218,7 @@ test.describe("new guns (beta) in the sandbox", () => {
             const dummy = await sandbox(page, s.gun, "&zoom=14");
             expect(await page.evaluate(() => (window as any).__rebirth.local.weapons[0].type)).toBe(s.gun);
             await expect(page.locator("#ui-weapon-id-1 .ui-weapon-name")).toHaveText(s.name);
+            await expectWeaponIconLoaded(page, s.gun);
             // a drawn gun: its own top-down sprite at 0.25 x its logical height (give or take the raster's whole
             // texels); else a plain bar (an original bar sprite, never the placeholder), 11-15 sprite px per unit of
             // barrel
@@ -217,7 +252,9 @@ test.describe("new guns (beta) in the sandbox", () => {
             }
             console.log(`${s.gun}: sheet ${damage}, hits ${bulletHits.map((h) => h.amount.toFixed(3)).join(", ")}`);
             // the gun's own fire sound was asked for (the owner's clip, installed by tools/assets/newGuns.ts)
-            expect(await sounds(page)).toContain(SHEET.guns[s.gun].gun.sound.shoot);
+            const shoot = SHEET.guns[s.gun].gun.sound.shoot;
+            expect(await sounds(page)).toContain(shoot);
+            await expectShotSoundDecoded(page, shoot, s.gun);
             expect((await spriteTrouble(page)).missing).toEqual([]);
             expect(errors).toEqual([]);
         });
@@ -229,6 +266,7 @@ test.describe("new guns (beta) in the sandbox", () => {
         const errors = collectErrors(page);
         const dummy = await sandbox(page, "rpg7", "&lang=ko&zoom=20");
         await expect(page.locator("#ui-weapon-id-1 .ui-weapon-name")).toHaveText("RPG-7");
+        await expectWeaponIconLoaded(page, "rpg7");
         // a full level 0 bag of rockets (the sheet's 4) in a brown HUD row
         expect(await page.evaluate(() => (window as any).__rebirth.local.inventory.rocket)).toBe(4);
         await expect(page.locator("#ui-loot-rocket")).toBeVisible();
@@ -256,6 +294,7 @@ test.describe("new guns (beta) in the sandbox", () => {
         await page.mouse.up();
         await page.waitForTimeout(80);
         await shot(page, "rpg7-launch");
+        await expectShotSoundDecoded(page, SHEET.guns.rpg7.gun.sound.shoot, "rpg7");
         await expect.poll(async () => (await hits(page)).length, { timeout: 5_000 }).toBeGreaterThanOrEqual(2);
         await page.waitForTimeout(150);
         await shot(page, "rpg7-explosion");
@@ -274,6 +313,21 @@ test.describe("new guns (beta) in the sandbox", () => {
         // the shooter, 16 u from the blast, is out of its reach (14 u); a stray shrapnel piece may still hit it
         expect(await page.evaluate(() => (window as any).__rebirth.local.health)).toBeGreaterThan(70);
         expect((await spriteTrouble(page)).missing).toEqual([]);
+        expect(errors).toEqual([]);
+    });
+
+    test("M202: the HUD icon loads and the shot audio decodes", async ({ page }) => {
+        const errors = collectErrors(page);
+        const dummy = await sandbox(page, "m202", "&zoom=14");
+        await expect(page.locator("#ui-weapon-id-1 .ui-weapon-name")).toHaveText("M202 FLASH");
+        await expectWeaponIconLoaded(page, "m202");
+        await recordHits(page, dummy);
+        await recordSounds(page);
+        await aimAt(page, dummy);
+        await fireUntil(page, 1, 300, 500);
+        const shoot = SHEET.guns.m202.gun.sound.shoot;
+        expect(await sounds(page)).toContain(shoot);
+        await expectShotSoundDecoded(page, shoot, "m202");
         expect(errors).toEqual([]);
     });
 

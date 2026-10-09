@@ -117,7 +117,7 @@ async function engine(names: string[]): Promise<{ audio: AudioEngine; ctx: FakeC
     const audio = new AudioEngine();
     listeners.get("pointerdown")?.();
     audio.preload(names);
-    for (let i = 0; i < 10; i++) await Promise.resolve();
+    for (let i = 0; i < 30; i++) await Promise.resolve();
     return { audio, ctx: FakeContext.last! };
 }
 
@@ -156,6 +156,31 @@ describe("audio engine mix (survev's client)", () => {
         expect(audio.evicted).toBe(0);
         expect(own.every((h) => h && !h.stopped)).toBe(true);
         audio.destroy();
+    });
+
+    it("reports whether a rebirth gun decoded its own shot file instead of its donor fallback", async () => {
+        const { audio } = await engine(["ak74_01"]);
+        expect(audio.isLoaded("ak74_01", "activePlayer")).toBe(true);
+        expect(audio.isLoadedExact("ak74_01", "activePlayer")).toBe(true);
+        audio.destroy();
+
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = ((input: RequestInfo | URL) => {
+            const ownFile = String(input).endsWith("/audio/rebirth/guns/ak74_01.mp3");
+            return Promise.resolve({
+                ok: !ownFile,
+                status: ownFile ? 404 : 200,
+                arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+            } as Response);
+        }) as typeof fetch;
+        try {
+            const fallback = await engine(["ak74_01"]);
+            expect(fallback.audio.isLoaded("ak74_01", "activePlayer")).toBe(true);
+            expect(fallback.audio.isLoadedExact("ak74_01", "activePlayer")).toBe(false);
+            fallback.audio.destroy();
+        } finally {
+            globalThis.fetch = originalFetch;
+        }
     });
 });
 
