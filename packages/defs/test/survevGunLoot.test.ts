@@ -2,8 +2,8 @@
 // tools/port-survev/lib/survevLoot.ts) plus the rebirth Barrett in the classic gold drop (rebirth/survevGuns.ts) and
 // the owner's PMG-134 in the bathhouse ring case (rebirth/ownerLoot.ts).
 // "Reachable" follows what each map can hand out (test/reach.ts). Placements that survev has in tables nothing on our
-// maps reaches yet are pinned too: they become live with the later survev waves (the Pirate's Bounty kills, Cobalt's
-// common Classless crate, 50v50's gold military crate); the crimson air drop and the Reserve came with stage 3.
+// maps reaches are pinned too, including unused baseline tables and other maps' copies of live sources.
+// Classless crates never spawn in survev (docs/adr/0003-survev-baseline.md); their tables are not future content.
 import { describe, expect, it } from "vitest";
 import {
     GOLD_DROP_TABLE,
@@ -114,14 +114,16 @@ const REACHABLE: Readonly<Record<string, Readonly<Record<string, readonly string
     },
 };
 
-/** Placements survev has that no object on our maps reaches yet, by table, with where they will come from. */
-const LATER_WAVES: Readonly<Record<string, { guns: readonly string[]; source: string }>> = {
+/** Unreachable placements, by table, with their source or reason for remaining unused. */
+const UNREACHABLE_PLACEMENTS: Readonly<Record<string, { guns: readonly string[]; source: string }>> = {
     tier_airdrop_crimson: { guns: ["ash12", "sw500", "barrett"], source: "other maps' copies (desert only, live)" },
     tier_revolvers: { guns: ["sw500"], source: "other maps' copies (the Reserve's wine racks, desert only, live)" },
     tier_pirate_rare: { guns: ["sw500", "ash12", "barrett"], source: "desert: Pirate's Bounty kills (Gold Cutlass)" },
     tier_airdrop_mythic: { guns: ["barrett"], source: "50v50 gold military crate (crate_13)" },
-    tier_guns_common_classless: { guns: ["imbel"], source: "Cobalt Classless crates" },
-    tier_guns_rare_classless: { guns: ["spas16"], source: "Cobalt Classless crates" },
+    // ADR 0003 (docs/adr/0003-survev-baseline.md): neither Classless crate ever spawns in survev.
+    // Keep these table/gun pairs pinned; the rare table is already reachable in Cobalt through the Twins bunker.
+    tier_guns_common_classless: { guns: ["imbel"], source: "unused baseline table (Classless crates never spawn)" },
+    tier_guns_rare_classless: { guns: ["spas16"], source: "other maps' copies (Cobalt Twins bunker, live)" },
     tier_guns_common_tank: { guns: ["imbel"], source: "Cobalt Tank class pods (other maps' copies)" },
     tier_guns_rare_demo: { guns: ["spas16"], source: "Cobalt Demo class pods (other maps' copies)" },
     tier_scavenger_adv: { guns: ["spas16"], source: "Master Scavenger (other maps' copies)" },
@@ -142,11 +144,11 @@ describe("survev-only guns: loot placements", () => {
         expect(got).toEqual(REACHABLE[name] ?? {});
     });
 
-    it("every other placement waits for a later survev wave (pinned with its future source)", () => {
+    it("every unreachable placement is pinned with its source or unused-baseline reason", () => {
         for (const name of Object.keys(MapDefs)) {
             for (const gun of GUNS) {
                 for (const tier of unreachablePlacements(name, gun)) {
-                    expect(LATER_WAVES[tier]?.guns, `${name} ${tier} ${gun}`).toContain(gun);
+                    expect(UNREACHABLE_PLACEMENTS[tier]?.guns, `${name} ${tier} ${gun}`).toContain(gun);
                 }
             }
         }
