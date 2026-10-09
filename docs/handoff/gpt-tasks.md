@@ -3,7 +3,10 @@
 These are moderate tasks while the main session is paused. Read `CLAUDE.md` first: its rules apply, and so do the
 rules below.
 
-- Work on branch `claude/relaxed-fermat-hcg1fo`. Pull first, then commit small and push.
+- Work on your own branch: `git fetch origin claude/relaxed-fermat-hcg1fo && git checkout -b gpt/2026-10-09
+  origin/claude/relaxed-fermat-hcg1fo`. Commit small and push to `gpt/2026-10-09` only, and open a pull request into
+  `claude/relaxed-fermat-hcg1fo`. Never push to `claude/relaxed-fermat-hcg1fo` itself: the main session reviews and
+  merges. The backup point is commit `343377c`.
 - Before every commit, run `pnpm format`, `npx tsc -p tsconfig.json --noEmit`, `npx biome check .` and the vitest files
   you touched. Run `node tools/kb/kb-check.ts` when docs change.
 - Never commit `assets-user/`, `apps/client/public/assets/` or `research-cache/`. They are gitignored and the
