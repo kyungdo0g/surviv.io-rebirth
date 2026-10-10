@@ -22,7 +22,7 @@ const KIT_CIRCLE = 3;
  * The faction brain's parts, each on by default (scripts/factionAb.ts turns single parts off for ablations; bots never
  * change them): the objective's push and fall back, the follower formation, the leader's advance to the front, the
  * no-solo-crossing rule, the local-numbers fight adjustment, reviving faction members outside the squad, the role
- * actions.
+ * actions, the rally to the Commander and the river discipline.
  */
 export const FACTION_TUNING = {
     push: true,
@@ -35,6 +35,10 @@ export const FACTION_TUNING = {
     outnumberedCap: false,
     factionRevive: true,
     roles: true,
+    /** owner 2026-10-08: most of the faction rallies to its Commander (factionRally.ts) */
+    rally: true,
+    /** owner 2026-10-08: bank spots out of the water, no idling in it (factionRiver.ts) */
+    dry: true,
 };
 
 /** The faction knowledge when the faction brain runs for this bot: flag on, faction map, faction known. */

@@ -165,8 +165,9 @@ describe("front estimate", () => {
         expect(f.x).toBeCloseTo(RIVER_X);
         const obj = objective(ctx, SPOT);
         expect(obj).not.toBeNull();
-        // on the own (left) bank, out of the water
-        expect(obj?.pos.x).toBeLessThan(RIVER_X - RIVER_WIDTH / 2);
+        // on the own (left) bank, out of the water (`width` u each side of the centre line: factionMap.ts)
+        expect(obj?.pos.x).toBeLessThan(RIVER_X - RIVER_WIDTH);
+        expect(w.model.nav.isWaterAt(obj?.pos ?? { x: RIVER_X, y: SPOT.y })).toBe(false);
         expect(obj?.push).toBe(false);
     });
 
@@ -183,11 +184,13 @@ describe("front estimate", () => {
             ],
         });
         giveGun(strong, 0, "ak47", 30, 120);
-        strong.fi.squadBoard?.see(30, v2.add(SPOT, { x: 25, y: 0 }), NOW, false, 10);
+        // (an enemy on the bank: 25 u east stands in the river, which is twice as wide as the bots took it until owner
+        // report 2026-10-08; a push stops out of the water there, faction-rally.test.ts)
+        strong.fi.squadBoard?.see(30, v2.add(SPOT, { x: 10, y: 0 }), NOW, false, 10);
         const push = objective(ctxOf(strong, ["faction"]), SPOT);
         expect(push?.push).toBe(true);
         // a push closes to 12 u of the enemy (the hold is at rifle range: 24 u)
-        expect(v2.distance(push?.pos ?? SPOT, v2.add(SPOT, { x: 25, y: 0 }))).toBeLessThan(15);
+        expect(v2.distance(push?.pos ?? SPOT, v2.add(SPOT, { x: 10, y: 0 }))).toBeLessThan(15);
         const weak = factionWorld();
         giveGun(weak, 0, "ak47", 30, 120);
         for (const [id, y] of [
@@ -333,7 +336,9 @@ describe("no solo crossing", () => {
         if (!geo) return;
         expect(riverSide(geo, SPOT)).toBeGreaterThan(0);
         expect(crossesRiver(geo, SPOT, across)).toBe(true);
-        expect(crossesRiver(geo, SPOT, v2.add(SPOT, { x: 20, y: 30 }))).toBe(false);
+        expect(crossesRiver(geo, SPOT, v2.add(SPOT, { x: 10, y: 30 }))).toBe(false);
+        // into the water is a crossing too (its edge is `width` u from the centre line, 20 u east of the bot)
+        expect(crossesRiver(geo, SPOT, v2.add(SPOT, { x: 24, y: 30 }))).toBe(true);
     });
 
     it("a lone bot does not go over the river to a known enemy cluster: it holds its own bank by the crossing", () => {
@@ -343,7 +348,7 @@ describe("no solo crossing", () => {
         intent.goal = v2.copy(across);
         guardCrossing(ctxOf(w, ["faction"]), intent);
         expect(intent.goal).not.toEqual(across);
-        expect(intent.goal?.x ?? 0).toBeLessThan(RIVER_X - RIVER_WIDTH / 2);
+        expect(intent.goal?.x ?? 0).toBeLessThan(RIVER_X - RIVER_WIDTH);
         expect(intent.lookAt?.x ?? 0).toBeGreaterThan(RIVER_X);
     });
 

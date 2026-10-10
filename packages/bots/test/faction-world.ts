@@ -65,12 +65,12 @@ export function stubSnap(over: Partial<Snapshot> & { role?: string; perks?: stri
 
 /**
  * The bot in faction 1, squad 5, on the left bank, with squadmates at the given offsets (ids 10, 11, ...) and the
- * faction minimap rows of `allies` (offsets, ids 20, 21, ...); `role` and `perks` are the bot's.
+ * faction minimap rows of `allies` (offsets, ids 20, 21, ..., with their roles); `role` and `perks` are the bot's.
  */
 export function factionWorld(
     opts: {
         mates?: Vec2[];
-        allies?: Array<{ off: Vec2; downed?: boolean }>;
+        allies?: Array<{ off: Vec2; downed?: boolean; role?: string }>;
         role?: string;
         perks?: string[];
         mateHealth?: number[];
@@ -95,7 +95,7 @@ export function factionWorld(
     const rows: FactionMemberView[] = team.map((m) => row(m.playerId, m.pos));
     (opts.allies ?? []).forEach((a, i) => {
         const id = 20 + i;
-        rows.push(row(id, v2.add(w.spot, a.off), { downed: !!a.downed }));
+        rows.push(row(id, v2.add(w.spot, a.off), { downed: !!a.downed, role: a.role ?? "" }));
         model.teamOf.set(id, TEAM);
         model.groupOf.set(id, GROUP + 1 + i);
     });

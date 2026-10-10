@@ -76,6 +76,11 @@ export class FactionBoard {
     aliveCounts: number[] = [];
     /** sign of the river side the faction spawned on (factionMap.ts riverSide), 0 until known */
     side = 0;
+    /**
+     * the Commander's call (owner 2026-10-08: the faction rallies to its Commander): refreshed with every decision it
+     * takes to advance, as a squad leader's on its squad board; null while it does not lead the faction anywhere
+     */
+    commanderPlan: SquadPlan | null = null;
     private readonly pingKeys = new Set<string>();
     private readonly killKeys = new Set<string>();
     private readonly revealedAt = new Map<number, number>();
@@ -198,6 +203,8 @@ export interface SquadPlan {
     objective: Vec2;
     front: Vec2;
     time: number;
+    /** the call is a push onto the enemy (brain/factionFront.ts): the Commander's group crosses the river with it */
+    push?: boolean;
 }
 
 export class SquadBoard {
@@ -206,6 +213,11 @@ export class SquadBoard {
     readonly sightings = new Map<number, Sighting>();
     /** the leader's call, refreshed with every decision it takes to advance (null: the squad loots on its own) */
     plan: SquadPlan | null = null;
+    /**
+     * whether each member rallies to the Commander (true) or keeps to itself (false), as it last told its squad (owner
+     * 2026-10-08, brain/factionRally.ts): the ones on their own keep a squad among themselves
+     */
+    readonly rallies = new Map<number, boolean>();
     readonly pings: SquadPing[] = [];
     private readonly pingKeys = new Set<string>();
 

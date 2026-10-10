@@ -6,11 +6,14 @@
 // revive itself is team.ts planRevive: no kneeling in an enemy's sights, smoke on the threat line first (guard), cover
 // next to the downed ally while someone covers it (pursuit). A Medic (Mass Medicate: its revive stands up every downed
 // teammate within reach) reaches twice as far, and with Revivify revives itself when downed and nobody is in its face.
+// Owner 2026-10-08: a knocked Commander is the group's to protect (factionRally.ts): a bot rallying to it reaches it as
+// far as a Medic, and two may head for it (the one nearest it and the next).
 import { type Vec2, v2 } from "@rebirth/core";
 import { Input } from "@rebirth/defs";
 import type { TeamMemberView } from "@rebirth/sim";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 import { FACTION_TUNING, factionOf } from "./factionCtx.ts";
+import { rallyCommander } from "./factionRally.ts";
 import { inStrike } from "./strikes.ts";
 import { mates } from "./team.ts";
 
@@ -19,8 +22,9 @@ const SQUAD_RANGE = 60;
 /** ...a downed faction member outside the squad this far, a Medic's anyone this far. */
 const FACTION_RANGE = 35;
 const MEDIC_RANGE = 80;
-/** Another standing ally this much closer to the downed one goes instead. */
+/** Another standing ally this much closer to the downed one goes instead (for the Commander, two closer ones). */
 const CLOSER_BY = 3;
+const COMMANDER_REVIVERS = 2;
 /** Revivify: no self revive with a standing enemy in view this close (it crawls away first). */
 const SELF_REVIVE_CLEAR = 22;
 const SELF_REVIVE_EVERY = 0.6;
@@ -63,8 +67,8 @@ function pickDowned(ctx: BrainCtx): Downed | undefined {
             best = m;
         }
     }
-    const range = medic ? MEDIC_RANGE : FACTION_RANGE;
     if (!FACTION_TUNING.factionRevive) return best;
+    const cmd = rallyCommander(ctx);
     for (const row of fi.downedAllies()) {
         if (squad.has(row.playerId)) continue;
         const c = ctx.model.contacts.get(row.playerId);
@@ -73,9 +77,11 @@ function pickDowned(ctx: BrainCtx): Downed | undefined {
         const at = c?.visible ? c.pos : row.pos;
         if (outOfReach(ctx, at)) continue;
         const d = v2.distance(at, me);
+        const commander = cmd?.id === row.playerId;
+        const range = medic || commander ? MEDIC_RANGE : FACTION_RANGE;
         if (d >= range || d >= bestD) continue;
-        // one reviver: a standing ally clearly closer to it goes (a Medic goes anyway)
-        if (!medic && closerAlly(ctx, at, d)) continue;
+        // one reviver: a standing ally clearly closer to it goes (a Medic goes anyway; the Commander gets two)
+        if (!medic && closerAllies(ctx, at, d) >= (commander ? COMMANDER_REVIVERS : 1)) continue;
         bestD = d;
         best = {
             playerId: row.playerId,
@@ -98,14 +104,16 @@ function outOfReach(ctx: BrainCtx, p: Vec2): boolean {
     return !ctx.model.insideCurrentCircle(p, 2) || (ctx.features.pursuit && inStrike(ctx, p));
 }
 
-function closerAlly(ctx: BrainCtx, at: Vec2, d: number): boolean {
+/** Standing allies (other than the bot) clearly closer to `at` than the bot's `d`, counted up to two. */
+function closerAllies(ctx: BrainCtx, at: Vec2, d: number): number {
     const fi = factionOf(ctx);
-    if (!fi) return false;
+    if (!fi) return 0;
+    let n = 0;
     for (const m of fi.allies()) {
         if (m.playerId === ctx.self.id) continue;
-        if (v2.distance(m.pos, at) < d - CLOSER_BY) return true;
+        if (v2.distance(m.pos, at) < d - CLOSER_BY && ++n >= COMMANDER_REVIVERS) break;
     }
-    return false;
+    return n;
 }
 
 /** Downed with Revivify (the Medic's self_revive): revive itself when no standing enemy is in its face, else null. */

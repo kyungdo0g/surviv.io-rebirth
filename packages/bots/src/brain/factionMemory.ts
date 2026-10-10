@@ -27,4 +27,18 @@ export class FactionMemory {
     lastSelfRevive = Number.NEGATIVE_INFINITY;
     /** goals kept off the far bank by the no-solo-crossing rule (diagnostics) */
     crossingsHeld = 0;
+    /** stops in the water turned into walking out onto a bank (factionRiver.ts keepDry; diagnostics) */
+    wetExits = 0;
+    /** errands over the river kept on the own bank (factionRiver.ts keepErrandsHome; diagnostics) */
+    errandsHeld = 0;
+    /** the bot's slot rank around its Commander and the Commander it was taken for (factionRally.ts) */
+    rallyRank = -1;
+    rallyRankFor = 0;
+    /**
+     * the Commander waiting for its group (factionRally.ts commanderWaits): since when (NaN: not waiting), on its way
+     * with it, and going on regardless until
+     */
+    cmdWaitFrom = Number.NaN;
+    cmdMoving = false;
+    cmdGoUntil = Number.NEGATIVE_INFINITY;
 }

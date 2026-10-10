@@ -7,6 +7,10 @@
 // cluster on the far bank without two squadmates beside it; the goal becomes a spot on its own bank by the crossing.
 // Until its leader calls it to the front (kitted: factionCtx.ts; the call is the squad board's plan) the squad loots:
 // the leader explores, followers loot within a leash a little shorter than the squad regroup's.
+// Owner 2026-10-08: once the faction has a Commander most bots follow it instead of their squad leader
+// (factionRally.ts: slots in rings around it, the same bands and scores as a squad's formation, its advance as the
+// call), the Commander leads (it advances like a squad leader once its group gathered around it) and the minority that
+// keeps to itself leads itself. Spots stay out of the river, the group's on the faction's own bank (factionRiver.ts).
 import { type Vec2, v2 } from "@rebirth/core";
 import type { TeamMemberView } from "@rebirth/sim";
 import { crossesRiver, nearestRiverPoint, riverSide } from "../perception/factionMap.ts";
@@ -15,6 +19,17 @@ import { type BehaviourName, type BrainCtx, emptyIntent, type Intent } from "./c
 import { avoidPos } from "./danger.ts";
 import { FACTION_TUNING, factionOf, kitted } from "./factionCtx.ts";
 import { holdSpot, objective, outOfStrikes } from "./factionFront.ts";
+import {
+    type Commander,
+    commanderWaits,
+    isCommander,
+    onItsOwn,
+    ownLeader,
+    rallyCommander,
+    rallyPoint,
+    rallySlot,
+} from "./factionRally.ts";
+import { dryCover, drySpot, inWater } from "./factionRiver.ts";
 import { inStrike } from "./strikes.ts";
 import { zonePressure } from "./survival.ts";
 import { leaderOf, mates } from "./team.ts";
@@ -40,6 +55,7 @@ const RALLY_DONE_LOOT = 12;
 /** The leader's call holds this long after its last advance decision. */
 const PLAN_FRESH = 2;
 const RALLY_URGENT = 45;
+const RALLY_HURRY = 0.62;
 /** A follower holds behind cover within this distance of its slot (facing the front) when it sees some. */
 const SLOT_COVER = 5;
 /** The slot moves this far before its cover is looked for again. */
@@ -48,12 +64,28 @@ const SLOT_COVER_MOVE = 3;
 const SLOT_TOLERANCE = 3;
 const SLOT_SCORE = 0.17;
 const HOLD_SCORE = 0.13;
+/**
+ * Walking to its slot around the Commander: above exploring with its hysteresis (0.12 + 0.08) and sweeping (0.2), below
+ * looting what it sees (from 0.22): the group gathers instead of wandering off around the Commander.
+ */
+const CMD_SLOT_SCORE = 0.21;
 /** The leader: holding the objective (above exploring, below sweeping and looting), and travelling to a far one. */
 const ADVANCE_HOLD = 0.16;
 const ADVANCE_FAR = 0.3;
 const ADVANCE_FAR_DIST = 50;
-/** The leader waits for a follower farther than this behind. */
+/** The leader waits for a follower farther than this behind (the Commander for its group: factionRally.ts). */
 const WAIT_FOR = 30;
+/** Rallying to the Commander: farther than this from its slot it hurries (RALLY_HURRY), as a far squad follower... */
+const CMD_URGENT = 50;
+/** ...and it walks back to its slot once farther than CMD_FAR from it (CMD_FAR_CALL while the Commander advances),
+ * until within CMD_DONE (CMD_DONE_CALL). */
+const CMD_FAR = 20;
+const CMD_DONE = 8;
+const CMD_FAR_CALL = 14;
+const CMD_DONE_CALL = 5;
+/** Around a knocked Commander within this distance the group closes in (above looting, below fights and flight). */
+const CMD_GUARD_REACH = 90;
+const CMD_GUARD_SCORE = 0.58;
 /** A lone bot joins faction members within this distance (two or more standing within JOIN_GROUP of each other). */
 const JOIN_RANGE = 150;
 const JOIN_GROUP = 25;
@@ -64,8 +96,8 @@ const CROSS_CLUSTER = 2;
 /** ...and a crossing needs this many squadmates within CROSS_SUPPORT_NEAR of the bot. */
 const CROSS_SUPPORT = 2;
 const CROSS_SUPPORT_NEAR = 15;
-/** Held back, the bot waits this far from the water on its own bank. */
-const CROSS_HOLD = 8;
+/** Held back, the bot waits this far past the riverbank on its own bank (out of the water and its open sand). */
+const CROSS_HOLD = 3;
 /** Behaviours the crossing rule leaves alone (getting out of danger, healing, orders). */
 const CROSS_FREE = new Set<BehaviourName>([
     "evacuate",
@@ -103,11 +135,21 @@ function joinTarget(ctx: BrainCtx): Vec2 | null {
     return best;
 }
 
-/** followTarget and formation slots, once per decision (scores and plans ask again). */
-const followCache = new WeakMap<BrainCtx, { lead: { id: number; at: Vec2 } | null; slot?: Vec2 }>();
+/** Who a bot follows: an id (-1 for a group it joins) and where; `cmd` when it is the Commander it rallies to. */
+export interface FollowTarget {
+    id: number;
+    at: Vec2;
+    cmd?: Commander;
+}
 
-/** Who the bot follows: its squad leader, or (squad down to itself) the nearest faction member with company. */
-export function followTarget(ctx: BrainCtx): { id: number; at: Vec2 } | null {
+/** followTarget and formation slots, once per decision (scores and plans ask again). */
+const followCache = new WeakMap<BrainCtx, { lead: FollowTarget | null; slot?: Vec2 }>();
+
+/**
+ * Who the bot follows: its Commander (rallying: the rally point, factionRally.ts), else its squad leader, or (squad
+ * down to itself) the nearest faction member with company. The Commander and the minority on its own follow nobody.
+ */
+export function followTarget(ctx: BrainCtx): FollowTarget | null {
     const hit = followCache.get(ctx);
     if (hit) return hit.lead;
     const lead = findFollowTarget(ctx);
@@ -115,7 +157,12 @@ export function followTarget(ctx: BrainCtx): { id: number; at: Vec2 } | null {
     return lead;
 }
 
-function findFollowTarget(ctx: BrainCtx): { id: number; at: Vec2 } | null {
+function findFollowTarget(ctx: BrainCtx): FollowTarget | null {
+    if (FACTION_TUNING.rally && isCommander(ctx)) return null;
+    const cmd = rallyCommander(ctx);
+    if (cmd) return { id: cmd.id, at: rallyPoint(ctx, cmd), cmd };
+    // (the minority on its own keeps a squad of those of its squadmates that keep to themselves too)
+    if (onItsOwn(ctx)) return ownLeader(ctx);
     const leader = leaderOf(ctx);
     if (leader) return { id: leader.playerId, at: leader.at };
     if (standingMates(ctx).length > 0) return null;
@@ -154,6 +201,8 @@ function computeSlot(ctx: BrainCtx, leaderId: number, leaderAt: Vec2): Vec2 {
         for (const m of standing) if (m.health < 70 && (!hurt || m.health < hurt.health)) hurt = m;
         if (hurt) return spotNear(ctx, v2.sub(hurt.at, v2.mul(fwd, 2.5)), hurt.at);
     }
+    const lead = followTarget(ctx);
+    if (lead?.cmd && lead.id === leaderId) return rallySlot(ctx, lead.cmd, leaderAt);
     const ids = standing.map((m) => m.playerId);
     ids.push(ctx.self.id);
     const order = ids.filter((id) => id !== leaderId).sort((a, b) => a - b);
@@ -164,14 +213,20 @@ function computeSlot(ctx: BrainCtx, leaderId: number, leaderAt: Vec2): Vec2 {
 }
 
 function spotNear(ctx: BrainCtx, p: Vec2, fallback: Vec2): Vec2 {
-    const cell = ctx.model.nav.nearestWalkable(p, 4, ctx.myComp);
-    return cell >= 0 ? ctx.model.nav.center(cell) : v2.copy(fallback);
+    // (on a dry cell: a slot by a leader at the water's edge does not step into the river, factionRiver.ts)
+    const spot = drySpot(ctx, p, 4);
+    return spot === p ? v2.copy(fallback) : spot;
 }
 
-/** Whether the squad leader `leaderId` calls the squad to the front now (a fresh plan on the squad board). */
+/**
+ * Whether the squad leader `leaderId` calls the squad to the front now (a fresh plan on the squad board); for the
+ * Commander, its call on the faction board.
+ */
 export function onCall(ctx: BrainCtx, leaderId: number): boolean {
-    const plan = factionOf(ctx)?.squadBoard?.plan;
-    return !!plan && plan.leader === leaderId && ctx.now - plan.time < PLAN_FRESH && FACTION_TUNING.formation;
+    const fi = factionOf(ctx);
+    const fresh = (plan: { leader: number; time: number } | null | undefined) =>
+        !!plan && plan.leader === leaderId && ctx.now - plan.time < PLAN_FRESH;
+    return FACTION_TUNING.formation && (fresh(fi?.squadBoard?.plan) || fresh(fi?.factionBoard?.commanderPlan));
 }
 
 /** Utility of keeping formation with the leader (followers, and lone bots joining a group). */
@@ -187,13 +242,14 @@ export function rallyScore(ctx: BrainCtx): number {
     // leader into an air strike: the leader is leaving it)
     if (ctx.features.pursuit && ((!ctx.armed && avoidPos(ctx, lead.at)) || inStrike(ctx, lead.at))) return 0;
     const dl = v2.distance(ctx.self.pos, lead.at);
+    if (lead.cmd) return commanderRallyScore(ctx, lead, lead.cmd, dl);
     // in formation only while the leader takes the squad to the front (its call on the squad board)
     const loose = !onCall(ctx, lead.id);
     const far = loose ? RALLY_FAR_LOOT : RALLY_FAR;
     const done = loose ? RALLY_DONE_LOOT : RALLY_DONE;
     if (dl > RALLY_URGENT) {
         fm.rallying = true;
-        return 0.62;
+        return RALLY_HURRY;
     }
     if (dl > far || (fm.rallying && dl > done)) {
         fm.rallying = true;
@@ -207,6 +263,40 @@ export function rallyScore(ctx: BrainCtx): number {
     if (lead.id < 0) return HOLD_SCORE;
     const slot = formationSlot(ctx, lead.id, lead.at);
     return v2.distance(ctx.self.pos, slot) > SLOT_TOLERANCE ? SLOT_SCORE : HOLD_SCORE;
+}
+
+/**
+ * Rallying to the Commander (factionRally.ts): an unarmed bot arms first (it loots on its way); a knocked Commander
+ * within CMD_GUARD_REACH gets the group around it; farther than CMD_URGENT from its slot the bot hurries; otherwise
+ * its slot in the group keeps it there on a leash measured from the slot (the rings reach 22 u out), shorter while the
+ * Commander advances (its call), and holding the slot is the filler between looting what is near and exploring.
+ */
+function commanderRallyScore(ctx: BrainCtx, lead: FollowTarget, cmd: Commander, dl: number): number {
+    const fm = ctx.mem.faction;
+    if (!ctx.armed) {
+        fm.rallying = false;
+        return 0;
+    }
+    if (cmd.downed && dl < CMD_GUARD_REACH) {
+        fm.rallying = true;
+        return CMD_GUARD_SCORE;
+    }
+    // (measured from the slot: a Commander over the river on an errand has its group's slots across from it on the
+    // own bank, factionRally.ts bankOf, where the group holds instead of hurrying on towards it)
+    const ds = v2.distance(ctx.self.pos, formationSlot(ctx, lead.id, lead.at));
+    if (ds > CMD_URGENT) {
+        fm.rallying = true;
+        return RALLY_HURRY;
+    }
+    const call = onCall(ctx, lead.id);
+    const far = call ? CMD_FAR_CALL : CMD_FAR;
+    const done = call ? CMD_DONE_CALL : CMD_DONE;
+    if (ds > far || (fm.rallying && ds > done)) {
+        fm.rallying = true;
+        return Math.min(0.6, 0.5 + (ds - done) / 150);
+    }
+    fm.rallying = false;
+    return ds > SLOT_TOLERANCE ? CMD_SLOT_SCORE : HOLD_SCORE;
 }
 
 export function planRally(ctx: BrainCtx): Intent {
@@ -232,7 +322,7 @@ function slotCover(ctx: BrainCtx, slot: Vec2, front: Vec2 | null): Vec2 {
     const fm = ctx.mem.faction;
     if (fm.slotCoverFor && v2.distance(fm.slotCoverFor, slot) < SLOT_COVER_MOVE) return fm.slotCover ?? slot;
     fm.slotCoverFor = v2.copy(slot);
-    fm.slotCover = findCoverFrom(ctx.model, slot, front, SLOT_COVER) ?? slot;
+    fm.slotCover = findCoverFrom(ctx.model, slot, front, SLOT_COVER, dryCover(ctx)) ?? slot;
     return fm.slotCover;
 }
 
@@ -243,16 +333,28 @@ function lag(ctx: BrainCtx): number {
     return far;
 }
 
+/**
+ * Whether the bot leads (takes itself and whoever follows it to the front): a squad leader, the Commander, or a bot of
+ * the minority on its own; a squad leader that rallies to its Commander follows instead.
+ */
+function leads(ctx: BrainCtx): boolean {
+    if (FACTION_TUNING.rally && isCommander(ctx)) return true;
+    if (onItsOwn(ctx)) return !ownLeader(ctx);
+    return !leaderOf(ctx) && !rallyCommander(ctx);
+}
+
 /** Utility of the squad leader taking the squad to its objective near the front. */
 export function advanceScore(ctx: BrainCtx): number {
     const fi = factionOf(ctx);
-    if (!fi || !FACTION_TUNING.advance || !ctx.armed || leaderOf(ctx) || !kitted(ctx)) return 0;
+    if (!fi || !FACTION_TUNING.advance || !ctx.armed || !leads(ctx) || !kitted(ctx)) return 0;
     // squad down to the bot: it joins a group (rally) when there is one to join
     if (standingMates(ctx).length === 0 && followTarget(ctx)) return 0;
     const obj = objective(ctx, ctx.self.pos);
     if (!obj) return 0;
     if (obj.fallback) return 0.6;
     if (obj.push) return 0.52;
+    // the Commander waits for its group where it is (looting what it sees: from 0.22) until enough stand around it
+    if (commanderWaits(ctx)) return ADVANCE_HOLD;
     // an enemy in view is the fight behaviours' business: no marching past it
     if (ctx.visibleEnemies.some((e) => !e.downed)) return ADVANCE_HOLD;
     return v2.distance(ctx.self.pos, obj.pos) > ADVANCE_FAR_DIST ? ADVANCE_FAR : ADVANCE_HOLD;
@@ -262,11 +364,16 @@ export function planAdvance(ctx: BrainCtx): Intent {
     const intent = emptyIntent("advance");
     const obj = objective(ctx, ctx.self.pos);
     if (!obj) return intent;
-    // "on me": the squad's call to follow in formation (factionBoard.ts SquadPlan)
-    const sb = factionOf(ctx)?.squadBoard;
-    if (sb) sb.plan = { leader: ctx.self.id, objective: obj.pos, front: obj.front, time: ctx.now };
+    // "on me": the squad's call to follow in formation (factionBoard.ts SquadPlan); the Commander's reaches the faction
+    const fi = factionOf(ctx);
+    const plan = { leader: ctx.self.id, objective: obj.pos, front: obj.front, time: ctx.now, push: obj.push };
+    if (fi?.squadBoard) fi.squadBoard.plan = plan;
+    if (fi?.factionBoard && FACTION_TUNING.rally && isCommander(ctx)) fi.factionBoard.commanderPlan = plan;
     const spot = holdSpot(ctx, obj);
-    const behind = lag(ctx) > WAIT_FOR && !obj.fallback;
+    // (the Commander waits for its group instead of its own squad, part of which may keep to itself: factionRally.ts)
+    // (never in the water: a leader caught mid-crossing goes on and waits on the bank)
+    const commander = isCommander(ctx) && FACTION_TUNING.rally;
+    const behind = !obj.fallback && (commander ? commanderWaits(ctx) : lag(ctx) > WAIT_FOR && !inWater(ctx));
     if (behind || v2.distance(ctx.self.pos, spot) <= 1.2) {
         // wait for the squad (or hold the spot), facing the front
         intent.stop = true;
@@ -325,13 +432,15 @@ export function guardCrossing(ctx: BrainCtx, intent: Intent): void {
     if (enemies.length < CROSS_CLUSTER) return;
     let support = 0;
     for (const m of standingMates(ctx)) if (v2.distance(m.at, me) < CROSS_SUPPORT_NEAR) support++;
+    // (rallying with the Commander's group, any faction member beside it backs the crossing)
+    if (rallyCommander(ctx)) support = Math.max(support, fi.alliesNear(me, CROSS_SUPPORT_NEAR));
     if (support >= CROSS_SUPPORT) return;
-    // hold on this bank by the crossing, facing the cluster
-    const { point, dir } = nearestRiverPoint(geo, crossing);
+    // hold on this bank by the crossing, facing the cluster: past the riverbank (the water is as wide as the terrain
+    // makes it, factionMap.ts), on a dry cell
+    const { point, dir, bank } = nearestRiverPoint(geo, crossing);
     const left = { x: -dir.y, y: dir.x };
-    const hold = v2.add(point, v2.mul(left, mySide * (geo.halfWidth + CROSS_HOLD)));
-    const cell = model.nav.nearestWalkable(hold, 8, ctx.myComp);
-    intent.goal = cell >= 0 ? model.nav.center(cell) : hold;
+    const hold = v2.add(point, v2.mul(left, mySide * (bank + CROSS_HOLD)));
+    intent.goal = drySpot(ctx, hold, 8);
     intent.arriveDist = 2;
     let cx = 0;
     let cy = 0;

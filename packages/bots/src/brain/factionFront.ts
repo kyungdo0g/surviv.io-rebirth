@@ -7,11 +7,16 @@
 // spot: with 1.5 allies per enemy around the squad pushes onto the enemy, clearly outnumbered it falls back. One squad
 // in four flanks: its spot slides along the river towards the bridge beside the main fight. The spot is kept inside
 // the next safe circle and moved behind cover from the front once the bot can see some near it.
+// Owner report 2026-10-08 (the faction's bots stood in the river): the spot never lies in the river. The bank spot is
+// measured from the riverbank's true edge (perception/factionMap.ts), and a spot the setback puts in the water or on
+// its open riverbank (a front across the river, a push onto enemies over it) moves back onto the squad's bank, past
+// the riverbank, on a dry cell (factionRiver.ts); a push onto the far bank itself still crosses.
 import { type Vec2, v2 } from "@rebirth/core";
-import { nearestBridge, nearestRiverPoint } from "../perception/factionMap.ts";
+import { nearestBridge, nearestRiverPoint, riverSide, waterHalfAt } from "../perception/factionMap.ts";
 import { findCoverFrom } from "./combat.ts";
 import type { BrainCtx } from "./context.ts";
 import { FACTION_TUNING, factionOf, favourable, localOdds, type Odds, outnumbered } from "./factionCtx.ts";
+import { BANK_CLEAR, dryCover, dryOn, drySpot } from "./factionRiver.ts";
 import { inStrike, strikeDangers } from "./strikes.ts";
 
 /**
@@ -22,8 +27,8 @@ import { inStrike, strikeDangers } from "./strikes.ts";
 const CONTACT_SETBACK = 24;
 const PUSH_SETBACK = 12;
 const FALLBACK_SETBACK = 48;
-/** Holding at the bank with no enemy known: this far back from the water's edge. */
-const BANK_SETBACK = 10;
+/** Holding at the bank with no enemy known: this far back from the riverbank's outer edge (the water and its sand). */
+const BANK_SETBACK = 6;
 /** Each role's extra setback (u): the Commander a little behind, the Marksman on a long angle, the Recon ahead. */
 const ROLE_SETBACK: Readonly<Record<string, number>> = {
     leader: 6,
@@ -75,13 +80,13 @@ export function defaultFront(ctx: BrainCtx, p: Vec2): Vec2 {
     return bridge && v2.distance(bridge, bank) < BRIDGE_PULL ? v2.copy(bridge) : bank;
 }
 
-/** `p` pulled inside the next safe circle (ZONE_MARGIN inside its edge). */
-function inZone(ctx: BrainCtx, p: Vec2): Vec2 {
+/** `p` pulled inside the next safe circle (`margin` inside its edge). */
+export function inZone(ctx: BrainCtx, p: Vec2, margin = ZONE_MARGIN): Vec2 {
     const gas = ctx.model.gas;
     if (!gas || gas.mode === "inactive") return p;
     const off = v2.sub(p, gas.posNew);
     const d = v2.length(off);
-    const max = Math.max(0, gas.radNew - ZONE_MARGIN);
+    const max = Math.max(0, gas.radNew - margin);
     return d <= max ? p : v2.add(gas.posNew, v2.mul(off, max / Math.max(d, 1e-6)));
 }
 
@@ -108,23 +113,46 @@ export function objective(ctx: BrainCtx, anchor: Vec2): Objective | null {
     const fallback = FACTION_TUNING.fallback && known !== null && outnumbered(odds) && role !== "last_man";
     const extra = ROLE_SETBACK[role] ?? 0;
     let setback = push ? PUSH_SETBACK : fallback ? FALLBACK_SETBACK : CONTACT_SETBACK + extra;
-    if (!known)
-        setback = (fi.geo ? fi.geo.halfWidth + BANK_SETBACK : CONTACT_SETBACK) + Math.max(-BANK_SETBACK + 2, extra);
+    if (!known) {
+        const bank = fi.geo ? nearestRiverPoint(fi.geo, front).bank : CONTACT_SETBACK - BANK_SETBACK;
+        setback = bank + BANK_SETBACK + Math.max(BANK_CLEAR - BANK_SETBACK, extra);
+    }
     let pos = v2.sub(front, v2.mul(fwd, setback));
     if (!push && !fallback && flankSquad(fi.group)) {
         const lateral = { x: -fwd.y, y: fwd.x };
         const sign = fi.group % 2 === 0 ? 1 : -1;
         pos = v2.add(pos, v2.mul(lateral, sign * FLANK_OFFSET));
     }
-    pos = outOfStrikes(ctx, inZone(ctx, clampToMap(ctx, pos)));
-    const cell = ctx.model.nav.nearestWalkable(pos, 10, ctx.myComp);
-    if (cell >= 0) pos = ctx.model.nav.center(cell);
+    pos = offRiver(ctx, outOfStrikes(ctx, inZone(ctx, clampToMap(ctx, pos))), anchor, push);
+    pos = drySpot(ctx, pos, 10);
     fm.objective = pos;
     fm.objectiveAt = ctx.now;
     fm.front = front;
     fm.push = push;
     fm.fallback = fallback;
     return { pos, front, push, fallback };
+}
+
+/**
+ * `p` out of the main river: a spot in its water or on its riverbank, or a hold over on the other bank, moves past the
+ * riverbank onto the bank `anchor` stands on (the faction's own while the anchor is in the water; always the own one
+ * for the Commander), or onto the other bank when only that one is inside the next safe circle; a spot neither bank
+ * keeps in the circle stays where the zone put it. A push onto the other bank itself crosses (quickly, attacking: the
+ * crossing rule still wants company).
+ */
+function offRiver(ctx: BrainCtx, p: Vec2, anchor: Vec2, push: boolean): Vec2 {
+    const fi = factionOf(ctx);
+    const geo = fi?.geo;
+    if (!fi || !geo || !FACTION_TUNING.dry) return p;
+    const sa = riverSide(geo, anchor);
+    let side = Math.abs(sa) > waterHalfAt(geo, anchor) ? Math.sign(sa) : fi.side || Math.sign(sa) || 1;
+    // the Commander holds its own bank, where its group forms (factionRally.ts bankOf), unless it attacks over there
+    if (!push && fi.side && fi.role === "leader" && FACTION_TUNING.rally) side = fi.side;
+    if (push && riverSide(geo, p) * side < -(nearestRiverPoint(geo, p).bank + BANK_CLEAR)) return p;
+    const out = dryOn(ctx, p, side);
+    if (out === p || ctx.model.insideSafeZone(out)) return out;
+    const other = dryOn(ctx, p, -side);
+    return ctx.model.insideSafeZone(other) ? other : p;
 }
 
 /** `p` moved out of the air strikes the bot knows of (past each one's edge, away from its centre). */
@@ -158,7 +186,8 @@ export function holdSpot(ctx: BrainCtx, obj: Objective): Vec2 {
     const fm = ctx.mem.faction;
     if (fm.cover && fm.coverFor && v2.distance(fm.coverFor, obj.pos) < 1) return fm.cover;
     if (v2.distance(ctx.self.pos, obj.pos) > COVER_NEAR) return obj.pos;
-    const cover = obj.push ? null : findCoverFrom(ctx.model, obj.pos, obj.front, COVER_RANGE);
+    // (never behind a river stone in the water: factionRiver.ts dryCover)
+    const cover = obj.push ? null : findCoverFrom(ctx.model, obj.pos, obj.front, COVER_RANGE, dryCover(ctx));
     fm.cover = cover ?? obj.pos;
     fm.coverFor = v2.copy(obj.pos);
     return fm.cover;

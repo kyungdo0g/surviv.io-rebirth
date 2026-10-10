@@ -60,9 +60,10 @@ export function planGuard(ctx: BrainCtx): Intent {
     }
     const dir = v2.normalizeSafe(v2.sub(threat, m.pos));
     const stand = v2.add(m.pos, v2.mul(dir, GUARD_DIST));
+    // (out of the water: a guard stands still, and in the river at water speed; owner report 2026-10-08)
     const cover = findCoverFrom(model, stand, threat, 3, (p) => {
         const d = v2.distance(p, m.pos);
-        return d >= 4 && d <= 8;
+        return d >= 4 && d <= 8 && !model.nav.isWaterAt(p);
     });
     const spot = cover ?? stand;
     const cell = model.nav.nearestWalkable(spot, 3, ctx.myComp);

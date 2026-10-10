@@ -31,6 +31,7 @@ import { escapeFrag } from "./escapeFrag.ts";
 import { bestLoot, lootScore, planExplore, planLoot } from "./explore.ts";
 import { EXTENSION_BEHAVIOURS } from "./extensions.ts";
 import { factionScores } from "./factionFight.ts";
+import { keepDry, keepErrandsHome } from "./factionRiver.ts";
 import { applyFactionRoles, grenadierThrow } from "./factionRoles.ts";
 import { guardCrossing } from "./factionSquad.ts";
 import { BRAIN_PRESETS, type BrainFeatures } from "./features.ts";
@@ -282,10 +283,13 @@ export class Brain {
             intent.throwPlan = grenadeOpportunity(ctx, thinkDt);
         }
         if (ctx.features.teamplay) applyTeamplay(ctx, intent);
-        // 50v50: role actions (Commander pings, the bugle, the medic's heals) and the no-solo-crossing rule
+        // 50v50: role actions (Commander pings, the bugle, the medic's heals), the no-solo-crossing rule, no errands over
+        // the river and no idling in it (factionRiver.ts)
         if (ctx.features.faction) {
             applyFactionRoles(ctx, intent);
             guardCrossing(ctx, intent);
+            keepErrandsHome(ctx, intent);
+            keepDry(ctx, intent);
         }
         if (ctx.features.threats) reactToThreats(ctx, intent);
         if (ctx.features.scope) manageScope(ctx, intent);

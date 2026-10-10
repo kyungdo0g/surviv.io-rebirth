@@ -74,6 +74,8 @@ function findPost(ctx: BrainCtx, t: Contact, gun: HeldGun, d: number): FightPost
         const dt = v2.distance(spot, t.pos);
         if (dt < lo || dt > reach) return false;
         if (pref < 0 ? dt < d - 1 : pref > 0 ? dt > d + 1 : dt < d - 3) return false;
+        // (no post behind a stone in the river: the bot would fight from the water at water speed, owner 2026-10-08)
+        if (model.nav.isWaterAt(spot)) return false;
         return reachable(ctx, spot, 1) && !nearFailedGoal(ctx, spot) && !avoidPos(ctx, spot) && !burned(ctx, spot);
     });
     if (!hide) return null;

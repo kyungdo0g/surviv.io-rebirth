@@ -15,7 +15,14 @@ import {
     SIGHTING_LIFE,
     type SquadBoard,
 } from "./factionBoard.ts";
-import { type FactionMap, factionMapOf, isFactionMap, nearestRiverPoint, riverSide } from "./factionMap.ts";
+import {
+    type FactionMap,
+    factionMapOf,
+    isFactionMap,
+    nearestRiverPoint,
+    riverSide,
+    waterHalfAt,
+} from "./factionMap.ts";
 import type { WorldModel } from "./world.ts";
 
 /** The squad's sightings are pruned this often (s). */
@@ -85,7 +92,7 @@ export class FactionIntel {
             if (snap.teamAliveCounts) fb.aliveCounts = snap.teamAliveCounts;
             if (fb.side === 0 && this.geo && model.snapshots > 0) {
                 const s = riverSide(this.geo, model.self.pos);
-                if (Math.abs(s) > this.geo.halfWidth) fb.side = Math.sign(s);
+                if (Math.abs(s) > waterHalfAt(this.geo, model.self.pos)) fb.side = Math.sign(s);
             }
         }
         for (const e of snap.emotes ?? []) {
@@ -181,7 +188,7 @@ export class FactionIntel {
         const geo = this.geo;
         const side = this.side;
         if (!geo || !side) return true;
-        return riverSide(geo, p) * side > geo.halfWidth;
+        return riverSide(geo, p) * side > waterHalfAt(geo, p);
     }
 
     /** Unit direction from `p` towards the enemy's side (across the river), null without a river or a known side. */
