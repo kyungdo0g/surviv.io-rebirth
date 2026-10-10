@@ -401,15 +401,42 @@ export interface LooseDrawing {
 
 /**
  * The drawings of a loose sheet: drawings on a transparent background with no grid, where a long gun may reach into
- * the next column (the owner's second-wave sheet of 2026-10-10). A drawing is one connected shape of pixels at least
- * half opaque, of at least `minArea` of the sheet; they come in reading order, rows top to bottom (a drawing whose
+ * the next column (the owner's second-wave sheets of 2026-10-10). A drawing is one connected shape of pixels at least
+ * half opaque and not background (transparent or lighter than `bgThreshold` and connected to the sheet's border, so a
+ * sheet on white works too), of at least `minArea` of the sheet; they come in reading order, rows top to bottom (a drawing whose
  * vertical centre lies within half the row's first drawing's height of it joins that row), left to right in a row.
  * Each crop keeps the drawing's own anti-aliased edge (pixels within 2 px of it) and clears a neighbour's muzzle.
  */
-export function looseDrawings(sheet: RgbaImage, minArea = 0.002, pad = 4): LooseDrawing[] {
+export function looseDrawings(sheet: RgbaImage, minArea = 0.002, pad = 4, bgThreshold = 235): LooseDrawing[] {
     const { width: w, height: h, data } = sheet;
     const n = w * h;
-    const solid = (p: number) => data[p * 4 + 3]! >= 128;
+    // the background: transparent or near-white pixels connected to the sheet's border (a sheet on white paper)
+    const bg = new Uint8Array(n);
+    const open = (p: number) => data[p * 4 + 3]! < 128 || luminance(data, p * 4) >= bgThreshold;
+    const flood: number[] = [];
+    const seed = (p: number) => {
+        if (!bg[p] && open(p)) {
+            bg[p] = 1;
+            flood.push(p);
+        }
+    };
+    for (let x = 0; x < w; x++) {
+        seed(x);
+        seed((h - 1) * w + x);
+    }
+    for (let y = 0; y < h; y++) {
+        seed(y * w);
+        seed(y * w + w - 1);
+    }
+    while (flood.length) {
+        const p = flood.pop()!;
+        const x = p % w;
+        if (x > 0) seed(p - 1);
+        if (x < w - 1) seed(p + 1);
+        if (p >= w) seed(p - w);
+        if (p < n - w) seed(p + w);
+    }
+    const solid = (p: number) => !bg[p] && data[p * 4 + 3]! >= 128;
     const label = new Int32Array(n).fill(-1);
     const comps: Array<Component & { id: number }> = [];
     const stack: number[] = [];

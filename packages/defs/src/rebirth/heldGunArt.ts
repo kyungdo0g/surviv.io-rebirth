@@ -114,6 +114,56 @@ export const HELD_GUN_ART_LEFT_HAND_OFFSET: Readonly<Partial<Record<string, { x:
  */
 export const HELD_GUN_ART_EMPTY: readonly HeldGunArtId[] = ["rpg7"];
 
+/**
+ * Held sprites cut at install time from the owner's top-down sheets of 2026-10-10 (owner: "use whichever versions you
+ * prefer"; tools/assets/ownerHeldArt.ts): the owner's art, so gitignored like the loot icons, installed as
+ * img/rebirth/gun-<id>-owner-01.png at twice the logical size given here (frame width by class, the length from the
+ * drawn-length formula, butt flush at the bottom, muzzle 2 body px past the bullet origin, like the drawn ones). The
+ * client draws one only once it has found its file installed (apps/client assets/ownerHeldArt.ts, objects/heldGun.ts);
+ * without assets-user a gun keeps its bar or its drawn sprite. The Model 94 is survev's (a bar in its def today); the
+ * others are the second wave. Hands: the def's, but for HELD_GUN_ART_LEFT_HAND_OFFSET.
+ */
+export const OWNER_HELD_GUN_ART = {
+    nlaw: [64, 204],
+    jackhammer: [48, 194],
+    pvg42: [60, 238],
+    rpd: [80, 212],
+    bren: [64, 212],
+    model94: [48, 206],
+    mg3: [80, 218],
+    maadi: [60, 238],
+    negev: [80, 212],
+    bazooka: [64, 204],
+    kpv: [88, 250],
+} as const satisfies Readonly<Record<string, readonly [number, number]>>;
+
+export type OwnerHeldGunArtId = keyof typeof OWNER_HELD_GUN_ART;
+
+/** Sprite id of an owner held sprite. */
+export function ownerHeldGunArtSprite(id: string): string {
+    return `gun-${id}-owner-01.img`;
+}
+
+/** Asset path (under the client's asset folder) of an installed owner held sprite. */
+export function ownerHeldGunArtPath(id: string): string {
+    return `img/rebirth/gun-${id}-owner-01.png`;
+}
+
+/** Every owner held sprite with its logical size (the client's sprite manifest entries). */
+export function ownerHeldGunArt(): Array<{
+    id: OwnerHeldGunArtId;
+    sprite: string;
+    path: string;
+    size: readonly [number, number];
+}> {
+    return (Object.keys(OWNER_HELD_GUN_ART) as OwnerHeldGunArtId[]).map((id) => ({
+        id,
+        sprite: ownerHeldGunArtSprite(id),
+        path: ownerHeldGunArtPath(id),
+        size: OWNER_HELD_GUN_ART[id],
+    }));
+}
+
 export interface HeldGunArt {
     id: HeldGunArtId;
     /** sprite id, gun-<id>-01.img (the client serves it from /rebirth/guns/gun-<id>-01.svg) */

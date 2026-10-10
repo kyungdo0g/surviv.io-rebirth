@@ -36,8 +36,9 @@ into `research-cache/` (needs git and network access to github.com and surviv.io
 The owner's art and sound for the new guns (beta) live in the gitignored `assets-user/` (copy that folder into the
 repository root; git never brings it): the line-art sheets in `assets-user/source/2026-10-07-sheets/`, the
 second-wave sheets in `assets-user/source/2026-10-10-sheets/` (exactly these file names: `second-wave-icons.webp`, the
-loot icons of the eleven second-wave guns plus the Molotov and the flashbang, and `second-wave-decals.png`, the
-throwables' and launchers' decals) and the recorded clips in `assets-user/audio/guns/` (see its `MANIFEST.md`). Run `pnpm assets` after every pull: it installs them last
+loot icons of the eleven second-wave guns plus the Molotov and the flashbang, `second-wave-decals.png`, the
+throwables' and launchers' decals, and the top-down held sprites `second-wave-topdown.png` and
+`second-wave-topdown-alt.webp`) and the recorded clips in `assets-user/audio/guns/` (see its `MANIFEST.md`). Run `pnpm assets` after every pull: it installs them last
 (`tools/assets/newGuns.ts`): it cuts each gun's loot icon out of the sheets (label removed, white background made
 transparent, fitted like the original icons) and levels each clip to the original guns of its class (reload clips are
 fitted to the reload time). Reading the WebP sheets and levelling the clips need `ffmpeg` and `ffprobe` on the PATH
