@@ -1,6 +1,8 @@
 // The generated sprite manifest (tools/assets/import.ts): sprite id ("map-tree-01.img") -> file, source and the size the
-// definitions' sprite scales are relative to; plus the beta new guns' loot icons (rebirthSprites.ts).
+// definitions' sprite scales are relative to; plus the beta new guns' loot icons (rebirthSprites.ts) and the owner's
+// 2026-10-10 throwables, rounds and launcher decals (decalThrowableSprites.ts).
 import manifestJson from "../generated/sprite-manifest.json";
+import { decalThrowableSpriteEntries } from "./decalThrowableSprites.ts";
 import { rebirthSpriteEntries } from "./rebirthSprites.ts";
 
 /**
@@ -28,6 +30,7 @@ export interface SpriteEntry {
 export const SPRITES: Readonly<Record<string, SpriteEntry>> = {
     ...(manifestJson as unknown as Record<string, SpriteEntry>),
     ...rebirthSpriteEntries(),
+    ...decalThrowableSpriteEntries(),
 };
 
 /** File of sprite `id` under /assets/, or undefined when the manifest has no image for it. */

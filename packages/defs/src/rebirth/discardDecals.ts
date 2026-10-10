@@ -108,7 +108,8 @@ export function rebirthGroundDecals(): Record<string, MapObjectDef> {
                 scale: Number(((art.length * PX) / art.size[1]).toFixed(4)),
                 alpha: 1,
                 tint: 0xffffff,
-                zIdx: 12,
+                // on the ground under crates and loot, like the barrel residue (decal_barrel_explosion 9)
+                zIdx: 9,
                 ignoreAdjust: true,
             },
         } satisfies DecalDef;

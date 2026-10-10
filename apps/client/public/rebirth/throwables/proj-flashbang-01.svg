@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- M84-style flashbang, own art (surviv.io-rebirth): olive perforated body, blue band, spoon and pull ring. -->
+  <g stroke="#1b1b1b" stroke-width="6" stroke-linejoin="round">
+    <circle cx="40" cy="30" r="12" fill="none" stroke="#3a3a3a"/>
+    <path d="M70 20h18v8l-6 4v72h-10z" fill="#5a5a3a"/>
+    <path d="M48 26h32v6l6 6v70l-6 8H48l-6-8V38l6-6z" fill="#7a7a3e"/>
+    <rect x="42" y="64" width="44" height="16" fill="#3b6fb6"/>
+  </g>
+  <g fill="#1b1b1b">
+    <circle cx="55" cy="50" r="5"/><circle cx="73" cy="50" r="5"/>
+    <circle cx="55" cy="72" r="5"/><circle cx="73" cy="72" r="5"/>
+    <circle cx="55" cy="94" r="5"/><circle cx="73" cy="94" r="5"/>
+  </g>
+</svg>

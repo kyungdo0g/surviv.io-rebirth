@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Molotov cocktail, own art (surviv.io-rebirth): green glass bottle, rag stuffed in the neck. -->
+  <g stroke="#1b1b1b" stroke-width="6" stroke-linejoin="round">
+    <path d="M57 30h14v18c0 6 14 10 14 22v44c0 5-4 8-8 8H51c-4 0-8-3-8-8V70c0-12 14-16 14-22z" fill="#4c6b2c"/>
+    <path d="M59 32c-2-10 2-20 10-22 8-1 12 4 14 12l8 18c2 5-1 8-5 8l-8-2-4-10-6 2z" fill="#d8c4a8"/>
+  </g>
+  <path d="M52 72v38" stroke="#7a9a4e" stroke-width="6" stroke-linecap="round"/>
+</svg>

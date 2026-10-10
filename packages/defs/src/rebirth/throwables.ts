@@ -72,7 +72,8 @@ const NAMES = { molotov: "Molotov Cocktail", flashbang: "Flashbang" } as const;
 /** Inventory order after the strobe (3): the throwable slot cycles frag, MIRV, smoke, strobe, Molotov, flashbang. */
 const INVENTORY_ORDER = { molotov: 4, flashbang: 5 } as const;
 
-const hand = (sprite: string, scale = 0.14) => ({ sprite, pos: { x: 4.2, y: 4.2 }, scale });
+// drawn larger than the frag's 0.14: the bottle and the canister are narrow and fill less of their 128 px frame
+const hand = (sprite: string, scale = 0.24) => ({ sprite, pos: { x: 4.2, y: 4.2 }, scale });
 const NONE = { sprite: "none" };
 
 /**
@@ -100,7 +101,7 @@ export function rebirthThrowableDefs(frag: ThrowableDef): Record<string, Throwab
         throwPhysics: { ...frag.throwPhysics, speed: 18 },
         noPotatoSwap: true,
         lootImg: loot(molotovSprite),
-        worldImg: { sprite: molotovSprite, scale: 0.13, tint: 0xffffff },
+        worldImg: { sprite: molotovSprite, scale: 0.16, tint: 0xffffff },
         handImg: {
             equip: { right: hand(molotovSprite), left: NONE },
             cook: { right: hand(molotovSprite), left: NONE },
@@ -116,10 +117,10 @@ export function rebirthThrowableDefs(frag: ThrowableDef): Record<string, Throwab
         fuseTime: FLASHBANG_FUSE,
         noPotatoSwap: true,
         lootImg: loot(flashSprite),
-        worldImg: { sprite: flashSprite, scale: 0.13, tint: 0xffffff },
+        worldImg: { sprite: flashSprite, scale: 0.16, tint: 0xffffff },
         handImg: {
             equip: { right: hand(flashSprite), left: NONE },
-            cook: { right: hand(flashSprite), left: hand("proj-frag-pin-part.img") },
+            cook: { right: hand(flashSprite), left: hand("proj-frag-pin-part.img", 0.14) },
             throwing: { right: NONE, left: NONE },
         },
     };
