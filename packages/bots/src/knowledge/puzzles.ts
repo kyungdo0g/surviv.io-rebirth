@@ -247,6 +247,32 @@ const SPECS: readonly PuzzleSpec[] = [
             "the military base's basement vault: the bank vault door, used by hand, opens 4.1 s later (rebirth " +
             "military base, docs/research/rebirth-deviations.md; packages/defs rebirth/buildings/military/bunker.ts)",
     },
+    // The rebirth buildings' hidden rooms (2026-10-10 rework; docs/research/rebirth-deviations.md "Rebirth buildings
+    // reworked"; packages/defs rebirth/buildings/). Appended last so every older entry keeps its knowledge draw. A
+    // single switch is obvious; a three-switch code whose order a note in the same building shows is common (the
+    // players who notice the note). Rooms: the layout's hidden room in the building's own frame.
+    ...(
+        [
+            ["clinic_01", "obvious", ["1"], [9, 6, 17, 12], 55, "the drug safe"],
+            ["radio_station_01", "common", ["yellow", "red", "blue"], [-5, 6, 6, 12], 60, "the signals vault"],
+            ["library_01", "obvious", ["1"], [10, -14, 19, -7], 60, "the rare-books room"],
+            ["firestation_01", "obvious", ["1"], [-19.5, 6, -12, 12.5], 60, "the gear cage"],
+            ["outpost_01r", "obvious", ["1"], [-14, 0, -2, 11], 55, "the armory"],
+            ["outpost_01b", "obvious", ["1"], [-14, 0, -2, 11], 55, "the armory"],
+            ["military_gatehouse_01", "obvious", ["1"], [0.5, -3.5, 6, 3.5], 35, "the weapons cage"],
+            ["military_bunker_command_01", "common", ["red", "yellow", "green"], [6, 2, 14, 7], 60, "the war chest"],
+        ] as const
+    ).map(
+        ([building, lore, code, [x0, y0, x1, y1], value, room]): PuzzleSpec => ({
+            building,
+            kind: "code",
+            lore,
+            code,
+            rooms: [{ box: { min: { x: x0, y: y0 }, max: { x: x1, y: y1 } } }],
+            value,
+            source: `${room}: rebirth switch puzzle (REBIRTH_PUZZLE_CODES, docs/research/rebirth-deviations.md)`,
+        }),
+    ),
 ];
 
 function obstacle(type: string): ObstacleDef | undefined {
