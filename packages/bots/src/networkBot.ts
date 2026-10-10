@@ -2,7 +2,8 @@
 // each snapshot goes through the same Bot as in-process bots and the resulting input is sent back.
 import { HeadlessClient, type HeadlessClientOptions } from "@rebirth/protocol";
 import type { Snapshot } from "@rebirth/sim";
-import { Bot, type BotOptions, teamModeOf } from "./bot.ts";
+import { Bot, type BotOptions } from "./bot.ts";
+import { teamModeOf } from "./botSetup.ts";
 
 export interface NetworkBotOptions extends BotOptions, Omit<HeadlessClientOptions, "bot"> {}
 

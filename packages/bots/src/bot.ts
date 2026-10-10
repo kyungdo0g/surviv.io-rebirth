@@ -4,11 +4,12 @@
 // cursor motor model (motor/human.ts), per DifficultyParams.motor.model. Pure and deterministic given its seed: no wall
 // clock, no unseeded randomness. BotController (in-process) and NetworkBot (WebSocket) feed it.
 import { type Collider, createRng, type Rng, type Vec2, v2 } from "@rebirth/core";
-import { GameObjectDefs, hasDef, Input, WeaponSlot } from "@rebirth/defs";
+import { Input, WeaponSlot } from "@rebirth/defs";
 import { type EmoteRequest, emptyInput, type MapData, type PlayerInput, type Snapshot } from "@rebirth/sim";
+import { emoteRequest, resolveSkill } from "./botSetup.ts";
 import { Brain } from "./brain/brain.ts";
 import { ClassPicker } from "./brain/classPick.ts";
-import { type BotOrder, emptyIntent, type Intent, type IntentEmote } from "./brain/context.ts";
+import { type BotOrder, emptyIntent, type Intent } from "./brain/context.ts";
 import { type BrainFeatures, type BrainName, brainFeatures, brainLabel } from "./brain/features.ts";
 import { fragNoThrowNear } from "./brain/fragMath.ts";
 import { throwBlocker } from "./brain/fragSkill.ts";
@@ -27,7 +28,7 @@ import { installPerception } from "./perception/install.ts";
 import { concealed } from "./perception/sight.ts";
 import { type Contact, WorldModel } from "./perception/world.ts";
 import { botPersona, PERSONA_SALT, type PersonaName, type PersonaParams } from "./persona.ts";
-import { drawSkill, type SkillProfile, skillOf, skillParams, tierOfSkill } from "./skill.ts";
+import { type SkillProfile, skillParams } from "./skill.ts";
 
 export interface BotOptions {
     /** preset name or custom parameters (default "normal"); ignored when `skill` is given */
@@ -51,11 +52,6 @@ export interface BotOptions {
     nav?: NavGrid;
     /** the game's team mode (default 1; 4 in squads and 50v50): picks the map's scale variant (WorldModel.teamMode) */
     teamMode?: 1 | 2 | 4;
-}
-
-/** A game's team mode as a BotOptions.teamMode (sim Game.teamMode, the Joined message's u8). */
-export function teamModeOf(n: number): 1 | 2 | 4 {
-    return n > 2 ? 4 : n === 2 ? 2 : 1;
 }
 
 const SLOT_ACTIONS = [Input.EquipPrimary, Input.EquipSecondary, Input.EquipMelee, Input.EquipThrowable];
@@ -588,20 +584,4 @@ export class Bot {
             this.pendingActions.push(SLOT_ACTIONS[slot]);
         }
     }
-}
-
-/** The bot's skill profile: a drawn tier, an exact s (g = sense ?? s), or the preset's (PRESET_SKILL). */
-function resolveSkill(opts: BotOptions, rng: Rng): SkillProfile {
-    const k = opts.skill;
-    if (k === undefined) return skillOf(opts.difficulty ?? "normal");
-    if (typeof k === "string") return drawSkill(rng, k);
-    const s = Math.min(1, Math.max(0, k));
-    const g = Math.min(1, Math.max(0, opts.sense ?? s));
-    return { tier: tierOfSkill(s), s, g };
-}
-
-/** The Emote message for an intent's emote: pings (def type "ping") mark their position, emotes float over the bot. */
-function emoteRequest(e: IntentEmote): EmoteRequest {
-    const isPing = hasDef(e.type) && GameObjectDefs[e.type].type === "ping";
-    return isPing && e.pos ? { type: e.type, isPing, pos: v2.copy(e.pos) } : { type: e.type, isPing };
 }

@@ -9,7 +9,7 @@
 // where and why they vanished for longer (perception/lastSeen.ts, round 3 item 25); loot is remembered until the bot
 // sees its spot empty. Teammates are known from the team UI (minimap, edge indicators), so they are not clipped.
 import { type Bounds, type Collider, type Vec2, v2 } from "@rebirth/core";
-import { GameConfig, type ObstacleDef } from "@rebirth/defs";
+import type { ObstacleDef } from "@rebirth/defs";
 import {
     type BuildingView,
     type GasView,
@@ -44,25 +44,17 @@ import { Trails } from "./trails.ts";
 
 export type { SelfState } from "./selfState.ts";
 
-const BULLET_HEIGHT = GameConfig.bullet.height;
-/** Remembered loot is forgotten after this long without being seen. */
-const LOOT_MEMORY = 90;
-/** A bullet passing this close counts as being shot at. */
-const NEAR_MISS = 3;
-/** An enemy is on the screen while this much of its body (radius 1) pokes in past the edge. */
-const BODY_ON_SCREEN = 0.5;
-/**
- * A contact seen again within this long keeps its sighting (reaction) when its body stayed on the screen (it only
- * dipped behind a roof edge, a bush or a canopy); one that went off the screen starts over after SIGHTING_GAP.
- */
-const SIGHTING_KEEP = 1.5;
-const SIGHTING_GAP = 0.6;
-/** Obstacles with this much health or less break to one bullet (windows: health 1): they stop no shot for long. */
-const FRAGILE_HEALTH = 2;
-/** An enemy under a tree canopy this close is plain to see (not faint). */
-const FAINT_NEAR = 5;
-/** Edge rays of a body (radius 1) test this far off its centre (perception/rays.ts EDGE_TEST, metrics/truth.ts). */
-const BODY_EDGE = 0.9;
+import {
+    BODY_EDGE,
+    BODY_ON_SCREEN,
+    BULLET_HEIGHT,
+    FAINT_NEAR,
+    FRAGILE_HEALTH,
+    LOOT_MEMORY,
+    NEAR_MISS,
+    SIGHTING_GAP,
+    SIGHTING_KEEP,
+} from "./worldTuning.ts";
 
 export interface Contact {
     id: number;
