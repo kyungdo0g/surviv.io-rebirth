@@ -78,7 +78,7 @@ describe("M202 FLASH: the volley", () => {
         expect(exp.decalType).toBe("decal_frag_large_explosion");
         // a normal air strike bomb still clearly outsizes it (user/2026-10-08-strike-size)
         expect(getDefOfType("explosion", "explosion_bomb_iron").rad).toEqual({ min: 6.25, max: 17.5 });
-        // neighbouring rockets 20 degrees apart burst on an arc around the muzzle, their centres 2 d sin(10°) apart
+        // within the burst's spread cone the blast centres stay far closer than the 10 u at which full-damage discs part
         for (const d of [15, 20, 25]) {
             const gap = 2 * d * Math.sin(math.deg2rad(FAN / 3 / 2));
             expect(gap, `${d} u`).toBeLessThanOrEqual(2 * exp.rad.min);

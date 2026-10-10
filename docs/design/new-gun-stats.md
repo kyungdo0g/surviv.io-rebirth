@@ -822,6 +822,8 @@ Owner-approved update (2026-10-10): four sequential rockets, 0.035 s between sho
 Four finite charges; discarded when empty; no reload. Standing/moving spread 2/4 degrees; no fixed fan.
 Damage remains 25 direct + 125 maximum blast per rocket; radius 5–16, range 75 u, speed 55 u/s.
 Recoil is 0.5 u per rocket (2 u total). The existing loot weights and obstacle piercing remain.
+- **Placement (owner, 2026-10-08, unchanged):** T1 0.05, T2 0.05, gold main gun 0.25 and the gold crates' bonus roll 0.1 against nothing 0.9 (`OWNER_LOOT_WEIGHTS` in `packages/defs/src/rebirth/ownerLootWeights.ts`). No floor.
+- **Blasts (unchanged):** explosion obstacle multiplier x42 (5250 at the centre) breaks every destructible obstacle, plated ones included (`armorPiercing` / `stonePiercing`); indestructible walls stay whole. Its explosion keeps its own client effect, `m202` (camera shake). Before 2026-10-10 the four rockets left together in a fixed 60° fan (-30 / -10 / 10 / 30°) with 2 u of recoil per volley.
 See `second-wave-gun-specs-draft.md` for the complete approved second-wave table.
 
 ## 3. Class ladders (survev baseline + new guns, TTK against armour)

@@ -1,8 +1,21 @@
-// Owner-approved beta guns: first wave plus eleven second-wave guns (2026-10-10).
-// Values: newGuns.json and docs/design/new-gun-stats.json. Second-wave rarity is deferred;
-// GUN_BETA makes them available for testing with existing art/audio fallbacks.
-// Finite charges never reload; M202 fires four sequential rockets 0.035 seconds apart.
-// Negev/KPV use speed.carry in either slot, like DShK. See second-wave-gun-specs-draft.md.
+// The owner's new guns, as a beta (2026-10-07: "the guns are still beta, so just do the basics"): 30 guns plus the dual
+// TEC-9 and dual vz. 61, with their bullets, explosions, the 40 mm lob and three new ammo types; then the second wave
+// of 2026-10-10 (docs/design/second-wave-gun-specs-draft.md): NLAW, PAW20, Bazooka, Pvg m/42, RPD, Bren, Jackhammer,
+// MG3, Maadi GMR-30A1, Negev and KPV, on GUN_BETA floors only until their rarity is decided, drawn with existing art.
+// Every number is the balance sheet's (docs/design/new-gun-stats.json, the machine-readable twin of new-gun-stats.md;
+// ids, ammo and colours from docs/design/survev-content-and-new-guns.md section 8): newGuns.json holds its def objects
+// unchanged, the loot icons included (loot-weapon-<id>.img, cut from the owner's sheets by tools/assets/newGuns.ts; the
+// client draws the sheet's fallback icon, rebirth/newGunAssets.ts, while one is missing).
+// packages/defs/test/newGuns.test.ts pins every def to the sheet.
+// New fields (types/weapons.ts): charges + discardWhenEmpty (Boys 7 shots, Panzerfaust 1, M202 4 rockets, NLAW and
+// Bazooka 1, Pvg m/42 10, Maadi 8; never reloaded), pumpEvery + pumpDelay (DP-12), speed.carry (DShK, Negev, KPV:
+// summed over both gun slots), goldOnly, handHeld, sound.discard; bullets noReflect, armDistance, noDistAdj.
+// The owner's changes of 2026-10-08 are in the sheet too: the M79, GL-06 and MGL hold no equip slowdown and are held
+// like a rifle (handHeld: rifle pose and hands, the muzzle on the aim line, barrelOffset 0), and the M202 bursts at
+// the cursor, slides its shooter back (recoilKnockback) and breaks plated obstacles (armorPiercing, stonePiercing)
+// with its bigger blasts. Since 2026-10-10 it fires its four rockets as a burst, 0.035 s apart (burstCount /
+// burstDelay, spread 2 / 4 degrees; 0.5 u of recoil each, 2 u in all) instead of the fixed 60 degree fan (fanAngle,
+// now unused).
 import type {
     AmmoDef,
     BulletDef,

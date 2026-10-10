@@ -69,7 +69,8 @@ describe("PROTOCOL_HASH", () => {
         // potato-faction gold drop's map types; 18: the 50v50 shooter minimap reveal; 19: the club secret room's gun box
         // map type (deposit_box_02_club); 20: the rebirth buildings' map types; 21: the Emote request's 0..2048
         // positions (the bigger 50v50 map) and the new rebirth buildings' map types; 22: the military bases' map types;
-        // 23: the planes' 11-bit positions over -512..2560 (maps grown by the player cap)
+        // 23: the planes' 11-bit positions over -512..2560 (maps grown by the player cap); 24: the second-wave guns'
+        // game types
         expect(PROTOCOL_SCHEMA_VERSION).toBe(24);
         expect(PROTOCOL_HASH).toBe(
             computeProtocolHash(PROTOCOL_SCHEMA_VERSION, GameObjectRegistry.types, MapObjectRegistry.types),
