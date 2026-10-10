@@ -10,10 +10,10 @@
 // 70 units and 6), its roam radius the buildings it explores (240). With BrainFeatures.sweep, a building is visited
 // only once swept (brain/sweep.ts) and buildings are weighed by their loot potential. With BrainFeatures.outfits, an
 // outfit close by is worth a short detour by the bot's taste when it is quiet (brain/outfits.ts, LOOT2).
-import { type Vec2, v2 } from "@rebirth/core";
+import { type Bounds, type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, GameObjectDefs, getMapObjectDef, hasDef, hasMapObjectDef, Input } from "@rebirth/defs";
 import type { MapData } from "@rebirth/sim";
-import { colliderBounds, transformCollider } from "../geom.ts";
+import { colliderBounds, pointInBounds, transformCollider } from "../geom.ts";
 import { buildingLootValue } from "../knowledge/buildingValue.ts";
 import type { Taste } from "../knowledge/desire.ts";
 import { lootValue, slotToReplace } from "../knowledge/loot.ts";
@@ -253,6 +253,8 @@ interface BuildingSpot {
     pos: Vec2;
     /** MapObjectDefs id (loot potential: brain/sweep.ts) */
     type: string;
+    /** its roof's zoomIn bounds */
+    bounds: Bounds;
 }
 
 const buildingCache = new WeakMap<MapData, BuildingSpot[]>();
@@ -269,7 +271,12 @@ export function buildingSpots(map: MapData): BuildingSpot[] {
         const zone = def.ceiling.zoomRegions.find((r) => r.zoomIn)?.zoomIn;
         if (!zone) continue;
         const b = colliderBounds(transformCollider(zone, o.pos, o.ori, o.scale));
-        spots.push({ id: o.id, pos: { x: (b.min.x + b.max.x) / 2, y: (b.min.y + b.max.y) / 2 }, type: o.type });
+        spots.push({
+            id: o.id,
+            pos: { x: (b.min.x + b.max.x) / 2, y: (b.min.y + b.max.y) / 2 },
+            type: o.type,
+            bounds: b,
+        });
     }
     buildingCache.set(map, spots);
     return spots;
@@ -309,7 +316,9 @@ function pickExploreGoal(ctx: BrainCtx): Vec2 {
     for (const b of buildingSpots(model.map)) {
         if (mem.visited.has(b.id)) continue;
         const d = v2.distance(self.pos, b.pos);
-        if (d < 6 && !below) {
+        // (reached: inside its roof, or next to the middle of one too small for the 6 u to mean inside: an outhouse is 7 by
+        // 6, and at 6 u from its middle the bot stood outside, marked it visited and never saw the toilet under the roof)
+        if (d < 6 && !below && (pointInBounds(self.pos, b.bounds) || d < 2)) {
             // sweep: visited once swept to the end (brain/sweep.ts marks it)
             if (!sweepPending(ctx, b.id)) mem.visited.add(b.id);
             continue;

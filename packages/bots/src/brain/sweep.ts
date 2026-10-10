@@ -157,11 +157,13 @@ export function planSweep(ctx: BrainCtx): Intent {
 }
 
 const potentialCache = new Map<string, number>();
+/** Loot potential of a toilet (an outhouse holds one). */
+const TOILET = 3;
 
 /**
  * Loot potential of a building type (0..10): its loot containers plus 1.5 per loot spawn among its def's map objects
  * (a random choice counts by its first option). A red house holds ~4-5 pieces of furniture, a warehouse ~10 crates, a
- * shipping container 2 loot spawns, an outhouse 1 toilet.
+ * shipping container 2 loot spawns, an outhouse 1 toilet (worth TOILET: 2-3 items).
  */
 export function buildingPotential(type: string): number {
     let p = potentialCache.get(type);
@@ -178,7 +180,10 @@ export function buildingPotential(type: string): number {
                     continue;
                 }
                 const o = obstacleDef(t);
-                if (o?.destructible && o.loot.length > 0 && !o.explosion && !o.armorPlated) p += 1;
+                // a toilet drops 2-3 items (tier_toilet): the early toilet run players make (docs/research/community-ko.md,
+                // "화장실 칸 부수기"; owner report 2026-10-10: bots never looted the outhouses)
+                if (o?.destructible && o.loot.length > 0 && !o.explosion && !o.armorPlated)
+                    p += o.loot.some((l) => l.tier === "tier_toilet") ? TOILET : 1;
             }
         }
     }
