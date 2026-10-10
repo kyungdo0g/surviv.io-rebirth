@@ -8,6 +8,7 @@
 import { type Collider, type Vec2, v2 } from "@rebirth/core";
 import type { ObstacleDef } from "@rebirth/defs";
 import { distanceToCollider, distToSegment, obstacleCollider, rotateOri } from "../geom.ts";
+import type { SeenObstacle } from "../perception/world.ts";
 
 /** Player radius (GameConfig.player.radius). */
 export const PLAYER_RAD = 1;
@@ -148,4 +149,18 @@ export function reaches(def: ObstacleDef, col: Collider, p: Vec2, slack: number)
 export function closable(def: ObstacleDef): boolean {
     const d = def.door;
     return !!d && d.canUse && !d.locked && !d.autoOpen && !d.openOnce && d.openDelay <= 0;
+}
+/**
+ * A closed door that opens for a bot walking up to it (usable and unlocked: by Use from the follower, or by itself):
+ * with BrainFeatures.doors the human keys (bot.ts) do not treat it as a wall to slide along, so the bot walks up to it
+ * and opens it instead of veering off along the wall before it opens.
+ */
+export function opensOnTheWay(o: SeenObstacle): boolean {
+    const door = o.view.door;
+    return !!door && !!o.def.door && !door.open && door.canUse && !door.locked && !o.view.dead;
+}
+
+/** Told about every door the follower uses (BrainFeatures.doors: brain/doors.ts DoorBrain). */
+export interface DoorUseSink {
+    noteUse(now: number): void;
 }

@@ -537,3 +537,14 @@ The owner approved the existing-art review on 2026-10-10: M60 and MG 42 bipods n
 | the bank the Commander's group holds | — | the faction's own, the Commander's hold too; over the river only with the Commander's call a push (an attack), or with the own bank across outside the next safe circle | [src:user/2026-10-08-faction-river] [src:user/2026-10-08-faction-rally] [H] |
 | a knocked Commander | like any faction member: its squadmates within 60 u, else the one nearest other member within 35 u | the group closes in around it (rings at 45 % of their radius) from up to 90 u, and the two nearest go to revive it from up to 80 u | [src:user/2026-10-08-faction-rally] [H] |
 | the Commander's flare drop (its automatic flare: "The Commander's automatic flare", above) | — | the group forms around the drop while it is known within 50 u of the Commander, unopened and under 2 minutes old | [src:user/2026-10-08-faction-rally] [src:user/2026-10-08-leader-auto-flare] [H] |
+
+## Bots break through what blocks them (2026-10-10)
+
+> The owner: inside a building, a bot blocked by a breakable obstacle should break it and walk through instead of turning back or getting stuck; and the house rule players follow: everyone breaks the couch across the Crimson Ring club's passage, the mansion's panels in front of its rooms, the police station's red-blue-red rounded interior walls and the greenhouse glass, and a share of players punches or shoots straight through glass walls. Code: `packages/bots/src/nav/breakThrough.ts`, `packages/bots/src/brain/breakThrough.ts`. Tests: `packages/bots/test/break-through.test.ts`. Numbers: `packages/bots/scripts/breakThrough.ts`.
+
+| bot behaviour | before | rebirth | sources |
+|---|---|---|---|
+| a breakable obstacle on the route inside a building (crates, furniture, interior walls; not explosive barrels, nothing over 300 HP) | walked round it, or gave the goal up when it sealed a room | breaks it when that is shorter than the way round (routing counts 5 u per blocked cell), once it sees it, unless an enemy stands within 18 u | [src:user/2026-10-09-break-through] [H] |
+| the house rule's obstacles (`couch_*`, `mansion_wall_int_*`, `police_wall_int_*`, `club_wall_int_*`, the greenhouse's `glass_wall_10`), anywhere | walked round | broken through by about 70–98 % of bots (persona and skill) | [src:user/2026-10-10-house-rule] [H] |
+| other glass walls outdoors | walked round to a door | broken through by a persona-driven 5–75 % (bold and skilled more) | [src:user/2026-10-10-house-rule] [H] |
+| crates, barrels and furniture in the open | walked round | unchanged | [src:user/2026-10-09-break-through] [H] |

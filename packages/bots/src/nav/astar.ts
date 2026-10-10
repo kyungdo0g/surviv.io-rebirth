@@ -2,6 +2,7 @@
 // door costs, a node budget (returns the partial path to the node closest to the goal when it runs out), then string
 // pulling over grid line of sight. Scratch arrays are shared per grid (searches never run concurrently).
 import { type Vec2, v2 } from "@rebirth/core";
+import { BREAK_STEP, breakableCell, CROSS_EXPAND } from "./breakThrough.ts";
 import type { CellGrid } from "./cellGrid.ts";
 
 export interface PathResult {
@@ -22,6 +23,11 @@ export interface PathOptions {
     raw?: boolean;
     /** walkable cell to start from (default: the start's own cell when tight, else the nearest walkable cell) */
     startCell?: number;
+    /**
+     * break classes the bot breaks through (nav/breakThrough.ts): cells blocked only by such obstacles are crossed at
+     * BREAK_STEP more per cell, and a goal behind them (another component) is searched for with CROSS_EXPAND nodes
+     */
+    breakMask?: number;
 }
 
 const SQRT2 = Math.SQRT2;
@@ -129,9 +135,19 @@ export function findPath(grid: CellGrid, start: Vec2, goal: Vec2, opts: PathOpti
     const own = grid.cellOf(start);
     const s = opts.startCell ?? (grid.covers(start) && grid.tight[own] !== 0 ? own : grid.nearestWalkable(start, 4));
     if (s < 0) return null;
-    const t = grid.nearestWalkable(goal, 6, grid.component(s));
+    const mask = opts.breakMask ?? 0;
+    let t = grid.nearestWalkable(goal, 6, grid.component(s));
+    let maxExpand = opts.maxExpand ?? 12000;
+    if (mask) {
+        // a goal behind a breakable obstacle lies in another component: searched for, on a smaller budget
+        const any = grid.nearestWalkable(goal, 6);
+        if (any >= 0 && any !== t && grid.component(any) !== grid.component(s)) {
+            t = any;
+            maxExpand = Math.min(maxExpand, CROSS_EXPAND);
+        }
+    }
     if (t < 0) return null;
-    const maxExpand = opts.maxExpand ?? 12000;
+    const open = (i: number) => grid.passable(i) || (mask !== 0 && breakableCell(grid, i, mask));
     const weight = opts.weight ?? 1.3;
     const w = grid.w;
     const sc = scratchFor(grid);
@@ -168,15 +184,20 @@ export function findPath(grid: CellGrid, start: Vec2, goal: Vec2, opts: PathOpti
             const ny = cy + DY[k];
             if (nx < 0 || ny < 0 || nx >= w || ny >= grid.h) continue;
             const ni = ny * w + nx;
-            if ((grid.blocked[ni] !== 0 && grid.tight[ni] === 0) || sc.closed[ni] === gen) continue;
+            if (sc.closed[ni] === gen) continue;
+            let extra = 0;
+            if (grid.blocked[ni] !== 0 && grid.tight[ni] === 0) {
+                if (mask === 0 || !breakableCell(grid, ni, mask)) continue;
+                extra = BREAK_STEP;
+            }
             let step = 1;
             if (k >= 4) {
                 // no corner cutting: both orthogonal neighbours must be free
-                if (!grid.passable(cy * w + nx) || !grid.passable(ny * w + cx)) continue;
+                if (!open(cy * w + nx) || !open(ny * w + cx)) continue;
                 step = SQRT2;
             }
             if ((grid.oneWay[ni] !== 0 || grid.oneWay[cur] !== 0) && !grid.oneWayAllows(cur, ni)) continue;
-            const g = gCur + step * grid.cost(ni);
+            const g = gCur + step * (grid.cost(ni) + extra);
             if (sc.seen[ni] === gen && g >= sc.g[ni]) continue;
             sc.seen[ni] = gen;
             sc.g[ni] = g;

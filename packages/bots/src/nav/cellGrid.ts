@@ -6,6 +6,7 @@ import { type Collider, type Vec2, v2 } from "@rebirth/core";
 import type { ObstacleDef } from "@rebirth/defs";
 import type { ObstacleView } from "@rebirth/sim";
 import { obstacleCollider, obstacleDef, rotateOri } from "../geom.ts";
+import { breakClassOf } from "./breakThrough.ts";
 import { CellLabels } from "./components.ts";
 
 /** Terrain cost classes per cell. */
@@ -83,6 +84,8 @@ export abstract class CellGrid {
     private readonly sub: Uint8Array;
     /** NavTerrain class of each cell */
     readonly terrain: Uint8Array;
+    /** breakable stamps covering each cell by break class 1 and 2 (nav/breakThrough.ts BreakClass) */
+    readonly brk: readonly [Uint8Array, Uint8Array];
     /** 1 where a usable door's closed panel lies */
     readonly doorMask: Uint8Array;
     /** usable doors of this grid's floor, by obstacle id */
@@ -104,6 +107,8 @@ export abstract class CellGrid {
     version = 0;
     /** stamped colliders by key (obstacle id; negative keys for stairs and door panels) */
     protected readonly stamps = new Map<number, Collider>();
+    /** the break class of breakable stamps by key (nav/breakThrough.ts) */
+    protected readonly stampCls = new Map<number, number>();
     /** obstacle ids already considered (stamped or deliberately left out) */
     protected readonly known = new Set<number>();
     /**
@@ -135,6 +140,7 @@ export abstract class CellGrid {
         this.tight = new Uint8Array(n);
         this.sub = new Uint8Array(4 * n);
         this.terrain = new Uint8Array(n).fill(terrain);
+        this.brk = [new Uint8Array(n), new Uint8Array(n)];
         this.doorMask = new Uint8Array(n);
         this.oneWay = new Uint8Array(n);
         this.labels = new CellLabels(w, h, this.blocked, this.tight);
@@ -149,6 +155,9 @@ export abstract class CellGrid {
         this.tight.set(src.tight);
         this.sub.set(src.sub);
         this.terrain.set(src.terrain);
+        this.brk[0].set(src.brk[0]);
+        this.brk[1].set(src.brk[1]);
+        for (const [key, c] of src.stampCls) this.stampCls.set(key, c);
         this.doorMask.set(src.doorMask);
         this.oneWay.set(src.oneWay);
         this.oneWayDirs.push(...src.oneWayDirs);
@@ -270,12 +279,18 @@ export abstract class CellGrid {
         }
     }
 
-    /** Blocks the cells within the clearance of `col` under `key` (no-op when the key is already stamped). */
-    stamp(key: number, col: Collider): void {
+    /**
+     * Blocks the cells within the clearance of `col` under `key` (no-op when the key is already stamped); `cls` 1 or 2
+     * marks it breakable for routing (nav/breakThrough.ts).
+     */
+    stamp(key: number, col: Collider, cls = 0): void {
         if (this.stamps.has(key)) return;
         this.stamps.set(key, col);
+        const brk = cls ? this.brk[cls - 1] : null;
+        if (brk) this.stampCls.set(key, cls);
         this.forCells(col, this.clearance, (i) => {
             if (this.blocked[i] < 254) this.blocked[i]++;
+            if (brk && brk[i] < 255) brk[i]++;
         });
         this.stampSub(col, 1);
         this.version++;
@@ -286,8 +301,12 @@ export abstract class CellGrid {
         const col = this.stamps.get(key);
         if (!col) return;
         this.stamps.delete(key);
+        const cls = this.stampCls.get(key) ?? 0;
+        const brk = cls ? this.brk[cls - 1] : null;
+        this.stampCls.delete(key);
         this.forCells(col, this.clearance, (i) => {
             if (this.blocked[i] > 0 && this.blocked[i] < 254) this.blocked[i]--;
+            if (brk && brk[i] > 0) brk[i]--;
         });
         this.stampSub(col, -1);
         this.version++;
@@ -388,7 +407,7 @@ export abstract class CellGrid {
             if (view.door) this.observeDoor(view);
             return;
         }
-        this.stamp(view.id, col);
+        this.stamp(view.id, col, breakClassOf(def, view.type, false));
     }
 
     /**
