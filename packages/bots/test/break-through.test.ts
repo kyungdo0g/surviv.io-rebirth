@@ -89,6 +89,9 @@ describe("what is worth breaking through", () => {
         expect(breakClassOf(def("barrel_01"), "barrel_01", true)).toBe(BreakClass.None);
         expect(breakClassOf(def("glass_wall_12_2"), "glass_wall_12_2", true)).toBe(BreakClass.None);
         expect(breakClassOf(def("metal_wall_ext_23"), "metal_wall_ext_23", true)).toBe(BreakClass.None);
+        // only explosions damage an obstacle with an explosion gate (a subway gate: 300 HP): never punched through
+        const gated = { ...def("couch_01"), explosionGate: { explosionTypes: ["explosion_rocket"] } } as ObstacleDef;
+        expect(breakClassOf(gated, "couch_01", true)).toBe(BreakClass.None);
     });
 
     it("nearly everyone follows the house rule; a bold, skilled persona breaks glass walls more often than a cautious one", () => {
