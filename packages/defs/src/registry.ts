@@ -69,8 +69,11 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * · 26: the rebirth buildings' breakable partitions (2026-10-10, rebirth/buildings/walls.ts): the map types
  * rebirth_wall_int_1 .. rebirth_wall_int_14 follow decal_panzerfaust_discard as the last map types; every earlier id
  * keeps its index. No record layout changed.
+ * · 27: the owner's wave 3 (2026-10-10, rebirth/buildings.ts rebirthWave3Defs): the map types rebirth_wall_brk_1 ..
+ * rebirth_wall_brk_14, blast_door_01, subway_gate_01 and the wave-3 buildings follow rebirth_wall_int_14 as the last
+ * map types; DamageType.Collapse (5) is a new value of the Kill message's and the hit feedback's damage type.
  */
-export const PROTOCOL_SCHEMA_VERSION = 26;
+export const PROTOCOL_SCHEMA_VERSION = 27;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 
