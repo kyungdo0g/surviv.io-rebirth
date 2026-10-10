@@ -2,8 +2,9 @@
 // tools/port-survev/lib/survevLoot.ts) plus the rebirth Barrett in the classic gold drop (rebirth/survevGuns.ts) and
 // the owner's PMG-134 in the bathhouse ring case (rebirth/ownerLoot.ts).
 // "Reachable" follows what each map can hand out (test/reach.ts). Placements that survev has in tables nothing on our
-// maps reaches are pinned too, including unused baseline tables and other maps' copies of live sources.
-// Classless crates never spawn in survev (docs/adr/0003-survev-baseline.md); their tables are not future content.
+// maps reaches are pinned too, with their source: other maps' copies of live sources, later survev waves (the Pirate's
+// Bounty kills, 50v50's gold military crate), or a table nothing will ever reach (the Classless crates never spawn in
+// survev: docs/adr/0003-survev-baseline.md).
 import { describe, expect, it } from "vitest";
 import {
     GOLD_DROP_TABLE,
