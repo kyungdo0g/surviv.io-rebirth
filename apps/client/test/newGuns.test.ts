@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { BitReader, BitWriter } from "@rebirth/core";
 import {
     DRAWN_LOOT_ICONS,
+    drawnLootIconSprite,
     drawnLootIconUrl,
     GameObjectDefs,
     type GunDef,
@@ -67,9 +68,10 @@ describe("new guns: loot icons", () => {
             expect(entry?.path).toBe(`img/rebirth/${sprite.replace(".img", "")}.png`);
             expect(entry?.fallback).toBe(NEW_GUN_LOOT_FALLBACKS[id]);
             const fallback = SPRITES[entry!.fallback!];
-            if (DRAWN_LOOT_ICONS.includes(id)) {
+            if (DRAWN_LOOT_ICONS.map(drawnLootIconSprite).includes(entry!.fallback!)) {
                 // our own art, committed and served from /rebirth/loot/ (no install step)
-                expect(fallback, id).toEqual({ source: "rebirth", path: drawnLootIconUrl(id), size: [128, 128] });
+                const donor = DRAWN_LOOT_ICONS.find((name) => drawnLootIconSprite(name) === entry!.fallback)!;
+                expect(fallback, id).toEqual({ source: "rebirth", path: drawnLootIconUrl(donor), size: [128, 128] });
                 expect(existsSync(join(PUBLIC, fallback!.path!)), fallback!.path).toBe(true);
             } else {
                 expect(fallback?.source, entry!.fallback).toBe("original-0.8.82");

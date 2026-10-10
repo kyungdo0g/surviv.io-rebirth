@@ -36,9 +36,9 @@ const gun = (id: string) => getDefOfType("gun", id);
 const num = (v: unknown): number => (typeof v === "number" ? v : Number.parseFloat(String(v)));
 
 describe("new guns: the sheet's defs", () => {
-    it("are the sheet's 30 guns plus the dual TEC-9 and dual vz. 61, in its order, after the air strike shell", () => {
+    it("are the sheet's first wave plus eleven second-wave guns, in its order, after the air strike shell", () => {
         expect(NEW_GUN_IDS).toEqual(Object.keys(sheet.guns));
-        expect(NEW_GUN_IDS).toHaveLength(32);
+        expect(NEW_GUN_IDS).toHaveLength(43);
         expect(NEW_GUN_IDS).not.toContain("spas15");
         for (const id of Object.keys(newGunDefs())) {
             expect(rebirthOnlyIds, id).toContain(id);
@@ -120,13 +120,13 @@ describe("new guns: the sheet's defs", () => {
 describe("new guns: mechanics fields (new-gun-stats.md section 4)", () => {
     const guns = () => NEW_GUN_IDS.map((id) => [id, gun(id)] as [string, GunDef]);
 
-    it("single-use guns: Boys 7, Panzerfaust 1, M202 1 (a volley of 4); no reload, no bag ammo, no Firepower", () => {
+    it("single-use guns: finite charges, including the four sequential M202 rockets; no reload, no bag ammo, no Firepower", () => {
         const charges = Object.fromEntries(
             guns()
                 .filter(([, d]) => d.charges)
                 .map(([id, d]) => [id, d.charges]),
         );
-        expect(charges).toEqual({ boys: 7, panzerfaust: 1, m202: 1 });
+        expect(charges).toEqual({ boys: 7, panzerfaust: 1, m202: 4, nlaw: 1, bazooka: 1, pvg42: 10, maadi: 8 });
         for (const id of Object.keys(charges)) {
             const d = gun(id);
             expect([d.maxClip, d.extendedClip, d.maxReload, d.extendedReload], id).toEqual(Array(4).fill(d.charges));
@@ -136,7 +136,7 @@ describe("new guns: mechanics fields (new-gun-stats.md section 4)", () => {
             // pseudo ammo: no def, no bag row
             expect(hasDef(d.ammo) || Object.hasOwn(GameConfig.bagSizes, d.ammo), id).toBe(false);
         }
-        expect(gun("m202").bulletCount).toBe(4);
+        expect(gun("m202").bulletCount).toBe(1);
         expect(sheet.chargeAmmoIds).toEqual([...CHARGE_AMMO_IDS]);
     });
 
@@ -151,20 +151,20 @@ describe("new guns: mechanics fields (new-gun-stats.md section 4)", () => {
         expect([d.bulletType, d.bulletCount, d.fireMode]).toEqual(["bullet_buckshot", 9, "single"]);
     });
 
-    it("DShK: carry -2 in a slot, equip -1, attack -5; no other gun carries weight", () => {
+    it("DShK: carry -2 in a slot, equip -1, attack -5; Negev and KPV also carry weight", () => {
         expect(
             guns()
                 .filter(([, d]) => d.speed.carry)
                 .map(([id]) => id),
-        ).toEqual(["dshk"]);
+        ).toEqual(["dshk", "negev", "kpv"]);
         expect(gun("dshk").speed).toEqual({ carry: -2, equip: -1, attack: -5 });
     });
 
-    it("launchers: six, Endless Ammo never applies, rockets and the GL-06 round do not ricochet and arm", () => {
+    it("launchers: nine, Endless Ammo never applies, rockets and the GL-06 round do not ricochet and arm", () => {
         const launchers = guns()
             .filter(([, d]) => d.isLauncher)
             .map(([id]) => id);
-        expect(launchers).toEqual(["m79", "mgl", "gl06", "rpg7", "panzerfaust", "m202"]);
+        expect(launchers).toEqual(["m79", "mgl", "gl06", "rpg7", "panzerfaust", "m202", "nlaw", "paw20", "bazooka"]);
         for (const id of launchers) {
             const d = gun(id);
             expect([d.ignoreEndlessAmmo, d.noPotatoSwap, d.noSplinter, d.deployGroup], id).toEqual([
@@ -329,7 +329,7 @@ describe("new guns: art and sound fallbacks (src/rebirth/newGunAssets.ts)", () =
         for (const donor of Object.values(NEW_GUN_SOUND_DONORS)) expect(NEW_GUN_SOUND_DONORS[donor]).toBeUndefined();
     });
 
-    it("every new gun has its own fallback loot icon: a gun's of its class, or for a launcher our own drawing", () => {
+    it("first-wave icons stay distinct; second-wave beta guns resolve a fallback of their class", () => {
         expect(Object.keys(NEW_GUN_LOOT_FALLBACKS)).toEqual(NEW_GUN_IDS);
         const otherGuns = Object.entries(GameObjectDefs).filter(
             ([id, d]) => d.type === "gun" && !NEW_GUN_IDS.includes(id),
@@ -338,6 +338,10 @@ describe("new guns: art and sound fallbacks (src/rebirth/newGunAssets.ts)", () =
         // the closest look where the class has none: the SVD for the semi-automatic WA2000, the VSS for the AS Val
         const lookAlike: Record<string, string> = { wa2000: "dmr", asval: "dmr" };
         for (const [id, icon] of Object.entries(NEW_GUN_LOOT_FALLBACKS)) {
+            if (sheet.guns[id].assets.artPending && gunClass(id) === "launcher") {
+                expect(DRAWN_LOOT_ICONS.map(drawnLootIconSprite), id).toContain(icon);
+                continue;
+            }
             if (DRAWN_LOOT_ICONS.includes(id)) {
                 expect(icon, id).toBe(drawnLootIconSprite(id));
                 continue;
@@ -346,8 +350,11 @@ describe("new guns: art and sound fallbacks (src/rebirth/newGunAssets.ts)", () =
             expect(classOfIcon.get(icon), `${id}: ${icon}`).toBe(lookAlike[id] ?? gunClass(id));
         }
         // owner, 2026-10-08: the RPG-7 and the M202 showed the same icon; now no two new guns share one
-        expect(new Set(Object.values(NEW_GUN_LOOT_FALLBACKS)).size).toBe(NEW_GUN_IDS.length);
-        expect(DRAWN_LOOT_ICONS).toEqual(NEW_GUN_IDS.filter((id) => gunClass(id) === "launcher"));
+        const finished = NEW_GUN_IDS.filter((id) => !sheet.guns[id].assets.artPending);
+        expect(new Set(finished.map((id) => NEW_GUN_LOOT_FALLBACKS[id])).size).toBe(finished.length);
+        expect(DRAWN_LOOT_ICONS).toEqual(
+            NEW_GUN_IDS.filter((id) => gunClass(id) === "launcher" && !sheet.guns[id].assets.artPending),
+        );
         expect(drawnLootIconUrl("rpg7")).toBe("/rebirth/loot/loot-weapon-rpg7.svg");
     });
 });

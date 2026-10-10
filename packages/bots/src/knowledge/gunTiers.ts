@@ -155,6 +155,12 @@ const ROWS: readonly Row[] = [
     // downgrade); by stats they are B-, C+ and C+ (A, B and A- against a stationary target)
     ["m79", "C", 0.72, true], ["mgl", "A", 0.7, true], ["gl06", "A", 0.85, true], ["rpg7", "A-", 0.38, true],
     ["panzerfaust", "B+", 0.55, true], ["m202", "A+", 0.46, true],
+    // second-wave beta guns (2026-10-10, GUN_BETA only, so off the main map): PROVISIONAL tiers by analogy with the
+    // first wave, pending the owner's tier list; not from tools/research/gun-tiers
+    ["nlaw", "B+", 0.5, false], ["paw20", "B+", 0.7, false], ["bazooka", "B", 0.55, false],
+    ["pvg42", "A", 0.35, false], ["maadi", "A", 0.3, false], ["jackhammer", "A", 0.85, false],
+    ["rpd", "A-", 0.6, false], ["bren", "B+", 0.5, false], ["mg3", "A", 0.6, false], ["negev", "A", 0.62, false],
+    ["kpv", "A", 0.5, false],
 ];
 
 const TIERS = new Map<string, GunTierInfo>();

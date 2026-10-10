@@ -56,8 +56,11 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * · 23: maps follow the player cap (the owner, 2026-10-08; defs mapDefForPlayers): the Update message's plane positions
  * span -512..2560 in 11 bits per axis (steps of 3072 / 2047, about 1.5007; was the original's -512..1536 in 10), for
  * maps up to 2304 a side.
+ * · 24: the second-wave beta guns (2026-10-10, rebirth/newGuns.ts): their bullets and explosions take game type ids
+ * after bullet_dshk and the eleven guns after dshk, so the later rebirth-only ids (the first-wave guns from ak74 on, the
+ * variant strobes) move up by 25; every original and survev-only id keeps its index. No record layout changed.
  */
-export const PROTOCOL_SCHEMA_VERSION = 23;
+export const PROTOCOL_SCHEMA_VERSION = 24;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

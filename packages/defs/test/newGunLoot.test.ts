@@ -226,7 +226,7 @@ describe("GUN_BETA floor tables", () => {
     it("the new guns (duals made from two singles) and five survev-only guns", () => {
         expect(GUN_BETA_SURVEV_GUNS).toEqual(["barrett", "ash12", "sw500", "imbel", "spas16"]);
         expect(GUN_BETA_GUNS).toEqual([...NEW_GUN_IDS.filter((g) => !g.endsWith("_dual")), ...GUN_BETA_SURVEV_GUNS]);
-        expect(GUN_BETA_GUNS).toHaveLength(35);
+        expect(GUN_BETA_GUNS).toHaveLength(46);
     });
 
     it("main: every beta gun on the floor, half of the floor gun rolls, nothing else changed", () => {

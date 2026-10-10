@@ -9,6 +9,7 @@ import { dirname, join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import {
     DRAWN_LOOT_ICONS,
+    drawnLootIconSprite,
     NEW_AMMO_IDS,
     NEW_GUN_IDS,
     NEW_GUN_LOOT_FALLBACKS,
@@ -82,14 +83,14 @@ describe("new-gun asset install without assets-user", () => {
         for (const id of NEW_GUN_IDS) {
             const row = report.icons[id]!;
             const bytes = readFileSync(join(dest, row.file));
-            if (DRAWN_LOOT_ICONS.includes(id)) {
-                expect(row.origin, id).toBe("drawn");
+            if (DRAWN_LOOT_ICONS.map(drawnLootIconSprite).includes(NEW_GUN_LOOT_FALLBACKS[id]!)) {
+                expect(row.origin, id).toBe(DRAWN_LOOT_ICONS.includes(id) ? "drawn" : "fallback");
                 const img = decodePng(bytes);
                 expect([img.width, img.height], id).toEqual([128, 128]);
                 let opaque = 0;
                 for (let i = 3; i < img.data.length; i += 4) if (img.data[i]! > 128) opaque++;
                 expect(opaque, id).toBeGreaterThan(1500);
-                drawn.add(Buffer.from(bytes).toString("base64"));
+                if (DRAWN_LOOT_ICONS.includes(id)) drawn.add(Buffer.from(bytes).toString("base64"));
             } else {
                 expect(row, id).toMatchObject({ origin: "fallback", from: NEW_GUN_LOOT_FALLBACKS[id] });
                 expect(bytes.toString(), id).toBe(`png ${NEW_GUN_LOOT_FALLBACKS[id]}`);

@@ -1,14 +1,9 @@
-// The M202 FLASH as the owner specified it (2026-10-08; defs rebirth/newGuns.json, docs/design/new-gun-stats.md
-// 2.8): one trigger pull fires all four rockets in a fixed, evenly spaced 60° fan that bursts at the cursor, then the
-// launcher is discarded; the four blasts tile a strip at 15-25 u and kill a level 2 armoured player anywhere across
-// it; the shooter slides about 2 u back, never through a wall; each blast breaks every destructible obstacle (plated
-// ones included) and leaves indestructible walls alone. The owner keeps this big blast (rad 5-16) and makes the air
-// strike bombs bigger instead (user/2026-10-08-strike-size: explosion_bomb_iron 6.25-17.5).
-import { createRng, math, type Vec2, v2 } from "@rebirth/core";
+// Owner update 2026-10-10: four sequential rockets in a narrow cone; existing damage,
+// obstacle penetration and total recoil are retained. Specs: second-wave-gun-specs-draft.md.
+import { math, type Vec2, v2 } from "@rebirth/core";
 import { DamageType, getDefOfType, MapObjectDefs, type ObstacleDef, WeaponSlot } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import type { Game, Player } from "../src/index.ts";
-import { fanDeviation } from "../src/weapons/gun.ts";
 import {
     constantRng,
     DT,
@@ -21,7 +16,7 @@ import {
     steps,
 } from "./combatHelpers.ts";
 
-const FAN = 60;
+const FAN = 4;
 
 /** A shooter facing +x at an open spot (or at `origin` among `obstacles`) with an M202 in hand. */
 function shooter(obstacles: ObstacleSpec[] = [], origin?: Vec2) {
@@ -43,63 +38,56 @@ const rockets = (game: Game) => game.bullets.active.filter((b) => b.bulletType =
 const degOff = (dir: Vec2) => math.rad2deg(Math.atan2(dir.y, dir.x));
 
 describe("M202 FLASH: the volley", () => {
-    it("fires all 4 rockets in one shot, in a fixed fan at -30 / -10 / 10 / 30 degrees, then is discarded", () => {
+    it("fires four separate rockets after a tap, with a narrow spread, then discards", () => {
         const def = getDefOfType("gun", "m202");
-        expect([def.bulletCount, def.fanAngle, def.shotSpread, def.moveSpread, def.toMouseHit]).toEqual([
+        expect([def.fireMode, def.burstCount, def.burstDelay, def.bulletCount, def.charges]).toEqual([
+            "burst",
             4,
-            FAN,
-            0,
-            0,
-            true,
+            0.035,
+            1,
+            4,
         ]);
-        expect([0, 1, 2, 3].map((i) => fanDeviation(FAN, i, 4))).toEqual([-30, -10, 10, 30]);
-        const shots: number[][] = [];
-        for (const [rng, moving] of [
-            [constantRng(0.1), false],
-            [createRng(99), true],
-            [constantRng(0.9), true],
-        ] as const) {
-            const { game, p, wm } = shooter();
-            game.combatRng = rng;
-            fire(game, p, 20, moving ? { moveUp: true } : {});
-            const r = rockets(game);
-            expect(r).toHaveLength(4);
-            expect(p.shotSeq).toBe(1);
-            // one muzzle point (no pellet jitter), each rocket flying to the cursor (20 u minus the 2.2 u barrel)
-            for (const b of r) {
-                expect(b.startPos.x).toBeCloseTo(r[0].startPos.x, 9);
-                expect(b.startPos.y).toBeCloseTo(r[0].startPos.y, 9);
-                expect(b.distance).toBeCloseTo(20 - def.barrelLength, 6);
-            }
-            shots.push(r.map((b) => degOff(b.dir) - degOff(p.dir)));
-            // the single charge is spent: the empty launcher leaves the slot after its fire delay
-            expect(wm.weapons[WeaponSlot.Primary].ammo).toBe(0);
-            steps(game, Math.ceil(def.fireDelay / DT) + 2);
-            expect(wm.weapons[WeaponSlot.Primary].type).toBe("");
+        expect([def.fanAngle, def.shotSpread, def.moveSpread]).toEqual([undefined, 2, 4]);
+        const { game, p, wm } = shooter();
+        fire(game, p, 70);
+        expect(rockets(game)).toHaveLength(1);
+        expect(wm.activeSlot.ammo).toBe(3);
+        const fired = [game.tick];
+        for (let i = 0; i < 12; i++) {
+            const before = p.shotSeq;
+            game.step();
+            if (p.shotSeq !== before) fired.push(game.tick);
         }
-        // the same evenly spaced fan whatever the random streams and whether the shooter moves
-        for (const s of shots) {
-            expect(s.map((a) => +a.toFixed(6))).toEqual([-30, -10, 10, 30]);
+        expect(fired).toHaveLength(4);
+        for (let i = 1; i < fired.length; i++) {
+            expect(fired[i]).toBeGreaterThan(fired[i - 1]);
+            expect((fired[i] - fired[i - 1]) * DT).toBeLessThanOrEqual(0.035 + DT);
         }
+        expect((fired[3] - fired[0]) * DT).toBeCloseTo(0.105, 1);
+        expect(p.shotSeq).toBe(4);
+        for (const b of rockets(game)) expect(Math.abs(degOff(b.dir) - degOff(p.dir))).toBeLessThanOrEqual(4);
+        expect(wm.activeSlot.ammo).toBe(0);
+        steps(game, Math.ceil(def.fireDelay / DT) + 2);
+        expect(wm.weapons[WeaponSlot.Primary].type).toBe("");
     });
 
-    it("the four blasts tile a strip at 15-25 u: no gap between neighbouring full-damage discs", () => {
+    it("the four blasts keep their damage and overlap across the narrower aim cone", () => {
         const exp = getDefOfType("explosion", "explosion_m202");
         expect([exp.damage, exp.rad.min, exp.rad.max, exp.obstacleDamage]).toEqual([125, 5, 16, 42]);
         // the frag's large scorch mark, drawn for its 15.6 u blast
         expect(exp.decalType).toBe("decal_frag_large_explosion");
         // a normal air strike bomb still clearly outsizes it (user/2026-10-08-strike-size)
         expect(getDefOfType("explosion", "explosion_bomb_iron").rad).toEqual({ min: 6.25, max: 17.5 });
-        // neighbouring rockets 20 degrees apart burst on an arc around the muzzle, their centres 2 d sin(10°) apart
+        // within the burst's spread cone the blast centres stay far closer than the 10 u at which full-damage discs part
         for (const d of [15, 20, 25]) {
             const gap = 2 * d * Math.sin(math.deg2rad(FAN / 3 / 2));
             expect(gap, `${d} u`).toBeLessThanOrEqual(2 * exp.rad.min);
         }
     });
 
-    it.each([15, 20, 25])("kills a full-health level 2 armoured player anywhere across the strip at %i u", (d) => {
+    it.each([15, 20, 25])("kills a full-health level 2 armoured player across the aim cone at %i u", (d) => {
         // at the aim point (between the inner rockets), on an inner rocket's line, between inner and outer, on the edge
-        for (const angle of [0, 10, 20, 30]) {
+        for (const angle of [0, 1, 2]) {
             const { game, p } = shooter();
             const at = v2.add(p.pos, v2.mul(v2.rotate(p.dir, math.deg2rad(angle)), d));
             const t = game.getPlayer(game.addPlayer("target"))!;
@@ -122,7 +110,7 @@ describe("M202 FLASH: recoil", () => {
         const moved = v2.sub(p.pos, start);
         expect(moved.x).toBeCloseTo(-2, 1);
         expect(Math.abs(moved.y)).toBeLessThan(1e-9);
-        expect(getDefOfType("gun", "m202").recoilKnockback).toBe(2);
+        expect(getDefOfType("gun", "m202").recoilKnockback).toBe(0.5);
     });
 
     it("never through a wall: a wall 0.9 u behind stops the slide", () => {
