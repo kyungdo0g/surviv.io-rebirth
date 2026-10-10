@@ -11,6 +11,7 @@ import type { Game } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import { BASEMENT_SALT, basementChance, floorPoints } from "../src/brain/basement.ts";
 import { BRAIN_PRESETS } from "../src/brain/features.ts";
+import { puzzleSites } from "../src/brain/puzzleSites.ts";
 import { BotController } from "../src/controller.ts";
 import { colliderBounds, pointInBounds, transformCollider } from "../src/geom.ts";
 import { basementSites } from "../src/knowledge/basements.ts";
@@ -56,6 +57,16 @@ function botNear(game: Game, type: string, persona: PersonaName, tier: Tier, goe
     giveGun(p, "mp5", 90);
     const seed = seedFor(persona, tier, goes);
     return { p, bot: new BotController(game, p.id, { seed, skill: tier, brain: "smart", persona }) };
+}
+
+/**
+ * Stages the library's hidden room as already looted: since the rebirth buildings' rework (2026-10-10) its one-switch
+ * room lies 88 units from the Hydra's stairs on main 12345 and draws the looter there first, then on to the chrys bunker.
+ */
+function libraryDone(game: Game, bot: BotController): void {
+    for (const s of puzzleSites(game.mapData)) {
+        if (s.entry.building === "library_01") bot.bot.brain.mem.puzzle.finished.add(s.index);
+    }
 }
 
 /** Containers (destructible obstacles with loot) on the floor of the structure's underground grid. */
@@ -132,6 +143,7 @@ describe("basements in a game", () => {
         const game = mainGame();
         const hydra = "bunker_structure_02";
         const { p, bot } = botNear(game, hydra, "looter", "expert", true, { x: 0, y: 0 });
+        libraryDone(game, bot);
         const containers = floorContainers(game, hydra);
         expect(containers.length).toBeGreaterThan(10);
         const region = site(hydra).region;
@@ -189,6 +201,7 @@ describe("basements in a game", () => {
         const game = mainGame({ gasStages: stages });
         const hydra = "bunker_structure_02";
         const { p, bot } = botNear(game, hydra, "looter", "expert", true, { x: 0, y: 0 });
+        libraryDone(game, bot);
         const s = site(hydra);
         const b = s.region.bounds;
         const halfDiag = Math.hypot(b.max.x - b.min.x, b.max.y - b.min.y) / 2;
