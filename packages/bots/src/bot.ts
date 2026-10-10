@@ -49,6 +49,13 @@ export interface BotOptions {
     brain?: BrainName | BrainFeatures;
     /** navigation grid override (default: the shared grid of the map) */
     nav?: NavGrid;
+    /** the game's team mode (default 1; 4 in squads and 50v50): picks the map's scale variant (WorldModel.teamMode) */
+    teamMode?: 1 | 2 | 4;
+}
+
+/** A game's team mode as a BotOptions.teamMode (sim Game.teamMode, the Joined message's u8). */
+export function teamModeOf(n: number): 1 | 2 | 4 {
+    return n > 2 ? 4 : n === 2 ? 2 : 1;
 }
 
 const SLOT_ACTIONS = [Input.EquipPrimary, Input.EquipSecondary, Input.EquipMelee, Input.EquipThrowable];
@@ -145,6 +152,7 @@ export class Bot {
         this.rng = createRng(opts.seed);
         this.model = new WorldModel(map, opts.nav ?? NavGrid.forBrain(map, this.features));
         this.model.memory = this.params.memory;
+        this.model.teamMode = opts.teamMode ?? 1;
         installPerception(this.model, this.features);
         this.brain = new Brain(this.model, this.params, this.rng, this.features, {
             persona: this.persona,

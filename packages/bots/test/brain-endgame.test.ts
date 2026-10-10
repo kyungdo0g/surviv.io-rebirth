@@ -2,7 +2,7 @@
 // scored (cover within 6 units, closeness to the centre, no water, threat heat), the hold behaviour's score and its
 // rotation in hops of at most 30 units, and the scanning crosshair while holding.
 import { v2 } from "@rebirth/core";
-import { getMapDef, mapWidth } from "@rebirth/defs";
+import { getMapDef, mapDefForPlayers, mapWidth } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
 import { endgameActive, endgameThresholds, holdScore, holdSpotScore, planHold } from "../src/brain/endgame.ts";
 import { healScore, zoneScore } from "../src/brain/survival.ts";
@@ -21,15 +21,27 @@ import {
 } from "./brain-world.ts";
 
 describe("endgame", () => {
-    it("scales the endgame thresholds with map width", () => {
-        const design = getMapDef("main");
-        const designWidth = mapWidth(design, "large");
-        expect(endgameThresholds("main", designWidth)).toEqual({ smallCircle: 80, fewAliveCircle: 150 });
-        const scale = 1225 / designWidth;
-        expect(endgameThresholds("main", 1225)).toEqual({
-            smallCircle: 80 * scale,
-            fewAliveCircle: 150 * scale,
-        });
+    it("scales the endgame thresholds with the played map's width over its design width, in the game's variant", () => {
+        const base = { smallCircle: 80, fewAliveCircle: 150 };
+        const main = getMapDef("main");
+        // the default caps: the design maps, solo / duo on the small variant, squads on the large one
+        expect(endgameThresholds("main", mapWidth(main, "small"), 1)).toEqual(base);
+        expect(endgameThresholds("main", mapWidth(main, "small"), 2)).toEqual(base);
+        expect(endgameThresholds("main", mapWidth(main, "large"), 4)).toEqual(base);
+        expect(endgameThresholds("faction", mapWidth(getMapDef("faction"), "large"), 4)).toEqual(base);
+        expect(endgameThresholds("unknown_map", 5000, 1)).toEqual(base);
+        // a 200-player squad game on main (1225) and a 200-player solo game (1144)
+        for (const [width, teamMode, variant] of [
+            [mapWidth(mapDefForPlayers("main", 200), "large"), 4, "large"],
+            [mapWidth(mapDefForPlayers("main", 200), "small"), 1, "small"],
+        ] as const) {
+            const s = width / mapWidth(main, variant);
+            expect(s).toBeGreaterThan(1.3);
+            const got = endgameThresholds("main", width, teamMode);
+            expect(got.smallCircle).toBeCloseTo(80 * s, 9);
+            expect(got.fewAliveCircle).toBeCloseTo(150 * s, 9);
+        }
+        expect(mapWidth(mapDefForPlayers("main", 200), "large")).toBe(1225);
     });
 
     it("applies with ten players or fewer in a closing zone, or a next circle under 80 units", () => {

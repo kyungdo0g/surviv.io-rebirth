@@ -2,7 +2,7 @@
 // each snapshot goes through the same Bot as in-process bots and the resulting input is sent back.
 import { HeadlessClient, type HeadlessClientOptions } from "@rebirth/protocol";
 import type { Snapshot } from "@rebirth/sim";
-import { Bot, type BotOptions } from "./bot.ts";
+import { Bot, type BotOptions, teamModeOf } from "./bot.ts";
 
 export interface NetworkBotOptions extends BotOptions, Omit<HeadlessClientOptions, "bot"> {}
 
@@ -37,7 +37,7 @@ export class NetworkBot {
     }
 
     private attach(map: NonNullable<HeadlessClient["map"]>): void {
-        this.bot = new Bot(map, this.options);
+        this.bot = new Bot(map, { teamMode: teamModeOf(this.client.joined?.teamMode ?? 1), ...this.options });
         this.client.onUpdate((msg) => this.onSnapshot(msg.snapshot));
         if (this.client.snapshot) this.onSnapshot(this.client.snapshot);
     }

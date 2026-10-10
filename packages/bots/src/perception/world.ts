@@ -154,6 +154,8 @@ export class WorldModel {
     lastHealthLoss = Number.NEGATIVE_INFINITY;
     gameOver = false;
     aliveCount = 0;
+    /** the game's team mode (1 solo, 2 duo, 4 squad and 50v50): which scale variant of the map it plays */
+    teamMode: 1 | 2 | 4 = 1;
     /** the snapshot's area (the screen plus VIEW_MARGIN): objects there are streamed, not necessarily drawn */
     view: Bounds = { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } };
     /** the 16:9 screen the client draws (perception/sight.ts) at `screenZoom` */

@@ -4,7 +4,7 @@
 // of bots spreads perception and decisions evenly over the ticks. Deterministic: the bot's random stream is seeded.
 import type { Game } from "@rebirth/sim";
 import { type AddPlayerOptions, SNAPSHOT_EVERY_TICKS, TICK_HZ } from "@rebirth/sim";
-import { Bot, type BotOptions } from "./bot.ts";
+import { Bot, type BotOptions, teamModeOf } from "./bot.ts";
 import { brainFeatures } from "./brain/features.ts";
 import { NavGrid } from "./nav/grid.ts";
 
@@ -30,7 +30,7 @@ export class BotController {
         this.playerId = playerId;
         // the navigation grid of this game: games on one MapData (tests) never see each other's doors and broken crates
         const nav = opts.nav ?? NavGrid.forBrain(game.mapData, brainFeatures(opts.brain), game);
-        this.bot = new Bot(game.mapData, { ...opts, nav });
+        this.bot = new Bot(game.mapData, { teamMode: teamModeOf(game.teamMode), ...opts, nav });
         this.phase = playerId % SNAPSHOT_EVERY_TICKS;
     }
 
