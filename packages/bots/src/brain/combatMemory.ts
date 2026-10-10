@@ -9,6 +9,7 @@
 // current fight (judgement.ts). Written only by COMBAT's code paths (brain/combat.ts, tactics.ts, grenades.ts,
 // dodge.ts and the round 3 and 4 files).
 import type { Vec2 } from "@rebirth/core";
+import type { HeldChoice } from "./earlyMemory.ts";
 
 /** One combat decision worth a look afterwards (tests, match diagnostics). */
 export interface CombatTraceEntry {
@@ -80,6 +81,8 @@ export interface SmokeStandoff {
 }
 
 export class CombatMemory {
+    /** point blank (pointBlank.ts): per enemy, swing at it (yes) or back off, held until `until`; since when at it */
+    readonly pointBlank = new Map<number, HeldChoice & { since: number }>();
     // exposure (combat.ts shotCheck)
     /** contact the exposure clock follows */
     expTarget = 0;

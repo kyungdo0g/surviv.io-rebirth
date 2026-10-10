@@ -41,6 +41,7 @@ import { manageScope } from "./gear.ts";
 import { grenadeOpportunity, smartGrenade } from "./grenades.ts";
 import { judged } from "./judgement.ts";
 import { planLayerEscape } from "./layers.ts";
+import { keepGunRange } from "./pointBlank.ts";
 import { observePuzzleDoors } from "./puzzleSight.ts";
 import { bestBreakable, breakScore, planBreak } from "./scavenge.ts";
 import { noteChoice, noteFlight, steadyCrate, steadyLoot, steadyScores } from "./steady.ts";
@@ -273,6 +274,8 @@ export class Brain {
         // an explosive next to the target that breaks within a moment: shoot it (intermediate and expert bots)
         if (ctx.features.barrelShot) planBarrelShot(ctx, intent);
         manageWeapons(ctx, intent);
+        // point blank with a gun: back off to where it hits (or swing: the fight's slot, pointBlank.ts)
+        if (ctx.features.pointBlank) keepGunRange(ctx, intent);
         if (ctx.features.grenades) {
             // round 4: running from a chaser, a frag thrown back at its path (escapeFrag.ts) comes first
             if (!intent.throwPlan && ESCAPE_THROW.has(intent.behaviour))

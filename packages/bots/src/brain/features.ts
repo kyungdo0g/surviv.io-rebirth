@@ -115,6 +115,11 @@ export interface BrainFeatures {
      * persona-driven share; the bot breaks the one on its way once it sees it (nav/breakThrough.ts, brain/breakThrough.ts)
      */
     breakThrough: boolean;
+    /**
+     * point blank: no shots whose bullets spawn past the target's body (barrel longer than the gap); the bot backs off
+     * to where its gun hits or swaps to melee, by persona and skill (brain/pointBlank.ts)
+     */
+    pointBlank: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -153,6 +158,7 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "barrelShot",
     "earlyPace",
     "breakThrough",
+    "pointBlank",
 ];
 
 export type BrainName = "baseline" | "smart";

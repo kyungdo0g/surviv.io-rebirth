@@ -590,3 +590,11 @@ The owner approved the existing-art review on 2026-10-10: M60 and MG 42 bipods n
 | the house rule's obstacles (`couch_*`, `mansion_wall_int_*`, `police_wall_int_*`, `club_wall_int_*`, the greenhouse's `glass_wall_10`), anywhere | walked round | broken through by about 70–98 % of bots (persona and skill) | [src:user/2026-10-10-house-rule] [H] |
 | other glass walls outdoors | walked round to a door | broken through by a persona-driven 5–75 % (bold and skilled more) | [src:user/2026-10-10-house-rule] [H] |
 | crates, barrels and furniture in the open | walked round | unchanged | [src:user/2026-10-09-break-through] [H] |
+
+## Bots at point blank (2026-10-10)
+
+> The owner, with a screenshot: two players pressed body to body on stairs, both shooting guns whose muzzle sits past the other's body, so every bullet spawned beyond the target; neither swapped to melee. The sim keeps survev's muzzle (bullets spawn `barrelLength` ahead of the centre: `packages/sim/src/weapons/gun.ts`). Code: `packages/bots/src/brain/pointBlank.ts`. Tests: `packages/bots/test/point-blank.test.ts`. Numbers: `packages/bots/scripts/hugging.ts`.
+
+| bot behaviour | before | rebirth | sources |
+|---|---|---|---|
+| a gun in hand with the target's far side inside the muzzle (centre distance under `barrelLength` − 1 + 0.3: the AK-47 misses a player 2 u away and hits at 2.5) | kept shooting, every bullet past the body | holds fire; backs off to where the gun hits or swaps to melee, a choice held 10 s per enemy (bold, risk-taking personas swing more, skilled bots back off more); cornered, or still at point blank after 1.2 s of backing off (players walk through each other), it swings | [src:user/2026-10-10-point-blank] [H] |

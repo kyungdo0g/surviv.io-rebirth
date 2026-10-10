@@ -24,6 +24,7 @@ import { faintAim, faintDropped, faintGate, noteClear } from "./faint.ts";
 import { launcherSlot, launcherTooClose } from "./launch.ts";
 import { heldMelee, swingBand } from "./melee.ts";
 import { opportunityMult } from "./opportunity.ts";
+import { muzzlePast, pointBlankSlot } from "./pointBlank.ts";
 import { ignoredTarget } from "./pursuit.ts";
 import { focusMult } from "./teamplay.ts";
 
@@ -218,6 +219,8 @@ export function shotCheck(ctx: BrainCtx, c: Contact, dist: number): ShotCheck {
     if (gun.mag <= 0) return no("empty", limit, aim);
     // a launcher never fires at point blank (its blast would hurt the bot: brain/launch.ts)
     if (launcherTooClose(gun, dist)) return no("range", limit, aim);
+    // nor any gun whose bullets would spawn past the target's body (pointBlank.ts)
+    if (ctx.features.pointBlank && muzzlePast(gun.info.id, dist)) return no("range", limit, aim);
     if (dist > limit || dist > gun.info.range) return no("range", limit, aim);
     if (!aim) return no("blocked", limit);
     if (!reacted) return no("reaction", limit, aim);
@@ -251,7 +254,9 @@ export function slotAgainst(ctx: BrainCtx, t: Contact, dist: number): number {
     if (launcher >= 0) return heldSlot(ctx, launcher);
     const slot = fightSlot(ctx.self, ctx.guns, dist, { sigmaDeg: aimSigma(ctx), helmet: t.helmet, chest: t.chest });
     // report 39: a bare-handed rusher at point blank is fought with melee by some (early.ts answerSlot)
-    return heldSlot(ctx, ctx.features.meleeAnswer ? answerSlot(ctx, t, dist, slot) : slot);
+    const held = heldSlot(ctx, ctx.features.meleeAnswer ? answerSlot(ctx, t, dist, slot) : slot);
+    // point blank: a swing instead of shots that spawn past the body, for those who chose it (pointBlank.ts)
+    return ctx.features.pointBlank ? pointBlankSlot(ctx, t, dist, held) : held;
 }
 
 /**
