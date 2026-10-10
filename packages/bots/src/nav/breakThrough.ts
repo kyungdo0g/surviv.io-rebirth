@@ -39,10 +39,14 @@ const AHEAD = 4;
 /**
  * The break class of an obstacle for routing: the house rule's types, and indoors (`indoor`: under a building's roof)
  * any destructible obstacle up to MAX_HEALTH; glass walls elsewhere; nothing for the rest, explosive ones included.
- * Doors are not here: usable ones open, the rest are sealed walls (cellGrid.ts).
+ * Doors are not here: usable ones open, the rest are sealed walls (cellGrid.ts). Nor obstacles only explosions damage
+ * (`explosionGate`).
  */
 export function breakClassOf(def: ObstacleDef, type: string, indoor: boolean): number {
     if (!def.destructible || def.explosion || def.health > MAX_HEALTH || def.door || def.armorPlated) return 0;
+    // only explosions damage an obstacle with an explosion gate (the clone's next wave: blast doors, subway gates):
+    // fists never break it (a launcher holder could; not yet). Read defensively: not in the defs types yet.
+    if ((def as ObstacleDef & { explosionGate?: unknown }).explosionGate) return 0;
     if (HOUSE_RULE.test(type) || indoor) return BreakClass.HouseRule;
     return def.material === "glass" ? BreakClass.Glass : BreakClass.None;
 }

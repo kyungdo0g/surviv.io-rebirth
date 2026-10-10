@@ -9,7 +9,9 @@
 // - sounds, audio/rebirth/guns/<name>.mp3: the owner's clip (assets-user/audio/guns/, MANIFEST.md) levelled to the
 //   original guns of its class (loudness.ts), else a copy of the donor's original file; the original sounds the owner
 //   replaced (the AK-47 reload) likewise; a reload clip longer than its reload is fitted to it (loudness.ts fitReload);
-// - the new ammo's ping emotes, img/rebirth/ammo-<id>.png: drawn like the original ammo emotes (ammoEmotes.ts).
+// - the new ammo's ping emotes, img/rebirth/ammo-<id>.png: drawn like the original ammo emotes (ammoEmotes.ts);
+// - the owner's held sprites, img/rebirth/gun-<id>-owner-01.png, from the top-down sheets of 2026-10-10 where they are
+//   there (ownerHeldArt.ts); nothing otherwise, the client then keeps the bar.
 // Levelling, fitting and the WebP sheets need ffmpeg / ffprobe on the PATH; without them the clips are copied as they
 // are and the installer says so. A report of what came from where goes to <dest>/rebirth-new-guns.json. Run by
 // import.ts after the original assets are in place, or alone: node tools/assets/newGuns.ts.
@@ -28,6 +30,8 @@ import {
     newGunDefs,
     newGunIconPath,
     newGunSoundPath,
+    OWNER_HELD_GUN_ART,
+    ownerHeldGunArtPath,
     REPLACED_ORIGINAL_SOUNDS,
 } from "../../packages/defs/src/rebirth/index.ts";
 import { ammoEmoteIcon } from "./ammoEmotes.ts";
@@ -42,6 +46,7 @@ import {
     processClip,
     type SoundRole,
 } from "./loudness.ts";
+import { installOwnerHeldArt, type OwnerHeldRow } from "./ownerHeldArt.ts";
 import { decodePng, encodePng, type RgbaImage } from "./png.ts";
 import { drawnLootIconImage } from "./rebirthLootIcons.ts";
 import { cutSecondWaveIcons, SECOND_WAVE_SHEET_DIR } from "./secondWaveSheets.ts";
@@ -100,6 +105,8 @@ export interface InstallReport {
     sounds: Record<string, InstalledSound>;
     /** the new ammo's ping emote icons, by ammo id */
     emotes: Record<string, InstalledAsset>;
+    /** the owner's held sprites installed from the top-down sheets, by gun id (ownerHeldArt.ts) */
+    held: Record<string, OwnerHeldRow>;
     /** whether ffmpeg / ffprobe were found (levelling, reload fitting, WebP sheets) */
     ffmpeg: boolean;
     warnings: string[];
@@ -217,9 +224,11 @@ export function soundUses(): Map<string, SoundUse> {
     return uses;
 }
 
-/** Every file installNewGunAssets writes under the asset folder: icons and emotes (img/rebirth/), sounds. */
-export function installPlan(): { icons: string[]; sounds: string[]; emotes: string[] } {
+/** Every file installNewGunAssets writes under the asset folder: icons, emotes, held sprites (img/rebirth/), sounds. */
+export function installPlan(): { icons: string[]; sounds: string[]; emotes: string[]; held: string[] } {
     return {
+        // written only where the owner's top-down sheets are (the client checks which are installed)
+        held: Object.keys(OWNER_HELD_GUN_ART).map(ownerHeldGunArtPath),
         icons: Object.values(NEW_GUN_LOOT_ICONS).map(newGunIconPath),
         sounds: [...Object.keys(NEW_GUN_SOUND_DONORS), ...REPLACED_ORIGINAL_SOUNDS].map(newGunSoundPath),
         emotes: NEW_AMMO_IDS.map((ammo) => newGunIconPath(newAmmoEmoteTexture(ammo))),
@@ -301,7 +310,7 @@ function installSound(
 export function installNewGunAssets(options: InstallOptions): InstallReport {
     const { dest, sheetDir = SHEET_DIR, secondWaveSheetDir = SECOND_WAVE_SHEET_DIR, userAudio = USER_AUDIO } = options;
     const ffmpeg = options.ffmpeg ?? hasFfmpeg();
-    const report: InstallReport = { icons: {}, sounds: {}, emotes: {}, ffmpeg, warnings: [] };
+    const report: InstallReport = { icons: {}, sounds: {}, emotes: {}, held: {}, ffmpeg, warnings: [] };
     if (!ffmpeg) {
         report.warnings.push(
             "ffmpeg / ffprobe not found on the PATH: the owner's WebP sheets cannot be cut, and the owner's clips are " +
@@ -351,6 +360,7 @@ export function installNewGunAssets(options: InstallOptions): InstallReport {
             report.warnings.push(`no loot icon for ${id}: ${fallback} has no PNG in ${dest} (run pnpm assets)`);
         }
     }
+    report.held = installOwnerHeldArt(dest, secondWaveSheetDir, readImage, report.warnings, ffmpeg);
     const lists = readJson<{ lists: SoundLists }>(SOUND_DEFS).lists;
     const ctx = { dest, userAudio, ffmpeg, lists, uses: soundUses() };
     const names: Array<[string, string]> = [
@@ -395,6 +405,7 @@ export function summarize(report: InstallReport): string[] {
                 : "") +
             (fitted ? `; ${fitted} reload clips fitted to their reload time` : ""),
         `new ammo ping emotes: ${count(report.emotes)}`,
+        `owner held sprites: ${Object.keys(report.held).join(", ") || "none (bars)"}`,
     ];
     if (!owned.length || standIns.length === Object.keys(report.icons).length) {
         lines.push(

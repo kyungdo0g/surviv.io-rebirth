@@ -12,7 +12,8 @@
 // machine pistols, two beta shotguns and three machine guns and the six beta launchers, the RPG-7 also empty, our own
 // art; the dual TEC-9 shares the TEC-9's) and the launcher rounds drawn in flight (rebirth/launcherRoundArt.ts) are
 // committed SVGs too, served from /rebirth/guns/, each at its own logical size; they have no fallback, since the file
-// always ships.
+// always ships. The owner's held sprites (heldGunArt.ts OWNER_HELD_GUN_ART) are installed under img/rebirth/ like the
+// loot icons, but drawn only once found installed (ownerHeldArt.ts).
 import {
     DRAWN_LOOT_ICONS,
     drawnLootIconSprite,
@@ -27,6 +28,7 @@ import {
     NEW_GUN_LOOT_FALLBACKS,
     newAmmoEmoteTexture,
     newGunIconPath,
+    ownerHeldGunArt,
     rebirthBuildingArt,
 } from "@rebirth/defs";
 import type { SpriteEntry } from "./spriteManifest.ts";
@@ -84,6 +86,8 @@ export function rebirthSpriteEntries(): Record<string, SpriteEntry> {
     for (const art of [...heldGunArt(), ...heldGunArtEmpty()]) {
         out[art.sprite] = { source: "rebirth", path: rebirthHeldGunUrl(art.sprite), size: art.size };
     }
+    // the owner's held sprites, installed from assets-user/ (no fallback: assets/ownerHeldArt.ts checks them first)
+    for (const art of ownerHeldGunArt()) out[art.sprite] = { source: "rebirth", path: art.path, size: art.size };
     for (const sprite of Object.keys(LAUNCHER_ROUND_ART) as LauncherRoundSprite[]) {
         out[sprite] = { source: "rebirth", path: rebirthHeldGunUrl(sprite), size: LAUNCHER_ROUND_ART[sprite] };
     }

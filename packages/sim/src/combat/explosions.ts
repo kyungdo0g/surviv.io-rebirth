@@ -4,7 +4,8 @@
 // loot item is hit once, by the first ray reaching it, and a ray stops at the first collidable obstacle taller than
 // 0.5 (walls block explosions). Damage is full inside rad.min and falls off to 0 at rad.max; obstacles take
 // x obstacleDamage, loot is pushed away; shrapnel bullets fly in random directions. explosion_smoke spawns a smoke
-// emitter instead of dealing damage.
+// emitter instead of dealing damage, as the rebirth Molotov lights a fire (world/fires.ts) and the flashbang flashes
+// (combat/flash.ts).
 // Behaviour follows docs/research/mechanics/explosions.md "Damage model" (survev objects/explosion.ts).
 import { type Bounds, type Collider, collider, math, type Vec2, v2 } from "@rebirth/core";
 import { type ExplosionDef, getDefOfType, getMapObjectDef, hasDef, hasMapObjectDef } from "@rebirth/defs";
@@ -160,6 +161,16 @@ export class ExplosionSystem {
         this.addDecal(def.decalType, pos, layer);
         if (e.type === "explosion_smoke") {
             this.host.smokes.addEmitter(pos, layer);
+            return;
+        }
+        // rebirth throwables (defs rebirth/throwables.ts): the Molotov's burst lights a fire, the flashbang's flashes;
+        // neither deals blast damage
+        if (def.fire) {
+            this.host.fires.add(def.fire, pos, layer, e.source);
+            return;
+        }
+        if (def.flash) {
+            this.host.flashes.burst(def.flash, pos, layer);
             return;
         }
         const rad = def.rad.max;

@@ -133,6 +133,7 @@ describe("rebirth balance deviations", () => {
             { id: "rpg7", sprite: "gun-rpg7-01.img", size: [64, 204] },
             { id: "panzerfaust", sprite: "gun-panzerfaust-01.img", size: [56, 210] },
             { id: "m202", sprite: "gun-m202-01.img", size: [64, 196] },
+            { id: "paw20", sprite: "gun-paw20-01.img", size: [64, 204] },
         ]);
         // the RPG-7 also without its warhead, at the same size (shown while its round is fired; the client decides)
         expect(HELD_GUN_ART_EMPTY).toEqual(["rpg7"]);
@@ -293,6 +294,11 @@ describe("rebirth-only defs", () => {
             "strobe_carpet",
             "ping_airstrike_heavy",
             "ping_airstrike_carpet",
+            // the owner's Molotov and flashbang (rebirth/throwables.ts)
+            "molotov",
+            "flashbang",
+            "explosion_molotov",
+            "explosion_flashbang",
         ]);
         expect(Object.keys(GameObjectDefs)).toEqual([...generated, ...rebirthOnlyIds]);
         expect(generated.map((id) => GameObjectRegistry.typeToId(id))).toEqual(generated.map((_, i) => i + 1));
@@ -337,6 +343,14 @@ describe("rebirth-only defs", () => {
             "military_base_01",
             "military_base_01r",
             "military_base_01b",
+            // the Molotov's fire and the discarded launchers (schema 25, rebirth/discardDecals.ts)
+            "decal_molotov_fire",
+            "decal_nlaw_discard",
+            "decal_bazooka_discard",
+            "decal_pvg42_discard",
+            "decal_m202_discard",
+            "decal_panzerfaust_discard",
+            // the breakable partitions (schema 26, rebirth/buildings/walls.ts)
             "rebirth_wall_int_1",
             "rebirth_wall_int_2",
             "rebirth_wall_int_2_5",

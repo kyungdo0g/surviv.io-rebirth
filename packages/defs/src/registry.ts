@@ -59,10 +59,18 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * · 24: the second-wave beta guns (2026-10-10, rebirth/newGuns.ts): their bullets and explosions take game type ids
  * after bullet_dshk and the eleven guns after dshk, so the later rebirth-only ids (the first-wave guns from ak74 on, the
  * variant strobes) move up by 25; every original and survev-only id keeps its index. No record layout changed.
- * · 25: the rebirth buildings' breakable partitions (2026-10-10, rebirth/buildings/walls.ts): the map types
- * rebirth_wall_int_1 .. rebirth_wall_int_14 follow the military bases' as the last map types. No record layout changed.
+ * · 25: the Molotov, flashbang and discarded launchers (the owner, 2026-10-10; rebirth/throwables.ts,
+ * rebirth/discardDecals.ts): the game types molotov, flashbang, explosion_molotov and explosion_flashbang follow the
+ * variant strobes' pings as the last game types, and the two throwables are the last two GameConfig.bagSizes items
+ * (two more inventory counts at the end of the Local message's inventory section); the map types decal_molotov_fire
+ * and the five decal_<gun>_discard follow military_base_01b as the last map types; every decal record ends with an
+ * 8-bit free rotation (static; DecalView.rot); the Update message's extended flag bit 10 announces a Flash section
+ * after the Hits section (protocol flash.ts: blind and deaf strengths, 8 bits each).
+ * · 26: the rebirth buildings' breakable partitions (2026-10-10, rebirth/buildings/walls.ts): the map types
+ * rebirth_wall_int_1 .. rebirth_wall_int_14 follow decal_panzerfaust_discard as the last map types; every earlier id
+ * keeps its index. No record layout changed.
  */
-export const PROTOCOL_SCHEMA_VERSION = 25;
+export const PROTOCOL_SCHEMA_VERSION = 26;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 

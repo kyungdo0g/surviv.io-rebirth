@@ -156,6 +156,14 @@ describe("air strike variants on the wire", () => {
             "military_base_01",
             "military_base_01r",
             "military_base_01b",
+            // the Molotov's fire and the discarded launchers (schema 25, rebirth/discardDecals.ts)
+            "decal_molotov_fire",
+            "decal_nlaw_discard",
+            "decal_bazooka_discard",
+            "decal_pvg42_discard",
+            "decal_m202_discard",
+            "decal_panzerfaust_discard",
+            // the breakable partitions (schema 26, rebirth/buildings/walls.ts)
             "rebirth_wall_int_1",
             "rebirth_wall_int_2",
             "rebirth_wall_int_2_5",

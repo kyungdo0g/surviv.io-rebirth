@@ -5,6 +5,7 @@ import type { GameOptions } from "../api.ts";
 import type { BulletSystem } from "../combat/bullets.ts";
 import type { DamageParams } from "../combat/damage.ts";
 import type { ExplosionSystem } from "../combat/explosions.ts";
+import type { FlashSystem } from "../combat/flash.ts";
 import type { HitLog } from "../combat/hitLog.ts";
 import type { ProjectileSystem } from "../combat/projectiles.ts";
 import type { LootSystem } from "../loot/loot.ts";
@@ -17,8 +18,10 @@ import type { SimRules } from "../rules.ts";
 import type { RoleAnnouncementEvent } from "../view.ts";
 import type { DeadBodySystem } from "./deadBodies.ts";
 import type { Obstacle } from "./entities.ts";
+import type { FireSystem } from "./fires.ts";
 import type { Player } from "./player.ts";
 import type { SmokeSystem } from "./smoke.ts";
+import type { TimedDecalSystem } from "./timedDecals.ts";
 import type { World } from "./world.ts";
 
 export interface SimContext {
@@ -44,6 +47,12 @@ export interface SimContext {
     readonly explosions: ExplosionSystem;
     /** smoke emitters and clouds (M5) */
     readonly smokes: SmokeSystem;
+    /** decals added during the game and removed after a lifetime: discarded launchers, burning ground (rebirth) */
+    readonly decals: TimedDecalSystem;
+    /** the Molotov's burning areas and the players on fire (rebirth) */
+    readonly fires: FireSystem;
+    /** players blinded and deafened by flashbangs (rebirth) */
+    readonly flashes: FlashSystem;
     /** planes: air drops (flare guns) and air strikes (strobes) (M4/M5); map pings ("ping_unlock", M5b) */
     readonly planes: PlaneSystem;
     /** where players died (M9) */

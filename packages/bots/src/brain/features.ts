@@ -125,6 +125,11 @@ export interface BrainFeatures {
      * away from enemies, instead of standing still with no squadmate or enemy in view (brain/downed.ts)
      */
     crawl: boolean;
+    /**
+     * a third player joining a duel: most bots turn on it or take cover from it while finishing the first fight, a
+     * persona-driven minority stays tunnel-visioned on the first opponent (brain/newcomer.ts)
+     */
+    thirdPartyReact: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -165,6 +170,7 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "breakThrough",
     "pointBlank",
     "crawl",
+    "thirdPartyReact",
 ];
 
 export type BrainName = "baseline" | "smart";

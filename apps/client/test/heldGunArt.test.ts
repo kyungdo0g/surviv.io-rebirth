@@ -11,8 +11,12 @@ import {
     heldGunArtEmpty,
     LAUNCHER_ROUND_ART,
     type LauncherRoundSprite,
+    NEW_GUN_IDS,
+    OWNER_HELD_GUN_ART,
+    ownerHeldGunArt,
 } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
+import { ownerHeldArtInstalled, setOwnerHeldArtInstalled } from "../src/assets/ownerHeldArt.ts";
 import { rebirthHeldGunUrl } from "../src/assets/rebirthSprites.ts";
 import { SPRITES } from "../src/assets/spriteManifest.ts";
 import { heldGunImage } from "../src/objects/heldGun.ts";
@@ -24,7 +28,7 @@ const FORBIDDEN =
     /<(text|image|linearGradient|radialGradient|filter|script|foreignObject|style|mask|use)\b|sodipodi|inkscape|xlink:href/i;
 
 describe("drawn top-down held sprites", () => {
-    it("the drawn guns: the AK-47 and 26 beta rifles, snipers, DMRs, SMGs, machine pistols, shotguns, MGs, launchers", () => {
+    it("the drawn guns: the AK-47 and 27 beta rifles, snipers, DMRs, SMGs, machine pistols, shotguns, MGs, launchers", () => {
         expect(Object.keys(HELD_GUN_ART)).toEqual([
             "ak47",
             "ak74",
@@ -53,6 +57,7 @@ describe("drawn top-down held sprites", () => {
             "rpg7",
             "panzerfaust",
             "m202",
+            "paw20",
         ]);
         // bars on purpose (owner); a dual pistol is never listed, it shares its single's sprite
         for (const id of ["mk14", "m1928", "vz61", "vz61_dual", "tec9_dual"]) {
@@ -125,6 +130,42 @@ describe("drawn top-down held sprites", () => {
             expect(entry, art.id).toEqual({ source: "rebirth", path: rebirthHeldGunUrl(art.sprite), size: art.size });
             expect(entry?.fallback, art.id).toBeUndefined();
             expect(existsSync(join(PUBLIC, entry!.path!)), entry!.path).toBe(true);
+        }
+    });
+
+    it("the owner's held sprites: installed PNGs under img/rebirth, drawn only once found installed", () => {
+        // the second wave and survev's Model 94; never a gun with a committed drawing
+        for (const art of ownerHeldGunArt()) {
+            expect(Object.hasOwn(HELD_GUN_ART, art.id), art.id).toBe(false);
+            expect(NEW_GUN_IDS.includes(art.id) || art.id === "model94", art.id).toBe(true);
+            expect(SPRITES[art.sprite], art.id).toEqual({
+                source: "rebirth",
+                path: `img/rebirth/gun-${art.id}-owner-01.png`,
+                size: OWNER_HELD_GUN_ART[art.id],
+            });
+        }
+        for (const id of ["bren", "model94", "nlaw"]) {
+            const def = GameObjectDefs[id] as GunDef;
+            expect(ownerHeldArtInstalled(id), id).toBe(false);
+            // not installed: the bar (the Model 94 its def's own bar)
+            const bar = heldGunImage(def);
+            expect(bar.sprite, id).toBe(id === "model94" ? def.worldImg.sprite : "gun-long-01.img");
+            setOwnerHeldArtInstalled(id, true);
+            try {
+                const img = heldGunImage(def);
+                expect(img).toMatchObject({
+                    sprite: `gun-${id}-owner-01.img`,
+                    scale: { x: 0.5, y: 0.5 },
+                    tint: 0xffffff,
+                });
+                expect(img.magImg, id).toBeUndefined();
+                // the def's hands: the launchers keep their shoulder hold, hands under the gun
+                expect(img.leftHandOffset, id).toEqual(def.worldImg.leftHandOffset);
+                expect(img.gunOffset, id).toEqual(def.worldImg.gunOffset);
+                expect(!!img.handsBelow, id).toBe(!!def.worldImg.handsBelow);
+            } finally {
+                setOwnerHeldArtInstalled(id, false);
+            }
         }
     });
 });

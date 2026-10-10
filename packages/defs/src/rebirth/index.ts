@@ -15,12 +15,14 @@ import { applyOwnerLoot, CLUB_VAULT_BOX, clubVaultBuilding, GOLD_BONUS_CRATES, g
 import { applyStrobeVariantLoot, rareThrowableCrates } from "./strobeLoot.ts";
 import { applySurvevStrobe, strobeVariantBagSizes } from "./strobes.ts";
 import { applyRebirthGoldGuns, applyWikiStatOverrides } from "./survevGuns.ts";
+import { applyRebirthThrowableLoot, REBIRTH_THROWABLE_TYPES, rebirthThrowableBagSizes } from "./throwables.ts";
 
 export * from "./airdropLoot.ts";
 export * from "./airdropTiers.ts";
 export * from "./airstrikeVariants.ts";
 export * from "./buildings.ts";
 export { type DefDeviation, FRAG_DECAL_TYPE, FRAG_RADIUS_MULT, IRON_BOMB_DECAL_TYPE } from "./deviations.ts";
+export * from "./discardDecals.ts";
 export * from "./gunBeta.ts";
 export * from "./gunSpeeds.ts";
 export * from "./heldGunArt.ts";
@@ -34,6 +36,7 @@ export * from "./ownerLootWeights.ts";
 export * from "./strobeLoot.ts";
 export * from "./strobes.ts";
 export * from "./survevGuns.ts";
+export * from "./throwables.ts";
 
 export interface RebirthDefs {
     /** generated game objects with the deviations applied, then the rebirth-only ones (in registry order) */
@@ -90,11 +93,16 @@ export function applyRebirthDefs(
 }
 
 /**
- * The GameConfig with the rebirth bag items (the variant strobes, rebirth/strobes.ts) after every other one, so the
+ * The GameConfig with the rebirth bag items (the variant strobes, rebirth/strobes.ts, then the Molotov and flashbang,
+ * rebirth/throwables.ts) after every other one, so the
  * original items keep their protocol order (the Local message's inventory section).
  */
 export function applyRebirthGameConfig(generated: GameConfigDef): GameConfigDef {
-    const added = strobeVariantBagSizes(generated.bagSizes);
+    // the variant strobes, then the Molotov and flashbang (rebirth/throwables.ts)
+    const added = { ...strobeVariantBagSizes(generated.bagSizes), ...rebirthThrowableBagSizes(generated.bagSizes) };
+    if (Object.keys(added).slice(-REBIRTH_THROWABLE_TYPES.length).join() !== REBIRTH_THROWABLE_TYPES.join()) {
+        throw new Error("rebirth throwables must be the last bag items");
+    }
     for (const id of Object.keys(added)) {
         if (Object.hasOwn(generated.bagSizes, id))
             throw new Error(`rebirth bag item "${id}" clashes with a generated one`);
@@ -118,7 +126,8 @@ export function grassSpawn(mapObjects: Readonly<Record<string, MapObjectDef>>): 
  * the air drop tier tables (rebirth/newGunLoot.ts, rebirth/airdropLoot.ts), then the rebirth gold guns (the Barrett,
  * the SVD and the SCAR-SSR, rebirth/survevGuns.ts) in the gold drop of main and its seasonal copies, then the owner's
  * 2026-10-08 rows (the classic floor's USAS-12, the bathhouse ring case, the club gun box's table;
- * rebirth/ownerLoot.ts), then the rare crates' throwables with the variant strobes (rebirth/strobeLoot.ts), then the
+ * rebirth/ownerLoot.ts), then the Molotov and flashbang in the throwable tables (rebirth/throwables.ts), then the rare
+ * crates' throwables with the variant strobes (rebirth/strobeLoot.ts), then the
  * bigger classic and 50v50 maps (`scales`, REBIRTH_MAP_SCALE by default; rebirth/mapScale.ts), then the rebirth
  * buildings in their maps' fixed spawns (rebirth/buildings.ts). Checks that every tier inner crate a map can
  * drop and the club's gun box find their tiers in that map's table. `gameObjects` gives the guns' ammo (the floor rule
@@ -137,7 +146,9 @@ export function applyRebirthMaps(
     const maps = applyRebirthBuildingSpawns(
         applyRebirthMapScale(
             applyStrobeVariantLoot(
-                applyOwnerLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf)), ammoOf),
+                applyRebirthThrowableLoot(
+                    applyOwnerLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf)), ammoOf),
+                ),
             ),
             scales,
             grassSpawn(mapObjects),

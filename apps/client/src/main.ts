@@ -25,6 +25,7 @@ import "@fontsource/roboto-condensed/700.css";
 import "@fontsource/noto-sans-kr/400.css";
 import "@fontsource/noto-sans-kr/700.css";
 import { Application } from "pixi.js";
+import { probeOwnerHeldArt } from "./assets/ownerHeldArt.ts";
 import { mountGallery } from "./dev/gallery.ts";
 import { bootSandbox } from "./game/sandbox.ts";
 import { debugGlobals } from "./globals.ts";
@@ -83,6 +84,8 @@ async function main() {
     });
     document.getElementById("game")!.appendChild(app.canvas);
     globals.app = app;
+    // which of the owner's held sprites pnpm assets installed (objects/heldGun.ts draws only those)
+    await probeOwnerHeldArt();
 
     const route = new URLSearchParams(location.search);
     const roomCode = roomCodeOf(route);

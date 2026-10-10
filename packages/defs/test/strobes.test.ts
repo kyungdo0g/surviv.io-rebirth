@@ -105,9 +105,11 @@ describe("the strobe (survev master, survev.wiki.gg)", () => {
 describe("variant strobes (rebirth)", () => {
     it("come after the other rebirth-only ids with their pings", () => {
         expect(VARIANTS).toEqual(["strobe_heavy", "strobe_carpet"]);
-        // after the air strike shell and the beta new guns (rebirth/newGuns.ts)
-        expect(rebirthOnlyIds.slice(-4)).toEqual([...VARIANTS, "ping_airstrike_heavy", "ping_airstrike_carpet"]);
-        const last = GameObjectRegistry.typeToId(rebirthOnlyIds[rebirthOnlyIds.length - 5]);
+        // after the air strike shell and the beta new guns (rebirth/newGuns.ts), before the Molotov and flashbang
+        // (rebirth/throwables.ts, 4 ids)
+        const strobes = rebirthOnlyIds.slice(0, -4);
+        expect(strobes.slice(-4)).toEqual([...VARIANTS, "ping_airstrike_heavy", "ping_airstrike_carpet"]);
+        const last = GameObjectRegistry.typeToId(strobes[strobes.length - 5]);
         expect(VARIANTS.map((id) => GameObjectRegistry.typeToId(id))).toEqual([last + 1, last + 2]);
     });
 
@@ -171,7 +173,8 @@ describe("variant strobes (rebirth)", () => {
 
     it("stack like the strobe, as the last bag items (the original ones keep their protocol order)", () => {
         const items = Object.keys(GameConfig.bagSizes);
-        expect(items.slice(-2)).toEqual([...VARIANTS]);
+        // then only the Molotov and flashbang (rebirth/throwables.ts)
+        expect(items.slice(-4)).toEqual([...VARIANTS, "molotov", "flashbang"]);
         for (const id of VARIANTS) expect(GameConfig.bagSizes[id]).toEqual(GameConfig.bagSizes.strobe);
         // after the 8 original ammo rows, the beta's 40mm / rocket / 57mm rows, frag and smoke
         expect(items.indexOf("strobe")).toBe(13);

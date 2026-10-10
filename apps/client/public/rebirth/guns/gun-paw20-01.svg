@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="204" viewBox="0 0 64 204">
+  <!-- Denel PAW20 (Neopup) held sprite, own art: seen from above, barrel up; long boxy polymer body, red-dot sight on top, sliding foregrip, thin barrel. -->
+  <!-- upper receiver in front of the grip, narrower than the rear body -->
+  <rect x="19" y="76" width="26" height="38" rx="2" fill="#484848" stroke="#000" stroke-width="8"/>
+  <!-- long boxy rear body (action, grip and stock in one shell), its cheek surface darker; butt pad flush with the bottom -->
+  <path d="M18 112h28l2 2v80l-4 4H20l-4-4v-80z" fill="#484848" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="26" y="158" width="12" height="34" fill="#3a3a3a"/>
+  <rect x="12" y="198" width="40" height="6" rx="2" fill="#000"/>
+  <!-- top rail along the receiver, slots -->
+  <rect x="27" y="82" width="10" height="66" fill="#000"/>
+  <path d="M29 88h6M29 94h6M29 100h6M29 106h6" stroke="#555555" stroke-width="2"/>
+  <!-- red-dot sight from above: housing, hood window, brightness buttons on the right -->
+  <rect x="20" y="112" width="24" height="32" rx="3" fill="#000"/>
+  <rect x="25" y="118" width="14" height="12" rx="1" fill="#555555"/>
+  <rect x="44" y="120" width="4" height="7" rx="1" fill="#000"/>
+  <!-- sliding foregrip, the slide seam across it, the highlight strip along its top -->
+  <rect x="22" y="24" width="20" height="50" rx="2" fill="#484848" stroke="#000" stroke-width="8"/>
+  <rect x="30" y="28" width="4" height="18" fill="#8f8f8f"/>
+  <rect x="30" y="54" width="4" height="16" fill="#8f8f8f"/>
+  <path d="M22 50h20" stroke="#000" stroke-width="3"/>
+  <!-- charging handle sticking out on the left near the front -->
+  <path d="M11 37h8" stroke="#000" stroke-width="3"/>
+  <rect x="6" y="31" width="6" height="12" rx="2" fill="#000"/>
+  <!-- thin barrel and muzzle -->
+  <rect x="27" y="6" width="10" height="20" fill="#000"/>
+  <rect x="25" y="1" width="14" height="8" rx="1" fill="#000"/>
+  <rect x="31" y="3" width="2" height="4" fill="#555555"/>
+</svg>

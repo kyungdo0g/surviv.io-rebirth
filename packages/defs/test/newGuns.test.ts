@@ -260,7 +260,7 @@ describe("new ammo (new-gun-stats.md 4.5)", () => {
         expect(keys.slice(at, at + 5)).toEqual(["45acp", "40mm", "rocket", "57mm", "frag"]);
         // every other row keeps its place and sizes; the generated config is untouched
         // (the variant strobes, rebirth/strobes.ts, are appended after every other row)
-        const added: readonly string[] = [...NEW_AMMO_IDS, ...STROBE_VARIANT_TYPES];
+        const added: readonly string[] = [...NEW_AMMO_IDS, ...STROBE_VARIANT_TYPES, "molotov", "flashbang"];
         expect(keys.filter((k) => !added.includes(k))).toEqual(Object.keys(gameConfig.bagSizes));
         for (const k of Object.keys(gameConfig.bagSizes))
             expect(GameConfig.bagSizes[k]).toEqual(gameConfig.bagSizes[k]);

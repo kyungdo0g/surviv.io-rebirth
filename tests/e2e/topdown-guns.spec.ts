@@ -48,6 +48,7 @@ const DRAWN: Readonly<Record<string, number>> = {
     rpg7: 204,
     panzerfaust: 210,
     m202: 196,
+    paw20: 204,
 };
 /**
  * The launchers: the RPG-7, Panzerfaust and M202 held on the shoulder with both hands under the gun (the sheet's potato
@@ -594,6 +595,56 @@ test.describe("top-down held sprites", () => {
             // DShK's ~3 body px further)
             const png = await page.screenshot({
                 path: `${SCREENS}/${gun}.png`,
+                clip: { x: Math.round(me.x) - 80, y: Math.round(me.y) - 60, width: 290, height: 120 },
+            });
+            expect(pixelsNear(png, 0xff00ff, 30), `${gun}: placeholder pixels`).toBe(0);
+        }
+        expect(await missing(page)).toEqual([]);
+        expect(errors).toEqual([]);
+    });
+
+    test("the owner's held sprites (installed from assets-user) at the 1080p default zoom, facing right", async ({
+        page,
+    }) => {
+        test.setTimeout(300_000);
+        const errors = collectErrors(page);
+        await boot(page, `/?sandbox=1&map=main&seed=1&loot=0&give=ak47&zoom=${(28 * 640) / 960}`);
+        // installed by pnpm assets only where the owner's top-down sheets are (tools/assets/ownerHeldArt.ts)
+        const installed: string[] = await page.evaluate(async () => {
+            const ids = [
+                "nlaw",
+                "jackhammer",
+                "pvg42",
+                "rpd",
+                "bren",
+                "model94",
+                "mg3",
+                "maadi",
+                "negev",
+                "bazooka",
+                "kpv",
+            ];
+            const ok = await Promise.all(
+                ids.map((id) =>
+                    fetch(`/assets/img/rebirth/gun-${id}-owner-01.png`, { method: "HEAD" }).then(
+                        // the dev server answers a missing file with its index page
+                        (r) => r.ok && (r.headers.get("content-type") ?? "").startsWith("image/png"),
+                    ),
+                ),
+            );
+            return ids.filter((_, i) => ok[i]);
+        });
+        test.skip(installed.length === 0, "no owner held sprite installed (assets-user missing)");
+        await faceRight(page);
+        for (const gun of installed) {
+            await hold(page, gun, `gun-${gun}-owner-01.img`);
+            await page.waitForTimeout(400);
+            const me = await page.evaluate(() => {
+                const r = (window as any).__rebirth;
+                return r.worldToScreen(r.visualPos(r.player.id)) as { x: number; y: number };
+            });
+            const png = await page.screenshot({
+                path: `${SCREENS}/${gun}-owner.png`,
                 clip: { x: Math.round(me.x) - 80, y: Math.round(me.y) - 60, width: 290, height: 120 },
             });
             expect(pixelsNear(png, 0xff00ff, 30), `${gun}: placeholder pixels`).toBe(0);
