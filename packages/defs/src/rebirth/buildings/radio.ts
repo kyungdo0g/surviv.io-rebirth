@@ -3,8 +3,9 @@
 // The lobby leads to the studio, the transmitter hall and the generator room; behind the hall lies the signals vault,
 // whose sliding door opens on the frequency code: a switch in each north room (a yellow, a red and a blue plate on the
 // floor), pressed in the order the note on the studio floor shows (yellow, red, blue; survev bathhouse_01's code room).
-// The vault holds a sniper crate (mil_crate_05), level 3 armour and a sniper scope. The generator room's power boxes
-// and propane tank explode. A slate-blue roof with the mast.
+// The vault (grown 2026-10-10 to a real room, 10 x 8 inside) holds a sniper crate (mil_crate_05), a QBB-97 on its
+// wall mount, a police locker, level 3 armour and a sniper scope. The transmitter rack stands in the generator room,
+// whose power boxes and propane tank explode. A slate-blue roof with the mast.
 import type { BuildingDef } from "../../types/index.ts";
 import {
     ART_SCALE,
@@ -20,8 +21,8 @@ import {
 } from "./layout.ts";
 import { hRun, op, room, vRun } from "./military/part.ts";
 
-// 34 x 24 inside (x -17..17, y -12..12). South: the lobby; north: studio | transmitter hall (the vault behind it) |
-// generator room. Doorways 4 units; furniture flush against the walls or 2.6+ clear.
+// 34 x 24 inside (x -17..17, y -12..12). South: the lobby; north: studio | transmitter hall (a 4-deep antechamber,
+// the vault behind it) | generator room. Doorways 4 units; furniture flush against the walls or 2.6+ clear.
 export const RADIO_LAYOUT: RebirthBuildingLayout = {
     bounds: { min: { x: -17, y: -12 }, max: { x: 17, y: 12 } },
     material: "concrete",
@@ -48,11 +49,11 @@ export const RADIO_LAYOUT: RebirthBuildingLayout = {
             [-2, 2],
             [9, 13],
         ]),
-        // studio | hall with the studio glass, hall | generator
-        ...vRun(-5, -2, 12, [[2, 6]]),
+        // studio | hall with the studio glass (from the corridor wall's face), hall | generator
+        ...vRun(-5, -1.5, 12, [[-1.5, 2.5]]),
         ...vRun(6, -2, 12),
         // the signals vault behind the hall: its sliding door slides east into the wall
-        ...hRun(6, -5, 6, [[-3.5, 0.5]]),
+        ...hRun(3, -5, 6, [[-3.5, 0.5]]),
     ],
     openings: [
         op("house_window_01", -11.5, -12.25, 3),
@@ -67,24 +68,24 @@ export const RADIO_LAYOUT: RebirthBuildingLayout = {
         op("house_door_01", -2, -2, 3),
         op("house_door_01", 9, -2, 3),
         // the studio glass into the hall, on the wall line
-        op("house_window_01", -5, 4, 0),
+        op("house_window_01", -5, 0.5, 0),
     ],
     rooms: [
         room(-17, -12, 17, -2, "lobby"),
         room(-17, -2, -5, 12, "studio"),
-        room(-5, -2, 6, 6, "hall"),
-        room(-5, 6, 6, 12, "vault"),
+        room(-5, -2, 6, 3, "hall"),
+        room(-5, 3, 6, 12, "vault"),
         room(6, -2, 17, 12, "generator"),
     ],
 };
 
 /** The signals vault's door (vault_door_bathhouse: only the puzzle opens it; slides east into the wall). */
-export const RADIO_VAULT_DOOR = { type: "vault_door_bathhouse", pos: { x: 0.5, y: 6 }, ori: 1 } as const;
+export const RADIO_VAULT_DOOR = { type: "vault_door_bathhouse", pos: { x: 0.5, y: 3 }, ori: 1 } as const;
 export const RADIO_PUZZLE = "rebirth_radio";
 /** The frequency switches (their floor plates' colours) and the code: yellow (studio), red (hall), blue (generator). */
 export const RADIO_SWITCHES = [
     { label: "yellow", x: -7, y: 10.95, ori: 0 },
-    { label: "red", x: -3.95, y: -0.5, ori: 1 },
+    { label: "red", x: 4.95, y: 2.05, ori: 3 },
     { label: "blue", x: 15.95, y: 9, ori: 3 },
 ] as const;
 export const RADIO_CODE: readonly string[] = ["yellow", "red", "blue"];
@@ -129,7 +130,7 @@ export function radioStation(known: (id: string) => boolean): BuildingDef {
             {
                 sound: "ambient_lab_01",
                 channel: "ambient",
-                pos: { x: 0.5, y: 2 },
+                pos: { x: 0.5, y: 0.5 },
                 range: { min: 3, max: 10 },
                 falloff: 1,
                 volume: 0.12,
@@ -140,28 +141,33 @@ export function radioStation(known: (id: string) => boolean): BuildingDef {
             ...openingChildren(L),
             child(RADIO_VAULT_DOOR.type, RADIO_VAULT_DOOR.pos.x, RADIO_VAULT_DOOR.pos.y, RADIO_VAULT_DOOR.ori),
             ...RADIO_SWITCHES.map((sw) => piece("switch_03", sw.x, sw.y, sw.ori, sw.label)),
-            // the transmitter hall: the transmitter rack against the east wall (indestructible, ricochets), loot
-            child("table_07", 4.15, 2.05, 1),
-            child("loot_tier_2", -1.5, 3),
-            child("loot_tier_1", -2, 0.5),
-            // the signals vault: a sniper crate against the north wall, level 3 armour, a sniper scope
-            child("mil_crate_05", 2.5, 10.25),
-            child("loot_tier_airdrop_armor", -3, 9.5),
-            child("loot_tier_scopes_sniper", -3, 7.5),
+            // the transmitter hall, an antechamber: loot by the studio glass
+            child("loot_tier_2", -2.5, 0.5),
+            child("loot_tier_1", 2.5, 0.5),
+            // the signals vault: the sniper crate against the east wall (a 2.6 bay below it by the door's pocket), the
+            // QBB-97 mount and a police locker along the north wall, level 3 armour and a sniper scope on the floor
+            child("mil_crate_05", 4.25, 8.8, 1),
+            child("gun_mount_03", 0.75, 10.6),
+            child("locker_02", -3, 10.75),
+            child("loot_tier_airdrop_armor", -2.5, 6.5),
+            child("loot_tier_scopes_sniper", 1, 5.5),
             // the studio: the mixing desk facing the glass, two chairs, the record shelf against the west wall
             child("table_04", -8.5, 4, 1),
             child("chair_02", -11.8, 2.5),
             child("chair_02", -11.8, 5.5),
             child("bookshelf_01", -15.5, 2, 1),
             child("loot_tier_2", -13, 9),
-            // the generator room: two power boxes and a propane tank (all explode), an extinguisher, a crate
-            child("power_box_01", 7.5, 10.5),
-            child("power_box_01", 15.5, 10.5),
+            // the generator room: along the west wall the transmitter rack (indestructible, ricochets), two power boxes
+            // and an extinguisher; a propane tank (the boxes and the tank explode), a crate under the east window
+            child("table_07", 7.85, 8.2, 3),
+            child("power_box_01", 7.5, 3.5),
+            child("power_box_01", 7.5, 1.5),
+            // the extinguisher clear of the corridor door's swing (its panel at x 8.7 when open)
+            child("fire_ext_01", 7.2, -0.5),
             child("propane_01", 15.25, -0.25),
-            child("fire_ext_01", 7.5, -0.5),
-            child("crate_01", 8.75, 3),
+            child("crate_01", 14.25, 3.5),
             child("decal_oil_01", 12, 8),
-            child("loot_tier_1", 12.5, 4),
+            child("loot_tier_1", 11.5, 6.5),
             // the lobby: the reception desk and chair, a couch, the soda machine
             child("table_01", 6, -7),
             child("chair_01", 6, -3.75),

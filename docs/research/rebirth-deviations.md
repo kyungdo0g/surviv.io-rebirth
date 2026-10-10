@@ -511,6 +511,30 @@ The owner approved the existing-art review on 2026-10-10: M60 and MG 42 bipods n
 - Per walkable area the rebirth buildings already held more guns than survev's houses before the rework, so the loot fun comes from the hidden rooms and from containers instead of floor spots: about a third of a building's expected guns lie behind its interaction (the bank's vault holds 39 % of the bank's), the blockhouses gained a weapons crate per chamber, and no building lost guns [src:derived/rebirth-building-probe] [M]
 - The bots' basement navigation (packages/bots nav, `nav.basements.test.ts`) keeps its portal counts [src:derived/rebirth-building-probe] [H]
 
+## Hidden rooms expanded (2026-10-10)
+
+> The owner, after the rework's screenshots: "expand the content" (the hidden rooms read as closets). Code: the same files as above; `REBIRTH_PUZZLE_CODES` in `packages/defs/src/rebirth/buildings.ts`. Tests: `rebirthBuildingsProbe.test.ts` (the bar below), `rebirthBuildingsWave2.test.ts` (every code: a wrong order resets, the right one opens).
+
+- Every hidden room is now a room: 25 u² or more a player can walk, 4 loot sources or more and 2 expected guns or more, checked by the probe for every special door (the military cages share one door type and add up). The blockhouses and three military buildings gained hidden rooms; the library's single switch became a three-switch code. No new map types, so protocol schema 24 stands [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H]
+
+| building | interaction | hidden room (walkable u², loot sources, expected guns) | sources |
+|---|---|---|---|
+| `clinic_01` | the switch behind the reception desk | the drug safe: a chest, a locker, level 3 armour, medicine, a weapon drop (42.0, 6, 2.5) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| `radio_station_01` | the frequency code (yellow, red, blue; unchanged) | the signals vault, 10 × 8 inside: a sniper crate, a QBB-97 mount, a police locker, level 3 armour, a sniper scope (36.1, 6, 4.8) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| `library_01` | the reading-lamp code: switches in the reading room, the foyer and the stacks' middle aisle, in the order of the note on the archive floor (red, yellow, green) | the rare-books vault, 7 × 13: a rare-books shelf, a card catalogue, a pistol case, a reading stand, an SV-98 (27.3, 6, 5.1) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| `firestation_01` | the switch beside the watch window | the gear cage: two gun mounts (M870, MP220), a chest, a riot locker, a fire axe, level 3 armour (37.1, 6, 4.2) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| `outpost_01r` / `_01b` | the switch in the command room | the armory, 13 × 10: the faction's crate, a sniper crate, a shotgun mount, ammunition (48.6, 5, 7.3) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| `arsenal_01` | the scheduled unlock | the magazine, 14 × 11: a sniper and a weapons crate, an LMG and a shotgun mount, a Deagle case, level 3 armour, a sniper scope (72.6, 7, 7.0) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| `blockhouse_01r` / `_01b` (new) | a two-switch code, one switch per chamber, chalked before the door (blue, red) | the magazine between the chambers, 11 × 6 behind a sliding steel door: a sniper crate, two police lockers, level 3 armour (26.7, 5, 4.3) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| military base, gatehouse | the guard room's switch | the weapons cage, now 6.75 × 6 (the guard room shrinks to a lobby) | [src:user/2026-10-10-expand-content] [H] |
+| military base, armory (new) | the armourer's switch in the ammo store | the gun cage behind a barred door, 8 × 9: shotgun racks, a QBB-97 mount (both cages: 46.6, 11, 6.1) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| military base, HQ (new) | the staff code: switches in the comms room, the office and the briefing room (blue, red, green), the note in the commander's office | the commander's archive behind a sliding panel, 8 × 8: deposit boxes, a riot locker, scopes, floor loot (34.0, 5, 2.6) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| military base, infirmary (new) | the switch in the triage hall | the narcotics store, 6 × 10, behind the pharmacy's sliding steel door (29.3, 5, 2.3) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| military base, basement | Command's staff code (unchanged) | the war chest, moved and grown (29.2, 6, 4.5) | [src:user/2026-10-10-expand-content] [src:derived/rebirth-building-probe] [H] |
+| military base, basement | the vault door or the sledgehammer breach (unchanged) | the vault (98.3, 8, 9.4) | [src:derived/rebirth-building-probe] [H] |
+
+- Every building still passes the walk bar (no squeeze on a route, cramped floor 0.5 u² at most, no unreachable floor). Walkable floor: clinic 436, radio station 412, library 559, fire station 605, command posts 335, arsenal 492, blockhouses 776, military base 8232 u²; expected guns: 5.1, 7.1, 10.0, 8.0, 8.9, 8.3, 5.6, 38.5 [src:derived/rebirth-building-probe] [H]
+
 ## Maps follow the player cap (2026-10-08)
 
 > The owner, through the lead: a classic game of 200 players felt small. A game whose player cap (`MAX_PLAYERS`, `FACTION_MAX_PLAYERS` for 50v50) is above its map's design count plays on a larger map. Code: `packages/defs/src/data.ts` (`mapDefForPlayers`), `packages/defs/src/rebirth/mapScale.ts` (`designPlayers`, `playerAreaFactor`, `playerLimit`, `MAX_PLAYER_AREA_FACTOR`), `packages/sim/src/match/gasScale.ts`, `packages/sim/src/match/match.ts` (`MAX_PLAYERS_IN_GAME`), `apps/server/src/room.ts`, `packages/protocol/src/match.ts`. Tests: `packages/defs/test/mapPlayerScale.test.ts`, `packages/sim/test/playerCap.test.ts`, `apps/server/test/mapCap.test.ts`, `packages/protocol/test/planes.test.ts`.

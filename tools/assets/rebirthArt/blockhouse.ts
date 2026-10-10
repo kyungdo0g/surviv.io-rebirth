@@ -1,12 +1,36 @@
 // Floor and roof art of the blockhouses (packages/defs rebirth/buildings/blockhouse.ts): two flagstone chambers in
 // fieldstone walls, each loophole a light sill (thresholds()) with a darker firing step inside it so the invisible low
-// walls read; a light stone roof with the eight slits notched into its parapet, the traverse as a ridge broken by the
-// emblem, two hatches and a white shield on a disc in the faction's colour.
-import { BLOCKHOUSE_LAYOUT } from "../../../packages/defs/src/rebirth/buildings.ts";
-import { circleAt, type FloorPalette, type Frame, floor, floorFrameOf, frameOf, px, py, rect, roof } from "./svg.ts";
+// walls read; the plank-floored magazine between them with a hazard strip before its sliding door, the switches'
+// colour plates and the code chalked by the door; a light stone roof with the eight slits notched into its parapet,
+// the magazine as a raised panel broken by the emblem, two hatches and a white shield on a disc in the faction's colour.
+import {
+    BLOCKHOUSE_CODE,
+    BLOCKHOUSE_CODE_NOTE,
+    BLOCKHOUSE_LAYOUT,
+    BLOCKHOUSE_MAGAZINE_DOOR,
+    BLOCKHOUSE_SWITCHES,
+} from "../../../packages/defs/src/rebirth/buildings.ts";
+import {
+    circleAt,
+    codeNote,
+    type FloorPalette,
+    type Frame,
+    floor,
+    floorFrameOf,
+    frameOf,
+    hazardBand,
+    px,
+    py,
+    rect,
+    roof,
+    SWITCH_PLATE_COLORS,
+    switchPlate,
+} from "./svg.ts";
 
 export const BLOCKHOUSE_FLOORS: FloorPalette = {
     chamber: { base: "#8a8478", grid: "#77726a", step: 2 },
+    // the magazine: darker planking over the flagstones (a dry floor for the powder)
+    magazine: { base: "#6e5f4b", grid: "#5e5140", step: 1 },
 };
 
 const INK = "#1f2326";
@@ -14,6 +38,8 @@ const LOOPHOLE = "brick_wall_ext_3_0_low";
 /** Half the loophole gap (3 long) and the firing step's depth inside the wall face. */
 const SLIT_HALF = 1.5;
 const STEP_DEPTH = 0.75;
+/** The magazine's walls' outer box (its room in the layout). */
+const MAGAZINE = BLOCKHOUSE_LAYOUT.rooms.find((r) => r.floor === "magazine")!;
 
 /** The loophole openings of the layout with their inward unit normal (the wall face points at the keep's centre). */
 function loopholes(): { x: number; y: number; horizontal: boolean; nx: number; ny: number }[] {
@@ -37,6 +63,10 @@ function flagstones(fr: Frame): string {
     const out: string[] = [];
     for (let x = Math.ceil(min.x / step) * step; x + step <= max.x; x += step) {
         for (let y = Math.ceil(min.y / step) * step; y + step <= max.y; y += step) {
+            // the magazine has its own planking
+            if (x + step > MAGAZINE.min.x && x < MAGAZINE.max.x && y + step > MAGAZINE.min.y && y < MAGAZINE.max.y) {
+                continue;
+            }
             const h = (Math.imul(x + 37, 73856093) ^ Math.imul(y + 53, 19349663)) >>> 0;
             const shade = h % 7 === 0 ? "#847e72" : h % 7 === 3 ? "#8f897d" : "";
             if (shade) out.push(rect(fr, x + inset, y + inset, x + step - inset, y + step - inset, `fill="${shade}"`));
@@ -70,9 +100,27 @@ function firingSteps(fr: Frame): string {
         .join("");
 }
 
+/**
+ * The magazine's door: a hazard strip on the chamber side of its doorway (the sliding door's panel covers the gap),
+ * the switches' plates under them and the code chalked on the flagstones before the door.
+ */
+function magazineMarks(fr: Frame): string {
+    const d = BLOCKHOUSE_MAGAZINE_DOOR.pos;
+    const strip = hazardBand(fr, d.x, d.y + 0.5, d.x + 4, d.y + 1.1, "blockhouse-magazine-hazard");
+    const plates = BLOCKHOUSE_SWITCHES.map((sw) => switchPlate(fr, sw.x, sw.y, SWITCH_PLATE_COLORS[sw.label]));
+    const note = codeNote(
+        fr,
+        BLOCKHOUSE_CODE_NOTE.x,
+        BLOCKHOUSE_CODE_NOTE.y,
+        BLOCKHOUSE_CODE.map((c) => SWITCH_PLATE_COLORS[c]),
+    );
+    return strip + plates.join("") + note;
+}
+
 export function blockhouseFloor(): string {
     const fr = floorFrameOf(BLOCKHOUSE_LAYOUT);
-    return floor(BLOCKHOUSE_LAYOUT, BLOCKHOUSE_FLOORS, "#7d776b", "#1f2224", flagstones(fr) + firingSteps(fr));
+    const extra = flagstones(fr) + firingSteps(fr) + magazineMarks(fr);
+    return floor(BLOCKHOUSE_LAYOUT, BLOCKHOUSE_FLOORS, "#7d776b", "#1f2224", extra);
 }
 
 /**
@@ -137,9 +185,15 @@ export function blockhouseCeiling(color: string): string {
     const fr = frameOf(BLOCKHOUSE_LAYOUT);
     const top =
         parapetSlots(fr) +
-        // the traverse below as a raised ridge, stopped 0.35 short of the disc so the emblem stays a clean circle
-        rect(fr, -6.5, -0.35, -4.6, 0.35, `fill="#8f897b" stroke="#6f6a5f" stroke-width="3"`) +
-        rect(fr, 4.6, -0.35, 6.5, 0.35, `fill="#8f897b" stroke="#6f6a5f" stroke-width="3"`) +
+        // the magazine below as a raised panel under the emblem
+        rect(
+            fr,
+            MAGAZINE.min.x,
+            MAGAZINE.min.y,
+            MAGAZINE.max.x,
+            MAGAZINE.max.y,
+            `fill="#a29c8d" stroke="#6f6a5f" stroke-width="3"`,
+        ) +
         // spec (-7,7)/(7,-7) moved to x = -6/6, the middle of their 4-unit seam panels (roof() seams at 0, +-4, +-8);
         // hinges toward the outer walls, keeping the roof's half-turn symmetry
         hatch(fr, -6, 7, 1) +

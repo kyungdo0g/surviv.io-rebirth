@@ -5,13 +5,15 @@
 // pixel for pixel; a nested floor only adds its own markings inside its walls. Barracks boards, the Spine's yellow guide
 // line, the Depot's painted pallet bays, the checkpoint's riveted plate with the vault door's swing, hazard pads under
 // the gallery's power boxes, the motor pool's yellow bays and lane toward the ramp, steel ribs along the tunnel;
-// Command's map-table outline, the Magazine's riveted plate, the vault's hazard border and door frame (the stone breach
-// stays plain floor: stone_wall_int_4 draws itself). One stairs-from-below sprite serves the four doored stairwells; the
-// dark roofs are flat grey (the game tints them 0x5f5f5f) with seams on the compound's 4-unit grid.
+// Command's planning-table outlines and the war chest's riveted plate, the Magazine's riveted plate, the vault's hazard
+// border and door frame (the stone breach stays plain floor: stone_wall_int_4 draws itself). One stairs-from-below
+// sprite serves the four doored stairwells; the dark roofs are flat grey (the game tints them 0x5f5f5f) with seams on
+// the compound's 4-unit grid.
 import {
     MILITARY_BUNKER,
     MILITARY_COMMAND,
     MILITARY_COMMAND_CODE,
+    MILITARY_COMMAND_NOTE,
     MILITARY_COMMAND_SWITCHES,
     MILITARY_MAGAZINE,
     MILITARY_STAIRS,
@@ -393,32 +395,37 @@ function ramp(fr: Frame): string {
 // the nested rooms' floors: windows of the basement with their own markings inside their walls
 
 /**
- * Command's map table (table_05, 18 x 5.5, walk-under): a darker inset with a pale keyline half a unit round it; the
- * staff code's plates under its switches and the briefing note with the code by the south doors.
+ * Command's planning tables (table_01, 5 x 4, walk-under): a darker inset with a pale keyline half a unit round each;
+ * the war chest's steel plate, the staff code's plates under its switches and the briefing note with the code by the
+ * west south door.
  */
 function mapTable(fr: Frame): string {
-    const { x: ox, y: oy } = at(MILITARY_COMMAND);
     const plates = MILITARY_COMMAND_SWITCHES.map((sw) => switchPlate(fr, sw.x, sw.y, SWITCH_PLATE_COLORS[sw.label]));
     const note = codeNote(
         fr,
-        ox - 2,
-        oy - 5.25,
+        MILITARY_COMMAND_NOTE.x,
+        MILITARY_COMMAND_NOTE.y,
         MILITARY_COMMAND_CODE.map((c) => SWITCH_PLATE_COLORS[c]),
     );
-    return table(fr) + plates.join("") + note;
+    return tables(fr) + rivets(fr, roomOf("war_chest"), 2, "#464e56") + plates.join("") + note;
 }
 
-function table(fr: Frame): string {
-    const t = MILITARY_COMMAND.props.find((q) => q.type === "table_05");
-    if (!t) throw new Error("military bunker art: no map table");
+function tables(fr: Frame): string {
+    const ts = MILITARY_COMMAND.props.filter((q) => q.type === "table_01");
+    if (!ts.length) throw new Error("military bunker art: no planning tables");
     const { x, y } = at(MILITARY_COMMAND);
-    const [cx, cy] = [t.x + x, t.y + y];
-    const box = (g: number, attrs: string) => rect(fr, cx - 9 - g, cy - 2.75 - g, cx + 9 + g, cy + 2.75 + g, attrs);
-    return (
-        box(0.5, `fill="#43594a"`) +
-        box(0.5, `fill="none" stroke="#9cbca4" stroke-width="3"`) +
-        box(0.2, `fill="none" stroke="#5f7d67" stroke-width="2"`)
-    );
+    return ts
+        .map((t) => {
+            const [cx, cy] = [t.x + x, t.y + y];
+            const box = (g: number, attrs: string) =>
+                rect(fr, cx - 2.5 - g, cy - 2 - g, cx + 2.5 + g, cy + 2 + g, attrs);
+            return (
+                box(0.5, `fill="#43594a"`) +
+                box(0.5, `fill="none" stroke="#9cbca4" stroke-width="3"`) +
+                box(0.2, `fill="none" stroke="#5f7d67" stroke-width="2"`)
+            );
+        })
+        .join("");
 }
 
 function magazinePlate(fr: Frame): string {

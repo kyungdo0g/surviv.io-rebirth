@@ -3,7 +3,7 @@
 // draw their own floor and roof (committed SVGs, no missing sprite), the roof hides once the player is inside, the
 // clinic's treatment rooms heal and show it, each post holds its faction's crate; every hidden room from inside (the
 // rework of 2026-10-10: the clinic's safe, the posts' armories, the cage, the rare-books room, the signals vault, the
-// magazine, the war chest, the gatehouse cage, the vault); the military bases (main and both 50v50 factions) from above,
+// magazines, the war chest, the gatehouse and armory cages, the HQ archive, the infirmary store, the vault); the military bases (main and both 50v50 factions) from above,
 // on the ground, in the infirmary's wards and in the basement. Hooks: window.__rebirth (showcase, game, player, missingSprites). Screenshots: __screens__/rebirth-buildings.
 import { expect, type Page, test } from "@playwright/test";
 import { boot, collectErrors } from "./m4-helpers.ts";
@@ -69,11 +69,11 @@ test.describe("rebirth buildings", () => {
             return r.buildingState(clinic.id)?.healFx as number;
         });
         expect(healFx).toBeGreaterThan(3);
-        await standAt(page, "clinic_01", 0, -2);
+        await standAt(page, "clinic_01", 0, -3);
         await page.waitForTimeout(1200);
         await page.screenshot({ path: `${SCREENS}/clinic-wards-from-lobby.png` });
         // the drug safe (its door opens on the switch behind the reception desk)
-        await standAt(page, "clinic_01", 11.25, 9);
+        await standAt(page, "clinic_01", 13, 5.5);
         await page.waitForTimeout(1200);
         await page.screenshot({ path: `${SCREENS}/clinic-safe.png` });
         expect((await missing(page)).filter((s) => s.includes("clinic"))).toEqual([]);
@@ -102,7 +102,7 @@ test.describe("rebirth buildings", () => {
             await page.waitForTimeout(1500);
             await page.screenshot({ path: `${SCREENS}/${type}-inside.png` });
             // the armory behind its bars
-            await standAt(page, type, -7, 5);
+            await standAt(page, type, -7, 5.5);
             await page.waitForTimeout(1200);
             await page.screenshot({ path: `${SCREENS}/${type}-armory.png` });
             expect((await missing(page)).filter((s) => s.includes("outpost"))).toEqual([]);
@@ -111,14 +111,14 @@ test.describe("rebirth buildings", () => {
     }
 
     // the second wave (the owner, 2026-10-08: "more buildings, the maps get bigger"): [type, map, sprite name, a
-    // spot outside, a spot inside, a spot in its hidden room (none: null), the camera zoom for the roof shot]
+    // spot outside, a spot inside, a spot in its hidden room, the camera zoom for the roof shot]
     for (const [type, map, art, outside, inside, hidden, zoom] of [
-        ["firestation_01", "main", "firestation", [-7.5, -20], [-8, 0], [-15, 7.5], 34],
-        ["library_01", "main", "library", [1, -18], [0, 5], [12, -9], 32],
-        ["radio_station_01", "main", "radio", [0, -15], [0, 3], [-3, 9], 28],
-        ["arsenal_01", "faction", "arsenal", [0, -17], [-11.5, 0], [0, 0.5], 30],
-        ["blockhouse_01r", "faction", "blockhouse", [0, -16], [0, 6], null, 24],
-        ["blockhouse_01b", "faction", "blockhouse", [0, -16], [0, 6], null, 24],
+        ["firestation_01", "main", "firestation", [-7.5, -20], [-8, 0], [-1.5, 7], 34],
+        ["library_01", "main", "library", [1, -18], [0, 5], [14.88, -7], 32],
+        ["radio_station_01", "main", "radio", [0, -15], [0, 3], [0.5, 7.5], 28],
+        ["arsenal_01", "faction", "arsenal", [0, -17], [-11.5, 0], [0, 0], 30],
+        ["blockhouse_01r", "faction", "blockhouse", [0, -16], [0, 6], [0.42, 0.62], 24],
+        ["blockhouse_01b", "faction", "blockhouse", [0, -16], [0, 6], [0.42, 0.62], 24],
     ] as const) {
         test(`${type}: its own roof outside, its rooms inside`, async ({ page }) => {
             test.setTimeout(120_000);
@@ -140,11 +140,9 @@ test.describe("rebirth buildings", () => {
             await standAt(page, type, inside[0], inside[1]);
             await page.waitForTimeout(1500);
             await page.screenshot({ path: `${SCREENS}/${type}-inside.png` });
-            if (hidden) {
-                await standAt(page, type, hidden[0], hidden[1]);
-                await page.waitForTimeout(1200);
-                await page.screenshot({ path: `${SCREENS}/${type}-hidden.png` });
-            }
+            await standAt(page, type, hidden[0], hidden[1]);
+            await page.waitForTimeout(1200);
+            await page.screenshot({ path: `${SCREENS}/${type}-hidden.png` });
             expect((await missing(page)).filter((s) => s.includes(art))).toEqual([]);
             expect(errors).toEqual([]);
         });
@@ -212,11 +210,14 @@ test.describe("rebirth buildings", () => {
         expect(ward.health).toBeGreaterThan(51);
         expect(ward.healFx).toBeGreaterThan(3);
         await page.screenshot({ path: `${SCREENS}/${type}-ward.png` });
-        // the hidden rooms: the war chest, the vault, the gatehouse's weapons cage
+        // the hidden rooms: the war chest, the vault, the gatehouse's and the armory's cages, the HQ archive, the infirmary store
         for (const [name, x, y, layer] of [
-            ["war-chest", 11.75, 20.25, 1],
+            ["war-chest", 0, 14.75, 1],
             ["vault", 0, -13, 1],
-            ["gatehouse-cage", 14.5, -37, 0],
+            ["gatehouse-cage", 14.63, -37, 0],
+            ["hq-archive", 11, 33, 0],
+            ["armory-cage", 36, 32.5, 0],
+            ["infirmary-store", -25, 32, 0],
         ] as const) {
             await standAt(page, type, x, y, layer);
             await page.waitForTimeout(1500);

@@ -2,8 +2,9 @@
 // normal map and one only for 50v50"; reworked 2026-10-10: roomier, with a payoff; docs/research/rebirth-deviations.md):
 // a brick clinic with a lobby, two treatment rooms that heal (heal regions like survev's camp_01, 2 HP/s, not in the
 // gas), a pharmacy with medical loot (loot_tier_medical, tier_medical) and its drug safe: the switch behind the
-// reception desk opens it (a one-switch puzzle like survev bathhouse_01's) onto a chest (tier_chest), level 3 armour
-// and medicine. The client draws the heal regions (REBIRTH_HEAL_FX_BUILDINGS, apps/client objects/healRegionFx.ts).
+// reception desk opens it (a one-switch puzzle like survev bathhouse_01's) onto a chest (tier_chest), a locker, level 3
+// armour, medicine and a weapon drop. The client draws the heal regions (REBIRTH_HEAL_FX_BUILDINGS, apps/client
+// objects/healRegionFx.ts).
 import type { BuildingDef } from "../../types/index.ts";
 import {
     ART_SCALE,
@@ -21,8 +22,9 @@ import { hRun, op, room, vRun } from "./military/part.ts";
 
 // ---------------------------------------------------------------------------------------------------------------------
 // clinic_01: 34 x 24 inside its walls (the owner's rework, 2026-10-10: room to move, a payoff behind the interaction).
-// South: the lobby; north: treatment 1 | treatment 2 | the pharmacy, whose back store (the drug safe) opens when the
-// switch behind the reception desk is pressed. Doorways 4 units, furniture flush against the walls or 2.6+ clear.
+// South: the lobby; north: treatment 1 | treatment 2 | the pharmacy | the drug safe (a 7 x 12 strongroom, the owner's
+// "expand the content", 2026-10-10), which opens off the pharmacy when the switch behind the reception desk is
+// pressed. Doorways 4 units, furniture flush against the walls or 2.6+ clear.
 
 export const CLINIC_LAYOUT: RebirthBuildingLayout = {
     bounds: { min: { x: -17, y: -12 }, max: { x: 17, y: 12 } },
@@ -56,24 +58,25 @@ export const CLINIC_LAYOUT: RebirthBuildingLayout = {
         ...vRun(-17, -11.5, 11.5, [[-5.5, -1.5]], undefined, "brick"),
         ...vRun(17, -11.5, 11.5, [[-5.5, -1.5]], undefined, "brick"),
         // the corridor wall with the three room doors, the two partitions (interior runs start on the outer walls'
-        // centre lines: brick comes in whole units)
+        // centre lines: brick comes in whole units); the corridor sits a unit south of the middle so the north rooms
+        // are 12 deep (the lobby keeps 10, flush with the side doors)
         ...hRun(
-            0,
+            -1,
             -17,
             17,
             [
                 [-13, -9],
-                [-4, 0],
-                [5, 9],
+                [-5, -1],
+                [3, 7],
             ],
             undefined,
             "brick",
         ),
-        ...vRun(-6, 0, 12, [], undefined, "brick"),
-        ...vRun(3, 0, 12, [], undefined, "brick"),
-        // the drug safe in the pharmacy's north-east corner: its sliding door slides east into the wall
-        ...hRun(6, 9, 17, [[9, 13]], undefined, "brick"),
-        ...vRun(9, 6, 12, [], undefined, "brick"),
+        ...vRun(-6, -1, 12, [], undefined, "brick"),
+        ...vRun(2, -1, 12, [], undefined, "brick"),
+        // the drug safe, the pharmacy's east half (7 x 12 inside): its sliding door, in the middle of the wall it shares
+        // with the pharmacy, slides north into that wall
+        ...vRun(9, -1, 12, [[3, 7]], undefined, "brick"),
     ],
     openings: [
         op("house_window_01", -10.5, -12.25, 3),
@@ -83,24 +86,24 @@ export const CLINIC_LAYOUT: RebirthBuildingLayout = {
         op("house_window_01", -0.5, 12.25, 1),
         op("house_door_01", -17.25, -5.5, 0),
         op("house_door_01", 17.25, -5.5, 0),
-        op("house_door_01", -13, 0, 3),
-        op("house_door_01", -4, 0, 3),
-        op("house_door_01", 5, 0, 3),
+        op("house_door_01", -13, -1, 3),
+        op("house_door_01", -5, -1, 3),
+        op("house_door_01", 3, -1, 3),
     ],
     rooms: [
-        room(-17, -12, 17, 0, "lobby"),
-        room(-17, 0, -6, 12, "ward"),
-        room(-6, 0, 3, 12, "ward"),
-        room(3, 0, 17, 12, "pharmacy"),
-        room(9, 6, 17, 12, "store"),
+        room(-17, -12, 17, -1, "lobby"),
+        room(-17, -1, -6, 12, "ward"),
+        room(-6, -1, 2, 12, "ward"),
+        room(2, -1, 9, 12, "pharmacy"),
+        room(9, -1, 17, 12, "store"),
     ],
 };
 
-/** The drug safe's door (vault_door_bathhouse: only the puzzle opens it; slides east into the wall). */
-export const CLINIC_SAFE_DOOR = { type: "vault_door_bathhouse", pos: { x: 13, y: 6 }, ori: 1 } as const;
+/** The drug safe's door (vault_door_bathhouse: only the puzzle opens it; slides north into the wall). */
+export const CLINIC_SAFE_DOOR = { type: "vault_door_bathhouse", pos: { x: 9, y: 7 }, ori: 2 } as const;
 /** The clinic's puzzle: the one switch behind the reception desk. */
 export const CLINIC_PUZZLE = "rebirth_clinic";
-export const CLINIC_SWITCH = { x: 12, y: -1.05 } as const;
+export const CLINIC_SWITCH = { x: 12, y: -2.05 } as const;
 
 export const CLINIC_ART: RoofedBuildingArt = layoutArt(
     CLINIC_LAYOUT,
@@ -112,7 +115,7 @@ export const CLINIC_ART: RoofedBuildingArt = layoutArt(
 export const CLINIC_HEAL_RATE = 2;
 
 /** The treatment rooms' heal regions (inside the rooms, clear of the walls). */
-export const CLINIC_WARDS = [box(-16.5, 0.5, -6.5, 11.5), box(-5.5, 0.5, 2.5, 11.5)];
+export const CLINIC_WARDS = [box(-16.5, -0.5, -6.5, 11.5), box(-5.5, -0.5, 1.5, 11.5)];
 
 /** Medical loot (tier_medical) for the clinic's pharmacy and treatment rooms. */
 export const MEDICAL_LOOT_SPAWNER = "loot_tier_medical";
@@ -173,23 +176,27 @@ export function clinic(known: (id: string) => boolean): BuildingDef {
             child("bed_sm_01", -15.1, 8.1),
             child({ drawers_01: 3, drawers_02: 1 }, -7.6, 9, 1),
             child(MEDICAL_LOOT_SPAWNER, -11, 5),
-            // treatment 2: a bed against the partition, a stand by the door
+            // treatment 2: a bed against the partition, a stand in the corner by the door (clear of its swing)
             child("bed_sm_01", -4.1, 8.1),
-            child("stand_01", 1.25, 1.6),
+            child("stand_01", 0.25, 0.6),
             child(MEDICAL_LOOT_SPAWNER, -0.5, 7),
-            // the pharmacy: the long shelf by the corridor, a locker in the alcove, medicine
-            child("bookshelf_01", 13, 1.5),
-            child("locker_01", 4.25, 10, 1),
-            child(MEDICAL_LOOT_SPAWNER, 6, 7),
-            child(MEDICAL_LOOT_SPAWNER, 11, 4),
-            // the drug safe: a chest against the east wall, level 3 armour, medicine
-            child("chest_02", 14.9, 9, 1),
-            child("loot_tier_airdrop_armor", 11.25, 10),
-            child(MEDICAL_LOOT_SPAWNER, 11.25, 7.5),
+            // the pharmacy: the shelf against the partition, a locker by the safe, medicine
+            child("bookshelf_01", 3.5, 8, 1),
+            child("locker_01", 7.75, 10, 3),
+            child(MEDICAL_LOOT_SPAWNER, 6, 5),
+            child(MEDICAL_LOOT_SPAWNER, 5.5, 1.5),
+            // the drug safe (the strongroom): the chest (tier_chest) in the north-east corner, a locker (locker_02) in the
+            // south-east one, level 3 armour, medicine and a weapon drop
+            child("chest_02", 14.9, 9.25, 1),
+            child("locker_02", 15.75, 1, 3),
+            child("loot_tier_airdrop_armor", 11.5, 9.5),
+            child(MEDICAL_LOOT_SPAWNER, 11.5, 5),
+            child(MEDICAL_LOOT_SPAWNER, 14, 5),
+            child("loot_tier_2", 12, 1.5),
             // the lobby: the reception desk with the safe's switch behind it, the waiting couch, plants
             // and the soda machine (no control panel: survev's explode when destroyed; no planter_04: it is the
             // chrysanthemum puzzle's button)
-            child("table_01", 11, -4),
+            child("table_01", 11, -5),
             piece("switch_03", CLINIC_SWITCH.x, CLINIC_SWITCH.y, 2, "1"),
             child("couch_02", -15, -8.5, 1),
             child("planter_07", -7, -10),

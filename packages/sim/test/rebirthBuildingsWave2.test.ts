@@ -8,17 +8,22 @@
 import { type Collider, collider, type Vec2, v2 } from "@rebirth/core";
 import {
     ARSENAL_UNLOCK,
+    BLOCKHOUSE_CODE,
     BLOCKHOUSE_FACTIONS,
+    BLOCKHOUSE_MAGAZINE_DOOR,
     CLINIC_SAFE_DOOR,
     FIRESTATION_CAGE_DOOR,
     FIRESTATION_TOWER,
     GameConfig,
     getMapObjectDef,
     getMapObjectDefOfType,
+    LIBRARY_CODE,
     LIBRARY_LAYOUT,
     LIBRARY_SECRET_DOOR,
     LIBRARY_SHELVES,
     LOOKOUT_ZOOM,
+    MILITARY_HQ_ARCHIVE_DOOR,
+    MILITARY_HQ_CODE,
     OUTPOST_ARMORY_DOOR,
     RADIO_CODE,
     RADIO_VAULT_DOOR,
@@ -53,6 +58,12 @@ describe("sliding doors", () => {
             radio_station_01: 1,
             library_01: 1,
             arsenal_01: 2,
+            blockhouse_01r: 1,
+            blockhouse_01b: 1,
+            military_hq_01: 1,
+            military_hq_01r: 1,
+            military_hq_01b: 1,
+            military_infirmary_01: 1,
             // the war chest's door (Command's lab doors slide into the basement's walls: militaryBase.test.ts)
             military_bunker_command_01: 1,
         };
@@ -89,29 +100,39 @@ describe("the hidden rooms", () => {
         return { b, switches, doors: childObstacles(game, b, door) };
     };
 
-    it("the radio station's vault opens on the frequency code only: yellow, red, blue", () => {
-        const game = mapGame("main", 12345);
-        const { switches, doors } = parts(game, "radio_station_01", RADIO_VAULT_DOOR.type);
-        expect([switches.length, doors.length]).toEqual([3, 1]);
-        const piece = (label: string) => switches.find((o) => o.puzzlePiece === label)!;
-        const p = placePlayer(game, piece("yellow").pos);
-        // a wrong order: an error, the switches reset, the vault stays shut
-        for (const label of ["yellow", "blue", "red"]) interactObstacle(game, piece(label), p);
-        stepSeconds(game, 3);
-        expect(doors[0].door!.open).toBe(false);
-        expect(switches.every((o) => o.button!.canUse && !o.button!.onOff)).toBe(true);
-        // the code
-        for (const label of RADIO_CODE) interactObstacle(game, piece(label), p);
-        stepSeconds(game, 1.5);
-        expect(doors[0].door!.open).toBe(false);
-        stepSeconds(game, 1);
-        expect(doors[0].door!.open).toBe(true);
-    });
+    // [map, seed, building, its hidden room's door type, the code]
+    const CODES = [
+        ["main", 12345, "radio_station_01", RADIO_VAULT_DOOR.type, RADIO_CODE],
+        ["main", 12345, "library_01", LIBRARY_SECRET_DOOR.type, LIBRARY_CODE],
+        ["main", 12345, "military_hq_01", MILITARY_HQ_ARCHIVE_DOOR.type, MILITARY_HQ_CODE],
+        ["faction", 7, "blockhouse_01r", BLOCKHOUSE_MAGAZINE_DOOR.type, BLOCKHOUSE_CODE],
+        ["faction", 7, "blockhouse_01b", BLOCKHOUSE_MAGAZINE_DOOR.type, BLOCKHOUSE_CODE],
+    ] as const;
+    for (const [map, seed, type, door, code] of CODES) {
+        it(`${type}'s hidden room opens on its code only (${code.join(", ")})`, () => {
+            const game = mapGame(map, seed);
+            const { switches, doors } = parts(game, type, door);
+            expect([switches.length, doors.length]).toEqual([code.length, 1]);
+            const piece = (label: string) => switches.find((o) => o.puzzlePiece === label)!;
+            const p = placePlayer(game, piece(code[0]).pos);
+            // a wrong order (the code backwards): an error, the switches reset, the room stays shut
+            for (const label of [...code].reverse()) interactObstacle(game, piece(label), p);
+            stepSeconds(game, 3);
+            expect(doors[0].door!.open).toBe(false);
+            expect(switches.every((o) => o.button!.canUse && !o.button!.onOff)).toBe(true);
+            for (const label of code) interactObstacle(game, piece(label), p);
+            stepSeconds(game, 1.5);
+            expect(doors[0].door!.open).toBe(false);
+            stepSeconds(game, 1);
+            expect(doors[0].door!.open).toBe(true);
+        });
+    }
 
-    it("the clinic's safe, the library's rare-books room, the fire station's cage and each command post's armory open on their switch", () => {
+    it("the clinic's safe, the fire station's cage, each command post's armory and the military armory's cage and infirmary store open on their switch", () => {
         const cases = [
             ["main", 12345, "clinic_01", CLINIC_SAFE_DOOR.type],
-            ["main", 12345, "library_01", LIBRARY_SECRET_DOOR.type],
+            ["main", 12345, "military_armory_01", "cell_door_01"],
+            ["main", 12345, "military_infirmary_01", "vault_door_bathhouse"],
             ["main", 12345, "firestation_01", FIRESTATION_CAGE_DOOR.type],
             ["faction", 7, "outpost_01r", OUTPOST_ARMORY_DOOR.type],
             ["faction", 7, "outpost_01b", OUTPOST_ARMORY_DOOR.type],

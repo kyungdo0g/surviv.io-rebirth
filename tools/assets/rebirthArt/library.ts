@@ -1,9 +1,16 @@
 // Floor and roof art of library_01 (packages/defs rebirth/buildings/library.ts): a parquet stacks hall, a green-carpet
-// reading room, a marble foyer with a red runner and a faded compass rose, a burgundy archive, pale limestone walls; a
-// plum roof with two skylights over the stacks, the open-book emblem, a pediment over the front door and two vents.
-import { LIBRARY_LAYOUT } from "../../../packages/defs/src/rebirth/buildings.ts";
+// reading room, a marble foyer with a red runner and a faded compass rose, a burgundy archive with the code note, a
+// dark rare-books vault, the reading-lamp switches' coloured plates, pale limestone walls; a plum roof with two
+// skylights over the stacks, the open-book emblem, a pediment over the front door and two vents.
+import {
+    LIBRARY_CODE,
+    LIBRARY_LAYOUT,
+    LIBRARY_NOTE,
+    LIBRARY_SWITCHES,
+} from "../../../packages/defs/src/rebirth/buildings.ts";
 import {
     circleAt,
+    codeNote,
     type FloorPalette,
     type Frame,
     floor,
@@ -14,6 +21,8 @@ import {
     py,
     rect,
     roof,
+    SWITCH_PLATE_COLORS,
+    switchPlate,
 } from "./svg.ts";
 
 export const LIBRARY_FLOORS: FloorPalette = {
@@ -65,7 +74,15 @@ export function libraryFloor(): string {
             rose.r - 0.35,
             `fill="none" stroke="#b8ad94" stroke-opacity="0.5" stroke-width="3"`,
         ) +
-        compassStar(fr, rose.x, rose.y, 1.7, 0.45, `fill="#8f8466" fill-opacity="0.45"`);
+        compassStar(fr, rose.x, rose.y, 1.7, 0.45, `fill="#8f8466" fill-opacity="0.45"`) +
+        // the reading-lamp switches' plates (under them) and the note with their order by the bookcase door
+        LIBRARY_SWITCHES.map((sw) => switchPlate(fr, sw.x, sw.y, SWITCH_PLATE_COLORS[sw.label])).join("") +
+        codeNote(
+            fr,
+            LIBRARY_NOTE.x,
+            LIBRARY_NOTE.y,
+            LIBRARY_CODE.map((c) => SWITCH_PLATE_COLORS[c]),
+        );
     return floor(LIBRARY_LAYOUT, LIBRARY_FLOORS, "#cdbf9f", "#2b2520", extra);
 }
 

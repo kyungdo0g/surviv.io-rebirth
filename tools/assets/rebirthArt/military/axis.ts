@@ -1,16 +1,20 @@
 // Floor and roof art of the military base's axis and guard posts (packages/defs rebirth/buildings/military/hq.ts,
 // guard.ts): the HQ's terrazzo hall round the S1 stairwell (grey treads darkening toward its bottom end) between a
-// blue-grey comms room, the commander's red carpet, the green briefing carpet and the planked records room, in brick
-// walls; its grey-brown roof with two AC units, an aerial and the emblem disc (main: a gold star on dark olive; red /
-// blue: a white star on the faction's disc with a white keyline, and the faction's band along the front parapet, never
-// a whole coloured roof). The reviewing stand's planked stage with its front rails and the dark green canopy with a
-// white scalloped front and three flags. The gatehouse's tiled guard room and white roof with red and white checkpoint
+// blue-grey comms room, the commander's red carpet, the green briefing carpet and the steel-floored archive (the staff
+// code's coloured plates under its switches, the note on the office floor), in brick walls; its grey-brown roof with
+// two AC units, an aerial and the emblem disc (main: a gold star on dark olive; red / blue: a white star on the
+// faction's disc with a white keyline, and the faction's band along the front parapet, never a whole coloured roof).
+// The reviewing stand's planked stage with its front rails and the dark green canopy with a white scalloped front and
+// three flags. The gatehouse's tiled lobby, steel-plated weapons cage and white roof with red and white checkpoint
 // stripes and an amber beacon. The watchtower's concrete floor, each loophole a sill with a firing step inside it, and
 // its roof ringed with sandbags (slots over the loopholes) round a searchlight.
 import {
     MILITARY_GATEHOUSE,
     MILITARY_HQ,
+    MILITARY_HQ_CODE,
     MILITARY_HQ_EMBLEM,
+    MILITARY_HQ_NOTE,
+    MILITARY_HQ_SWITCHES,
     MILITARY_STAND,
     MILITARY_TOWER,
     REBIRTH_ART_PX_PER_UNIT as PX,
@@ -20,6 +24,7 @@ import {
 import {
     acUnit,
     circleAt,
+    codeNote,
     type FloorPalette,
     type Frame,
     f2,
@@ -32,7 +37,9 @@ import {
     py,
     rect,
     roof,
+    SWITCH_PLATE_COLORS,
     star,
+    switchPlate,
 } from "../svg.ts";
 import type { MilitaryArtContext, MilitaryDrawer } from "./index.ts";
 
@@ -44,7 +51,8 @@ export const AXIS_FLOORS: FloorPalette = {
     hq_comms: { base: "#9fb0b8", grid: "#8d9ea7", step: 1 },
     hq_office: plain("#7a3f3a"),
     hq_briefing: plain("#5f7a5a"),
-    hq_records: plain("#b08a5a"),
+    // the commander's archive: a steel strongroom floor
+    hq_archive: { base: "#7d8287", grid: "#6c7176", step: 1 },
     stairs_down_s: plain("#8e908a"),
     stage: plain("#a07848"),
     guard: { base: "#c0c4c6", grid: "#adb2b5", step: 1 },
@@ -150,7 +158,16 @@ function stairTreads(fr: Frame, r: Room): string {
 function hqFloor(): string {
     const fr = frameOf(HQ);
     const hall = roomOf(HQ, "hq_hall");
-    const records = roomOf(HQ, "hq_records");
+    // the staff code's switches and note are given in the compound frame
+    const plates = MILITARY_HQ_SWITCHES.map((sw) =>
+        switchPlate(fr, sw.x - HQ_AT.x, sw.y - HQ_AT.y, SWITCH_PLATE_COLORS[sw.label]),
+    );
+    const note = codeNote(
+        fr,
+        MILITARY_HQ_NOTE.x - HQ_AT.x,
+        MILITARY_HQ_NOTE.y - HQ_AT.y,
+        MILITARY_HQ_CODE.map((c) => SWITCH_PLATE_COLORS[c]),
+    );
     const extra =
         // the hall: a darker inlay band round the terrazzo, an entry mat inside the main door (gap x -2..2)
         border(fr, hall, 0.6, "#ada48f", 5) +
@@ -158,17 +175,10 @@ function hqFloor(): string {
         // the commander's office and the briefing room: carpet borders a shade darker
         border(fr, roomOf(HQ, "hq_office"), 0.6, "#5f2f2b", 6) +
         border(fr, roomOf(HQ, "hq_briefing"), 0.6, "#4b6347", 6) +
-        // records: planks along x from the walls' inner faces
-        planks(
-            fr,
-            records.min.x + 0.5,
-            records.min.y + 0.5,
-            records.max.x - 0.5,
-            records.max.y - 0.5,
-            0.5,
-            4,
-            "#93714a",
-        ) +
+        // the archive: a yellow keyline round the strongroom's steel floor
+        border(fr, roomOf(HQ, "hq_archive"), 0.35, "#c9a227", 4) +
+        plates.join("") +
+        note +
         stairTreads(fr, roomOf(HQ, "stairs_down_s"));
     return floor(HQ, AXIS_FLOORS, BRICK, BRICK_INK, extra);
 }
@@ -305,15 +315,15 @@ const GATEHOUSE = MILITARY_GATEHOUSE.layout;
 
 function gatehouseFloor(): string {
     const fr = frameOf(GATEHOUSE);
-    // a rubber mat inside the yard door (house_door_01's gap: 4 east of its hinge)
+    // a rubber mat inside the lobby's door (house_door_01 in the west wall, ori 2: its gap 4 south of its hinge)
     const door = GATEHOUSE.openings.find((o) => o.type === "house_door_01");
     const mat = door
         ? rect(
               fr,
-              door.pos.x + 0.35,
-              door.pos.y - 1.85,
-              door.pos.x + 3.65,
-              door.pos.y - 0.75,
+              door.pos.x + 0.75,
+              door.pos.y - 3.65,
+              door.pos.x + 1.85,
+              door.pos.y - 0.35,
               `fill="#5d6366" stroke="#484d50" stroke-width="3"`,
           )
         : "";

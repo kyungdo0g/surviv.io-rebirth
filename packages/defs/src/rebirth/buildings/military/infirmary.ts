@@ -2,10 +2,17 @@
 // wards (heal regions, the clinic's 2 HP/s; the client draws their glow, REBIRTH_HEAL_FX_BUILDINGS), a triage hall and
 // a pharmacy. The north ward's window lines up with a perimeter loophole, so outsiders can shoot into a heal camp. An
 // olive roof with a white panel and a red cross (a military medical marking, unlike the clinic's white roof).
+// The narcotics store (added 2026-10-10, the owner: "more hidden rooms"): a 6 x 10 strongroom behind the pharmacy's
+// steel door (vault_door_bathhouse: only the puzzle opens it; it slides north into the wall), opened by the switch in
+// the triage hall (a one-switch puzzle, as the clinic's drug safe); the triage hall gives up 2 units to make room.
 import { fromWorld, fullZoom, hRun, type MilitaryPart, op, out, p, room, vRun } from "./part.ts";
 
 /** HP per second in the wards: the clinic's CLINIC_HEAL_RATE (survev camp_01). */
 export const MILITARY_WARD_HEAL_RATE = 2;
+
+/** The narcotics store's door (vault_door_bathhouse: only the puzzle opens it; slides 3.75 north into the wall). */
+export const MILITARY_NARCOTICS_DOOR = { type: "vault_door_bathhouse", hinge: { x: -28.5, y: 31 }, ori: 2 } as const;
+export const MILITARY_INFIRMARY_PUZZLE = "rebirth_milbase_infirmary";
 
 export const MILITARY_INFIRMARY: MilitaryPart = fromWorld({
     id: "military_infirmary_01",
@@ -28,17 +35,8 @@ export const MILITARY_INFIRMARY: MilitaryPart = fromWorld({
                 undefined,
                 "brick",
             ),
-            ...hRun(
-                37.5,
-                -46,
-                -21,
-                [
-                    [-42, -38],
-                    [-29, -25],
-                ],
-                undefined,
-                "brick",
-            ),
+            // north: a window into the north ward only (none into the store)
+            ...hRun(37.5, -46, -21, [[-42, -38]], undefined, "brick"),
             ...vRun(
                 -45.5,
                 20,
@@ -50,7 +48,7 @@ export const MILITARY_INFIRMARY: MilitaryPart = fromWorld({
                 undefined,
                 "brick",
             ),
-            ...vRun(-21.5, 20, 37, [[23, 27]], undefined, "brick"),
+            ...vRun(-21.5, 20, 37, [[21, 25]], undefined, "brick"),
             // the wards | the east half, a door into each ward
             ...vRun(
                 -34.5,
@@ -65,29 +63,39 @@ export const MILITARY_INFIRMARY: MilitaryPart = fromWorld({
             ),
             // south ward | north ward
             ...hRun(28.5, -45, -35, [], undefined, "brick"),
-            // triage hall | pharmacy
-            ...hRun(28.5, -34, -22, [[-31, -27]], undefined, "brick"),
+            // triage hall | pharmacy and store
+            ...hRun(26.5, -34, -22, [[-33, -29]], undefined, "brick"),
+            // pharmacy | narcotics store: the store's door (y 27..31) slides north into the wall
+            ...vRun(-28.5, 27, 37, [[27, 31]], undefined, "brick"),
         ],
         openings: [
             op("house_door_01", -30, 19.25, 3),
             op("house_window_01", -40, 19.25, 3),
             op("house_window_01", -40, 37.75, 1),
-            op("house_window_01", -27, 37.75, 1),
             op("house_window_01", -45.75, 24, 0),
             op("house_window_01", -45.75, 33, 0),
-            op("house_door_01", -21.25, 23, 0),
+            op("house_door_01", -21.25, 21, 0),
             op("house_door_01", -34.5, 21, 0),
             op("house_door_01", -34.5, 32, 0),
-            op("house_door_01", -31, 28.5, 3),
+            op("house_door_01", -29, 26.5, 1),
         ],
         rooms: [
             room(-45.5, 19.5, -34.5, 28.5, "ward"),
             room(-45.5, 28.5, -34.5, 37.5, "ward"),
-            room(-34.5, 19.5, -21.5, 28.5, "triage"),
-            room(-34.5, 28.5, -21.5, 37.5, "pharmacy"),
+            room(-34.5, 19.5, -21.5, 26.5, "triage"),
+            room(-34.5, 26.5, -28.5, 37.5, "pharmacy"),
+            room(-28.5, 26.5, -21.5, 37.5, "narcotics"),
         ],
     },
+    puzzle: { name: MILITARY_INFIRMARY_PUZZLE, door: MILITARY_NARCOTICS_DOOR.type },
     props: [
+        p(
+            MILITARY_NARCOTICS_DOOR.type,
+            MILITARY_NARCOTICS_DOOR.hinge.x,
+            MILITARY_NARCOTICS_DOOR.hinge.y,
+            MILITARY_NARCOTICS_DOOR.ori,
+            { wallLike: true },
+        ),
         // the south ward
         p("bed_sm_01", -43.4, 24),
         p("bed_sm_01", -40, 24),
@@ -97,13 +105,19 @@ export const MILITARY_INFIRMARY: MilitaryPart = fromWorld({
         p("bed_sm_01", -40, 33),
         p("decal_caduceus_01", -37.5, 34.5),
         p("loot_tier_medical", -37, 30.5),
-        // the triage hall: the exam table
-        p("table_01", -28, 24),
-        // the pharmacy: a medicine cabinet, the fridge, a cabinet of drawers
-        p("drawers_01", -28.2, 35.4),
-        p("refrigerator_01", -25, 30.15),
-        p({ drawers_01: 3, drawers_02: 1 }, -23.4, 34.5, 3),
-        p("loot_tier_medical", -29, 32),
+        // the triage hall: the exam table, the store's switch on the north wall, clear of the east door's swing
+        p("table_01", -28, 23),
+        p("switch_03", -24, 25.45, 2, { piece: "1" }),
+        // the pharmacy: the fridge in the north-east corner, medical loot
+        p("refrigerator_01", -30.7, 35.9, 2),
+        p("loot_tier_medical", -31.5, 29.5),
+        // the narcotics store: the drug safe (deposit boxes, the jackpot) against the north wall, the guard's riot
+        // locker under it, medical loot and confiscated arms on the floor, clear of the door
+        p("deposit_box_02", -24.5, 35.85),
+        p("locker_02", -22.75, 33.5, 3),
+        p("loot_tier_medical", -25.5, 28.5),
+        p("loot_tier_medical", -26.5, 32.5),
+        p("loot_tier_police_floor", -24.5, 30.5),
         out("bush_01", -36, 17.6),
     ],
     surfaces: [{ type: "tile", boxes: [[-45.5, 19.5, -21.5, 37.5]] }],
