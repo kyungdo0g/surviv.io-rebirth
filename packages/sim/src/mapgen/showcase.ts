@@ -5,7 +5,7 @@
 // stands on the beach (survev map.ts genOnWaterEdge), everything else stands in the middle.
 import { type Bounds, type Vec2, v2 } from "@rebirth/core";
 import { getMapDef, getMapObjectDef, hasMapObjectDef, type MapDef, MapDefs } from "@rebirth/defs";
-import { toBounds, transformOri } from "../geom/transform.ts";
+import { rotateOri, toBounds, transformOri } from "../geom/transform.ts";
 import type { MapData } from "../view.ts";
 import { getBoundingAabb, getBoundingCollider } from "./bounds.ts";
 import type { GenerateMapResult } from "./generate.ts";
@@ -49,6 +49,11 @@ export interface ShowcaseResult {
     object: GeneratedObject;
     /** its world bounds (as placed, turned by its ori) */
     bounds: Bounds;
+    /**
+     * where a player stands to see it: a structure's ground-floor building's bounds (the subway's kiosk at one end of
+     * the platform below), else `bounds`
+     */
+    ground: Bounds;
 }
 
 /** Top-level buildings and structures a map's generation can spawn, after its spawn replacements. */
@@ -246,7 +251,18 @@ export function generateShowcase(type: string, seed = 1, mapName = showcaseMapOf
         factionSplitOri: 0,
     };
     const bounds = toBounds(transformOri(getBoundingCollider(type), object.pos, object.ori, object.scale));
-    return { generation, mapName, type, object, bounds };
+    const top = objDef.type === "structure" ? objDef.layers[0] : undefined;
+    const ground = top
+        ? toBounds(
+              transformOri(
+                  getBoundingCollider(top.type),
+                  v2.add(object.pos, rotateOri(top.pos, object.ori)),
+                  (object.ori + top.ori) % 4,
+                  object.scale,
+              ),
+          )
+        : bounds;
+    return { generation, mapName, type, object, bounds, ground };
 }
 
 /**
@@ -256,7 +272,7 @@ export function generateShowcase(type: string, seed = 1, mapName = showcaseMapOf
 export function showcaseSpawnSpots(show: ShowcaseResult): Vec2[] {
     const out: Vec2[] = [];
     const { width, height } = show.generation.mapData;
-    const { min, max } = show.bounds;
+    const { min, max } = show.ground;
     const cx = (min.x + max.x) / 2;
     const cy = (min.y + max.y) / 2;
     for (let pad = 3; pad < Math.max(width, height); pad += 4) {

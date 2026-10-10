@@ -239,4 +239,31 @@ test.describe("rebirth buildings", () => {
             expect(errors).toEqual([]);
         });
     }
+    // the owner's wave 3 (2026-10-10): each new building from above, then the player standing at its centre (the blast
+    // bunker and the subway open only to explosives, so their basements come in their sim tests)
+    for (const [type, art] of [
+        ["gas_station_01", "gas"],
+        ["church_01", "church"],
+        ["mall_01", "mall"],
+        ["power_plant_01", "power"],
+        ["radar_base_01", "radar"],
+        ["capitol_01", "capitol"],
+        ["apartment_01", "apartment"],
+        ["port_checkpoint_01", "port"],
+        ["cargo_ship_01", "ship"],
+        ["bunker_blast_01", "bunker"],
+        ["subway_station_01", "subway"],
+    ] as const) {
+        test(`${type}: from above and inside (wave 3)`, async ({ page }) => {
+            test.setTimeout(120_000);
+            const errors = collectErrors(page);
+            await boot(page, `/?building=${type}&seed=1`);
+            await aerial(page, type, `${SCREENS}/${type}-above.png`);
+            await standAt(page, type, 0, 0);
+            await page.waitForTimeout(1500);
+            await page.screenshot({ path: `${SCREENS}/${type}-inside.png` });
+            expect((await missing(page)).filter((s) => s.includes(art))).toEqual([]);
+            expect(errors).toEqual([]);
+        });
+    }
 });
