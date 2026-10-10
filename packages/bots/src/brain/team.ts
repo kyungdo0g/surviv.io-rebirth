@@ -19,6 +19,7 @@ import type { Contact } from "../perception/world.ts";
 import { findCoverFrom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent } from "./context.ts";
 import { avoidPos } from "./danger.ts";
+import { planCrawl } from "./downed.ts";
 import { factionDowned, planSelfRevive } from "./factionRevive.ts";
 import { inStrike, planEvacuate, strikeScore } from "./strikes.ts";
 
@@ -325,6 +326,11 @@ export function planDowned(ctx: BrainCtx): Intent {
     if (self.action.type === "revive") {
         // being revived: crawling away would cancel it
         intent.stop = true;
+        return intent;
+    }
+    // crawl to friends and cover, away from enemies (downed.ts)
+    if (ctx.features.crawl) {
+        planCrawl(ctx, intent);
         return intent;
     }
     let best: Vec2 | null = null;

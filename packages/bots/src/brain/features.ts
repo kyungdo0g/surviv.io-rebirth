@@ -120,6 +120,11 @@ export interface BrainFeatures {
      * to where its gun hits or swaps to melee, by persona and skill (brain/pointBlank.ts)
      */
     pointBlank: boolean;
+    /**
+     * knocked down: crawl to the nearest standing friend (50v50: any faction member) and to cover from a close enemy,
+     * away from enemies, instead of standing still with no squadmate or enemy in view (brain/downed.ts)
+     */
+    crawl: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -159,6 +164,7 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "earlyPace",
     "breakThrough",
     "pointBlank",
+    "crawl",
 ];
 
 export type BrainName = "baseline" | "smart";
