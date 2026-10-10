@@ -61,6 +61,7 @@ describe("new-gun asset install without assets-user", () => {
     const report = installNewGunAssets({
         dest,
         sheetDir: join(tmp, "no-sheets"),
+        secondWaveSheetDir: join(tmp, "no-second-wave"),
         userAudio: join(tmp, "no-audio"),
         ffmpeg: false,
     });
@@ -107,6 +108,7 @@ describe("new-gun asset install without assets-user", () => {
         const text = summarize(report).join("\n");
         expect(text).toContain("no-audio missing: the owner's gun sounds are not installed");
         expect(text).toContain("no-sheets missing: the owner's loot icons are not installed");
+        expect(text).toContain("second-wave-icons.webp missing: the second-wave guns' loot icons are not installed");
         expect(text).toContain("ffmpeg / ffprobe not found");
         expect(text).toContain("assets-user/");
     });

@@ -65,6 +65,25 @@ export const NEW_GUN_LOOT_FALLBACKS: Readonly<Record<string, string>> = {
 };
 
 /**
+ * The second wave (2026-10-10): their loot icons come from the owner's second-wave sheet (tools/assets/
+ * secondWaveSheets.ts); their fallbacks, drawn only on a machine without it, borrow a first-wave gun's stand-in of the
+ * class (a launcher one of our drawn launcher icons), so they may repeat one.
+ */
+export const BORROWED_LOOT_FALLBACKS: readonly string[] = [
+    "nlaw",
+    "paw20",
+    "bazooka",
+    "pvg42",
+    "rpd",
+    "bren",
+    "jackhammer",
+    "mg3",
+    "maadi",
+    "negev",
+    "kpv",
+];
+
+/**
  * New guns whose fallback loot icon is our own drawing (tools/assets/rebirthArt/lootIcons.ts; no original or survev
  * icon shows a launcher): sprite `loot-weapon-<id>-drawn.img`, a committed SVG served from /rebirth/loot/.
  */

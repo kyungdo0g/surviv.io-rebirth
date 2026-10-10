@@ -44,7 +44,7 @@ interface Component {
 }
 
 export interface IsolateResult {
-    /** the drawing alone: kept pixels opaque, the rest transparent */
+    /** the drawing alone: kept pixels with their alpha (opaque on an opaque sheet), the rest transparent */
     image: RgbaImage;
     /** components dropped as label text and as specks */
     label: number;
@@ -169,7 +169,8 @@ export function isolateGun(cell: RgbaImage, options: IconOptions = {}): IsolateR
         image.data[i] = lift(data[i]!);
         image.data[i + 1] = lift(data[i + 1]!);
         image.data[i + 2] = lift(data[i + 2]!);
-        image.data[i + 3] = 255;
+        // the sheets of 2026-10-07 are opaque; the loose sheet's anti-aliased edges keep their alpha
+        image.data[i + 3] = data[i + 3]!;
     }
     return { image, label: labelCount, specks };
 }
@@ -389,4 +390,87 @@ export function dualIcon(single: RgbaImage, size = 128): RgbaImage {
     drawScaled(out, single, src, { x: 0, y, w: s, h: s }, true);
     drawScaled(out, single, src, { x: size - s, y, w: s, h: s });
     return out;
+}
+
+/** One drawing of a loose sheet: its box on the sheet and the crop holding only it. */
+export interface LooseDrawing {
+    box: { x0: number; y0: number; x1: number; y1: number };
+    /** the box plus `pad` on every side, every pixel that is not part of this drawing transparent */
+    image: RgbaImage;
+}
+
+/**
+ * The drawings of a loose sheet: drawings on a transparent background with no grid, where a long gun may reach into
+ * the next column (the owner's second-wave sheet of 2026-10-10). A drawing is one connected shape of pixels at least
+ * half opaque, of at least `minArea` of the sheet; they come in reading order, rows top to bottom (a drawing whose
+ * vertical centre lies within half the row's first drawing's height of it joins that row), left to right in a row.
+ * Each crop keeps the drawing's own anti-aliased edge (pixels within 2 px of it) and clears a neighbour's muzzle.
+ */
+export function looseDrawings(sheet: RgbaImage, minArea = 0.002, pad = 4): LooseDrawing[] {
+    const { width: w, height: h, data } = sheet;
+    const n = w * h;
+    const solid = (p: number) => data[p * 4 + 3]! >= 128;
+    const label = new Int32Array(n).fill(-1);
+    const comps: Array<Component & { id: number }> = [];
+    const stack: number[] = [];
+    for (let start = 0; start < n; start++) {
+        if (!solid(start) || label[start] >= 0) continue;
+        const id = comps.length;
+        const c = { id, area: 0, x0: w, y0: h, x1: -1, y1: -1 };
+        label[start] = id;
+        stack.push(start);
+        while (stack.length) {
+            const p = stack.pop()!;
+            const x = p % w;
+            const y = (p - x) / w;
+            c.area++;
+            if (x < c.x0) c.x0 = x;
+            if (x > c.x1) c.x1 = x;
+            if (y < c.y0) c.y0 = y;
+            if (y > c.y1) c.y1 = y;
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const xx = x + dx;
+                    const yy = y + dy;
+                    if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+                    const q = yy * w + xx;
+                    if (label[q] < 0 && solid(q)) {
+                        label[q] = id;
+                        stack.push(q);
+                    }
+                }
+            }
+        }
+        comps.push(c);
+    }
+    const big = comps.filter((c) => c.area >= minArea * n);
+    big.sort((a, b) => a.y0 + a.y1 - (b.y0 + b.y1));
+    const rows: Array<typeof big> = [];
+    for (const c of big) {
+        const row = rows.at(-1);
+        const first = row?.[0];
+        if (first && Math.abs(c.y0 + c.y1 - (first.y0 + first.y1)) / 2 < (first.y1 - first.y0) / 2) row!.push(c);
+        else rows.push([c]);
+    }
+    const near = (x: number, y: number, id: number) => {
+        for (let dy = -2; dy <= 2; dy++) {
+            for (let dx = -2; dx <= 2; dx++) {
+                const xx = x + dx;
+                const yy = y + dy;
+                if (xx >= 0 && yy >= 0 && xx < w && yy < h && label[yy * w + xx] === id) return true;
+            }
+        }
+        return false;
+    };
+    return rows
+        .flatMap((row) => row.sort((a, b) => a.x0 - b.x0))
+        .map((c) => {
+            const image = crop(sheet, c.x0 - pad, c.y0 - pad, c.x1 - c.x0 + 1 + 2 * pad, c.y1 - c.y0 + 1 + 2 * pad);
+            for (let y = 0; y < image.height; y++) {
+                for (let x = 0; x < image.width; x++) {
+                    if (!near(x + c.x0 - pad, y + c.y0 - pad, c.id)) image.data[(y * image.width + x) * 4 + 3] = 0;
+                }
+            }
+            return { box: { x0: c.x0, y0: c.y0, x1: c.x1, y1: c.y1 }, image };
+        });
 }

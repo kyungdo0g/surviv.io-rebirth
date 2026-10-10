@@ -1,31 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="60" height="238" viewBox="0 0 60 238">
-  <!-- Boys anti-tank rifle held sprite, own art: seen from above, barrel up; blued steel, top magazine offset left. -->
+  <!-- Boys anti-tank rifle held sprite, own art: seen from above, barrel up; blued steel, centred top magazine, sights offset left. -->
   <!-- butt: shoulder piece and rubber pad (under the right hand in game) -->
-  <path d="M19 218h22l2 2v12H17v-12z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
-  <rect x="13" y="232" width="34" height="6" rx="3" fill="#000"/>
+  <path d="M18 216h24l3 3v13H15v-13z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="11" y="231" width="38" height="7" rx="3" fill="#000"/>
   <!-- receiver body; the bolt tube along its top is the highlight strip -->
-  <path d="M17 149h26l2 2v67H15v-67z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
-  <rect x="28" y="172" width="4" height="42" fill="#8f8f8f"/>
+  <path d="M17 150h26l2 2v66H15v-66z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="28" y="174" width="4" height="40" fill="#8f8f8f"/>
   <!-- leather cheek pad wrapped round the rear of the body -->
   <rect x="18" y="199" width="24" height="17" rx="2" fill="#7a3f3a" stroke="#000" stroke-width="6"/>
   <!-- bolt handle: arm + ball, right side -->
-  <path d="M41 181l9 5" stroke="#000" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="52" cy="187" r="4.5" fill="#000"/>
-  <!-- barrel collar with the bipod clamp -->
-  <rect x="19" y="115" width="22" height="34" fill="#000"/>
-  <rect x="19" y="122" width="22" height="6" rx="1" fill="#000"/>
-  <!-- top magazine sticking up, offset left (lips as the centre slot); rear sight in front of it, offset left -->
-  <rect x="12" y="148" width="18" height="22" rx="1" fill="#555555" stroke="#000" stroke-width="6"/>
-  <rect x="19.5" y="151" width="3" height="16" fill="#000"/>
-  <rect x="12" y="136" width="6" height="7" rx="1" fill="#000"/>
-  <rect x="17" y="138" width="7" height="3" fill="#000"/>
-  <!-- heavy barrel, front sight offset left -->
-  <rect x="23" y="9" width="14" height="108" fill="#000"/>
-  <rect x="28" y="25" width="4" height="85" fill="#555555"/>
-  <rect x="18" y="17" width="6" height="6" rx="1" fill="#000"/>
-  <rect x="23" y="18.5" width="4" height="3" fill="#000"/>
-  <!-- disc muzzle brake seen edge-on, its body behind it -->
-  <rect x="21" y="9" width="18" height="8" rx="2" fill="#000"/>
-  <rect x="17" y="1" width="26" height="10" rx="4" fill="#000"/>
-  <rect x="21" y="5" width="18" height="2" fill="#555555"/>
+  <path d="M48 180l5 5" stroke="#000" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="54" cy="187" r="4.5" fill="#000"/>
+  <!-- barrel cradle (recoil spring housing) with two rings, the bipod clamp band and its knobs -->
+  <rect x="18" y="110" width="24" height="42" rx="1" fill="#000"/>
+  <path d="M20 134h20M20 141h20" stroke="#454545" stroke-width="3"/>
+  <rect x="12" y="120" width="36" height="7" rx="1" fill="#000"/>
+  <rect x="8" y="118" width="7" height="11" rx="2" fill="#000"/>
+  <rect x="45" y="118" width="7" height="11" rx="2" fill="#000"/>
+  <!-- top magazine sticking up, centred on the receiver (lips as the centre slot) -->
+  <rect x="20" y="144" width="20" height="28" rx="1" fill="#555555" stroke="#000" stroke-width="6"/>
+  <rect x="28.5" y="147" width="3" height="22" fill="#000"/>
+  <!-- rear sight offset left of the magazine, on a bracket to the cradle -->
+  <rect x="8" y="132" width="8" height="9" rx="1" fill="#000"/>
+  <rect x="15" y="135" width="5" height="3" fill="#000"/>
+  <!-- long heavy barrel with a flute; front sight offset left on its bracket -->
+  <rect x="23" y="10" width="14" height="104" fill="#000"/>
+  <rect x="29" y="26" width="2" height="82" fill="#555555"/>
+  <rect x="14" y="18" width="7" height="7" rx="1" fill="#000"/>
+  <rect x="21" y="20" width="3" height="3" fill="#000"/>
+  <!-- big disc muzzle brake seen edge-on, its body behind it -->
+  <rect x="21" y="10" width="18" height="8" rx="2" fill="#000"/>
+  <rect x="12" y="1" width="36" height="12" rx="4" fill="#000"/>
+  <rect x="16" y="6" width="28" height="2" fill="#555555"/>
 </svg>
