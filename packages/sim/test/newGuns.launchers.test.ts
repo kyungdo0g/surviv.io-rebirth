@@ -132,7 +132,7 @@ describe("launchers fire the sheet's explosions", () => {
         // rockets fly their exact range (noDistAdj): the cursor (30 u) minus the barrel
         game.combatRng = constantRng(0);
         giveGun(p, "m202");
-        fire(game, p, 1, 30);
+        fire(game, p, 12, 30);
         const b = game.bullets.active.filter((x) => x.bulletType === "bullet_m202");
         expect(b.map((x) => +x.distance.toFixed(6))).toEqual([27.8, 27.8, 27.8, 27.8]);
     });

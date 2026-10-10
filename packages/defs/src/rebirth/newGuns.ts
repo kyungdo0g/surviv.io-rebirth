@@ -1,16 +1,8 @@
-// The owner's new guns, as a beta (2026-10-07: "the guns are still beta, so just do the basics"): 30 guns plus the dual
-// TEC-9 and dual vz. 61, with their bullets, explosions, the 40 mm lob and three new ammo types. Every number is the
-// decided balance sheet's (docs/design/new-gun-stats.json, the machine-readable twin of new-gun-stats.md; ids, ammo and
-// colours from docs/design/survev-content-and-new-guns.md section 8): newGuns.json holds its def objects unchanged,
-// the loot icons included (loot-weapon-<id>.img, cut from the owner's sheets by tools/assets/newGuns.ts; the client
-// draws the sheet's fallback icon, rebirth/newGunAssets.ts, while one is missing). packages/defs/test/newGuns.test.ts
-// pins every def to the sheet.
-// New fields (types/weapons.ts): charges + discardWhenEmpty (Boys 7 shots, Panzerfaust 1, M202 one volley), pumpEvery +
-// pumpDelay (DP-12), speed.carry (DShK), goldOnly, handHeld, sound.discard; bullets noReflect, armDistance, noDistAdj.
-// The owner's changes of 2026-10-08 are in the sheet too: the M79, GL-06 and MGL hold no equip slowdown and are held
-// like a rifle (handHeld: rifle pose and hands, the muzzle on the aim line, barrelOffset 0), and the M202 fires a fixed
-// 60° fan (fanAngle) bursting at the cursor, slides its shooter back (recoilKnockback) and breaks plated obstacles
-// (armorPiercing, stonePiercing) with its bigger blasts.
+// Owner-approved beta guns: first wave plus eleven second-wave guns (2026-10-10).
+// Values: newGuns.json and docs/design/new-gun-stats.json. Second-wave rarity is deferred;
+// GUN_BETA makes them available for testing with existing art/audio fallbacks.
+// Finite charges never reload; M202 fires four sequential rockets 0.035 seconds apart.
+// Negev/KPV use speed.carry in either slot, like DShK. See second-wave-gun-specs-draft.md.
 import type {
     AmmoDef,
     BulletDef,
@@ -51,7 +43,15 @@ export function newGunEntry(id: string): NewGunEntry | undefined {
 /** New ammo: 40mm (teal; M79, GL-06, MGL), rocket (brown; RPG-7 only, gold only), 5.7x28 (pink; P90 only). */
 export const NEW_AMMO_IDS = ["40mm", "rocket", "57mm"] as const;
 /** Pseudo ammo of the single-use guns: no def and no bag row, like the bugle's (new-gun-stats.md 4.2). */
-export const CHARGE_AMMO_IDS = ["boys_ammo", "panzerfaust_ammo", "m202_ammo"] as const;
+export const CHARGE_AMMO_IDS = [
+    "boys_ammo",
+    "panzerfaust_ammo",
+    "m202_ammo",
+    "nlaw_ammo",
+    "bazooka_ammo",
+    "pvg42_ammo",
+    "maadi_ammo",
+] as const;
 /** Bag rows of the new ammo, inserted after this one so the ammo rows stay together (the wire order: schema 11). */
 export const NEW_AMMO_BAG_AFTER = "45acp";
 /** Ping emote of each new ammo (the sheet's ammo.*.emote ids; the emote wheel's ammo wedge pings the held gun's). */
