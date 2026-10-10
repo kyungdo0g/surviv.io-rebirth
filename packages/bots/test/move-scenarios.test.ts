@@ -91,8 +91,9 @@ describe("MOVE scenarios", () => {
         // three red houses of main 12345 the bot walks into (the rebirth's bigger map: 8 red houses; at house 5 the bot
         // explores the other way and never meets the player, so s = 6 replaced it; the military base moved the houses
         // again, so s = 2, 4, 6: house 1, now beside the crossing bunker, sends the bot to the bunker's puzzle first,
-        // and it meets the player only at the end of the run, 47 s in, or armed)
-        for (const s of [2, 4, 6]) {
+        // and it meets the player only at the end of the run, 47 s in, or armed; the rebirth buildings' rework
+        // (2026-10-10) moved them once more: at house 6 the bot never meets the player, so s = 7 replaced it)
+        for (const s of [2, 4, 7]) {
             const game = mainGame({ minPlayers: 99 });
             const hb = houses[s % houses.length];
             const def = getMapObjectDef(hb.type);
@@ -151,8 +152,9 @@ describe("MOVE scenarios", () => {
         // three red houses of main 12345 the bot walks into (the rebirth's bigger map: 8 red houses; at house 5 the bot
         // explores the other way and never meets the player, so s = 6 replaced it; the military base moved the houses
         // again, so s = 2, 4, 6: house 1, now beside the crossing bunker, sends the bot to the bunker's puzzle first,
-        // and it meets the player only at the end of the run, 47 s in, or armed)
-        for (const s of [2, 4, 6]) {
+        // and it meets the player only at the end of the run, 47 s in, or armed; the rebirth buildings' rework
+        // (2026-10-10) moved them once more: at house 6 the bot never meets the player, so s = 7 replaced it)
+        for (const s of [2, 4, 7]) {
             const game = mainGame({ minPlayers: 99 });
             const hb = houses[s % houses.length];
             const def = getMapObjectDef(hb.type);
