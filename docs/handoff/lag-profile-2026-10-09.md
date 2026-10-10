@@ -53,3 +53,28 @@ The loopback transport advances `Game.step()` from its `requestAnimationFrame` c
 ## Conclusion
 
 In this setup, the server is the bottleneck under high bot counts: its 80+ bot p95 tick exceeds the 10 ms budget, while even the 150-player client callback remained below 6 ms at its maximum. Both bot perception/simulation and per-client snapshot serialization contribute on the server; the CPU profile identifies view creation, spatial queries, perception, and protocol encoding among the largest sampled functions. The browser result does not include client-side AI because none runs in loopback.
+
+## Review (main session, 2026-10-10)
+
+The numbers hold up, the server conclusion needs a correction.
+
+- **Checked:** every `file:line` in the CPU profile names the function it says at `94ae0a4`; the map widths are the
+  solo (small variant) widths `mapDefForPlayers` gives (842 / 842 / 1006 / 1144). A rerun of the same harness shape
+  (`BotFill.update` + `Game.step`, then `getSnapshot` + `ClientEncoder.writeFrame` for every living player every third
+  tick) on a different machine (4 cores, load average 3.3 to 3.6 from other work) gave, in ms p50 / p95 / p99:
+
+  | Bots | Bot fill | Sim step | Encode every player | Encode one player (p50 / p95) |
+  |---:|---:|---:|---:|---:|
+  | 80 | 6.45 / 15.66 / 26.45 | 1.09 / 5.57 / 10.26 | 6.99 / 18.40 / 26.22 | 0.121 / 0.210 |
+  | 200 | 15.41 / 33.23 / 66.84 | 2.28 / 8.63 / 18.32 | 17.23 / 36.13 / 70.31 | 0.149 / 0.410 |
+
+  About 1.5 to 2 times the table above on a slower, loaded machine, with the same proportions between the parts.
+- **Correction:** the real server encodes a frame only for its seats, the connected humans (`apps/server/src/room.ts`
+  `netsync`); fill bots are in-process `BotController`s that read `Game.getSnapshot` inside `BotFill.update` and are
+  never encoded. The "serialization" column (one frame per bot) and the "total tick" that includes it therefore
+  overstate the real server: one human's frame costs about 0.1 to 0.4 ms. The real tick is about bot fill + sim step:
+  near 5 ms p50 at 80 bots and 9.5 ms p50 at 200 bots on the 16-core machine above, so the budget is still crossed at
+  p95 from about 120 bots and at the median near 200. The bottleneck is the bots (perception: `updateObjects`,
+  `seeObstacle`, the snapshots they read through `getSnapshot` / `toView` / `query`) and the sim, not the encoding.
+- **Client:** the frame times measure the ticker callback, not GPU time, with the refresh rate capping the frame rate;
+  the loopback sandbox does run `Game.step` on the main thread (`apps/client/src/net/loopback.ts`) and loads no bot AI.
