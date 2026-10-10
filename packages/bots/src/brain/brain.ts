@@ -41,6 +41,7 @@ import { manageScope } from "./gear.ts";
 import { grenadeOpportunity, smartGrenade } from "./grenades.ts";
 import { judged } from "./judgement.ts";
 import { planLayerEscape } from "./layers.ts";
+import { coverFromNewcomer } from "./newcomer.ts";
 import { keepGunRange } from "./pointBlank.ts";
 import { observePuzzleDoors } from "./puzzleSight.ts";
 import { bestBreakable, breakScore, planBreak } from "./scavenge.ts";
@@ -276,6 +277,8 @@ export class Brain {
         manageWeapons(ctx, intent);
         // point blank with a gun: back off to where it hits (or swing: the fight's slot, pointBlank.ts)
         if (ctx.features.pointBlank) keepGunRange(ctx, intent);
+        // a newcomer shooting into the duel: behind cover from it while finishing the first fight (newcomer.ts)
+        if (ctx.features.thirdPartyReact) coverFromNewcomer(ctx, intent);
         if (ctx.features.grenades) {
             // round 4: running from a chaser, a frag thrown back at its path (escapeFrag.ts) comes first
             if (!intent.throwPlan && ESCAPE_THROW.has(intent.behaviour))

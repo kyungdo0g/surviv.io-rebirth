@@ -23,6 +23,7 @@ import { answerSlot } from "./early.ts";
 import { faintAim, faintDropped, faintGate, noteClear } from "./faint.ts";
 import { launcherSlot, launcherTooClose } from "./launch.ts";
 import { heldMelee, swingBand } from "./melee.ts";
+import { newcomerMult } from "./newcomer.ts";
 import { opportunityMult } from "./opportunity.ts";
 import { muzzlePast, pointBlankSlot } from "./pointBlank.ts";
 import { ignoredTarget } from "./pursuit.ts";
@@ -68,6 +69,8 @@ export function selectTarget(ctx: BrainCtx): Contact | null {
         // smart brain: punish busy or weakened enemies, shoot the one the team is shooting
         if (ctx.features.opportunism) s *= opportunityMult(ctx, c);
         if (ctx.features.teamplay) s *= focusMult(ctx, c);
+        // a third player joining a duel: most turn on it, a tunnel-visioned few stay on the first one (newcomer.ts)
+        if (ctx.features.thirdPartyReact) s *= newcomerMult(ctx, c);
         if (s > bestScore) {
             bestScore = s;
             best = c;
