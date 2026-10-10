@@ -167,8 +167,10 @@
 //   bullet.ts:165-166).
 // - PlayerView: `lastStand` (Indomitable Spirit absorbed a fatal hit within the last second: survev's
 //   lastStandEffect, drawn as the boost effect in blue).
+// Molotov, flashbang and discarded launchers (2026-10-10, schema 25): DecalView `rot`, Snapshot `flash` (viewEffects.ts).
 import type { Vec2 } from "@rebirth/core";
 import type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+import type { FlashEvent } from "./viewFlash.ts";
 import type { HitEvent } from "./viewHits.ts";
 import type {
     AirdropView,
@@ -187,6 +189,7 @@ import type {
 import type { EmoteEvent, TeamMemberView } from "./viewTeams.ts";
 
 export type { AirstrikeZoneView, ExplosionEvent, ProjectileView, RecorderEvent, SmokeView } from "./viewEffects.ts";
+export type { FlashEvent } from "./viewFlash.ts";
 export type { HitEvent } from "./viewHits.ts";
 export type {
     AirdropView,
@@ -390,6 +393,11 @@ export interface DecalView extends BaseView {
     scale: number;
     /** decals with a def `gore` (club pool): players killed in the building's gore region, at most 255 (M5b) */
     goreKills?: number;
+    /**
+     * Rebirth (schema 25): free rotation in radians, counter-clockwise, added to `ori` (a discarded launcher lies along
+     * its shooter's facing: the sprite's up axis points along `rot + pi / 2`); 0 for map decals. 8 bits on the wire.
+     */
+    rot?: number;
 }
 
 export interface LootView extends BaseView {
@@ -570,6 +578,8 @@ export interface Snapshot {
     factionStatus?: FactionMemberView[];
     /** rebirth hit feedback: hits the active player dealt or took since the viewer's previous snapshot, when any */
     hits?: HitEvent[];
+    /** rebirth flashbang: the active player was flashed since the viewer's previous snapshot (schema 25) */
+    flash?: FlashEvent;
 }
 
 /** Public info of a player (the original PlayerInfos record, without the heal/boost cosmetics). */

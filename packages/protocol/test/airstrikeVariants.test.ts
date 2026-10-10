@@ -156,6 +156,13 @@ describe("air strike variants on the wire", () => {
             "military_base_01",
             "military_base_01r",
             "military_base_01b",
+            // the Molotov's fire and the discarded launchers (schema 25, rebirth/discardDecals.ts)
+            "decal_molotov_fire",
+            "decal_nlaw_discard",
+            "decal_bazooka_discard",
+            "decal_pvg42_discard",
+            "decal_m202_discard",
+            "decal_panzerfaust_discard",
         ]);
         const first = MapObjectRegistry.typeToId("decal_bomb_heavy_explosion");
         expect(first).toBe(MapObjectRegistry.size - rebirthOnlyMapObjectIds.length);

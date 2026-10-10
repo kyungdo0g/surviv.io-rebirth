@@ -4,7 +4,8 @@
 // enlarged blasts (the heavy shell, the x1.3 frag grenade) and the tier 1 / tier 2 inner crates of the normal air drop
 // (rebirth/airdropTiers.ts, airdropLoot.ts); then the owner's new guns with their ammo, bullets and explosions
 // (rebirth/newGuns.ts, the beta of 2026-10-07); then the variant strobes and their air strike pings
-// (rebirth/strobes.ts). The owner's club gun box (2026-10-08, rebirth/ownerLoot.ts) follows the air drop crates.
+// (rebirth/strobes.ts), then the owner's Molotov and flashbang (rebirth/throwables.ts). The owner's club gun box
+// (2026-10-08, rebirth/ownerLoot.ts) follows the air drop crates.
 import type { DecalDef, ExplosionDef, GameObjectDef, MapObjectDef, PingDef, ThrowableDef } from "../types/index.ts";
 import { airdropTierCrates } from "./airdropLoot.ts";
 import {
@@ -16,9 +17,11 @@ import {
 } from "./airstrikeVariants.ts";
 import { rebirthBuildings } from "./buildings.ts";
 import { FRAG_DECAL_TYPE, FRAG_RADIUS_MULT, IRON_BOMB_DECAL_TYPE, scaleDefValue } from "./deviations.ts";
+import { rebirthGroundDecals } from "./discardDecals.ts";
 import { newGunDefs } from "./newGuns.ts";
 import { CLUB_VAULT_BOX, clubVaultBox } from "./ownerLoot.ts";
 import { airstrikePingDefs, strobeVariantDefs } from "./strobes.ts";
+import { rebirthThrowableDefs } from "./throwables.ts";
 
 /**
  * The rebirth-only game objects, built from the generated air strike bomb so they follow its sprites, sounds and
@@ -57,6 +60,8 @@ export function rebirthOnlyDefs(
         ...newGunDefs(),
         ...strobeVariantDefs(deviated.strobe as ThrowableDef),
         ...airstrikePingDefs(generated.ping_airstrike as PingDef),
+        // the owner's Molotov and flashbang (2026-10-10, rebirth/throwables.ts), built from the frag
+        ...rebirthThrowableDefs(deviated.frag as ThrowableDef),
     };
 }
 
@@ -77,6 +82,7 @@ function scaledDecal(decal: DecalDef, mult: number): DecalDef {
  * - the club secret room's gun box deposit_box_02_club, deposit_box_02 rolling its gun from tier_club_vault (the
  *   owner, 2026-10-08; rebirth/ownerLoot.ts).
  * - the rebirth buildings clinic_01, outpost_01r and outpost_01b and their loot_tier_medical (rebirth/buildings.ts).
+ * - the ground decals of 2026-10-10: the Molotov's fire and the discarded launchers (rebirth/discardDecals.ts).
  */
 export function rebirthOnlyMapObjects(
     generated: Readonly<Record<string, MapObjectDef>>,
@@ -90,5 +96,7 @@ export function rebirthOnlyMapObjects(
         ...airdropTierCrates(generated),
         [CLUB_VAULT_BOX]: clubVaultBox(generated),
         ...rebirthBuildings(generated),
+        // the Molotov's burning ground and the discarded launchers' bodies (2026-10-10, rebirth/discardDecals.ts)
+        ...rebirthGroundDecals(),
     };
 }

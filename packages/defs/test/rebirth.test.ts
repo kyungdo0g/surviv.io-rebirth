@@ -293,6 +293,11 @@ describe("rebirth-only defs", () => {
             "strobe_carpet",
             "ping_airstrike_heavy",
             "ping_airstrike_carpet",
+            // the owner's Molotov and flashbang (rebirth/throwables.ts)
+            "molotov",
+            "flashbang",
+            "explosion_molotov",
+            "explosion_flashbang",
         ]);
         expect(Object.keys(GameObjectDefs)).toEqual([...generated, ...rebirthOnlyIds]);
         expect(generated.map((id) => GameObjectRegistry.typeToId(id))).toEqual(generated.map((_, i) => i + 1));
@@ -337,6 +342,13 @@ describe("rebirth-only defs", () => {
             "military_base_01",
             "military_base_01r",
             "military_base_01b",
+            // the Molotov's fire and the discarded launchers (schema 25, rebirth/discardDecals.ts)
+            "decal_molotov_fire",
+            "decal_nlaw_discard",
+            "decal_bazooka_discard",
+            "decal_pvg42_discard",
+            "decal_m202_discard",
+            "decal_panzerfaust_discard",
         ]);
         expect(AIRDROP_TIER_CRATES).toEqual(["crate_10t1", "crate_10t2", "crate_10svt1", "crate_10svt2"]);
         expect(Object.keys(MapObjectDefs)).toEqual([...generatedMap, ...rebirthOnlyMapObjectIds]);

@@ -25,6 +25,11 @@ export interface DamageParams {
     dir?: Vec2;
     /** every reduction is multiplied by this (AP Rounds 0.8: armour is 80 % as effective; survev player.ts:2447-2452) */
     armorPenetration?: number;
+    /**
+     * rebirth: no reduction applies and no headshot is rolled, as for gas and bleeding, whatever the damage type (the
+     * Molotov's fire, world/fires.ts, keeps DamageType.Player so the thrower is credited)
+     */
+    ignoreArmor?: boolean;
 }
 
 /** What a target wears, for the reductions. */
@@ -50,7 +55,7 @@ export function headshotMultOf(gameSourceType: string | undefined): number | und
 /** Whether a hit may roll a headshot at all (gas, bleeding and explosions never do). */
 export function canHeadshot(params: DamageParams, rules: SimRules): boolean {
     if (params.damageType === DamageType.Gas || params.damageType === DamageType.Bleeding) return false;
-    if (params.isExplosion) return false;
+    if (params.isExplosion || params.ignoreArmor) return false;
     const mult = headshotMultOf(params.gameSourceType);
     if (mult === undefined) return false;
     return rules.headshotNeedsMultAboveOne ? mult > 1 : true;
@@ -69,6 +74,7 @@ export function rollHeadshot(params: DamageParams, rules: SimRules, rng: Rng): b
  */
 export function armorCovers(params: DamageParams, headshot: boolean, target: ArmorState, rules: SimRules): boolean {
     if (params.damageType === DamageType.Gas || params.damageType === DamageType.Bleeding) return false;
+    if (params.ignoreArmor) return false;
     if (params.damageType === DamageType.Airdrop && !rules.airdropCrushArmor) return false;
     return reductionOf(headshot ? target.helmet : target.chest) > 0;
 }
@@ -81,6 +87,7 @@ export function armorCovers(params: DamageParams, headshot: boolean, target: Arm
 export function computeDamage(params: DamageParams, headshot: boolean, target: ArmorState, rules: SimRules): number {
     let damage = params.amount;
     if (params.damageType === DamageType.Gas || params.damageType === DamageType.Bleeding) return damage;
+    if (params.ignoreArmor) return damage;
     const reduce = (mult: number) => {
         damage -= damage * mult * (params.armorPenetration ?? 1);
     };

@@ -1,6 +1,7 @@
 // Game: fixed-step authoritative simulation implementing the GameApi contract.
 // Tick order follows survev server/src/game/game.ts: start check, gas, players (gas damage, input actions, boost,
-// movement, weapons), loot, bullets (then their queued damage), projectiles, explosions, smoke, dead bodies (M9),
+// movement, weapons), loot, bullets (then their queued damage), projectiles, explosions, smoke, the rebirth fires,
+// flashes and timed decals, dead bodies (M9),
 // obstacle timers, building puzzles and scheduled unlocks (M5b), planes, air strikes and air drops, building occupancy,
 // spectators, group spawns and team status (M6a), faction status and role schedules (M7a), then the match results.
 import { type Bounds, type Rng, type Vec2, v2 } from "@rebirth/core";
@@ -10,6 +11,7 @@ import { BulletSystem } from "./combat/bullets.ts";
 import { applyObstacleDamage, applyPlayerDamage } from "./combat/combat.ts";
 import type { DamageParams } from "./combat/damage.ts";
 import { ExplosionSystem } from "./combat/explosions.ts";
+import { FlashSystem } from "./combat/flash.ts";
 import { HitLog } from "./combat/hitLog.ts";
 import { ProjectileSystem } from "./combat/projectiles.ts";
 import { DEFAULT_MIN_PLAYERS, type GameInit } from "./gameInit.ts";
@@ -45,38 +47,26 @@ import type {
     RoleAnnouncementEvent,
     Snapshot,
 } from "./view.ts";
+import { viewBounds } from "./viewBounds.ts";
 import type { SimContext } from "./world/context.ts";
 import { DeadBodySystem } from "./world/deadBodies.ts";
 import { removeDisguise, updateDisguise, wearerOf } from "./world/disguise.ts";
 import { checkDoorLayer } from "./world/doors.ts";
 import { dropItem } from "./world/dropItem.ts";
 import type { Building, Obstacle } from "./world/entities.ts";
+import { FireSystem } from "./world/fires.ts";
 import { updateObstacleTimers } from "./world/interact.ts";
 import { floorsVisible } from "./world/layers.ts";
 import { Player } from "./world/player.ts";
 import { updatePuzzle } from "./world/puzzles.ts";
 import { SmokeSystem } from "./world/smoke.ts";
+import { TimedDecalSystem } from "./world/timedDecals.ts";
 import { type Entity, World } from "./world/world.ts";
 
-/** Visible area margin around the camera, in world units (survev client.ts adds 4 to the zoom). */
-export const VIEW_MARGIN = 4;
-/** The client camera keeps a 16:9 aspect: `zoom` is half the larger screen dimension (survev client.ts). */
-export const VIEW_ASPECT = 16 / 9;
 /** Join / leave events (and emotes, M6a) are kept this long for viewers that skip snapshots. */
 const PLAYER_EVENT_RETENTION_TICKS = 30 * TICK_HZ;
 /** Bullet reports older than this many ticks are forgotten (a client that slept longer misses them). */
 const BULLET_REPORT_TICKS = TICK_HZ;
-
-/** World-space rectangle a player with camera radius `zoom` at `pos` can see, margin included. */
-export function viewBounds(pos: Vec2, zoom: number): Bounds {
-    const halfW = zoom + VIEW_MARGIN;
-    const halfH = zoom / VIEW_ASPECT + VIEW_MARGIN;
-    return { min: { x: pos.x - halfW, y: pos.y - halfH }, max: { x: pos.x + halfW, y: pos.y + halfH } };
-}
-
-export function entityView(entity: Entity): ObjectView {
-    return entity.toView();
-}
 
 function playerInfo(p: Player): PlayerInfoView {
     return {
@@ -88,6 +78,8 @@ function playerInfo(p: Player): PlayerInfoView {
         boost: p.loadoutBoost,
     };
 }
+
+export { entityView, VIEW_ASPECT, VIEW_MARGIN, viewBounds } from "./viewBounds.ts";
 
 export class Game implements GameApi, SimContext {
     readonly options: GameOptions;
@@ -112,6 +104,10 @@ export class Game implements GameApi, SimContext {
     readonly explosions: ExplosionSystem;
     /** smoke emitters and clouds (M5) */
     readonly smokes: SmokeSystem;
+    /** rebirth: timed decals (discarded launchers, burning ground), Molotov fires and flashbang flashes */
+    readonly decals: TimedDecalSystem;
+    readonly fires: FireSystem;
+    readonly flashes: FlashSystem;
     /** where players died (M9) */
     readonly deadBodies: DeadBodySystem;
     /** red zone (M4) */
@@ -181,6 +177,9 @@ export class Game implements GameApi, SimContext {
         this.projectiles = new ProjectileSystem(this);
         this.explosions = new ExplosionSystem(this);
         this.smokes = new SmokeSystem(this);
+        this.decals = new TimedDecalSystem(this.world);
+        this.fires = new FireSystem(this);
+        this.flashes = new FlashSystem(this.world);
         this.deadBodies = new DeadBodySystem(this.world);
         const gasRng = subRng(options.seed, `gas:${options.mapName}`);
         // under a cap that grows the map, the gas and its schedules stretch by how much wider the map played is than
@@ -447,6 +446,7 @@ export class Game implements GameApi, SimContext {
         this.bullets.tick = this.tickCount + 1;
         this.explosions.tick = this.tickCount + 1;
         this.hitLog.tick = this.tickCount + 1;
+        this.flashes.tick = this.tickCount + 1;
         this.match.checkStart();
         this.gas.update();
         for (const player of this.playerMap.values()) if (!player.dead) player.timeAlive += dt;
@@ -465,6 +465,9 @@ export class Game implements GameApi, SimContext {
         this.projectiles.update(dt);
         this.explosions.update(dt);
         this.smokes.update(dt);
+        this.fires.update(dt);
+        this.flashes.update(dt);
+        this.decals.update(dt);
         this.deadBodies.update(dt);
         for (const obstacle of [...this.activeObstacles]) {
             if (!updateObstacleTimers(this, obstacle, dt)) this.activeObstacles.delete(obstacle);
@@ -591,6 +594,8 @@ export class Game implements GameApi, SimContext {
         if (gameOver) snapshot.gameOver = gameOver;
         const hits = this.hitLog.eventsFor(player.id, sinceTick, this.tickCount, next);
         if (hits.length) snapshot.hits = hits;
+        const flash = this.flashes.eventFor(player.id, sinceTick, this.tickCount);
+        if (flash) snapshot.flash = flash;
         const stats = this.match.statsSince(owner.id, seq);
         if (stats) snapshot.playerStats = stats;
         return snapshot;

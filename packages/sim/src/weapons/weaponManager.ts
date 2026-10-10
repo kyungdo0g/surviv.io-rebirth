@@ -9,6 +9,7 @@ import { isBagItem, THROWABLE_LIST } from "../items/inventory.ts";
 import { addPerk, removePerksWhere } from "../perks/perks.ts";
 import type { SimContext } from "../world/context.ts";
 import type { Player } from "../world/player.ts";
+import { dropDiscardedGun } from "../world/timedDecals.ts";
 import { fireGun } from "./gun.ts";
 import { meleeDamage } from "./melee.ts";
 import { throwThrowable, updateThrowable } from "./throwable.ts";
@@ -226,7 +227,7 @@ export class WeaponManager {
         }
         for (let i = 0; i < this.bursts.length; i++) this.bursts[i] -= dt;
         for (let i = 0; i < this.meleeAttacks.length; i++) this.meleeAttacks[i] -= dt;
-        this.discardSpent();
+        this.discardSpent(ctx);
         const def = getDef(this.activeWeapon || "fists");
         if (def.type === "gun") this.gunUpdate(ctx, def, dt);
         else if (def.type === "melee") this.meleeUpdate(ctx, def, dt);
@@ -298,8 +299,9 @@ export class WeaponManager {
      * Rebirth single-use guns (Boys, Panzerfaust, M202; new-gun-stats.md 4.2): an empty `discardWhenEmpty` gun leaves
      * its slot once its cooldown (the last shot's fireDelay, or a switch delay) has run out; nothing drops. The player
      * then holds the other gun, or the melee weapon, without losing a heal, boost or revive started after the shot.
+     * A launcher's body drops at the player's feet as a decal (the owner, 2026-10-10; world/timedDecals.ts).
      */
-    private discardSpent(): void {
+    private discardSpent(ctx: SimContext): void {
         for (const idx of [WeaponSlot.Primary, WeaponSlot.Secondary]) {
             const slot = this.weapons[idx];
             if (slot.ammo > 0 || slot.cooldown > TIME_EPS || !gunDef(slot.type)?.discardWhenEmpty) continue;
@@ -307,6 +309,7 @@ export class WeaponManager {
                 const other = idx === WeaponSlot.Primary ? WeaponSlot.Secondary : WeaponSlot.Primary;
                 this.setCurWeapIndex(this.weapons[other].type ? other : WeaponSlot.Melee, true, true);
             }
+            dropDiscardedGun(ctx.decals, this.player, slot.type);
             this.setWeapon(idx, "", 0);
         }
     }

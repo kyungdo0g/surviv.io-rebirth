@@ -6,6 +6,7 @@ export * from "./codec.ts";
 export * from "./connection.ts";
 export * from "./constants.ts";
 export * from "./effects.ts";
+export * from "./flash.ts";
 export * from "./headless.ts";
 export * from "./hits.ts";
 export * from "./local.ts";

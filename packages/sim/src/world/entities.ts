@@ -485,6 +485,8 @@ export class Decal {
     readonly surface?: string;
     /** gore decals (club pool): players killed in their building's gore region (at most 255) */
     goreKills = 0;
+    /** rebirth: free rotation in radians added to `ori` (a discarded launcher's body, timedDecals.ts) */
+    rot = 0;
 
     constructor(spawn: GeneratedObject) {
         this.id = spawn.id;
@@ -501,7 +503,7 @@ export class Decal {
     }
 
     toView(): DecalView {
-        return {
+        const view: DecalView = {
             id: this.id,
             kind: "decal",
             type: this.type,
@@ -511,6 +513,8 @@ export class Decal {
             scale: this.scale,
             goreKills: this.goreKills,
         };
+        if (this.rot) view.rot = this.rot;
+        return view;
     }
 }
 

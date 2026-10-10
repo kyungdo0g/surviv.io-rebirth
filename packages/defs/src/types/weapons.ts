@@ -271,4 +271,38 @@ export interface ExplosionDef {
     healAmount?: number;
     /** survev: random items a hit enemy drops (the simulation reads rules.modes.throwableHits instead) */
     dropRandomLoot?: number;
+    /** rebirth (Molotov): the burst leaves a burning area instead of dealing damage (sim world/fires.ts) */
+    fire?: FireAreaDef;
+    /** rebirth (flashbang): the burst blinds and deafens the players who see it, no damage (sim combat/flash.ts) */
+    flash?: FlashDef;
+}
+
+/** A rebirth fire area (the Molotov's; docs/research/rebirth-deviations.md "Molotov and flashbang"). */
+export interface FireAreaDef {
+    /** radius of the burning ground, units */
+    rad: number;
+    /** seconds the ground burns */
+    duration: number;
+    /** damage of one burn tick (armour, helmets and Flak Jacket do not reduce it, like gas and bleeding) */
+    damage: number;
+    /** seconds between two burn ticks of one player */
+    tickInterval: number;
+    /** seconds a player keeps burning after leaving the area */
+    afterburn: number;
+    /** decal map object drawn while the ground burns (its def lifetime is `duration`) */
+    decalType: string;
+}
+
+/** A rebirth flash (the flashbang's). */
+export interface FlashDef {
+    /** players farther than this are not affected, units */
+    rad: number;
+    /** full strength up to this distance, then falling linearly to 0 at `rad` */
+    fullRad: number;
+    /** seconds of full white screen at strength 1 (the client fades it out over `blindTime` x strength) */
+    blindTime: number;
+    /** seconds of muffled hearing at strength 1 */
+    deafTime: number;
+    /** hearing strength left behind a wall (no line of sight): the bang is heard, not seen */
+    deafThroughWalls: number;
 }

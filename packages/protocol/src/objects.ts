@@ -81,6 +81,21 @@ const HEALTH_BITS = 8;
 const DURATION_BITS = 8;
 const LOOT_COUNT_BITS = 16;
 const GORE_BITS = 8;
+/** a decal's free rotation (rebirth, schema 25): 256 steps over a full turn, about 1.4 degrees */
+export const DECAL_ROT_BITS = 8;
+const TAU = Math.PI * 2;
+
+/** Wire value of a decal rotation (radians, any range; wraps). */
+export function quantizeDecalRot(rot: number): number {
+    const steps = 2 ** DECAL_ROT_BITS;
+    const t = (((rot % TAU) + TAU) % TAU) / TAU;
+    return Math.round(t * steps) % steps;
+}
+
+/** Decal rotation in radians of a wire value, in [0, 2 pi). */
+export function dequantizeDecalRot(q: number): number {
+    return (q / 2 ** DECAL_ROT_BITS) * TAU;
+}
 
 // "revive" (M6a): code 4 / 3 (the original Anim.Revive is 6 and Action.Revive 4; our codes are list indices)
 const ANIM_TYPES: readonly AnimType[] = ["none", "melee", "cook", "throw", "revive"];
@@ -377,11 +392,14 @@ export const StructureCodec: ObjectCodec<StructureView> = {
     },
 };
 
-/** Decal. Static: type, pos, ori, layer, scale. Group 0: goreKills u8 (M5b; the original sent it too). */
+/**
+ * Decal. Static: type, pos, ori, layer, scale, then the rebirth rotation (8 bits, schema 25: a discarded launcher's
+ * body lies along its shooter's facing). Group 0: goreKills u8 (M5b; the original sent it too).
+ */
 export const DecalCodec: ObjectCodec<DecalView> = {
     kind: "decal",
     code: ObjectTypeCode.Decal,
-    fields: [f(MT, S), f(P, S), f(P, S), f(2, S), f(2, S), f(SCALE_BITS, S), f(GORE_BITS, 0)],
+    fields: [f(MT, S), f(P, S), f(P, S), f(2, S), f(2, S), f(SCALE_BITS, S), f(GORE_BITS, 0), f(DECAL_ROT_BITS, S)],
     groupCount: 1,
     quantize(v, ctx, out) {
         out[0] = mapTypeId(v.type);
@@ -391,9 +409,10 @@ export const DecalCodec: ObjectCodec<DecalView> = {
         out[4] = v.layer & 3;
         out[5] = mapScale(v.scale);
         out[6] = Math.min(Math.max(Math.round(v.goreKills ?? 0), 0), 2 ** GORE_BITS - 1);
+        out[7] = quantizeDecalRot(v.rot ?? 0);
     },
     build(id, v, ctx) {
-        return {
+        const view: DecalView = {
             id,
             kind: "decal",
             type: mapTypeOf(v[0]),
@@ -403,6 +422,9 @@ export const DecalCodec: ObjectCodec<DecalView> = {
             scale: mapScaleOf(v[5]),
             goreKills: v[6],
         };
+        // only the rebirth's turned decals carry a rotation (map decals stay as they were)
+        if (v[7]) view.rot = dequantizeDecalRot(v[7]);
+        return view;
     },
 };
 

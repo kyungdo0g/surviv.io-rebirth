@@ -36,7 +36,8 @@ function roundTrip<T>(write: (w: BitWriter) => void, read: (r: BitReader) => T):
 describe("variant strobes on the wire", () => {
     it("schema 13: they are the last bag items and their types follow the other rebirth-only ones", () => {
         expect(PROTOCOL_SCHEMA_VERSION).toBeGreaterThanOrEqual(12);
-        expect(BAG_ITEMS.slice(-2)).toEqual([...STROBE_VARIANT_TYPES]);
+        // then the Molotov and flashbang (schema 25)
+        expect(BAG_ITEMS.slice(-4, -2)).toEqual([...STROBE_VARIANT_TYPES]);
         expect(BAG_ITEMS.slice(0, 14)).toEqual([
             "9mm",
             "762mm",
