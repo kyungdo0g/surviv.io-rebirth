@@ -19,10 +19,31 @@ The 2026-10-08 patch was used in full and deleted.
    `nav/breakThrough.ts`, `brain/breakThrough.ts`, `scripts/breakThrough.ts`). 80 bots, first 150 s: house-rule
    obstacles destroyed 9 -> 46, stuck events 0.209 -> 0.220 per bot-minute.
 
-Known red test: `packages/bots/test/determinism.test.ts` "bot source files stay under 600 lines" fails on HEAD since
-`0313583` (`src/bot.ts` 607 lines, `src/perception/world.ts` 601), not from these commits.
+4. **Point blank**: `c377365` (`brain/pointBlank.ts`, `scripts/hugging.ts`): no shots whose bullets spawn past the body;
+   back off or swing (persona and skill), swing when cornered or still hugged after 1.2 s.
+5. **Grenades**: `a389f0e`: no dodging a teammate's frag (no friendly fire in any mode) nor a frag behind a wall.
+6. **Knocked bots crawl**: `ec1a52d` (`brain/downed.ts`, `scripts/downed.ts`): standing still while knocked 12% -> 7%
+   (squads), revives 44/206 -> 64/230.
+7. **Third parties**: `57d0d96` (`brain/newcomer.ts`, `scripts/thirdParty.ts`): a persona-driven tunnel-vision minority,
+   the others turn on the newcomer or take cover from it. The probe is noisy (60-90 events per 8 matches).
+8. **Famous basements**: `f94f061`: military base, Chrysanthemum (greenhouse) and club bathhouse draw more bots
+   (military base 12 -> 18-22 bots in 3 matches). In the probe they were already visited every match.
+9. **Outhouses**: `6d521d2`: toilets count 3 in the loot potential, a building is reached only inside its roof; outhouse
+   toilets opened 7 -> 11 of 30.
+10. **Molotov and flashbang**: `573139d` (`brain/rebirthThrows.ts`), and `208bf54` split `bot.ts` / `world.ts` (the
+    600-line test is green again).
+11. **HQ archive**: `78af98a`: between a puzzle's pieces a gun shoots the blocking table down; 6/6 seeds solve it.
+12. `6cfd4f0`: `explosionGate` obstacles are never broken through (the launcher holder's case is still to do).
 
 ## Still to do
+
+- **Infirmary narcotics store** (not fixed): the pharmacy's house door (`defs/src/rebirth/buildings/military/infirmary.ts`
+  `op("house_door_01", -29, 26.5, 1)`, world id 918 on main 12345) opened from the triage hall swings across the store's
+  vault doorway, so the grid has no way in and the bot gives the room up every 10 s. A bot that closes it from the hall
+  reopens it on the way in; closing it from inside needs the way in. Likely fix: hinge that door at the other end of its
+  doorway (or swing it the other way) so it never covers the vault door; then re-stage the golden hash.
+- **When the clone's next wave lands**: a launcher holder may break an `explosionGate` obstacle; stay out of a building
+  near collapse (`rebirth_wall_brk_*`, DamageType.Collapse).
 
 - **Full verification** in a clean worktree, with its own `pnpm install --offline --frozen-lockfile`. Symlinked
   `node_modules` resolve the workspace packages to the main checkout and give bogus type errors. Run it with the machine
