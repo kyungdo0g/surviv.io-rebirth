@@ -188,10 +188,6 @@ test.describe("rebirth buildings", () => {
             ["checkpoint", -2.5, -1, 1],
             ["motorpool", 25, -10, 1],
             ["tunnel", -30, -34, 1],
-            // the hidden rooms: the war chest, the vault, the gatehouse's weapons cage
-            ["war-chest", 11.75, 20.25, 1],
-            ["vault", 0, -13, 1],
-            ["gatehouse-cage", 14.5, -37, 0],
         ] as const) {
             await standAt(page, type, x, y, layer);
             await page.waitForTimeout(1500);
@@ -216,6 +212,16 @@ test.describe("rebirth buildings", () => {
         expect(ward.health).toBeGreaterThan(51);
         expect(ward.healFx).toBeGreaterThan(3);
         await page.screenshot({ path: `${SCREENS}/${type}-ward.png` });
+        // the hidden rooms: the war chest, the vault, the gatehouse's weapons cage
+        for (const [name, x, y, layer] of [
+            ["war-chest", 11.75, 20.25, 1],
+            ["vault", 0, -13, 1],
+            ["gatehouse-cage", 14.5, -37, 0],
+        ] as const) {
+            await standAt(page, type, x, y, layer);
+            await page.waitForTimeout(1500);
+            await page.screenshot({ path: `${SCREENS}/${type}-${name}.png` });
+        }
         expect((await missing(page)).filter((s) => s.includes("milbase"))).toEqual([]);
         expect(errors).toEqual([]);
     });

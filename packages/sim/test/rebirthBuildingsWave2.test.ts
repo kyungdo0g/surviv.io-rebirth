@@ -33,17 +33,17 @@ import { cachedMap } from "./helpers.ts";
 /** A building-local point in world space. */
 const at = (b: { pos: Vec2; ori: number }, x: number, y: number) => v2.add(b.pos, rotateOri({ x, y }, b.ori));
 
-/** Whether the wall boxes cover `box` within `tol` (collinear wall pieces count as one wall). */
-function coveredByWalls(box: { min: Vec2; max: Vec2 }, walls: ReadonlyArray<{ min: Vec2; max: Vec2 }>, tol = 0.3) {
-    const vertical = box.max.y - box.min.y > box.max.x - box.min.x;
-    const [a, c] = vertical ? (["y", "x"] as const) : (["x", "y"] as const);
-    const spans = walls
-        .filter((w) => w.min[c] <= box.min[c] + tol && w.max[c] >= box.max[c] - tol)
-        .map((w) => [w.min[a], w.max[a]] as const)
-        .sort((p, q) => p[0] - q[0]);
-    let reach = box.min[a] + tol;
-    for (const [lo, hi] of spans) if (lo <= reach + 1e-6) reach = Math.max(reach, hi);
-    return reach >= box.max[a] - tol;
+/** The share of `box` inside the union of the wall boxes (sampled every 0.05 unit). */
+function shareInWalls(box: { min: Vec2; max: Vec2 }, walls: ReadonlyArray<{ min: Vec2; max: Vec2 }>): number {
+    let n = 0;
+    let inside = 0;
+    for (let x = box.min.x + 0.025; x < box.max.x; x += 0.05) {
+        for (let y = box.min.y + 0.025; y < box.max.y; y += 0.05) {
+            n++;
+            if (walls.some((w) => x >= w.min.x && x <= w.max.x && y >= w.min.y && y <= w.max.y)) inside++;
+        }
+    }
+    return inside / n;
 }
 
 describe("sliding doors", () => {
@@ -73,8 +73,9 @@ describe("sliding doors", () => {
             }
             expect([type, doors.length]).toEqual([type, count]);
             for (const door of doors) {
-                const covered = coveredByWalls(collider.toAabb(door.col), walls);
-                expect([type, door.type, covered]).toEqual([type, door.type, true]);
+                // survev's panels keep 0.25 of 4 in the doorway when open
+                const share = shareInWalls(collider.toAabb(door.col), walls);
+                expect([type, door.type, share >= 0.93]).toEqual([type, door.type, true]);
             }
         }
     });

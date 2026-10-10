@@ -67,8 +67,9 @@ export const LIBRARY_LAYOUT: RebirthBuildingLayout = {
         // reading room | foyer and foyer | archive, a door each
         ...vRun(-7, -14, 0, [[-6, -2]], undefined, "brick"),
         ...vRun(5, -14, 0, [[-6, -2]], undefined, "brick"),
-        // the rare-books room: the bookcase door slides east into its north wall
-        ...hRun(-7, 10, 19, [[10, 14]], undefined, "brick"),
+        // the rare-books room: the bookcase door (1.5 thick) slides east into its north wall, doubled to 1.5 there
+        ...hRun(-7.25, 10, 19, [[10, 14]], undefined, "brick"),
+        ...hRun(-6.75, 10, 19, [[10, 14]], undefined, "brick"),
         ...vRun(10, -14, -7, [], undefined, "brick"),
     ],
     openings: [
