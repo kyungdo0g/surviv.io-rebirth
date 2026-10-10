@@ -131,6 +131,8 @@ export class CombatMemory {
     readonly grenadeSeen = new Map<number, { at: number; delay: number }>();
     /** projectile ids of the bot's own frags (seen leaving its hand: brain/dodge.ts), with when they showed */
     readonly ownFrags = new Map<number, number>();
+    /** grenades seen leaving a teammate's hand, by projectile id, with when they showed (dodge.ts: no friendly fire) */
+    readonly friendlyFrags = new Map<number, number>();
 
     // faint targets under a canopy (faint.ts)
     faintTarget = 0;
