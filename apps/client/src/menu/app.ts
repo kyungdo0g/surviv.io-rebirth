@@ -72,7 +72,7 @@ export class MenuApp {
         this.app = app;
         this.opts = opts;
         this.menu = new MainMenu(document.body, {
-            play: (mode) => this.quickPlay(mode),
+            play: (mode, mapName) => this.quickPlay(mode, mapName),
             createTeam: () => this.openParty(null),
             joinTeam: (code) => this.openParty(code),
             langChanged: () => this.lobby.applyStrings(),
@@ -138,7 +138,7 @@ export class MenuApp {
         return this.menu.name || "Player";
     }
 
-    private quickPlay(teamMode: 1 | 2 | 4): void {
+    private quickPlay(teamMode: 1 | 2 | 4, mapName?: string): void {
         if (this.client) return;
         this.menu.setError("");
         this.startGame();
@@ -146,7 +146,7 @@ export class MenuApp {
         const autoFill = config().get("teamAutoFill");
         const region = this.region;
         this.client = bootSandbox(this.app, {
-            mapName: this.opts.mapName,
+            mapName: mapName ?? this.opts.mapName,
             seed: 1,
             showDebugHud: this.opts.showDebugHud,
             debugZoom: this.opts.debugZoom,

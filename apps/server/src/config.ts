@@ -81,6 +81,8 @@ export interface ServerConfig {
     debugSpawnTogether: boolean;
     /** living players (alive for 10 s; team modes: groups with such a player) a game needs to start (original: 2) */
     minPlayers: number;
+    /** a started game takes no new human once fewer than this many players live (0: off) */
+    joinMinAlive: number;
     /**
      * Rebirth (the owner's ruling, START_WHEN_FULL, default on): a game that reaches its player cap starts at once
      * instead of waiting for players alive 10 s (sim rules.startWhenFull)
@@ -207,6 +209,7 @@ const EnvSchema = z.object({
     LOG: bool.default(true),
     DEBUG_SPAWN_TOGETHER: bool.default(false),
     MIN_PLAYERS: z.coerce.number().int().min(1).max(255).default(2),
+    JOIN_MIN_ALIVE: z.coerce.number().int().min(0).max(255).default(0),
     START_WHEN_FULL: bool.default(true),
     GAME_OVER_GRACE_MS: z.coerce.number().int().min(0).default(1800),
     PARTY_MAX_CONNECTIONS_PER_IP: z.coerce.number().int().min(1).default(5),
@@ -304,6 +307,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
         log: e.LOG,
         debugSpawnTogether: e.DEBUG_SPAWN_TOGETHER,
         minPlayers: e.MIN_PLAYERS,
+        joinMinAlive: e.JOIN_MIN_ALIVE,
         startWhenFull: e.START_WHEN_FULL,
         gameOverGraceMs: e.GAME_OVER_GRACE_MS,
         partyMaxConnectionsPerIp: e.PARTY_MAX_CONNECTIONS_PER_IP,

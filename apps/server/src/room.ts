@@ -193,6 +193,9 @@ export class GameRoom {
      */
     canJoin(): boolean {
         if (this.isFull) return false;
+        // JOIN_MIN_ALIVE: a started game with few survivors left is closed to newcomers (they get a fresh game)
+        const { joinMinAlive } = this.config;
+        if (joinMinAlive > 0 && this.game.started && this.game.aliveCount < joinMinAlive) return false;
         return this.game.canJoin() || (this.bots?.canMakeRoom() ?? false);
     }
 
