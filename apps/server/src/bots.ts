@@ -172,10 +172,14 @@ export class BotFill {
         this.botIds.add(bot.playerId);
     }
 
-    /** Whether a human may take bot `id`'s seat: alive, standing, and (once the match started) not in a fight yet. */
+    /**
+     * Whether a human may take bot `id`'s seat: alive, standing, and (once the match started) not in a fight yet. A
+     * 50v50 role holder stays: the Commander is promoted 50 s in, inside the 60 s join window, and a human joining then
+     * must not delete it before its automatic flare (sim rules.roles.leaderAutoFlare). Cobalt classes do not count.
+     */
     private canLeave(id: number): boolean {
         const p = this.game.getPlayer(id);
-        if (!p || p.dead || p.downed) return false;
+        if (!p || p.dead || p.downed || (this.game.faction && p.role)) return false;
         return !this.game.started || (p.kills === 0 && p.damageDealt === 0 && p.damageTaken === 0);
     }
 
