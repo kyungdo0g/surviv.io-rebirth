@@ -72,6 +72,8 @@ export class LootMemory {
     // basements and bunkers (basement.ts, BrainFeatures.basements)
     /** whether this bot heads for basements at all (drawn once from its own stream), null until drawn */
     basementGoer: boolean | null = null;
+    /** whether it goes down the famous basements though no basement-goer (brain/basement.ts famousGoer), drawn once */
+    famousGoer: boolean | null = null;
     /** underground grid id of the basement it is on its way to or looting (-1 none), and its trips so far */
     basementSite = -1;
     basementTrips = 0;

@@ -11,6 +11,11 @@
 // the loot and break behaviours take what it finds there (containers on its basement's floor are worth breaking even
 // with a full loadout: scavenge.ts breakScore; the vault doors and switches are the puzzle behaviour's), then leaves:
 // done, the basement is never visited again, and exploring takes it back up to the ground floor.
+// Owner report 2026-10-10: nobody went down into the military base's basement, and bots skipped the greenhouse's
+// (the Chrysanthemum bunker's stairs stand in the greenhouse) and the Crimson Ring club's (its bathhouse); they did
+// visit the mansion and barn cellars. Those three are the basements every player knows (FAMOUS): their worth counts
+// FAME times in the reach and the choice, and a bot that is no basement-goer still goes down one within its reach when
+// its own draw says it knows them (famousChance: about half of the population, more of thorough and skilled ones).
 // Fair: what it knows is map knowledge (where the structures and their stairs are, what kind of floor lies under them);
 // what is down there now is seen only on the floor (perception: other floors' loot is culled, containers are read only
 // while drawn on its floor), so a looted basement is found empty by walking through it, like a player does.
@@ -54,6 +59,15 @@ const MAX_POINTS = 14;
 const MIN_SPACING = 9;
 const VISITED = 2.5;
 const NOT_REACHED = 10;
+/** The basements every player knows (structure types), their worth's weight, and the salt of the famous-goer draw. */
+const FAMOUS: ReadonlySet<string> = new Set([
+    "military_base_01",
+    "bunker_structure_08",
+    "bunker_structure_08b",
+    "club_structure_01",
+]);
+const FAME = 1.6;
+const FAMOUS_SALT = 0x2545f491;
 /** What a skill tier knows of the map's basements (beginners have not found most of them yet). */
 const TIER_KNOWS: Readonly<Record<SkillProfile["tier"], number>> = { beginner: 0.55, intermediate: 0.85, expert: 1 };
 
@@ -76,6 +90,21 @@ export function basementGoer(ctx: BrainCtx): boolean {
     return lm.basementGoer;
 }
 
+/** Chance that a bot that is no basement-goer still goes down the famous basements (persona thoroughness, skill). */
+export function famousChance(persona: Readonly<PersonaParams>, skill: Readonly<SkillProfile>): number {
+    return Math.max(0.1, Math.min(0.9, (0.3 + 0.6 * persona.lootThoroughness) * TIER_KNOWS[skill.tier]));
+}
+
+/** Whether this bot goes down the famous basements even if it is no basement-goer (its own draw, no rng shift). */
+export function famousGoer(ctx: BrainCtx): boolean {
+    const lm = ctx.mem.loot2;
+    if (lm.famousGoer === null) {
+        const roll = createRng((ctx.mem.puzzle.seed ^ FAMOUS_SALT) >>> 0).next();
+        lm.famousGoer = roll < famousChance(ctx.persona, ctx.skill);
+    }
+    return lm.famousGoer;
+}
+
 /** A fixed per-bot spread of 0.6..1.4 on a basement's worth (not every goer heads for the same one). */
 function spread(selfId: number, structureId: number): number {
     return 0.6 + (0.8 * ((((selfId * 83492791) ^ (structureId * 2971215073)) >>> 0) % 1000)) / 1000;
@@ -88,7 +117,7 @@ function siteOf(ctx: BrainCtx, id: number): BasementSite | null {
 }
 
 /** The basement worth going to now, or null: within reach, inside the safe zone, not done, not a place it fled. */
-function chooseSite(ctx: BrainCtx): BasementSite | null {
+function chooseSite(ctx: BrainCtx, famousOnly = false): BasementSite | null {
     const { model, self } = ctx;
     const ug = model.underground;
     if (!ug) return null;
@@ -97,6 +126,8 @@ function chooseSite(ctx: BrainCtx): BasementSite | null {
     let bestCost = Number.POSITIVE_INFINITY;
     for (const site of basementSites(model.map, ug)) {
         if (lm.basementsDone.has(site.region.id)) continue;
+        const famous = FAMOUS.has(site.type);
+        if (famousOnly && !famous) continue;
         if (!model.insideSafeZone(site.center, SAFE_MARGIN) || avoidPos(ctx, site.center) || !onLeash(ctx, site.center))
             continue;
         let d = Number.POSITIVE_INFINITY;
@@ -106,7 +137,7 @@ function chooseSite(ctx: BrainCtx): BasementSite | null {
             if (dd < d && model.nav.reachable(self.pos, p.top)) d = dd;
         }
         if (!Number.isFinite(d)) continue;
-        const bonus = VALUE_WEIGHT * site.value * spread(self.id, site.region.structureId);
+        const bonus = VALUE_WEIGHT * site.value * spread(self.id, site.region.structureId) * (famous ? FAME : 1);
         if (d > REACH_SHARE * ctx.persona.roamRadius + bonus) continue;
         let cost = d - bonus;
         if (ctx.features.threats) cost += (1 / heatPenalty(ctx, site.center) - 1) * 40;
@@ -181,7 +212,9 @@ function onFloorOf(ctx: BrainCtx, region: UndergroundGrid): boolean {
 /** Utility of the basement trip (0: no trip, it is done, given up, or something threatens the bot). */
 export function basementScore(ctx: BrainCtx): number {
     const { model, self, now } = ctx;
-    if (!model.underground || !basementGoer(ctx)) return 0;
+    if (!model.underground) return 0;
+    const goer = basementGoer(ctx);
+    if (!goer && !famousGoer(ctx)) return 0;
     const lm = ctx.mem.loot2;
     if (lm.basementSite < 0) {
         // a trip starts in place of exploring: what lies around (an item, a crate, the house it sweeps, a puzzle) first
@@ -189,7 +222,7 @@ export function basementScore(ctx: BrainCtx): number {
         lm.basementCheckAt = now + CHOOSE_EVERY;
         if (lm.basementTrips >= MAX_TRIPS || self.layer !== 0 || underThreat(ctx) || zonePressure(model) > ZONE_LIMIT)
             return 0;
-        const site = chooseSite(ctx);
+        const site = chooseSite(ctx, !goer);
         if (!site) return 0;
         start(ctx, site);
     }
