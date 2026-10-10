@@ -2,11 +2,16 @@
 // transparent while the white fill inside the outline stays, the bottom-right label and specks go, the drawing is
 // turned to the original icons' 45 degrees and fitted into 128 x 128; the sheet layout names every new gun once.
 
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { NEW_GUN_IDS } from "../../packages/defs/src/index.ts";
 import { axisAngle, cutGunIcon, dualIcon, fitIcon, gridCell, isolateGun, opaqueBox, rotate } from "./gunIcons.ts";
 import { DUAL_ICONS, SHEETS } from "./newGunInstall.ts";
 import { createImage, type RgbaImage } from "./png.ts";
+
+/** Guns whose drawings have not arrived yet (the sheet's assets.artPending: the second wave, 2026-10-10). */
+const SHEET = JSON.parse(readFileSync(new URL("../../docs/design/new-gun-stats.json", import.meta.url), "utf8"));
+const ART_PENDING = new Set(Object.keys(SHEET.guns).filter((id) => SHEET.guns[id].assets?.artPending));
 
 const W = 300;
 const H = 270;
@@ -101,10 +106,11 @@ describe("loot icons from the sheets", () => {
         expect(c.data[(2 * 5 + 4) * 4 + 3]).toBe(77);
     });
 
-    it("the sheet layout names every new gun once but the M79 (no drawing) and the duals (composed)", () => {
+    it("the sheet layout names every new gun once but the M79 (no drawing), the duals (composed) and art pending", () => {
         const cut = SHEETS.flatMap((s) => s.cells.filter((c): c is string => !!c));
         expect(new Set(cut).size).toBe(cut.length);
-        const expected = NEW_GUN_IDS.filter((id) => id !== "m79" && !DUAL_ICONS[id]);
+        expect(ART_PENDING.size).toBe(11);
+        const expected = NEW_GUN_IDS.filter((id) => id !== "m79" && !DUAL_ICONS[id] && !ART_PENDING.has(id));
         expect([...cut].sort()).toEqual([...expected].sort());
         for (const s of SHEETS) expect(s.cells).toHaveLength(s.cols * s.rows);
         // the FN FAL comes from the redrawn sheet; sheet 17's cell (the SPAS-15 picture) and the SPAS-15 are not cut

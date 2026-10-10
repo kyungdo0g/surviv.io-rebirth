@@ -141,6 +141,11 @@ export const PARTICLE_DEFS: Readonly<Record<string, ParticleDef>> = {
     boys_ammo: shell("part-shell-02.img", [0.75, 1], [1.5, 2.5], PI * 2.5, 0.075, 0.045, 0.925),
     panzerfaust_ammo: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
     m202_ammo: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
+    // second wave (beta): the rockets as the Panzerfaust's, the 20 mm Pvg m/42 and the Maadi as the Boys'
+    nlaw_ammo: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
+    bazooka_ammo: shell("part-shell-03.img", [0.5, 0.75], [1, 2], PI * 3, 0.1, 0.05, 0.95),
+    pvg42_ammo: shell("part-shell-02.img", [0.75, 1], [1.5, 2.5], PI * 2.5, 0.075, 0.045, 0.925),
+    maadi_ammo: shell("part-shell-02.img", [0.75, 1], [1.5, 2.5], PI * 2.5, 0.075, 0.045, 0.925),
     bloodSplat: {
         image: ["part-splat-01.img", "part-splat-02.img", "part-splat-03.img"],
         life: 0.5,
