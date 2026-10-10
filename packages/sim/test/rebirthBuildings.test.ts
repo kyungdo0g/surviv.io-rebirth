@@ -10,6 +10,8 @@ import {
     getMapObjectDefOfType,
     MILITARY_BASE_BUILDINGS,
     OUTPOST_FACTIONS,
+    POWER_PLANT_TYPES,
+    RADAR_BASE_TYPES,
     REBIRTH_BUILDING_SPAWNS,
 } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
@@ -28,8 +30,32 @@ const BUILDINGS = [
     "arsenal_01",
     "blockhouse_01r",
     "blockhouse_01b",
+    // the owner's wave 3 (2026-10-10)
+    "church_01",
+    // the container port's checkpoint and cargo ship (wave 3)
+    "port_checkpoint_01",
+    "cargo_ship_01",
     // the military bases' buildings (their structures are checked in militaryBase.test.ts)
     ...MILITARY_BASE_BUILDINGS,
+    // wave 3: the gas station's site (fence, drums, pumps) and its collapsing store
+    "gas_station_01",
+    "gas_station_store_01",
+    // the wave 3 buildings (2026-10-10)
+    "mall_01",
+    // the power plant's compound, turbine hall and control building (wave 3, 2026-10-10)
+    ...POWER_PLANT_TYPES,
+    // the radar base's buildings and its compound (wave 3)
+    ...RADAR_BASE_TYPES,
+    // the wave-3 buildings (2026-10-10)
+    "capitol_01",
+    // wave 3 (2026-10-10)
+    "apartment_01",
+    // the blast bunker's two floors (wave 3)
+    "bunker_blast_entrance_01",
+    "bunker_blast_vault_01",
+    // the abandoned subway station's two floors (wave 3; its structure in subwayStation.test.ts)
+    "subway_entrance_01",
+    "subway_platform_01",
 ];
 /** Walls a building has at least: more than 8, but the military base's small parts have fewer. */
 const MIN_WALLS: Readonly<Record<string, number>> = {
@@ -41,13 +67,17 @@ const MIN_WALLS: Readonly<Record<string, number>> = {
     military_bunker_command_01: 0,
     military_bunker_magazine_01: 0,
     military_bunker_vault_01: 6,
+    // the gas station site: its drum yard fence (the store is its child building)
+    gas_station_01: 6,
+    radar_guard_01: 6,
+    radar_generator_01: 6,
 };
 /** objects that stand outside the walls on purpose (porticos, bollards, sandbags, bushes) */
 const OUTSIDE = /^(bush_|sandbags_|bollard_|house_column_)/;
-/** a loophole (brick_wall_ext_3_0_low) fills a wall gap: it is an opening, not a wall */
-const WALL = /_wall_ext_(?!3_0_low)|^stone_wall_int_4$|^rebirth_wall_int_/;
+const WALL = /_wall_ext_(?!3_0_low)|^stone_wall_int_4$|^rebirth_wall_(int|brk)_/;
+/** a loophole (brick_wall_ext_3_0_low) or an explosion-gated slab fills a wall gap: an opening, not a wall */
 const OPENING =
-    /^(house_door_0[12]|house_window_01|lab_door_01|lab_door_locked_01|brick_wall_ext_3_0_low|vault_door_main|vault_door_bathhouse|saloon_door_secret|cell_door_01)$/;
+    /^(house_door_0[12]|house_window_01|lab_door_01|lab_door_locked_01|brick_wall_ext_3_0_low|vault_door_main|vault_door_bathhouse|saloon_door_secret|cell_door_01|blast_door_01|subway_gate_01)$/;
 
 interface Placed {
     type: string;
@@ -110,7 +140,20 @@ describe("rebirth building layouts", () => {
 describe("rebirth buildings in their maps", () => {
     it("spawn lists: the clinic, fire station, library and radio station on main; per faction a command post and two blockhouses, and the arsenal on 50v50", () => {
         expect(REBIRTH_BUILDING_SPAWNS).toEqual({
-            main: { clinic_01: 1, firestation_01: 1, library_01: 1, radio_station_01: 1, military_base_01: 1 },
+            main: {
+                clinic_01: 1,
+                firestation_01: 1,
+                library_01: 1,
+                radio_station_01: 1,
+                military_base_01: 1,
+                gas_station_01: 1,
+                church_01: 1,
+                mall_01: 1,
+                capitol_01: 1,
+                apartment_01: 2,
+                bunker_blast_01: 1,
+                subway_station_01: 1,
+            },
             faction: {
                 outpost_01r: 1,
                 outpost_01b: 1,
@@ -119,6 +162,11 @@ describe("rebirth buildings in their maps", () => {
                 blockhouse_01b: 2,
                 military_base_01r: 1,
                 military_base_01b: 1,
+                gas_station_01: 1,
+                church_01: 1,
+                power_plant_01: 1,
+                radar_base_01: 1,
+                bunker_blast_01: 1,
             },
         });
         for (const [map, teamMode] of [

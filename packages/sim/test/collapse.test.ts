@@ -1,8 +1,9 @@
 // Collapsing buildings (the owner, 2026-10-10; sim world/collapse.ts): a building whose def sets
 // `ceiling.destroy.collapse` caves in once `wallCount` of its walls are broken: everyone on its floor dies at once
-// (DamageType.Collapse, credited to whoever broke the last wall, nothing dropped), its obstacles and the loot on its
-// floor are gone, and players outside are untouched. The building is a test-only def built from the breakable brick
-// walls (rebirth_wall_brk_4), added to the defs for this file only (the real collapsing buildings come next).
+// (DamageType.Collapse, credited to whoever broke the last wall unless a teammate, nothing dropped), its obstacles and
+// the loot on its floor are gone, and players outside are untouched. The building is a test-only def built from the
+// breakable brick walls (rebirth_wall_brk_4), added to the defs for this file only (the real collapsing buildings come
+// next).
 import { type Vec2, v2 } from "@rebirth/core";
 import {
     type BuildingChildDef,
@@ -153,6 +154,20 @@ describe("collapsing buildings", () => {
         }
         expect(inside.dead).toBe(true);
         expect(inside.killedBy).toBe(0);
+    });
+
+    it("buries the wall breaker's teammates too, but credits their deaths to nobody (no team kill)", () => {
+        const { game, hut } = hutGame();
+        const enemy = placePlayer(game, v2.add(hut.pos, { x: 0, y: 2 }));
+        const mate = placePlayer(game, v2.add(hut.pos, { x: 0, y: -2 }));
+        const shooter = placePlayer(game, v2.add(hut.pos, { x: 16, y: 0 }));
+        mate.teamId = shooter.teamId;
+        for (const w of children(game, hut)
+            .filter((o) => o.isWall)
+            .slice(0, WALL_COUNT))
+            breakWall(game, w, shooter);
+        expect([enemy.dead, mate.dead]).toEqual([true, true]);
+        expect([enemy.killedBy, mate.killedBy, shooter.kills]).toEqual([shooter.id, 0, 1]);
     });
 
     it("a buried barrel disguise goes silently: no explosion, no loot", () => {

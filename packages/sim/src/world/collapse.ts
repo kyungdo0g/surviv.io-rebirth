@@ -84,6 +84,9 @@ export function collapseBuilding(ctx: SimContext, building: Building, creditId?:
     const credit = creditId ? ctx.getPlayer(creditId) : undefined;
     const victims = found.filter((e): e is Player => e.kind === "player" && !e.dead && !e.awaitingClass && inside(e));
     for (const player of victims) {
+        // the wall breaker's own teammates are buried by the building, not by them: no team kill in the feed or the
+        // stats (a 50v50 bot match buried 17 of one faction under its own side's stray shots)
+        const source = credit && (credit === player || credit.teamId !== player.teamId) ? credit : undefined;
         killPlayer(
             ctx,
             player,
@@ -91,10 +94,10 @@ export function collapseBuilding(ctx: SimContext, building: Building, creditId?:
                 amount: 0,
                 damageType: DamageType.Collapse,
                 mapSourceType: building.type,
-                sourceId: credit?.id,
+                sourceId: source?.id,
                 dir: v2.copy(player.dir),
             },
-            credit?.id,
+            source?.id,
             { buried: true },
         );
     }

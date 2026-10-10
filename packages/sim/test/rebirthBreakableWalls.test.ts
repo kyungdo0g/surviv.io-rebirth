@@ -4,10 +4,27 @@
 // only by its own door (a broken partition never bypasses a puzzle or the arsenal's unlock).
 import { getMapObjectDef, getMapObjectDefOfType, REBIRTH_WALL_INT_LENGTHS, rebirthWallInt } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { probeBuilding } from "./buildingProbe.ts";
+import { EXPLOSION_GATED, probeBuilding } from "./buildingProbe.ts";
 
 /** The arsenal and the blockhouses have no ordinary partition (only their magazines' walls), so none breaks. */
-const REBIRTH = ["clinic_01", "firestation_01", "library_01", "radio_station_01", "outpost_01r", "military_base_01"];
+const REBIRTH = [
+    "clinic_01",
+    "firestation_01",
+    "library_01",
+    "radio_station_01",
+    "outpost_01r",
+    "military_base_01",
+    "gas_station_01",
+    "church_01",
+    "mall_01",
+    "power_plant_01",
+    "radar_base_01",
+    "capitol_01",
+    "apartment_01",
+    // the port checkpoint's hall | locker room partition (the cargo ship is all steel)
+    "port_checkpoint_01",
+    "subway_station_01",
+];
 
 /** The buildings a type's children name (the military base is a structure of layer buildings and parts). */
 function breakableWalls(type: string): number {
@@ -45,8 +62,13 @@ describe("the rebirth buildings' breakable walls", () => {
             const intact = probeBuilding(type);
             const broken = probeBuilding(type, { breakWalls: true });
             expect(broken.squeezes.map((g) => `${g.a} / ${g.b} ${g.width} at ${g.x}, ${g.y}`)).toEqual([]);
-            // the floor reached from outside grows only by the partitions' own footprint, never by a hidden room
-            const key = (r: typeof intact) => r.unlocks.map((u) => `${u.door} ${Math.round(u.area)}`).sort();
+            // the floor reached from outside grows only by the partitions' own footprint, never by a hidden room (an
+            // explosion gate over a structure's stairs counts the floor below, partitions' footprints included)
+            const key = (r: typeof intact) =>
+                r.unlocks
+                    .filter((u) => u.how !== EXPLOSION_GATED)
+                    .map((u) => `${u.door} ${Math.round(u.area)}`)
+                    .sort();
             expect(key(broken)).toEqual(key(intact));
         });
     }

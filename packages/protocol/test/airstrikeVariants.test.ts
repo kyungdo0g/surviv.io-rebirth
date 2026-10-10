@@ -196,6 +196,38 @@ describe("air strike variants on the wire", () => {
             "rebirth_wall_brk_14",
             "blast_door_01",
             "subway_gate_01",
+            "gas_pump_01",
+            "gas_station_store_01",
+            "gas_station_01",
+            "church_01",
+            "mall_01",
+            "power_plant_turbine_01",
+            "power_plant_control_01",
+            "power_plant_01",
+            // the radar base (wave 3, rebirth/buildings/radar)
+            "radar_dome_01",
+            "radar_ops_01",
+            "radar_barracks_01",
+            "radar_guard_01",
+            "radar_generator_01",
+            "radar_base_01",
+            "capitol_01",
+            // the wave-3 buildings (rebirth/buildings.ts rebirthWave3Defs)
+            "apartment_01",
+            // the container port's checkpoint and cargo ship (rebirth/buildings/port.ts)
+            "port_checkpoint_01",
+            "cargo_ship_01",
+            // the blast bunker (wave 3, rebirth/buildings/blastBunker.ts)
+            "loot_tier_bunker_launcher",
+            "loot_tier_bunker_rockets",
+            "loot_tier_bunker_gear",
+            "bunker_blast_entrance_01",
+            "bunker_blast_vault_01",
+            "bunker_blast_01",
+            // the abandoned subway station (wave 3, rebirth/buildings/subway.ts)
+            "subway_entrance_01",
+            "subway_platform_01",
+            "subway_station_01",
         ]);
         const first = MapObjectRegistry.typeToId("decal_bomb_heavy_explosion");
         expect(first).toBe(MapObjectRegistry.size - rebirthOnlyMapObjectIds.length);

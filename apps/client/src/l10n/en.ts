@@ -31,8 +31,27 @@ export const en: Readonly<Record<string, string>> = {
     "game-buried": "buried",
     "game-in-the": "in the",
     "game-rubble": "rubble",
+    "game-church_01": "church",
+    "game-power_plant_01": "power plant",
+    "game-capitol_01": "provincial government building",
     "game-a-collapse": "a collapse",
     "game-the-collapse": "The collapse",
+    // rebirth building names (the collapse kill feed, ui/killFeed.ts collapsePlace)
+    "game-gas_station_01": "gas station",
+    "game-gas_station_store_01": "gas station",
+    "game-gas_pump_01": "fuel pump",
+    // wave-3 rebirth building names (killFeed.ts mapSourceType)
+    "game-apartment_01": "Apartment Block",
+    // rebirth buildings named in the kill feed (wave 3, 2026-10-10)
+    "game-port_checkpoint_01": "port checkpoint",
+    "game-cargo_ship_01": "cargo ship",
+    // rebirth wave-3 buildings (interaction and kill feed names: game-<type>)
+    "game-bunker_blast_01": "Blast Bunker",
+    "game-blast_door_01": "Blast Door",
+    // the rebirth wave-3 buildings by map type (the kill feed's building, the showcase)
+    "game-subway_station_01": "Subway Station",
+    "game-subway_entrance_01": "Subway Station",
+    "game-subway_platform_01": "Subway Station",
     "game-an-air-strike": "an air strike",
     "game-with": "with",
     "game-promoted-to": "promoted to",
@@ -72,6 +91,7 @@ export const en: Readonly<Record<string, string>> = {
     "game-use": "Use",
     "game-airdrop_crate_01": "Air Drop",
     "game-airdrop_crate_02": "Air Drop",
+    "game-mall_01": "shopping mall",
     "game-play-new-game": "Play New Game",
     "game-level-1": "Lvl. 1",
     "game-level-2": "Lvl. 2",
@@ -87,6 +107,13 @@ export const en: Readonly<Record<string, string>> = {
     "game-duo-rank": "Duo Rank",
     "game-squad-rank": "Squad Rank",
     "game-team-kills": "Team Kills",
+    // the wave-3 rebirth buildings' names (packages/defs rebirth/buildings; the kill feed's collapse line names them)
+    "game-radar_base_01": "Radar Base",
+    "game-radar_dome_01": "Radar Dome",
+    "game-radar_ops_01": "Operations Building",
+    "game-radar_barracks_01": "Barracks",
+    "game-radar_guard_01": "Guard Post",
+    "game-radar_generator_01": "Generator Shed",
 };
 
 /**

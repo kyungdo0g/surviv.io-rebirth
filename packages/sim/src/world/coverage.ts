@@ -220,6 +220,7 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "structure.layers.pos": mapgen(),
     "structure.layers.ori": mapgen(),
     "structure.layers.underground": client("underground backdrop (bridges are not underground)"),
+    "structure.layers.dark": client("rebirth unlit floor: fx/darkness.ts overlay (the subway station)"),
     "structure.interiorSound.puzzle": impl("puzzles.ts puzzlePieceToggled"),
     "structure.interiorSound.sound": client(),
     "structure.interiorSound.soundAlt": client(),

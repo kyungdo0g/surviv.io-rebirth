@@ -28,8 +28,27 @@ export const ko: Readonly<Record<string, string>> = {
     "game-buried": "이(가) 매몰시켰습니다",
     "game-in-the": "- 장소:",
     "game-rubble": "잔해",
+    "game-church_01": "교회",
+    "game-power_plant_01": "발전소",
+    "game-capitol_01": "도청",
     "game-a-collapse": "붕괴",
     "game-the-collapse": "붕괴",
+    // rebirth building names (the collapse kill feed, ui/killFeed.ts collapsePlace)
+    "game-gas_station_01": "주유소",
+    "game-gas_station_store_01": "주유소",
+    "game-gas_pump_01": "주유기",
+    // wave-3 rebirth building names (killFeed.ts mapSourceType)
+    "game-apartment_01": "아파트",
+    // rebirth buildings named in the kill feed (wave 3, 2026-10-10)
+    "game-port_checkpoint_01": "항구 검문소",
+    "game-cargo_ship_01": "화물선",
+    // rebirth wave-3 buildings (interaction and kill feed names: game-<type>)
+    "game-bunker_blast_01": "방폭 벙커",
+    "game-blast_door_01": "방폭문",
+    // the rebirth wave-3 buildings by map type (the kill feed's building, the showcase)
+    "game-subway_station_01": "지하철역",
+    "game-subway_entrance_01": "지하철역",
+    "game-subway_platform_01": "지하철역",
     "game-an-air-strike": "공습",
     "game-with": "을(를). 사용무기:",
     "game-promoted-to": "으(로) 승진했습니다",
@@ -69,6 +88,7 @@ export const ko: Readonly<Record<string, string>> = {
     "game-use": "사용",
     "game-airdrop_crate_01": "공중 보급",
     "game-airdrop_crate_02": "공중 보급",
+    "game-mall_01": "쇼핑몰",
     "game-play-new-game": "새 게임 플레이",
     "game-level-1": "레벨 1",
     "game-level-2": "레벨 2",
@@ -84,6 +104,13 @@ export const ko: Readonly<Record<string, string>> = {
     "game-duo-rank": "2인 팀전 등수",
     "game-squad-rank": "분대(4인) 등수",
     "game-team-kills": "팀 킬수",
+    // 3차 리버스 건물 이름 (packages/defs rebirth/buildings; 붕괴 킬피드가 사용)
+    "game-radar_base_01": "레이더 기지",
+    "game-radar_dome_01": "레이더 돔",
+    "game-radar_ops_01": "작전동",
+    "game-radar_barracks_01": "막사",
+    "game-radar_guard_01": "위병소",
+    "game-radar_generator_01": "발전기실",
 };
 
 /** "game-<id>" item names (l10n-ko.md: 의료품·탄약, 가방·방어구·스코프, 총기, 근접 무기, 투척 무기) */

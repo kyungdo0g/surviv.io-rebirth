@@ -5,7 +5,7 @@
 import { DamageType } from "../constants.ts";
 import type { ExplosionDef, GameConfigDef, GameObjectDef, LootSpawnDef, MapDef, MapObjectDef } from "../types/index.ts";
 import { AIRDROP_TIER_SPLITS } from "./airdropTiers.ts";
-import { applyRebirthBuildingSpawns } from "./buildings.ts";
+import { applyRebirthBuildingSpawns, portComplex } from "./buildings.ts";
 import { rebirthOnlyDefs, rebirthOnlyMapObjects } from "./defs.ts";
 import { applyBalanceDeviations, applyMapObjectDeviations, type DefDeviation } from "./deviations.ts";
 import { applyGunSpeedOverrides } from "./gunSpeeds.ts";
@@ -85,6 +85,8 @@ export function applyRebirthDefs(
     Object.assign(mapObjects, goldBonusCrates(mapObjects));
     // the heavy shell's scorch decal is built from the iron bomb's resized one
     const addedMapObjects = append(mapObjects, rebirthOnlyMapObjects(generatedMapObjects, mapObjects));
+    // the container port gains its checkpoint and cargo ship as children (wave 3, rebirth/buildings/port.ts)
+    Object.assign(mapObjects, portComplex(mapObjects));
     // every scorch decal an explosion leaves must exist (the rebirth ones point at the rebirth decals)
     for (const [id, def] of Object.entries(gameObjects)) {
         const decal = def.type === "explosion" ? (def as ExplosionDef).decalType : "";

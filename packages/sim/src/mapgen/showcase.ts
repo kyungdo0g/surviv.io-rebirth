@@ -24,6 +24,14 @@ const MARGIN = 48;
  * 50v50 river is 20 wide, survev factionDefs rivers.weights).
  */
 const BRIDGE_RIVER_WIDTH = { medium: 6, large: 12, xlarge: 20 } as const;
+/**
+ * Rebirth buildings spawned only as a child of another building, showcased on their own (child -> parent): the container
+ * port's checkpoint and cargo ship (defs rebirth/buildings/port.ts, wave 3).
+ */
+const SHOWCASE_CHILDREN: Readonly<Record<string, string>> = {
+    port_checkpoint_01: "warehouse_complex_01",
+    cargo_ship_01: "warehouse_complex_01",
+};
 /** Placed on the 50v50 river by the faction bridge rule, not by a spawn list (generate.ts generateFactionBridges). */
 const FACTION_RIVER_TOWN = "river_town_01";
 
@@ -80,6 +88,14 @@ export function showcaseEntries(): readonly ShowcaseEntry[] {
             if (seen.has(type)) continue;
             seen.add(type);
             out.push({ type, mapName });
+        }
+    }
+    // rebirth buildings that only spawn as another building's child, shown on their own after their parent's map's
+    for (const [type, parent] of Object.entries(SHOWCASE_CHILDREN)) {
+        const home = out.find((e) => e.type === parent);
+        if (home && !seen.has(type) && hasMapObjectDef(type)) {
+            seen.add(type);
+            out.push({ type, mapName: home.mapName });
         }
     }
     entries = out;

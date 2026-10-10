@@ -8,9 +8,9 @@ import { cachedMap, objectsHash } from "./helpers.ts";
 
 /**
  * Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. Last change: the
- * rebirth buildings' breakable partitions (2026-10-10: their interior walls became rebirth_wall_int_* children).
+ * owner's wave 3 (2026-10-10: gas station, church, mall, capitol, two apartment blocks, blast bunker, subway).
  */
-const MAIN_12345_HASH = "d6403f2f155ce9c7";
+const MAIN_12345_HASH = "d20d3c726f1fec70";
 
 /**
  * Area an object reserves against other top-level objects (what canSpawn tests against). A beach obstacle is tested at

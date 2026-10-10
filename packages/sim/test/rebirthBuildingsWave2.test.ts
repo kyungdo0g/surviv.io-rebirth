@@ -7,10 +7,13 @@
 // door has a wall to slide into.
 import { type Collider, collider, type Vec2, v2 } from "@rebirth/core";
 import {
+    APARTMENT_STORE_DOOR,
     ARSENAL_UNLOCK,
     BLOCKHOUSE_CODE,
     BLOCKHOUSE_FACTIONS,
     BLOCKHOUSE_MAGAZINE_DOOR,
+    CAPITOL_CODE,
+    CAPITOL_VAULT_DOOR,
     CLINIC_SAFE_DOOR,
     FIRESTATION_CAGE_DOOR,
     FIRESTATION_TOWER,
@@ -22,9 +25,13 @@ import {
     LIBRARY_SECRET_DOOR,
     LIBRARY_SHELVES,
     LOOKOUT_ZOOM,
+    MALL_CODE,
+    MALL_VAULT_DOOR,
     MILITARY_HQ_ARCHIVE_DOOR,
     MILITARY_HQ_CODE,
     OUTPOST_ARMORY_DOOR,
+    PLANT_CODE,
+    PLANT_STRONGROOM_DOOR,
     RADIO_CODE,
     RADIO_VAULT_DOOR,
     REBIRTH_BUILDING_UNLOCKS,
@@ -66,6 +73,19 @@ describe("sliding doors", () => {
             military_infirmary_01: 1,
             // the war chest's door (Command's lab doors slide into the basement's walls: militaryBase.test.ts)
             military_bunker_command_01: 1,
+            // the mall's four automatic doors and its vault door (wave 3)
+            mall_01: 5,
+            // the power plant's strongroom (wave 3)
+            power_plant_control_01: 1,
+            // the governor's vault (wave 3)
+            capitol_01: 1,
+            // wave 3 (2026-10-10): the apartment's storeroom
+            apartment_01: 1,
+            // the container port's evidence vault and captain's cabin (wave 3)
+            port_checkpoint_01: 1,
+            cargo_ship_01: 1,
+            // the subway station master's safe (wave 3)
+            subway_platform_01: 1,
         };
         const own = (type: string, door: string) => type !== "military_bunker_command_01" || door !== "lab_door_01";
         for (const [type, count] of Object.entries(expected)) {
@@ -106,8 +126,11 @@ describe("the hidden rooms", () => {
         ["main", 12345, "radio_station_01", RADIO_VAULT_DOOR.type, RADIO_CODE],
         ["main", 12345, "library_01", LIBRARY_SECRET_DOOR.type, LIBRARY_CODE],
         ["main", 12345, "military_hq_01", MILITARY_HQ_ARCHIVE_DOOR.type, MILITARY_HQ_CODE],
+        ["main", 12345, "mall_01", MALL_VAULT_DOOR.type, MALL_CODE],
         ["faction", 7, "blockhouse_01r", BLOCKHOUSE_MAGAZINE_DOOR.type, BLOCKHOUSE_CODE],
         ["faction", 7, "blockhouse_01b", BLOCKHOUSE_MAGAZINE_DOOR.type, BLOCKHOUSE_CODE],
+        ["faction", 7, "power_plant_control_01", PLANT_STRONGROOM_DOOR.type, PLANT_CODE],
+        ["main", 12345, "capitol_01", CAPITOL_VAULT_DOOR.type, CAPITOL_CODE],
     ] as const;
     for (const [map, seed, type, door, code] of CODES) {
         it(`${type}'s hidden room opens on its code only (${code.join(", ")})`, () => {
@@ -137,6 +160,8 @@ describe("the hidden rooms", () => {
             ["main", 12345, "firestation_01", FIRESTATION_CAGE_DOOR.type],
             ["faction", 7, "outpost_01r", OUTPOST_ARMORY_DOOR.type],
             ["faction", 7, "outpost_01b", OUTPOST_ARMORY_DOOR.type],
+            // wave 3 (2026-10-10): the apartment's storeroom
+            ["main", 12345, "apartment_01", APARTMENT_STORE_DOOR.type],
         ] as const;
         for (const [map, seed, type, door] of cases) {
             const game = mapGame(map, seed);

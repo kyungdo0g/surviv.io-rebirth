@@ -13,6 +13,16 @@ const REBIRTH = [
     "arsenal_01",
     "blockhouse_01r",
     "military_base_01",
+    "gas_station_01",
+    "church_01",
+    "mall_01",
+    "radar_base_01",
+    "capitol_01",
+    "apartment_01",
+    "port_checkpoint_01",
+    "cargo_ship_01",
+    "bunker_blast_01",
+    "subway_station_01",
 ];
 const REFERENCE = ["house_red_01", "warehouse_01", "bank_01", "police_01", "mansion_01"];
 
