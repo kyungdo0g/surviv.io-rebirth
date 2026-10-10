@@ -1,37 +1,43 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="88" height="250" viewBox="0 0 88 250">
-  <!-- DShK held sprite, own art: seen from above, barrel up; flat brake, finned radiator, ammo box and belt on the left, spade grips. -->
+  <!-- DShK held sprite, own art: seen from above, barrel up; big flat brake, finned radiator, wide barrel-nut flange, ammo box and belt on the left, spade grips. -->
   <!-- spade grips: butt plate across the rear, arms out to both sides, wooden grips seen end-on (flush with the bottom) -->
   <path d="M16 239h56" stroke="#000" stroke-width="6"/>
   <rect x="5" y="231" width="14" height="16" rx="5" fill="#7a4a2a" stroke="#000" stroke-width="6"/>
   <rect x="69" y="231" width="14" height="16" rx="5" fill="#7a4a2a" stroke="#000" stroke-width="6"/>
   <rect x="22" y="232" width="44" height="12" rx="2" fill="#000"/>
-  <!-- OD ammo box on the left, drawn before the receiver; lid strip across its rear edge (as on the PKP box) -->
-  <rect x="4" y="148" width="32" height="58" rx="2" fill="#4f5e2a" stroke="#000" stroke-width="8"/>
-  <rect x="8" y="196" width="18" height="6" fill="#7a9140"/>
-  <!-- boxy receiver -->
-  <rect x="22" y="138" width="44" height="92" rx="2" fill="#4b5057" stroke="#000" stroke-width="8"/>
-  <!-- belt from the box into the feed: links (black band), brass rounds parallel to the bore, pointed copper bullets forward -->
-  <rect x="4" y="146" width="26" height="18" rx="2" fill="#000"/>
-  <path d="M8 152v10M14 152v10M20 152v10M26 152v10" stroke="#c9a04a" stroke-width="4"/>
-  <path d="M6 152l2-4 2 4zM12 152l2-4 2 4zM18 152l2-4 2 4zM24 152l2-4 2 4z" fill="#8a5a2a"/>
-  <!-- feed slide housing across the receiver front: the belt runs into it -->
-  <rect x="20" y="142" width="48" height="16" fill="#000"/>
+  <!-- OD ammo box on the left, inside the frame, drawn before the receiver; lid strip across its rear edge -->
+  <rect x="6" y="150" width="26" height="52" rx="2" fill="#4f5e2a" stroke="#000" stroke-width="8"/>
+  <rect x="10" y="190" width="14" height="6" fill="#7a9140"/>
+  <!-- wide boxy receiver -->
+  <rect x="22" y="140" width="44" height="90" rx="2" fill="#4b5057" stroke="#000" stroke-width="8"/>
+  <!-- feed slide housing across the receiver front -->
+  <rect x="20" y="140" width="48" height="16" fill="#000"/>
+  <!-- belt from the box into the feed: links (black band), four brass rounds parallel to the bore, copper bullets forward -->
+  <rect x="2" y="158" width="28" height="18" rx="2" fill="#000"/>
+  <path d="M6 164v10M12 164v10M18 164v10M24 164v10" stroke="#c9a04a" stroke-width="4"/>
+  <path d="M4 164l2-4 2 4zM10 164l2-4 2 4zM16 164l2-4 2 4zM22 164l2-4 2 4z" fill="#8a5a2a"/>
   <!-- top cover with the cold highlight strip; rear sight leaf behind it -->
-  <rect x="30" y="158" width="28" height="42" rx="2" fill="#4b5057" stroke="#000" stroke-width="4"/>
-  <rect x="40" y="162" width="8" height="34" fill="#a3b1c0"/>
+  <rect x="30" y="160" width="28" height="40" rx="2" fill="#4b5057" stroke="#000" stroke-width="4"/>
+  <rect x="41" y="164" width="6" height="32" fill="#a3b1c0"/>
   <rect x="36" y="204" width="16" height="5" fill="#000"/>
   <!-- cocking handle, right -->
   <path d="M70 187h6" stroke="#000" stroke-width="5"/>
   <rect x="74" y="181" width="8" height="12" rx="2" fill="#000"/>
-  <!-- barrel nut flange; finned radiator: black band, lit fin edges at a steady 6 px pitch; front collar -->
-  <rect x="20" y="130" width="48" height="10" rx="2" fill="#000"/>
-  <rect x="26" y="44" width="36" height="88" rx="2" fill="#000"/>
-  <path d="M30 55h28M30 61h28M30 67h28M30 73h28M30 79h28M30 85h28M30 91h28M30 97h28M30 103h28M30 109h28M30 115h28M30 121h28M30 127h28" stroke="#6a7078" stroke-width="3"/>
-  <rect x="24" y="42" width="40" height="8" rx="2" fill="#000"/>
-  <!-- heavy barrel, front sight (post between the ears), flat muzzle brake with a port band -->
-  <rect x="38" y="10" width="12" height="34" fill="#000"/>
-  <rect x="34" y="28" width="20" height="10" rx="1" fill="#000"/>
-  <rect x="42" y="31" width="4" height="4" fill="#8f8f8f"/>
-  <path d="M28 1h32l4 4v10l-4 4H28l-4-4V5z" fill="#000"/>
-  <rect x="26" y="8" width="36" height="4" fill="#6a7078"/>
+  <!-- barrel nut flange, wider than the receiver (the left hand sits on it), bolt heads at its ends -->
+  <path d="M13 126h62l3 3v8l-3 3H13l-3-3v-8z" fill="#000"/>
+  <rect x="14" y="131" width="4" height="4" fill="#6a7078"/>
+  <rect x="70" y="131" width="4" height="4" fill="#6a7078"/>
+  <!-- finned radiator: black band, fin edges sticking out both sides, lit fins at a steady 6 px pitch; front collar -->
+  <rect x="24" y="48" width="40" height="80" rx="2" fill="#000"/>
+  <path d="M20 57h48M20 69h48M20 81h48M20 93h48M20 105h48M20 117h48" stroke="#000" stroke-width="5"/>
+  <path d="M28 54h32M28 60h32M28 66h32M28 72h32M28 78h32M28 84h32M28 90h32M28 96h32M28 102h32M28 108h32M28 114h32M28 120h32" stroke="#6a7078" stroke-width="3"/>
+  <rect x="21" y="44" width="46" height="8" rx="2" fill="#000"/>
+  <!-- heavy barrel, front sight (post between the ears) -->
+  <rect x="37" y="18" width="14" height="28" fill="#000"/>
+  <rect x="33" y="30" width="22" height="10" rx="1" fill="#000"/>
+  <rect x="42" y="33" width="4" height="4" fill="#8f8f8f"/>
+  <!-- large flat muzzle brake, two port bands across -->
+  <path d="M23 1h42l5 5v12l-5 5H23l-5-5V6z" fill="#000"/>
+  <rect x="20" y="6" width="48" height="4" fill="#6a7078"/>
+  <rect x="20" y="14" width="48" height="4" fill="#6a7078"/>
 </svg>
