@@ -80,7 +80,8 @@ export const MILITARY_INFIRMARY: MilitaryPart = fromWorld({
             op("house_door_01", -21.25, 21, 0),
             op("house_door_01", -34.5, 21, 0),
             op("house_door_01", -34.5, 32, 0),
-            op("house_door_01", -29, 26.5, 1),
+            // the pharmacy door hinges on its west jamb, so it never swings across the narcotics store's doorway
+            op("house_door_01", -33, 26.5, 3),
         ],
         rooms: [
             room(-45.5, 19.5, -34.5, 28.5, "ward"),
