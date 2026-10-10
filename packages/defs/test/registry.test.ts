@@ -70,7 +70,7 @@ describe("PROTOCOL_HASH", () => {
         // map type (deposit_box_02_club); 20: the rebirth buildings' map types; 21: the Emote request's 0..2048
         // positions (the bigger 50v50 map) and the new rebirth buildings' map types; 22: the military bases' map types;
         // 23: the planes' 11-bit positions over -512..2560 (maps grown by the player cap)
-        expect(PROTOCOL_SCHEMA_VERSION).toBe(23);
+        expect(PROTOCOL_SCHEMA_VERSION).toBe(24);
         expect(PROTOCOL_HASH).toBe(
             computeProtocolHash(PROTOCOL_SCHEMA_VERSION, GameObjectRegistry.types, MapObjectRegistry.types),
         );

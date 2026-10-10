@@ -68,12 +68,15 @@ describe("a rocket vanishes when it detonates", () => {
         "%s: a crate stops it, it explodes once and is reported stopped there",
         (gun, bullet, explosion) => {
             const { game, p, log } = range(gun, [{ type: "crate_01", at: { x: 15, y: 0 } }]);
+            // Test one projectile's stop, including an M202 with its final charge remaining.
+            // A full sequential burst can destroy this crate and let later rockets through.
+            if (gun === "m202") p.weaponManager.activeSlot.ammo = 1;
             const behind = target(game, v2.add(p.pos, { x: 45, y: 0 }));
             const rockets = fireAndWatch(game, p, bullet, 150);
             expect(rockets.length).toBeGreaterThan(0);
             for (const r of rockets) {
                 expect(r.movedAfterStop).toBe(false);
-                // every rocket stopped (on the crate or, for an M202 rocket fanned past it, at its range) and says where
+                // Every rocket stopped on the crate and reports where.
                 expect(r.event.endDist).toBeDefined();
             }
             // one burst per rocket, never a second one further on
@@ -91,9 +94,8 @@ describe("a rocket vanishes when it detonates", () => {
         "%s: a direct hit stops it on the player, rocket damage plus the blast",
         (gun, bullet, explosion) => {
             const { game, p, log } = range(gun);
-            // the M202 fans its rockets at -30 / -10 / 10 / 30 degrees: stand in the 10 degree one
-            const ang = gun === "m202" ? (10 * Math.PI) / 180 : 0;
-            const t = target(game, v2.add(p.pos, { x: 18 * Math.cos(ang), y: 18 * Math.sin(ang) }));
+            // Centered RNG aims every launcher straight ahead, including the new narrow M202 burst.
+            const t = target(game, v2.add(p.pos, { x: 18, y: 0 }));
             const damage: number[] = [];
             const orig = game.bullets.damages.push.bind(game.bullets.damages);
             game.bullets.damages.push = (...d) => {
@@ -112,4 +114,16 @@ describe("a rocket vanishes when it detonates", () => {
             expect(t.health).toBe(0);
         },
     );
+
+    it("M202 sequential rockets can pass a crate destroyed by an earlier rocket, without any rocket continuing after detonation", () => {
+        const { game, p, log } = range("m202", [{ type: "crate_01", at: { x: 15, y: 0 } }]);
+        const behind = target(game, v2.add(p.pos, { x: 45, y: 0 }));
+        const rockets = fireAndWatch(game, p, "bullet_m202", 150);
+        expect(rockets).toHaveLength(4);
+        expect(rockets[0].event.endDist!).toBeLessThan(15);
+        expect(rockets.some((r) => r.event.hitPlayer)).toBe(true);
+        expect(behind.health).toBe(0);
+        expect(rockets.every((r) => !r.movedAfterStop)).toBe(true);
+        expect(log.filter((x) => x.type === "explosion_m202")).toHaveLength(4);
+    });
 });

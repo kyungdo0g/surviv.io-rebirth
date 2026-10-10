@@ -1,5 +1,9 @@
 # New gun stats (final balance sheet)
 
+2026-10-10 update: eleven second-wave beta guns and the sequential M202 burst are applied.
+See [second-wave-gun-specs-draft.md](second-wave-gun-specs-draft.md) and the updated JSON for current values.
+Second-wave rarity remains undecided; equipment and new illustrations are deferred.
+
 Status: **decided** 2026-10-07 (final stage of the balance workflow; no open questions); the owner's 2026-10-08 changes
 of the M79, GL-06 and Milkor MGL (Player speed -1 / -1 / -1.5 -> 0, held like a rifle) are applied here (section 6).
 Supersedes the per-gun stat columns of `survev-content-and-new-guns.md` 4.1 and the loot weights of 4.1 / 4.2 where they
@@ -57,7 +61,7 @@ ammo, loot).
 | `gl06` | GL-06 | launcher | 40mm | 10 + 100e+shr | 26.1 (1 per 2.3 s) | 1/1 | 2 | 366.7 | 0.27 / 2.57 / 2.57 / 2.57 | floor 0.02, T1 0.5 |
 | `rpg7` | RPG-7 | launcher | rocket | 60 + 150e+shr | 15.8 (1 per 3.8 s) | 1/1 | 3.5 | 700 | 0.14 / 0.14 / 0.14 / 3.94 | gold 0.5 |
 | `panzerfaust` | Panzerfaust | launcher | none | 80 + 140e+shr | single use | 1 (single use) | none (discarded when empty) | 440 | 0.17 / 0.17 / 0.17 / 0.17 | floor 0.2 (owner), T1 0.5 |
-| `m202` | M202 FLASH | launcher | none | 4 x (25 + 125e) | single use | 1 (single use) | none (discarded when empty) | 1200 | 0.22 / 0.22 / 0.22 / 0.22 | T1 0.05, T2 0.05, gold 0.25 + bonus 0.1 (owner) |
+| `m202` | M202 FLASH | launcher | none | 4 x (25 + 125e), sequential | single use | 4 charges | none (discarded when empty) | 1200 | 0.22 / 0.22 / 0.22 / 0.22 | T1 0.05, T2 0.05, gold 0.25 + bonus 0.1 (owner) |
 | `m200` | M200 Intervention | sniper | 7.62mm | 115 | 38 | 7/9 | 3.5 | 71.9 | 0.05 / 1.65 / 1.65 / 1.65 | T2 0.25, gold 0.5 |
 | `hecate` | Hécate II | sniper | .50 AE | 160 | 34 | 7/9 | 4 | 91.4 | 0.05 / 0.05 / 1.8 / 1.8 | gold 0.5 |
 | `lynx` | Lynx | sniper | .50 AE | 118 | 50 | 5/6 | 4.2 | 98.3 | 0.05 / 1.25 / 1.25 / 1.25 | gold 0.5 |
@@ -814,26 +818,11 @@ an empty cylinder).
 
 #### M202 FLASH (`m202`)
 
-| Field | Value | Bullet | Value |
-|---|---|---|---|
-| Gun type | Rocket launcher (4 tubes, one volley in a fixed 60° fan bursting at the cursor, single use) | Damage | 4 x (25 + 125 explosion (rad 5-16)) |
-| Ammo | none (1 charge = 4 rockets) | Falloff | 1 |
-| Fire mode | Single | Headshot multiplier | 1 |
-| Player speed | -2.5 | Obstacle multiplier | bullet x2, explosion x42 (5250 at the centre) |
-| Recoil speed | 0 | Distance | 75 (or the cursor, nearer) |
-| Carry speed (rebirth) | 0 | Speed | 55 |
-| Magazine capacity | 1 charge (4 rockets), no extension | Max DPS | 1200 (single use) |
-| Ammo spawn | 0 | Max obstacle DPS | 42400 |
-| Reload time | none (discarded when empty) | Sustained DPS / magazine damage | 1200 / 600 |
-| Fire delay | 0.5 (single use) | Speed carried / held / firing | 12 / 9.5 / 4.75 |
-| Switch delay | 1.1 | Volley kill, A2 at full health, anywhere across the strip at 15 / 20 / 25 u | yes / yes / yes |
-| Standing / moving spread | 0 / 0 (fixed fan: -30 / -10 / 10 / 30°) | Self-damage free from | 17 u cursor distance (15 u: about 24 HP unarmoured; 12 u and nearer kills the shooter) |
-| Barrel length | 2.2 | Recoil slide | 2 u back, against the aim |
-
-- **Placement (owner, 2026-10-08):** T1 0.05, T2 0.05 ("barely ever"), gold main gun 0.25 ("occasionally", 1 gold crate in 112) and the gold crates' bonus roll 0.1 against nothing 0.9 ("sometimes", 1 gold crate in 10; `OWNER_LOOT_WEIGHTS` in `packages/defs/src/rebirth/ownerLootWeights.ts`). No floor.
-- **References:** `rpg7`, `usas` (rounds that stop at the cursor).
-- **Real weapon:** M202A1 FLASH: four 66 mm rockets, 12 kg loaded, 114 m/s (Wikipedia). Incendiary effect deferred.
-- **Why (owner, 2026-10-08):** the endgame comeback weapon, a near-certain kill. One trigger pull fires all four rockets together in a fixed, evenly spaced 60° fan (no random spread, no pellet jitter; the beta fired the four at once with a random ±3° deviation each, ±5° moving, and random start offsets) that bursts at the cursor (`toMouseHit`, as the USAS-12 and GL-06). Neighbouring rockets are 20° apart, so their blast centres sit 2 d sin 10° apart: 5.2 u at 15 u, 6.9 u at 20 u, 8.7 u at 25 u, never more than the 10 u at which the full-damage discs (rad.min 5) would part, so the strip tiles with no gap from 15 to 25 u. Each blast deals 125 (two full ones kill a full-health A2 player: 2 x 125 x 0.546 = 136.5) with a 16 u reach (the rebirth frag's 15.6 is the next biggest player weapon; a normal air strike bomb's 17.5 stays bigger, as the owner asked on 2026-10-08: the bombs grew x1.25 rather than the M202 shrinking); a level 2 armoured player anywhere across the strip at 15-25 u dies (`packages/sim/test/m202.test.ts`). Explosion obstacle multiplier x42: one blast's full 5250 breaks every destructible obstacle (the toughest: the bunker glass wall `glass_wall_12_2` 5000, the potato silo 2500, the tyre 1500), plated ones included (`armorPiercing` / `stonePiercing`: the ammo crates `crate_04` / `crate_06`, the plated stones, statues, safes and `stone_wall_int_4`); indestructible obstacles (`destructible: false`: building exterior walls) stay whole. Destructible walls are the interior walls (house, cabin, barn, bank, police, mansion, hut, Reserve), shack and grassy walls, glass walls and archway columns. The shooter slides 2 u back (`recoilKnockback`, a damped slide pushed out of obstacles every tick). Its explosion has its own client effect, `m202`: a 1.6 u camera shake for 1.6 s, felt to 120 u (full within 30 u), off with the Screen shake setting.
+Owner-approved update (2026-10-10): four sequential rockets, 0.035 s between shots, one trigger pull.
+Four finite charges; discarded when empty; no reload. Standing/moving spread 2/4 degrees; no fixed fan.
+Damage remains 25 direct + 125 maximum blast per rocket; radius 5–16, range 75 u, speed 55 u/s.
+Recoil is 0.5 u per rocket (2 u total). The existing loot weights and obstacle piercing remain.
+See `second-wave-gun-specs-draft.md` for the complete approved second-wave table.
 
 ## 3. Class ladders (survev baseline + new guns, TTK against armour)
 

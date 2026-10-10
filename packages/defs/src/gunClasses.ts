@@ -38,7 +38,7 @@ const CLASSES: Readonly<Record<GunClass, readonly string[]>> = {
         "vz61_dual",
     ],
     smg: ["mp5", "mac10", "ump9", "vector", "vector45", "scorpion", "m1a1", "bizon", "m1928", "asval", "p90"],
-    shotgun: ["m870", "m1100", "mp220", "saiga", "spas12", "m1014", "usas", "spas16", "dp12", "aa12"],
+    shotgun: ["m870", "m1100", "mp220", "saiga", "spas12", "m1014", "usas", "spas16", "dp12", "aa12", "jackhammer"],
     assault: [
         "ak47",
         "scar",
@@ -72,9 +72,11 @@ const CLASSES: Readonly<Record<GunClass, readonly string[]>> = {
         "hecate",
         "lynx",
         "boys",
+        "pvg42",
+        "maadi",
     ],
-    lmg: ["dp28", "bar", "m249", "qbb97", "pkp", "imbel", "m60", "mg42", "dshk"],
-    launcher: ["m79", "mgl", "gl06", "rpg7", "panzerfaust", "m202"],
+    lmg: ["dp28", "bar", "m249", "qbb97", "pkp", "imbel", "m60", "mg42", "dshk", "rpd", "bren", "mg3", "negev", "kpv"],
+    launcher: ["m79", "mgl", "gl06", "rpg7", "panzerfaust", "m202", "nlaw", "paw20", "bazooka"],
     special: ["potato_cannon", "potato_smg", "bugle", "m9_cursed", "potato_lmg"],
 };
 

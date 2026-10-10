@@ -18,6 +18,7 @@ import { dirname, join } from "node:path";
 import { type AmmoDef, GameObjectDefs, type GunDef, gunClass } from "../../packages/defs/src/index.ts";
 import {
     DRAWN_LOOT_ICONS,
+    drawnLootIconSprite,
     NEW_AMMO_IDS,
     NEW_GUN_LOOT_FALLBACKS,
     NEW_GUN_LOOT_ICONS,
@@ -316,10 +317,18 @@ export function installNewGunAssets(options: InstallOptions): InstallReport {
         const file = newGunIconPath(sprite);
         const icon = cut.get(id);
         const fallback = NEW_GUN_LOOT_FALLBACKS[id]!;
-        if (icon || DRAWN_LOOT_ICONS.includes(id)) {
+        // Second-wave beta guns can borrow a committed launcher's drawn icon until their own art arrives.
+        const drawnDonor = DRAWN_LOOT_ICONS.find((name) => drawnLootIconSprite(name) === fallback);
+        if (icon || drawnDonor) {
             mkdirSync(dirname(join(dest, file)), { recursive: true });
-            writeFileSync(join(dest, file), encodePng(icon ?? drawnLootIconImage(id)));
-            const origin: AssetOrigin = !icon ? "drawn" : DUAL_ICONS[id] ? "composed" : "owner";
+            writeFileSync(join(dest, file), encodePng(icon ?? drawnLootIconImage(drawnDonor!)));
+            const origin: AssetOrigin = !icon
+                ? DRAWN_LOOT_ICONS.includes(id)
+                    ? "drawn"
+                    : "fallback"
+                : DUAL_ICONS[id]
+                  ? "composed"
+                  : "owner";
             report.icons[id] = { file, origin, from: icon ? sheetDir : fallback };
             continue;
         }

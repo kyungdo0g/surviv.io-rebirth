@@ -138,10 +138,13 @@ describe("single-use guns (new-gun-stats.md 4.2)", () => {
         // the rockets burst at the cursor (owner, 2026-10-08), so aim 30 u ahead
         send(game, p, { shootHold: true, shootStart: true, toMouseLen: 30 });
         game.step();
-        send(game, p, {});
+        send(game, p, { toMouseLen: 30 });
+        expect(game.bullets.active.filter((b) => b.bulletType === "bullet_m202")).toHaveLength(1);
+        expect(wm.activeSlot.ammo).toBe(3);
+        steps(game, 12);
         expect(game.bullets.active.filter((b) => b.bulletType === "bullet_m202")).toHaveLength(4);
         expect(wm.activeSlot.ammo).toBe(0);
-        expect(p.shotSeq).toBe(1);
+        expect(p.shotSeq).toBe(4);
         steps(game, 55);
         expect(wm.weapons[WeaponSlot.Primary].type).toBe("");
         expect(wm.curWeapIdx).toBe(WeaponSlot.Melee);
@@ -261,8 +264,8 @@ describe("DShK carry weight (new-gun-stats.md 4.1)", () => {
         wm.setWeapon(WeaponSlot.Secondary, "dshk", 30);
         expect(p.carrySpeed()).toBe(-4);
         expect(speed()).toBe(7);
-        // other guns carry nothing
-        for (const id of NEW_GUN_IDS.filter((g) => g !== "dshk")) {
+        // Only the three heavy second/first-wave guns carry weight.
+        for (const id of NEW_GUN_IDS.filter((g) => !["dshk", "negev", "kpv"].includes(g))) {
             wm.setWeapon(WeaponSlot.Secondary, id, 1);
             wm.setWeapon(WeaponSlot.Primary, id, 1);
             expect(p.carrySpeed(), id).toBe(0);

@@ -57,7 +57,8 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * span -512..2560 in 11 bits per axis (steps of 3072 / 2047, about 1.5007; was the original's -512..1536 in 10), for
  * maps up to 2304 a side.
  */
-export const PROTOCOL_SCHEMA_VERSION = 23;
+// 24: second-wave gun/bullet/explosion IDs change the rebirth registry; no record layout changes.
+export const PROTOCOL_SCHEMA_VERSION = 24;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 
