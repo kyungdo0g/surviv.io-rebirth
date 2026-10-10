@@ -16,11 +16,29 @@
 // The odds of fighting: FIGHT_BASE, more for a bold persona (aggressionBias) or a risk taker, for game sense, for its
 // own health against the enemy's estimate, for the better melee weapon (damage per second from the defs), and for an
 // enemy standing still with its back turned.
+// Early-game pacing (BrainFeatures.earlyPace, the owner's early-deaths report of 2026-10-08): two unarmed players with
+// loot close by go for the loot rather than a long fist duel (scripts/earlyDeaths.ts, 200 players on the main map: 683
+// fist duels in 3 matches, 60 players punched dead by unarmed ones in the first minute). A gun lying in
+// view within LOOT_NEAR or a crate worth breaking within CRATE_NEAR takes LOOT_PENALTY off the odds, and a duel that
+// has gone on DUEL_LONG seconds with such loot close by is dropped for it (the decision turns to "leave it be").
+// A bot losing a fist fight in the loot phase gets out of it (losingFistFight): once it has taken LOSING_TAKEN damage
+// since the fight began and either stands LOSING_GAP under the enemy's estimated health (its own swings that land count:
+// perception/enemyIntel.ts) or is down to LOSING_LOW, it neither presses the duel nor punches back, and runs
+// (flight.ts), to a gun when one is in view. A bot punched once while already hurt still punches back (round 5: nobody
+// runs from one bare-handed player on health alone; fists deal 24, so a bot that starts a fight hurt still mostly
+// loses it). Fist and melee deaths in the first 2 minutes at 200 players, 3 seeds: 141 before, 98 after. With the same speed on both sides the chaser's 3 s fist patience ends the chase. (After
+// the loot-phase pacing, 200 players on the main map: 129 unarmed bots punched dead by unarmed ones in the first 2
+// minutes of 3 matches, the largest single cause; the 0.7 punch-back kept the losing side swinging to the end.)
 import { v2 } from "@rebirth/core";
 import { GameObjectDefs, hasDef, type MeleeDef, WeaponSlot } from "@rebirth/defs";
+import { distanceToCollider } from "../geom.ts";
+import { gunInfo } from "../knowledge/weapons.ts";
 import type { Contact } from "../perception/world.ts";
 import { enemyGun, faces } from "./assess.ts";
+import { containerValue, meleeBreaks } from "./containers.ts";
 import type { BrainCtx } from "./context.ts";
+import { paceStrength } from "./earlyPace.ts";
+import { breakableNow } from "./scavenge.ts";
 
 /** An unarmed enemy this close gets a decision. */
 export const DECIDE_RANGE = 9;
@@ -41,6 +59,23 @@ const UNAWARE_DEG = 90;
 const UNAWARE_BONUS = 0.25;
 const FIGHT_MIN = 0.12;
 const FIGHT_MAX = 0.92;
+/** earlyPace: loot close by (a gun in view, a crate worth breaking) lowers the odds; a duel this long yields to it. */
+const LOOT_NEAR = 15;
+const CRATE_NEAR = 10;
+const CRATE_WORTH = 30;
+const LOOT_PENALTY = 0.3;
+const DUEL_LONG = 5;
+/** earlyPace: the loot phase (paceStrength) takes up to this much off the odds: people loot first. */
+const FIST_PACE = 0.25;
+/**
+ * earlyPace: a fist fight is lost after taking this much damage in it (more for a risk taker) while this far under the
+ * enemy's estimated health. The fight's start is the bot's health when the enemy first came within DECIDE_RANGE, kept
+ * while it stays within CHASE_RANGE and forgotten FIGHT_FORGET seconds after.
+ */
+const LOSING_TAKEN = 40;
+const LOSING_GAP = 15;
+const LOSING_LOW = 40;
+const FIGHT_FORGET = 10;
 
 /** Damage per second of a melee weapon (fists for an unknown id). */
 export function meleeDps(id: string): number {
@@ -75,8 +110,49 @@ export function fightOdds(ctx: BrainCtx, t: Contact): number {
         0.2 * (ctx.skill.g - 0.5) +
         0.4 * health +
         0.5 * edge +
-        unaware;
+        unaware -
+        (ctx.features.earlyPace ? FIST_PACE * paceStrength(ctx) + (lootNear(ctx) ? LOOT_PENALTY : 0) : 0);
     return Math.min(FIGHT_MAX, Math.max(FIGHT_MIN, odds));
+}
+
+/**
+ * Whether the unarmed bot is losing its fist fight with the bare-handed `t` in the loot phase (see the header): it
+ * gets out of it instead of punching on (fistDuelScore, fightScore's punch-back, flight.ts).
+ */
+export function losingFistFight(ctx: BrainCtx, t: Contact): boolean {
+    if (!ctx.features.earlyPace || ctx.armed || t.downed || !bareHanded(ctx, t) || paceStrength(ctx) <= 0) return false;
+    const hp = ctx.self.health;
+    const d = v2.distance(t.pos, ctx.self.pos);
+    const fights = ctx.mem.early.fistFights;
+    let f = fights.get(t.id);
+    if (f && ctx.now - f.last > FIGHT_FORGET) {
+        fights.delete(t.id);
+        f = undefined;
+    }
+    if (!f) {
+        if (d > DECIDE_RANGE) return false;
+        f = { hp, last: ctx.now };
+        fights.set(t.id, f);
+    }
+    if (d <= CHASE_RANGE) f.last = ctx.now;
+    const taken = f.hp - hp;
+    return (
+        taken >= LOSING_TAKEN * (0.8 + 0.4 * ctx.persona.riskTolerance) &&
+        (hp < LOSING_LOW || hp < ctx.model.intel.of(t.id).estHealth - LOSING_GAP)
+    );
+}
+
+/** A gun lying in view within LOOT_NEAR, or a crate worth breaking with fists within CRATE_NEAR (earlyPace). */
+export function lootNear(ctx: BrainCtx): boolean {
+    const me = ctx.self.pos;
+    for (const l of ctx.model.loot.values())
+        if ((gunInfo(l.type)?.score ?? 0) > 0 && v2.distance(l.pos, me) < LOOT_NEAR) return true;
+    for (const o of ctx.model.obstacles) {
+        if (o.view.layer !== ctx.self.layer || !breakableNow(o) || o.def.airdropCrate) continue;
+        if (distanceToCollider(me, o.col) < CRATE_NEAR && meleeBreaks(ctx.self, o) && containerValue(o) >= CRATE_WORTH)
+            return true;
+    }
+    return false;
 }
 
 /**
@@ -91,11 +167,19 @@ export function fistDuelScore(ctx: BrainCtx): number | null {
     const { now } = ctx;
     for (const [id, f] of fists) if (now >= f.until) fists.delete(id);
     let f = fists.get(t.id);
+    // earlyPace: losing it, the bot leaves the fight (held: it does not come back for it)
+    if (losingFistFight(ctx, t)) {
+        fists.set(t.id, { fight: false, until: now + DECISION_HOLD });
+        return 0;
+    }
     if (!f) {
         if (d > DECIDE_RANGE) return null;
         f = { fight: ctx.rng.next() < fightOdds(ctx, t), until: now + DECISION_HOLD };
         fists.set(t.id, f);
     }
+    // earlyPace: a duel that drags on gives way to the loot close by
+    if (f.fight && ctx.features.earlyPace && now - (f.until - DECISION_HOLD) > DUEL_LONG && lootNear(ctx))
+        f.fight = false;
     if (f.fight && d <= CHASE_RANGE) return DUEL_SCORE;
     if (d < IN_REACH && faces(t, ctx.self.pos, FACING_DEG)) return IN_REACH_SCORE;
     // left be: the old rule (fightScore: meleeAggression within 4 units) still decides about one standing right there

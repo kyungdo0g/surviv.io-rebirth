@@ -27,6 +27,7 @@ import type { Contact } from "../perception/world.ts";
 import { skillSigma } from "../skill.ts";
 import { findCover } from "./combat.ts";
 import type { BrainCtx } from "./context.ts";
+import { leftBe } from "./earlyPace.ts";
 import type { BrainFeatures } from "./features.ts";
 
 /** A above this: the bot wins the trade clearly (push); below its negative: it loses (disengage). */
@@ -323,6 +324,8 @@ export function engagingMe(ctx: BrainCtx, t: Contact): boolean {
  * opened 44 exchanges at A < -1 and won 9 of the 33 that ended in a kill; at -1..-0.3 it still won 56%.
  */
 export function holdFire(ctx: BrainCtx, t: Contact, d: number): boolean {
+    // early-game pacing: an enemy the bot leaves be is not shot at on the move either (earlyPace.ts)
+    if (ctx.features.earlyPace && leftBe(ctx, t, d)) return true;
     if (!ctx.features.assess || t.downed || d < 12) return false;
     const a = ctx.assessment;
     if (!a || a.targetId !== t.id || a.advantage > -LOST_BAND) return false;

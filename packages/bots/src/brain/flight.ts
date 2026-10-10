@@ -27,6 +27,7 @@ import { addCombatLayer, findCoverFrom } from "./combat.ts";
 import { type BrainCtx, emptyIntent, type Intent, nearFailedGoal, reachable } from "./context.ts";
 import { dangerToLeave, inDangerBuilding, noteDanger } from "./danger.ts";
 import { planLoot } from "./explore.ts";
+import { losingFistFight } from "./fists.ts";
 import { closingSpeed } from "./pursuit.ts";
 import { strikeBlocks } from "./strikes.ts";
 import { zonePressure } from "./survival.ts";
@@ -78,6 +79,8 @@ const RUN = 25;
 const BORDER = 14;
 /** An armed threat this close with a line of fire: running only gives it free shots (disengage.ts BRAWL). */
 const BRAWL = 10;
+/** Getting out of a fist fight the bot is losing (earlyPace, fists.ts losingFistFight): above the punch-back's 0.7. */
+const LOSING_SCORE = 0.75;
 const SMOKE_EVERY = 12;
 const SMOKE_RANGE = 30;
 /** Score of walking on out of the way of a building the bot was chased out of (below a gun to grab, 0.7). */
@@ -231,7 +234,8 @@ export function flightScore(ctx: BrainCtx): number {
     }
     // a lone enemy without a gun is fought or left be, whatever the bot's health (round 5, report 35: same speed, no
     // gun to run from; brain/fists.ts)
-    if (!armedThreats.length && threats.length < 2) return 0;
+    // (except a fist fight it is losing in the loot phase: it gets out of it, fists.ts)
+    if (!armedThreats.length && threats.length < 2) return close && losingFistFight(ctx, close) ? LOSING_SCORE : 0;
     const hasHeals = (self.inventory.healthkit ?? 0) + (self.inventory.bandage ?? 0) > 0;
     const low = self.health < fleeHealth(ctx.persona) && hasHeals;
     if (!low && armedThreats.length < 3) return 0;
@@ -255,7 +259,8 @@ export function planFlight(ctx: BrainCtx): Intent {
     const me = self.pos;
     const leave = threats.length ? null : dangerToLeave(ctx);
     const away = leave ? v2.normalizeSafe(v2.sub(me, leave.pos)) : awayDir(ctx, threats);
-    const gun = !ctx.armed && (armedThreats.length || leave) ? safeGun(ctx, armedThreats) : null;
+    const losing = !armedThreats.length && !!primary && losingFistFight(ctx, primary);
+    const gun = !ctx.armed && (armedThreats.length || leave || losing) ? safeGun(ctx, armedThreats) : null;
     const gunDist = gun ? v2.distance(gun.pos, me) : Number.POSITIVE_INFINITY;
     if (gun && gunDist < GUN_GRAB) {
         // on it: pick it up on the run (the loot behaviour's pickup: the closest item, slot to replace, retries)

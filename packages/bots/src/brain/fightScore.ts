@@ -27,7 +27,8 @@ import { gunRank } from "../knowledge/gunTiers.ts";
 import { isMeleeWeapon } from "../knowledge/weapons.ts";
 import { ADVANTAGE_BAND, enemyGun, engagingMe, LOST_BAND } from "./assess.ts";
 import { type BrainCtx, nearFailedGoal } from "./context.ts";
-import { fistDuelScore } from "./fists.ts";
+import { pacedFightScore } from "./earlyPace.ts";
+import { fistDuelScore, losingFistFight } from "./fists.ts";
 import { isBusy, isWeakened } from "./opportunity.ts";
 import { closingSpeed, givenUp, notePursuit, shootRange } from "./pursuit.ts";
 import { zonePressure } from "./survival.ts";
@@ -44,6 +45,12 @@ const STARVED_SCORE = 0.3;
 
 /** Utility of fighting the selected target (0..1). */
 export function fightScore(ctx: BrainCtx): number {
+    const s = rawFightScore(ctx);
+    // early-game pacing: the loot phase holds back unprovoked fights (earlyPace.ts)
+    return ctx.features.earlyPace ? pacedFightScore(ctx, s, confidence(ctx)) : s;
+}
+
+function rawFightScore(ctx: BrainCtx): number {
     const pursuit = ctx.features.pursuit;
     if (pursuit) notePursuit(ctx);
     const base = pursuit ? patientFightScore(ctx) : baseFightScore(ctx);
@@ -110,7 +117,10 @@ export function patientFightScore(ctx: BrainCtx): number {
         // unarmed: punch back when attacked (the 0.7 retaliation); against an unarmed one, the fist fight it chose or
         // the punch of one about to swing (brain/fists.ts; its clock ends a chase that goes nowhere: notePursuit)
         if (!t.visible) return 0;
-        if (d <= 6 && now - model.lastHurt < 2) return 0.7;
+        // (earlyPace: not while losing a fist fight in the loot phase: it gets out of it, fists.ts; asked on every think
+        // so the fight's start is noted before the first punch lands)
+        const losing = losingFistFight(ctx, t);
+        if (d <= 6 && now - model.lastHurt < 2 && !losing) return 0.7;
         const duel = fistDuelScore(ctx);
         if (duel !== null) return duel;
         if (d > 6) return 0;

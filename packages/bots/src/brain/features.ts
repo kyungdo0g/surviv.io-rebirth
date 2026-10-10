@@ -102,6 +102,13 @@ export interface BrainFeatures {
      * break within a moment (brain/barrelShot.ts)
      */
     barrelShot: boolean;
+    // early-game pacing (the owner's report of 2026-10-08: bots die en masse from the very start)
+    /**
+     * the loot phase, until the second gas stage ends: an armed bot takes on an enemy it is not already fighting only at
+     * low persona odds, does not shoot at one it leaves be and looks for its loot away from it; shot at, hit, rushed
+     * or met at arm's reach it fights (brain/earlyPace.ts); fist duels near loot give way to the loot (brain/fists.ts)
+     */
+    earlyPace: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -138,6 +145,7 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "puzzles",
     "blastAware",
     "barrelShot",
+    "earlyPace",
 ];
 
 export type BrainName = "baseline" | "smart";

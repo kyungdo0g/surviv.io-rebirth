@@ -24,6 +24,7 @@ import { roofRegions } from "../perception/roofs.ts";
 import type { Contact, WorldModel } from "../perception/world.ts";
 import { enemyGun } from "./assess.ts";
 import type { BrainCtx, Intent } from "./context.ts";
+import { nearLeftBe } from "./earlyPace.ts";
 import type { DangerArea } from "./pursuitMemory.ts";
 import { strikeBlocks } from "./strikes.ts";
 
@@ -154,7 +155,8 @@ export function dangerToLeave(ctx: BrainCtx): DangerArea | null {
  * bot straight back at it every time it lost sight of it (match probe, squads: explore <-> flee every 4 s).
  */
 export function avoidPos(ctx: BrainCtx, p: Vec2): boolean {
-    return inDanger(ctx, p, false) || strikeBlocks(ctx, p);
+    // early-game pacing: not up to an armed enemy the bot leaves be either (earlyPace.ts)
+    return inDanger(ctx, p, false) || strikeBlocks(ctx, p) || (ctx.features.earlyPace && nearLeftBe(ctx, p));
 }
 
 /** avoidPos for buildings only (the flight's own checks keep it away from a threat in the open). */

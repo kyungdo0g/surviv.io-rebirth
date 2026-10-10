@@ -12,12 +12,18 @@
 //   the gun and re-engages armed (the break behaviour scores CRATE_SCORE: above the fist fight and the flight).
 // Round 5 still holds: bare hands against bare hands is brain/fists.ts's fight-or-leave decision, and every decision
 // here is held per enemy, so no flee / come back loop starts.
+// Early deaths (owner, 2026-10-08, scripts/earlyDeaths.ts, 200 players on the main map, 3 seeds): 107 rushes, 46% of
+// them shot dead by their target, 9% killing it; rushes were decided from 16 u and pressed to 24 u, whatever the gunman
+// did. Now a rush is decided only for an enemy within 12 u that is not already shooting at the bot, pressed while it
+// stays within 16 u, and a rusher that loses the race breaks off (the decision turns to no, held): hit while still
+// beyond the punch's reach with its health under LOST_HP (lower for a risk taker), or still more than LOST_GAP away
+// after RUSH_TIME seconds.
 import { type Vec2, v2 } from "@rebirth/core";
 import { WeaponSlot } from "@rebirth/defs";
 import { colliderCenter, colliderRadius, distanceToCollider } from "../geom.ts";
 import { gunInfo } from "../knowledge/weapons.ts";
 import type { Contact, SeenObstacle } from "../perception/world.ts";
-import { enemyGun } from "./assess.ts";
+import { enemyGun, engagingMe } from "./assess.ts";
 import { freeDir, reactedTo, shotCheck } from "./combat.ts";
 import { containerValue, finishSeconds, meleeBreaks } from "./containers.ts";
 import { type BrainCtx, emptyIntent, type Intent, reachable } from "./context.ts";
@@ -28,8 +34,14 @@ import { type BreakChoice, breakableNow } from "./scavenge.ts";
 /** The early game: the bot's first this many seconds alive. */
 export const EARLY_ALIVE = 60;
 /** A rush is decided for an armed enemy this close, and pressed while it stays this close. */
-const RUSH_DECIDE = 16;
-const RUSH_CHASE = 24;
+const RUSH_DECIDE = 12;
+const RUSH_CHASE = 16;
+/** Losing the race: hit this lately beyond JUKE_END with less health than LOST_HP (risk takers hold on longer)... */
+const LOST_HIT = 1;
+const LOST_HP = 60;
+/** ...or still farther than LOST_GAP after RUSH_TIME seconds of rushing. */
+const RUSH_TIME = 5;
+const LOST_GAP = 6;
 /** One decision per enemy holds this long. */
 const HOLD = 20;
 /** Score of a rush (above the unarmed flight's 0.8). */
@@ -102,11 +114,21 @@ export function rushTarget(ctx: BrainCtx): Contact | null {
     const em = ctx.mem.early;
     let c = held(em.rush, ctx.now, best.id);
     if (!c) {
-        if (bestD > RUSH_DECIDE) return null;
+        // a gunman already shooting at the bot is no one to run at
+        if (bestD > RUSH_DECIDE || engagingMe(ctx, best)) return null;
         c = { yes: ctx.rng.next() < rushOdds(ctx, best), until: ctx.now + HOLD };
         em.rush.set(best.id, c);
     }
+    if (c.yes && lostRace(ctx, bestD, c.until - HOLD)) c.yes = false;
     return c.yes ? best : null;
+}
+
+/** The rush begun at `since` is lost (see the header): hit short of the punch with little health, or not closing in. */
+function lostRace(ctx: BrainCtx, d: number, since: number): boolean {
+    if (d <= JUKE_END) return false;
+    const hp = LOST_HP * (1.3 - 0.6 * ctx.persona.riskTolerance);
+    if (ctx.now - ctx.model.lastHurt < LOST_HIT && ctx.self.health < hp) return true;
+    return ctx.now - since > RUSH_TIME && d > LOST_GAP;
 }
 
 function gunNear(ctx: BrainCtx): boolean {

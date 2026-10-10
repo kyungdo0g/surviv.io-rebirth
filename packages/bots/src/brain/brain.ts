@@ -26,6 +26,7 @@ import { updateTrade } from "./disengage.ts";
 import { dodge } from "./dodge.ts";
 import { DoorBrain } from "./doors.ts";
 import { crateFirstChoice, crateFirstScore } from "./early.ts";
+import { leftBe, pacedExtension } from "./earlyPace.ts";
 import { escapeFrag } from "./escapeFrag.ts";
 import { bestLoot, lootScore, planExplore, planLoot } from "./explore.ts";
 import { EXTENSION_BEHAVIOURS } from "./extensions.ts";
@@ -221,7 +222,11 @@ export class Brain {
         if (ctx.features.sweep) options.push(["sweep", sweep, () => planSweep(ctx)]);
         // behaviours of enabled features only: a disabled one is never scored (no rng draws, no memory writes)
         for (const ext of EXTENSION_BEHAVIOURS) {
-            if (ctx.features[ext.feature]) options.push([ext.name, ext.score(ctx), () => ext.plan(ctx)]);
+            if (!ctx.features[ext.feature]) continue;
+            const s = ext.score(ctx);
+            // early-game pacing: joining others' fights and hunting down a lost one wait for the hunt (earlyPace.ts)
+            const score = ctx.features.earlyPace ? pacedExtension(ctx, ext.name, s) : s;
+            options.push([ext.name, score, () => ext.plan(ctx)]);
         }
         options.push(["explore", EXPLORE_SCORE, () => planExplore(ctx)]);
         // 50v50: local numbers, the faction's formation instead of the regroup, role priorities (factionFight.ts)
@@ -265,7 +270,11 @@ export class Brain {
             // round 4: running from a chaser, a frag thrown back at its path (escapeFrag.ts) comes first
             if (!intent.throwPlan && ESCAPE_THROW.has(intent.behaviour))
                 intent.throwPlan = escapeFrag(ctx, intent, thinkDt);
-            if (!intent.throwPlan && SMART_THROW.has(intent.behaviour)) intent.throwPlan = smartGrenade(ctx, thinkDt);
+            // (early-game pacing: no frag at an enemy the bot leaves be, earlyPace.ts)
+            const t = ctx.target;
+            const paced = ctx.features.earlyPace && t !== null && leftBe(ctx, t, ctx.targetDist);
+            if (!intent.throwPlan && SMART_THROW.has(intent.behaviour) && !paced)
+                intent.throwPlan = smartGrenade(ctx, thinkDt);
             // 50v50: the Grenadier's own explosives (factionRoles.ts)
             if (!intent.throwPlan && ctx.features.faction && SMART_THROW.has(intent.behaviour))
                 intent.throwPlan = grenadierThrow(ctx, thinkDt);
