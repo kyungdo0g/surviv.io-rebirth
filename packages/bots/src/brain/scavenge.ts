@@ -207,7 +207,7 @@ function committed(ctx: BrainCtx, o: SeenObstacle): boolean {
  * loaded one, for the last hits) and a gun that hits what it aims at (never at plating, nor next to it: sprayed pistol
  * and shotgun rounds struck the plated crate beside the target).
  */
-function breakGun(ctx: BrainCtx, o: SeenObstacle, spare = false): HeldGun | undefined {
+export function breakGun(ctx: BrainCtx, o: SeenObstacle, spare = false): HeldGun | undefined {
     if (plated(o) || platedNear(ctx, o)) return undefined;
     // basements: punched only underground (bunker and vault walls send rounds back at the shooter)
     if (ctx.features.basements && (o.view.layer & 1) === 1) return undefined;

@@ -8,13 +8,14 @@
 // walls and the greenhouse glass (the house rule).
 import { v2 } from "@rebirth/core";
 import { WeaponSlot } from "@rebirth/defs";
-import { distanceToCollider, segmentHits } from "../geom.ts";
+import { colliderCenter, distanceToCollider, segmentHits } from "../geom.ts";
 import { type BlockerSink, BREAK_BITS } from "../nav/breakThrough.ts";
 import { sameLayer } from "../nav/cellGrid.ts";
 import type { PersonaParams } from "../persona.ts";
 import type { SkillProfile } from "../skill.ts";
-import { closestPoint, meleeBreaks, meleeReach, swingLands } from "./containers.ts";
+import { closestPoint, meleeBreaks, meleeReach, nearSurface, swingLands } from "./containers.ts";
 import type { BehaviourName, BrainCtx, Intent } from "./context.ts";
+import { breakGun } from "./scavenge.ts";
 
 /** A reported obstacle is acted on this long after the follower last reported it... */
 const FRESH = 0.6;
@@ -146,6 +147,22 @@ export class BreakThrough implements BlockerSink {
             return;
         }
         const aim = closestPoint(o, me);
+        // in a hurry (between a puzzle's pieces: the piece window runs) a loaded gun shoots it down faster than fists
+        // (the HQ archive: the office door swings onto a table, punched for 3 s on the way to the last switch)
+        const hurry = intent.behaviour === "puzzle" && ctx.mem.puzzle.stage === "press";
+        const gun = hurry ? breakGun(ctx, o, true) : undefined;
+        if (gun) {
+            intent.slot = gun.slot;
+            intent.aim = colliderCenter(o.col);
+            intent.lookAt = intent.aim;
+            intent.stop = true;
+            intent.moveDir = null;
+            intent.fire = ctx.self.curWeapIdx === gun.slot && ctx.model.lineOfFire(me, nearSurface(o, me));
+            this.acted++;
+            this.actingId = o.view.id;
+            this.actingAt = ctx.now;
+            return;
+        }
         intent.slot = WeaponSlot.Melee;
         intent.aim = aim;
         intent.lookAt = aim;
