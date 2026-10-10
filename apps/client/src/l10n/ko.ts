@@ -23,6 +23,13 @@ export const ko: Readonly<Record<string, string>> = {
     "game-the-air-drop": "공중 보급",
     "game-crushed": "깔렸습니다.",
     "game-the-air-strike": "공습",
+    // rebirth collapsing buildings (DamageType.Collapse; ui/killFeed.ts)
+    "game-was-buried-in-the": "이(가) 매몰되었습니다. 장소:",
+    "game-buried": "이(가) 매몰시켰습니다",
+    "game-in-the": "- 장소:",
+    "game-rubble": "잔해",
+    "game-a-collapse": "붕괴",
+    "game-the-collapse": "붕괴",
     "game-an-air-strike": "공습",
     "game-with": "을(를). 사용무기:",
     "game-promoted-to": "으(로) 승진했습니다",

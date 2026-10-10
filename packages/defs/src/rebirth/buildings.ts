@@ -6,6 +6,7 @@
 // building in rebirth/buildings/; this module lists them, their art and where they spawn.
 import type { LootSpawnerDef, MapDef, MapObjectDef } from "../types/index.ts";
 import { ARSENAL_ART, ARSENAL_UNLOCK, arsenal } from "./buildings/arsenal.ts";
+import { BLAST_DOOR_ART, blastDoorDefs } from "./buildings/blastDoors.ts";
 import {
     BLOCKHOUSE_CODE,
     BLOCKHOUSE_FACTIONS,
@@ -25,8 +26,10 @@ import { MILITARY_INFIRMARY_PUZZLE } from "./buildings/military/infirmary.ts";
 import { militaryBaseArt, militaryBaseDefs } from "./buildings/military/structure.ts";
 import { OUTPOST_FACTIONS, OUTPOST_PUZZLE, outpost, outpostArt } from "./buildings/outpost.ts";
 import { RADIO_ART, RADIO_CODE, RADIO_PUZZLE, radioStation } from "./buildings/radio.ts";
+import { rebirthBrittleWallDefs } from "./buildings/walls.ts";
 
 export * from "./buildings/arsenal.ts";
+export * from "./buildings/blastDoors.ts";
 export * from "./buildings/blockhouse.ts";
 export * from "./buildings/clinic.ts";
 export * from "./buildings/firestation.ts";
@@ -99,6 +102,8 @@ export function rebirthBuildingArt(): RebirthBuildingArt[] {
         ARSENAL_ART,
         ...BLOCKHOUSE_FACTIONS.map((f) => blockhouseArt(f.teamId)),
         ...militaryBaseArt(),
+        // the explosion-gated doors' images (wave 3, 2026-10-10)
+        ...BLAST_DOOR_ART,
     ];
 }
 
@@ -122,6 +127,17 @@ export function rebirthBuildings(generated: Readonly<Record<string, MapObjectDef
         // the military bases (the owner, 2026-10-08), after every earlier id
         ...militaryBaseDefs(known),
         // (the breakable partitions' types, buildings/walls.ts, come after the schema-25 ground decals: rebirth/defs.ts)
+    };
+}
+
+/**
+ * The wave-3 rebirth map types (the owner, 2026-10-10; schema 27), after the breakable partitions (rebirth/defs.ts):
+ * the collapsing buildings' breakable shells, the explosion-gated doors, then the wave-3 buildings.
+ */
+export function rebirthWave3Defs(generated: Readonly<Record<string, MapObjectDef>>): Record<string, MapObjectDef> {
+    return {
+        ...rebirthBrittleWallDefs(generated),
+        ...blastDoorDefs(),
     };
 }
 

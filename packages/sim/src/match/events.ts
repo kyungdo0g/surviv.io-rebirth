@@ -17,6 +17,8 @@ export function damageSourceOf(damageType: number, itemSourceType: string, mapSo
             return "airdrop";
         case DamageType.Airstrike:
             return "airstrike";
+        case DamageType.Collapse:
+            return "collapse";
     }
     if (itemSourceType && hasDef(itemSourceType)) {
         const type = GameObjectDefs[itemSourceType].type;

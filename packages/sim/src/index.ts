@@ -143,7 +143,7 @@ export {
     useItem,
 } from "./world/consumables.ts";
 export type { SimContext } from "./world/context.ts";
-export { BEHAVIOUR_FIELDS, type FieldStatus } from "./world/coverage.ts";
+export { BEHAVIOUR_FIELDS, FIELDS_AWAITING_DEFS, type FieldStatus } from "./world/coverage.ts";
 export { DeadBody, DeadBodySystem } from "./world/deadBodies.ts";
 export { disguiseOf, setOutfit } from "./world/disguise.ts";
 export {

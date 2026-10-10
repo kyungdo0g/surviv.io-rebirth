@@ -26,6 +26,13 @@ export const en: Readonly<Record<string, string>> = {
     "game-the-air-drop": "The air drop",
     "game-crushed": "crushed",
     "game-the-air-strike": "The air strike",
+    // rebirth collapsing buildings (DamageType.Collapse; ui/killFeed.ts)
+    "game-was-buried-in-the": "was buried in the",
+    "game-buried": "buried",
+    "game-in-the": "in the",
+    "game-rubble": "rubble",
+    "game-a-collapse": "a collapse",
+    "game-the-collapse": "The collapse",
     "game-an-air-strike": "an air strike",
     "game-with": "with",
     "game-promoted-to": "promoted to",

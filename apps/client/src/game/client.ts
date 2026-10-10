@@ -89,6 +89,8 @@ export interface ClientOptions {
     report?: ReportFlowDeps["submit"];
     /** the sandbox's ?rain=1 / ?rain=0: forces the weather instead of the map seed's (rebirth isRainyMatch) */
     rain?: boolean;
+    /** the sandbox's ?dark=1: darkness everywhere (dev check of fx/darkness.ts) */
+    dark?: boolean;
 }
 
 export class GameClient {
@@ -151,6 +153,7 @@ export class GameClient {
     private cameraPlaced = false;
     private readonly debugZoom: number | undefined;
     private readonly rain: boolean | undefined;
+    private readonly dark: boolean;
     private readonly ownsAudio: boolean;
     private readonly unbindAudio: () => void = () => {};
     private readonly unbindHitFx: () => void;
@@ -169,6 +172,7 @@ export class GameClient {
         this.hud = new DebugHud(!!opts.showDebugHud);
         this.debugZoom = opts.debugZoom;
         this.rain = opts.rain;
+        this.dark = !!opts.dark;
         this.renderer.overlay.addChild(this.hud.container);
         this.pingIndicator = new PingIndicator(textures);
         this.renderer.overlay.addChild(this.pingIndicator.container);
@@ -338,7 +342,9 @@ export class GameClient {
             fading,
             rainy: rainyMatch(map, this.rain),
             groundSurface: (pos) => queries.groundSurface(pos, 0),
+            dark: this.dark,
         });
+        this.bullets.shotListener = (pos, layer) => this.worldFx?.darkness.addShot(pos, layer);
         this.effects.setWorld(this.world, playerId);
         this.hitFx.setWorld(this.world, playerId);
         this.bullets.setMap(mapDef);

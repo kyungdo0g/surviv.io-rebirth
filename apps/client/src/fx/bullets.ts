@@ -166,6 +166,8 @@ export class BulletSystem {
     }
     /** rebirth Enhanced hit effects: told about every player hit after its original effects */
     hitListener: PlayerHitListener | null = null;
+    /** rebirth dark interiors (fx/darkness.ts): told about every gun shot (its muzzle position and layer) */
+    shotListener: ((pos: Vec2, layer: number) => void) | null = null;
 
     constructor(renderer: Renderer, textures: TextureStore, audio: AudioEngine, particles: ParticleSystem) {
         this.renderer = renderer;
@@ -212,6 +214,7 @@ export class BulletSystem {
     private playShot(e: BulletEvent, scene: BulletScene): void {
         const gun = GameObjectDefs[e.sourceType] as GunDef | undefined;
         if (gun?.type !== "gun") return;
+        this.shotListener?.(e.pos, e.layer);
         this.audio.playSound(gun.sound.shoot, {
             channel: e.shooterId === scene.localId ? "activePlayer" : "otherPlayers",
             pos: e.pos,

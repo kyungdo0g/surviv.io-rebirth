@@ -267,6 +267,7 @@ export class ExplosionSystem {
             mapSourceType: e.source.mapSourceType ?? "",
             sourceId: e.source.sourceId ?? 0,
             isExplosion: true,
+            explosionType: e.type,
             dir,
         };
         if (obj.kind === "obstacle") this.host.damageObstacle(obj, params);

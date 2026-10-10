@@ -86,7 +86,16 @@ export interface MapIndicatorView {
 }
 
 /** How a player died, derived from the damage type and the source defs (kill feed wording). */
-export type DamageSource = "gun" | "melee" | "explosion" | "gas" | "bleed" | "airdrop" | "airstrike" | "other";
+export type DamageSource =
+    | "gun"
+    | "melee"
+    | "explosion"
+    | "gas"
+    | "bleed"
+    | "airdrop"
+    | "airstrike"
+    | "collapse"
+    | "other";
 
 /** One kill (the original Kill message). */
 export interface KillEvent {
@@ -98,7 +107,7 @@ export interface KillEvent {
     killCreditId: number;
     /** kill count of the credited player after this kill */
     killerKills: number;
-    /** defs DamageType (Player 0, Bleeding 1, Gas 2, Airdrop 3, Airstrike 4) */
+    /** defs DamageType (Player 0, Bleeding 1, Gas 2, Airdrop 3, Airstrike 4, rebirth Collapse 5) */
     damageType: number;
     source: DamageSource;
     /** GameObjectDefs id of the weapon, "" for none */

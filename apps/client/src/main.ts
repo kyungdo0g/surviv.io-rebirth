@@ -11,7 +11,8 @@
 //   filled to capacity, the first gun or throwable equipped (any gun id, the new beta guns included: give=dshk,rpg7).
 //   &beta=1 turns on the new-gun beta (the server's GUN_BETA: new and survev-only guns as common floor loot).
 //   &lang=ko Korean HUD. &rain=1 makes the match rain, &rain=0 keeps it dry (else the map seed decides, 30 % of the
-//   classic and 50v50 seeds; fx/weather.ts).
+//   classic and 50v50 seeds; fx/weather.ts). &dark=1 makes every place pitch dark (a dev check of the unlit
+//   interiors' overlay, fx/darkness.ts: shots and explosions light it up).
 //   Match (M4): the loopback runs a sandbox match (starts at once, never ends) unless &sandbox=0 (a real match: two
 //   players alive for 10 s start it, the last one alive wins); &gas=fast uses a shortened red-zone stage table.
 //   Teams (M6): &team=2|4 makes the loopback a duo / squad game with &teammates=<n> idle teammates in the local
@@ -62,6 +63,7 @@ const SANDBOX_KEYS = [
     "debug",
     "building",
     "rain",
+    "dark",
 ] as const;
 
 function isSandboxRoute(route: URLSearchParams): boolean {
@@ -136,6 +138,7 @@ async function main() {
         teammates: Math.max(0, Math.min(3, Math.floor(Number(route.get("teammates") ?? 0) || 0))),
         building: route.get("building") ?? undefined,
         rain: route.has("rain") ? route.get("rain") === "1" : undefined,
+        dark: route.get("dark") === "1",
         net,
     });
 }

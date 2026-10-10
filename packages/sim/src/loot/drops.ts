@@ -288,6 +288,28 @@ export function dropEverythingOnDeath(ctx: SimContext, player: Player): void {
 }
 
 /**
+ * A player buried by a collapsing building (world/collapse.ts) loses what it carried instead of dropping it: the state
+ * dropEverythingOnDeath leaves behind, with no loot.
+ */
+export function buryEverythingOnDeath(player: Player): void {
+    const wm = player.weaponManager;
+    for (let i = 0; i < WeaponSlot.Count; i++) {
+        const weapon = wm.weapons[i];
+        if (!weapon.type) continue;
+        const def = getDef(weapon.type);
+        if (def.type === "gun") wm.setWeapon(i, "", 0);
+        else if (def.type === "melee" && !def.noDropOnDeath) weapon.type = "fists";
+        else if (def.type === "throwable") weapon.type = "";
+    }
+    wm.setCurWeapIndex(WeaponSlot.Melee);
+    player.inv.clear();
+    player.helmet = "";
+    player.chest = "";
+    player.backpack = "backpack00";
+    wm.showNextThrowable();
+}
+
+/**
  * Pirate's Bounty: a melee kill by a holder drops minCount-maxCount rolls of the pirate tier at the victim, plus a
  * rareChance roll of the rare tier, each pushed 7.5-11 in a random direction (survev player.ts:2727-2765).
  */

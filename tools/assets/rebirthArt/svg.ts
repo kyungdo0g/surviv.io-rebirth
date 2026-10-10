@@ -3,6 +3,7 @@
 // outline, door thresholds, roofs with a parapet and panel seams).
 import {
     floorFrame,
+    isSpriteWall,
     REBIRTH_ART_PX_PER_UNIT as PX,
     type RebirthBuildingLayout,
     type Room,
@@ -70,8 +71,8 @@ export function walls(
     fill: string | Readonly<Partial<Record<WallMaterial, string>>>,
     outline: string,
 ): string {
-    // breakable (wood) partitions draw their own sprite, so a broken one leaves bare floor
-    const solid = layout.walls.filter((seg) => wallMaterial(layout, seg) !== "wood");
+    // breakable (wood, brittle) walls draw their own sprite, so a broken one leaves bare floor
+    const solid = layout.walls.filter((seg) => !isSpriteWall(wallMaterial(layout, seg)));
     const boxes = solid.map(([x0, y0, x1, y1]) =>
         y0 === y1 ? ([x0, y0 - 0.5, x1, y0 + 0.5] as const) : ([x0 - 0.5, y0, x0 + 0.5, y1] as const),
     );
