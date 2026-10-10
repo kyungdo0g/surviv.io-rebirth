@@ -5,6 +5,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+    BORROWED_LOOT_FALLBACKS,
     CHARGE_AMMO_IDS,
     DRAWN_LOOT_ICONS,
     drawnLootIconSprite,
@@ -338,7 +339,7 @@ describe("new guns: art and sound fallbacks (src/rebirth/newGunAssets.ts)", () =
         // the closest look where the class has none: the SVD for the semi-automatic WA2000, the VSS for the AS Val
         const lookAlike: Record<string, string> = { wa2000: "dmr", asval: "dmr" };
         for (const [id, icon] of Object.entries(NEW_GUN_LOOT_FALLBACKS)) {
-            if (sheet.guns[id].assets.artPending && gunClass(id) === "launcher") {
+            if (BORROWED_LOOT_FALLBACKS.includes(id) && gunClass(id) === "launcher") {
                 expect(DRAWN_LOOT_ICONS.map(drawnLootIconSprite), id).toContain(icon);
                 continue;
             }
@@ -350,10 +351,11 @@ describe("new guns: art and sound fallbacks (src/rebirth/newGunAssets.ts)", () =
             expect(classOfIcon.get(icon), `${id}: ${icon}`).toBe(lookAlike[id] ?? gunClass(id));
         }
         // owner, 2026-10-08: the RPG-7 and the M202 showed the same icon; now no two new guns share one
-        const finished = NEW_GUN_IDS.filter((id) => !sheet.guns[id].assets.artPending);
+        for (const id of BORROWED_LOOT_FALLBACKS) expect(NEW_GUN_IDS, id).toContain(id);
+        const finished = NEW_GUN_IDS.filter((id) => !BORROWED_LOOT_FALLBACKS.includes(id));
         expect(new Set(finished.map((id) => NEW_GUN_LOOT_FALLBACKS[id])).size).toBe(finished.length);
         expect(DRAWN_LOOT_ICONS).toEqual(
-            NEW_GUN_IDS.filter((id) => gunClass(id) === "launcher" && !sheet.guns[id].assets.artPending),
+            NEW_GUN_IDS.filter((id) => gunClass(id) === "launcher" && !BORROWED_LOOT_FALLBACKS.includes(id)),
         );
         expect(drawnLootIconUrl("rpg7")).toBe("/rebirth/loot/loot-weapon-rpg7.svg");
     });

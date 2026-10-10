@@ -2,8 +2,9 @@
 // client names for them (packages/defs/src/rebirth/newGunAssets.ts; installPlan lists them), so it never requests a
 // missing one, with or without the owner's gitignored assets-user/ folder:
 // - loot icons, img/rebirth/loot-weapon-<id>.png: cut from the owner's line-art sheets (assets-user/source/
-//   2026-10-07-sheets/; gunIcons.ts), the two dual pistols composed from their single; anything without a drawing (the
-//   M79; every gun when the sheets or ffmpeg are missing) gets its fallback icon: the launchers our own drawn icon
+//   2026-10-07-sheets/; gunIcons.ts), the second wave's from the owner's loose sheet of 2026-10-10
+//   (secondWaveSheets.ts), the two dual pistols composed from their single; anything without a drawing (the M79; every
+//   gun when the sheets or ffmpeg are missing) gets its fallback icon: the launchers our own drawn icon
 //   (rebirthLootIcons.ts, rasterized here), the others a copy of an original gun's of the same class;
 // - sounds, audio/rebirth/guns/<name>.mp3: the owner's clip (assets-user/audio/guns/, MANIFEST.md) levelled to the
 //   original guns of its class (loudness.ts), else a copy of the donor's original file; the original sounds the owner
@@ -43,6 +44,7 @@ import {
 } from "./loudness.ts";
 import { decodePng, encodePng, type RgbaImage } from "./png.ts";
 import { drawnLootIconImage } from "./rebirthLootIcons.ts";
+import { cutSecondWaveIcons, SECOND_WAVE_SHEET_DIR } from "./secondWaveSheets.ts";
 
 export const SHEET_DIR = "assets-user/source/2026-10-07-sheets";
 export const USER_AUDIO = "assets-user/audio/guns";
@@ -228,6 +230,8 @@ export interface InstallOptions {
     /** the client's asset folder (apps/client/public/assets) */
     dest: string;
     sheetDir?: string;
+    /** the owner's second-wave sheets (secondWaveSheets.ts) */
+    secondWaveSheetDir?: string;
     userAudio?: string;
     /** force (true) or forbid (false) the ffmpeg steps; default: whether ffmpeg and ffprobe are on the PATH */
     ffmpeg?: boolean;
@@ -295,7 +299,7 @@ function installSound(
 
 /** Installs every new-gun loot icon and sound into `dest`; see the header. */
 export function installNewGunAssets(options: InstallOptions): InstallReport {
-    const { dest, sheetDir = SHEET_DIR, userAudio = USER_AUDIO } = options;
+    const { dest, sheetDir = SHEET_DIR, secondWaveSheetDir = SECOND_WAVE_SHEET_DIR, userAudio = USER_AUDIO } = options;
     const ffmpeg = options.ffmpeg ?? hasFfmpeg();
     const report: InstallReport = { icons: {}, sounds: {}, emotes: {}, ffmpeg, warnings: [] };
     if (!ffmpeg) {
@@ -313,11 +317,13 @@ export function installNewGunAssets(options: InstallOptions): InstallReport {
     }
     const sprites = readJson<Record<string, { path?: string }>>(SPRITE_MANIFEST);
     const cut = cutSheetIcons(sheetDir, report.warnings, ffmpeg);
+    const secondWave = cutSecondWaveIcons(secondWaveSheetDir, readImage, report.warnings, ffmpeg);
+    for (const [id, icon] of secondWave) cut.set(id, icon);
     for (const [id, sprite] of Object.entries(NEW_GUN_LOOT_ICONS)) {
         const file = newGunIconPath(sprite);
         const icon = cut.get(id);
         const fallback = NEW_GUN_LOOT_FALLBACKS[id]!;
-        // Second-wave beta guns can borrow a committed launcher's drawn icon until their own art arrives.
+        // a second-wave launcher without the owner's sheet borrows a first-wave launcher's drawn icon
         const drawnDonor = DRAWN_LOOT_ICONS.find((name) => drawnLootIconSprite(name) === fallback);
         if (icon || drawnDonor) {
             mkdirSync(dirname(join(dest, file)), { recursive: true });
@@ -329,7 +335,11 @@ export function installNewGunAssets(options: InstallOptions): InstallReport {
                 : DUAL_ICONS[id]
                   ? "composed"
                   : "owner";
-            report.icons[id] = { file, origin, from: icon ? sheetDir : fallback };
+            report.icons[id] = {
+                file,
+                origin,
+                from: icon ? (secondWave.has(id) ? secondWaveSheetDir : sheetDir) : fallback,
+            };
             continue;
         }
         const src = sprites[fallback]?.path;

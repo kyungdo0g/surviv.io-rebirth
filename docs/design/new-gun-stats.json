@@ -5267,8 +5267,7 @@
                     "nlaw_01": "flare_gun_01",
                     "nlaw_switch_01": "barrett_switch_01",
                     "nlaw_discard_01": "gun_pickup_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "launcher",
@@ -5418,8 +5417,7 @@
                     "paw20_01": "flare_gun_01",
                     "paw20_switch_01": "barrett_switch_01",
                     "paw20_reload_01": "potato_cannon_reload_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "launcher",
@@ -5572,8 +5570,7 @@
                     "bazooka_01": "flare_gun_01",
                     "bazooka_switch_01": "barrett_switch_01",
                     "bazooka_discard_01": "gun_pickup_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "launcher",
@@ -5700,8 +5697,7 @@
                     "pvg42_01": "sv98_01",
                     "pvg42_switch_01": "mosin_cycle_01",
                     "pvg42_discard_01": "gun_pickup_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "sniper",
@@ -5831,8 +5827,7 @@
                     "rpd_01": "m249_01",
                     "rpd_switch_01": "m249_switch_01",
                     "rpd_reload_01": "m249_reload_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "lmg",
@@ -5962,8 +5957,7 @@
                     "bren_01": "m249_01",
                     "bren_switch_01": "m249_switch_01",
                     "bren_reload_01": "m249_reload_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "lmg",
@@ -6086,8 +6080,7 @@
                     "jackhammer_01": "saiga_01",
                     "jackhammer_switch_01": "saiga_switch_01",
                     "jackhammer_reload_01": "saiga_reload_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "shotgun",
@@ -6217,8 +6210,7 @@
                     "mg3_01": "pkp_01",
                     "mg3_switch_01": "pkp_switch_01",
                     "mg3_reload_01": "pkp_reload_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "lmg",
@@ -6345,8 +6337,7 @@
                     "maadi_01": "sv98_01",
                     "maadi_switch_01": "mosin_cycle_01",
                     "maadi_discard_01": "gun_pickup_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "sniper",
@@ -6477,8 +6468,7 @@
                     "negev_01": "m249_01",
                     "negev_switch_01": "m249_switch_01",
                     "negev_reload_01": "m249_reload_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "lmg",
@@ -6609,8 +6599,7 @@
                     "kpv_01": "dp28_01",
                     "kpv_switch_01": "dp28_switch_01",
                     "kpv_reload_01": "dp28_reload_01"
-                },
-                "artPending": true
+                }
             },
             "infobox": {
                 "gunType": "lmg",
