@@ -69,6 +69,18 @@ function libraryDone(game: Game, bot: BotController): void {
     }
 }
 
+/**
+ * Stages the military base's PR #18 hidden rooms (the armory's gun cage, the HQ's archive, the infirmary's narcotics
+ * store) as already looted: a looter who knows them works all three on the way (they sit round the basement's stairs)
+ * and starts down only some 120 s in, too late for the vault and ten containers inside the 150 s.
+ */
+function militaryRoomsDone(game: Game, bot: BotController): void {
+    const rooms = ["military_armory_01", "military_hq_01", "military_infirmary_01"];
+    for (const s of puzzleSites(game.mapData)) {
+        if (rooms.includes(s.entry.building)) bot.bot.brain.mem.puzzle.finished.add(s.index);
+    }
+}
+
 /** Containers (destructible obstacles with loot) on the floor of the structure's underground grid. */
 function floorContainers(game: Game, type: string): number[] {
     const region = site(type).region;
@@ -166,6 +178,7 @@ describe("basements in a game", () => {
         const game = mainGame();
         const mil = "military_base_01";
         const { bot } = botNear(game, mil, "looter", "expert", true, { x: 0, y: 60 });
+        militaryRoomsDone(game, bot);
         const containers = floorContainers(game, mil);
         const door = [...game.world.objects.values()].find(
             (o) => o.kind === "obstacle" && o.type === "vault_door_main" && site(mil).region.onFloor(o.pos, 2),

@@ -2,7 +2,7 @@
 // shuts the door behind it from inside, out of the doorway, and stays inside to loot (a cautious expert: closeChance
 // near its cap); a baseline bot leaves it open; the door stays open while a teammate waits right outside (following),
 // and is shut once the teammate is far; when a teammate opens it again while the bot is inside, the bot shuts it again.
-// All on the real main map (seed 12345), the third unrotated red house and its south door. And in the bank, whose
+// All on the real main map (seed 12345), the first unrotated red house and its south door. And in the bank, whose
 // south-east room is reached from the hall only round the outside: a bot that came in by a door and loots on in the
 // other wing leaves that door open (it shut it and opened it again a moment later, review of the interactions).
 import { type Vec2, v2 } from "@rebirth/core";
@@ -18,9 +18,10 @@ import { doorMiddle, doorShape, inDoorway, sideOf } from "../src/nav/doorGeom.ts
 import { cachedMap, firstOfType, mainGame, placePlayer } from "./helpers.ts";
 
 const gen = cachedMap("main", 12345);
-// the third unrotated red house: main 12345's layout moved with the rebirth buildings' rework (2026-10-10), and of the
-// four only the third still stages every run below (the first did before)
-const house = gen.objects.filter((o) => o.type === "house_red_02" && o.ori === 0)[2];
+// the first unrotated red house: main 12345's layout moved with the rebirth buildings' rework (2026-10-10) and again
+// with the grown hidden rooms (PR #18, 2026-10-10), after which it is the only unrotated house_red_02 left (the third
+// staged every run before)
+const house = gen.objects.filter((o) => o.type === "house_red_02" && o.ori === 0)[0];
 // the south front door (the house's two exterior doors turn a quarter: ori 1 south, ori 3 north)
 const front = gen.objects.find((o) => o.parentId === house.id && o.type === "house_door_01" && o.ori === 1)!;
 const shape = doorShape(front.id, obstacleDef(front.type)!, front.pos, front.ori, front.scale)!;
@@ -93,7 +94,8 @@ describe("doors: closing behind", () => {
 
     it("the baseline brain leaves the door open behind it", () => {
         // seed 8: since the military base moved the map round the house, a shipping container and a crate east of it
-        // draw most baseline bots there first (of seeds 1-12 only 3, 6 and 8 walk into the house within the 10 s)
+        // drew most baseline bots there first (of seeds 1-12 only 3, 6 and 8 walked into the house within the 10 s);
+        // at the house of PR #18's layout all twelve walk in
         const run = lootRun({ brain: "baseline", seed: 8 });
         // under this house's roof (the container's roof next door does not count)
         const def = getMapObjectDef(house.type);

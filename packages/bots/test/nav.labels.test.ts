@@ -204,9 +204,9 @@ describe("per-game grids", () => {
         const crate = crates.sort((a, b) => v2.distance(a.pos, door.pos) - v2.distance(b.pos, door.pos))[0];
         const start = (name: string) => {
             const game = mainGame();
-            // outside, between the door and the crate (at +25, -15 from it since the rebirth buildings' rework moved
-            // main 12345's layout, 2026-10-10): both in view
-            const p = placePlayer(game, name, v2.add(door.pos, { x: 12, y: -7 }));
+            // outside, between the door and the crate (at +20, -31 from it since PR #18's grown hidden rooms and
+            // breakable partitions moved main 12345's layout, 2026-10-10): both in view
+            const p = placePlayer(game, name, v2.add(door.pos, { x: 12, y: -15 }));
             const bot = new BotController(game, p.id, { seed: 1, brain: "smart" });
             bot.bot.setOrder({ type: "hold" });
             return { game, bot };
