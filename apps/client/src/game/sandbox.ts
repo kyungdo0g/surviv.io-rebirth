@@ -66,6 +66,8 @@ export interface SandboxOptions {
     teammates?: number;
     /** loopback: force the rainy weather on or off (?rain=1 / 0) instead of the map seed's (fx/weather.ts) */
     rain?: boolean;
+    /** loopback: darkness everywhere (?dark=1), a dev check of the unlit interiors (fx/darkness.ts) */
+    dark?: boolean;
     /** play on a game server instead of the loopback simulation */
     net?: {
         /** HTTP origin of the server; "" uses the page's origin (the Vite dev server proxies /api and /play) */
@@ -214,6 +216,7 @@ export function bootSandbox(app: Application, opts: SandboxOptions): GameClient 
         showDebugHud: opts.showDebugHud,
         debugZoom: opts.debugZoom,
         rain: loopback ? opts.rain : undefined,
+        dark: loopback ? !!opts.dark : false,
         onPlayAgain: playAgain,
         audio,
         touch,
@@ -414,6 +417,11 @@ function exposeWorldFeel(client: GameClient): void {
         /** the rainy match's effects (fx/weather.ts RainState), null on a dry match */
         get rain() {
             return client.worldFx?.rain?.state ?? null;
+        },
+        /** the unlit interiors' overlay (fx/darkness.ts): in the dark, fade, live lights, lights added */
+        get darkness() {
+            const d = client.worldFx?.darkness.state;
+            return d ? { active: d.active, fade: d.fade, lights: d.lights.length, added: d.added } : null;
         },
         get particles() {
             return client.particles.count;

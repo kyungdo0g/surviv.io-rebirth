@@ -296,5 +296,14 @@ export function killAllDowned(ctx: SimContext, group: Group | readonly Player[])
     }
 }
 
+/**
+ * A player died outside the knock rules (a collapsing building, world/collapse.ts): when every teammate left is
+ * downed and none holds Revivify, the downed die too, as after any team wipe (handlePlayerDeath).
+ */
+export function wipeIfAllDowned(ctx: SimContext, player: Player): void {
+    const mates = ctx.faction?.team(player.teamId)?.players ?? player.group?.players ?? [];
+    if (othersDowned(mates, player) && !hasSelfRevive(mates)) killAllDowned(ctx, mates);
+}
+
 /** GameConfig team spawn radius, re-exported for tests. */
 export const TEAMMATE_SPAWN_RADIUS = GameConfig.player.teammateSpawnRadius;

@@ -45,7 +45,11 @@ export const Input = {
 
 export const EmoteSlot = { Top: 0, Right: 1, Bottom: 2, Left: 3, Win: 4, Death: 5, Count: 6 } as const;
 export const WeaponSlot = { Primary: 0, Secondary: 1, Melee: 2, Throwable: 3, Count: 4 } as const;
-export const DamageType = { Player: 0, Bleeding: 1, Gas: 2, Airdrop: 3, Airstrike: 4 } as const;
+/**
+ * `Collapse` is a rebirth addition (the owner, 2026-10-10: a collapsing building kills everyone inside; sim
+ * world/collapse.ts); it fits the Kill message's uint8 and the hit log's 3-bit field.
+ */
+export const DamageType = { Player: 0, Bleeding: 1, Gas: 2, Airdrop: 3, Airstrike: 4, Collapse: 5 } as const;
 /** `Count` is a survev addition */
 export const Action = { None: 0, Reload: 1, ReloadAlt: 2, UseItem: 3, Revive: 4, Count: 5 } as const;
 /** `DeployMelee`, `IdleMelee` and `Count` are survev additions (the original client stops at Revive) */

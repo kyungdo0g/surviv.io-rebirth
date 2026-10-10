@@ -40,7 +40,9 @@ describe("air drops land inside the next safe circle", () => {
             untilLanded(game);
             const [crate] = crates(game, "airdrop_crate_");
             expect(crate).toBeDefined();
-            if (v2.distance(crate.pos, posNew) >= radNew) outside++;
+            // the push out of a building or crate may carry it a few units past the edge (survev plane.ts:94-102;
+            // main 4242 seed 1092 lands 2.2 past it beside the capitol)
+            if (v2.distance(crate.pos, posNew) >= radNew + 5) outside++;
             // never on an indestructible obstacle (destroyed ones may leave a residue obstacle, e.g. broken windows)
             for (const o of game.world.query(crate.bounds)) {
                 if (o.kind !== "obstacle" || !before.has(o.id) || o.destructible || o.dead || o.layer !== 0) continue;

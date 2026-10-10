@@ -3,7 +3,7 @@
 // damage goes through the team rules (match/teams.ts handlePlayerDeath: knock or death, M6a).
 import type { Vec2 } from "@rebirth/core";
 import { DamageType, GameObjectDefs, getMapDef, hasDef } from "@rebirth/defs";
-import { dropEverythingOnDeath, dropObstacleLoot, spawnDestroyType } from "../loot/drops.ts";
+import { buryEverythingOnDeath, dropEverythingOnDeath, dropObstacleLoot, spawnDestroyType } from "../loot/drops.ts";
 import { DEATH_EMOTE_DELAY } from "../match/emotes.ts";
 import { onKillCredited, onPerkHolderDeath } from "../perks/effects.ts";
 import { clearHaste } from "../perks/perks.ts";
@@ -16,8 +16,9 @@ import {
     parentBuildingOf,
     removeAnchoredDecals,
 } from "../world/buildings.ts";
+import { collapseBuilding, collapsesWith } from "../world/collapse.ts";
 import type { SimContext } from "../world/context.ts";
-import { disguiseOf } from "../world/disguise.ts";
+import { disguiseOf, removeDisguise } from "../world/disguise.ts";
 import { downPlayer } from "../world/downed.ts";
 import type { Obstacle } from "../world/entities.ts";
 import type { Player } from "../world/player.ts";
@@ -94,9 +95,16 @@ export function applyPlayerDamage(ctx: SimContext, target: Player, params: Damag
 
 /**
  * Kills a player: kill credit, a dead body (M9), everything it carried drops (survev player.ts kill). `creditId`
- * overrides the credited player (the knocker of a downed player, M6a); killing a teammate credits no kill.
+ * overrides the credited player (the knocker of a downed player, M6a); killing a teammate credits no kill. `buried`
+ * (a collapsing building, world/collapse.ts) loses the items instead of dropping them.
  */
-export function killPlayer(ctx: SimContext, player: Player, params: DamageParams, creditId?: number): void {
+export function killPlayer(
+    ctx: SimContext,
+    player: Player,
+    params: DamageParams,
+    creditId?: number,
+    opts?: { buried?: boolean },
+): void {
     if (player.dead) return;
     player.downed = false;
     player.dead = true;
@@ -141,9 +149,12 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
     // the loadout's death emote follows 0.3 s later (match/emotes.ts updateSlotEmotes)
     player.deathEmoteTicker = DEATH_EMOTE_DELAY;
     // an obstacle disguise dies with its wearer, loot and explosion included (survev player.ts kill obstacleOutfit)
+    // (buried by a collapse, world/collapse.ts: it goes silently, without loot or explosion)
     const disguise = disguiseOf(ctx, player);
-    if (disguise) destroyObstacle(ctx, disguise, params.dir, params);
-    dropEverythingOnDeath(ctx, player);
+    if (disguise && opts?.buried) removeDisguise(ctx, player);
+    else if (disguise) destroyObstacle(ctx, disguise, params.dir, params);
+    if (opts?.buried) buryEverythingOnDeath(player);
+    else dropEverythingOnDeath(ctx, player);
     goreRegionKill(ctx, player);
 }
 
@@ -151,12 +162,26 @@ export function killPlayer(ctx: SimContext, player: Player, params: DamageParams
 export function canDamageObstacle(obstacle: Obstacle, params: DamageParams): boolean {
     // a disguise takes no hits: it dies with its wearer (survev obstacle.ts damage: isSkin)
     if (obstacle.dead || obstacle.isSkin || !obstacle.destructible) return false;
+    if (!passesExplosionGate(obstacle, params)) return false;
     if (params.damageType !== DamageType.Player) return true;
     const src = params.gameSourceType && hasDef(params.gameSourceType) ? GameObjectDefs[params.gameSourceType] : null;
     const pierce = (src ?? {}) as { armorPiercing?: boolean; stonePiercing?: boolean };
     if (obstacle.def.armorPlated && !pierce.armorPiercing) return false;
     if (obstacle.def.stonePlated && !pierce.stonePiercing) return false;
     return true;
+}
+
+/**
+ * Rebirth explosion-gated obstacles (ObstacleDef.explosionGate; packages/defs rebirth/buildings/blastDoors.ts): only an
+ * explosion's own hit counts (never bullets, melee, shrapnel or projectile impacts), of a listed type when
+ * `explosionTypes` is set and dealing at least `minDamage` in one hit; a plane crash (Airdrop) still destroys it.
+ */
+function passesExplosionGate(obstacle: Obstacle, params: DamageParams): boolean {
+    const gate = obstacle.def.explosionGate;
+    if (!gate || params.damageType === DamageType.Airdrop) return true;
+    if (!params.isExplosion || !params.explosionType) return false;
+    if (gate.explosionTypes && !gate.explosionTypes.includes(params.explosionType)) return false;
+    return params.amount >= (gate.minDamage ?? 0);
 }
 
 export function applyObstacleDamage(ctx: SimContext, obstacle: Obstacle, params: DamageParams): void {
@@ -208,9 +233,12 @@ function onObstacleDestroyed(ctx: SimContext, obstacle: Obstacle, params: Damage
         });
     }
     const building = parentBuildingOf(ctx, obstacle);
+    const collapse = !!building && collapsesWith(building, obstacle);
     if (building) onBuildingObstacleDestroyed(building, obstacle);
     if (obstacle.isWall) {
         breakWallAttachments(ctx, obstacle, params, (o, p) => destroyObstacle(ctx, o, p.dir, p));
     }
     if (def.isDecalAnchor && building) removeAnchoredDecals(ctx, building, obstacle);
+    // rebirth: the last wall of a collapsing building brings it down on everyone inside (world/collapse.ts)
+    if (collapse && building) collapseBuilding(ctx, building, params.sourceId);
 }

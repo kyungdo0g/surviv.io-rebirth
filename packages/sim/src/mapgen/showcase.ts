@@ -5,7 +5,7 @@
 // stands on the beach (survev map.ts genOnWaterEdge), everything else stands in the middle.
 import { type Bounds, type Vec2, v2 } from "@rebirth/core";
 import { getMapDef, getMapObjectDef, hasMapObjectDef, type MapDef, MapDefs } from "@rebirth/defs";
-import { toBounds, transformOri } from "../geom/transform.ts";
+import { rotateOri, toBounds, transformOri } from "../geom/transform.ts";
 import type { MapData } from "../view.ts";
 import { getBoundingAabb, getBoundingCollider } from "./bounds.ts";
 import type { GenerateMapResult } from "./generate.ts";
@@ -24,6 +24,14 @@ const MARGIN = 48;
  * 50v50 river is 20 wide, survev factionDefs rivers.weights).
  */
 const BRIDGE_RIVER_WIDTH = { medium: 6, large: 12, xlarge: 20 } as const;
+/**
+ * Rebirth buildings spawned only as a child of another building, showcased on their own (child -> parent): the container
+ * port's checkpoint and cargo ship (defs rebirth/buildings/port.ts, wave 3).
+ */
+const SHOWCASE_CHILDREN: Readonly<Record<string, string>> = {
+    port_checkpoint_01: "warehouse_complex_01",
+    cargo_ship_01: "warehouse_complex_01",
+};
 /** Placed on the 50v50 river by the faction bridge rule, not by a spawn list (generate.ts generateFactionBridges). */
 const FACTION_RIVER_TOWN = "river_town_01";
 
@@ -41,6 +49,11 @@ export interface ShowcaseResult {
     object: GeneratedObject;
     /** its world bounds (as placed, turned by its ori) */
     bounds: Bounds;
+    /**
+     * where a player stands to see it: a structure's ground-floor building's bounds (the subway's kiosk at one end of
+     * the platform below), else `bounds`
+     */
+    ground: Bounds;
 }
 
 /** Top-level buildings and structures a map's generation can spawn, after its spawn replacements. */
@@ -80,6 +93,14 @@ export function showcaseEntries(): readonly ShowcaseEntry[] {
             if (seen.has(type)) continue;
             seen.add(type);
             out.push({ type, mapName });
+        }
+    }
+    // rebirth buildings that only spawn as another building's child, shown on their own after their parent's map's
+    for (const [type, parent] of Object.entries(SHOWCASE_CHILDREN)) {
+        const home = out.find((e) => e.type === parent);
+        if (home && !seen.has(type) && hasMapObjectDef(type)) {
+            seen.add(type);
+            out.push({ type, mapName: home.mapName });
         }
     }
     entries = out;
@@ -230,7 +251,18 @@ export function generateShowcase(type: string, seed = 1, mapName = showcaseMapOf
         factionSplitOri: 0,
     };
     const bounds = toBounds(transformOri(getBoundingCollider(type), object.pos, object.ori, object.scale));
-    return { generation, mapName, type, object, bounds };
+    const top = objDef.type === "structure" ? objDef.layers[0] : undefined;
+    const ground = top
+        ? toBounds(
+              transformOri(
+                  getBoundingCollider(top.type),
+                  v2.add(object.pos, rotateOri(top.pos, object.ori)),
+                  (object.ori + top.ori) % 4,
+                  object.scale,
+              ),
+          )
+        : bounds;
+    return { generation, mapName, type, object, bounds, ground };
 }
 
 /**
@@ -240,7 +272,7 @@ export function generateShowcase(type: string, seed = 1, mapName = showcaseMapOf
 export function showcaseSpawnSpots(show: ShowcaseResult): Vec2[] {
     const out: Vec2[] = [];
     const { width, height } = show.generation.mapData;
-    const { min, max } = show.bounds;
+    const { min, max } = show.ground;
     const cx = (min.x + max.x) / 2;
     const cy = (min.y + max.y) / 2;
     for (let pad = 3; pad < Math.max(width, height); pad += 4) {

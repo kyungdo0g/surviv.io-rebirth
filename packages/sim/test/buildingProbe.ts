@@ -196,8 +196,15 @@ function dilate(g: Grid, mask: Uint8Array): Uint8Array {
     return out;
 }
 
-/** Whether an obstacle is a door that only a lock, a button, a puzzle or a delay opens. */
+/**
+ * Whether an obstacle is a door that only a lock, a button, a puzzle or a delay opens, or an explosion-gated slab
+ * (blast_door_01, subway_gate_01: ObstacleDef.explosionGate) that only a blast opens.
+ */
+/** How an explosion-gated obstacle opens (the wave-3 blast doors, ObstacleDef.explosionGate): blown open. */
+export const EXPLOSION_GATED = "explosion-gated";
+
 function specialDoor(o: Obstacle): string | null {
+    if (o.def.explosionGate) return EXPLOSION_GATED;
     const d = o.door;
     if (!d) return null;
     if (d.locked) return "locked";
@@ -208,9 +215,11 @@ function specialDoor(o: Obstacle): string | null {
 
 /**
  * Probes one building or structure type, alone on a showcase map; `breakWalls` walks it with every breakable partition
- * (rebirth_wall_int_*) already broken; other destructible walls (the vault's breach wall) stand.
+ * (rebirth_wall_int_*) already broken; other destructible walls (the vault's breach wall) stand. `openGates` walks it
+ * with every explosion-gated slab blown open, so what lies behind one (the blast bunker's basement) is walked as
+ * reachable and its passages are checked like any other floor's.
  */
-export function probeBuilding(type: string, opts: { breakWalls?: boolean } = {}): ProbeResult {
+export function probeBuilding(type: string, opts: { breakWalls?: boolean; openGates?: boolean } = {}): ProbeResult {
     const show = generateShowcase(type);
     const game = new Game(
         { mapName: show.mapName, seed: 1 },
@@ -237,6 +246,7 @@ export function probeBuilding(type: string, opts: { breakWalls?: boolean } = {})
     for (const obj of game.world.query(region, [])) {
         if (obj.kind === "obstacle" && obj.collidable && !obj.dead) {
             if (opts.breakWalls && obj.type.startsWith("rebirth_wall_int_")) continue;
+            if (opts.openGates && obj.def.explosionGate) continue;
             obstacles.push(obj);
         }
         if (obj.kind === "structure") for (const s of obj.stairs) stairs.push(s.collision);
@@ -271,6 +281,19 @@ export function probeBuilding(type: string, opts: { breakWalls?: boolean } = {})
         unlocks: [],
     };
 
+    // the ground floor's floods by the special doors open ("" none, "*" all, else one door group) and its unlocks
+    const groundReach = new Map<string, Uint8Array>();
+    const groundUnlocks = new Map<string, ProbeUnlock>();
+    const stairCellMemo = new Map<Bounds, number[]>();
+    const stairCells = (s: Bounds) => {
+        let out = stairCellMemo.get(s);
+        if (!out) {
+            out = [];
+            for (let i = 0; i < g.nx * g.ny; i++) if (inBounds(s, cellPos(g, i))) out.push(i);
+            stairCellMemo.set(s, out);
+        }
+        return out;
+    };
     for (const layer of layers) {
         // the ground floor is the building's bounds, a basement its floors
         const insideIdx = (i: number) => {
@@ -279,13 +302,18 @@ export function probeBuilding(type: string, opts: { breakWalls?: boolean } = {})
             return basementFloors.some((c) => collider.distance({ type: 0, pos: p, rad: 0 }, c) <= 0);
         };
         const onLayer = obstacles.filter((o) => sameLayer(o.layer, layer));
-        // ordinary doors are passable; special doors block until their interaction
+        // ordinary doors are passable; special doors (and explosion-gated slabs) block until their interaction
         const blocking = (open: ReadonlySet<Obstacle>) =>
-            onLayer.filter((o) => !o.door || (specialDoor(o) !== null && !open.has(o))).map((o) => o.collider);
-        const seedsFor = (free: Uint8Array) => {
+            onLayer.filter((o) => (specialDoor(o) !== null ? !open.has(o) : !o.door)).map((o) => o.collider);
+        // a basement is entered by the stairs whose top the ground floor reaches (`ground`: the ground's flood with the
+        // same doors open), so a stairwell behind a special door opens the basement with it
+        const seedsFor = (_free: Uint8Array, ground: Uint8Array | undefined = groundReach.get("")) => {
             if (layer === 0) return outsideSeed;
             const out: number[] = [];
-            for (let i = 0; i < free.length; i++) if (stairs.some((s) => inBounds(s, cellPos(g, i)))) out.push(i);
+            for (const s of stairs) {
+                const cells = stairCells(s);
+                if (!ground || cells.some((i) => ground[i])) out.push(...cells);
+            }
             return out;
         };
         const none = new Set<Obstacle>();
@@ -293,9 +321,13 @@ export function probeBuilding(type: string, opts: { breakWalls?: boolean } = {})
         const reach = flood(g, free, seedsFor(free));
         const allSpecial = new Set(onLayer.filter((o) => specialDoor(o) !== null));
         const freeAll = freeMask(g, blocking(allSpecial), PLAYER_RAD);
-        const reachAll = flood(g, freeAll, seedsFor(freeAll));
+        const reachAll = flood(g, freeAll, seedsFor(freeAll, groundReach.get("*")));
         const freeWide = freeMask(g, blocking(none), COMFORT_GAP / 2);
         const reachWide = dilate(g, flood(g, freeWide, seedsFor(freeWide)));
+        if (layer === 0) {
+            groundReach.set("", reach);
+            groundReach.set("*", reachAll);
+        }
         let walkable = 0;
         let cramped = 0;
         let unreachable = 0;
@@ -390,10 +422,25 @@ export function probeBuilding(type: string, opts: { breakWalls?: boolean } = {})
             const how = specialDoor(o);
             if (how) groups.set(`${o.type}|${how}`, [...(groups.get(`${o.type}|${how}`) ?? []), o]);
         }
-        for (const [key, doors] of groups) {
+        // each group's flood (and, for a ground floor's group measured again in the basement, its ground unlock)
+        // a basement's own special doors are measured with the ground floor's all open (a safe below a blast gate is
+        // reached once the gate is blown), against that floor walked with them shut
+        const below = layer === 0 ? undefined : groundReach.get("*");
+        const baseline = layer === 0 ? reach : flood(g, free, seedsFor(free, below));
+        const measured: Array<readonly [string, Uint8Array, Uint8Array, ProbeUnlock?]> = [...groups].map(
+            ([key, doors]) => {
+                const freeOpen = freeMask(g, blocking(new Set(doors)), PLAYER_RAD);
+                return [key, flood(g, freeOpen, seedsFor(freeOpen, below ?? groundReach.get(""))), baseline] as const;
+            },
+        );
+        if (layer === 0) for (const [key, reachOpen] of measured) groundReach.set(key, reachOpen);
+        else {
+            // a ground floor's special door also opens the basement under the stairs behind it
+            for (const [key, unlock] of groundUnlocks)
+                measured.push([key, flood(g, free, seedsFor(free, groundReach.get(key))), reach, unlock]);
+        }
+        for (const [key, reachOpen, reach, groundUnlock] of measured) {
             const [door, how] = key.split("|");
-            const freeOpen = freeMask(g, blocking(new Set(doors)), PLAYER_RAD);
-            const reachOpen = flood(g, freeOpen, seedsFor(freeOpen));
             let n = 0;
             // a container or spawner counts when a cell reachable only now lies within a player's reach of it
             const added = (box: Bounds) => {
@@ -414,18 +461,23 @@ export function probeBuilding(type: string, opts: { breakWalls?: boolean } = {})
             for (let i = 0; i < reachOpen.length; i++) if (reachOpen[i] && !reach[i] && insideIdx(i)) n++;
             const inside = containers.filter((o) => sameLayer(o.layer, layer) && added(collider.toAabb(o.collider)));
             const spotIn = spots.filter((s) => sameLayer(s.layer, layer) && added(pointBox(s.pos)));
-            result.unlocks.push({
+            const gunsIn =
+                inside.reduce((s, o) => s + containerGuns(o), 0) + spotIn.reduce((s, sp) => s + spotGuns(sp.type), 0);
+            if (groundUnlock) {
+                groundUnlock.area += n * a;
+                groundUnlock.containers += inside.length + spotIn.length;
+                groundUnlock.guns = Math.round((groundUnlock.guns + gunsIn) * 100) / 100;
+                continue;
+            }
+            const unlock: ProbeUnlock = {
                 door,
                 how,
                 area: n * a,
                 containers: inside.length + spotIn.length,
-                guns:
-                    Math.round(
-                        (inside.reduce((s, o) => s + containerGuns(o), 0) +
-                            spotIn.reduce((s, sp) => s + spotGuns(sp.type), 0)) *
-                            100,
-                    ) / 100,
-            });
+                guns: Math.round(gunsIn * 100) / 100,
+            };
+            result.unlocks.push(unlock);
+            if (layer === 0) groundUnlocks.set(key, unlock);
         }
     }
     for (const o of obstacles) {

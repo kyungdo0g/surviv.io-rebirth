@@ -5,7 +5,10 @@
 // tools/assets/rebirthBuildingArt.ts, so the walls drawn on the floor are the walls that collide). One file per
 // building in rebirth/buildings/; this module lists them, their art and where they spawn.
 import type { LootSpawnerDef, MapDef, MapObjectDef } from "../types/index.ts";
+import { APARTMENT_ART, APARTMENT_PUZZLE, apartment } from "./buildings/apartment.ts";
 import { ARSENAL_ART, ARSENAL_UNLOCK, arsenal } from "./buildings/arsenal.ts";
+import { BLAST_BUNKER_ART, blastBunkerDefs } from "./buildings/blastBunker.ts";
+import { BLAST_DOOR_ART, blastDoorDefs } from "./buildings/blastDoors.ts";
 import {
     BLOCKHOUSE_CODE,
     BLOCKHOUSE_FACTIONS,
@@ -13,10 +16,27 @@ import {
     blockhouse,
     blockhouseArt,
 } from "./buildings/blockhouse.ts";
+import { CAPITOL_ART, CAPITOL_CODE, CAPITOL_PUZZLE, capitol } from "./buildings/capitol.ts";
+import { CARGO_SHIP_ART, CARGO_SHIP_CODE, CARGO_SHIP_PUZZLE, cargoShip } from "./buildings/cargoShip.ts";
+import { CHURCH_ART, CHURCH_CODE, CHURCH_PUZZLE, CHURCH_RESIDUE_ART, church } from "./buildings/church.ts";
 import { CLINIC_ART, CLINIC_PUZZLE, clinic, MEDICAL_LOOT_SPAWNER } from "./buildings/clinic.ts";
 import { FIRESTATION_ART, FIRESTATION_PUZZLE, firestation } from "./buildings/firestation.ts";
+import {
+    GAS_PUMP,
+    GAS_PUMP_ART,
+    GAS_STATION,
+    GAS_STATION_PUZZLE,
+    GAS_STATION_RUBBLE,
+    GAS_STATION_SITE_ART,
+    GAS_STATION_STORE,
+    GAS_STATION_STORE_ART,
+    gasPumpDef,
+    gasStation,
+    gasStationStore,
+} from "./buildings/gasStation.ts";
 import type { RebirthBuildingArt } from "./buildings/layout.ts";
 import { LIBRARY_ART, LIBRARY_CODE, LIBRARY_PUZZLE, library } from "./buildings/library.ts";
+import { MALL_ART, MALL_CODE, MALL_PUZZLE, mall } from "./buildings/mall.ts";
 import { MILITARY_ARMORY_PUZZLE } from "./buildings/military/armory.ts";
 import { MILITARY_COMMAND_CODE, MILITARY_COMMAND_PUZZLE } from "./buildings/military/bunker.ts";
 import { MILITARY_GATEHOUSE_PUZZLE } from "./buildings/military/guard.ts";
@@ -24,14 +44,34 @@ import { MILITARY_HQ_CODE, MILITARY_HQ_PUZZLE } from "./buildings/military/hq.ts
 import { MILITARY_INFIRMARY_PUZZLE } from "./buildings/military/infirmary.ts";
 import { militaryBaseArt, militaryBaseDefs } from "./buildings/military/structure.ts";
 import { OUTPOST_FACTIONS, OUTPOST_PUZZLE, outpost, outpostArt } from "./buildings/outpost.ts";
+import {
+    PORT_BOOTH_ART,
+    PORT_CHECKPOINT_ART,
+    PORT_CHECKPOINT_PUZZLE,
+    portCheckpoint,
+} from "./buildings/portCheckpoint.ts";
+import { POWER_PLANT_PUZZLE_CODES, powerPlantArt, powerPlantDefs } from "./buildings/powerplant/plant.ts";
+import { RADAR_CODE, RADAR_PUZZLE } from "./buildings/radar/ops.ts";
+import { radarBaseArt, radarBaseDefs } from "./buildings/radar/structure.ts";
 import { RADIO_ART, RADIO_CODE, RADIO_PUZZLE, radioStation } from "./buildings/radio.ts";
+import { SUBWAY_ART, subwayDefs } from "./buildings/subway.ts";
+import { SUBWAY_CODE, SUBWAY_PUZZLE } from "./buildings/subwayStation.ts";
+import { rebirthBrittleWallDefs } from "./buildings/walls.ts";
 
+export * from "./buildings/apartment.ts";
 export * from "./buildings/arsenal.ts";
+export * from "./buildings/blastBunker.ts";
+export * from "./buildings/blastDoors.ts";
 export * from "./buildings/blockhouse.ts";
+export * from "./buildings/capitol.ts";
+export * from "./buildings/cargoShip.ts";
+export * from "./buildings/church.ts";
 export * from "./buildings/clinic.ts";
 export * from "./buildings/firestation.ts";
+export * from "./buildings/gasStation.ts";
 export * from "./buildings/layout.ts";
 export * from "./buildings/library.ts";
+export * from "./buildings/mall.ts";
 export * from "./buildings/military/armory.ts";
 export * from "./buildings/military/bunker.ts";
 export * from "./buildings/military/compound.ts";
@@ -48,7 +88,20 @@ export type {
 export * from "./buildings/military/structure.ts";
 export * from "./buildings/military/yard.ts";
 export * from "./buildings/outpost.ts";
+export * from "./buildings/port.ts";
+export * from "./buildings/portCheckpoint.ts";
+export * from "./buildings/powerplant/compound.ts";
+export * from "./buildings/powerplant/control.ts";
+export * from "./buildings/powerplant/plant.ts";
+export * from "./buildings/powerplant/turbine.ts";
+export * from "./buildings/radar/annex.ts";
+export * from "./buildings/radar/compound.ts";
+export * from "./buildings/radar/dome.ts";
+export * from "./buildings/radar/ops.ts";
+export * from "./buildings/radar/structure.ts";
 export * from "./buildings/radio.ts";
+export * from "./buildings/subway.ts";
+export * from "./buildings/subwayStation.ts";
 export * from "./buildings/walls.ts";
 
 /**
@@ -68,6 +121,24 @@ export const REBIRTH_PUZZLE_CODES: Readonly<Record<string, readonly string[]>> =
     [MILITARY_HQ_PUZZLE]: MILITARY_HQ_CODE,
     [MILITARY_ARMORY_PUZZLE]: ["1"],
     [MILITARY_INFIRMARY_PUZZLE]: ["1"],
+    // wave 3 (2026-10-10)
+    [GAS_STATION_PUZZLE]: ["1"],
+    // the wave-3 buildings (the owner, 2026-10-10)
+    [CHURCH_PUZZLE]: CHURCH_CODE,
+    // the wave 3 buildings (the owner, 2026-10-10)
+    [MALL_PUZZLE]: MALL_CODE,
+    // the wave 3 buildings (2026-10-10)
+    ...POWER_PLANT_PUZZLE_CODES,
+    // wave 3 (2026-10-10): the radar base's crypto vault
+    [RADAR_PUZZLE]: RADAR_CODE,
+    // the wave-3 buildings (2026-10-10)
+    [CAPITOL_PUZZLE]: CAPITOL_CODE,
+    [APARTMENT_PUZZLE]: ["1"],
+    // the container port's additions (wave 3, 2026-10-10)
+    [PORT_CHECKPOINT_PUZZLE]: ["1"],
+    [CARGO_SHIP_PUZZLE]: CARGO_SHIP_CODE,
+    // the wave-3 buildings (2026-10-10)
+    [SUBWAY_PUZZLE]: SUBWAY_CODE,
 };
 
 /** Buildings whose heal regions the client draws (apps/client objects/healRegionFx.ts: glow, crosses, ring pulse). */
@@ -99,6 +170,33 @@ export function rebirthBuildingArt(): RebirthBuildingArt[] {
         ARSENAL_ART,
         ...BLOCKHOUSE_FACTIONS.map((f) => blockhouseArt(f.teamId)),
         ...militaryBaseArt(),
+        // the explosion-gated doors' images (wave 3, 2026-10-10)
+        ...BLAST_DOOR_ART,
+        // the gas station (wave 3, 2026-10-10): the store, its rubble, the site and canopy, the pump
+        GAS_STATION_STORE_ART,
+        GAS_STATION_RUBBLE,
+        ...GAS_STATION_SITE_ART,
+        GAS_PUMP_ART,
+        // the church and its rubble (wave 3, 2026-10-10)
+        CHURCH_ART,
+        CHURCH_RESIDUE_ART,
+        // the wave 3 buildings (2026-10-10)
+        MALL_ART,
+        // the wave 3 buildings (2026-10-10)
+        ...powerPlantArt(),
+        // the radar base (wave 3)
+        ...radarBaseArt(),
+        // the wave-3 buildings
+        CAPITOL_ART,
+        APARTMENT_ART,
+        // the container port's checkpoint (its booth's roof apart) and cargo ship (wave 3, 2026-10-10)
+        PORT_CHECKPOINT_ART,
+        PORT_BOOTH_ART,
+        CARGO_SHIP_ART,
+        // the wave-3 buildings
+        ...BLAST_BUNKER_ART,
+        // the wave-3 buildings
+        ...SUBWAY_ART,
     ];
 }
 
@@ -125,9 +223,57 @@ export function rebirthBuildings(generated: Readonly<Record<string, MapObjectDef
     };
 }
 
+/**
+ * The wave-3 rebirth map types (the owner, 2026-10-10; schema 27), after the breakable partitions (rebirth/defs.ts):
+ * the collapsing buildings' breakable shells, the explosion-gated doors, then the wave-3 buildings.
+ */
+export function rebirthWave3Defs(generated: Readonly<Record<string, MapObjectDef>>): Record<string, MapObjectDef> {
+    const known = (id: string) => Object.hasOwn(generated, id);
+    return {
+        ...rebirthBrittleWallDefs(generated),
+        ...blastDoorDefs(),
+        // the gas station (the owner's wave 3, 2026-10-10): its pump, the collapsing store, the site
+        [GAS_PUMP]: gasPumpDef(generated),
+        [GAS_STATION_STORE]: gasStationStore(known),
+        [GAS_STATION]: gasStation(known),
+        // the owner's wave-3 buildings (2026-10-10), after the explosion-gated doors
+        church_01: church(known),
+        // the wave 3 buildings (the owner, 2026-10-10), after the explosion-gated doors
+        mall_01: mall(known),
+        // the wave 3 buildings (the owner, 2026-10-10), after the explosion-gated doors
+        ...powerPlantDefs(known),
+        // the radar base (the owner's wave 3, 2026-10-10): its five buildings, then the compound
+        ...radarBaseDefs(known),
+        capitol_01: capitol((id) => Object.hasOwn(generated, id)),
+        // the apartment block (wave 3, 2026-10-10)
+        apartment_01: apartment(generated),
+        // the container port's additions, children of warehouse_complex_01 (buildings/port.ts)
+        port_checkpoint_01: portCheckpoint(known),
+        cargo_ship_01: cargoShip(known),
+        // the blast bunker (buildings/blastBunker.ts)
+        ...blastBunkerDefs(known),
+        // the abandoned subway station (rebirth/buildings/subway.ts)
+        ...subwayDefs((id) => Object.hasOwn(generated, id)),
+    };
+}
+
 /** Where the rebirth buildings spawn: map -> fixedSpawns entries added (rebirth/index.ts applyRebirthMaps). */
 export const REBIRTH_BUILDING_SPAWNS: Readonly<Record<string, Readonly<Record<string, number>>>> = {
-    main: { clinic_01: 1, firestation_01: 1, library_01: 1, radio_station_01: 1, military_base_01: 1 },
+    main: {
+        clinic_01: 1,
+        firestation_01: 1,
+        library_01: 1,
+        radio_station_01: 1,
+        military_base_01: 1,
+        // the owner's wave 3 (2026-10-10)
+        gas_station_01: 1,
+        church_01: 1,
+        mall_01: 1,
+        capitol_01: 1,
+        apartment_01: 2,
+        bunker_blast_01: 1,
+        subway_station_01: 1,
+    },
     faction: {
         outpost_01r: 1,
         outpost_01b: 1,
@@ -136,6 +282,13 @@ export const REBIRTH_BUILDING_SPAWNS: Readonly<Record<string, Readonly<Record<st
         blockhouse_01b: 2,
         military_base_01r: 1,
         military_base_01b: 1,
+        // the owner's wave 3 (2026-10-10)
+        gas_station_01: 1,
+        church_01: 1,
+        power_plant_01: 1,
+        // wave 3: the radar base, neutral (no teamId: anywhere on the map)
+        radar_base_01: 1,
+        bunker_blast_01: 1,
     },
 };
 

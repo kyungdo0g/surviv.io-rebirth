@@ -36,6 +36,11 @@ describe("building showcase", () => {
         expect(showcaseMapOf("camp_01")).toBe("snow");
         expect(showcaseMapOf("house_red_01")).toBe("main");
         expect(showcaseMapOf("river_town_01")).toBe("faction");
+        // the container port's checkpoint and ship, children of warehouse_complex_01, are shown on their own
+        for (const type of ["port_checkpoint_01", "cargo_ship_01"]) {
+            expect(types).toContain(type);
+            expect(showcaseMapOf(type)).toBe(showcaseMapOf("warehouse_complex_01"));
+        }
     });
 
     it("every entry generates a map holding only it, without warnings, and runs as a game", () => {

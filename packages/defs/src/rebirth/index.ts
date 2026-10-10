@@ -2,9 +2,10 @@
 // @rebirth/defs loads (data.ts), before the id registries are built. Generated JSON is never edited by hand
 // (tools/port-survev regenerates it); everything the rebirth changes or adds lives here, in code, with its reason.
 // docs/research/rebirth-deviations.md is the cited list.
+import { DamageType } from "../constants.ts";
 import type { ExplosionDef, GameConfigDef, GameObjectDef, LootSpawnDef, MapDef, MapObjectDef } from "../types/index.ts";
 import { AIRDROP_TIER_SPLITS } from "./airdropTiers.ts";
-import { applyRebirthBuildingSpawns } from "./buildings.ts";
+import { applyRebirthBuildingSpawns, portComplex } from "./buildings.ts";
 import { rebirthOnlyDefs, rebirthOnlyMapObjects } from "./defs.ts";
 import { applyBalanceDeviations, applyMapObjectDeviations, type DefDeviation } from "./deviations.ts";
 import { applyGunSpeedOverrides } from "./gunSpeeds.ts";
@@ -84,6 +85,8 @@ export function applyRebirthDefs(
     Object.assign(mapObjects, goldBonusCrates(mapObjects));
     // the heavy shell's scorch decal is built from the iron bomb's resized one
     const addedMapObjects = append(mapObjects, rebirthOnlyMapObjects(generatedMapObjects, mapObjects));
+    // the container port gains its checkpoint and cargo ship as children (wave 3, rebirth/buildings/port.ts)
+    Object.assign(mapObjects, portComplex(mapObjects));
     // every scorch decal an explosion leaves must exist (the rebirth ones point at the rebirth decals)
     for (const [id, def] of Object.entries(gameObjects)) {
         const decal = def.type === "explosion" ? (def as ExplosionDef).decalType : "";
@@ -94,8 +97,8 @@ export function applyRebirthDefs(
 
 /**
  * The GameConfig with the rebirth bag items (the variant strobes, rebirth/strobes.ts, then the Molotov and flashbang,
- * rebirth/throwables.ts) after every other one, so the
- * original items keep their protocol order (the Local message's inventory section).
+ * rebirth/throwables.ts) after every other one, so the original items keep their protocol order (the Local message's
+ * inventory section), and the rebirth's DamageType.Collapse (the collapsing buildings, sim world/collapse.ts).
  */
 export function applyRebirthGameConfig(generated: GameConfigDef): GameConfigDef {
     // the variant strobes, then the Molotov and flashbang (rebirth/throwables.ts)
@@ -107,7 +110,12 @@ export function applyRebirthGameConfig(generated: GameConfigDef): GameConfigDef 
         if (Object.hasOwn(generated.bagSizes, id))
             throw new Error(`rebirth bag item "${id}" clashes with a generated one`);
     }
-    return { ...generated, bagSizes: { ...generated.bagSizes, ...added } };
+    return {
+        ...generated,
+        bagSizes: { ...generated.bagSizes, ...added },
+        // the collapsing buildings' damage type (sim world/collapse.ts), after the original ones
+        DamageType: { ...generated.DamageType, Collapse: DamageType.Collapse },
+    };
 }
 
 /**

@@ -51,7 +51,8 @@ export interface GameConfigDef {
     EmoteSlot: EnumOf<typeof EmoteSlot>;
     WeaponSlot: EnumOf<typeof WeaponSlot>;
     WeaponType: string[];
-    DamageType: EnumOf<typeof DamageType>;
+    /** `Collapse` is the rebirth's, added over the generated data (rebirth/index.ts applyRebirthGameConfig) */
+    DamageType: EnumOf<Omit<typeof DamageType, "Collapse">> & { readonly Collapse?: number };
     Action: EnumOf<typeof Action>;
     Anim: EnumOf<typeof Anim>;
     GasMode: EnumOf<typeof GasMode>;

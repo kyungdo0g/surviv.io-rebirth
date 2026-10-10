@@ -16,7 +16,7 @@ import {
     IRON_BOMB_RAD_MAX,
 } from "./airstrikeVariants.ts";
 import { rebirthWallDefs } from "./buildings/walls.ts";
-import { rebirthBuildings } from "./buildings.ts";
+import { rebirthBuildings, rebirthWave3Defs } from "./buildings.ts";
 import { FRAG_DECAL_TYPE, FRAG_RADIUS_MULT, IRON_BOMB_DECAL_TYPE, scaleDefValue } from "./deviations.ts";
 import { rebirthGroundDecals } from "./discardDecals.ts";
 import { newGunDefs } from "./newGuns.ts";
@@ -85,6 +85,7 @@ function scaledDecal(decal: DecalDef, mult: number): DecalDef {
  * - the rebirth buildings clinic_01, outpost_01r and outpost_01b and their loot_tier_medical (rebirth/buildings.ts).
  * - the ground decals of 2026-10-10: the Molotov's fire and the discarded launchers (rebirth/discardDecals.ts).
  * - the breakable partitions rebirth_wall_int_<length> (2026-10-10, rebirth/buildings/walls.ts; schema 26).
+ * - wave 3 (2026-10-10, rebirth/buildings.ts rebirthWave3Defs; schema 27).
  */
 export function rebirthOnlyMapObjects(
     generated: Readonly<Record<string, MapObjectDef>>,
@@ -103,5 +104,7 @@ export function rebirthOnlyMapObjects(
         // the rebirth buildings' breakable partitions (the owner, 2026-10-10: "the walls can't be broken"), after
         // every earlier id (schema 26)
         ...rebirthWallDefs(generated),
+        // the owner's wave 3 (2026-10-10, schema 27): breakable shells, explosion-gated doors, the new buildings
+        ...rebirthWave3Defs(generated),
     };
 }

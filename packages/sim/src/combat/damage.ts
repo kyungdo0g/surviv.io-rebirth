@@ -19,6 +19,8 @@ export interface DamageParams {
     mapSourceType?: string;
     /** explosions and shrapnel never headshot and use the Flak Jacket explosion reduction */
     isExplosion?: boolean;
+    /** the explosion id of an explosion's hit (not its shrapnel), for explosion-gated obstacles (combat.ts) */
+    explosionType?: string;
     /** id of the player who dealt the hit (0 / undefined for the environment) */
     sourceId?: number;
     /** direction of the hit */

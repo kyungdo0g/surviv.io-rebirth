@@ -1,9 +1,9 @@
 // Field coverage (M5b): every field present in the obstacle, building and structure defs (and their door, button,
-// ceiling, floor, puzzle, child, heal region, stair, layer and interior sound sub-fields) is listed in
+// explosion gate, ceiling, floor, puzzle, child, heal region, stair, layer and interior sound sub-fields) is listed in
 // BEHAVIOUR_FIELDS as implemented, handled elsewhere (client, map generation, data) or deferred to a milestone.
 import { MapObjectDefs } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
-import { BEHAVIOUR_FIELDS } from "../src/index.ts";
+import { BEHAVIOUR_FIELDS, FIELDS_AWAITING_DEFS } from "../src/index.ts";
 
 /** Every field path present in the map object defs. */
 function fieldPaths(): Set<string> {
@@ -16,6 +16,7 @@ function fieldPaths(): Set<string> {
             keys("obstacle", def);
             keys("obstacle.door", def.door);
             keys("obstacle.button", def.button);
+            keys("obstacle.explosionGate", def.explosionGate);
         } else if (def.type === "building") {
             keys("building", def);
             keys("building.ceiling", def.ceiling);
@@ -44,7 +45,7 @@ describe("behaviour field coverage", () => {
 
     it("the table lists no field the defs do not have", () => {
         const stale = Object.keys(BEHAVIOUR_FIELDS)
-            .filter((p) => !paths.has(p))
+            .filter((p) => !paths.has(p) && !FIELDS_AWAITING_DEFS.has(p))
             .sort();
         expect(stale).toEqual([]);
     });
@@ -74,6 +75,9 @@ describe("behaviour field coverage", () => {
             "obstacle.smartLoot",
             "obstacle.armorPlated",
             "obstacle.stonePlated",
+            "obstacle.explosionGate",
+            "obstacle.explosionGate.minDamage",
+            "obstacle.explosionGate.explosionTypes",
             "obstacle.destroyType",
             "obstacle.swapWeaponOnDestroy",
             "obstacle.createSmoke",

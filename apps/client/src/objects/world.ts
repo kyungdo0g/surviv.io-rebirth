@@ -31,6 +31,19 @@ function overlaps(a: ViewBounds, b: ViewBounds): boolean {
     return a.min.x <= b.max.x && a.max.x >= b.min.x && a.min.y <= b.max.y && a.max.y >= b.min.y;
 }
 
+/** Map object types that can be unlit (fx/darkness.ts): structures with a `dark` floor and `dark` buildings. */
+let darkTypeSet: Set<string> | null = null;
+function darkTypes(): Set<string> {
+    if (darkTypeSet) return darkTypeSet;
+    darkTypeSet = new Set();
+    for (const [type, def] of Object.entries(MapObjectDefs)) {
+        const d = def as StructureDef | BuildingDef;
+        if (d.type === "structure" ? d.layers.some((l) => l.dark) : d.type === "building" && d.dark)
+            darkTypeSet.add(type);
+    }
+    return darkTypeSet;
+}
+
 export class ObjectWorld {
     private readonly deps: ViewDeps;
     private readonly interp: SnapshotInterpolator;
@@ -204,6 +217,28 @@ export class ObjectWorld {
             if (b?.insideCeiling(pos)) return layerDef.underground ?? true;
         }
         return true;
+    }
+
+    /**
+     * Rebirth (wave 3): whether `pos` on `layer` is inside an unlit building (fx/darkness.ts): under the ceiling of a
+     * structure floor marked `layers[i].dark` on that floor's layer, or of a building marked `dark` on its layer.
+     * A stairs layer (2, 3) counts as its floor (`layer & 1`, as fx surfaceAt): a shot fired down the stairwell
+     * (bullet layer 3, sim aimLayerOf) or a viewer on its lower half is in the dark floor's light.
+     */
+    inDarkness(pos: Vec2, layer: number): boolean {
+        if (darkTypes().size === 0) return false;
+        const floor = layer & 1;
+        for (const { render, data } of this.entries.values()) {
+            if (!darkTypes().has(data.type)) continue;
+            if (data.kind === "structure") {
+                const layerDef = (MapObjectDefs[data.type] as StructureDef | undefined)?.layers[floor];
+                if (layerDef?.dark && this.structureLayer(data, floor)?.insideCeiling(pos)) return true;
+            } else if (render instanceof BuildingRender && data.layer === floor) {
+                if ((MapObjectDefs[data.type] as BuildingDef | undefined)?.dark && render.insideCeiling(pos))
+                    return true;
+            }
+        }
+        return false;
     }
 
     /** Whether the local player stands under a building's roof (survev map.insideBuildingCeiling). */

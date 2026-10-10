@@ -173,6 +173,14 @@ describe("Update encoder/decoder against the simulation", () => {
                 const plane = game.planes.planes.at(-1)!;
                 plane.pos = v2.sub(plane.target, v2.mul(plane.dir, 20));
             }
+            // the bots' random fire must not take the scripted kills' victims or their killer first (it did once the
+            // wave-3 buildings moved the map's houses): topped up until the kills
+            if (tick < 300) {
+                for (const id of ids) {
+                    const p = game.getPlayer(id);
+                    if (p && !p.dead) p.health = 100;
+                }
+            }
             if (tick === 300) {
                 // scripted kills make ids[1] the kill leader; the victims start spectating
                 for (const victim of ids.slice(4, 7)) {

@@ -20,6 +20,24 @@ const REBIRTH = [
     "military_base_01",
     "military_base_01r",
     "military_base_01b",
+    "gas_station_01",
+    // the owner's wave 3 (2026-10-10)
+    "church_01",
+    // the wave 3 buildings (2026-10-10)
+    "mall_01",
+    // the wave 3 buildings (2026-10-10)
+    "power_plant_01",
+    "radar_base_01",
+    // the wave-3 buildings (2026-10-10)
+    "capitol_01",
+    // wave 3 (2026-10-10)
+    "apartment_01",
+    // the container port's additions (wave 3, children of warehouse_complex_01)
+    "port_checkpoint_01",
+    "cargo_ship_01",
+    "bunker_blast_01",
+    // the wave-3 buildings (2026-10-10)
+    "subway_station_01",
 ];
 
 const MILITARY_HIDDEN = [
@@ -30,7 +48,7 @@ const MILITARY_HIDDEN = [
     "vault_door_main",
 ];
 
-/** Each building's hidden rooms: its special doors (locked, puzzle or delayed) by type. */
+/** Each building's hidden rooms: its special doors (locked, puzzle, delayed or explosion-gated) by type. */
 const HIDDEN: Readonly<Record<string, readonly string[]>> = {
     clinic_01: ["vault_door_bathhouse"],
     firestation_01: ["cell_door_01"],
@@ -46,7 +64,30 @@ const HIDDEN: Readonly<Record<string, readonly string[]>> = {
     military_base_01: MILITARY_HIDDEN,
     military_base_01r: MILITARY_HIDDEN,
     military_base_01b: MILITARY_HIDDEN,
+    // the store's back office (wave 3)
+    gas_station_01: ["vault_door_bathhouse"],
+    // the reliquary
+    church_01: ["vault_door_bathhouse"],
+    mall_01: ["vault_door_bathhouse"],
+    // the control building's strongroom
+    power_plant_01: ["vault_door_bathhouse"],
+    // the operations building's crypto vault
+    radar_base_01: ["vault_door_bathhouse"],
+    // the governor's vault
+    capitol_01: ["vault_door_bathhouse"],
+    // the caretaker's storeroom
+    apartment_01: ["vault_door_bathhouse"],
+    // the evidence vault, the captain's cabin
+    port_checkpoint_01: ["vault_door_bathhouse"],
+    cargo_ship_01: ["vault_door_bathhouse"],
+    // the whole basement behind the blast door (an explosion-gated slab: only an M202 opens it)
+    bunker_blast_01: ["blast_door_01"],
+    // the shutter over the stairs (explosion-gated: its unlock is the whole station below) and the station master's safe
+    subway_station_01: ["subway_gate_01", "vault_door_bathhouse"],
 };
+
+/** Buildings behind an explosion-gated slab: walked again with the slab blown open (probeBuilding openGates). */
+const GATED = ["bunker_blast_01"];
 
 describe("the rebirth buildings, walked", () => {
     for (const type of [...REBIRTH, "house_red_01", "bank_01"]) {
@@ -56,6 +97,17 @@ describe("the rebirth buildings, walked", () => {
             // the probe's grid leaves a few cells in room corners (survev's bank: 5.5 u²)
             expect(r.layers.reduce((n, l) => n + l.cramped, 0)).toBeLessThanOrEqual(6);
             expect(r.layers.flatMap((l) => l.pockets.filter((p) => p.area >= 1))).toEqual([]);
+        });
+    }
+
+    for (const type of GATED) {
+        it(`${type}: blown open, no squeeze on a route behind the gate, no floor nobody reaches`, () => {
+            const r = probeBuilding(type, { openGates: true });
+            expect(r.squeezes.map((g) => `${g.a} / ${g.b} ${g.width} at ${g.x}, ${g.y}`)).toEqual([]);
+            expect(r.layers.reduce((n, l) => n + l.cramped, 0)).toBeLessThanOrEqual(6);
+            expect(r.layers.flatMap((l) => l.pockets.filter((p) => p.area >= 1))).toEqual([]);
+            // the gate closed, nothing behind it is walkable
+            expect(probeBuilding(type).layers.find((l) => l.layer === 1)?.walkable).toBe(0);
         });
     }
 

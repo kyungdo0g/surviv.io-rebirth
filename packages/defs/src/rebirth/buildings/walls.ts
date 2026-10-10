@@ -28,3 +28,41 @@ export function rebirthWallDefs(generated: Readonly<Record<string, MapObjectDef>
     }
     return out;
 }
+
+/** The breakable exterior wall type of a length (`rebirth_wall_brk_<len>`, 2.5 as `2_5`). */
+export const rebirthWallBrk = (len: number): string => `rebirth_wall_brk_${String(len).replace(".", "_")}`;
+
+/** The breakable exterior walls' brick tint. */
+export const REBIRTH_WALL_BRK_TINT = 0x8c4a36;
+/** A breakable exterior wall's health: twice a partition's (the owner's wave 3 collapsing buildings, 2026-10-10). */
+export const REBIRTH_WALL_BRK_HEALTH = 300;
+
+/**
+ * The collapsing buildings' breakable exterior walls (the owner, 2026-10-10: "the gas station and the church: their
+ * exterior walls can be broken; when a certain amount collapses the whole building caves in"): the partitions' shapes
+ * and rounded sprites tinted brick, brick_wall_ext_4's hit particles, sounds and material, 300 health.
+ */
+export function rebirthBrittleWallDefs(
+    generated: Readonly<Record<string, MapObjectDef>>,
+): Record<string, MapObjectDef> {
+    const brick = generated.brick_wall_ext_4;
+    if (brick?.type !== "obstacle") throw new Error("rebirth walls: no brick_wall_ext_4 to copy");
+    const parts = rebirthWallDefs(generated);
+    const out: Record<string, MapObjectDef> = {};
+    for (const len of REBIRTH_WALL_INT_LENGTHS) {
+        const part = parts[rebirthWallInt(len)];
+        if (part?.type !== "obstacle") continue;
+        const def: ObstacleDef = {
+            ...part,
+            destructible: true,
+            health: REBIRTH_WALL_BRK_HEALTH,
+            hitParticle: brick.hitParticle,
+            explodeParticle: "rockBreak",
+            sound: { ...brick.sound },
+            material: brick.material,
+            img: { ...part.img, tint: REBIRTH_WALL_BRK_TINT },
+        };
+        out[rebirthWallBrk(len)] = def;
+    }
+    return out;
+}

@@ -111,6 +111,12 @@ export interface ObstacleDef {
     smartLoot?: boolean;
     stonePlated?: boolean;
     armorPlated?: boolean;
+    /**
+     * rebirth (wave 3 blast doors, rebirth/buildings/blastDoors.ts): only explosions damage it (no bullet, melee,
+     * shrapnel or projectile impact; a plane crash still does); with `explosionTypes` only those explosion ids count,
+     * with `minDamage` a single hit's obstacle damage (after the explosion's obstacleDamage) below it is ignored
+     */
+    explosionGate?: { minDamage?: number; explosionTypes?: readonly string[] };
     aabb?: AABB;
     disableBuildingOccupied?: boolean;
     damageCeiling?: boolean;
@@ -179,7 +185,18 @@ export interface BuildingDef {
         vision?: { dist?: number; width?: number; linger?: number; fadeRate?: number };
         imgs: FloorImage[];
         damage?: { obstacleCount: number };
-        destroy?: { wallCount: number; particle: string; particleCount: number; residue: string; sound?: string };
+        destroy?: {
+            wallCount: number;
+            particle: string;
+            particleCount: number;
+            residue: string;
+            sound?: string;
+            /**
+             * rebirth: when the roof falls (wallCount walls broken) the whole building caves in: everyone on its floor
+             * dies (DamageType.Collapse), its obstacles and the loot on its floor are buried (sim world/collapse.ts)
+             */
+            collapse?: true;
+        };
         collision?: AABB[];
     };
     mapObjects: BuildingChildDef[];
@@ -222,6 +239,26 @@ export interface BuildingDef {
     }>;
     healRegions?: Array<{ collision: Collider; healRate: number }>;
     teamId?: number;
+    /**
+     * Rebirth (owner wave 3, 2026-10-10): an unlit building. A player standing under its ceiling on its own layer sees
+     * the screen near black except a dim glow round themselves, muzzle flashes and explosions (client fx/darkness.ts).
+     * Presentation only: the simulation ignores it. For a structure's underground floor use `layers[i].dark` instead.
+     */
+    dark?: true;
+}
+
+/** One floor of a structure: the building placed at `pos` (rotated by `ori`) on map layer = its index. */
+export interface StructureLayerDef {
+    type: string;
+    pos: Vec2;
+    ori: number;
+    /** false: the floor counts as above ground (no ground cover, no underground audio); default true on layer 1 */
+    underground?: boolean;
+    /**
+     * Rebirth (owner wave 3, 2026-10-10: the subway station's inside is pitch dark): the floor's building is unlit,
+     * as `BuildingDef.dark` (client fx/darkness.ts; presentation only).
+     */
+    dark?: true;
 }
 
 export interface StructureDef {
@@ -229,7 +266,7 @@ export interface StructureDef {
     terrain: TerrainSpawnDef;
     ori?: number;
     mapObstacleBounds?: Collider[];
-    layers: Array<{ type: string; pos: Vec2; ori: number; underground?: boolean }>;
+    layers: StructureLayerDef[];
     stairs: Array<{ collision: AABB; downDir: Vec2; noCeilingReveal?: boolean; lootOnly?: boolean }>;
     mask: AABB[];
     structureType?: string;

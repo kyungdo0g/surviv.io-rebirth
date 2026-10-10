@@ -84,7 +84,7 @@ export const MAP_CASES: readonly MapCase[] = [
     {
         map: "main",
         teamModes: [1, 4],
-        // the rebirth buildings of the normal map: clinic, fire station, library, radio station, military base
+        // the rebirth buildings of the normal map: clinic, fire station, library, radio station, military base, church
         // (rebirth/buildings.ts)
         required: {
             club_complex_01: 1,
@@ -97,6 +97,14 @@ export const MAP_CASES: readonly MapCase[] = [
             library_01: 1,
             radio_station_01: 1,
             military_base_01: 1,
+            // the owner's wave 3 (2026-10-10)
+            gas_station_01: 1,
+            church_01: 1,
+            mall_01: 1,
+            capitol_01: 1,
+            apartment_01: 2,
+            bunker_blast_01: 1,
+            subway_station_01: 1,
         },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,
@@ -303,6 +311,12 @@ export const MAP_CASES: readonly MapCase[] = [
             // a military base per faction, in its own half
             military_base_01r: 1,
             military_base_01b: 1,
+            // the owner's wave 3 (2026-10-10): neutral, anywhere
+            gas_station_01: 1,
+            church_01: 1,
+            power_plant_01: 1,
+            radar_base_01: 1,
+            bunker_blast_01: 1,
         },
         softFixed: RIVER_SOFT,
         maxWarnings: 1.5,

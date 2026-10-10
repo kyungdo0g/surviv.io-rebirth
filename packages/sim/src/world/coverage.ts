@@ -21,6 +21,12 @@ const deferred = (milestone: string, note: string): FieldStatus => ({ status: "d
 
 const factoryParam = data("parameter of the original building factory, kept in the data");
 
+/**
+ * Rebirth fields the simulation handles before any def uses them (the owner's wave 3, 2026-10-10: the mechanics land
+ * before the buildings that need them); the stale-field check skips them.
+ */
+export const FIELDS_AWAITING_DEFS: ReadonlySet<string> = new Set(["building.ceiling.destroy.collapse"]);
+
 /** Field path ("obstacle.door.autoOpen", "building.ceiling.destroy.wallCount", ...) -> how it is handled. */
 export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     // obstacles
@@ -55,6 +61,9 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "obstacle.swapWeaponOnDestroy": impl("potatoSwap.ts randomWeaponSwap"),
     "obstacle.regrow": impl("combat.ts onObstacleDestroyed, interact.ts updateObstacleTimers"),
     "obstacle.regrowTimer": impl("combat.ts onObstacleDestroyed"),
+    "obstacle.explosionGate": impl("combat.ts canDamageObstacle passesExplosionGate (rebirth blast doors)"),
+    "obstacle.explosionGate.minDamage": impl("combat.ts passesExplosionGate (one hit's obstacle damage)"),
+    "obstacle.explosionGate.explosionTypes": impl("combat.ts passesExplosionGate (DamageParams.explosionType)"),
     "obstacle.stonePlated": impl("combat.ts canDamageObstacle (needs a stonePiercing source)"),
     "obstacle.disableBuildingOccupied": impl("buildings.ts onBuildingObstacleDestroyed (occupiedDisabled)"),
     "obstacle.damageCeiling": impl("buildings.ts onBuildingObstacleDestroyed (ceilingDamaged)"),
@@ -169,6 +178,7 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "building.ceiling.destroy.particleCount": client("collapse effect"),
     "building.ceiling.destroy.residue": client("collapse residue sprite"),
     "building.ceiling.destroy.sound": client("collapse sound"),
+    "building.ceiling.destroy.collapse": impl("combat.ts onObstacleDestroyed -> collapse.ts collapseBuilding"),
     "building.floor.surfaces": impl("world.ts isOnWater, loot.ts"),
     "building.floor.imgs": client(),
     "building.puzzle.name": impl("puzzles.ts puzzleCode"),
@@ -210,6 +220,7 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "structure.layers.pos": mapgen(),
     "structure.layers.ori": mapgen(),
     "structure.layers.underground": client("underground backdrop (bridges are not underground)"),
+    "structure.layers.dark": client("rebirth unlit floor: fx/darkness.ts overlay (the subway station)"),
     "structure.interiorSound.puzzle": impl("puzzles.ts puzzlePieceToggled"),
     "structure.interiorSound.sound": client(),
     "structure.interiorSound.soundAlt": client(),

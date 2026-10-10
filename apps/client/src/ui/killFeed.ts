@@ -12,6 +12,8 @@
 // uiLayout.ts).
 // Rebirth: a kill by the bombs of a variant strobe names its strike ("with a heavy shell strike" / "with carpet
 // bombing"): the sim credits those bombs to the strobe (itemSourceType strobe_heavy / strobe_carpet).
+// Rebirth: a collapsing building (DamageType.Collapse, sim world/collapse.ts) buries the players inside: "<target> was
+// buried in the <building>", or "<player> buried <target> in the <building>" when a player broke the last wall.
 import { DamageType, GameConfig, GameObjectDefs, MapObjectDefs, type RoleDef, strobeStrikeOf } from "@rebirth/defs";
 import type { KillEvent, RoleAnnouncementEvent } from "@rebirth/sim";
 import { isSov, itemName, roleName, t, tryT } from "../l10n/index.ts";
@@ -65,6 +67,11 @@ export function airstrikeName(itemSourceType: string): string {
     }
 }
 
+/** Where a collapse buried its victims: the building's name ("game-<type>"), else "rubble". */
+export function collapsePlace(mapSourceType: string): string {
+    return tryT(`game-${mapSourceType}`) || t("game-rubble");
+}
+
 /** Kill feed line of a kill (survev getKillFeedText). */
 export function killFeedText(e: KillEvent, names: PlayerNames): string {
     const sourceType = e.itemSourceType || e.mapSourceType;
@@ -103,6 +110,15 @@ export function killFeedText(e: KillEvent, names: PlayerNames): string {
             const txt = t(downed ? "game-knocked-out" : "game-killed");
             if (killer) return `${killer} ${txt} ${target} ${t("game-with")} ${airstrikeName(e.itemSourceType)}`;
             return `${t("game-the-air-strike")} ${txt} ${target}`;
+        }
+        case DamageType.Collapse: {
+            const place = collapsePlace(e.mapSourceType);
+            const credited = e.killCreditId && e.killCreditId !== e.targetId && names.teamId(e.killCreditId);
+            if (credited) {
+                const by = truncateName(names.name(e.killCreditId));
+                return `${by} ${t("game-buried")} ${target} ${t("game-in-the")} ${place}`;
+            }
+            return `${target} ${t("game-was-buried-in-the")} ${place}`;
         }
         default:
             return "";
@@ -166,7 +182,12 @@ export function killMessage(e: KillEvent, names: PlayerNames, spectating: boolea
             : t("game-yourself").toUpperCase()
         : truncateName(names.name(e.targetId));
     const sourceType = e.itemSourceType || e.mapSourceType;
-    const damageTxt = e.damageType === DamageType.Airstrike ? airstrikeName(e.itemSourceType) : sourceName(sourceType);
+    const damageTxt =
+        e.damageType === DamageType.Airstrike
+            ? airstrikeName(e.itemSourceType)
+            : e.damageType === DamageType.Collapse
+              ? t("game-a-collapse")
+              : sourceName(sourceType);
     const text =
         damageTxt && (completeKill || knockedOut)
             ? `${you} ${killTxt} ${target} ${t("game-with")} ${damageTxt}`
@@ -187,6 +208,7 @@ export function downedMessage(e: KillEvent, names: PlayerNames, spectating: bool
         if (e.damageType === DamageType.Gas) killer = t("game-the-red-zone");
         else if (e.damageType === DamageType.Airdrop) killer = t("game-the-air-drop");
         else if (e.damageType === DamageType.Airstrike) killer = t("game-the-air-strike");
+        else if (e.damageType === DamageType.Collapse) killer = t("game-the-collapse");
     }
     let damage = sourceName(e.itemSourceType || e.mapSourceType);
     if (killer && e.killCreditId && e.damageType === DamageType.Airstrike) damage = airstrikeName(e.itemSourceType);

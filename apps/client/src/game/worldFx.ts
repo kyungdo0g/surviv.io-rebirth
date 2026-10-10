@@ -1,7 +1,8 @@
 // The M5 world effects driven by snapshot sections rather than objects: explosions, flying projectiles, smoke clouds,
 // recorders, fading decals, the ambience tracks with the structures' interior music, and the underground state of
 // the listener (reverb, ground cover). The client creates one per map and feeds it every snapshot and frame.
-// Rebirth: the rain of a rainy match (fx/weather.ts, user/2026-10-08-rain), decided by the client from the map seed.
+// Rebirth: the rain of a rainy match (fx/weather.ts, user/2026-10-08-rain), decided by the client from the map seed,
+// and the darkness of unlit interiors with its muzzle flashes and explosion lights (fx/darkness.ts, owner wave 3).
 import type { Vec2 } from "@rebirth/core";
 import type { MapDef } from "@rebirth/defs";
 import type { Snapshot, Terrain, TerrainShape } from "@rebirth/sim";
@@ -10,6 +11,7 @@ import type { TextureStore } from "../assets/textures.ts";
 import { Ambience } from "../audio/ambience.ts";
 import type { AudioEngine } from "../audio/audio.ts";
 import { InteriorSounds } from "../audio/interior.ts";
+import { DarknessFx } from "../fx/darkness.ts";
 import { ExplosionSystem, explosionSounds } from "../fx/explosions.ts";
 import type { ParticleSystem } from "../fx/particles.ts";
 import { SmokeSystem } from "../fx/smoke.ts";
@@ -39,6 +41,8 @@ export interface WorldFxDeps {
      * rain's ripples land on water, never on the bridge decks and docks over it
      */
     groundSurface: (pos: Vec2) => GroundSurface;
+    /** dev: darkness everywhere (the sandbox's ?dark=1, fx/darkness.ts) */
+    dark?: boolean;
 }
 
 export interface WorldFxFrame {
@@ -61,6 +65,8 @@ export class WorldFx {
     readonly ambience: Ambience;
     /** the rain of a rainy match, else null */
     readonly rain: RainFx | null;
+    /** the overlay of unlit interiors (fx/darkness.ts); the client feeds it the gun shots */
+    readonly darkness: DarknessFx;
     private readonly interior = new InteriorSounds();
     /** recorder sounds played (tests) */
     recorders = 0;
@@ -103,6 +109,11 @@ export class WorldFx {
                   },
               })
             : null;
+        this.darkness = new DarknessFx({
+            renderer: deps.renderer,
+            isDark: (pos, layer) => deps.world.inDarkness(pos, layer),
+            force: deps.dark,
+        });
         deps.audio.preload(explosionSounds(), "sfx");
         deps.audio.preload(["frag_pin_01", "frag_throw_01", "strobe_click_01", "ceiling_break_01"], "sfx");
         deps.audio.preload(["door_open_01", "door_close_01", "door_open_02", "door_close_02", "door_error_01"], "sfx");
@@ -114,7 +125,10 @@ export class WorldFx {
             this.interval = Math.min(0.25, Math.max(0.005, s.time - this.lastTime));
         }
         this.lastTime = s.time;
-        if (s.explosions?.length) this.explosions.add(s.explosions);
+        if (s.explosions?.length) {
+            this.explosions.add(s.explosions);
+            for (const e of s.explosions) this.darkness.addExplosion(e.type, e.pos, e.layer);
+        }
         this.projectiles.apply(s.projectiles ?? [], this.interval);
         this.smokes.apply(s.smokes ?? []);
         for (const r of s.recorders ?? []) {
@@ -144,6 +158,7 @@ export class WorldFx {
             roofs: world.localRoofs(),
             view: camera.viewBounds(),
         });
+        this.darkness.update(f);
     }
 
     /** Drops everything in flight (sandbox respawn, new game). */
@@ -153,6 +168,7 @@ export class WorldFx {
         this.smokes.clear();
         this.deps.fading.clear();
         this.interior.clear();
+        this.darkness.clear();
         this.lastTime = -1;
     }
 
@@ -160,5 +176,6 @@ export class WorldFx {
         this.clear();
         this.ambience.stop();
         this.rain?.destroy();
+        this.darkness.destroy();
     }
 }
