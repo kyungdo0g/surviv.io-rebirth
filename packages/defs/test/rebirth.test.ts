@@ -133,6 +133,7 @@ describe("rebirth balance deviations", () => {
             { id: "rpg7", sprite: "gun-rpg7-01.img", size: [64, 204] },
             { id: "panzerfaust", sprite: "gun-panzerfaust-01.img", size: [56, 210] },
             { id: "m202", sprite: "gun-m202-01.img", size: [64, 196] },
+            { id: "paw20", sprite: "gun-paw20-01.img", size: [64, 204] },
         ]);
         // the RPG-7 also without its warhead, at the same size (shown while its round is fired; the client decides)
         expect(HELD_GUN_ART_EMPTY).toEqual(["rpg7"]);

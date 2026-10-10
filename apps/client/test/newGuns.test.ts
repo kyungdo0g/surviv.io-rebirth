@@ -85,7 +85,7 @@ describe("new guns: loot icons", () => {
 
     it("the installer writes every rebirth file the client requests under /assets/ (icons, emotes, sounds)", () => {
         const plan = installPlan();
-        const planned = new Set([...plan.icons, ...plan.emotes, ...plan.sounds]);
+        const planned = new Set([...plan.icons, ...plan.emotes, ...plan.sounds, ...plan.held]);
         const requested: string[] = [];
         for (const entry of Object.values(SPRITES)) {
             // committed rebirth art is named by its absolute URL and ships with the client
@@ -150,6 +150,7 @@ describe("new guns: held sprites", () => {
             "m60",
             "mg42",
             "dshk",
+            "paw20",
         ]);
         // the bullpups' own sprites are drawn for survev's bullpup gun offset; the sheet gave them none
         const gunOffset: Record<string, { x: number; y: number }> = {
@@ -188,7 +189,9 @@ describe("new guns: held sprites", () => {
             // is kept, and the hands and gun offset but the overrides
             if (id === "hecate" || id === "lynx") expect(def.worldImg.sprite, id).toBe("gun-awc-01.img");
             else if (BELT_GUNS.includes(id)) expect(def.worldImg.sprite, id).toBe("gun-pkp-top-01.img");
-            else if (LAUNCHERS.includes(id)) expect(def.worldImg.sprite, id).toBe("gun-potato-cannon-01.img");
+            // the PAW20 (second wave) is held on the shoulder like the launchers
+            else if (LAUNCHERS.includes(id) || id === "paw20")
+                expect(def.worldImg.sprite, id).toBe("gun-potato-cannon-01.img");
             else expect(isBarSprite(def.worldImg.sprite), id).toBe(true);
             expect(img.leftHandOffset, id).toEqual(leftHandOffset[id] ?? def.worldImg.leftHandOffset);
             expect(img.gunOffset, id).toEqual(gunOffset[id] ?? def.worldImg.gunOffset);

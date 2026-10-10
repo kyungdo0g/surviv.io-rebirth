@@ -48,6 +48,7 @@ const DRAWN: Readonly<Record<string, number>> = {
     rpg7: 204,
     panzerfaust: 210,
     m202: 196,
+    paw20: 204,
 };
 /**
  * The launchers: the RPG-7, Panzerfaust and M202 held on the shoulder with both hands under the gun (the sheet's potato

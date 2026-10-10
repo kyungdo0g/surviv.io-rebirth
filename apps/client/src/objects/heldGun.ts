@@ -2,7 +2,8 @@
 // "if there's no texture, just hold a bar"): a new gun draws its own gun-<id>-01.img once the sprite manifest has it
 // (the drawn ones, packages/defs rebirth/heldGunArt.ts: the G36C, M16A4, SIG 550 and G3, then the FN FAL, WA2000, M200,
 // Hécate II, Lynx and Boys, then the PP-19 Bizon, AS Val, P90 and TEC-9, then the DP-12, AA-12, M60, MG 42 and DShK,
-// then the M79, GL-06, MGL, RPG-7, Panzerfaust and M202, all 2026-10-08, committed SVGs under /rebirth/guns/; a dual
+// then the M79, GL-06, MGL, RPG-7, Panzerfaust and M202, all 2026-10-08, then the PAW20, 2026-10-10, committed SVGs
+// under /rebirth/guns/; a dual
 // pistol holds its single's sprite in each hand, ownHeldSprite; the RPG-7 draws gun-rpg7-empty-01, no warhead, while
 // its round is fired and not yet reloaded, objects/gunLoad.ts), at scale 0.5 in its own colours with the sheet's hands
 // and recoil and its gun offset, but for the rebirth's own-sprite overrides (the bullpups' own sprites take survev's

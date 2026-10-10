@@ -1,6 +1,7 @@
 // Top-down held sprites drawn for the rebirth (the owner, 2026-10-08: "draw only 5 first", then the snipers and DMRs,
 // then the SMGs and machine pistols, then two shotguns and three machine guns, the MG 42 and the DShK "menacing", then
-// the six launchers, the RPG-7 also empty and the Panzerfaust and M202 thrown away after their shot): our
+// the six launchers, the RPG-7 also empty and the Panzerfaust and M202 thrown away after their shot, then the second
+// wave's PAW20 from the owner's photo, held on the shoulder like the RPG-7): our
 // own art, minimal hand-written SVGs committed under apps/client/public/rebirth/guns/gun-<id>-01.svg and served at
 // /rebirth/guns/, like the rebirth buildings' images (buildings.ts rebirthBuildingArt). Each is the gun seen from
 // straight above, barrel up, butt flush with the bottom edge, drawn at worldImg.scale 0.5 in its own colours (tint
@@ -63,6 +64,8 @@ export const HELD_GUN_ART = {
     rpg7: [64, 204],
     panzerfaust: [56, 210],
     m202: [64, 196],
+    // second wave: the PAW20 from the owner's photo (2026-10-10; no cell on the top-down sheet), held like the launchers
+    paw20: [64, 204],
 } as const satisfies Readonly<Record<string, readonly [number, number]>>;
 
 export type HeldGunArtId = keyof typeof HELD_GUN_ART;

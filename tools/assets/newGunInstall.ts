@@ -30,6 +30,8 @@ import {
     newGunDefs,
     newGunIconPath,
     newGunSoundPath,
+    OWNER_HELD_GUN_ART,
+    ownerHeldGunArtPath,
     REPLACED_ORIGINAL_SOUNDS,
 } from "../../packages/defs/src/rebirth/index.ts";
 import { ammoEmoteIcon } from "./ammoEmotes.ts";
@@ -222,9 +224,11 @@ export function soundUses(): Map<string, SoundUse> {
     return uses;
 }
 
-/** Every file installNewGunAssets writes under the asset folder: icons and emotes (img/rebirth/), sounds. */
-export function installPlan(): { icons: string[]; sounds: string[]; emotes: string[] } {
+/** Every file installNewGunAssets writes under the asset folder: icons, emotes, held sprites (img/rebirth/), sounds. */
+export function installPlan(): { icons: string[]; sounds: string[]; emotes: string[]; held: string[] } {
     return {
+        // written only where the owner's top-down sheets are (the client checks which are installed)
+        held: Object.keys(OWNER_HELD_GUN_ART).map(ownerHeldGunArtPath),
         icons: Object.values(NEW_GUN_LOOT_ICONS).map(newGunIconPath),
         sounds: [...Object.keys(NEW_GUN_SOUND_DONORS), ...REPLACED_ORIGINAL_SOUNDS].map(newGunSoundPath),
         emotes: NEW_AMMO_IDS.map((ammo) => newGunIconPath(newAmmoEmoteTexture(ammo))),
