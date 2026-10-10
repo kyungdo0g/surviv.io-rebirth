@@ -15,6 +15,8 @@ import {
     MAX_LIGHTS,
     SHOT_LIGHT,
 } from "../src/fx/darkness.ts";
+import { StructureRender } from "../src/objects/structure.ts";
+import { ObjectWorld } from "../src/objects/world.ts";
 import type { Renderer } from "../src/render/renderer.ts";
 
 const DT = 1 / 60;
@@ -119,5 +121,42 @@ describe("darkness overlay", () => {
         fx.clear();
         expect(fx.state.lights).toHaveLength(0);
         fx.destroy();
+    });
+});
+
+describe("where it is dark (ObjectWorld.inDarkness)", () => {
+    // review of PR #19: a viewer on the upper half of the subway's stairs (layer 2) saw the whole dark station lit,
+    // since the stairs layer shows the floor below; the stairs of a structure with a dark floor are dark too
+    const stairs = new StructureRender(1);
+    stairs.stairs = [{ min: { x: -2, y: 17 }, max: { x: 2, y: 23 } }];
+    const platform = { insideCeiling: (p: Vec2) => p.y < 17 && Math.abs(p.x) < 30 };
+    const fakeWorld = {
+        entries: new Map([
+            [
+                1,
+                {
+                    render: stairs,
+                    data: {
+                        id: 1,
+                        kind: "structure",
+                        type: "subway_station_01",
+                        pos: { x: 0, y: 0 },
+                        ori: 0,
+                        layer: 0,
+                    },
+                },
+            ],
+        ]),
+        structureLayer: (_s: unknown, i: number) => (i === 1 ? platform : null),
+    };
+    const dark = (p: Vec2, layer: number) => ObjectWorld.prototype.inDarkness.call(fakeWorld as never, p, layer);
+
+    it("is the dark floor under its ceiling, and its stairs on a stairs layer, never the ground floor", () => {
+        expect(dark({ x: 0, y: 0 }, 1)).toBe(true);
+        expect(dark({ x: 0, y: 0 }, 0)).toBe(false);
+        expect(dark({ x: 0, y: 20 }, 2)).toBe(true);
+        expect(dark({ x: 0, y: 20 }, 3)).toBe(true);
+        expect(dark({ x: 0, y: 20 }, 0)).toBe(false);
+        expect(dark({ x: 5, y: 20 }, 2)).toBe(false);
     });
 });

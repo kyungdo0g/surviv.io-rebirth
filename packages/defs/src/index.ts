@@ -27,6 +27,7 @@ export {
     unscaledMapDef,
 } from "./data.ts";
 export * from "./gunClasses.ts";
+export * from "./rebirth/darkness.ts";
 export * from "./rebirth/index.ts";
 export * from "./rebirth/weather.ts";
 export * from "./refs.ts";

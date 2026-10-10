@@ -30,11 +30,22 @@ export function parentBuildingOf(ctx: SimContext, obstacle: Obstacle): Building 
 }
 
 /** A child obstacle of `building` died: roof damage, occupied emitters, wall count (survev obstacleDestroyed). */
+/**
+ * Whether a destroyed wall counts towards the roof's `wallCount`: any wall (survev), but in a rebirth collapsing
+ * building (`ceiling.destroy.collapse`) only its load-bearing walls (ObstacleDef.loadBearing, the brick shells): the
+ * owner's rule is that broken exterior walls bring it down, and its wood partitions broken in a fight (or by a bot
+ * breaking through) counted too before (review of PR #19: eight of the church's ten partitions caved it in).
+ */
+export function countsTowardRoof(building: Building, obstacle: Obstacle): boolean {
+    if (!obstacle.isWall) return false;
+    return !building.def.ceiling.destroy?.collapse || !!obstacle.def.loadBearing;
+}
+
 export function onBuildingObstacleDestroyed(building: Building, obstacle: Obstacle): void {
     const def = obstacle.def;
     if (def.damageCeiling) building.ceilingDamaged = true;
     if (def.disableBuildingOccupied) building.occupiedDisabled = true;
-    if (obstacle.isWall) {
+    if (countsTowardRoof(building, obstacle)) {
         building.wallsToDestroy--;
         if (building.wallsToDestroy <= 0) building.ceilingDead = true;
     }

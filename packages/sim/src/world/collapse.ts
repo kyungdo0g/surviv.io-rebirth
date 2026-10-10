@@ -9,6 +9,7 @@ import { type Bounds, collider, type Vec2, v2 } from "@rebirth/core";
 import { DamageType } from "@rebirth/defs";
 import { killPlayer } from "../combat/combat.ts";
 import { wipeIfAllDowned } from "../match/teams.ts";
+import { countsTowardRoof } from "./buildings.ts";
 import type { SimContext } from "./context.ts";
 import type { Building, Obstacle } from "./entities.ts";
 import type { Player } from "./player.ts";
@@ -22,7 +23,7 @@ export function collapsesWith(building: Building, obstacle: Obstacle): boolean {
     return (
         !!building.def.ceiling.destroy?.collapse &&
         !building.ceilingDead &&
-        obstacle.isWall &&
+        countsTowardRoof(building, obstacle) &&
         building.wallsToDestroy <= 1
     );
 }

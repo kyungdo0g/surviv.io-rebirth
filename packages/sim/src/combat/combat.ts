@@ -110,8 +110,8 @@ export function killPlayer(
     player.dead = true;
     player.boost = 0;
     player.cancelAction();
-    // a cooked throwable drops at the feet (survev player.ts kill)
-    if (player.weaponManager.cooking) throwThrowable(ctx, player, true);
+    // a cooked throwable drops at the feet (survev player.ts kill); a buried one is lost with the rest
+    if (player.weaponManager.cooking && !opts?.buried) throwThrowable(ctx, player, true);
     player.cancelAnim();
     player.shootHold = false;
     clearHaste(player);
@@ -126,7 +126,8 @@ export function killPlayer(
         }
     }
     // Last Breath and Martyrdom (the perk, or the Grenadier / Demo role) (M7a, perks/effects.ts)
-    onPerkHolderDeath(ctx, player);
+    // (buried: no Martyrdom grenades out of the rubble)
+    onPerkHolderDeath(ctx, player, !!opts?.buried);
     // kill feed, role announcements, alive count, kill leader, game over (match/match.ts)
     ctx.onPlayerKilled(player, params, credit);
     ctx.observer?.onPlayerKilled?.(player, params, credit);
@@ -145,7 +146,8 @@ export function killPlayer(
         randomWeaponSwap(ctx, killer, params);
     }
     // the body slides along the killing hit, before the loot drops (survev player.ts kill addDeadBody) (M9)
-    ctx.deadBodies.add(player.pos, player.id, player.layer, params.dir);
+    // (buried by a collapse: no body, it lies under the rubble)
+    if (!opts?.buried) ctx.deadBodies.add(player.pos, player.id, player.layer, params.dir);
     // the loadout's death emote follows 0.3 s later (match/emotes.ts updateSlotEmotes)
     player.deathEmoteTicker = DEATH_EMOTE_DELAY;
     // an obstacle disguise dies with its wearer, loot and explosion included (survev player.ts kill obstacleOutfit)

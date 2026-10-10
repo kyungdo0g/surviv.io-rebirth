@@ -64,6 +64,7 @@ export const BEHAVIOUR_FIELDS: Readonly<Record<string, FieldStatus>> = {
     "obstacle.explosionGate": impl("combat.ts canDamageObstacle passesExplosionGate (rebirth blast doors)"),
     "obstacle.explosionGate.minDamage": impl("combat.ts passesExplosionGate (one hit's obstacle damage)"),
     "obstacle.explosionGate.explosionTypes": impl("combat.ts passesExplosionGate (DamageParams.explosionType)"),
+    "obstacle.loadBearing": impl("buildings.ts countsTowardRoof (a collapsing building counts only these walls)"),
     "obstacle.stonePlated": impl("combat.ts canDamageObstacle (needs a stonePiercing source)"),
     "obstacle.disableBuildingOccupied": impl("buildings.ts onBuildingObstacleDestroyed (occupiedDisabled)"),
     "obstacle.damageCeiling": impl("buildings.ts onBuildingObstacleDestroyed (ceilingDamaged)"),

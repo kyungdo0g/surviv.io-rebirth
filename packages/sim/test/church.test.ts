@@ -83,6 +83,45 @@ describe("the church", () => {
         expect(lootInside()).toBe(0);
     });
 
+    it("stands however many wood partitions break: only the brick shell counts, and the buried leave no body", () => {
+        // review of PR #19: every wall counted towards wallCount, so eight of the ten partitions broken in a fight
+        // inside (or by bots breaking through) caved the church in
+        const { game, church } = churchGame();
+        const inNave = placePlayer(game, at(church, 0, 0));
+        const shooter = placePlayer(game, at(church, 26, 0));
+        const hit = (w: Obstacle) =>
+            game.damageObstacle(w, {
+                amount: 1000,
+                damageType: DamageType.Player,
+                gameSourceType: "ak47",
+                sourceId: shooter.id,
+            });
+        const partitions = live(game, church).filter((o) => o.type.startsWith("rebirth_wall_int_"));
+        expect(partitions.length).toBeGreaterThanOrEqual(CHURCH_COLLAPSE_WALLS);
+        for (const w of partitions) hit(w);
+        expect([church.ceilingDead, inNave.dead]).toEqual([false, false]);
+        const bodies = game.deadBodies.bodies.length;
+        const brittle = live(game, church).filter((o) => o.type.startsWith("rebirth_wall_brk_"));
+        for (const w of brittle.slice(0, CHURCH_COLLAPSE_WALLS)) hit(w);
+        expect([church.ceilingDead, inNave.dead]).toEqual([true, true]);
+        expect(game.deadBodies.bodies.length).toBe(bodies);
+    });
+
+    it("caves in the same way every time (deterministic: the same kills in the same order)", () => {
+        const run = () => {
+            const { game, church } = churchGame();
+            const ps = [-6, -2, 2, 6].map((x) => placePlayer(game, at(church, x, 4)));
+            const shooter = placePlayer(game, at(church, 26, 0));
+            const kills: number[] = [];
+            game.observer = { onPlayerKilled: (p: { id: number }) => kills.push(p.id) } as typeof game.observer;
+            for (const w of live(game, church).filter((o) => o.type.startsWith("rebirth_wall_brk_")))
+                game.damageObstacle(w, { amount: 1000, damageType: DamageType.Player, sourceId: shooter.id });
+            stepSeconds(game, 1);
+            return { kills: kills.map((id) => ps.findIndex((p) => p.id === id)), objects: game.world.objects.size };
+        };
+        expect(run()).toEqual(run());
+    });
+
     it("opens the reliquary on the bell code only", () => {
         const { game, church } = churchGame();
         const switches = childObstacles(game, church, "switch_03").filter((o) => o.puzzlePiece);

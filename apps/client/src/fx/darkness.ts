@@ -12,21 +12,23 @@
 // Drawing: one screen-sized render texture at half resolution, cleared each frame to the dark shade, with one reused
 // radial-gradient sprite per light drawn over it in the "erase" blend mode; the texture is shown by one sprite.
 import type { Vec2 } from "@rebirth/core";
-import { type ExplosionDef, GameObjectDefs } from "@rebirth/defs";
+import {
+    DARK_ALPHA,
+    EXPLOSION_LIGHT,
+    type ExplosionDef,
+    GameObjectDefs,
+    PLAYER_LIGHT,
+    SHOT_LIGHT,
+} from "@rebirth/defs";
 import { Container, RenderTexture, Sprite, Texture } from "pixi.js";
 import type { Renderer } from "../render/renderer.ts";
 import { explosionVisual } from "./explosions.ts";
 
-/** opacity of the dark shade at full fade */
-export const DARK_ALPHA = 0.96;
 /** seconds the overlay takes to fade in or out when the player enters or leaves the dark */
 export const DARK_FADE_TIME = 0.3;
-/** the glow round the followed player: radius (world units) and how much of the shade it takes away at its centre */
-export const PLAYER_LIGHT = { radius: 2.5, intensity: 0.8 } as const;
-/** a muzzle flash: radius (world units) and life (seconds) */
-export const SHOT_LIGHT = { radius: 9, duration: 0.08 } as const;
-/** an explosion's light: radius as a multiple of its blast radius (rad.max) and life (seconds) */
-export const EXPLOSION_LIGHT = { radiusMult: 1.5, duration: 0.5 } as const;
+// the light sizes are shared with the bots' vision in the dark (defs rebirth/darkness.ts; packages/bots
+// perception/darkness.ts), so a bot never sees more in the dark than this overlay shows a player
+export { DARK_ALPHA, EXPLOSION_LIGHT, PLAYER_LIGHT, SHOT_LIGHT } from "@rebirth/defs";
 /** at most this many lights alive (the oldest go first) */
 export const MAX_LIGHTS = 48;
 /** render texture resolution: the soft lights need no detail */

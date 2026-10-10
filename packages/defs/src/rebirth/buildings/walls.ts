@@ -56,6 +56,8 @@ export function rebirthBrittleWallDefs(
             ...part,
             destructible: true,
             health: REBIRTH_WALL_BRK_HEALTH,
+            // the walls a collapsing building counts (sim world/buildings.ts onBuildingObstacleDestroyed)
+            loadBearing: true,
             hitParticle: brick.hitParticle,
             explodeParticle: "rockBreak",
             sound: { ...brick.sound },

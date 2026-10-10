@@ -44,6 +44,8 @@ function darkTypes(): Set<string> {
     return darkTypeSet;
 }
 
+const inBox = (p: Vec2, b: ViewBounds) => p.x >= b.min.x && p.x <= b.max.x && p.y >= b.min.y && p.y <= b.max.y;
+
 export class ObjectWorld {
     private readonly deps: ViewDeps;
     private readonly interp: SnapshotInterpolator;
@@ -233,6 +235,10 @@ export class ObjectWorld {
             if (data.kind === "structure") {
                 const layerDef = (MapObjectDefs[data.type] as StructureDef | undefined)?.layers[floor];
                 if (layerDef?.dark && this.structureLayer(data, floor)?.insideCeiling(pos)) return true;
+                // on its stairs (either half): from the top step a viewer looks down into the dark floor, which the
+                // stairs layer shows lit otherwise (review of PR #19: a stair camper saw the whole station)
+                if (layer & 2 && render instanceof StructureRender && render.stairs.some((b) => inBox(pos, b)))
+                    return true;
             } else if (render instanceof BuildingRender && data.layer === floor) {
                 if ((MapObjectDefs[data.type] as BuildingDef | undefined)?.dark && render.insideCeiling(pos))
                     return true;

@@ -115,7 +115,7 @@ export function playBugle(ctx: SimContext, player: Player): void {
  * A player died (survev kill): Last Breath bloodlusts the teammates within 60 u (bonus damage, size, Inspire haste
  * for 5 s), and Martyrdom (the perk, or the Grenadier / Demo role) scatters 12 martyr_nades.
  */
-export function onPerkHolderDeath(ctx: SimContext, player: Player): void {
+export function onPerkHolderDeath(ctx: SimContext, player: Player, buried = false): void {
     const rules = ctx.rules.perks;
     if (player.hasPerk("final_bugle")) {
         for (const p of teammatesInRange(ctx, player, rules.lastBreathRange)) {
@@ -126,7 +126,8 @@ export function onPerkHolderDeath(ctx: SimContext, player: Player): void {
             recalcScale(p);
         }
     }
-    if (player.hasPerk("martyrdom") || rules.martyrdomRoles.includes(player.role)) {
+    // (a player buried by a collapsing building drops no grenades: world/collapse.ts)
+    if (!buried && (player.hasPerk("martyrdom") || rules.martyrdomRoles.includes(player.role))) {
         const { x, y } = player.pos;
         ctx.projectiles.addSplit(
             player.id,

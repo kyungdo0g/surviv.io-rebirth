@@ -117,6 +117,12 @@ export interface ObstacleDef {
      * with `minDamage` a single hit's obstacle damage (after the explosion's obstacleDamage) below it is ignored
      */
     explosionGate?: { minDamage?: number; explosionTypes?: readonly string[] };
+    /**
+     * rebirth (wave 3 collapsing buildings, rebirth/buildings/walls.ts): a load-bearing wall. In a building whose roof
+     * collapses (`ceiling.destroy.collapse`) only these walls count towards `wallCount` (sim world/buildings.ts), so
+     * breaking its wood partitions in a fight never brings it down
+     */
+    loadBearing?: boolean;
     aabb?: AABB;
     disableBuildingOccupied?: boolean;
     damageCeiling?: boolean;
