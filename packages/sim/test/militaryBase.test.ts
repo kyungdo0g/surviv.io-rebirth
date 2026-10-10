@@ -1,7 +1,7 @@
 // The military base (packages/defs rebirth/buildings/military/; the owner, 2026-10-08): its structure data (five
 // stairs, the mask clear of them, the stair-bottom doors, sliding doors with walls to slide into, the vault door's swing,
 // images at most 72 units), and its mechanics in the real sim on generated maps: the stair-bottom doors switch to the
-// basement, the gatehouse panel locks the main gate, Command's panel locks only Command's lab doors, the vault opens
+// basement, the gatehouse switch opens its weapons cage, Command's staff code opens the war chest, the vault opens
 // 4.1 s after Interact, the wards heal 2 HP/s, the towers give the 4x view, players walk down the HQ stairs, up the
 // sapper hatch and from outside the motor gate down the ramp; on 50v50 each faction's base stands in its own half,
 // outside its spawn band.
@@ -13,10 +13,13 @@ import {
     MILITARY_BASES,
     MILITARY_BUNKER,
     MILITARY_COMMAND,
+    MILITARY_COMMAND_CODE,
+    MILITARY_GATEHOUSE_CAGE_DOOR,
     MILITARY_MASK,
     MILITARY_PARTS,
     MILITARY_STAIRS,
     MILITARY_VAULT_DOOR,
+    MILITARY_WAR_CHEST_DOOR,
     MILITARY_WARD_HEAL_RATE,
     type MilitaryBox,
 } from "@rebirth/defs";
@@ -196,40 +199,42 @@ describe.each(CASES)("$base on $map $seed", ({ map, seed, teamMode, base }) => {
         expect(odd.map((d) => d.type)).toEqual([]);
     });
 
-    it("the gatehouse panel closes and locks the main gate's two leaves for 12 s", () => {
+    it("the gatehouse switch opens its weapons cage, and only that (the gate's leaves stay free)", () => {
         const g = game();
         const s = findStructure(g, base);
         const gate = near(g, s, "military_gatehouse_01");
-        const [panel] = childObstacles(g, gate, "control_panel_07de");
+        const [sw] = childObstacles(g, gate, "switch_03");
+        const cage = childObstacles(g, gate, MILITARY_GATEHOUSE_CAGE_DOOR.type);
         const leaves = childObstacles(g, gate, "house_door_02");
-        expect(leaves).toHaveLength(2);
-        const p = placePlayer(g, v2.add(panel.pos, rotateOri({ x: -2.8, y: 0 }, s.ori)));
-        interactObstacle(g, leaves[0], p);
+        expect([cage.length, leaves.length, sw?.puzzlePiece]).toEqual([1, 2, "1"]);
+        const p = placePlayer(g, v2.add(sw.pos, rotateOri({ x: 0, y: 1.5 }, s.ori)));
+        interactObstacle(g, cage[0], p);
         stepSeconds(g, 0.5);
-        expect(leaves[0].door!.open).toBe(true);
-        interactObstacle(g, panel, p);
-        stepSeconds(g, 1);
-        expect(leaves.map((d) => [d.door!.open, d.door!.locked])).toEqual([
-            [false, true],
-            [false, true],
-        ]);
-        stepSeconds(g, 12);
+        expect(cage[0].door!.open).toBe(false);
+        interactObstacle(g, sw, p);
+        stepSeconds(g, 2.5);
+        expect(cage[0].door!.open).toBe(true);
         expect(leaves.map((d) => d.door!.locked)).toEqual([false, false]);
     });
 
-    it("Command's panel locks Command's four lab doors for 10 s, not the Spine's, the tunnel's or the HQ stairs' door", () => {
+    it("Command's staff code (red, yellow, green) opens the war chest; a wrong order resets the switches", () => {
         const g = game();
         const s = findStructure(g, base);
         const command = near(g, s, "military_bunker_command_01");
-        const [panel] = childObstacles(g, command, "control_panel_07sv");
+        const switches = childObstacles(g, command, "switch_03");
+        const [chest] = childObstacles(g, command, MILITARY_WAR_CHEST_DOOR.type);
         const labs = childObstacles(g, command, "lab_door_01");
-        const others = childObstacles(g, near(g, s, "military_bunker_01"), "lab_door_01");
-        const stairDoor = doorsNear(g, s).find((d) => v2.distance(d.pos, worldOf(s, -2, 24.25)) < 1e-3)!;
-        interactObstacle(g, panel, placePlayer(g, worldOf(s, 6, 19.2), 1));
-        stepSeconds(g, 1);
-        expect([labs.length, labs.every((d) => d.door!.locked)]).toEqual([4, true]);
-        expect([others.length, others.some((d) => d.door!.locked), stairDoor.door!.locked]).toEqual([3, false, false]);
-        stepSeconds(g, 11);
+        expect([switches.length, labs.length, !!chest]).toEqual([3, 4, true]);
+        const piece = (label: string) => switches.find((o) => o.puzzlePiece === label)!;
+        const p = placePlayer(g, worldOf(s, 0, 12), 1);
+        for (const label of ["yellow", "red", "green"]) interactObstacle(g, piece(label), p);
+        stepSeconds(g, 3);
+        expect(chest.door!.open).toBe(false);
+        expect(switches.every((o) => o.button!.canUse && !o.button!.onOff)).toBe(true);
+        for (const label of MILITARY_COMMAND_CODE) interactObstacle(g, piece(label), p);
+        stepSeconds(g, 2.5);
+        expect(chest.door!.open).toBe(true);
+        // nothing locks Command any more
         expect(labs.some((d) => d.door!.locked)).toBe(false);
     });
 

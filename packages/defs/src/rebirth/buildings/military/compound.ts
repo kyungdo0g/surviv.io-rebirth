@@ -137,26 +137,25 @@ export const MILITARY_COMPOUND: MilitaryPart = fromWorld({
         // the main gate's checkpoint: a sandbag on the axis breaks the gate-to-HQ sight line, a hedgehog west of the
         // road, a barrel by the west leaf (it blows on whoever holds the gate)
         out("sandbags_02", 0, -30),
-        out("hedgehog_01", -9, -32),
-        out("barrel_01", -6.5, -39.2),
+        out("hedgehog_01", -8, -32),
         // the south-west yard: a closed container as hard cover on the way to the SW tower, sandbags
         out("container_05", -18, -33, 1),
         out("sandbags_01", -38, -27),
         // the south-east vehicle park on the motor apron: a container with loot (open end west), a closed one, fuel
         out("container_01", 36, -31, 3),
-        out("container_05", 21.5, -35.5),
-        out("barrel_01", 47.5, -38),
-        out("barrel_01", 47.5, -34),
+        out("container_05", 25.5, -34.5),
+        out("barrel_01", 50, -39),
+        out("barrel_01", 50, -35.5),
         out("decal_oil_01", 30, -36),
         out("decal_oil_04", 42, -25),
         out("decal_oil_06", 27, -27),
         // the fuel point between the garage and the armory
         out("container_05", 36, 12.5, 1),
-        out("barrel_01", 47, 9.5),
-        out("barrel_01", 47, 15.5),
+        out("barrel_01", 47, 10.75),
+        out("barrel_01", 47, 14.25),
         // the west yard by the wicket
         out("sandbags_02", -47.5, 18),
-        out("crate_01", -40, 15),
+        out("crate_01", -40, 16),
         // outside: the attackers' cover facing the main gate, hedgehogs on its apron, sandbags outside the motor gate,
         // bushes screening the hatch
         out("sandbags_01", 0, -48),

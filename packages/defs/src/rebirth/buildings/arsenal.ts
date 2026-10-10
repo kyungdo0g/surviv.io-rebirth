@@ -3,7 +3,8 @@
 // placement in sim mapgen placement.ts). Its steel magazine is sealed by two locked sliding doors
 // (lab_door_locked_01) until a scheduled unlock opens them 90 s into the first circle and pings the map for everyone
 // (MapDef gameConfig.unlocks, survev's Cobalt bunker doors; REBIRTH_BUILDING_UNLOCKS): a siege both factions see
-// coming. The roof needs no ceiling.destroy, so air strike bombs fizzle inside.
+// coming: the magazine holds two weapons crates, an LMG mount, ammo and level 3 armour. The roof needs no
+// ceiling.destroy, so air strike bombs fizzle inside.
 import type { BuildingDef } from "../../types/index.ts";
 import {
     ART_SCALE,
@@ -94,18 +95,21 @@ export function arsenal(known: (id: string) => boolean): BuildingDef {
         mapObjects: [
             ...wallChildren(L, known),
             ...openingChildren(L),
-            // the ring corridor: corner crates as cover, lockers, loot by the vault doors
-            child("crate_01", -11.5, 8.5),
-            child("crate_01", 11.5, -8.5),
-            child("locker_01", -14.25, -9, 1),
-            child("locker_01", 14.25, 9, 3),
+            // the ring corridor: ammo crates against the outer walls in two corners, lockers, loot by the vault doors
+            // (everything flush against a wall or 2.6+ clear: reworked 2026-10-10)
+            child("crate_06", -13.9, 8.75, 1),
+            child("crate_06", 13.9, -8.75, 1),
+            child("locker_01", -14.25, -9.5, 1),
+            child("locker_01", 14.25, 9.5, 3),
             child("loot_tier_1", -11.5, 0.5),
             child("loot_tier_1", 11.5, 0.5),
-            // the magazine: guns and a sniper, guns and throwables, an ammo crate, a level 3 armour piece
-            child("mil_crate_05", -3.5, 3.75),
-            child("mil_crate_04", 3.5, 3.75),
-            child("crate_04", 0, -3),
-            child("loot_tier_airdrop_armor", 0, 1),
+            // the magazine: guns and a sniper, guns and throwables, an LMG on the wall, an ammo crate, a level 3 armour
+            // piece
+            child("mil_crate_05", -4.3, 4.25),
+            child("mil_crate_04", 4.3, 4.25),
+            child("gun_mount_03", -4.75, -4.6, 2),
+            child("crate_04", 3.5, -3.25),
+            child("loot_tier_airdrop_armor", 0, 0.5),
             // outside: sandbags flanking both doors, bushes
             child("sandbags_01", -5.5, 13.6),
             child("sandbags_01", 5.5, 13.6),

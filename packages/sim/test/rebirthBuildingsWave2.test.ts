@@ -1,20 +1,27 @@
-// The second wave of rebirth buildings (the owner, 2026-10-08: "more buildings, the maps get bigger"; packages/defs
-// rebirth/buildings/): the fire station's hose tower gives the 4x view and nothing around it does, the radio station's
-// panel seals the transmitter hall's sliding doors for 10 s, the arsenal's magazine opens 90 s into the first circle
-// with pings, the 50v50 buildings stand on the front line (the arsenal beside the river, each blockhouse on its own
-// side near it), the blockhouse's loopholes stop players but not bullets, the library's stacks leave no straight lane,
-// and every sliding door has a wall to slide into.
+// The second wave of rebirth buildings (the owner, 2026-10-08: "more buildings, the maps get bigger"; reworked
+// 2026-10-10; packages/defs rebirth/buildings/): the fire station's hose tower gives the 4x view and nothing around it
+// does, every hidden room opens on its puzzle (the radio station's frequency code, the one-switch rooms of the clinic,
+// library, fire station and command posts), the arsenal's magazine opens 90 s into the first circle with pings, the
+// 50v50 buildings stand on the front line (the arsenal beside the river, each blockhouse on its own side near it), the
+// blockhouse's loopholes stop players but not bullets, the library's stacks leave no straight lane, and every sliding
+// door has a wall to slide into.
 import { type Collider, collider, type Vec2, v2 } from "@rebirth/core";
 import {
     ARSENAL_UNLOCK,
     BLOCKHOUSE_FACTIONS,
+    CLINIC_SAFE_DOOR,
+    FIRESTATION_CAGE_DOOR,
     FIRESTATION_TOWER,
     GameConfig,
     getMapObjectDef,
     getMapObjectDefOfType,
     LIBRARY_LAYOUT,
+    LIBRARY_SECRET_DOOR,
     LIBRARY_SHELVES,
     LOOKOUT_ZOOM,
+    OUTPOST_ARMORY_DOOR,
+    RADIO_CODE,
+    RADIO_VAULT_DOOR,
     REBIRTH_BUILDING_UNLOCKS,
 } from "@rebirth/defs";
 import { describe, expect, it } from "vitest";
@@ -26,38 +33,100 @@ import { cachedMap } from "./helpers.ts";
 /** A building-local point in world space. */
 const at = (b: { pos: Vec2; ori: number }, x: number, y: number) => v2.add(b.pos, rotateOri({ x, y }, b.ori));
 
+/** Whether the wall boxes cover `box` within `tol` (collinear wall pieces count as one wall). */
+function coveredByWalls(box: { min: Vec2; max: Vec2 }, walls: ReadonlyArray<{ min: Vec2; max: Vec2 }>, tol = 0.3) {
+    const vertical = box.max.y - box.min.y > box.max.x - box.min.x;
+    const [a, c] = vertical ? (["y", "x"] as const) : (["x", "y"] as const);
+    const spans = walls
+        .filter((w) => w.min[c] <= box.min[c] + tol && w.max[c] >= box.max[c] - tol)
+        .map((w) => [w.min[a], w.max[a]] as const)
+        .sort((p, q) => p[0] - q[0]);
+    let reach = box.min[a] + tol;
+    for (const [lo, hi] of spans) if (lo <= reach + 1e-6) reach = Math.max(reach, hi);
+    return reach >= box.max[a] - tol;
+}
+
 describe("sliding doors", () => {
-    it("slide into a wall of their building (lab doors: 3.75 along their local -y, 0.25 left in the doorway)", () => {
-        for (const type of ["radio_station_01", "arsenal_01"]) {
+    it("slide into a wall of their building (open, 0.25 or less left in the doorway)", () => {
+        const expected: Readonly<Record<string, number>> = {
+            clinic_01: 1,
+            radio_station_01: 1,
+            library_01: 1,
+            arsenal_01: 2,
+            // the war chest's door (Command's lab doors slide into the basement's walls: militaryBase.test.ts)
+            military_bunker_command_01: 1,
+        };
+        const own = (type: string, door: string) => type !== "military_bunker_command_01" || door !== "lab_door_01";
+        for (const [type, count] of Object.entries(expected)) {
             const def = getMapObjectDefOfType("building", type);
-            const walls: Collider[] = [];
+            const walls: Array<{ min: Vec2; max: Vec2 }> = [];
             const doors: Array<{ col: Collider; type: string }> = [];
             for (const c of def.mapObjects) {
                 if (typeof c.type !== "string") continue;
                 const d = getMapObjectDef(c.type);
                 if (d.type !== "obstacle") continue;
-                if (/_wall_ext_/.test(c.type)) walls.push(transformOri(d.collision, c.pos, c.ori, 1));
-                if (d.door?.slideToOpen) {
-                    const slid = { ...c.pos, ...v2.add(c.pos, rotateOri({ x: 0, y: -d.door.slideOffset }, c.ori)) };
+                if (/_wall_ext_/.test(c.type)) walls.push(collider.toAabb(transformOri(d.collision, c.pos, c.ori, 1)));
+                if (d.door?.slideToOpen && own(type, c.type)) {
+                    const slid = v2.add(c.pos, rotateOri({ x: 0, y: -d.door.slideOffset }, c.ori));
                     doors.push({ col: transformOri(d.collision, slid, c.ori, 1), type: c.type });
                 }
             }
-            expect(doors.length, type).toBe(2);
+            expect([type, doors.length]).toEqual([type, count]);
             for (const door of doors) {
-                // survev's panels keep 0.25 in the doorway when open
-                const box = collider.toAabb(door.col);
-                const tol = 0.3;
-                const covered = walls.some((w) => {
-                    const wb = collider.toAabb(w);
-                    return (
-                        box.min.x >= wb.min.x - tol &&
-                        box.max.x <= wb.max.x + tol &&
-                        box.min.y >= wb.min.y - tol &&
-                        box.max.y <= wb.max.y + tol
-                    );
-                });
+                const covered = coveredByWalls(collider.toAabb(door.col), walls);
                 expect([type, door.type, covered]).toEqual([type, door.type, true]);
             }
+        }
+    });
+});
+
+describe("the hidden rooms", () => {
+    /** The building's switches (puzzle pieces) and its hidden room's doors. */
+    const parts = (game: Game, type: string, door: string) => {
+        const b = findBuilding(game, type);
+        const switches = childObstacles(game, b, "switch_03").filter((o) => o.puzzlePiece);
+        return { b, switches, doors: childObstacles(game, b, door) };
+    };
+
+    it("the radio station's vault opens on the frequency code only: yellow, red, blue", () => {
+        const game = mapGame("main", 12345);
+        const { switches, doors } = parts(game, "radio_station_01", RADIO_VAULT_DOOR.type);
+        expect([switches.length, doors.length]).toEqual([3, 1]);
+        const piece = (label: string) => switches.find((o) => o.puzzlePiece === label)!;
+        const p = placePlayer(game, piece("yellow").pos);
+        // a wrong order: an error, the switches reset, the vault stays shut
+        for (const label of ["yellow", "blue", "red"]) interactObstacle(game, piece(label), p);
+        stepSeconds(game, 3);
+        expect(doors[0].door!.open).toBe(false);
+        expect(switches.every((o) => o.button!.canUse && !o.button!.onOff)).toBe(true);
+        // the code
+        for (const label of RADIO_CODE) interactObstacle(game, piece(label), p);
+        stepSeconds(game, 1.5);
+        expect(doors[0].door!.open).toBe(false);
+        stepSeconds(game, 1);
+        expect(doors[0].door!.open).toBe(true);
+    });
+
+    it("the clinic's safe, the library's rare-books room, the fire station's cage and each command post's armory open on their switch", () => {
+        const cases = [
+            ["main", 12345, "clinic_01", CLINIC_SAFE_DOOR.type],
+            ["main", 12345, "library_01", LIBRARY_SECRET_DOOR.type],
+            ["main", 12345, "firestation_01", FIRESTATION_CAGE_DOOR.type],
+            ["faction", 7, "outpost_01r", OUTPOST_ARMORY_DOOR.type],
+            ["faction", 7, "outpost_01b", OUTPOST_ARMORY_DOOR.type],
+        ] as const;
+        for (const [map, seed, type, door] of cases) {
+            const game = mapGame(map, seed);
+            const { switches, doors } = parts(game, type, door);
+            expect([type, switches.length, doors.length]).toEqual([type, 1, 1]);
+            // the door ignores Interact: only the switch opens it
+            const p = placePlayer(game, switches[0].pos);
+            interactObstacle(game, doors[0], p);
+            stepSeconds(game, 0.5);
+            expect([type, doors[0].door!.open]).toEqual([type, false]);
+            interactObstacle(game, switches[0], p);
+            stepSeconds(game, 2.5);
+            expect([type, doors[0].door!.open]).toEqual([type, true]);
         }
     });
 });
@@ -80,26 +149,6 @@ describe("the fire station", () => {
             stepSeconds(game, 0.2);
             expect([x, y, p.zoom < LOOKOUT_ZOOM]).toEqual([x, y, true]);
         }
-    });
-});
-
-describe("the radio station", () => {
-    it("its panel closes and locks the transmitter hall's two sliding doors for 10 s, then restores them", () => {
-        const game = mapGame("main", 12345);
-        const station = findBuilding(game, "radio_station_01");
-        const [panel] = childObstacles(game, station, "control_panel_07sv");
-        const doors = childObstacles(game, station, "lab_door_01");
-        expect(doors.length).toBe(2);
-        // a player at the lobby door opens it (automatic)
-        const p = placePlayer(game, at(station, 0, -5));
-        stepSeconds(game, 1);
-        expect(doors.some((d) => d.door?.open)).toBe(true);
-        game.teleportPlayer(p.id, at(station, 0.5, 6.4), 0);
-        interactObstacle(game, panel, p);
-        stepSeconds(game, 1);
-        for (const d of doors) expect(d.door).toMatchObject({ open: false, locked: true });
-        stepSeconds(game, 10);
-        for (const d of doors) expect(d.door?.locked).toBe(false);
     });
 });
 
@@ -190,25 +239,16 @@ describe("the blockhouse", () => {
 });
 
 describe("the library", () => {
-    it("its stacks leave no straight east-west lane and 3-unit aisles between the shelves", () => {
+    it("its stacks leave no straight east-west lane and 4-unit aisles between the shelves", () => {
         const shelf = getMapObjectDef("bookshelf_01");
-        const column = getMapObjectDef("house_column_1");
-        if (shelf.type !== "obstacle" || column.type !== "obstacle") throw new Error("obstacles");
-        const blocks = [
-            ...LIBRARY_SHELVES.map(([x, y]) => collider.toAabb(transformOri(shelf.collision, { x, y }, 1, 1))),
-            ...[
-                [-3, 7],
-                [7, 7],
-                [-8, 4],
-                [2, 4],
-            ].map(([x, y]) => collider.toAabb(transformOri(column.collision, { x, y }, 0, 1))),
-        ];
+        if (shelf.type !== "obstacle") throw new Error("obstacles");
+        const blocks = LIBRARY_SHELVES.map(([x, y]) => collider.toAabb(transformOri(shelf.collision, { x, y }, 1, 1)));
         const hall = LIBRARY_LAYOUT.rooms.find((r) => r.floor === "stacks")!;
         for (let y = hall.min.y + 0.6; y < hall.max.y - 0.6; y += 0.25) {
             const crossing = blocks.some((b) => y >= b.min.y && y <= b.max.y);
             expect([y, crossing]).toEqual([y, true]);
         }
         const xs = LIBRARY_SHELVES.map(([x]) => x).sort((a, b) => a - b);
-        for (let i = 1; i < xs.length; i++) expect(xs[i] - xs[i - 1] - 2).toBeGreaterThanOrEqual(3);
+        for (let i = 1; i < xs.length; i++) expect(xs[i] - xs[i - 1] - 2).toBeGreaterThanOrEqual(4);
     });
 });

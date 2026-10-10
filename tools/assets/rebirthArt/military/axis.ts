@@ -48,6 +48,8 @@ export const AXIS_FLOORS: FloorPalette = {
     stairs_down_s: plain("#8e908a"),
     stage: plain("#a07848"),
     guard: { base: "#c0c4c6", grid: "#adb2b5", step: 1 },
+    // the gatehouse's weapons cage: steel plate
+    cage: { base: "#8f979c", grid: "#7c8489", step: 1 },
     tower: { base: "#9a9c96", grid: "#8b8d87", step: 2 },
 };
 

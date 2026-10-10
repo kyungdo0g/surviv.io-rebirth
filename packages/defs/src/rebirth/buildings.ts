@@ -7,13 +7,15 @@
 import type { LootSpawnerDef, MapDef, MapObjectDef } from "../types/index.ts";
 import { ARSENAL_ART, ARSENAL_UNLOCK, arsenal } from "./buildings/arsenal.ts";
 import { BLOCKHOUSE_FACTIONS, blockhouse, blockhouseArt } from "./buildings/blockhouse.ts";
-import { CLINIC_ART, clinic, MEDICAL_LOOT_SPAWNER } from "./buildings/clinic.ts";
-import { FIRESTATION_ART, firestation } from "./buildings/firestation.ts";
+import { CLINIC_ART, CLINIC_PUZZLE, clinic, MEDICAL_LOOT_SPAWNER } from "./buildings/clinic.ts";
+import { FIRESTATION_ART, FIRESTATION_PUZZLE, firestation } from "./buildings/firestation.ts";
 import type { RebirthBuildingArt } from "./buildings/layout.ts";
-import { LIBRARY_ART, library } from "./buildings/library.ts";
+import { LIBRARY_ART, LIBRARY_PUZZLE, library } from "./buildings/library.ts";
+import { MILITARY_COMMAND_CODE, MILITARY_COMMAND_PUZZLE } from "./buildings/military/bunker.ts";
+import { MILITARY_GATEHOUSE_PUZZLE } from "./buildings/military/guard.ts";
 import { militaryBaseArt, militaryBaseDefs } from "./buildings/military/structure.ts";
-import { OUTPOST_FACTIONS, outpost, outpostArt } from "./buildings/outpost.ts";
-import { RADIO_ART, radioStation } from "./buildings/radio.ts";
+import { OUTPOST_FACTIONS, OUTPOST_PUZZLE, outpost, outpostArt } from "./buildings/outpost.ts";
+import { RADIO_ART, RADIO_CODE, RADIO_PUZZLE, radioStation } from "./buildings/radio.ts";
 
 export * from "./buildings/arsenal.ts";
 export * from "./buildings/blockhouse.ts";
@@ -38,6 +40,20 @@ export * from "./buildings/military/structure.ts";
 export * from "./buildings/military/yard.ts";
 export * from "./buildings/outpost.ts";
 export * from "./buildings/radio.ts";
+
+/**
+ * Codes of the rebirth buildings' puzzles (the sim's puzzle engine, world/puzzles.ts, reads them with survev's): the
+ * switches' labels in the order that opens the building's hidden room.
+ */
+export const REBIRTH_PUZZLE_CODES: Readonly<Record<string, readonly string[]>> = {
+    [CLINIC_PUZZLE]: ["1"],
+    [RADIO_PUZZLE]: RADIO_CODE,
+    [LIBRARY_PUZZLE]: ["1"],
+    [FIRESTATION_PUZZLE]: ["1"],
+    [OUTPOST_PUZZLE]: ["1"],
+    [MILITARY_GATEHOUSE_PUZZLE]: ["1"],
+    [MILITARY_COMMAND_PUZZLE]: MILITARY_COMMAND_CODE,
+};
 
 /** Buildings whose heal regions the client draws (apps/client objects/healRegionFx.ts: glow, crosses, ring pulse). */
 export const REBIRTH_HEAL_FX_BUILDINGS: ReadonlySet<string> = new Set(["clinic_01", "military_infirmary_01"]);

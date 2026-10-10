@@ -2,7 +2,7 @@
 // art are built from, and the helpers that turn it into map object children. Walls are invisible wall obstacles
 // (`<material>_wall_ext_<length>`, 1 unit thick, centred on the floor's edge like house_red_01's), doors and windows sit
 // 0.25 outside the wall line (house_red_01's door oris: 0 +y, 1 -x, 2 -y, 3 +x from the hinge).
-import type { AABB, BuildingChildDef, CircleCollider } from "../../types/index.ts";
+import type { AABB, BuildingChildDef, BuildingDef, CircleCollider } from "../../types/index.ts";
 
 /** Floor and roof images are drawn at this many pixels per world unit and placed at scale 0.5 (16 px per unit). */
 export const REBIRTH_ART_PX_PER_UNIT = 32;
@@ -174,3 +174,26 @@ export function layoutArt(layout: RebirthBuildingLayout, floor: string, ceiling?
     const art = ceiling ? { floor, ceiling, size } : { floor, size };
     return same ? art : { ...art, floorSize };
 }
+
+/**
+ * A rebirth building's hidden-room puzzle (the owner's rework, 2026-10-10: every interaction opens something): the
+ * building's `piece` switches, pressed in the order of its code (REBIRTH_PUZZLE_CODES), open every `door` child (doors
+ * only puzzles move: vault_door_bathhouse, secret_door_club, saloon_door_secret); survev bathhouse_01's timings.
+ */
+export function rebirthPuzzle(name: string, door: string): NonNullable<BuildingDef["puzzle"]> {
+    return {
+        name,
+        completeUseType: door,
+        completeOffDelay: 1,
+        completeUseDelay: 2,
+        errorResetDelay: 1,
+        pieceResetDelay: 10,
+        sound: { fail: "door_error_01", complete: "none" },
+    };
+}
+
+/** A puzzle piece child (a switch labelled `label`). */
+export const piece = (type: string, x: number, y: number, ori: number, label: string): BuildingChildDef => ({
+    ...child(type, x, y, ori),
+    puzzlePiece: label,
+});

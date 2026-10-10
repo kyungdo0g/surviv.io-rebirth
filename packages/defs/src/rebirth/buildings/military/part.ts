@@ -19,6 +19,8 @@ export interface Prop {
     readonly outside?: boolean;
     /** a low wall or rail, the vault door or the breach wall: it counts as a wall against the furniture */
     readonly wallLike?: boolean;
+    /** a puzzle piece's label (the part's `puzzle`) */
+    readonly piece?: string;
 }
 
 export interface Zoom {
@@ -74,6 +76,8 @@ export interface MilitaryPart {
     readonly surfaces: readonly Surface[];
     readonly zoom: readonly Zoom[];
     readonly heal?: readonly Box[];
+    /** a hidden room's puzzle: its pieces (props with `piece`) in the order of REBIRTH_PUZZLE_CODES[name] open `door` */
+    readonly puzzle?: { readonly name: string; readonly door: string };
     readonly images: readonly PartImage[];
     readonly mapShapes: readonly PartMapShape[];
 }

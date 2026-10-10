@@ -1,5 +1,6 @@
 // Floor and roof art of clinic_01 (packages/defs rebirth/buildings/clinic.ts): pale tiled rooms (mint treatment rooms,
-// a blue pharmacy) with a faded cross in the lobby; a white roof with the red cross in a circle and AC units.
+// a blue pharmacy, the steel drug safe) with a faded cross in the lobby; a white roof with the red cross in a circle and
+// AC units.
 import { CLINIC_LAYOUT, REBIRTH_ART_PX_PER_UNIT as PX } from "../../../packages/defs/src/rebirth/buildings.ts";
 import { acUnit, cross, type FloorPalette, floor, frameOf, px, py, roof } from "./svg.ts";
 
@@ -7,15 +8,17 @@ export const CLINIC_FLOORS: FloorPalette = {
     lobby: { base: "#d8d4cc", grid: "#c2bdb3", step: 2 },
     ward: { base: "#cde2da", grid: "#b3cec4", step: 2 },
     pharmacy: { base: "#d2dce8", grid: "#b9c7d7", step: 2 },
+    // the drug safe: steel plate
+    store: { base: "#a9b1b8", grid: "#8f99a2", step: 1 },
 };
 
 /** The clinic's red cross: on the roof (and the map shapes, buildings.ts). */
-export const CLINIC_CROSS = { x: -9, y: 6.5, len: 5, width: 1.75 } as const;
+export const CLINIC_CROSS = { x: -11.5, y: 6, len: 5, width: 1.75 } as const;
 
 export function clinicFloor(): string {
     const fr = frameOf(CLINIC_LAYOUT);
     // a faded cross on the lobby floor
-    const extra = cross(fr, 0, -4.5, 4, 1.25, `fill="#c8312e" fill-opacity="0.18"`);
+    const extra = cross(fr, -3, -6, 4, 1.25, `fill="#c8312e" fill-opacity="0.18"`);
     return floor(CLINIC_LAYOUT, CLINIC_FLOORS, "#c7ccd0", "#25292c", extra);
 }
 

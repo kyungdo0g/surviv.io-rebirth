@@ -25,6 +25,8 @@ export const FIRESTATION_FLOORS: FloorPalette = {
     crew: { base: "#b08a62", grid: "#9c7a55", step: 1 },
     tower: { base: "#7a7d80", grid: "#6c6f72", step: 1 },
     apron: { base: "#5f6366", grid: "#5f6366", step: 4 },
+    // the gear cage: steel mesh plate
+    cage: { base: "#7d8286", grid: "#6d7276", step: 1 },
 };
 
 const OUTLINE = "#1f2326";
@@ -66,9 +68,12 @@ export function firestationFloor(): string {
         .map((x) => `M${px(fr, x)} ${py(fr, -13)}V${py(fr, -16.75)}`)
         .join("");
     out.push(`<path d="${laneLines}" stroke="#e9e9e3" stroke-width="5" fill="none"/>`);
-    // the engine lanes (x a..b, y -12..9; their open end runs under the hatch), then the red and white hatch just
-    // inside each mouth; the lane outlines are 6 px, not the spec's 4 px, so they read over the bay grid in game
-    const lanes = LANES.map(([a, b]) => `M${px(fr, a)} ${py(fr, -11.25)}V${py(fr, 9)}H${px(fr, b)}V${py(fr, -11.25)}`);
+    // the engine lanes (x a..b, y -12..4.5, short of the gear cage; their open end runs under the hatch), then the red
+    // and white hatch just inside each mouth; the lane outlines are 6 px, not the spec's 4 px, so they read over the bay
+    // grid in game
+    const lanes = LANES.map(
+        ([a, b]) => `M${px(fr, a)} ${py(fr, -11.25)}V${py(fr, 4.5)}H${px(fr, b)}V${py(fr, -11.25)}`,
+    );
     out.push(`<path d="${lanes.join("")}" stroke="#e2b425" stroke-width="6" fill="none" stroke-linejoin="miter"/>`);
     MOUTHS.forEach(([a, b], i) => {
         out.push(hazardBand(fr, a, -12, b, -11.25, `firestation-hatch-${i}`, ["#d8402f", "#f2f2ee"]));

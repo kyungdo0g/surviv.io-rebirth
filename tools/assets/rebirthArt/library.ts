@@ -21,6 +21,7 @@ export const LIBRARY_FLOORS: FloorPalette = {
     reading: { base: "#5f7d5a", grid: "#56724f", step: 2 },
     foyer: { base: "#e0dccf", grid: "#c9c3b2", step: 2 },
     archive: { base: "#7a3a32", grid: "#6c322b", step: 2 },
+    rare: { base: "#4a2f2a", grid: "#3f2824", step: 1 },
 };
 
 const INK = "#2a2233";
@@ -48,14 +49,14 @@ export function libraryFloor(): string {
     // the red runner from the front door (its end under the threshold) to the archway, with flush darker edge trim; it
     // stops 0.3 short of the compass rose inlaid in the marble, which is drawn whole after it (the carpet never covers
     // the medallion, so the star keeps all four points and one colour)
-    const rose = { x: 1, y: -7, r: 2 };
+    const rose = { x: -0.5, y: -7, r: 2 };
     const runner = (y0: number, y1: number) =>
-        rect(fr, 0, y0, 2, y1, `fill="#9d2b2b" fill-opacity="0.55"`) +
-        rect(fr, 0, y0, 0.22, y1, `fill="#9d2b2b" fill-opacity="0.6"`) +
-        rect(fr, 1.78, y0, 2, y1, `fill="#9d2b2b" fill-opacity="0.6"`);
+        rect(fr, -1.5, y0, 0.5, y1, `fill="#9d2b2b" fill-opacity="0.55"`) +
+        rect(fr, -1.5, y0, -1.28, y1, `fill="#9d2b2b" fill-opacity="0.6"`) +
+        rect(fr, 0.28, y0, 0.5, y1, `fill="#9d2b2b" fill-opacity="0.6"`);
     const extra =
-        runner(-12.5, rose.y - rose.r - 0.3) +
-        runner(rose.y + rose.r + 0.3, -1.5) +
+        runner(-13.5, rose.y - rose.r - 0.3) +
+        runner(rose.y + rose.r + 0.3, -0.5) +
         circleAt(fr, rose.x, rose.y, rose.r, `fill="#b8ad94" fill-opacity="0.35"`) +
         circleAt(
             fr,

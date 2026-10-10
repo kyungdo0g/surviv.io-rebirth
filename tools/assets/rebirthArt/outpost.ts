@@ -13,23 +13,24 @@ export function outpostFloor(): string {
     const fr = frameOf(OUTPOST_LAYOUT);
     // hazard stripes inside the doors, the command room's carpet border
     const stripes: string[] = [];
-    for (let x = -1.5; x < 2.5; x += 1) {
+    for (let x = -2; x < 2; x += 1) {
         stripes.push(
-            rect(fr, x, -9, x + 0.5, -8.25, `fill="#d6a425"`),
-            rect(fr, x + 0.5, -9, x + 1, -8.25, `fill="#2a2a2a"`),
+            rect(fr, x, -10.5, x + 0.5, -9.75, `fill="#d6a425"`),
+            rect(fr, x + 0.5, -10.5, x + 1, -9.75, `fill="#2a2a2a"`),
         );
     }
+    // the command room's carpet border, the armory's crate bay
     const extra =
         stripes.join("") +
-        rect(fr, 0.25, 2.25, 10.25, 8.25, `fill="none" stroke="#45503b" stroke-width="6"`) +
-        rect(fr, -10.5, 1.75, -5, 4.75, `fill="#000000" fill-opacity="0.12"`);
+        rect(fr, -0.75, 1.25, 12.75, 9.75, `fill="none" stroke="#45503b" stroke-width="6"`) +
+        rect(fr, -13.5, 5.5, -9, 10.5, `fill="#000000" fill-opacity="0.12"`);
     return floor(OUTPOST_LAYOUT, OUTPOST_FLOORS, "#55584f", "#1b1d1a", extra);
 }
 
 export function outpostCeiling(color: string): string {
     const fr = frameOf(OUTPOST_LAYOUT);
     const top =
-        rect(fr, -11, -9, 11, -7.25, `fill="${color}"`) +
+        rect(fr, -13.5, -10.5, 13.5, -8.75, `fill="${color}"`) +
         `<circle cx="${px(fr, 0)}" cy="${py(fr, 1.5)}" r="${PX * 4}" fill="${color}" stroke="#1f2326" stroke-width="4"/>` +
         star(fr, 0, 1.5, 3, "#f2f2ee") +
         // radio mast and hatch

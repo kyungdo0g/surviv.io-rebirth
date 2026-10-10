@@ -32,12 +32,13 @@ export const MILITARY_STOREHOUSE: MilitaryPart = fromWorld({
     },
     props: [
         // pallet stacks (indestructible cover), crates of throwables and ammunition, a cabinet
-        p("crate_05", -43.5, -4),
-        p("crate_05", -38.5, -4),
-        p("crate_01", -44, -11.5),
-        p("drawers_01", -39, -12.9),
-        p("crate_03", -34.5, -6.5),
-        p("crate_04", -31.3, 2.8),
+        // (reworked 2026-10-10: the stairwell's west approach and the lane to the north door stay clear, everything
+        // else flush against a wall or a neighbour)
+        p("crate_05", -39, -4),
+        p("crate_05", -35, -4),
+        p("crate_03", -41, -0.425),
+        p("crate_01", -45.75, -11.75),
+        p("drawers_01", -41, -12.9),
         p("loot_tier_2", -45, 1),
     ],
     surfaces: [
@@ -112,8 +113,7 @@ export const MILITARY_GARAGE: MilitaryPart = fromWorld({
         p("propane_01", 30.5, -2),
         p("loot_tier_1", 33, 1),
         // the south bay and the west lane
-        p("barrel_01", 31.5, -18),
-        p("crate_06", 38.5, -18.5),
+        p("barrel_01", 30.75, -18.25),
         p("crate_06", 30.2, -10, 1),
         p("loot_tier_2", 33, -13),
         p("decal_oil_01", 34, -1),

@@ -123,28 +123,27 @@ export const MILITARY_BUNKER: MilitaryPart = fromWorld({
         p("decal_light_02", 0, 7),
         p("decal_light_03", 25, 7),
         // the Barracks: three bunks, two footlockers (a quarter of them the AK locker), a washroom corner, a table
-        p("bed_sm_01", -24.6, 19.9),
-        p("bed_sm_01", -21.4, 19.9),
-        p("bed_sm_01", -18.2, 19.9),
+        p("bed_sm_01", -27.6, 19.9),
+        p("bed_sm_01", -24.8, 19.9),
+        p("bed_sm_01", -22, 19.9),
         p({ locker_01: 3, locker_03: 1 }, -25.5, 11.4, 2),
         p({ locker_01: 3, locker_03: 1 }, -15.3, 12.4, 3),
         p("toilet_01", -34.3, 22),
-        p("table_01", -29, 18.5),
-        p("chair_01", -32.75, 18.5, 1),
+        p("table_01", -18.5, 13.5),
         p("loot_tier_1", -21, 13.5),
         // the Depot: pallet rows (indestructible), crates, a cabinet (no rack_01: its tier_revolvers would bring
         // survev's desert-only SW500 to these maps)
-        p("crate_05", -30, -5),
+        p("crate_05", -30, -7),
         p("crate_05", -30, -11),
-        p("crate_05", -22, -8),
+        p("crate_05", -22, -10),
         p("crate_05", -22, -14),
-        p("crate_06", -17.5, -1.5, 1),
+        p("crate_06", -15.6, 1.25, 1),
         p("drawers_01", -33, -23.6),
         p("loot_tier_2", -26, -21.5),
         // the checkpoint hall: the guard desk; the open vault door lands at x -3.5..-1.5, y -5.5..1.5 (kept clear)
         p("table_01", -9, 0),
         p("chair_02", -9, -3.25),
-        p("sandbags_01", 7, -2),
+        p("sandbags_01", 7, -1.25),
         p("decal_camera_01", -13, -5),
         // the vault ring: the generator gallery behind the vault (the power boxes explode); the breach is x -2.5..1.5
         p("power_box_01", -12.5, -24.5),
@@ -159,7 +158,7 @@ export const MILITARY_BUNKER: MilitaryPart = fromWorld({
         p("sandbags_01", 25, -10.5, 1),
         p("crate_01", 17.5, -22.5),
         p("crate_05", 33, 1),
-        p("barrel_01", 33.3, -21.5),
+        p("barrel_01", 33.75, -23.75),
         p("decal_oil_01", 29, -8),
         p("decal_oil_03", 19, -12),
         p("decal_oil_05", 31, -23),
@@ -246,38 +245,61 @@ export const MILITARY_VAULT_DOOR = {
 
 // the nested rooms: child buildings of the basement (zIdx 1), each with its own floor, dark roof and zoomIn
 
+/** The war chest's door (vault_door_bathhouse: only the puzzle opens it; slides west into the wall). */
+export const MILITARY_WAR_CHEST_DOOR = { type: "vault_door_bathhouse", hinge: { x: 10, y: 19 }, ori: 3 } as const;
+export const MILITARY_COMMAND_PUZZLE = "rebirth_milbase_command";
+/** The staff code's switches on Command's walls (their floor plates' colours) and the code: red, yellow, green. */
+export const MILITARY_COMMAND_SWITCHES = [
+    { label: "red", x: -12.95, y: 12, ori: 1 },
+    { label: "yellow", x: 12.95, y: 12, ori: 3 },
+    { label: "green", x: -9, y: 22.95, ori: 0 },
+] as const;
+export const MILITARY_COMMAND_CODE: readonly string[] = ["red", "yellow", "green"];
+
 export const MILITARY_COMMAND: MilitaryPart = fromWorld({
     id: "military_bunker_command_01",
     layer: 1,
     parent: "military_bunker_01",
     centre: { x: 0, y: 17 },
     zIdx: 1,
-    // Command (under the HQ): its lockdown panel (control_panel_07sv, indestructible) closes and locks its four lab
-    // doors for 10 s (40 s cooldown); the HQ stairs' steel door is the basement's, so it never locks
+    // Command (under the HQ; reworked 2026-10-10: its interaction opens something): the war chest, a strongroom in its
+    // north-east corner (clear of the HQ stairs' foot), opens on the staff code: three switches on Command's walls (a
+    // red, a yellow and a green plate on the floor) pressed in the order the briefing note by the south doors shows (red,
+    // yellow, green; survev bathhouse_01's code room); inside, a chest (tier_chest), a riot locker and level 3 armour
     layout: {
         bounds: { min: { x: -14, y: 10 }, max: { x: 14, y: 24 } },
         material: "concrete",
-        walls: [],
+        walls: [
+            // the war chest: its sliding door slides west into the wall
+            ...hRun(19, 6, 14, [[10, 14]]),
+            ...vRun(6, 19, 24),
+        ],
         openings: [
             op("lab_door_01", -9, 10, 3),
             op("lab_door_01", 5, 10, 3),
             op("lab_door_01", -14, 15, 0),
             op("lab_door_01", 14, 15, 0),
         ],
-        rooms: [room(-14, 10, 14, 24, "command")],
+        rooms: [room(-14, 10, 14, 24, "command"), room(6, 19, 14, 24, "war_chest")],
     },
+    puzzle: { name: MILITARY_COMMAND_PUZZLE, door: MILITARY_WAR_CHEST_DOOR.type },
     props: [
-        p("table_05", 0, 16),
-        p("chair_02", -4, 12),
-        p("chair_02", 4, 12),
-        p("chair_02", -10.6, 16),
-        p("chair_02", 10.6, 16),
-        p("screen_01", -8, 23.15),
-        p("control_panel_07sv", 6, 21.6),
+        p(
+            MILITARY_WAR_CHEST_DOOR.type,
+            MILITARY_WAR_CHEST_DOOR.hinge.x,
+            MILITARY_WAR_CHEST_DOOR.hinge.y,
+            MILITARY_WAR_CHEST_DOOR.ori,
+            { wallLike: true },
+        ),
+        ...MILITARY_COMMAND_SWITCHES.map((sw) => p("switch_03", sw.x, sw.y, sw.ori, { piece: sw.label })),
+        p("table_05", 0, 15),
         p("locker_02", -12.75, 21, 1),
-        p({ deposit_box_01: 1, deposit_box_02: 1 }, 10.75, 22.3),
-        p("loot_tier_2", -5, 20.5),
+        p("loot_tier_2", -10, 17.5),
         p("decal_camera_01", -13, 23),
+        // the war chest
+        p("chest_02", 8.75, 21.9),
+        p("locker_02", 12.75, 21.5, 3),
+        p("loot_tier_airdrop_armor", 11.75, 20.25),
     ],
     surfaces: [{ type: "tile", boxes: [[-14, 10, 14, 24]] }],
     zoom: [{ zoomIn: [-13.5, 10.5, 13.5, 23.5] }],
@@ -306,8 +328,8 @@ export const MILITARY_MAGAZINE: MilitaryPart = fromWorld({
         p("mil_crate_04", 18, 22.1),
         p("mil_crate_04", 34, 19.5, 1),
         p("crate_04", 32.5, 13),
-        p("crate_06", 16.2, 15, 1),
-        p("sandbags_02", 24, 18.5),
+        p("crate_06", 15.6, 12.75, 1),
+        p("sandbags_02", 25, 17),
     ],
     surfaces: [{ type: "container", boxes: [[14, 10, 36, 24]] }],
     zoom: [{ zoomIn: [14.5, 10.5, 35.5, 23.5] }],
@@ -350,9 +372,13 @@ export const MILITARY_VAULT: MilitaryPart = fromWorld({
             outside: true,
         }),
         p("stone_wall_int_4", -0.5, -20, 1, { wallLike: true, outside: true }),
+        // (reworked 2026-10-10: the base's richest room) a sniper crate, a rifle locker, an LMG mount, a chest
+        // (tier_chest), an SV-98, level 3 armour and ammunition
         p("mil_crate_05", -6, -15.5, 1),
         p("locker_03", 6.6, -9.5, 3),
-        p("gun_mount_03", 6.5, -15, 3),
+        p("gun_mount_03", 6.5, -13.5, 3),
+        p("chest_02", 5.25, -17.9),
+        p("loot_tier_sv98", 0, -16.5),
         p("loot_tier_airdrop_armor", 0, -13),
         p("crate_04", -5.2, -10),
     ],
