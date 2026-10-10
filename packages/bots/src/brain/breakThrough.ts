@@ -10,6 +10,7 @@ import { v2 } from "@rebirth/core";
 import { WeaponSlot } from "@rebirth/defs";
 import { distanceToCollider, segmentHits } from "../geom.ts";
 import { type BlockerSink, BREAK_BITS } from "../nav/breakThrough.ts";
+import { sameLayer } from "../nav/cellGrid.ts";
 import type { PersonaParams } from "../persona.ts";
 import type { SkillProfile } from "../skill.ts";
 import { closestPoint, meleeBreaks, meleeReach, swingLands } from "./containers.ts";
@@ -118,7 +119,9 @@ export class BreakThrough implements BlockerSink {
         if (!this.ahead || !this.travelling) return;
         const o = ctx.model.obstacleById.get(this.ahead);
         const me = ctx.self.pos;
-        if (!o || o.view.dead || !meleeBreaks(ctx.self, o)) {
+        // (an obstacle reported on another floor is forgotten: down the stairs under it, the straight line to the goal
+        // kept it "between" forever, punching a ground-floor door from the basement below)
+        if (!o || o.view.dead || !meleeBreaks(ctx.self, o) || !sameLayer(o.view.layer, ctx.self.layer)) {
             this.ahead = 0;
             return;
         }
