@@ -16,7 +16,7 @@ import type { Snapshot } from "@rebirth/sim";
 import type { WorldModel } from "./world.ts";
 
 /** What a threat entry comes from. */
-export type ThreatKind = "gunfire" | "explosion" | "kill" | "ping" | "airstrike" | "airdrop" | "grenade";
+export type ThreatKind = "gunfire" | "explosion" | "kill" | "ping" | "airstrike" | "airdrop" | "grenade" | "fire";
 
 /** An enemy heard (its bullets crossed the bot's snapshot) but not on screen. */
 export interface UnseenShooter {
@@ -113,6 +113,8 @@ export interface ThreatBoard {
     killLeader?(): Readonly<KillLeaderIntel> | null;
     /** (added in wave 2, optional) the event ring buffer, oldest first */
     events?(): readonly ThreatEvent[];
+    /** (rebirth flashbang, optional) game time the bot's own flash blinds it until (Snapshot.flash) */
+    blindUntil?(): number;
 }
 
 const NONE: readonly never[] = Object.freeze([]);

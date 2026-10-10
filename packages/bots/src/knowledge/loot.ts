@@ -8,7 +8,8 @@ import { DEFAULT_TASTE, gunPickupValue, slotToReplaceByDesire, type Taste } from
 import { type GunInfo, gunInfo } from "./weapons.ts";
 
 const SCOPES = ["1xscope", "2xscope", "4xscope", "8xscope", "15xscope"];
-const GOOD_THROWABLES: Readonly<Record<string, number>> = { frag: 18, mirv: 22, smoke: 10 };
+// (the rebirth's Molotov flushes campers and denies doorways; its flashbang opens a push: brain/rebirthThrows.ts)
+const GOOD_THROWABLES: Readonly<Record<string, number>> = { frag: 18, mirv: 22, smoke: 10, molotov: 16, flashbang: 12 };
 const HEALS: Readonly<Record<string, number>> = { bandage: 18, healthkit: 32, soda: 20, painkiller: 26 };
 
 function level(id: string): number {

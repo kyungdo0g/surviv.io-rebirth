@@ -15,7 +15,7 @@
 // obstacle taller than BLOCK_HEIGHT stops each one (sim combat/explosions.ts), so the bot checks the rays to its centre
 // and both sides of its body against the obstacles it sees (shielded).
 import { type Vec2, v2 } from "@rebirth/core";
-import { GameConfig } from "@rebirth/defs";
+import { GameConfig, MOLOTOV_FIRE } from "@rebirth/defs";
 import type { ProjectileView } from "@rebirth/sim";
 import { segmentHits } from "../geom.ts";
 import { freeDir } from "./combat.ts";
@@ -23,7 +23,9 @@ import type { BrainCtx, Intent } from "./context.ts";
 import { fragBlast } from "./fragMath.ts";
 
 /** Projectiles worth running from. */
-const DANGEROUS = new Set(["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron", "bomb_heavy"]);
+const DANGEROUS = new Set(["frag", "mirv", "mirv_mini", "martyr_nade", "bomb_iron", "bomb_heavy", "molotov"]);
+/** A Molotov's flight is checked this far ahead of where it is (a full throw carries it about 25 u). */
+const MOLOTOV_REACH = 15;
 const dodgeRadii = new Map<string, number>();
 /** Its own frag counts as a danger this long after it showed (leaving the hand it is next to the thrower). */
 const OWN_GRACE = 0.5;
@@ -162,6 +164,17 @@ export function dodge(ctx: BrainCtx, intent: Intent): void {
             if (!ctx.features.grenades || ctx.now - showed < OWN_GRACE) continue;
         } else if (ownOnly || friendly || !noticed(ctx, p)) continue;
         if (shielded(ctx, p)) continue;
+        // an incoming Molotov bursts where it lands: off its flight line (brain/rebirthThrows.ts)
+        if (p.type === "molotov") {
+            if (!ctx.features.rebirthThrows || mine) continue;
+            const ahead = v2.normalizeSafe(p.dir, { x: 1, y: 0 });
+            const along = Math.max(0, Math.min(MOLOTOV_REACH, v2.dot(v2.sub(me, p.pos), ahead)));
+            const spot = v2.add(p.pos, v2.mul(ahead, along));
+            const off = v2.distance(spot, me);
+            if (off < MOLOTOV_FIRE.rad + 1)
+                away = v2.add(away, v2.mul(v2.normalizeSafe(v2.sub(me, spot), v2.perp(ahead)), 1 / Math.max(off, 1)));
+            continue;
+        }
         seen.push(p.pos);
         const d = v2.distance(p.pos, me);
         // inside its blast (defs explosion rad.max, 12 for the frag) less a unit; its own (smart): out of the blast's

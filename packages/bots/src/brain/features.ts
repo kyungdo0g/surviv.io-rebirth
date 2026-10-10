@@ -130,6 +130,11 @@ export interface BrainFeatures {
      * persona-driven minority stays tunnel-visioned on the first opponent (brain/newcomer.ts)
      */
     thirdPartyReact: boolean;
+    /**
+     * the rebirth's Molotov (flush campers, deny doorways) and flashbang (before a push), staying out of burning ground,
+     * stepping off an incoming Molotov, and backing off blind when flashed (brain/rebirthThrows.ts)
+     */
+    rebirthThrows: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -171,6 +176,7 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "pointBlank",
     "crawl",
     "thirdPartyReact",
+    "rebirthThrows",
 ];
 
 export type BrainName = "baseline" | "smart";

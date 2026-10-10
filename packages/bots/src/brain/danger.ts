@@ -156,7 +156,19 @@ export function dangerToLeave(ctx: BrainCtx): DangerArea | null {
  */
 export function avoidPos(ctx: BrainCtx, p: Vec2): boolean {
     // early-game pacing: not up to an armed enemy the bot leaves be either (earlyPace.ts)
-    return inDanger(ctx, p, false) || strikeBlocks(ctx, p) || (ctx.features.earlyPace && nearLeftBe(ctx, p));
+    return (
+        inDanger(ctx, p, false) ||
+        strikeBlocks(ctx, p) ||
+        (ctx.features.earlyPace && nearLeftBe(ctx, p)) ||
+        (ctx.features.rebirthThrows && inFire(ctx, p))
+    );
+}
+
+/** Whether `p` lies in burning ground the bot sees (the threat tracker's fire zones: brain/rebirthThrows.ts). */
+export function inFire(ctx: BrainCtx, p: Vec2): boolean {
+    for (const z of ctx.model.threats.dangerZones())
+        if (z.kind === "fire" && v2.distance(z.pos, p) < z.rad) return true;
+    return false;
 }
 
 /** avoidPos for buildings only (the flight's own checks keep it away from a threat in the open). */

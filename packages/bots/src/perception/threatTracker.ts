@@ -13,7 +13,16 @@
 // Events go to a 64-entry ring buffer on the simulation clock; `heat` sums them with a recency weight. Pure and
 // deterministic: no rng, no wall clock.
 import { type Vec2, v2 } from "@rebirth/core";
-import { airstrikePingVariant, GameConfig, GameObjectDefs, hasDef, isAirstrikePing } from "@rebirth/defs";
+import {
+    airstrikePingVariant,
+    FIRE_DECAL_TYPE,
+    FLASHBANG_FLASH,
+    GameConfig,
+    GameObjectDefs,
+    hasDef,
+    isAirstrikePing,
+    MOLOTOV_FIRE,
+} from "@rebirth/defs";
 import type { Snapshot } from "@rebirth/sim";
 import { bulletOrigin } from "./bulletSight.ts";
 import { MARKER_DANGER_TIME, markerRadius, StrobeWatch } from "./strobes.ts";
@@ -28,6 +37,9 @@ import type {
     UnseenShooter,
 } from "./threats.ts";
 import type { WorldModel } from "./world.ts";
+
+/** Burning ground is kept clear by this much past its radius (fire: brain/rebirthThrows.ts). */
+const FIRE_PAD = 1;
 
 const RING_SIZE = 64;
 /** Heat of an event decays as exp(-age / HEAT_TAU) (seconds). */
@@ -59,6 +71,7 @@ const KIND_WEIGHT: Readonly<Record<ThreatKind, number>> = {
     airstrike: 3,
     airdrop: 1,
     grenade: 2,
+    fire: 2,
 };
 /** Heat of each teammate ping type (ping_coming is no threat). */
 const PING_WEIGHT: Readonly<Record<string, number>> = { ping_danger: 2, ping_help: 1 };
@@ -111,6 +124,8 @@ export class ThreatTracker implements ThreatBoard {
     private readonly reports: ReportState[] = [];
     private readonly drops: DropState[] = [];
     private zones: DangerZone[] = [];
+    /** game time the bot's own flashbang flash blinds it until */
+    private blind = Number.NEGATIVE_INFINITY;
     private strikes: DangerZone[] = [];
     private shooterList: UnseenShooter[] = [];
     private reportList: ReportedThreat[] = [];
@@ -152,6 +167,10 @@ export class ThreatTracker implements ThreatBoard {
 
     reported(): readonly ReportedThreat[] {
         return this.reportList;
+    }
+
+    blindUntil(): number {
+        return this.blind;
     }
 
     dangerZones(): readonly DangerZone[] {
@@ -451,6 +470,13 @@ export class ThreatTracker implements ThreatBoard {
             const rad = GRENADE_RAD.get(p.type);
             if (rad) zones.push({ kind: "grenade", pos: v2.copy(p.pos), rad, until: now + 0.5 });
         }
+        // the Molotov's burning ground, as its decal shows on the screen (brain/rebirthThrows.ts)
+        for (const o of snap.objects)
+            if (o.kind === "decal" && o.type === FIRE_DECAL_TYPE)
+                zones.push({ kind: "fire", pos: v2.copy(o.pos), rad: MOLOTOV_FIRE.rad + FIRE_PAD, until: now + 0.5 });
+        // the bot's own flash (Snapshot.flash): white for blind x blindTime
+        if (snap.flash && snap.flash.blind > 0)
+            this.blind = Math.max(this.blind, now + snap.flash.blind * FLASHBANG_FLASH.blindTime);
         this.zones = zones;
         this.dropList = this.drops.map((d) => ({
             pos: d.pos,

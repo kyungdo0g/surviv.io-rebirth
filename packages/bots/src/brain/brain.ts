@@ -44,6 +44,7 @@ import { planLayerEscape } from "./layers.ts";
 import { coverFromNewcomer } from "./newcomer.ts";
 import { keepGunRange } from "./pointBlank.ts";
 import { observePuzzleDoors } from "./puzzleSight.ts";
+import { keepClear, rebirthThrow } from "./rebirthThrows.ts";
 import { bestBreakable, breakScore, planBreak } from "./scavenge.ts";
 import { noteChoice, noteFlight, steadyCrate, steadyLoot, steadyScores } from "./steady.ts";
 import { noteStillHit, unpinUnderFire } from "./stillHit.ts";
@@ -288,6 +289,9 @@ export class Brain {
             const paced = ctx.features.earlyPace && t !== null && leftBe(ctx, t, ctx.targetDist);
             if (!intent.throwPlan && SMART_THROW.has(intent.behaviour) && !paced)
                 intent.throwPlan = smartGrenade(ctx, thinkDt);
+            // the rebirth's Molotov at a camper, a flashbang before a push (rebirthThrows.ts)
+            if (!intent.throwPlan && ctx.features.rebirthThrows && SMART_THROW.has(intent.behaviour))
+                intent.throwPlan = rebirthThrow(ctx);
             // 50v50: the Grenadier's own explosives (factionRoles.ts)
             if (!intent.throwPlan && ctx.features.faction && SMART_THROW.has(intent.behaviour))
                 intent.throwPlan = grenadierThrow(ctx, thinkDt);
@@ -315,6 +319,8 @@ export class Brain {
             stepOutOfBlast(ctx, intent);
             holdBlastFire(ctx, intent);
         }
+        // flashed: no aim, no shot, back off (its own state only: rebirthThrows.ts)
+        if (ctx.features.rebirthThrows) keepClear(ctx, intent);
         dodge(ctx, intent);
         // doors: the bot's own Use (a door it toggles is no sign of anyone else)
         if (this.doors && intent.actions.includes(Input.Use)) this.doors.noteUse(now);
