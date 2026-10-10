@@ -3,8 +3,8 @@
 // a brick clinic with a lobby, two treatment rooms that heal (heal regions like survev's camp_01, 2 HP/s, not in the
 // gas), a pharmacy with medical loot (loot_tier_medical, tier_medical) and its drug safe: the switch behind the
 // reception desk opens it (a one-switch puzzle like survev bathhouse_01's) onto a chest (tier_chest), a locker, level 3
-// armour, medicine and a weapon drop. The client draws the heal regions (REBIRTH_HEAL_FX_BUILDINGS, apps/client
-// objects/healRegionFx.ts).
+// armour, medicine and a weapon drop. Its partitions are breakable wood (the owner, 2026-10-10). The client draws the
+// heal regions (REBIRTH_HEAL_FX_BUILDINGS, apps/client objects/healRegionFx.ts).
 import type { BuildingDef } from "../../types/index.ts";
 import {
     ART_SCALE,
@@ -59,21 +59,23 @@ export const CLINIC_LAYOUT: RebirthBuildingLayout = {
         ...vRun(17, -11.5, 11.5, [[-5.5, -1.5]], undefined, "brick"),
         // the corridor wall with the three room doors, the two partitions (interior runs start on the outer walls'
         // centre lines: brick comes in whole units); the corridor sits a unit south of the middle so the north rooms
-        // are 12 deep (the lobby keeps 10, flush with the side doors)
+        // are 12 deep (the lobby keeps 10, flush with the side doors). The partitions are breakable wood (the owner,
+        // 2026-10-10: "a pity: the walls can't be broken"); the drug safe's walls (its south side, x 9..17) stay brick
         ...hRun(
             -1,
             -17,
-            17,
+            9,
             [
                 [-13, -9],
                 [-5, -1],
                 [3, 7],
             ],
-            undefined,
+            "wood",
             "brick",
         ),
-        ...vRun(-6, -1, 12, [], undefined, "brick"),
-        ...vRun(2, -1, 12, [], undefined, "brick"),
+        ...hRun(-1, 9, 17, [], undefined, "brick"),
+        ...vRun(-6, -1, 12, [], "wood", "brick"),
+        ...vRun(2, -1, 12, [], "wood", "brick"),
         // the drug safe, the pharmacy's east half (7 x 12 inside): its sliding door, in the middle of the wall it shares
         // with the pharmacy, slides north into that wall
         ...vRun(9, -1, 12, [[3, 7]], undefined, "brick"),

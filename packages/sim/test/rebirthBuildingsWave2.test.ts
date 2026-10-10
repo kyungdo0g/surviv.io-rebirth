@@ -76,7 +76,8 @@ describe("sliding doors", () => {
                 if (typeof c.type !== "string") continue;
                 const d = getMapObjectDef(c.type);
                 if (d.type !== "obstacle") continue;
-                if (/_wall_ext_|^rebirth_wall_int_/.test(c.type)) walls.push(collider.toAabb(transformOri(d.collision, c.pos, c.ori, 1)));
+                if (/_wall_ext_|^rebirth_wall_int_/.test(c.type))
+                    walls.push(collider.toAabb(transformOri(d.collision, c.pos, c.ori, 1)));
                 if (d.door?.slideToOpen && own(type, c.type)) {
                     const slid = v2.add(c.pos, rotateOri({ x: 0, y: -d.door.slideOffset }, c.ori));
                     doors.push({ col: transformOri(d.collision, slid, c.ori, 1), type: c.type });

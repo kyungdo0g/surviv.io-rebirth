@@ -535,6 +535,14 @@ The owner approved the existing-art review on 2026-10-10: M60 and MG 42 bipods n
 
 - Every building still passes the walk bar (no squeeze on a route, cramped floor 0.5 u² at most, no unreachable floor). Walkable floor: clinic 436, radio station 412, library 559, fire station 605, command posts 335, arsenal 492, blockhouses 776, military base 8232 u²; expected guns: 5.1, 7.1, 10.0, 8.0, 8.9, 8.3, 5.6, 38.5 [src:derived/rebirth-building-probe] [H]
 
+## Breakable partitions (2026-10-10)
+
+> The owner, after the hidden rooms: "a pity: the walls can't be broken". Code: `packages/defs/src/rebirth/buildings/walls.ts` (the wall types), `layout.ts` (the `wood` wall material), the buildings' layouts; the floor art leaves wood walls out (`tools/assets/rebirthArt/svg.ts`). Tests: `packages/sim/test/rebirthBreakableWalls.test.ts`.
+
+- The rebirth buildings' interior partitions are wooden walls a player can shoot, punch or blow through, as survev's houses are built: survev's `house_wall_int_4` (150 health, wood sounds and planks) re-cut to every length the original rounded wall sprites come in (1, 2, 2.5, 3 to 14), as the rebirth map types `rebirth_wall_int_<length>` after every earlier map type (protocol schema 25) [src:user/2026-10-10-breakable-walls] [src:survev/shared/defs/mapObjects/buildings/baseBuildingDefs.ts] [H]
+- Shells stay unbreakable, as survev's exterior walls are; so do the walls round every hidden room and their sliding doors' pockets (a broken partition never bypasses a puzzle: with every partition broken, each hidden room still opens only by its door, checked by the building probe), the stairwells and the ramp (no way onto the stairs from the side), the basement, the wall a puzzle switch stands on, and the infirmary's ward wall the beds stand head to head across (broken, it left a squeeze between the beds) [src:user/2026-10-10-breakable-walls] [src:derived/rebirth-building-probe] [H]
+- Breakable pieces: clinic 6, radio station 4, library 7, fire station 7, command posts 3, military base 12 (infirmary, HQ, armory, garage); the arsenal and the blockhouses have no ordinary partition, only their magazines' walls, so none of theirs breaks [src:derived/rebirth-building-probe] [H]
+
 ## Maps follow the player cap (2026-10-08)
 
 > The owner, through the lead: a classic game of 200 players felt small. A game whose player cap (`MAX_PLAYERS`, `FACTION_MAX_PLAYERS` for 50v50) is above its map's design count plays on a larger map. Code: `packages/defs/src/data.ts` (`mapDefForPlayers`), `packages/defs/src/rebirth/mapScale.ts` (`designPlayers`, `playerAreaFactor`, `playerLimit`, `MAX_PLAYER_AREA_FACTOR`), `packages/sim/src/match/gasScale.ts`, `packages/sim/src/match/match.ts` (`MAX_PLAYERS_IN_GAME`), `apps/server/src/room.ts`, `packages/protocol/src/match.ts`. Tests: `packages/defs/test/mapPlayerScale.test.ts`, `packages/sim/test/playerCap.test.ts`, `apps/server/test/mapCap.test.ts`, `packages/protocol/test/planes.test.ts`.

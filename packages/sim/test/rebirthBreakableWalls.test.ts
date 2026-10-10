@@ -6,22 +6,13 @@ import { getMapObjectDef, getMapObjectDefOfType, REBIRTH_WALL_INT_LENGTHS, rebir
 import { describe, expect, it } from "vitest";
 import { probeBuilding } from "./buildingProbe.ts";
 
-const REBIRTH = [
-    "clinic_01",
-    "firestation_01",
-    "library_01",
-    "radio_station_01",
-    "outpost_01r",
-    "arsenal_01",
-    "blockhouse_01r",
-    "military_base_01",
-];
+/** The arsenal and the blockhouses have no ordinary partition (only their magazines' walls), so none breaks. */
+const REBIRTH = ["clinic_01", "firestation_01", "library_01", "radio_station_01", "outpost_01r", "military_base_01"];
 
 /** The buildings a type's children name (the military base is a structure of layer buildings and parts). */
 function breakableWalls(type: string): number {
     const def = getMapObjectDef(type);
-    if (def.type === "structure")
-        return def.layers.reduce((n, l) => n + breakableWalls(l.type), 0);
+    if (def.type === "structure") return def.layers.reduce((n, l) => n + breakableWalls(l.type), 0);
     if (def.type !== "building") return 0;
     let n = 0;
     for (const c of def.mapObjects) {
@@ -37,7 +28,13 @@ describe("the rebirth buildings' breakable walls", () => {
         const base = getMapObjectDefOfType("obstacle", "house_wall_int_4");
         for (const len of REBIRTH_WALL_INT_LENGTHS) {
             const d = getMapObjectDefOfType("obstacle", rebirthWallInt(len));
-            expect([len, d.destructible, d.health, d.isWall, d.material]).toEqual([len, true, base.health, true, "wood"]);
+            expect([len, d.destructible, d.health, d.isWall, d.material]).toEqual([
+                len,
+                true,
+                base.health,
+                true,
+                "wood",
+            ]);
             expect(d.extents).toEqual({ x: 0.5, y: len / 2 });
         }
     });

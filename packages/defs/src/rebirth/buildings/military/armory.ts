@@ -5,6 +5,8 @@
 // The gun cage locked (2026-10-10, the owner: "more hidden rooms"): its door is a barred one (cell_door_01, survev
 // police_01's cells: only the puzzle opens it; it swings east into the cage) that the armourer's switch in the ammo
 // store opens (a one-switch puzzle); the cage grows to 8 x 9 inside (the hall gives up 2 units east of the stairs).
+// The hall | store partition is breakable wood (the owner, 2026-10-10: "a pity: the walls can't be broken"); the cage's
+// walls and the stairwell's stay steel.
 import { fromWorld, fullZoom, hRun, type MilitaryPart, op, p, room, vRun } from "./part.ts";
 
 /** The armory roof's emblem disc (compound frame). */
@@ -29,17 +31,9 @@ export const MILITARY_ARMORY: MilitaryPart = fromWorld({
             ...vRun(21.5, 20, 37, [[33, 37]], undefined, "metal"),
             ...vRun(40.5, 20, 37, [[27, 30]], undefined, "metal"),
             // the hall | the cage and the store (4 wide beside the stairwell): the store's door, the cage's barred door
-            ...vRun(
-                31.5,
-                20,
-                37,
-                [
-                    [20, 24],
-                    [31, 35],
-                ],
-                undefined,
-                "metal",
-            ),
+            // (wood beside the store; steel along the cage)
+            ...vRun(31.5, 24, 27, [], "wood"),
+            ...vRun(31.5, 27, 37, [[31, 35]], undefined, "metal"),
             ...hRun(27.5, 32, 40, [], undefined, "metal"),
             // the S2 stairwell against the west wall (its west side): the closer at its bottom and its east side
             ...hRun(24.5, 22, 27, [], undefined, "metal"),

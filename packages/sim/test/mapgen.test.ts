@@ -8,9 +8,9 @@ import { cachedMap, objectsHash } from "./helpers.ts";
 
 /**
  * Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. Last change: the
- * hidden rooms grown and added (2026-10-10, "expand the content": every rebirth building's children moved).
+ * rebirth buildings' breakable partitions (2026-10-10: their interior walls became rebirth_wall_int_* children).
  */
-const MAIN_12345_HASH = "61fd713e903ee320";
+const MAIN_12345_HASH = "d6403f2f155ce9c7";
 
 /**
  * Area an object reserves against other top-level objects (what canSpawn tests against). A beach obstacle is tested at

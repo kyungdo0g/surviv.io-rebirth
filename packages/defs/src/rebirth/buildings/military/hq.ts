@@ -6,6 +6,8 @@
 // wall), opened by the staff code: a switch in the comms room, the office and the briefing room (a coloured plate under
 // each) pressed in the order of the note in the commander's office (survev bathhouse_01's code room, as Command's war
 // chest below it); inside, the deposit boxes, a riot locker, a sniper's scopes and vault-grade floor loot.
+// The HQ's partitions are breakable wood (the owner, 2026-10-10: "a pity: the walls can't be broken") but for the
+// archive's walls and the stairwell's.
 import { fromWorld, fullZoom, hRun, low, type MilitaryPart, op, p, room, vRun } from "./part.ts";
 
 /** The HQ roof's emblem disc (compound frame): its roof art and minimap disc. */
@@ -75,6 +77,7 @@ export const MILITARY_HQ: MilitaryPart = fromWorld({
             ...vRun(15.5, 20, 37, [[21, 25]], undefined, "brick"),
             // the hall's partitions: two doors west; east the briefing room's door and the archive's panel, which
             // slides south into the wall y 28..32
+            // (wood but for the archive's wall and the panel's pocket y 28..32, which stay brick)
             ...vRun(
                 -6.5,
                 20,
@@ -83,22 +86,12 @@ export const MILITARY_HQ: MilitaryPart = fromWorld({
                     [20, 24],
                     [32, 36],
                 ],
-                undefined,
-                "brick",
+                "wood",
             ),
-            ...vRun(
-                6.5,
-                20,
-                37,
-                [
-                    [20, 24],
-                    [32, 36],
-                ],
-                undefined,
-                "brick",
-            ),
-            // comms | office, briefing | archive (8 x 8 inside)
-            ...hRun(28.5, -15, -7, [], undefined, "brick"),
+            ...vRun(6.5, 24, 28, [], "wood"),
+            ...vRun(6.5, 28, 37, [[32, 36]], undefined, "brick"),
+            // comms | office (wood), briefing | archive (8 x 8 inside)
+            ...hRun(28.5, -15, -7, [], "wood"),
             ...hRun(28.5, 7, 15, [], undefined, "brick"),
             // the S1 stairwell: the closer at its bottom and both long sides (down south; its top end at y 31 is open)
             ...hRun(24.5, -3, 3, [], undefined, "brick"),

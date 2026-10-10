@@ -5,6 +5,8 @@
 // The narcotics store (added 2026-10-10, the owner: "more hidden rooms"): a 6 x 10 strongroom behind the pharmacy's
 // steel door (vault_door_bathhouse: only the puzzle opens it; it slides north into the wall), opened by the switch in
 // the triage hall (a one-switch puzzle, as the clinic's drug safe); the triage hall gives up 2 units to make room.
+// The partitions between the wards and the triage hall and pharmacy are breakable wood (the owner, 2026-10-10: "a pity:
+// the walls can't be broken"); the store's walls stay brick.
 import { fromWorld, fullZoom, hRun, type MilitaryPart, op, out, p, room, vRun } from "./part.ts";
 
 /** HP per second in the wards: the clinic's CLINIC_HEAL_RATE (survev camp_01). */
@@ -49,7 +51,7 @@ export const MILITARY_INFIRMARY: MilitaryPart = fromWorld({
                 "brick",
             ),
             ...vRun(-21.5, 20, 37, [[21, 25]], undefined, "brick"),
-            // the wards | the east half, a door into each ward
+            // the wards | the east half, a door into each ward (wood)
             ...vRun(
                 -34.5,
                 20,
@@ -58,13 +60,14 @@ export const MILITARY_INFIRMARY: MilitaryPart = fromWorld({
                     [21, 25],
                     [32, 36],
                 ],
-                undefined,
-                "brick",
+                "wood",
             ),
-            // south ward | north ward
+            // south ward | north ward (brick: the wards' beds stand head to head against it, broken it would leave a
+            // squeeze between them)
             ...hRun(28.5, -45, -35, [], undefined, "brick"),
-            // triage hall | pharmacy and store
-            ...hRun(26.5, -34, -22, [[-33, -29]], undefined, "brick"),
+            // triage hall | pharmacy (wood) and store (brick: the store's wall)
+            ...hRun(26.5, -34, -33, [], "wood"),
+            ...hRun(26.5, -29, -22, [], undefined, "brick"),
             // pharmacy | narcotics store: the store's door (y 27..31) slides north into the wall
             ...vRun(-28.5, 27, 37, [[27, 31]], undefined, "brick"),
         ],

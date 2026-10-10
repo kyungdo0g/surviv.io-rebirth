@@ -7,7 +7,8 @@
 // 2026-10-10: every interaction opens something; widened the same day, the owner: "expand the content", from about 8 to
 // over 25 u² a player can walk) has a barred door like survev police_01's cells; the switch beside the watch window opens
 // it (a one-switch puzzle) onto the turnout gear and the station's long guns: a rack of two gun mounts (m870, mp220), a
-// chest (tier_chest), a riot locker (tier_police), a fire axe and level 3 armour.
+// chest (tier_chest), a riot locker (tier_police), a fire axe and level 3 armour. The partitions between the ordinary
+// rooms are breakable wood (the owner, 2026-10-10); the shell and the gear cage stay brick.
 import type { BuildingDef } from "../../types/index.ts";
 import {
     ART_SCALE,
@@ -52,17 +53,18 @@ export const FIRESTATION_LAYOUT: RebirthBuildingLayout = {
         [19.5, -4, 19.5, 1],
         [19.5, 5, 19.5, 7],
         [19.5, 11, 19.5, 12],
-        // bay | wing: the watch window -9..-5 (office), crew door -3..1; the cage's east wall above it
-        [3.5, -12, 3.5, -9],
-        [3.5, -5, 3.5, -3],
+        // bay | wing: the watch window -9..-5 (office), crew door -3..1; breakable wood beside the office, the
+        // cage's east wall above it stays brick
+        [3.5, -12, 3.5, -9, "wood"],
+        [3.5, -5, 3.5, -3, "wood"],
         ...vRun(3.5, 1, 12, [], undefined, "brick"),
-        // office | crew room: door 13..17
-        [4, -3, 13, -3],
-        [17, -3, 19, -3],
-        // the hose tower: west wall, south wall with its door 14..18
-        [13.5, 7, 13.5, 12],
-        [13, 6.5, 14, 6.5],
-        [18, 6.5, 19, 6.5],
+        // office | crew room (breakable wood): door 13..17
+        [4, -3, 13, -3, "wood"],
+        [17, -3, 19, -3, "wood"],
+        // the hose tower (breakable wood): west wall, south wall with its door 14..18
+        [13.5, 7, 13.5, 12, "wood"],
+        [13, 6.5, 14, 6.5, "wood"],
+        [18, 6.5, 19, 6.5, "wood"],
         // the gear cage: its barred door -6..-2 swings out into the bay; the west wall meets the north wall at the window's
         // east jamb (x -6), so the cage stays sealed behind the window
         ...hRun(1.5, -7, 3, [[-6, -2]], undefined, "brick"),

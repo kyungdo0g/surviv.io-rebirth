@@ -5,7 +5,8 @@
 // floor), pressed in the order the note on the studio floor shows (yellow, red, blue; survev bathhouse_01's code room).
 // The vault (grown 2026-10-10 to a real room, 10 x 8 inside) holds a sniper crate (mil_crate_05), a QBB-97 on its
 // wall mount, a police locker, level 3 armour and a sniper scope. The transmitter rack stands in the generator room,
-// whose power boxes and propane tank explode. A slate-blue roof with the mast.
+// whose power boxes and propane tank explode. A slate-blue roof with the mast. The partitions between the ordinary
+// rooms are breakable wood (the owner, 2026-10-10).
 import type { BuildingDef } from "../../types/index.ts";
 import {
     ART_SCALE,
@@ -44,14 +45,24 @@ export const RADIO_LAYOUT: RebirthBuildingLayout = {
             [2, 6],
         ]),
         // the corridor wall with a door into each north room
-        ...hRun(-2, -17, 17, [
-            [-14, -10],
-            [-2, 2],
-            [9, 13],
-        ]),
-        // studio | hall with the studio glass (from the corridor wall's face), hall | generator
+        // (breakable wood, like the hall | generator partition: the owner, 2026-10-10, "a pity: the walls can't be
+        // broken"; the vault's walls stay concrete)
+        ...hRun(
+            -2,
+            -17,
+            17,
+            [
+                [-14, -10],
+                [-2, 2],
+                [9, 13],
+            ],
+            "wood",
+        ),
+        // studio | hall with the studio glass (from the corridor wall's face; its stub north of the glass bounds the
+        // vault), hall | generator (concrete: the red switch stands on it)
         ...vRun(-5, -1.5, 12, [[-1.5, 2.5]]),
-        ...vRun(6, -2, 12),
+        ...vRun(6, -2, 3),
+        ...vRun(6, 3, 12),
         // the signals vault behind the hall: its sliding door slides east into the wall
         ...hRun(3, -5, 6, [[-3.5, 0.5]]),
     ],

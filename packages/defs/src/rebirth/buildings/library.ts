@@ -5,7 +5,8 @@
 // (saloon_door_secret) that slides open on the reading-lamp code: three switches (the reading room's, the foyer's, the
 // stacks' middle aisle's) pressed in the order of the coloured note on the archive floor (a code puzzle like survev
 // bathhouse_01's; the owner, 2026-10-10: "expand the hidden rooms"). The vault (7 x 13) holds a rare-books shelf and a
-// card catalogue (tier_soviet), a pistol case, a reading stand, an SV-98 and loot. A purple roof with an open book.
+// card catalogue (tier_soviet), a pistol case, a reading stand, an SV-98 and loot. A purple roof with an open book. The
+// partitions between the ordinary rooms are breakable wood (the owner, 2026-10-10); the shell and the vault stay brick.
 import type { BuildingDef } from "../../types/index.ts";
 import {
     ART_SCALE,
@@ -53,22 +54,23 @@ export const LIBRARY_LAYOUT: RebirthBuildingLayout = {
         // west and east: the stacks doors
         ...vRun(-19, -13.5, 13.5, [[3.5, 7.5]], undefined, "brick"),
         ...vRun(19, -13.5, 13.5, [[3.5, 7.5]], undefined, "brick"),
-        // the stacks wall: the reading-room door, the open archway from the foyer, the archive door
+        // the stacks wall (breakable wood): the reading-room door, the open archway from the foyer, the archive door;
+        // its stretch over the rare-books vault (x 10..19) stays brick
         ...hRun(
             0,
             -19,
-            19,
+            10,
             [
                 [-15, -11],
                 [-5, 1],
                 [6, 10],
             ],
-            undefined,
-            "brick",
+            "wood",
         ),
-        // reading room | foyer and foyer | archive, a door each
-        ...vRun(-7, -14, 0, [[-6, -2]], undefined, "brick"),
-        ...vRun(5, -14, 0, [[-6, -2]], undefined, "brick"),
+        ...hRun(0, 10, 19, [], undefined, "brick"),
+        // reading room | foyer and foyer | archive (breakable wood), a door each
+        ...vRun(-7, -14, 0, [[-6, -2]], "wood"),
+        ...vRun(5, -14, 0, [[-6, -2]], "wood"),
         // archive | rare-books vault: the bookcase door (1.5 thick) slides south into the wall, doubled to x 10..11.5
         ...vRun(10.5, -14, 0, [[-7, -3]], undefined, "brick"),
         ...vRun(11, -14, 0, [[-7, -3]], undefined, "brick"),

@@ -1,7 +1,8 @@
 // The military base's yard buildings (rebirth/buildings/military/): the storehouse (창고) west of the parade ground with
 // the freight stairs down to the Spine (S3), and the garage (차고) east of it with the doorless vehicle ramp down to the
 // motor pool (S4, its mouth lined up with the motor gate for a drive-in raid) and the workshop holding the sledgehammer
-// (the vault's breach wall needs it).
+// (the vault's breach wall needs it). The workshop's partitions are breakable wood (the owner, 2026-10-10: "a pity: the
+// walls can't be broken").
 import { fromWorld, fullZoom, hRun, low, type MilitaryPart, op, p, room, vRun } from "./part.ts";
 
 export const MILITARY_STOREHOUSE: MilitaryPart = fromWorld({
@@ -84,9 +85,9 @@ export const MILITARY_GARAGE: MilitaryPart = fromWorld({
             ...vRun(47.5, -20, 5, [[-15, -6]]),
             // the S4 ramp's closer at its bottom (full height); its sides are low steel rails
             ...vRun(36, -16, -5),
-            // the workshop in the north-east corner (brick partitions)
-            ...hRun(-1.5, 40, 47, [], "brick"),
-            ...vRun(40.5, -1, 5, [[0, 4]], "brick"),
+            // the workshop in the north-east corner (breakable wood partitions)
+            ...hRun(-1.5, 40, 47, [], "wood"),
+            ...vRun(40.5, -1, 5, [[0, 4]], "wood"),
         ],
         openings: [
             op("house_door_01", 35, 5.75, 3),

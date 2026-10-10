@@ -4,7 +4,8 @@
 // faction's crate (crate_02f / crate_22), a sniper crate (mil_crate_05, the jackpot), a shotgun mount, ammo and floor
 // loot; the switch in the command room opens it (a one-switch puzzle). Widened 2026-10-10 (the owner: "expand the
 // hidden rooms"): 13 x 10 inside, everything along the walls round an open floor. The command room has the map table,
-// the hall bunks and lockers, sandbags at the door; the roof carries the faction's colour.
+// the hall bunks and lockers, sandbags at the door; the roof carries the faction's colour. The hall | command room
+// partition is breakable wood (the owner, 2026-10-10); the armory's walls stay concrete.
 import type { BuildingDef } from "../../types/index.ts";
 import {
     ART_SCALE,
@@ -35,11 +36,12 @@ export const OUTPOST_LAYOUT: RebirthBuildingLayout = {
             [-8.5, -4.5],
             [2, 6],
         ]),
-        // the hall wall: the armory's barred door, the command room door
-        ...hRun(0, -14, 14, [
-            [-10, -6],
-            [4, 8],
-        ]),
+        // the hall wall: the armory's half (its barred door) stays concrete, the command room's half (its door) is a
+        // breakable wood partition; the armory | command room wall bounds the armory, concrete
+        ...hRun(0, -14, 0, [[-10, -6]]),
+        // (the wood half cut 4 | door | 3 + 3, the same line, so a breach is a doorway-sized hole)
+        ...hRun(0, 0, 11, [[4, 8]], "wood"),
+        ...hRun(0, 11, 14, [], "wood"),
         ...vRun(0, 0, 11),
     ],
     openings: [

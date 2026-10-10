@@ -207,8 +207,8 @@ function specialDoor(o: Obstacle): string | null {
 }
 
 /**
- * Probes one building or structure type, alone on a showcase map; `breakWalls` walks it with every breakable wall
- * (a destructible wall obstacle) already broken.
+ * Probes one building or structure type, alone on a showcase map; `breakWalls` walks it with every breakable partition
+ * (rebirth_wall_int_*) already broken; other destructible walls (the vault's breach wall) stand.
  */
 export function probeBuilding(type: string, opts: { breakWalls?: boolean } = {}): ProbeResult {
     const show = generateShowcase(type);
@@ -236,7 +236,7 @@ export function probeBuilding(type: string, opts: { breakWalls?: boolean } = {})
     const basementFloors: Collider[] = [];
     for (const obj of game.world.query(region, [])) {
         if (obj.kind === "obstacle" && obj.collidable && !obj.dead) {
-            if (opts.breakWalls && obj.isWall && obj.def.destructible) continue;
+            if (opts.breakWalls && obj.type.startsWith("rebirth_wall_int_")) continue;
             obstacles.push(obj);
         }
         if (obj.kind === "structure") for (const s of obj.stairs) stairs.push(s.collision);
