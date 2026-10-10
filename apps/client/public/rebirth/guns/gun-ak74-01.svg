@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="172" viewBox="0 0 48 172">
+  <!-- AK-74 held sprite, own art: seen from above, barrel up; wood furniture, stamped steel receiver and a long two-chamber muzzle brake. -->
+  <!-- buttstock: narrow wrist widening to the butt, one grain line, butt plate (under the right hand in game) -->
+  <path d="M19 136h10l5 24v8H14v-8z" fill="#8a4316" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M24 146v14" stroke="#5c2a0c" stroke-width="3"/>
+  <rect x="10" y="166" width="28" height="6" fill="#000"/>
+  <!-- receiver / dust cover: centre highlight, transverse ribs and latch button at the rear -->
+  <path d="M15 98h18v28l-2 2H17l-2-2z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <rect x="22" y="98" width="4" height="14" fill="#8f8f8f"/>
+  <path d="M19 113.5h10M19 119.5h10" stroke="#000" stroke-width="3"/>
+  <rect x="21" y="122" width="6" height="6" fill="#000"/>
+  <!-- cocking handle on the right side, at the front of the receiver -->
+  <rect x="33" y="99" width="7" height="5" fill="#000"/>
+  <rect x="38" y="97" width="6" height="8" rx="3" fill="#000"/>
+  <!-- rear sight block with the tangent leaf -->
+  <rect x="15" y="83" width="18" height="12" fill="#000"/>
+  <rect x="22" y="85" width="4" height="8" fill="#8f8f8f"/>
+  <!-- wooden handguard: lower handguard either side, upper handguard over the gas tube in the centre, steel bands -->
+  <rect x="14" y="40" width="20" height="40" rx="2" fill="#8a4316" stroke="#000" stroke-width="8"/>
+  <rect x="21" y="40" width="6" height="40" fill="#5c2a0c"/>
+  <rect x="8" y="35" width="32" height="5" rx="1" fill="#000"/>
+  <rect x="8" y="80" width="32" height="5" rx="1" fill="#000"/>
+  <!-- barrel, gas block (chamfered front), front sight block with the post -->
+  <rect x="20" y="8" width="8" height="26" fill="#000"/>
+  <path d="M20 30h8l4 4v3H16v-3z" fill="#000"/>
+  <rect x="16" y="10" width="16" height="8" rx="2" fill="#000"/>
+  <rect x="22" y="12" width="4" height="4" fill="#8f8f8f"/>
+  <!-- two-chamber muzzle brake seen from above: long body, side-port bands -->
+  <rect x="16" y="0" width="16" height="16" rx="1" fill="#000"/>
+  <path d="M18 5h12M18 11h12" stroke="#555555" stroke-width="2"/>
+</svg>
+

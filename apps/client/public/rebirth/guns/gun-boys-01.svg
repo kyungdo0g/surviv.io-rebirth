@@ -4,7 +4,7 @@
   <path d="M19 218h22l2 2v12H17v-12z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
   <rect x="13" y="232" width="34" height="6" rx="3" fill="#000"/>
   <!-- receiver body; the bolt tube along its top is the highlight strip -->
-  <path d="M21 149h18l2 2v67H19v-67z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M17 149h26l2 2v67H15v-67z" fill="#555555" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
   <rect x="28" y="172" width="4" height="42" fill="#8f8f8f"/>
   <!-- leather cheek pad wrapped round the rear of the body -->
   <rect x="18" y="199" width="24" height="17" rx="2" fill="#7a3f3a" stroke="#000" stroke-width="6"/>
@@ -12,19 +12,20 @@
   <path d="M41 181l9 5" stroke="#000" stroke-width="5" stroke-linecap="round"/>
   <circle cx="52" cy="187" r="4.5" fill="#000"/>
   <!-- barrel collar with the bipod clamp -->
-  <rect x="23" y="115" width="14" height="34" fill="#000"/>
+  <rect x="19" y="115" width="22" height="34" fill="#000"/>
   <rect x="19" y="122" width="22" height="6" rx="1" fill="#000"/>
   <!-- top magazine sticking up, offset left (lips as the centre slot); rear sight in front of it, offset left -->
   <rect x="12" y="148" width="18" height="22" rx="1" fill="#555555" stroke="#000" stroke-width="6"/>
   <rect x="19.5" y="151" width="3" height="16" fill="#000"/>
   <rect x="12" y="136" width="6" height="7" rx="1" fill="#000"/>
   <rect x="17" y="138" width="7" height="3" fill="#000"/>
-  <!-- long thin barrel, front sight offset left -->
-  <rect x="26" y="9" width="8" height="108" fill="#000"/>
+  <!-- heavy barrel, front sight offset left -->
+  <rect x="23" y="9" width="14" height="108" fill="#000"/>
+  <rect x="28" y="25" width="4" height="85" fill="#555555"/>
   <rect x="18" y="17" width="6" height="6" rx="1" fill="#000"/>
   <rect x="23" y="18.5" width="4" height="3" fill="#000"/>
   <!-- disc muzzle brake seen edge-on, its body behind it -->
-  <rect x="23" y="9" width="14" height="8" rx="2" fill="#000"/>
+  <rect x="21" y="9" width="18" height="8" rx="2" fill="#000"/>
   <rect x="17" y="1" width="26" height="10" rx="4" fill="#000"/>
   <rect x="21" y="5" width="18" height="2" fill="#555555"/>
 </svg>

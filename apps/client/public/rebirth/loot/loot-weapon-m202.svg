@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
   <!-- M202 FLASH loot icon, own art: box of stacked rocket tubes with end covers, pistol grip, folding sight. -->
-  <path d="M67.14 76.32L73.42 70.04L82.61 84.06L76.33 90.34Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
-  <path d="M72.94 69.56L80.68 61.83L85.03 66.18L77.29 73.91Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
-  <path d="M44.43 69.07L51.19 62.31L44.43 55.54L40.08 59.89Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
-  <path d="M41.04 61.82L42.49 60.38L45.88 63.76L44.43 65.21Z" fill="#323232"/>
-  <path d="M11.08 101.46L100.98 11.56L116.44 27.03L26.54 116.92Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
-  <path d="M20.65 106.19L105.71 21.13L106.87 22.29L21.81 107.35Z" fill="#323232"/>
-  <path d="M31.13 82.85L33.07 80.92L47.08 94.93L45.15 96.87Z" fill="#323232"/>
-  <path d="M79.47 34.52L81.4 32.58L95.42 46.6L93.48 48.53Z" fill="#323232"/>
-  <path d="M6 104.12L11.32 98.8L29.2 116.68L23.88 122Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
-  <path d="M98.32 11.8L104.12 6L122 23.88L116.2 29.68Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M74.31 76.7L80.54 70.47L91.08 81.02L84.85 87.25Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M80.54 70.47L88.21 62.8L91.56 66.16L83.89 73.83Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M43.63 61.36L50.34 54.65L43.63 47.94L39.31 52.26Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M40.27 54.17L41.71 52.74L45.07 56.09L43.63 57.53Z" fill="#323232"/>
+  <path d="M11.03 93.96L93.48 11.51L116.49 34.52L34.04 116.97Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M24.36 102.49L102.01 24.84L103.16 25.99L25.51 103.64Z" fill="#323232"/>
+  <path d="M30.93 75.5L32.84 73.59L54.41 95.16L52.5 97.07Z" fill="#323232"/>
+  <path d="M73.11 33.32L75.02 31.4L96.6 52.98L94.68 54.89Z" fill="#323232"/>
+  <path d="M6 96.6L11.27 91.32L36.68 116.73L31.4 122Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
+  <path d="M90.84 11.75L96.6 6L122 31.4L116.25 37.16Z" fill="#ffffff" stroke="#323232" stroke-width="3.2" stroke-linejoin="round"/>
 </svg>

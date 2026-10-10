@@ -22,6 +22,7 @@ const SCREENS = "tests/e2e/__screens__/topdown-guns";
 /** The drawn guns and their sprites' logical height (rebirth/heldGunArt.ts HELD_GUN_ART). */
 const DRAWN: Readonly<Record<string, number>> = {
     ak47: 172,
+    ak74: 172,
     g36c: 136,
     m16a4: 220,
     sig550: 188,

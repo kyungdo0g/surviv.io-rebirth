@@ -24,9 +24,10 @@ const FORBIDDEN =
     /<(text|image|linearGradient|radialGradient|filter|script|foreignObject|style|mask|use)\b|sodipodi|inkscape|xlink:href/i;
 
 describe("drawn top-down held sprites", () => {
-    it("the drawn guns: the AK-47 and 25 beta rifles, snipers, DMRs, SMGs, machine pistols, shotguns, MGs, launchers", () => {
+    it("the drawn guns: the AK-47 and 26 beta rifles, snipers, DMRs, SMGs, machine pistols, shotguns, MGs, launchers", () => {
         expect(Object.keys(HELD_GUN_ART)).toEqual([
             "ak47",
+            "ak74",
             "g36c",
             "m16a4",
             "sig550",
