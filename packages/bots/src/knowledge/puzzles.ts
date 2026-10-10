@@ -247,20 +247,32 @@ const SPECS: readonly PuzzleSpec[] = [
             "the military base's basement vault: the bank vault door, used by hand, opens 4.1 s later (rebirth " +
             "military base, docs/research/rebirth-deviations.md; packages/defs rebirth/buildings/military/bunker.ts)",
     },
-    // The rebirth buildings' hidden rooms (2026-10-10 rework; docs/research/rebirth-deviations.md "Rebirth buildings
-    // reworked"; packages/defs rebirth/buildings/). Appended last so every older entry keeps its knowledge draw. A
-    // single switch is obvious; a three-switch code whose order a note in the same building shows is common (the
-    // players who notice the note). Rooms: the layout's hidden room in the building's own frame.
+    // The rebirth buildings' hidden rooms (2026-10-10 rework, grown and four more added by PR #18 the same day;
+    // docs/research/rebirth-deviations.md "Hidden rooms expanded"; packages/defs rebirth/buildings/). Appended last so
+    // every older entry keeps its knowledge draw (the PR #18 buildings after the first eight). A single switch is
+    // obvious; a two- or three-switch code whose order a note in the same building shows is common (the players who
+    // notice the note). Rooms: the layout's hidden room in the building's own frame (a military part's: its compound
+    // box less its centre).
     ...(
         [
-            ["clinic_01", "obvious", ["1"], [9, 6, 17, 12], 55, "the drug safe"],
-            ["radio_station_01", "common", ["yellow", "red", "blue"], [-5, 6, 6, 12], 60, "the signals vault"],
-            ["library_01", "obvious", ["1"], [10, -14, 19, -7], 60, "the rare-books room"],
-            ["firestation_01", "obvious", ["1"], [-19.5, 6, -12, 12.5], 60, "the gear cage"],
-            ["outpost_01r", "obvious", ["1"], [-14, 0, -2, 11], 55, "the armory"],
-            ["outpost_01b", "obvious", ["1"], [-14, 0, -2, 11], 55, "the armory"],
-            ["military_gatehouse_01", "obvious", ["1"], [0.5, -3.5, 6, 3.5], 35, "the weapons cage"],
-            ["military_bunker_command_01", "common", ["red", "yellow", "green"], [6, 2, 14, 7], 60, "the war chest"],
+            ["clinic_01", "obvious", ["1"], [9, -1, 17, 12], 55, "the drug safe"],
+            ["radio_station_01", "common", ["yellow", "red", "blue"], [-5, 3, 6, 12], 60, "the signals vault"],
+            // three switches since PR #18, the order on the note on the archive floor
+            ["library_01", "common", ["red", "yellow", "green"], [10.75, -14, 19, 0], 60, "the rare-books vault"],
+            ["firestation_01", "obvious", ["1"], [-6.5, 1.5, 3.5, 12.5], 60, "the gear cage"],
+            ["outpost_01r", "obvious", ["1"], [-14, 0, 0, 11], 55, "the armory"],
+            ["outpost_01b", "obvious", ["1"], [-14, 0, 0, 11], 55, "the armory"],
+            ["military_gatehouse_01", "obvious", ["1"], [-1.75, -3.5, 6, 3.5], 35, "the weapons cage"],
+            ["military_bunker_command_01", "common", ["red", "yellow", "green"], [-5, -7, 5, 2.5], 60, "the war chest"],
+            // PR #18: the code chalked on the floor before the magazine's door
+            ["blockhouse_01r", "common", ["blue", "red"], [-6, -3.5, 6, 3.5], 60, "the blockhouse magazine"],
+            ["blockhouse_01b", "common", ["blue", "red"], [-6, -3.5, 6, 3.5], 60, "the blockhouse magazine"],
+            ["military_armory_01", "obvious", ["1"], [0.5, -1, 9.5, 9], 60, "the gun cage"],
+            // PR #18: the staff code, its note on the commander's office floor
+            ["military_hq_01", "common", ["blue", "red", "green"], [6.5, 0, 15.5, 9], 45, "the commander's archive"],
+            ["military_hq_01r", "common", ["blue", "red", "green"], [6.5, 0, 15.5, 9], 45, "the commander's archive"],
+            ["military_hq_01b", "common", ["blue", "red", "green"], [6.5, 0, 15.5, 9], 45, "the commander's archive"],
+            ["military_infirmary_01", "obvious", ["1"], [5, -2, 12, 9], 40, "the narcotics store"],
         ] as const
     ).map(
         ([building, lore, code, [x0, y0, x1, y1], value, room]): PuzzleSpec => ({
