@@ -282,7 +282,12 @@ export class BulletSystem {
             if (b.def.armDistance && b.distanceTraveled < b.def.armDistance) b.onHitFx = "";
             else this.explodeOnHit(b);
         }
-        if (!b.alive && b.hitPlayer && b.reportTicks[b.reportTicks.length - 1] !== this.tick) {
+        // a stop is re-reported (with its endDist) after a player hit, and for every round with its own on-hit
+        // explosion (rockets, the GL-06 and USAS-12 rounds): clients stop its tracer, sprite and smoke trail there even
+        // when the obstacle it hit is destroyed before their tracer reaches it (owner report 2026-10-10: the RPG-7
+        // warhead flew on through the crate it had just blown up)
+        const reportStop = b.hitPlayer || !!b.def.onHit;
+        if (!b.alive && reportStop && b.reportTicks[b.reportTicks.length - 1] !== this.tick) {
             b.reportTicks.push(this.tick);
             this.reports.push({ tick: this.tick, bullet: b });
         }
