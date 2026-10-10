@@ -1,12 +1,12 @@
 // The military base's wing images (packages/defs rebirth/buildings/military/ infirmary.ts, armory.ts, yard.ts), each in
-// its part's own frame (centred on the part): the infirmary's mint wards, white triage hall and blue pharmacy in brick
-// under an olive roof with a white panel and a red cross; the armory's steel deck, mesh gun cage and the stairs down to
-// S2 inside steel walls under a rust-brown corrugated roof with crossed rifles on a sand disc and hazard stripes over
-// its two doors; the storehouse's concrete hall with yellow bay lines and the freight stairs down to S3 under a tan
-// corrugated roof with skylight strips, a crate stencil and a canvas awning over the loading mouth; the garage's bay,
-// workshop and the vehicle ramp down to S4 between its yellow and black rails under a grey steel roof with chevron
-// bands over both mouths, a hatched panel with an arrow over the ramp and a wrench over the workshop (spec §6.3-6.6,
-// §9.1-9.2).
+// its part's own frame (centred on the part): the infirmary's mint wards, white triage hall, blue pharmacy and
+// steel-blue narcotics store in brick under an olive roof with a white panel and a red cross; the armory's steel deck,
+// mesh gun cage and the stairs down to S2 inside steel walls under a rust-brown corrugated roof with crossed rifles on
+// a sand disc and hazard stripes over its two doors; the storehouse's concrete hall with yellow bay lines and the
+// freight stairs down to S3 under a tan corrugated roof with skylight strips, a crate stencil and a canvas awning over
+// the loading mouth; the garage's bay, workshop and the vehicle ramp down to S4 between its yellow and black rails
+// under a grey steel roof with chevron bands over both mouths, a hatched panel with an arrow over the ramp and a wrench
+// over the workshop (spec §6.3-6.6, §9.1-9.2).
 import {
     MILITARY_ARMORY_EMBLEM,
     type MilitaryPart,
@@ -212,6 +212,8 @@ export const INFIRMARY_FLOORS: FloorPalette = {
     ward: { base: "#bfe0c6", grid: "#a9cfb2", step: 1 },
     triage: { base: "#eef0ee", grid: "#d8dcd8", step: 2 },
     pharmacy: { base: "#cfe0ee", grid: "#b8cbdd", step: 2 },
+    // the narcotics store behind the pharmacy: a darker steel-blue strongroom floor
+    narcotics: { base: "#8d9aa6", grid: "#7d8a96", step: 1 },
 };
 
 /** The infirmary's white panel and red cross map shapes (infirmary.ts: a 9 x 9 panel, a 7 x 2.2 cross). */
@@ -219,7 +221,7 @@ const PANEL_WHITE = 0xf4f4f0;
 const PANEL_RED = 0xc8312e;
 
 const infirmaryFloor: MilitaryDrawer = ({ part, fr }) => {
-    // a faded green pharmacy cross in the pharmacy's free middle, clear of its cabinets and fridge
+    // a faded green pharmacy cross in the pharmacy's free middle, south of its fridge
     const extra = cross(fr, 2.25, 3.25, 3, 1, `fill="#3f9a5a" fill-opacity="0.22"`);
     return floor(part.layout, INFIRMARY_FLOORS, WALLS, INK, extra);
 };

@@ -6,16 +6,26 @@
 // building in rebirth/buildings/; this module lists them, their art and where they spawn.
 import type { LootSpawnerDef, MapDef, MapObjectDef } from "../types/index.ts";
 import { ARSENAL_ART, ARSENAL_UNLOCK, arsenal } from "./buildings/arsenal.ts";
-import { BLOCKHOUSE_FACTIONS, blockhouse, blockhouseArt } from "./buildings/blockhouse.ts";
+import {
+    BLOCKHOUSE_CODE,
+    BLOCKHOUSE_FACTIONS,
+    BLOCKHOUSE_PUZZLE,
+    blockhouse,
+    blockhouseArt,
+} from "./buildings/blockhouse.ts";
 import { CLINIC_ART, CLINIC_PUZZLE, clinic, MEDICAL_LOOT_SPAWNER } from "./buildings/clinic.ts";
 import { FIRESTATION_ART, FIRESTATION_PUZZLE, firestation } from "./buildings/firestation.ts";
 import type { RebirthBuildingArt } from "./buildings/layout.ts";
-import { LIBRARY_ART, LIBRARY_PUZZLE, library } from "./buildings/library.ts";
+import { LIBRARY_ART, LIBRARY_CODE, LIBRARY_PUZZLE, library } from "./buildings/library.ts";
+import { MILITARY_ARMORY_PUZZLE } from "./buildings/military/armory.ts";
 import { MILITARY_COMMAND_CODE, MILITARY_COMMAND_PUZZLE } from "./buildings/military/bunker.ts";
 import { MILITARY_GATEHOUSE_PUZZLE } from "./buildings/military/guard.ts";
+import { MILITARY_HQ_CODE, MILITARY_HQ_PUZZLE } from "./buildings/military/hq.ts";
+import { MILITARY_INFIRMARY_PUZZLE } from "./buildings/military/infirmary.ts";
 import { militaryBaseArt, militaryBaseDefs } from "./buildings/military/structure.ts";
 import { OUTPOST_FACTIONS, OUTPOST_PUZZLE, outpost, outpostArt } from "./buildings/outpost.ts";
 import { RADIO_ART, RADIO_CODE, RADIO_PUZZLE, radioStation } from "./buildings/radio.ts";
+import { rebirthWallDefs } from "./buildings/walls.ts";
 
 export * from "./buildings/arsenal.ts";
 export * from "./buildings/blockhouse.ts";
@@ -40,6 +50,7 @@ export * from "./buildings/military/structure.ts";
 export * from "./buildings/military/yard.ts";
 export * from "./buildings/outpost.ts";
 export * from "./buildings/radio.ts";
+export * from "./buildings/walls.ts";
 
 /**
  * Codes of the rebirth buildings' puzzles (the sim's puzzle engine, world/puzzles.ts, reads them with survev's): the
@@ -48,11 +59,16 @@ export * from "./buildings/radio.ts";
 export const REBIRTH_PUZZLE_CODES: Readonly<Record<string, readonly string[]>> = {
     [CLINIC_PUZZLE]: ["1"],
     [RADIO_PUZZLE]: RADIO_CODE,
-    [LIBRARY_PUZZLE]: ["1"],
+    [LIBRARY_PUZZLE]: LIBRARY_CODE,
     [FIRESTATION_PUZZLE]: ["1"],
     [OUTPOST_PUZZLE]: ["1"],
     [MILITARY_GATEHOUSE_PUZZLE]: ["1"],
     [MILITARY_COMMAND_PUZZLE]: MILITARY_COMMAND_CODE,
+    // the hidden rooms added on 2026-10-10 ("expand the content")
+    [BLOCKHOUSE_PUZZLE]: BLOCKHOUSE_CODE,
+    [MILITARY_HQ_PUZZLE]: MILITARY_HQ_CODE,
+    [MILITARY_ARMORY_PUZZLE]: ["1"],
+    [MILITARY_INFIRMARY_PUZZLE]: ["1"],
 };
 
 /** Buildings whose heal regions the client draws (apps/client objects/healRegionFx.ts: glow, crosses, ring pulse). */
@@ -106,6 +122,8 @@ export function rebirthBuildings(generated: Readonly<Record<string, MapObjectDef
         ...Object.fromEntries(BLOCKHOUSE_FACTIONS.map((f) => [f.id, blockhouse(f, known)])),
         // the military bases (the owner, 2026-10-08), after every earlier id
         ...militaryBaseDefs(known),
+        // the breakable partitions (the owner, 2026-10-10: "the walls can't be broken"), after every earlier id
+        ...rebirthWallDefs(generated),
     };
 }
 

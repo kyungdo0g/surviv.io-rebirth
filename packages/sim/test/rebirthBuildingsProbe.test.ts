@@ -1,7 +1,8 @@
 // The rebirth buildings walked with player-sized circles (buildingProbe.ts; the owner's rework, 2026-10-10: "far too
 // cramped, some passages can't be walked through, no looting fun, the interactions open nothing"): no passage a player
 // has to squeeze through (2 to 2.6 units between two obstacles on a route), next to no floor reached only that way, no
-// free floor nobody can reach, and every hidden room's door opens onto loot with guns in it. survev's house_red_01 and
+// free floor nobody can reach, and every hidden room's door opens onto a room of 25 u² or more with 4 loot sources and 2
+// expected guns at least. survev's house_red_01 and
 // bank_01 pass the same bar. tools/research/building-probe.ts prints the full table.
 import { describe, expect, it } from "vitest";
 import { probeBuilding } from "./buildingProbe.ts";
@@ -21,6 +22,14 @@ const REBIRTH = [
     "military_base_01b",
 ];
 
+const MILITARY_HIDDEN = [
+    "cell_door_01",
+    "secret_door_club",
+    "vault_door_bathhouse",
+    "vault_door_bathhouse",
+    "vault_door_main",
+];
+
 /** Each building's hidden rooms: its special doors (locked, puzzle or delayed) by type. */
 const HIDDEN: Readonly<Record<string, readonly string[]>> = {
     clinic_01: ["vault_door_bathhouse"],
@@ -30,11 +39,13 @@ const HIDDEN: Readonly<Record<string, readonly string[]>> = {
     outpost_01r: ["cell_door_01"],
     outpost_01b: ["cell_door_01"],
     arsenal_01: ["lab_door_locked_01"],
-    blockhouse_01r: [],
-    blockhouse_01b: [],
-    military_base_01: ["cell_door_01", "vault_door_main", "vault_door_bathhouse"],
-    military_base_01r: ["cell_door_01", "vault_door_main", "vault_door_bathhouse"],
-    military_base_01b: ["cell_door_01", "vault_door_main", "vault_door_bathhouse"],
+    blockhouse_01r: ["vault_door_bathhouse"],
+    blockhouse_01b: ["vault_door_bathhouse"],
+    // the gatehouse's and the armory's cages (one door type), the HQ archive, the infirmary store (ground) and the war
+    // chest (basement): vault_door_bathhouse once per floor, the vault
+    military_base_01: MILITARY_HIDDEN,
+    military_base_01r: MILITARY_HIDDEN,
+    military_base_01b: MILITARY_HIDDEN,
 };
 
 describe("the rebirth buildings, walked", () => {
@@ -53,7 +64,9 @@ describe("the rebirth buildings, walked", () => {
             const r = probeBuilding(type);
             expect(r.unlocks.map((u) => u.door).sort()).toEqual([...HIDDEN[type]].sort());
             for (const u of r.unlocks) {
-                expect([u.door, u.area > 3, u.containers >= 3, u.guns >= 1.5]).toEqual([u.door, true, true, true]);
+                // a real room (the owner, 2026-10-10: "expand the content"): 25 u² to walk in (the military cages share
+                // one door type and add up), 4 loot sources, 2 expected guns
+                expect([u.door, u.area >= 25, u.containers >= 4, u.guns >= 2]).toEqual([u.door, true, true, true]);
             }
         });
     }

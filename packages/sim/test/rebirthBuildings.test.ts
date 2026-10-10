@@ -45,7 +45,7 @@ const MIN_WALLS: Readonly<Record<string, number>> = {
 /** objects that stand outside the walls on purpose (porticos, bollards, sandbags, bushes) */
 const OUTSIDE = /^(bush_|sandbags_|bollard_|house_column_)/;
 /** a loophole (brick_wall_ext_3_0_low) fills a wall gap: it is an opening, not a wall */
-const WALL = /_wall_ext_(?!3_0_low)|^stone_wall_int_4$/;
+const WALL = /_wall_ext_(?!3_0_low)|^stone_wall_int_4$|^rebirth_wall_int_/;
 const OPENING =
     /^(house_door_0[12]|house_window_01|lab_door_01|lab_door_locked_01|brick_wall_ext_3_0_low|vault_door_main|vault_door_bathhouse|saloon_door_secret|cell_door_01)$/;
 

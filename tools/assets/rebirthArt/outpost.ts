@@ -22,8 +22,8 @@ export function outpostFloor(): string {
     // the command room's carpet border, the armory's crate bay
     const extra =
         stripes.join("") +
-        rect(fr, -0.75, 1.25, 12.75, 9.75, `fill="none" stroke="#45503b" stroke-width="6"`) +
-        rect(fr, -13.5, 5.5, -9, 10.5, `fill="#000000" fill-opacity="0.12"`);
+        rect(fr, 1.25, 1.25, 12.75, 9.75, `fill="none" stroke="#45503b" stroke-width="6"`) +
+        rect(fr, -13.5, 3.75, -9, 10.5, `fill="#000000" fill-opacity="0.12"`);
     return floor(OUTPOST_LAYOUT, OUTPOST_FLOORS, "#55584f", "#1b1d1a", extra);
 }
 

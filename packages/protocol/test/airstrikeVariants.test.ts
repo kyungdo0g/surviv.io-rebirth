@@ -156,6 +156,21 @@ describe("air strike variants on the wire", () => {
             "military_base_01",
             "military_base_01r",
             "military_base_01b",
+            "rebirth_wall_int_1",
+            "rebirth_wall_int_2",
+            "rebirth_wall_int_2_5",
+            "rebirth_wall_int_3",
+            "rebirth_wall_int_4",
+            "rebirth_wall_int_5",
+            "rebirth_wall_int_6",
+            "rebirth_wall_int_7",
+            "rebirth_wall_int_8",
+            "rebirth_wall_int_9",
+            "rebirth_wall_int_10",
+            "rebirth_wall_int_11",
+            "rebirth_wall_int_12",
+            "rebirth_wall_int_13",
+            "rebirth_wall_int_14",
         ]);
         const first = MapObjectRegistry.typeToId("decal_bomb_heavy_explosion");
         expect(first).toBe(MapObjectRegistry.size - rebirthOnlyMapObjectIds.length);

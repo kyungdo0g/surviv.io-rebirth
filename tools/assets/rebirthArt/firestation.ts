@@ -68,11 +68,11 @@ export function firestationFloor(): string {
         .map((x) => `M${px(fr, x)} ${py(fr, -13)}V${py(fr, -16.75)}`)
         .join("");
     out.push(`<path d="${laneLines}" stroke="#e9e9e3" stroke-width="5" fill="none"/>`);
-    // the engine lanes (x a..b, y -12..4.5, short of the gear cage; their open end runs under the hatch), then the red
+    // the engine lanes (x a..b, y -12..0.5, short of the gear cage; their open end runs under the hatch), then the red
     // and white hatch just inside each mouth; the lane outlines are 6 px, not the spec's 4 px, so they read over the bay
     // grid in game
     const lanes = LANES.map(
-        ([a, b]) => `M${px(fr, a)} ${py(fr, -11.25)}V${py(fr, 4.5)}H${px(fr, b)}V${py(fr, -11.25)}`,
+        ([a, b]) => `M${px(fr, a)} ${py(fr, -11.25)}V${py(fr, 0.5)}H${px(fr, b)}V${py(fr, -11.25)}`,
     );
     out.push(`<path d="${lanes.join("")}" stroke="#e2b425" stroke-width="6" fill="none" stroke-linejoin="miter"/>`);
     MOUTHS.forEach(([a, b], i) => {
@@ -168,6 +168,6 @@ export function firestationCeiling(): string {
         hoseTower(fr) +
         acUnit(fr, 8, 4) +
         acUnit(fr, 10.5, -7) +
-        circleAt(fr, -15, 9, 0.6, `fill="#7d868c" stroke="#2c3135" stroke-width="3"`);
+        circleAt(fr, -1.5, 7, 0.6, `fill="#7d868c" stroke="#2c3135" stroke-width="3"`);
     return roof(FIRESTATION_LAYOUT, "#cf2e28", "#9e2420", "#c02a24", top);
 }

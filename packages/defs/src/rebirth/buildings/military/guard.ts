@@ -1,13 +1,15 @@
 // The military base's guard posts (rebirth/buildings/military/): the gatehouse (위병소) by the main gate, which owns
-// the gate's two steel leaves (its direct children) and a weapons cage behind barred doors (cell_door_01, survev
+// the gate's two steel leaves (its direct children) and a weapons cage behind a barred door (cell_door_01, survev
 // police_01's cells) that the guard room's switch opens (a one-switch puzzle; reworked 2026-10-10: it replaces the panel
 // that only locked the gate), and the corner watchtower (초소) placed twice: a 4x lookout (zoom 48) with loopholes on its
 // two outer faces and the yard face, and a fire extinguisher in the corner beside the outer slits (shot through one, its
 // smoke forces 1x).
+// Expanded 2026-10-10 (the owner: "the hidden rooms are too small"): the gatehouse cannot grow, so the guard room
+// shrinks to a 3.25-wide lobby with its door facing the gate and the cage takes the other 6.75 x 6 (was 4.5 x 6).
 import { LOOKOUT_ZOOM } from "../layout.ts";
 
-/** The gatehouse's weapons cage: its barred door (only the puzzle opens it) and the guard room's switch. */
-export const MILITARY_GATEHOUSE_CAGE_DOOR = { type: "cell_door_01", hinge: { x: 13, y: -39 }, ori: 0 } as const;
+/** The gatehouse's weapons cage: its barred door (only the puzzle opens it; swings east into the cage). */
+export const MILITARY_GATEHOUSE_CAGE_DOOR = { type: "cell_door_01", hinge: { x: 10.75, y: -35 }, ori: 2 } as const;
 export const MILITARY_GATEHOUSE_PUZZLE = "rebirth_milbase_gatehouse";
 
 import { fromWorld, fullZoom, hRun, type MilitaryPart, op, p, room, vRun } from "./part.ts";
@@ -23,20 +25,21 @@ export const MILITARY_GATEHOUSE: MilitaryPart = fromWorld({
         material: "brick",
         walls: [
             ...hRun(-40.5, 6, 19, [], undefined, "brick"),
-            ...hRun(-33.5, 6, 19, [[7, 11]], undefined, "brick"),
+            ...hRun(-33.5, 6, 19, [], undefined, "brick"),
+            // the lobby's door faces the gate
             ...vRun(6.5, -40, -34, [[-39, -35]], undefined, "brick"),
             ...vRun(18.5, -40, -34, [], undefined, "brick"),
-            // the weapons cage (x 13..18.5): its barred door -39..-35 swings out into the guard room
-            ...vRun(13, -40, -34, [[-39, -35]], undefined, "brick"),
+            // lobby | weapons cage: the barred door -39..-35 swings east into the cage; the lobby door's leaf, open,
+            // reaches the partition's face
+            ...vRun(10.75, -40, -34, [[-39, -35]], undefined, "brick"),
         ],
         openings: [
-            op("house_door_01", 7, -33.25, 3),
-            op("house_window_01", 6.25, -37, 0),
+            op("house_door_01", 6.25, -35, 2),
             // the main gate's leaves in the perimeter gap x -4..4, 0.25 outside its wall line
             op("house_door_02", -4, -41.75, 3),
             op("house_door_02", 4, -41.75, 1),
         ],
-        rooms: [room(6.5, -40.5, 18.5, -33.5, "guard"), room(13, -40.5, 18.5, -33.5, "cage")],
+        rooms: [room(6.5, -40.5, 10.75, -33.5, "guard"), room(10.75, -40.5, 18.5, -33.5, "cage")],
     },
     puzzle: { name: MILITARY_GATEHOUSE_PUZZLE, door: MILITARY_GATEHOUSE_CAGE_DOOR.type },
     props: [
@@ -47,12 +50,15 @@ export const MILITARY_GATEHOUSE: MilitaryPart = fromWorld({
             MILITARY_GATEHOUSE_CAGE_DOOR.ori,
             { wallLike: true },
         ),
-        p("switch_03", 8, -39.45, 0, { piece: "1" }),
-        p("loot_tier_1", 9.5, -36),
-        // the cage: a shotgun on the east wall, a riot locker (tier_police), loot
+        // the lobby: the switch on the south wall, clear of the door's swing
+        p("switch_03", 8.6, -39.45, 0, { piece: "1" }),
+        // the cage: a soldier's locker (an AK) and a shotgun rack in its south-east corner, the guards' floor loot and
+        // level 3 armour (the jackpot) in the middle
+        p("locker_03", 16.5, -39.25, 2),
         p("gun_mount_02", 17.1, -36.25, 3),
-        p("locker_02", 16.5, -39.25),
-        p("loot_tier_2", 15, -35.75),
+        p("loot_tier_police_floor", 13, -38),
+        p("loot_tier_2", 13, -36),
+        p("loot_tier_airdrop_armor", 15.25, -37),
     ],
     surfaces: [{ type: "tile", boxes: [[6.5, -40.5, 18.5, -33.5]] }],
     zoom: [fullZoom([6.5, -40.5, 18.5, -33.5])],

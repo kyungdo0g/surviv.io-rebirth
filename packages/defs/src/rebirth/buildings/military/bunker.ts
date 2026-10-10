@@ -245,8 +245,8 @@ export const MILITARY_VAULT_DOOR = {
 
 // the nested rooms: child buildings of the basement (zIdx 1), each with its own floor, dark roof and zoomIn
 
-/** The war chest's door (vault_door_bathhouse: only the puzzle opens it; slides west into the wall). */
-export const MILITARY_WAR_CHEST_DOOR = { type: "vault_door_bathhouse", hinge: { x: 10, y: 19 }, ori: 3 } as const;
+/** The war chest's door (vault_door_bathhouse: only the puzzle opens it; slides south into its east wall). */
+export const MILITARY_WAR_CHEST_DOOR = { type: "vault_door_bathhouse", hinge: { x: 5, y: 15 }, ori: 0 } as const;
 export const MILITARY_COMMAND_PUZZLE = "rebirth_milbase_command";
 /** The staff code's switches on Command's walls (their floor plates' colours) and the code: red, yellow, green. */
 export const MILITARY_COMMAND_SWITCHES = [
@@ -255,6 +255,8 @@ export const MILITARY_COMMAND_SWITCHES = [
     { label: "green", x: -9, y: 22.95, ori: 0 },
 ] as const;
 export const MILITARY_COMMAND_CODE: readonly string[] = ["red", "yellow", "green"];
+/** The briefing note with the staff code, painted on the floor inside the west south door. */
+export const MILITARY_COMMAND_NOTE = { x: -7.5, y: 12 } as const;
 
 export const MILITARY_COMMAND: MilitaryPart = fromWorld({
     id: "military_bunker_command_01",
@@ -262,17 +264,19 @@ export const MILITARY_COMMAND: MilitaryPart = fromWorld({
     parent: "military_bunker_01",
     centre: { x: 0, y: 17 },
     zIdx: 1,
-    // Command (under the HQ; reworked 2026-10-10: its interaction opens something): the war chest, a strongroom in its
-    // north-east corner (clear of the HQ stairs' foot), opens on the staff code: three switches on Command's walls (a
-    // red, a yellow and a green plate on the floor) pressed in the order the briefing note by the south doors shows (red,
-    // yellow, green; survev bathhouse_01's code room); inside, a chest (tier_chest), a riot locker and level 3 armour
+    // Command (under the HQ; reworked 2026-10-10: its interaction opens something): the war chest, a 9 x 8.5 strongroom
+    // in the middle of its south side (between the two south doors, 3.5 short of the HQ stairs' foot, its door in its
+    // east wall), opens on the staff code: three switches on Command's walls (a red, a yellow and a green plate on the
+    // floor) pressed in the order the briefing note by the south doors shows (red, yellow, green; survev bathhouse_01's
+    // code room); Command itself is a U round it with a planning table either side
     layout: {
         bounds: { min: { x: -14, y: 10 }, max: { x: 14, y: 24 } },
         material: "concrete",
         walls: [
-            // the war chest: its sliding door slides west into the wall
-            ...hRun(19, 6, 14, [[10, 14]]),
-            ...vRun(6, 19, 24),
+            // the war chest: its sliding door slides south into the east wall's lower run
+            ...hRun(19.5, -5.5, 5.5),
+            ...vRun(-5, 10.5, 19),
+            ...vRun(5, 10.5, 19, [[15, 19]]),
         ],
         openings: [
             op("lab_door_01", -9, 10, 3),
@@ -280,7 +284,7 @@ export const MILITARY_COMMAND: MilitaryPart = fromWorld({
             op("lab_door_01", -14, 15, 0),
             op("lab_door_01", 14, 15, 0),
         ],
-        rooms: [room(-14, 10, 14, 24, "command"), room(6, 19, 14, 24, "war_chest")],
+        rooms: [room(-14, 10, 14, 24, "command"), room(-5, 10, 5, 19.5, "war_chest")],
     },
     puzzle: { name: MILITARY_COMMAND_PUZZLE, door: MILITARY_WAR_CHEST_DOOR.type },
     props: [
@@ -292,14 +296,20 @@ export const MILITARY_COMMAND: MilitaryPart = fromWorld({
             { wallLike: true },
         ),
         ...MILITARY_COMMAND_SWITCHES.map((sw) => p("switch_03", sw.x, sw.y, sw.ori, { piece: sw.label })),
-        p("table_05", 0, 15),
-        p("locker_02", -12.75, 21, 1),
-        p("loot_tier_2", -10, 17.5),
+        // the planning tables (walk-under) either side of the war chest, the riot locker, a camera
+        p("table_01", -9.5, 17),
+        p("table_01", 9.5, 21),
+        p("locker_02", -12.75, 22, 1),
+        p("loot_tier_2", -9.5, 17),
         p("decal_camera_01", -13, 23),
-        // the war chest
-        p("chest_02", 8.75, 21.9),
-        p("locker_02", 12.75, 21.5, 3),
-        p("loot_tier_airdrop_armor", 11.75, 20.25),
+        // the war chest: the chest (tier_chest) and an M870 mount along its south wall, the AK locker and a riot
+        // locker along its north wall, level 3 armour and a container's worth of loot on the floor
+        p("chest_02", -2.25, 12.1),
+        p("gun_mount_01", 2.25, 11.4, 2),
+        p("locker_03", -3, 18.25),
+        p("locker_02", 0, 18.25),
+        p("loot_tier_airdrop_armor", 2.25, 15.25),
+        p("loot_tier_2", -2, 15.75),
     ],
     surfaces: [{ type: "tile", boxes: [[-14, 10, 14, 24]] }],
     zoom: [{ zoomIn: [-13.5, 10.5, 13.5, 23.5] }],
@@ -316,7 +326,8 @@ export const MILITARY_MAGAZINE: MilitaryPart = fromWorld({
     parent: "military_bunker_01",
     centre: { x: 25, y: 17 },
     zIdx: 1,
-    // the Magazine (under the armory): crates of throwables and ammunition
+    // the Magazine (under the armory): crates of throwables and ammunition, flush in its corners, and a deposit box of
+    // rounds by the south door
     layout: {
         bounds: { min: { x: 14, y: 10 }, max: { x: 36, y: 24 } },
         material: "concrete",
@@ -325,9 +336,10 @@ export const MILITARY_MAGAZINE: MilitaryPart = fromWorld({
         rooms: [room(14, 10, 36, 24, "magazine")],
     },
     props: [
-        p("mil_crate_04", 18, 22.1),
-        p("mil_crate_04", 34, 19.5, 1),
-        p("crate_04", 32.5, 13),
+        p("mil_crate_04", 17.2, 22.25),
+        p("mil_crate_04", 34.25, 20.8, 1),
+        p("crate_04", 33.25, 12.75),
+        p("deposit_box_02", 28.5, 11.65, 2),
         p("crate_06", 15.6, 12.75, 1),
         p("sandbags_02", 25, 17),
     ],
@@ -372,15 +384,17 @@ export const MILITARY_VAULT: MilitaryPart = fromWorld({
             outside: true,
         }),
         p("stone_wall_int_4", -0.5, -20, 1, { wallLike: true, outside: true }),
-        // (reworked 2026-10-10: the base's richest room) a sniper crate, a rifle locker, an LMG mount, a chest
-        // (tier_chest), an SV-98, level 3 armour and ammunition
-        p("mil_crate_05", -6, -15.5, 1),
-        p("locker_03", 6.6, -9.5, 3),
-        p("gun_mount_03", 6.5, -13.5, 3),
+        // (reworked 2026-10-10: the base's richest room) flush along its side walls, the middle left open between the
+        // door and the breach: west an ammunition crate, a sniper crate and a rifle locker; east a chest (tier_chest),
+        // a deposit box and an LMG mount (2.6 off the door's inner edge); an SV-98 and level 3 armour on the floor
+        p("crate_04", -5.25, -17.25),
+        p("mil_crate_05", -6.25, -12.3, 1),
+        p("locker_03", -6.75, -8.1, 1),
         p("chest_02", 5.25, -17.9),
+        p("deposit_box_02", 6.35, -13.8, 3),
+        p("gun_mount_03", 6.6, -9, 3),
         p("loot_tier_sv98", 0, -16.5),
-        p("loot_tier_airdrop_armor", 0, -13),
-        p("crate_04", -5.2, -10),
+        p("loot_tier_airdrop_armor", 0, -12.5),
     ],
     surfaces: [{ type: "container", boxes: [[-8, -20, 8, -6]] }],
     zoom: [{ zoomIn: [-7.5, -19.5, 7.5, -6.5] }],

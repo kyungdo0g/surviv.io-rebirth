@@ -3,8 +3,9 @@
 // floor surfaces, zoom regions and images. Parts are authored in the compound frame (origin the compound centre, +y
 // north, the main gate south; the structure's two layer buildings sit at that origin with ori 0) and re-expressed
 // around their own centre by fromWorld(), where the parent places them. Long walls are written as runs (hRun / vRun)
-// split into the existing `<material>_wall_ext_<length>` pieces.
+// split into the existing `<material>_wall_ext_<length>` pieces (wood: the breakable `rebirth_wall_int_<length>`).
 import type { Opening, RebirthBuildingLayout, Room, WallMaterial, WallSeg } from "../layout.ts";
+import { REBIRTH_WALL_INT_LENGTHS } from "../walls.ts";
 
 /** A world box [x0, y0, x1, y1]. */
 export type Box = readonly [x0: number, y0: number, x1: number, y1: number];
@@ -90,6 +91,7 @@ export const WALL_LENGTHS: Readonly<Record<WallMaterial, readonly number[]>> = {
     concrete: [1.5, 2, 3, 4, 5, 6, 7, 8, 9, 9.5, 10.5, 11, 11.5, 13, 14, 15, 16, 17, 23, 24, 25],
     brick: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11.5, 12, 12.5, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 33, 41],
     metal: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 12.5, 13, 16, 18, 23, 43],
+    wood: REBIRTH_WALL_INT_LENGTHS,
 };
 
 /** The fewest wall lengths summing to `len` (half units; the longest piece first). */

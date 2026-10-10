@@ -3,8 +3,9 @@
 // placement in sim mapgen placement.ts). Its steel magazine is sealed by two locked sliding doors
 // (lab_door_locked_01) until a scheduled unlock opens them 90 s into the first circle and pings the map for everyone
 // (MapDef gameConfig.unlocks, survev's Cobalt bunker doors; REBIRTH_BUILDING_UNLOCKS): a siege both factions see
-// coming: the magazine holds two weapons crates, an LMG mount, ammo and level 3 armour. The roof needs no
-// ceiling.destroy, so air strike bombs fizzle inside.
+// coming: the magazine (14 x 11 inside) holds the 50v50's richest loot: a sniper crate, a weapons crate, an LMG and a
+// shotgun mount, a Deagle case, level 3 armour and a sniper scope (enriched 2026-10-10, the owner: "expand the hidden
+// rooms"). The roof needs no ceiling.destroy, so air strike bombs fizzle inside.
 import type { BuildingDef } from "../../types/index.ts";
 import {
     ART_SCALE,
@@ -103,12 +104,14 @@ export function arsenal(known: (id: string) => boolean): BuildingDef {
             child("locker_01", 14.25, 9.5, 3),
             child("loot_tier_1", -11.5, 0.5),
             child("loot_tier_1", 11.5, 0.5),
-            // the magazine: guns and a sniper, guns and throwables, an LMG on the wall, an ammo crate, a level 3 armour
-            // piece
+            // the magazine (x -7..7, y -5.5..5.5; doorways y -1.5..2.5 on both sides): crates along the north wall, two
+            // gun mounts and a case along the south wall (flush within 0.25), armour and a scope on the open floor
             child("mil_crate_05", -4.3, 4.25),
             child("mil_crate_04", 4.3, 4.25),
+            child("loot_tier_scopes_sniper", 0, 4.25),
             child("gun_mount_03", -4.75, -4.6, 2),
-            child("crate_04", 3.5, -3.25),
+            child("gun_mount_02", 0, -4.6, 2),
+            child("case_01", 4.75, -3.9),
             child("loot_tier_airdrop_armor", 0, 0.5),
             // outside: sandbags flanking both doors, bushes
             child("sandbags_01", -5.5, 13.6),
