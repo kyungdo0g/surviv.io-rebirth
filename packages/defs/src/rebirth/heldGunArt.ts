@@ -37,6 +37,7 @@ import type { DefDeviation } from "./deviations.ts";
 /** The drawn guns and their sprites' logical size (the SVG's width and height; drawn at scale 0.5). */
 export const HELD_GUN_ART = {
     ak47: [48, 172],
+    ak74: [48, 172],
     g36c: [48, 136],
     m16a4: [48, 220],
     sig550: [48, 188],

@@ -107,6 +107,7 @@ describe("rebirth balance deviations", () => {
         ]);
         expect(heldGunArt()).toEqual([
             { id: "ak47", sprite: "gun-ak47-01.img", size: [48, 172] },
+            { id: "ak74", sprite: "gun-ak74-01.img", size: [48, 172] },
             { id: "g36c", sprite: "gun-g36c-01.img", size: [48, 136] },
             { id: "m16a4", sprite: "gun-m16a4-01.img", size: [48, 220] },
             { id: "sig550", sprite: "gun-sig550-01.img", size: [48, 188] },

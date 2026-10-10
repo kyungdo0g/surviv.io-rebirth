@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="80" height="218" viewBox="0 0 80 218">
-  <!-- MG 42 held sprite, own art: seen from above, barrel up; flared booster, slotted jacket, barbed folded bipod, brass belt left. -->
+  <!-- MG 42 held sprite, own art: seen from above, barrel up; flared booster, slotted jacket, tucked folded bipod, brass belt left. -->
   <!-- bakelite stock tapering to a rounded butt (under the right hand in game) -->
   <path d="M29 186h22l-2 20q0 8-8 8h-2q-8 0-8-8z" fill="#4a3a30" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
   <rect x="37" y="192" width="6" height="16" fill="#35281f"/>
@@ -25,10 +25,11 @@
   <!-- rear sight block and barrel latch (right), under the left hand -->
   <rect x="33" y="116" width="14" height="8" fill="#000"/>
   <rect x="55" y="104" width="6" height="14" rx="1" fill="#000"/>
-  <!-- folded bipod: legs along the jacket, barbed feet flaring out and back (the left one shows beside the hand) -->
-  <path d="M21 32h4l-2 52h-4zM55 32h4l2 52h-4z" fill="#000"/>
-  <polygon points="19,77 23,77 23,90 8,101 6,98" fill="#000"/>
-  <polygon points="61,77 57,77 57,90 72,101 74,98" fill="#000"/>
+  <!-- folded bipod: legs and shoes parallel to the jacket, no deployed side silhouette -->
+  <rect x="21" y="32" width="5" height="58" rx="1" fill="#000"/>
+  <rect x="54" y="32" width="5" height="58" rx="1" fill="#000"/>
+  <rect x="20" y="84" width="7" height="12" rx="2" fill="#000"/>
+  <rect x="53" y="84" width="7" height="12" rx="2" fill="#000"/>
   <!-- bipod collar behind the booster (front sight base) -->
   <rect x="20" y="27" width="40" height="8" rx="2" fill="#000"/>
   <!-- ribbed booster housing with three holes, flaring muzzle cone -->

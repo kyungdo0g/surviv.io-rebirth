@@ -12,10 +12,11 @@
   <path d="M17 51.5h14M17 57.5h14M17 63.5h14M17 69.5h14M17 75.5h14" stroke="#a37450" stroke-width="3"/>
   <rect x="12" y="82" width="24" height="4" fill="#000"/>
   <rect x="19" y="80" width="10" height="8" rx="1" fill="#000"/>
-  <!-- sight housing (shell colour, as in the photo) straddling the front of the magazine: optic window, grey reticle -->
+  <!-- sight housing (shell colour, as in the photo) straddling the front of the magazine: opaque top of the optic housing, longitudinal highlight and fasteners -->
   <rect x="12" y="16" width="24" height="28" rx="2" fill="#706760" stroke="#000" stroke-width="8"/>
-  <rect x="19" y="22" width="10" height="14" rx="1" fill="#000"/>
-  <rect x="22" y="27" width="4" height="4" fill="#8f8f8f"/>
+  <rect x="20" y="21" width="8" height="18" rx="1" fill="#a8a09a"/>
+  <circle cx="16" cy="23" r="1.5" fill="#000"/>
+  <circle cx="32" cy="37" r="1.5" fill="#000"/>
   <!-- standard flash hider with two slots -->
   <rect x="19" y="1" width="10" height="12" rx="2" fill="#000"/>
   <rect x="21" y="3" width="2" height="7" fill="#555555"/>

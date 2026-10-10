@@ -100,26 +100,22 @@ function panzerfaust(): Shape[] {
 
 function m202(): Shape[] {
     return [
+        // A broad rectangular pack, rather than two skinny parallel tubes.
+        part(box(84, 24, 97, 46)),
+        part(box(97, 24, 113, 31)),
         part([
-            [84, 16],
-            [97, 16],
-            [92, 40],
-            [79, 40],
+            [68, -24],
+            [82, -24],
+            [82, -38],
+            [73, -38],
         ]),
-        part(box(97, 15, 113, 24)),
-        part([
-            [68, -15],
-            [82, -15],
-            [82, -29],
-            [73, -29],
-        ]),
-        detail(box(72, -26, 75, -19)),
-        part(box(0, -16, 186, 16)),
-        detail(box(5, -1.2, 181, 1.2)),
-        detail(box(40, -14.5, 44, 14.5)),
-        detail(box(140, -14.5, 144, 14.5)),
-        part(box(-8, -18.5, 3, 18.5)),
-        part(box(183, -18.5, 195, 18.5)),
+        detail(box(72, -35, 75, -28)),
+        part(box(0, -24, 172, 24)),
+        detail(box(5, -1.2, 167, 1.2)),
+        detail(box(40, -22.5, 44, 22.5)),
+        detail(box(128, -22.5, 132, 22.5)),
+        part(box(-8, -26.5, 3, 26.5)),
+        part(box(169, -26.5, 181, 26.5)),
     ];
 }
 

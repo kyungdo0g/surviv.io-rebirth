@@ -122,6 +122,7 @@ describe("new guns: held sprites", () => {
     it("a drawn new gun holds its own top-down sprite at 0.5 in its own colours, with the sheet's hands", () => {
         const drawnNew = NEW_GUN_IDS.filter((id) => DRAWN.has(id));
         expect(drawnNew).toEqual([
+            "ak74",
             "g36c",
             "m16a4",
             "sig550",
@@ -285,7 +286,7 @@ describe("new guns: held sprites", () => {
     });
 
     it("keeps the sheet's own bars, turns borrowed art into a long bar by class, leaves other guns alone", () => {
-        expect(heldGunImage(gun("ak74"))).toBe(gun("ak74").worldImg);
+        expect(heldGunImage(gun("ak74")).sprite).toBe("gun-ak74-01.img");
         expect(heldGunImage(gun("ak47"))).toBe(gun("ak47").worldImg);
         expect(heldGunImage(gun("ak47")).sprite).toBe("gun-ak47-01.img");
         expect(heldGunImage(gun("barrett"))).toBe(gun("barrett").worldImg);
