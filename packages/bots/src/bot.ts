@@ -160,7 +160,7 @@ export class Bot {
             personaRng,
             seed: opts.seed,
         });
-        this.follower = new PathFollower(this.rng, this.brain.doors);
+        this.follower = new PathFollower(this.rng, this.brain.doors, this.brain.breaker);
         const human = this.params.motor.model === "human";
         // the motor's own stream (like the class picker's): motor noise never shifts the brain's decisions
         const motorRng = createRng(opts.seed ^ 0x9e3779b9);

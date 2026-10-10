@@ -109,6 +109,12 @@ export interface BrainFeatures {
      * or met at arm's reach it fights (brain/earlyPace.ts); fist duels near loot give way to the loot (brain/fists.ts)
      */
     earlyPace: boolean;
+    /**
+     * break through what blocks the way: routes cross breakable obstacles indoors and the house rule's (the club's
+     * couch, the mansion's panels, the police station's interior walls, greenhouse glass), and glass walls for a
+     * persona-driven share; the bot breaks the one on its way once it sees it (nav/breakThrough.ts, brain/breakThrough.ts)
+     */
+    breakThrough: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -146,6 +152,7 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "blastAware",
     "barrelShot",
     "earlyPace",
+    "breakThrough",
 ];
 
 export type BrainName = "baseline" | "smart";

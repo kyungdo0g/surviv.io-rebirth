@@ -10,9 +10,12 @@
 // BrainFeatures.puzzles (NavOptions.sealedDoors, its own shared grid): there they stop being walls once a snapshot shows
 // them open (cellGrid.ts sealedDoors). The flags-off grid must not learn them: the baseline replays as before the
 // puzzles existed even when a human opens the police cells (THE RULE, brain/features.ts).
+
+import type { Bounds } from "@rebirth/core";
 import { getMapObjectDef, hasMapObjectDef } from "@rebirth/defs";
 import { createTerrain, type MapData } from "@rebirth/sim";
-import { obstacleCollider, transformCollider } from "../geom.ts";
+import { obstacleCollider, pointInBounds, transformCollider } from "../geom.ts";
+import { breakClassOf } from "./breakThrough.ts";
 import { CellGrid, NavTerrain, walkThroughDoor } from "./cellGrid.ts";
 import { type RasterGrid, rasterBounds, rasterPolygon } from "./raster.ts";
 
@@ -196,6 +199,7 @@ export class NavGrid extends CellGrid implements RasterGrid {
     }
 
     private buildObjects(map: MapData): void {
+        const roofs = roofBoxes(map);
         for (const obj of map.objects) {
             if (!hasMapObjectDef(obj.type)) continue;
             const def = getMapObjectDef(obj.type);
@@ -221,7 +225,9 @@ export class NavGrid extends CellGrid implements RasterGrid {
                 this.addSealedDoor(obj.id, col);
                 continue;
             }
-            this.stamp(obj.id, col);
+            // (breakable for routing: under a roof, the house rule's types, glass walls: nav/breakThrough.ts)
+            const indoor = roofs.some((r) => pointInBounds(obj.pos, r));
+            this.stamp(obj.id, col, breakClassOf(def, obj.type, indoor));
         }
     }
 
@@ -233,4 +239,19 @@ export class NavGrid extends CellGrid implements RasterGrid {
             }
         }
     }
+}
+
+/** The roofed areas of the ground floor's buildings (their ceilings' zoom-in regions). */
+function roofBoxes(map: MapData): Bounds[] {
+    const out: Bounds[] = [];
+    for (const obj of map.objects) {
+        if (!onGroundLayer(obj.layer) || !hasMapObjectDef(obj.type)) continue;
+        const def = getMapObjectDef(obj.type);
+        if (def.type !== "building") continue;
+        for (const z of def.ceiling.zoomRegions) {
+            const c = z.zoomIn ? transformCollider(z.zoomIn, obj.pos, obj.ori, obj.scale) : null;
+            if (c?.type === 1) out.push(c);
+        }
+    }
+    return out;
 }

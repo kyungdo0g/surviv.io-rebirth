@@ -18,6 +18,7 @@ import { reactToThreats } from "./alert.ts";
 import { assessCached, wantsAssessment } from "./assess.ts";
 import { planBarrelShot } from "./barrelShot.ts";
 import { holdBlastFire, stepOutOfBlast } from "./blast.ts";
+import { BreakThrough } from "./breakThrough.ts";
 import { addCombatLayer, selectTarget } from "./combat.ts";
 import { type BehaviourName, type BrainCtx, BrainMemory, emptyIntent, type Intent } from "./context.ts";
 import { noteContested } from "./danger.ts";
@@ -102,6 +103,8 @@ export class Brain {
     private readonly personaRng: Rng;
     /** doors (BrainFeatures.doors): door state, alerts and the close behind; null with the flag off */
     readonly doors: DoorBrain | null;
+    /** breaking through what blocks the way (BrainFeatures.breakThrough): the follower's sink; mask 0 with the flag off */
+    readonly breaker: BreakThrough;
     /** scores of the last decision (diagnostics) */
     lastScores: Partial<Record<BehaviourName, number>> = {};
 
@@ -120,6 +123,7 @@ export class Brain {
         this.skill = Object.freeze({ ...(profile.skill ?? skillOf(params)) });
         this.personaRng = profile.personaRng ?? createRng(PERSONA_SALT);
         this.doors = features.doors ? new DoorBrain(profile.seed ?? 0) : null;
+        this.breaker = new BreakThrough(features.breakThrough, this.persona, this.skill, profile.seed ?? 0);
         // exploding obstacles: the model's blast watch prices them into every cover search (perception/blasts.ts)
         if (features.blastAware) installBlastWatch(model);
         // (a number only: the knowledge is drawn from it on first use, by an enabled feature)
@@ -153,6 +157,7 @@ export class Brain {
             teamMode: model.team.length > 0,
             myComp: 0,
             assessment: null,
+            breakMask: this.breaker.mask,
         };
         const cell = model.nav.nearestWalkable(self.pos, 3);
         if (cell >= 0) ctx.myComp = model.nav.component(cell);
@@ -181,6 +186,7 @@ export class Brain {
             } else {
                 intent.stop = true;
             }
+            if (ctx.features.breakThrough) this.breaker.apply(ctx, intent);
             return intent;
         }
         if (self.downed) return planDowned(ctx);
@@ -291,6 +297,8 @@ export class Brain {
             keepErrandsHome(ctx, intent);
             keepDry(ctx, intent);
         }
+        // breaking through the obstacle on the way (after the faction's rules: they may have moved the goal)
+        if (ctx.features.breakThrough) this.breaker.apply(ctx, intent);
         if (ctx.features.threats) reactToThreats(ctx, intent);
         if (ctx.features.scope) manageScope(ctx, intent);
         // pursuit: shot on the spot it stands on: step off it (stillHit.ts)

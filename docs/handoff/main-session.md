@@ -3,31 +3,24 @@
 Head when written: `014639c` on `claude/relaxed-fermat-hcg1fo` (pushed). Protocol schema 23. The clone session
 (`session_01TqsHMvL19R8fcPNuQnQ81U`, branch `claude/survev-content`) is idle with nothing open; its PRs #11-#13 are merged.
 
-## Unfinished work (saved as a patch, not applied)
+## Done on 2026-10-10 (session_0155uKqQzUgmUurS5imUMVYt)
 
-`docs/handoff/wip/2026-10-08-unfinished.patch` holds two half-done bot tasks, interrupted by a container restart and
-then the usage limit. They are untested, so they were left out of the branch. To resume: `git apply --index
-docs/handoff/wip/2026-10-08-unfinished.patch`, then finish, measure and review each one before committing.
+The 2026-10-08 patch was used in full and deleted.
 
-1. **Early mass deaths** (the owner's most serious report: "they die from the very start, many at once; 200 players
-   were down to 40 before long, mostly punched to death").
-   - Files: `brain/earlyPace.ts` (new), `early.ts`, `fists.ts`, `fightScore.ts`, `assess.ts`, `danger.ts`,
-     `earlyMemory.ts`, `scripts/earlyDeaths*.ts` (probe), `test/early-pace.test.ts`.
-   - Measured before (`docs/handoff/wip/early-deaths-before.md`, the `earlyDeaths.ts` probe): at 80 players about 33
-     deaths per minute in the first 2 minutes, and 80 % of early deaths fall within 5 s of two others somewhere on the
-     map. Spatial bursts are 2 % of early deaths at 80 players and 17 % at 200 (fist rushes and brawls at drop spots,
-     one barrel chain).
-   - Target: at 80 players most players are still alive when the first gas moves, and about half remain around the end
-     of the second stage. Keep the owner's early behaviours (fist rush with jukes, melee answer, crate-first,
-     high-value routing) but make them sane.
-2. **50v50: bots out of the river and rallying to the Commander** (owner).
-   - Files: `brain/factionRally.ts`, `brain/factionRiver.ts` (new), the `faction*` brain and perception files, `guard.ts`,
-     `position.ts`, `scripts/factionRally*.ts` (probe), `test/faction-rally.test.ts`.
-   - Asks:
-     - Never idle in the water. Hold from the banks, cover and bridges.
-     - Most bots go to their Commander, a loose group that follows it and goes with it to the flare drop.
-     - A persona-driven 20-30 % stays out.
-   - Keep `test/faction.test.ts` (seeds 11 and 12) green.
+1. **Early mass deaths**: `1a4263b` (BrainFeatures.earlyPace, sane fist rush and fist fights, `scripts/earlyDeaths.ts`).
+   Seeds 1-3, normal gas, alive before -> after: 80 players 41% -> 58% when the first gas moves (80 s), 26% -> 44% at
+   the end of the second stage (110 s), 7% -> 14% when the second circle closes (200 s); 200 players 32% -> 58%,
+   18% -> 43%, 5% -> 17%. Fist and melee deaths in the first 2 minutes 20 -> 6 (80) and 141 -> 98 (200): an unarmed
+   bot punched once while hurt still punches back (round-5 tests), so a hurt bot still mostly loses a fist fight.
+2. **50v50 river and rally**: `ce29661` (`scripts/factionRally.ts`). Seeds 1-6: water bot-seconds 4.2% -> 2.6%
+   (standing in water 2.1% -> 0.3%), members within 40 u of their Commander 22-28% -> 53-56% (rallying bots 67-72%),
+   red wins 2/6 -> 2/6.
+3. **Bots break what blocks them indoors + the house rule**: `24b73b5` (BrainFeatures.breakThrough,
+   `nav/breakThrough.ts`, `brain/breakThrough.ts`, `scripts/breakThrough.ts`). 80 bots, first 150 s: house-rule
+   obstacles destroyed 9 -> 46, stuck events 0.209 -> 0.220 per bot-minute.
+
+Known red test: `packages/bots/test/determinism.test.ts` "bot source files stay under 600 lines" fails on HEAD since
+`0313583` (`src/bot.ts` 607 lines, `src/perception/world.ts` 601), not from these commits.
 
 ## Still to do
 
@@ -52,11 +45,6 @@ docs/handoff/wip/2026-10-08-unfinished.patch`, then finish, measure and review e
   survev), the owner's own rarity list and tier list, and an M16A4 shortening (offered).
 - **50v50 seed-11 endgame**: fixed (`2585deb`, knock at 50 HP once the zone has closed). The 50v50 test runs seeds 11
   and 12.
-
-- **Bots break what blocks them indoors** (owner, 2026-10-09): when a breakable obstacle (crate, barrel, furniture,
-  a breakable wall or door) blocks a bot's route *inside* a building, the bot breaks it and walks through instead of
-  turning back or getting stuck. Outdoors it keeps walking around. Start from the nav (`packages/bots/src/nav`: freed
-  cells already relabel at once since `1008af5`) and the crate-break deadlock fix (task #34).
 
 ## Owner setup notes
 

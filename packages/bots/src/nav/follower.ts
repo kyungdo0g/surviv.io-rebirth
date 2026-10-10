@@ -23,7 +23,9 @@ import { v2 } from "@rebirth/core";
 import { colliderCenter, distanceToCollider, segmentHits } from "../geom.ts";
 import type { SeenObstacle, WorldModel } from "../perception/world.ts";
 import { findPath } from "./astar.ts";
+import { type BlockerSink, blockerAhead } from "./breakThrough.ts";
 import { type CellGrid, sameLayer } from "./cellGrid.ts";
+import { type DoorUseSink, opensOnTheWay } from "./doorGeom.ts";
 import { blockedStart, planStartCell, towardUnreachable } from "./followEnds.ts";
 import { LayeredRoute } from "./layered.ts";
 
@@ -75,21 +77,6 @@ const APPROACH_DIST = 3;
 /** A goal this close that a full search cannot reach is not searched for again for UNREACHABLE_MEMORY seconds. */
 const DETOUR_DIST = 30;
 const UNREACHABLE_MEMORY = 10;
-
-/**
- * A closed door that opens for a bot walking up to it (usable and unlocked: by Use from the follower, or by itself):
- * with BrainFeatures.doors the human keys (bot.ts) do not treat it as a wall to slide along, so the bot walks up to it
- * and opens it instead of veering off along the wall before it opens.
- */
-export function opensOnTheWay(o: SeenObstacle): boolean {
-    const door = o.view.door;
-    return !!door && !!o.def.door && !door.open && door.canUse && !door.locked && !o.view.dead;
-}
-
-/** Told about every door the follower uses (BrainFeatures.doors: brain/doors.ts DoorBrain). */
-export interface DoorUseSink {
-    noteUse(now: number): void;
-}
 
 export class PathFollower {
     goal: Vec2 | null = null;
@@ -150,9 +137,15 @@ export class PathFollower {
      */
     ditherEvents = 0;
 
-    constructor(rng: Rng, doorSink: DoorUseSink | null = null) {
+    /** BrainFeatures.breakThrough: the bot's break classes, told the obstacle on the way (nav/breakThrough.ts) */
+    private readonly blockers: BlockerSink | null;
+    /** the break classes the current plan was made with (a change plans again) */
+    private planMask = 0;
+
+    constructor(rng: Rng, doorSink: DoorUseSink | null = null, blockers: BlockerSink | null = null) {
         this.rng = rng;
         this.doorSink = doorSink;
+        this.blockers = blockers;
     }
 
     /** Doors feature: `o` is the closed door ahead that opens for the bot (the keys walk up to it, bot.ts). */
@@ -245,7 +238,9 @@ export class PathFollower {
         this.idx = 0;
         const maxExpand = Math.min(MAX_PLAN_NODES, budget);
         const startCell = blockedStart(model, grid, pos);
-        let res = findPath(grid, pos, goal, { maxExpand, startCell });
+        const breakMask = this.blockers?.breakMask() ?? 0;
+        this.planMask = breakMask;
+        let res = findPath(grid, pos, goal, { maxExpand, startCell, breakMask });
         grid.spendPlanBudget(res ? res.expanded : 50);
         const start = res ? -1 : planStartCell(grid, pos, startCell);
         if (start >= 0) {
@@ -367,6 +362,7 @@ export class PathFollower {
         }
         // complete plans are refreshed now and then (doors, destroyed obstacles), partial ones sooner
         if (now - this.planTime > (this.complete ? 6 : 2)) replan = true;
+        if (this.blockers && this.blockers.breakMask() !== this.planMask) replan = true;
         // the grid changed (a door opened across the way): replan when the next legs are no longer open
         if (!replan && grid.version !== this.planVersion) {
             this.planVersion = grid.version;
@@ -413,7 +409,11 @@ export class PathFollower {
             now,
             this.idx + 1 < pts.length ? pts[this.idx + 1] : undefined,
         );
-        this.checkStuck(pos, dir, now);
+        // an obstacle in view on the way that the bot breaks through: reported; no stuck check while the brain breaks it
+        // (with an enemy close it declines and the route goes round: brain/breakThrough.ts)
+        const blocker = this.blockers ? blockerAhead(model, grid, pos, pts, this.idx, this.blockers.breakMask()) : 0;
+        if (blocker && this.blockers?.blockerAhead(blocker, now)) this.checkPos = null;
+        else this.checkStuck(pos, dir, now);
         const failed = this.failures >= 3 || this.stuckCount >= 5;
         // a failed goal: stand (the brain picks another) rather than jitter at the plan's end
         return { dir: failed && this.snapped ? null : dir, openDoor, arrived: false, failed };

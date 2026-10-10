@@ -13,8 +13,8 @@
 // they were; with the flag off nothing here runs, draws or writes.
 import { type Collider, createRng, type Rng, type Vec2, v2 } from "@rebirth/core";
 import { distanceToCollider } from "../geom.ts";
+import type { DoorUseSink } from "../nav/doorGeom.ts";
 import { closable, doorMiddle, sideOf, useReach } from "../nav/doorGeom.ts";
-import type { DoorUseSink } from "../nav/follower.ts";
 import { type DoorCause, type DoorEvent, DoorWatch } from "../perception/doorWatch.ts";
 import type { SeenObstacle } from "../perception/world.ts";
 import type { BehaviourName, BrainCtx, Intent } from "./context.ts";

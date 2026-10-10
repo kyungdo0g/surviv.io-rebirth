@@ -3,6 +3,7 @@
 import { type Rng, type Vec2, v2 } from "@rebirth/core";
 import type { DifficultyParams } from "../difficulty.ts";
 import type { HeldGun } from "../knowledge/arsenal.ts";
+import { reachableBreaking } from "../nav/breakThrough.ts";
 import type { Contact, SelfState, WorldModel } from "../perception/world.ts";
 import type { PersonaParams } from "../persona.ts";
 import type { SkillProfile } from "../skill.ts";
@@ -251,6 +252,8 @@ export interface BrainCtx {
     myComp: number;
     /** fight assessment against `target` (brain/assess.ts); null while no feature that reads it is on, or no target */
     assessment: Assessment | null;
+    /** the break classes the bot breaks through (BrainFeatures.breakThrough, nav/breakThrough.ts); 0 or absent: none */
+    breakMask?: number;
 }
 
 /** Whether a walkable cell within `slack` of `p` lies in the bot's navigation component. */
@@ -259,7 +262,9 @@ export function reachable(ctx: BrainCtx, p: Vec2, slack = 1.5): boolean {
     const below = ctx.features.basements ? ctx.model.underground : null;
     if (below && ctx.self.layer !== 0) return below.canPathTo(ctx.model.nav, ctx.self.pos, ctx.self.layer, p, 0);
     if (ctx.myComp === 0) return true;
-    return ctx.model.nav.nearestWalkable(p, slack, ctx.myComp) >= 0;
+    if (ctx.model.nav.nearestWalkable(p, slack, ctx.myComp) >= 0) return true;
+    // behind an obstacle the bot breaks through (a room behind the club's couch, nav/breakThrough.ts)
+    return !!ctx.breakMask && reachableBreaking(ctx.model.nav, ctx.self.pos, p, ctx.now, slack);
 }
 
 /** Whether `p` lies at a goal the path follower recently failed to reach (avoided for a while). */
