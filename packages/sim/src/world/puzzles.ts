@@ -5,7 +5,7 @@
 // `pieceResetDelay`, is an error: the pieces lock for `errorResetDelay`, then everything resets.
 // Behaviour follows survev server/src/game/objects/building.ts (puzzlePieceToggled, update, startReset,
 // resetPuzzle); docs/research/maps/puzzles.md "Puzzle engine".
-import { DamageType, getMapDef } from "@rebirth/defs";
+import { DamageType, getMapDef, REBIRTH_PUZZLE_CODES } from "@rebirth/defs";
 import { destroyObstacle } from "../combat/combat.ts";
 import type { SimContext } from "./context.ts";
 import { toggleDoor } from "./doors.ts";
@@ -40,6 +40,8 @@ export const PUZZLE_CODES: Readonly<Record<string, readonly string[]>> = {
     bunker_chrys_02: ["flower", "leaves", "moon", "frost"],
     bunker_twins: ["scout", "sniper", "medic", "demo", "assault", "tank"],
     reserve_vault: ["1", "2", "3", "4", "2", "5"],
+    // the rebirth buildings' hidden rooms (defs rebirth/buildings.ts)
+    ...REBIRTH_PUZZLE_CODES,
 };
 
 /** Timer comparisons tolerate float drift of summed 0.01 s steps. */

@@ -3,7 +3,10 @@
 // the south through two 8-unit mouths with no doors (an open-front brawl around two indestructible columns), the watch
 // office looks into it through a window, the crew room has bunks, and the hose tower in the north-east corner gives a
 // 4x view (a zoom region of 48 like the bathhouse's, on the tower's inner faces only). Fire extinguishers on the walls
-// burst into smoke when shot (fire_ext_01 createSmoke); the axe rack holds a fire axe half the time.
+// burst into smoke when shot (fire_ext_01 createSmoke). The gear cage in the bay's north-west corner (reworked
+// 2026-10-10: every interaction opens something) has barred doors like survev police_01's cells; the switch beside the
+// watch window opens them (a one-switch puzzle) onto the turnout gear: a fire axe, level 3 armour, a riot locker
+// (tier_police) and a chest (tier_chest).
 import type { BuildingDef } from "../../types/index.ts";
 import {
     ART_SCALE,
@@ -13,10 +16,13 @@ import {
     LOOKOUT_ZOOM,
     layoutArt,
     openingChildren,
+    piece,
     type RebirthBuildingLayout,
     type RoofedBuildingArt,
+    rebirthPuzzle,
     wallChildren,
 } from "./layout.ts";
+import { hRun, vRun } from "./military/part.ts";
 
 // 39 x 25 inside (x -19.5..19.5, y -12.5..12.5). West: the apparatus bay; east: the watch office (south), the crew room
 // (north) and the hose tower (north-east corner). An asphalt apron in front of the bay mouths.
@@ -54,6 +60,9 @@ export const FIRESTATION_LAYOUT: RebirthBuildingLayout = {
         [13.5, 7, 13.5, 12],
         [13, 6.5, 14, 6.5],
         [18, 6.5, 19, 6.5],
+        // the gear cage: its barred door -17.5..-13.5 swings out into the bay
+        ...hRun(6, -19.5, -11.5, [[-17.5, -13.5]], undefined, "brick"),
+        ...vRun(-12, 6, 12, [], undefined, "brick"),
     ],
     openings: [
         { type: "house_door_01", pos: { x: 8, y: -12.75 }, ori: 3 },
@@ -76,6 +85,7 @@ export const FIRESTATION_LAYOUT: RebirthBuildingLayout = {
         { min: { x: 3.5, y: -12.5 }, max: { x: 19.5, y: -1 }, floor: "office" },
         { min: { x: 3.5, y: -1 }, max: { x: 19.5, y: 12.5 }, floor: "crew" },
         { min: { x: 13.5, y: 6.5 }, max: { x: 19.5, y: 12.5 }, floor: "tower" },
+        { min: { x: -19.5, y: 6 }, max: { x: -12, y: 12.5 }, floor: "cage" },
     ],
     outdoor: [{ min: { x: -20, y: -17.5 }, max: { x: 3.5, y: -12.5 }, floor: "apron" }],
 };
@@ -85,6 +95,11 @@ export const FIRESTATION_ART: RoofedBuildingArt = layoutArt(
     "map-building-firestation-floor-01.img",
     "map-building-firestation-ceiling-01.img",
 );
+
+/** The gear cage's barred door (cell_door_01: only the puzzle opens it) and the switch beside the watch window. */
+export const FIRESTATION_CAGE_DOOR = { type: "cell_door_01", pos: { x: -13.5, y: 6 }, ori: 1 } as const;
+export const FIRESTATION_PUZZLE = "rebirth_firestation";
+export const FIRESTATION_SWITCH = { x: 4.55, y: -3 } as const;
 
 /** The hose tower's zoom region (its inner faces: no zoomOut, which would hand the 4x view to the crew room). */
 export const FIRESTATION_TOWER = box(14, 7, 19, 12);
@@ -132,25 +147,36 @@ export function firestation(known: (id: string) => boolean): BuildingDef {
             vision: { dist: 5.5, width: 2.75, linger: 0.5, fadeRate: 6 },
             imgs: [{ sprite: FIRESTATION_ART.ceiling, scale: ART_SCALE, alpha: 1, tint: 0xffffff }],
         },
+        puzzle: rebirthPuzzle(FIRESTATION_PUZZLE, FIRESTATION_CAGE_DOOR.type),
         mapObjects: [
             ...wallChildren(L, known),
             ...openingChildren(L),
-            // the apparatus bay: two structural columns between the engine lanes (the bay's hard cover), turnout
-            // lockers, the axe rack (a fire axe half the time), extinguishers, a throwables crate, a barrel, loot in
-            // the open lanes
+            child(
+                FIRESTATION_CAGE_DOOR.type,
+                FIRESTATION_CAGE_DOOR.pos.x,
+                FIRESTATION_CAGE_DOOR.pos.y,
+                FIRESTATION_CAGE_DOOR.ori,
+            ),
+            // the apparatus bay: two structural columns between the engine lanes (the bay's hard cover), two crew
+            // lockers, extinguishers, a throwables crate, loot in the open lanes
             child("house_column_1", -7.5, -4),
             child("house_column_1", -7.5, 4),
-            child("locker_01", -17.5, 11.25),
-            child("locker_01", -14.5, 11.25),
-            child("locker_01", -11.5, 11.25),
-            child({ loot_tier_fireaxe: 1, loot_tier_2: 1 }, -3.5, 10.5),
+            child("locker_01", -3, 11.25),
+            child("locker_01", 0, 11.25),
             child("fire_ext_01", -18.3, -6, 0),
             child("fire_ext_01", 2.2, -1.5, 2),
-            child("crate_14", -16.5, 7),
-            child("barrel_02", 0.75, 10),
+            child("crate_14", -16.75, -2.75),
             child("loot_tier_1", -13, -6),
             child("loot_tier_1", -2, -6),
-            // the watch office: the dispatch desk facing the watch window, its chair and board, lockers, an extinguisher
+            child("loot_tier_2", -3, 6),
+            // the gear cage: a chest against the north wall, a riot locker, a fire axe, level 3 armour
+            child("chest_02", -15.55, 10.4),
+            child("locker_02", -18.25, 8, 1),
+            child("loot_tier_fireaxe", -15, 7.5),
+            child("loot_tier_airdrop_armor", -16.5, 7.25),
+            // the watch office: the dispatch desk facing the watch window, its chair and board, the cage switch, lockers,
+            // an extinguisher
+            piece("switch_03", FIRESTATION_SWITCH.x, FIRESTATION_SWITCH.y, 1, "1"),
             child("table_01", 8, -5),
             child("chair_02", 11.75, -5),
             child("screen_01", 8, -1.75),
@@ -159,8 +185,8 @@ export function firestation(known: (id: string) => boolean): BuildingDef {
             child("fire_ext_01", 5, -10.9, 0),
             child("loot_tier_2", 14.5, -8.5),
             // the crew room: bunks, a fridge and a sink (no oven: no surprise blast)
-            child("bed_sm_01", 7.6, 10.6, 1),
-            child("bed_sm_01", 7.6, 7.6, 1),
+            child("bed_sm_01", 5.4, 8.6),
+            child("bed_sm_01", 8.2, 8.6),
             child("loot_tier_1", 12, 8.5),
             child("refrigerator_01", 5.75, 0.9, 2),
             child("sink_01", 10, 1, 2),

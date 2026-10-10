@@ -1,11 +1,18 @@
 // Floor and roof art of radio_station_01 (packages/defs rebirth/buildings/radio.ts): a terrazzo lobby, a dark
-// acoustic-tile studio, the transmitter hall's green anti-static floor with hazard strips inside both sliding doors, a
-// concrete generator room; a slate-blue roof with the mast base (an orange and white checker with a lattice X and the
-// red aviation light), its four guy wires, two exhausts and two AC units.
-import { RADIO_LAYOUT } from "../../../packages/defs/src/rebirth/buildings.ts";
+// acoustic-tile studio with the frequency note on its floor, the transmitter hall's green anti-static floor with a hazard
+// strip before the signals vault's sliding door, the vault's steel plate, a concrete generator room, a coloured plate
+// under each frequency switch; a slate-blue roof with the mast base (an orange and white checker with a lattice X and
+// the red aviation light), its four guy wires, two exhausts and two AC units.
+import {
+    RADIO_CODE,
+    RADIO_LAYOUT,
+    RADIO_SWITCHES,
+    RADIO_VAULT_DOOR,
+} from "../../../packages/defs/src/rebirth/buildings.ts";
 import {
     acUnit,
     circleAt,
+    codeNote,
     type FloorPalette,
     type Frame,
     floor,
@@ -15,6 +22,8 @@ import {
     py,
     rect,
     roof,
+    SWITCH_PLATE_COLORS,
+    switchPlate,
 } from "./svg.ts";
 
 export const RADIO_FLOORS: FloorPalette = {
@@ -22,6 +31,7 @@ export const RADIO_FLOORS: FloorPalette = {
     studio: { base: "#4f5a6b", grid: "#465161", step: 1 },
     hall: { base: "#8fa39a", grid: "#7f948a", step: 2 },
     generator: { base: "#8a8c85", grid: "#7a7c75", step: 4 },
+    vault: { base: "#5f6b73", grid: "#545f67", step: 1 },
 };
 
 const INK = "#1c1f22";
@@ -50,8 +60,17 @@ function hazardBlocks(fr: Frame, x0: number, y0: number, x1: number, y1: number,
 
 export function radioFloor(): string {
     const fr = floorFrameOf(RADIO_LAYOUT);
-    // hazard strips on the hall side of both sliding doors (thresholds() stripes the door gaps themselves)
-    const extra = hazardBlocks(fr, -2, -3, 2, -2.25) + hazardBlocks(fr, 4.25, 3, 5, 7);
+    // a hazard strip on the hall side of the vault's sliding door (thresholds() stripes the door gap itself), the
+    // switches' plates (drawn under them, a little into the room) and the note with the code by the studio window
+    const d = RADIO_VAULT_DOOR.pos;
+    const plates = RADIO_SWITCHES.map((sw) => switchPlate(fr, sw.x, sw.y, SWITCH_PLATE_COLORS[sw.label]));
+    const note = codeNote(
+        fr,
+        -14,
+        9.5,
+        RADIO_CODE.map((c) => SWITCH_PLATE_COLORS[c]),
+    );
+    const extra = hazardBlocks(fr, d.x - 4, d.y - 1.25, d.x, d.y - 0.5) + plates.join("") + note;
     return floor(RADIO_LAYOUT, RADIO_FLOORS, "#6b7178", INK, extra);
 }
 

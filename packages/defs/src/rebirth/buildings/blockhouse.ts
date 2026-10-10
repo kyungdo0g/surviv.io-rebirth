@@ -106,17 +106,18 @@ export function blockhouse(faction: (typeof BLOCKHOUSE_FACTIONS)[number], known:
         mapObjects: [
             ...wallChildren(L, known),
             ...openingChildren(L),
-            // the north chamber: central sandbags against a door breach, ammo, throwables
-            child("sandbags_02", 0, 4),
-            child("crate_06", -3.75, 1.6),
-            child("crate_03", 4, 2.1),
+            // the north chamber: sandbags against a door breach, an ammo crate and a weapons crate against the traverse
+            // (reworked 2026-10-10: flush against the walls, 2.6+ clear of each other)
+            child("sandbags_02", 0, 4.5),
+            child("crate_06", -3.5, 1.6),
+            child("mil_crate_04", 3.5, 1.75),
             child("loot_tier_2", 7, 8),
             child("loot_tier_1", -7, 7.5),
             // the south chamber (turned round): no faction crates (survevFaction.test.ts spaces them)
-            child("sandbags_02", 0, -4),
-            child("crate_06", 3.75, -1.6),
-            child("crate_14", -4, -2.75),
-            child("loot_tier_1", -7, -7.5),
+            child("sandbags_02", 0, -4.5),
+            child("crate_06", 3.5, -1.6),
+            child("mil_crate_04", -3.5, -1.75),
+            child("loot_tier_2", -7, -7.5),
             child("loot_tier_1", 7, -8),
             // outside: sandbags beside the doors, hedgehogs and bushes at the corners, clear of the loopholes' lines
             child("sandbags_02", -3.6, 12.4),

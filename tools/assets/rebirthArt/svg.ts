@@ -250,3 +250,34 @@ export function circleAt(fr: Frame, x: number, y: number, r: number, attrs: stri
 export function polygon(fr: Frame, pts: ReadonlyArray<readonly [number, number]>, attrs: string): string {
     return `<polygon points="${pts.map(([x, y]) => `${px(fr, x)},${py(fr, y)}`).join(" ")}" ${attrs}/>`;
 }
+
+/** The plate colours of the rebirth buildings' code switches (their puzzle pieces' labels). */
+export const SWITCH_PLATE_COLORS: Readonly<Record<string, string>> = {
+    red: "#c8312e",
+    yellow: "#e2b425",
+    blue: "#2f6fd0",
+    green: "#3f9b4b",
+};
+
+/** A coloured floor plate under a code switch at (x, y): 1.6 units square with a dark rim. */
+export function switchPlate(fr: Frame, x: number, y: number, color: string): string {
+    return rect(fr, x - 0.8, y - 0.8, x + 0.8, y + 0.8, `fill="${color}" stroke="#1f2326" stroke-width="3"`);
+}
+
+/** A note on the floor at (x, y) showing a code: a pale sheet with one coloured square per step, left to right. */
+export function codeNote(fr: Frame, x: number, y: number, colors: readonly string[]): string {
+    const w = 0.9 * colors.length + 0.5;
+    const sheet = rect(
+        fr,
+        x - w / 2,
+        y - 0.75,
+        x + w / 2,
+        y + 0.75,
+        `fill="#efe8d6" stroke="#3a3328" stroke-width="3"`,
+    );
+    const marks = colors.map((c, i) => {
+        const cx = x - w / 2 + 0.7 + i * 0.9;
+        return rect(fr, cx - 0.3, y - 0.3, cx + 0.3, y + 0.3, `fill="${c}" stroke="#1f2326" stroke-width="2"`);
+    });
+    return sheet + marks.join("");
+}

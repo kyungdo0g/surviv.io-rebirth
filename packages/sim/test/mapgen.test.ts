@@ -8,14 +8,21 @@ import { cachedMap, objectsHash } from "./helpers.ts";
 
 /**
  * Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. Last change: the
- * military base (rebirth/buildings/military/), placed before the Hydra as the largest fixed spawn.
+ * rebirth buildings' rework (2026-10-10: the clinic, radio station and library grew, every building's children moved).
  */
-const MAIN_12345_HASH = "9e1a7279640f14db";
+const MAIN_12345_HASH = "92f22d98edcab85a";
 
-/** Area an object reserves against other top-level objects (what canSpawn tests against). */
-function footprints(o: GeneratedObject): Collider[] {
+/**
+ * Area an object reserves against other top-level objects (what canSpawn tests against). A beach obstacle is tested at
+ * scale 1 and spawned at its rolled scale (survev map.ts genOnBeach), so as the newcomer it checks its unscaled
+ * footprint against the scaled ones already placed (`asCandidate`).
+ */
+function footprints(o: GeneratedObject, asCandidate = false): Collider[] {
     const def = getMapObjectDef(o.type);
-    if (def.type === "obstacle") return [transformOri(getBoundingCollider(o.type), o.pos, o.ori, o.scale)];
+    if (def.type === "obstacle") {
+        const beachOnly = !!def.terrain?.beach && !def.terrain.grass;
+        return [transformOri(getBoundingCollider(o.type), o.pos, o.ori, asCandidate && beachOnly ? 1 : o.scale)];
+    }
     if (def.type === "building" || def.type === "structure") {
         if (def.mapObstacleBounds) return def.mapObstacleBounds.map((c) => transformOri(c, o.pos, o.ori, 1));
         return [transformOri(getBoundingCollider(o.type), o.pos, o.ori, 1.1)];
@@ -101,7 +108,7 @@ describe("generateMap main", () => {
         let n = 0;
         const overlapsFound: string[] = [];
         for (const o of top) {
-            for (const col of footprints(o)) {
+            for (const col of footprints(o, true)) {
                 for (const other of grid.query(toBounds(col))) {
                     if (other.owner === o.id) continue;
                     const res = overlaps(col, other.col);

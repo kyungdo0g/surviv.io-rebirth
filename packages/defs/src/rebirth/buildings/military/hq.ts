@@ -127,10 +127,9 @@ export const MILITARY_HQ: MilitaryPart = fromWorld({
         // the comms room: the radio rack (indestructible, ricochets) along its north side, container loot
         p("table_07", -11, 26.6),
         p("loot_tier_2", -11, 23),
-        // the commander's office: the Deagle case against the west wall, the desk (turned) and its chair
-        p("case_01", -13.4, 32.5, 1),
+        // the commander's office: the Deagle case in the north-west corner, the desk (turned)
+        p("case_01", -13.4, 34.75, 1),
         p("table_01", -9.2, 34.05, 1),
-        p("chair_02", -9.2, 30.3),
         // the briefing room: the table under the screen, a locker
         p("table_01", 11, 26),
         p("screen_01", 11, 28.75),

@@ -11,6 +11,8 @@
 import {
     MILITARY_BUNKER,
     MILITARY_COMMAND,
+    MILITARY_COMMAND_CODE,
+    MILITARY_COMMAND_SWITCHES,
     MILITARY_MAGAZINE,
     MILITARY_STAIRS,
     MILITARY_VAULT,
@@ -23,7 +25,21 @@ import {
     type Room,
     type WallSeg,
 } from "../../../../packages/defs/src/rebirth/buildings.ts";
-import { circleAt, type FloorPalette, type Frame, f2, floor, hazardBand, px, py, rect, svg } from "../svg.ts";
+import {
+    circleAt,
+    codeNote,
+    type FloorPalette,
+    type Frame,
+    f2,
+    floor,
+    hazardBand,
+    px,
+    py,
+    rect,
+    SWITCH_PLATE_COLORS,
+    svg,
+    switchPlate,
+} from "../svg.ts";
 import type { MilitaryArtContext, MilitaryDrawer } from "./index.ts";
 
 export const BUNKER_FLOORS: FloorPalette = {
@@ -36,6 +52,7 @@ export const BUNKER_FLOORS: FloorPalette = {
     motorpool: { base: "#5f6264", grid: "#57595b", step: 4 },
     tunnel: { base: "#6c6a62", grid: "#625f58", step: 2 },
     command: { base: "#4f6a56", grid: "#47614e", step: 1 },
+    war_chest: { base: "#56606a", grid: "#4d565f", step: 1 },
     magazine: { base: "#6a6e72", grid: "#5f6367", step: 2 },
     vault: { base: "#56606a", grid: "#4d565f", step: 1 },
 };
@@ -375,8 +392,23 @@ function ramp(fr: Frame): string {
 // ---------------------------------------------------------------------------------------------------------------------
 // the nested rooms' floors: windows of the basement with their own markings inside their walls
 
-/** Command's map table (table_05, 18 x 5.5, walk-under): a darker inset with a pale keyline half a unit round it. */
+/**
+ * Command's map table (table_05, 18 x 5.5, walk-under): a darker inset with a pale keyline half a unit round it; the
+ * staff code's plates under its switches and the briefing note with the code by the south doors.
+ */
 function mapTable(fr: Frame): string {
+    const { x: ox, y: oy } = at(MILITARY_COMMAND);
+    const plates = MILITARY_COMMAND_SWITCHES.map((sw) => switchPlate(fr, sw.x, sw.y, SWITCH_PLATE_COLORS[sw.label]));
+    const note = codeNote(
+        fr,
+        ox - 2,
+        oy - 5.25,
+        MILITARY_COMMAND_CODE.map((c) => SWITCH_PLATE_COLORS[c]),
+    );
+    return table(fr) + plates.join("") + note;
+}
+
+function table(fr: Frame): string {
     const t = MILITARY_COMMAND.props.find((q) => q.type === "table_05");
     if (!t) throw new Error("military bunker art: no map table");
     const { x, y } = at(MILITARY_COMMAND);

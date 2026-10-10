@@ -13,6 +13,7 @@ import {
     openingChildren,
     REBIRTH_ART_PX_PER_UNIT,
     type RebirthBuildingArt,
+    rebirthPuzzle,
     wallChildren,
 } from "../layout.ts";
 import { MILITARY_ARMORY } from "./armory.ts";
@@ -120,7 +121,10 @@ function militaryBuilding(part: MilitaryPart, base: MilitaryBase, known: (id: st
     const kids: BuildingChildDef[] = [
         ...wallChildren(L, known),
         ...openingChildren(L),
-        ...part.props.map((q) => child(q.type as BuildingChildDef["type"], q.x, q.y, q.ori)),
+        ...part.props.map((q) => ({
+            ...child(q.type as BuildingChildDef["type"], q.x, q.y, q.ori),
+            ...(q.piece ? { puzzlePiece: q.piece } : {}),
+        })),
     ];
     // the child buildings, where the parent places them (the parents sit at the structure's origin)
     for (const c of MILITARY_PARTS.filter((q) => q.parent === part.id)) {
@@ -170,6 +174,7 @@ function militaryBuilding(part: MilitaryPart, base: MilitaryBase, known: (id: st
         },
         mapObjects: kids,
     };
+    if (part.puzzle) def.puzzle = rebirthPuzzle(part.puzzle.name, part.puzzle.door);
     if (part.heal) def.healRegions = part.heal.map((b) => ({ collision: aabb(b), healRate: MILITARY_WARD_HEAL_RATE }));
     if (part === MILITARY_COMPOUND) {
         def.mapGroundPatches = MILITARY_GROUND_PATCHES.map((g) => ({
