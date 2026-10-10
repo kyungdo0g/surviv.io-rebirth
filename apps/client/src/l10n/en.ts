@@ -96,11 +96,16 @@ const REBIRTH_ITEMS: Readonly<Record<string, string>> = {
     m79_grenade: "40mm Grenade",
     strobe_heavy: "Heavy Shell Strobe",
     strobe_carpet: "Carpet Bombing Strobe",
+    // the owner's throwables of 2026-10-10 (defs rebirth/throwables.ts)
+    molotov: "Molotov Cocktail",
+    flashbang: "Flashbang",
 };
 /** weapon slot names: short like the original throwables' ("Strobe"), as the slot shows the count beside the name */
 const rebirthHudItems: Readonly<Record<string, string>> = {
     strobe_heavy: "Heavy",
     strobe_carpet: "Carpet",
+    molotov: "Molotov",
+    flashbang: "Flash",
     // the new dual pistols show the single's name, like the original duals ("M9", "G18C")
     tec9_dual: "TEC-9",
     vz61_dual: "vz. 61",

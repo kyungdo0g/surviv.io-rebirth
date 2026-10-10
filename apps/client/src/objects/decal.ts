@@ -1,7 +1,8 @@
 // Ground decal (explosion scorch marks, residues spawned by the map): one sprite ordered by its image zIdx.
 // survev client/src/objects/decal.ts. M5: decals with a def `lifetime` (scorch marks) fade out once the simulation
 // removes them; flickering decals (fire) jitter their scale; low decals in water are drawn at 30 % alpha; the club
-// pool's gore decal turns red with `goreKills` along its def's `gore.fade`.
+// pool's gore decal turns red with `goreKills` along its def's `gore.fade`. Rebirth (2026-10-10): a decal turns by its
+// free rotation `rot` too (a discarded launcher's body lies along its shooter's facing; defs rebirth/discardDecals.ts).
 import { math, type Vec2 } from "@rebirth/core";
 import { type DecalDef, MapObjectDefs } from "@rebirth/defs";
 import type { DecalView } from "@rebirth/sim";
@@ -81,7 +82,8 @@ export class DecalRender implements ObjectRender<DecalView> {
         const local = toLocal(pos);
         this.sprite.position.set(local.x, local.y);
         this.sprite.scale.set(this.data.scale * this.imgScale);
-        this.sprite.rotation = -math.oriToRad(this.data.ori);
+        // rebirth: a discarded launcher's free rotation (DecalView.rot, counter-clockwise like ori)
+        this.sprite.rotation = -(math.oriToRad(this.data.ori) + (this.data.rot ?? 0));
         this.sprite.alpha = this.alpha * (this.inWater ? 0.3 : 1);
         // decals sort by image zIdx, then id (survev decal.ts)
         this.deps.renderer.add(this.sprite, this.data.layer, img.zIdx, this.data.id);

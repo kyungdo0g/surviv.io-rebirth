@@ -21,6 +21,7 @@
 // M8: the settings' volume sliders (survev audioManager.ts setMasterVolume / setSoundVolume / setMusicVolume, 0-1 each):
 // master scales the output, SFX every channel but music, Music the "music" type channel (menu and victory music);
 // they sit on gain nodes, so playing sounds follow a slider at once.
+// Rebirth (2026-10-10): a flashbang's deafness muffles the SFX bus through a low-pass and a dip (setDeafness).
 import type { Vec2 } from "@rebirth/core";
 import { AudioBuses } from "./filters.ts";
 import { Channels, soundDef, soundFallback, soundGroup } from "./soundDefs.ts";
@@ -100,6 +101,10 @@ function sameAudioLayer(a: number, b: number): boolean {
     return a === b || (a & 2) !== 0 || (b & 2) !== 0;
 }
 
+/** low-pass corner of normal hearing and of a full flashbang deafness (setDeafness) */
+const DEAF_OPEN_HZ = 20000;
+const DEAF_SHUT_HZ = 350;
+
 export interface Volumes {
     master: number;
     sound: number;
@@ -115,6 +120,11 @@ export class AudioEngine {
     private soundBus: GainNode | null = null;
     /** the music channel (the Music volume) */
     private musicBus: GainNode | null = null;
+    /** rebirth flashbang deafness: a low-pass and a dip between the SFX bus and the master (setDeafness) */
+    private deafFilter: BiquadFilterNode | null = null;
+    private deafGain: GainNode | null = null;
+    /** how deaf the listener is now, 0..1 (fx/flashbang.ts; tests) */
+    deafness = 0;
     private volumes: Volumes = { master: 1, sound: 1, music: 1 };
     private buses: AudioBuses | null = null;
     private readonly buffers = new Map<string, AudioBuffer>();
@@ -182,6 +192,24 @@ export class AudioEngine {
         if (this.musicBus) this.musicBus.gain.value = this.volumes.music;
     }
 
+    /**
+     * Rebirth flashbang (defs rebirth/throwables.ts): every sound but the music muffled at `t` (0 normal hearing, 1
+     * stunned): a low-pass sliding from 20 kHz down to 350 Hz on a log scale and up to 45 % quieter.
+     */
+    setDeafness(t: number): void {
+        const v = Number.isFinite(t) ? Math.min(1, Math.max(0, t)) : 0;
+        if (Math.abs(v - this.deafness) < 1e-3 && v !== 0 && v !== 1) return;
+        this.deafness = v;
+        this.applyDeafness();
+    }
+
+    private applyDeafness(): void {
+        if (!this.deafFilter || !this.deafGain) return;
+        // set every frame by fx/flashbang.ts along a smooth curve, so no ramp is needed
+        this.deafFilter.frequency.value = DEAF_OPEN_HZ * (DEAF_SHUT_HZ / DEAF_OPEN_HZ) ** this.deafness;
+        this.deafGain.gain.value = 1 - 0.45 * this.deafness;
+    }
+
     toggleMute(): boolean {
         this.setMuted(!this.muted);
         return this.muted;
@@ -197,7 +225,12 @@ export class AudioEngine {
                 this.master.connect(this.compressor);
                 this.compressor.connect(this.ctx.destination);
                 this.soundBus = this.ctx.createGain();
-                this.soundBus.connect(this.master);
+                this.deafFilter = this.ctx.createBiquadFilter();
+                this.deafFilter.type = "lowpass";
+                this.deafFilter.frequency.value = DEAF_OPEN_HZ;
+                this.deafGain = this.ctx.createGain();
+                this.soundBus.connect(this.deafFilter).connect(this.deafGain).connect(this.master);
+                this.applyDeafness();
                 this.musicBus = this.ctx.createGain();
                 this.musicBus.connect(this.master);
                 this.applyGains();

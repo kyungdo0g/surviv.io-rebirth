@@ -30,6 +30,7 @@ import {
 import { emptyLocalState, LOCAL_ALL_DIRTY, quantizeLocal, readLocal, writeLocal } from "@rebirth/protocol";
 import { type BulletEvent, emptyInput, Game, generateMap, type LocalPlayerState, type PlayerInput } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
+import { decalSheetPlan } from "../../../tools/assets/decalSheet.ts";
 import { installPlan } from "../../../tools/assets/newGunInstall.ts";
 import { SPRITES, type SpriteEntry } from "../src/assets/spriteManifest.ts";
 import { rebirthSoundDefs } from "../src/audio/rebirthSounds.ts";
@@ -85,7 +86,8 @@ describe("new guns: loot icons", () => {
 
     it("the installer writes every rebirth file the client requests under /assets/ (icons, emotes, sounds)", () => {
         const plan = installPlan();
-        const planned = new Set([...plan.icons, ...plan.emotes, ...plan.sounds, ...plan.held]);
+        // with the owner's 2026-10-10 decal sheet (tools/assets/decalSheet.ts: throwables, rounds, launcher bodies)
+        const planned = new Set([...plan.icons, ...plan.emotes, ...plan.sounds, ...plan.held, ...decalSheetPlan()]);
         const requested: string[] = [];
         for (const entry of Object.values(SPRITES)) {
             // committed rebirth art is named by its absolute URL and ships with the client

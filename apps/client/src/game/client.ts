@@ -34,6 +34,7 @@ import { bindAudioSettings } from "../audio/shared.ts";
 import { BulletSystem } from "../fx/bullets.ts";
 import { CameraEmitters } from "../fx/cameraEmitters.ts";
 import { GameEffects } from "../fx/effects.ts";
+import { FlashbangFx } from "../fx/flashbang.ts";
 import { GasShape, WORLD_GAS_COLOR } from "../fx/gas.ts";
 import { bindHitFx, HitFeedback } from "../fx/hitFeedback.ts";
 import { mapParticleSprites } from "../fx/particleDefsAll.ts";
@@ -107,6 +108,8 @@ export class GameClient {
     readonly effects: GameEffects;
     /** rebirth Enhanced hit effects (setting enhancedHitFx) */
     readonly hitFx: HitFeedback;
+    /** rebirth flashbang: the white-out and muffled hearing of the active player (fx/flashbang.ts) */
+    readonly flashFx: FlashbangFx;
     readonly gasOverlay = new GasShape(WORLD_GAS_COLOR);
     readonly interactions: InteractionTracker;
     readonly pingIndicator: PingIndicator;
@@ -203,6 +206,7 @@ export class GameClient {
             camera: this.camera,
             hudRoot: this.ui.root,
         });
+        this.flashFx = new FlashbangFx(this.ui.root, this.audio);
         this.unbindHitFx = bindHitFx(this.hitFx, [this.bullets, this.effects], (on) => {
             this.match.hud.gasFlashEnabled = on;
         });
@@ -419,6 +423,7 @@ export class GameClient {
         }
         this.match.applySnapshot(s, this.localPos);
         this.hitFx.applySnapshot(s);
+        if (s.flash) this.flashFx.flash(s.flash);
         this.modes.applySnapshot(s, this.localId, this.match.spectating);
     }
 
@@ -530,6 +535,7 @@ export class GameClient {
             hudHidden: controls.hudHidden,
             hudScale: scale,
         });
+        this.flashFx.update(dt);
         this.renderer.update(dt);
         this.renderGas(now);
         this.pingIndicator.update(uiDt, this.camera);
@@ -601,6 +607,7 @@ export class GameClient {
         this.effects.clear();
         this.unbindHitFx();
         this.hitFx.destroy();
+        this.flashFx.destroy();
         this.worldFx?.destroy();
         this.worldFx = null;
         this.cameraFx?.stop();

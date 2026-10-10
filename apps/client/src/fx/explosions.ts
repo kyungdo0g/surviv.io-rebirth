@@ -11,6 +11,7 @@
 // "bomb_heavy", sized from its radius against the iron bomb's original one, with a lower, louder and farther boom and
 // a stronger, longer shake (neither shake is tied to the blast radius). The M202 FLASH's rockets
 // (explosion_m202, owner 2026-10-08) have "m202": a big frag burst and by far the strongest, longest and widest shake.
+// The Molotov ("molotov") and the flashbang ("flashbang", owner 2026-10-10) have their own small effects.
 import type { Vec2 } from "@rebirth/core";
 import {
     AIRSTRIKE_BOMB_RADIUS_MULT,
@@ -137,6 +138,21 @@ const EFFECTS: Readonly<Record<string, EffectDef>> = {
         range: 3,
         refRad: 12,
         shakeRange: 3,
+    }),
+    /**
+     * Rebirth Molotov (owner, 2026-10-10; defs rebirth/throwables.ts): the bottle breaks (the original window break)
+     * in a small fireball drawn for the fire's 4.5 u, no shake; the burning ground is its decal (objects/decal.ts).
+     */
+    molotov: fx("explosionBurst", 1, "window_break_01", "frag_water_01", 3, [0, 0], 1.5, { refRad: 12, volume: 1.2 }),
+    /**
+     * Rebirth flashbang: a sharp, loud crack (the MIRV bomblet's boom pitched up and louder, heard 3x as far), a small
+     * pop of a burst and a light jolt; the white-out and the muffled hearing are fx/flashbang.ts's.
+     */
+    flashbang: fx("explosionBurst", 0.35, "explosion_03", "explosion_02", 3, [0.1, 0.15], 1, {
+        refRad: 20,
+        detune: 400,
+        volume: 1.5,
+        range: 3,
     }),
 };
 

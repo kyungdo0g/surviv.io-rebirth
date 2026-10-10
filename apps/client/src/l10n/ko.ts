@@ -295,6 +295,9 @@ export const koItems: Readonly<Record<string, string>> = {
     // rebirth variant strobes (named after their strike: "고폭탄 공습 경보" / "대공습 경보")
     strobe_heavy: "고폭탄 스트로브",
     strobe_carpet: "대공습 스트로브",
+    // the owner's throwables of 2026-10-10 (defs rebirth/throwables.ts)
+    molotov: "화염병",
+    flashbang: "섬광탄",
     snowball: "스노우볼",
     snowball_heavy: "스노우볼",
     potato: "감자",
@@ -354,6 +357,8 @@ export const koHudItems: Readonly<Record<string, string>> = {
     // rebirth variant strobes: short like the others, the slot shows the count beside the name
     strobe_heavy: "고폭탄",
     strobe_carpet: "대공습",
+    molotov: "화염병",
+    flashbang: "섬광탄",
     snowball: "스노우볼",
     potato: "감자",
     coconut: "코코넛",
