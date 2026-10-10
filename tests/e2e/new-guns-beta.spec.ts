@@ -321,12 +321,14 @@ test.describe("new guns (beta) in the sandbox", () => {
         const dummy = await sandbox(page, "m202", "&zoom=14");
         await expect(page.locator("#ui-weapon-id-1 .ui-weapon-name")).toHaveText("M202 FLASH");
         await expectWeaponIconLoaded(page, "m202");
-        await recordHits(page, dummy);
         await recordSounds(page);
         await aimAt(page, dummy);
-        await fireUntil(page, 1, 300, 500);
+        // its rockets hit as explosions (fireUntil counts bullet hits only): one press, then the shot's own sound
+        await page.mouse.down();
+        await page.waitForTimeout(150);
+        await page.mouse.up();
         const shoot = SHEET.guns.m202.gun.sound.shoot;
-        expect(await sounds(page)).toContain(shoot);
+        await expect.poll(() => sounds(page), { timeout: 5_000 }).toContain(shoot);
         await expectShotSoundDecoded(page, shoot, "m202");
         expect(errors).toEqual([]);
     });
