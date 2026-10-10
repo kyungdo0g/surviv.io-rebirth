@@ -337,6 +337,21 @@ describe("rebirth-only defs", () => {
             "military_base_01",
             "military_base_01r",
             "military_base_01b",
+            "rebirth_wall_int_1",
+            "rebirth_wall_int_2",
+            "rebirth_wall_int_2_5",
+            "rebirth_wall_int_3",
+            "rebirth_wall_int_4",
+            "rebirth_wall_int_5",
+            "rebirth_wall_int_6",
+            "rebirth_wall_int_7",
+            "rebirth_wall_int_8",
+            "rebirth_wall_int_9",
+            "rebirth_wall_int_10",
+            "rebirth_wall_int_11",
+            "rebirth_wall_int_12",
+            "rebirth_wall_int_13",
+            "rebirth_wall_int_14",
         ]);
         expect(AIRDROP_TIER_CRATES).toEqual(["crate_10t1", "crate_10t2", "crate_10svt1", "crate_10svt2"]);
         expect(Object.keys(MapObjectDefs)).toEqual([...generatedMap, ...rebirthOnlyMapObjectIds]);

@@ -59,8 +59,10 @@ import { gameObjectsData, mapObjectsData } from "./data.ts";
  * · 24: the second-wave beta guns (2026-10-10, rebirth/newGuns.ts): their bullets and explosions take game type ids
  * after bullet_dshk and the eleven guns after dshk, so the later rebirth-only ids (the first-wave guns from ak74 on, the
  * variant strobes) move up by 25; every original and survev-only id keeps its index. No record layout changed.
+ * · 25: the rebirth buildings' breakable partitions (2026-10-10, rebirth/buildings/walls.ts): the map types
+ * rebirth_wall_int_1 .. rebirth_wall_int_14 follow the military bases' as the last map types. No record layout changed.
  */
-export const PROTOCOL_SCHEMA_VERSION = 24;
+export const PROTOCOL_SCHEMA_VERSION = 25;
 export const GAME_OBJECT_TYPE_BITS = 10;
 export const MAP_OBJECT_TYPE_BITS = 12;
 
