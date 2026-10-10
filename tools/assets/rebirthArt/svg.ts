@@ -70,12 +70,14 @@ export function walls(
     fill: string | Readonly<Partial<Record<WallMaterial, string>>>,
     outline: string,
 ): string {
-    const boxes = layout.walls.map(([x0, y0, x1, y1]) =>
+    // breakable (wood) partitions draw their own sprite, so a broken one leaves bare floor
+    const solid = layout.walls.filter((seg) => wallMaterial(layout, seg) !== "wood");
+    const boxes = solid.map(([x0, y0, x1, y1]) =>
         y0 === y1 ? ([x0, y0 - 0.5, x1, y0 + 0.5] as const) : ([x0 - 0.5, y0, x0 + 0.5, y1] as const),
     );
     const fillOf = (i: number) => {
         if (typeof fill === "string") return fill;
-        const material = wallMaterial(layout, layout.walls[i]);
+        const material = wallMaterial(layout, solid[i]);
         const c = fill[material];
         if (!c) throw new Error(`rebirth art: no wall colour for ${material}`);
         return c;

@@ -25,6 +25,7 @@ import { MILITARY_INFIRMARY_PUZZLE } from "./buildings/military/infirmary.ts";
 import { militaryBaseArt, militaryBaseDefs } from "./buildings/military/structure.ts";
 import { OUTPOST_FACTIONS, OUTPOST_PUZZLE, outpost, outpostArt } from "./buildings/outpost.ts";
 import { RADIO_ART, RADIO_CODE, RADIO_PUZZLE, radioStation } from "./buildings/radio.ts";
+import { rebirthWallDefs } from "./buildings/walls.ts";
 
 export * from "./buildings/arsenal.ts";
 export * from "./buildings/blockhouse.ts";
@@ -49,6 +50,7 @@ export * from "./buildings/military/structure.ts";
 export * from "./buildings/military/yard.ts";
 export * from "./buildings/outpost.ts";
 export * from "./buildings/radio.ts";
+export * from "./buildings/walls.ts";
 
 /**
  * Codes of the rebirth buildings' puzzles (the sim's puzzle engine, world/puzzles.ts, reads them with survev's): the
@@ -120,6 +122,8 @@ export function rebirthBuildings(generated: Readonly<Record<string, MapObjectDef
         ...Object.fromEntries(BLOCKHOUSE_FACTIONS.map((f) => [f.id, blockhouse(f, known)])),
         // the military bases (the owner, 2026-10-08), after every earlier id
         ...militaryBaseDefs(known),
+        // the breakable partitions (the owner, 2026-10-10: "the walls can't be broken"), after every earlier id
+        ...rebirthWallDefs(generated),
     };
 }
 

@@ -3,6 +3,7 @@
 // (`<material>_wall_ext_<length>`, 1 unit thick, centred on the floor's edge like house_red_01's), doors and windows sit
 // 0.25 outside the wall line (house_red_01's door oris: 0 +y, 1 -x, 2 -y, 3 +x from the hinge).
 import type { AABB, BuildingChildDef, BuildingDef, CircleCollider } from "../../types/index.ts";
+import { REBIRTH_WALL_INT_LENGTHS, rebirthWallInt } from "./walls.ts";
 
 /** Floor and roof images are drawn at this many pixels per world unit and placed at scale 0.5 (16 px per unit). */
 export const REBIRTH_ART_PX_PER_UNIT = 32;
@@ -10,8 +11,11 @@ export const ART_SCALE = 0.5;
 /** A lookout's view (a zoom region's `zoom`): the 4x scope's, as survev's bathhouse_01 gives its balcony. */
 export const LOOKOUT_ZOOM = 48;
 
-/** Wall obstacle families (`<material>_wall_ext_<length>`): brick and concrete walls, steel (metal, reflects bullets). */
-export type WallMaterial = "brick" | "concrete" | "metal";
+/**
+ * Wall obstacle families (`<material>_wall_ext_<length>`): brick and concrete walls, steel (metal, reflects bullets);
+ * wood is a breakable partition (`rebirth_wall_int_<length>`, walls.ts), drawn by its own sprite, not the floor art.
+ */
+export type WallMaterial = "brick" | "concrete" | "metal" | "wood";
 
 /**
  * An axis-aligned wall from (x0, y0) to (x1, y1), 1 unit thick, centred on that line; a fifth element overrides the
@@ -99,8 +103,12 @@ export function wallChildren(layout: RebirthBuildingLayout, known: (id: string) 
         const horizontal = y0 === y1;
         if (!horizontal && x0 !== x1) throw new Error(`rebirth wall ${seg} is not axis-aligned`);
         const len = Math.abs(horizontal ? x1 - x0 : y1 - y0);
-        const type = `${wallMaterial(layout, seg)}_wall_ext_${String(len).replace(".", "_")}`;
-        if (!known(type)) throw new Error(`rebirth building: no wall obstacle "${type}"`);
+        const material = wallMaterial(layout, seg);
+        if (material === "wood" && !REBIRTH_WALL_INT_LENGTHS.includes(len))
+            throw new Error(`rebirth building: no breakable wall of length ${len}`);
+        const type =
+            material === "wood" ? rebirthWallInt(len) : `${material}_wall_ext_${String(len).replace(".", "_")}`;
+        if (material !== "wood" && !known(type)) throw new Error(`rebirth building: no wall obstacle "${type}"`);
         return child(type, (x0 + x1) / 2, (y0 + y1) / 2, horizontal ? 1 : 0);
     });
 }
