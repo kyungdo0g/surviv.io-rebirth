@@ -3,8 +3,8 @@
 // items there are deleted: they are buried"). A building whose def sets `ceiling.destroy.collapse` caves in when its
 // roof falls (its `wallCount` walls broken, buildings.ts onBuildingObstacleDestroyed): every player on its floor dies
 // at once (DamageType.Collapse, items buried with it), every obstacle of the building (walls, doors, furniture, the
-// children of its child buildings) and every loose obstacle and item on its floor disappear without loot, explosion or
-// smoke. The client shows the roof's existing collapse particles, sound and residue (docs/research/rebirth-deviations.md).
+// children of its child buildings) and every loose obstacle, item and dead body on its floor disappear without loot,
+// explosion or smoke. The client shows the roof's existing collapse particles, sound and residue (docs/research/rebirth-deviations.md).
 import { type Bounds, collider, type Vec2, v2 } from "@rebirth/core";
 import { DamageType } from "@rebirth/defs";
 import { killPlayer } from "../combat/combat.ts";
@@ -110,9 +110,12 @@ export function collapseBuilding(ctx: SimContext, building: Building, creditId?:
         if (e.kind === "obstacle" && !e.parentId && !e.isSkin && inside(e) && !obstacles.includes(e)) obstacles.push(e);
     }
     for (const o of obstacles) buryObstacle(ctx, o);
-    // loot on the floor, re-queried after the deaths (a cooked grenade dropped, items pushed by the bodies)
+    // loot on the floor, re-queried after the deaths (a cooked grenade dropped, items pushed by the bodies), and the
+    // bodies already lying there: buried like the players who die in the collapse (review of PR #19: they stayed on
+    // top of the rubble)
     for (const e of [...ctx.world.query(bounds, scratch)]) {
         if (e.kind === "loot" && inside(e)) ctx.loot.remove(e);
+        else if (e.kind === "deadBody" && inside(e)) ctx.deadBodies.remove(e);
     }
     // loot resting against the fallen walls from outside may move again
     for (const o of obstacles) ctx.loot.wakeAround(o.bounds, o.layer);

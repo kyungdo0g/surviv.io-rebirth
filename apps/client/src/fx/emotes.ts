@@ -10,6 +10,8 @@
 // Everything is drawn in screen space over the world (survev draws emotes on the top layer, pings in the UI layer).
 // An emote of a player on another floor shows only as much as that floor does (survev emote.ts:1088-1092 draws it on
 // the player's layer then): none from the surface while the viewer is underground, none from a bunker on the surface.
+// Rebirth: none of a player standing in an unlit interior out of every light (fx/darkness.ts shrouded, 2026-10-11),
+// or the bubble over the darkness overlay would show where it stands.
 import { GameConfig, GameObjectDefs } from "@rebirth/defs";
 import type { EmoteEvent } from "@rebirth/sim";
 import { type Container, Container as PixiContainer, Sprite } from "pixi.js";
@@ -88,6 +90,11 @@ export interface EmoteFxFrame {
     player(id: number): EmotePlayer | null;
     /** how visible (0-1) something on a map layer is to the viewer (renderer.visibility); fully when omitted */
     visibility?(layer: number): number;
+    /**
+     * whether a player at `pos` on `layer` stands in the dark out of every light (fx/darkness.ts shrouded): its bubble
+     * is not drawn, or it would show over the darkness overlay where the player stands
+     */
+    hidden?(pos: { x: number; y: number }, layer: number): boolean;
 }
 
 export class EmoteFx {
@@ -280,7 +287,8 @@ export class EmoteFx {
             const s = scale * EMOTE_BASE_SCALE * Math.min(Math.max(zoom, 0.9), 1.75);
             b.container.position.set(screen.x, screen.y);
             b.container.scale.set(s);
-            b.container.alpha = frame.visibility ? frame.visibility(target.layer) : 1;
+            const shrouded = frame.hidden?.(target.pos, target.layer) ?? false;
+            b.container.alpha = shrouded ? 0 : frame.visibility ? frame.visibility(target.layer) : 1;
             b.container.visible = b.alive && b.container.alpha > 0;
         }
         this.updatePings(frame.dt, cam);

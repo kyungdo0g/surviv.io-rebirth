@@ -85,6 +85,11 @@ export interface HitFeedbackDeps {
     /** HUD root for the vignette (null in tests) */
     hudRoot: HTMLElement | null;
     enabled?: boolean;
+    /**
+     * a player at `pos` on `layer` stands in the dark out of every light (fx/darkness.ts shrouded): no arc points at it
+     * and no marker follows it, as both are drawn over the darkness overlay
+     */
+    shrouded?(pos: Vec2, layer: number): boolean;
 }
 
 export interface HitFeedbackFrame {
@@ -168,9 +173,12 @@ export class HitFeedback implements PlayerHitListener {
     private readonly splatVel: Vec2 = { x: 0, y: 0 };
     private readonly splatOpts = { scale: 1, zOrd: 0 };
     private bounds: { min: Vec2; max: Vec2 } | null = null;
-    /** an attacker's screen position for the arcs (null when not in view), at the latest frame's clock */
+    /**
+     * an attacker's screen position for the arcs (null when not in view, or hidden in the dark: the arc then keeps the
+     * hit's direction), at the latest frame's clock
+     */
     private readonly sourcePos = (id: number): Vec2 | null => {
-        const pos = this.world?.visualPos(id, this.now);
+        const pos = this.shownPos(id);
         return pos ? this.deps.camera.worldToScreen(pos) : null;
     };
     /** counters since boot (tests, debug); `dropped`: hits beyond the frame's FRAME_SLOTS players */
@@ -515,9 +523,18 @@ export class HitFeedback implements PlayerHitListener {
         this.markers.update(f.dt, this.markerPos(f, center), center, screen, this.sourcePos, f.hudHidden, f.hudScale);
     }
 
+    /** A player's drawn position, unless it is out of view or stands in the dark out of every light. */
+    private shownPos(id: number): Vec2 | undefined {
+        const pos = this.world?.visualPos(id, this.now);
+        if (!pos) return undefined;
+        const view = this.world?.get(id);
+        if (view && this.deps.shrouded?.(pos, view.layer)) return undefined;
+        return pos;
+    }
+
     private markerPos(f: HitFeedbackFrame, center: Vec2): Vec2 {
         if (f.cursor) return f.cursor;
-        const pos = this.markerTarget ? this.world?.visualPos(this.markerTarget, f.now) : undefined;
+        const pos = this.markerTarget ? this.shownPos(this.markerTarget) : undefined;
         if (pos) return this.deps.camera.worldToScreen(pos);
         return { x: center.x + f.aimDir.x * MARKER_FALLBACK_DIST, y: center.y - f.aimDir.y * MARKER_FALLBACK_DIST };
     }

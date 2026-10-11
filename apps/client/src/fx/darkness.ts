@@ -8,7 +8,12 @@
 // - a burst of light (1.5 x the blast radius, fading over 0.5 s) at every fiery explosion in the dark (WorldFx.apply;
 //   smoke grenades and fruit splats give none).
 // Presentation only: the simulation knows nothing of it, and the minimap keeps working (the overlay sits in the
-// screen-space `weather` container, under the red zone, the emotes and the HUD).
+// screen-space `weather` container, under the red zone, the emotes and the HUD). What is drawn over it for one player
+// is hidden while that player stands in the dark out of every light (`shrouded`, the wave-3 leftovers, 2026-10-11): an
+// emote bubble (game/teamPlay.ts) and the damage arc pointing at an attacker (the arc falls back to the hit's
+// direction) or a touch marker following a hit target (fx/hitFeedback.ts). Pings stay: they mark a spot a teammate
+// chose, not where anyone stands, and only the team sees them; teammates' names are drawn in the world, under the
+// overlay; sounds are not darkened.
 // Drawing: one screen-sized render texture at half resolution, cleared each frame to the dark shade, with one reused
 // radial-gradient sprite per light drawn over it in the "erase" blend mode; the texture is shown by one sprite.
 import type { Vec2 } from "@rebirth/core";
@@ -33,6 +38,28 @@ export { DARK_ALPHA, EXPLOSION_LIGHT, PLAYER_LIGHT, SHOT_LIGHT } from "@rebirth/
 export const MAX_LIGHTS = 48;
 /** render texture resolution: the soft lights need no detail */
 const RT_RESOLUTION = 0.5;
+/** a light that takes at least this much of the shade away shows what stands in it (and what is drawn over it) */
+export const LIT_MIN = 0.25;
+/** the glow sprite's falloff (glowTexture): how much of a light's strength is left at a fraction of its radius */
+const GLOW_STOPS: ReadonlyArray<readonly [number, number]> = [
+    [0, 1],
+    [0.35, 0.9],
+    [0.7, 0.35],
+    [1, 0],
+];
+
+/** The glow's strength (0-1) at `t` (distance over radius) from its centre: GLOW_STOPS, linear between them. */
+export function glowFalloff(t: number): number {
+    if (t <= 0) return 1;
+    for (let i = 1; i < GLOW_STOPS.length; i++) {
+        const [t1, v1] = GLOW_STOPS[i];
+        if (t <= t1) {
+            const [t0, v0] = GLOW_STOPS[i - 1];
+            return v0 + ((v1 - v0) * (t - t0)) / (t1 - t0);
+        }
+    }
+    return 0;
+}
 
 export interface DarkLight {
     kind: "shot" | "explosion";
@@ -77,6 +104,26 @@ export class DarknessState {
     /** opacity of the dark shade now */
     get alpha(): number {
         return DARK_ALPHA * this.fade;
+    }
+
+    /**
+     * How lit `pos` is (0-1): the strongest light over it, the glow round the viewer (at `viewerPos`) included, by the
+     * glow's falloff.
+     */
+    lightAt(pos: Vec2, viewerPos?: Vec2): number {
+        let best = 0;
+        const add = (at: Vec2, radius: number, intensity: number) => {
+            const d = Math.hypot(pos.x - at.x, pos.y - at.y);
+            if (d < radius) best = Math.max(best, intensity * glowFalloff(d / radius));
+        };
+        if (viewerPos) add(viewerPos, PLAYER_LIGHT.radius, PLAYER_LIGHT.intensity);
+        for (const l of this.lights) add(l.pos, l.radius, lightIntensity(l));
+        return best;
+    }
+
+    /** Whether something at `pos` on `layer` is hidden by the dark: in an unlit place, and no light shows it. */
+    shrouded(pos: Vec2, layer: number, viewerPos?: Vec2): boolean {
+        return this.isDark(pos, layer) && this.lightAt(pos, viewerPos) < LIT_MIN;
     }
 
     /** A gun shot at `pos`: a muzzle flash when it is in the dark. */
@@ -161,6 +208,8 @@ export interface DarknessFrame {
 export class DarknessFx {
     readonly state: DarknessState;
     private readonly renderer: Renderer;
+    /** the followed player's position at the last update (its glow lights what stands near it) */
+    private viewerPos: Vec2 | null = null;
     private view: {
         overlay: Sprite;
         rt: RenderTexture;
@@ -183,7 +232,16 @@ export class DarknessFx {
         this.state.addExplosion(type, pos, layer);
     }
 
+    /**
+     * Whether what is drawn over the overlay for something at `pos` on `layer` (an emote, an arc at an attacker) must
+     * be hidden: it stands in the dark out of every light, the glow round the viewer as last drawn included.
+     */
+    shrouded(pos: Vec2, layer: number): boolean {
+        return this.state.shrouded(pos, layer, this.viewerPos ?? undefined);
+    }
+
     update(f: DarknessFrame): void {
+        this.viewerPos = { x: f.viewerPos.x, y: f.viewerPos.y };
         this.state.update(f.dt, f.viewerPos, f.viewerLayer);
         if (this.state.fade <= 0) {
             if (this.view) this.view.overlay.visible = false;

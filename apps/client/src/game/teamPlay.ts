@@ -40,6 +40,8 @@ export interface TeamPlayDeps {
     touch?: boolean;
     /** closes the big map (an emote sent from the ping wheel, M8) */
     closeBigMap?(): void;
+    /** a player at `pos` on `layer` stands in the dark out of every light: no emote over it (fx/darkness.ts) */
+    shrouded?(pos: Vec2, layer: number): boolean;
 }
 
 export interface TeamPlayFrame {
@@ -184,6 +186,7 @@ export class TeamPlay {
                 return p ? { pos: p.pos, layer: p.layer } : null;
             },
             visibility: (layer) => this.deps.renderer.visibility(layer),
+            hidden: (pos, layer) => this.deps.shrouded?.(pos, layer) ?? false,
         });
         this.world = world;
     }

@@ -102,7 +102,12 @@ interface Rig {
     frame(dt?: number, local?: LocalPlayerState): void;
 }
 
-function rig(players: PlayerView[], activeId = 1, enabled = true): Rig {
+function rig(
+    players: PlayerView[],
+    activeId = 1,
+    enabled = true,
+    shrouded?: (pos: Vec2, layer: number) => boolean,
+): Rig {
     const pool = new SpritePool();
     const screen = new Container();
     const renderer = { pool, screen, add: () => {} } as unknown as Renderer;
@@ -121,6 +126,7 @@ function rig(players: PlayerView[], activeId = 1, enabled = true): Rig {
         camera,
         hudRoot: null,
         enabled,
+        shrouded,
     });
     const world = fakeWorld(players);
     fx.setWorld(world, activeId);
@@ -348,6 +354,21 @@ describe("hits taken", () => {
         r.fx.applySnapshot(snap(1, [taken(0, 20, undefined, { damageType: 3 })]));
         r.frame();
         expect(r.fx.markers.arcsStarted).toBe(1);
+    });
+
+    it("keeps the hit's direction for an attacker standing in the dark out of every light (fx/darkness.ts)", () => {
+        // the attacker 20 u north of the player (up the screen); the hit travelled +x (from the west)
+        const arcAngleNow = (shrouded: boolean) => {
+            const r = rig([player(1, { x: 100, y: 100 }), player(2, { x: 100, y: 120 })], 1, true, () => shrouded);
+            r.fx.applySnapshot(snap(1, [taken(2, 20, { x: 1, y: 0 })]));
+            r.frame();
+            const arcs = (r.fx.markers as unknown as { arcs: Array<{ active: boolean; g: Container }> }).arcs;
+            return arcs.filter((a) => a.active).map((a) => a.g.rotation);
+        };
+        const [lit] = arcAngleNow(false);
+        expect(lit).toBeCloseTo(-Math.PI / 2, 3);
+        const [dark] = arcAngleNow(true);
+        expect(Math.abs(dark)).toBeCloseTo(Math.PI, 3);
     });
 
     it("adds nothing for bleeding and gas, and at most four arcs", () => {

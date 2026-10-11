@@ -209,6 +209,7 @@ export class GameClient {
             particles: this.particles,
             camera: this.camera,
             hudRoot: this.ui.root,
+            shrouded: (pos, layer) => this.worldFx?.darkness.shrouded(pos, layer) ?? false,
         });
         this.flashFx = new FlashbangFx(this.ui.root, this.audio);
         this.unbindHitFx = bindHitFx(this.hitFx, [this.bullets, this.effects], (on) => {
@@ -236,6 +237,7 @@ export class GameClient {
             factionOf: (id) => this.modes.factionOf(id),
             touch,
             closeBigMap: () => this.modes.setBigMap(false),
+            shrouded: (pos, layer) => this.worldFx?.darkness.shrouded(pos, layer) ?? false,
         });
         this.controls = new ClientControls({
             app,

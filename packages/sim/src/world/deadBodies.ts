@@ -1,5 +1,6 @@
 // Dead bodies: every player that dies leaves one where it died (the client draws a skull and the player's name). A body
-// starts sliding along the killing hit's direction at 10 u/s, slows with drag 4, follows stairs and is never removed;
+// starts sliding along the killing hit's direction at 10 u/s, slows with drag 4, follows stairs and is never removed
+// (rebirth: except under a collapsing building's rubble, `remove`);
 // explosions do not push it. Behaviour follows survev server/src/game/objects/deadBody.ts (DeadBodyBarn, DeadBody) and
 // player.ts kill (addDeadBody(pos, id, layer, params.dir)).
 import { type Bounds, type Vec2, v2 } from "@rebirth/core";
@@ -71,6 +72,17 @@ export class DeadBodySystem {
         this.bodies.push(body);
         this.world.add(body);
         return body;
+    }
+
+    /**
+     * Takes a body out of the game (rebirth: one lying in a building that collapses is buried with it, world/collapse.ts;
+     * survev never removes a body). Clients see it leave like any deleted object.
+     */
+    remove(body: DeadBody): void {
+        const i = this.bodies.indexOf(body);
+        if (i < 0) return;
+        this.bodies.splice(i, 1);
+        this.world.remove(body);
     }
 
     update(dt: number): void {

@@ -1,7 +1,7 @@
 // Collapsing buildings (the owner, 2026-10-10; sim world/collapse.ts): a building whose def sets
 // `ceiling.destroy.collapse` caves in once `wallCount` of its walls are broken: everyone on its floor dies at once
-// (DamageType.Collapse, credited to whoever broke the last wall unless a teammate, nothing dropped), its obstacles and
-// the loot on its floor are gone, and players outside are untouched. The building is a test-only def built from the
+// (DamageType.Collapse, credited to whoever broke the last wall unless a teammate, nothing dropped), its obstacles,
+// the loot and the dead bodies on its floor are gone, and players outside are untouched. The building is a test-only def built from the
 // breakable brick walls (rebirth_wall_brk_4), added to the defs for this file only (the real collapsing buildings come
 // next).
 import { type Vec2, v2 } from "@rebirth/core";
@@ -168,6 +168,30 @@ describe("collapsing buildings", () => {
             breakWall(game, w, shooter);
         expect([enemy.dead, mate.dead]).toEqual([true, true]);
         expect([enemy.killedBy, mate.killedBy, shooter.kills]).toEqual([shooter.id, 0, 1]);
+    });
+
+    it("buries the bodies already lying inside; one outside stays (review of PR #19)", () => {
+        const { game, hut } = hutGame();
+        const dead = placePlayer(game, v2.add(hut.pos, { x: 0, y: 2 }));
+        const deadOut = placePlayer(game, v2.add(hut.pos, { x: 0, y: 16 }));
+        const viewer = placePlayer(game, v2.add(hut.pos, { x: 0, y: 20 }));
+        const shooter = placePlayer(game, v2.add(hut.pos, { x: 16, y: 0 }));
+        for (const p of [dead, deadOut]) game.damagePlayer(p, { amount: 1000, damageType: DamageType.Player });
+        expect([dead.dead, deadOut.dead]).toEqual([true, true]);
+        for (let i = 0; i < 100; i++) game.step();
+        const bodies = () => game.deadBodies.bodies.map((b) => b.playerId);
+        expect(bodies()).toEqual([dead.id, deadOut.id]);
+        const bodyId = game.deadBodies.bodies[0].id;
+        expect(game.getSnapshot(viewer.id).objects.some((o) => o.id === bodyId)).toBe(true);
+        for (const w of children(game, hut)
+            .filter((o) => o.isWall)
+            .slice(0, WALL_COUNT))
+            breakWall(game, w, shooter);
+        expect(hut.ceilingDead).toBe(true);
+        expect(bodies()).toEqual([deadOut.id]);
+        expect(game.world.get(bodyId)).toBeUndefined();
+        // the clients are told it is gone
+        expect(game.getSnapshot(viewer.id).deletedIds).toContain(bodyId);
     });
 
     it("a buried barrel disguise goes silently: no explosion, no loot", () => {
