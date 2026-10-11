@@ -5,8 +5,9 @@
 // - a bot on the floor of a building it saw near collapse walks out of it (brain/collapse.ts);
 // - in the dark subway a bot sees what the client's overlay shows: the glow round itself and muzzle flashes
 //   (perception/darkness.ts);
-// - an expert with an M202 blasts the blast bunker's door open; an RPG-7 cannot open it and never wastes a round on it
-//   (brain/gateBreach.ts).
+// - an expert with an M202 blasts the blast bunker's door open; the door counts hits (the owner, 2026-10-11: M202 1,
+//   NLAW 2, RPG-7 6), so a bot with RPG-7 rockets enough for the hits left spends those before the single-use M202, a
+//   lone NLAW starts only on a door already half open, and too few rounds are never wasted on it (brain/gateBreach.ts).
 import { type Vec2, v2 } from "@rebirth/core";
 import {
     BLAST_BUNKER,
@@ -21,9 +22,12 @@ import {
 import { type Building, Game, generateShowcase, type Obstacle } from "@rebirth/sim";
 import { describe, expect, it } from "vitest";
 import { NEAR_LEFT } from "../src/brain/collapse.ts";
+import { gateLauncher, roundsToOpen } from "../src/brain/gateBreach.ts";
 import { BotController } from "../src/controller.ts";
 import { collapseSites, onCollapseFloor } from "../src/knowledge/collapse.ts";
 import { explosiveOf } from "../src/knowledge/explosives.ts";
+import { launcherSpec } from "../src/knowledge/launchers.ts";
+import { gunInfo } from "../src/knowledge/weapons.ts";
 import { BreakClass, breakClassOf } from "../src/nav/breakThrough.ts";
 import { NavGrid } from "../src/nav/grid.ts";
 import { UndergroundNav } from "../src/nav/underground.ts";
@@ -144,7 +148,44 @@ describe("the dark subway", () => {
 });
 
 describe("explosion-gated doors", () => {
-    function bunker(gun: string): { game: Game; door: Obstacle; bot: BotController; mag: () => number } {
+    const gate = getMapObjectDefOfType("obstacle", BLAST_BUNKER_DOOR.type).explosionGate!;
+    const held = (id: string, slot: number, mag: number, reserve = 0) => ({ slot, info: gunInfo(id)!, mag, reserve });
+    const chosen = (guns: ReturnType<typeof held>[], healthT = 1) => gateLauncher(guns, gate, healthT)?.gun.info.id;
+
+    it("counts the rounds left from the door's health (the shares left)", () => {
+        const rpg = launcherSpec("rpg7")!;
+        const nlaw = launcherSpec("nlaw")!;
+        expect([1, 5 / 6, 4 / 6, 1 / 6].map((h) => roundsToOpen(rpg, gate, h))).toEqual([6, 5, 4, 1]);
+        // the health travels quantized (8 bits): still whole shares
+        expect(roundsToOpen(rpg, gate, Math.round((5 / 6) * 255) / 255)).toBe(5);
+        expect([1, 0.5, 1 / 6].map((h) => roundsToOpen(nlaw, gate, h))).toEqual([2, 1, 1]);
+        expect(roundsToOpen(launcherSpec("m202")!, gate, 1)).toBe(1);
+    });
+
+    it("spends the cheapest ammo that finishes the door: RPG-7 rockets, then NLAWs, the M202 last", () => {
+        const m202 = held("m202", 1, 4);
+        // six rockets (one loaded, five in the bag): the RPG-7, the M202 kept
+        expect(chosen([held("rpg7", 0, 1, 5), m202])).toBe("rpg7");
+        // reloading (none loaded, six in the bag) is no reason to switch to the M202
+        expect(chosen([held("rpg7", 0, 0, 6), m202])).toBe("rpg7");
+        // five rockets for a fresh door: the M202
+        expect(chosen([held("rpg7", 0, 1, 4), m202])).toBe("m202");
+        // 6 minus the hits already on it: two rockets finish a door with four RPG-7 hits
+        expect(chosen([held("rpg7", 0, 1, 1), m202], 2 / 6)).toBe("rpg7");
+        // one NLAW: no start on a fresh door (the M202 does it), the NLAW finishes a door already half open
+        expect(chosen([held("nlaw", 0, 1), m202])).toBe("m202");
+        expect(chosen([held("nlaw", 0, 1)])).toBeUndefined();
+        expect(chosen([held("nlaw", 0, 1), m202], 0.5)).toBe("nlaw");
+        // too few rockets and nothing else: nothing (no round wasted)
+        expect(chosen([held("rpg7", 0, 1, 2)])).toBeUndefined();
+        // nothing that opens it at all
+        expect(chosen([held("panzerfaust", 0, 1), held("m79", 1, 1, 10)])).toBeUndefined();
+    });
+
+    function bunker(
+        primary: string,
+        opts: { reserve?: number; secondary?: string; rpgHits?: number; from?: number } = {},
+    ): { game: Game; door: Obstacle; bot: BotController; mag: (slot?: number) => number } {
         const show = generateShowcase(BLAST_BUNKER, 1);
         const game = new Game(
             { mapName: show.mapName, seed: 1 },
@@ -154,34 +195,73 @@ describe("explosion-gated doors", () => {
         const door = obstacles(game, BLAST_BUNKER_DOOR.type).find(
             (o) => v2.distance(o.pos, doorPos) < 0.01,
         ) as Obstacle;
-        const p = placePlayer(game, "breacher", v2.add(doorPos, { x: 0, y: -24 }));
-        // a full magazine, no reserve (the launchers' own rounds are no bag items)
-        p.weaponManager.setWeapon(0, gun, getDefOfType("gun", gun).maxClip);
+        // (from 10 u the door is on screen; at the stand-off spot it lies just off the screen's short side)
+        const p = placePlayer(game, "breacher", v2.add(doorPos, { x: 0, y: -(opts.from ?? 24) }));
+        // a full magazine; rockets in the bag only when asked (the single-use launchers' rounds are no bag items)
+        const arm = (gun: string, slot: number, reserve: number) => {
+            const def = getDefOfType("gun", gun);
+            p.weaponManager.setWeapon(slot, gun, def.maxClip);
+            if (reserve > 0) {
+                p.backpack = "backpack03";
+                p.inv.set(def.ammo, reserve);
+            }
+        };
+        if (opts.secondary) arm(opts.secondary, 1, 0);
+        arm(primary, 0, opts.reserve ?? 0);
         p.weaponManager.setCurWeapIndex(0);
+        // earlier RPG-7 hits on the door
+        for (let i = 0; i < (opts.rpgHits ?? 0); i++) {
+            game.damageObstacle(door, {
+                amount: 135,
+                damageType: DamageType.Player,
+                isExplosion: true,
+                explosionType: "explosion_rpg7",
+            });
+        }
         // others far away (a crowd: no endgame hold)
         for (let k = 0; k < 12; k++) placePlayer(game, `far${k}`, v2.add(doorPos, { x: 150 + k * 6, y: 200 }));
         const bot = new BotController(game, p.id, { seed: 1, skill: "expert", brain: "smart" });
-        return { game, door, bot, mag: () => p.weaponManager.weapons[0].ammo };
+        return { game, door, bot, mag: (slot = 0) => p.weaponManager.weapons[slot].ammo };
+    }
+
+    function run(game: Game, bot: BotController, door: Obstacle, ticks: number): number {
+        for (let i = 0; i < ticks; i++) {
+            bot.update();
+            game.step();
+            if (door.dead) return i / 100;
+        }
+        return -1;
     }
 
     it("an expert with an M202 blasts the blast bunker's door open", () => {
         const { game, door, bot } = bunker("m202");
-        let t = -1;
-        for (let i = 0; i < 1500 && t < 0; i++) {
-            bot.update();
-            game.step();
-            if (door.dead) t = i / 100;
-        }
-        expect(t).toBeGreaterThan(0);
+        expect(run(game, bot, door, 1500)).toBeGreaterThan(0);
     });
 
-    it("never wastes an RPG-7 round on the door it cannot open", () => {
+    it("an expert with six RPG-7 rockets opens it with those and keeps its M202", () => {
+        const { game, door, bot, mag } = bunker("rpg7", { reserve: 5, secondary: "m202" });
+        expect(run(game, bot, door, 4000)).toBeGreaterThan(0);
+        expect([door.gateHits, mag(1)]).toEqual([6, 4]);
+    });
+
+    it("with two rockets for a door already four RPG-7 hits in, it finishes it with the RPG-7", () => {
+        // it walks up seeing the door's health (a third left), then backs off to the stand-off spot
+        const { game, door, bot, mag } = bunker("rpg7", { reserve: 1, secondary: "m202", rpgHits: 4, from: 10 });
+        expect(door.gateHits).toBe(4);
+        expect(run(game, bot, door, 2500)).toBeGreaterThan(0);
+        expect([door.gateHits, mag(1)]).toEqual([6, 4]);
+    });
+
+    it("with too few rockets it uses the M202", () => {
+        const { game, door, bot, mag } = bunker("rpg7", { reserve: 1, secondary: "m202" });
+        expect(run(game, bot, door, 1500)).toBeGreaterThan(0);
+        expect([door.gateHits, mag(0)]).toEqual([1, 1]);
+    });
+
+    it("never wastes an RPG-7 round it cannot finish the door with", () => {
         const { game, door, bot, mag } = bunker("rpg7");
         const before = mag();
-        for (let i = 0; i < 1000; i++) {
-            bot.update();
-            game.step();
-        }
+        expect(run(game, bot, door, 1000)).toBe(-1);
         expect([door.dead, door.health, mag()]).toEqual([false, door.maxHealth, before]);
     });
 });

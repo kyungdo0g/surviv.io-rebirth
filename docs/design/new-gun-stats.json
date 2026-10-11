@@ -5222,11 +5222,11 @@
             "bullets": {
                 "bullet_nlaw": {
                     "type": "bullet",
-                    "damage": 60,
+                    "damage": 80,
                     "obstacleDamage": 4,
                     "falloff": 1,
-                    "distance": 160,
-                    "speed": 85,
+                    "distance": 200,
+                    "speed": 100,
                     "variance": 0,
                     "shrapnel": false,
                     "tracerColor": "rocket",
@@ -5241,11 +5241,11 @@
             "explosions": {
                 "explosion_nlaw": {
                     "type": "explosion",
-                    "damage": 150,
-                    "obstacleDamage": 0.9,
+                    "damage": 175,
+                    "obstacleDamage": 0.8,
                     "rad": {
-                        "min": 5,
-                        "max": 14
+                        "min": 6,
+                        "max": 16
                     },
                     "shrapnelCount": 0,
                     "shrapnelType": "shrapnel_frag",
@@ -5285,12 +5285,12 @@
                 "movingSpread": 3,
                 "barrelLength": 2.3,
                 "bullet": {
-                    "damage": "60 + 150 explosion (rad 5-14)",
+                    "damage": "80 + 175 explosion (rad 6-16)",
                     "falloff": 1,
                     "headshotMultiplier": 1,
                     "obstacleMultiplier": "4",
-                    "distance": 160,
-                    "speed": 85
+                    "distance": 200,
+                    "speed": 100
                 },
                 "suppressed": false
             }

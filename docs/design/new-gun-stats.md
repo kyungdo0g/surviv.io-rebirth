@@ -4,6 +4,13 @@
 See [second-wave-gun-specs-draft.md](second-wave-gun-specs-draft.md) and the updated JSON for current values.
 Second-wave rarity remains undecided; equipment and new illustrations are deferred.
 
+2026-10-11 update (the owner: the NLAW "looks scarier than the M202"): the NLAW is buffed. Its rocket hits for 80
+(was 60) and flies at 100 u/s (was 85) out to 200 u (was 160); its blast deals 175 (was 150) over radius 6-16 (was 5-14,
+now the M202 rocket's reach), obstacle multiplier x0.8 (was x0.9: 140 per blast against obstacles, up from 135, still
+three blasts for the 300-health subway gate). One NLAW round (80 + 175) now hits clearly harder than one RPG-7 round
+(60 + 150); it stays single use, and the M202's 4-rocket volley (4 x (25 + 125)) still deals more in total. The
+blast_door_01 opens to its 2nd NLAW hit (M202 1, NLAW 2, RPG-7 6; `explosionGate.hitsToOpen`). Bot tier B+ -> A-.
+
 Status: **decided** 2026-10-07 (final stage of the balance workflow; no open questions); the owner's 2026-10-08 changes
 of the M79, GL-06 and Milkor MGL (Player speed -1 / -1 / -1.5 -> 0, held like a rifle) are applied here (section 6).
 Supersedes the per-gun stat columns of `survev-content-and-new-guns.md` 4.1 and the loot weights of 4.1 / 4.2 where they

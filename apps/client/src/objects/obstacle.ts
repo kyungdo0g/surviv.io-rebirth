@@ -5,7 +5,8 @@
 // play their sounds (door.ts); the casing stays at the closed door. M9: an explosive obstacle (barrel) below half health
 // smokes (survev obstacle.ts smoke_barrel emitter, drifting up-right) until it blows up. Rebirth: an air drop tier
 // inner crate carries its tier's star marking (crateTierMark.ts). An obstacle disguise (`skinPlayerId`) is drawn over its
-// wearer, at the wearer's interpolated position (world.ts), and smokes below 30 % health.
+// wearer, at the wearer's interpolated position (world.ts), and smokes below 30 % health. A hit-counted blast door
+// darkens and smokes as it takes launcher hits (gateDamage.ts).
 import { collider, math, type Vec2, v2 } from "@rebirth/core";
 import { MapObjectDefs, type ObstacleDef } from "@rebirth/defs";
 import type { ObstacleView } from "@rebirth/sim";
@@ -16,6 +17,7 @@ import { PIXELS_PER_UNIT } from "../render/camera.ts";
 import { toLocal } from "../render/renderer.ts";
 import { CrateTierMark, crateTierMarkStyle } from "./crateTierMark.ts";
 import { DoorAnim } from "./door.ts";
+import { gateScorch, gateSmokes, isHitCountedGate } from "./gateDamage.ts";
 import { adjustValue, type FrameContext, type ObjectRender, type ViewDeps } from "./types.ts";
 
 /** zOrd of dead obstacles (residues lie on the ground) */
@@ -55,6 +57,8 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
     private buttonSeq = -1;
     private wasDead = false;
     private smoke: Emitter | null = null;
+    /** the scorch factor drawn on a hit-counted blast door (gateDamage.ts), -1 before the first */
+    private scorch = -1;
 
     constructor(deps: ViewDeps, id: number) {
         this.deps = deps;
@@ -96,18 +100,32 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
             const anchor = this.def.door?.spriteAnchor ?? { x: 0.5, y: 0.5 };
             this.sprite.anchor.set(anchor.x, anchor.y);
             this.sprite.tint = adjustValue(img.tint ?? 0xffffff, this.deps.mapDef.biome.valueAdjust);
+            this.scorch = -1;
             this.imgAlpha = view.dead ? 0.75 : (img.alpha ?? 1);
             this.zOrd = img.zIdx ?? 0;
             this.zIdx = Math.floor(view.scale * 1000) * 65535 + view.id;
         }
+        this.updateScorch(view);
         this.sprite.visible = current !== "";
+    }
+
+    /** A hit-counted blast door darkens with the hits it took (gateDamage.ts). */
+    private updateScorch(view: ObstacleView): void {
+        if (!isHitCountedGate(this.def) || view.dead) return;
+        const scorch = gateScorch(view.healthT);
+        if (scorch === this.scorch) return;
+        this.scorch = scorch;
+        const base = adjustValue(this.def.img.tint ?? 0xffffff, this.deps.mapDef.biome.valueAdjust);
+        this.sprite.tint = adjustValue(base, scorch);
     }
 
     private updateSmoke(view: ObstacleView): void {
         const particles = this.deps.particles;
-        if (!particles || !this.def.explosion) return;
+        const gate = isHitCountedGate(this.def);
+        if (!particles || (!this.def.explosion && !gate)) return;
         const limit = view.skinPlayerId === undefined ? SMOKE_HEALTH : SKIN_SMOKE_HEALTH;
-        if (!this.smoke?.active && view.healthT < limit && !view.dead) {
+        const smokes = gate ? gateSmokes(view.healthT, view.dead) : view.healthT < limit && !view.dead;
+        if (!this.smoke?.active && smokes) {
             this.smoke = particles.addEmitter("smoke_barrel", { pos: view.pos, dir: SMOKE_DIR, layer: view.layer });
         }
         if (this.smoke && view.dead) {
@@ -116,7 +134,7 @@ export class ObstacleRender implements ObjectRender<ObstacleView> {
         }
         if (this.smoke) {
             this.smoke.pos = { x: view.pos.x, y: view.pos.y };
-            this.smoke.enabled = view.healthT < limit;
+            this.smoke.enabled = gate ? smokes : view.healthT < limit;
         }
     }
 

@@ -1,11 +1,11 @@
 // The explosion-gated doors of the wave 3 buildings (the owner, 2026-10-10; rebirth/buildings/blastDoors.ts): wall-like
-// steel slabs only explosions open, the blast door only to an M202-class hit, the subway gate to launcher rounds and
-// air strike bombs. The gate itself is applied by the sim (packages/sim combat.ts canDamageObstacle).
+// steel slabs only explosions open, the blast door to counted launcher hits (the owner, 2026-10-11: one M202 rocket, two
+// NLAW rounds, six RPG-7 rockets), the subway gate to launcher rounds and air strike bombs. The gate itself is applied by the sim (packages/sim combat.ts canDamageObstacle).
 import { describe, expect, it } from "vitest";
 import {
     BLAST_DOOR,
     BLAST_DOOR_ART,
-    BLAST_DOOR_MIN_DAMAGE,
+    BLAST_DOOR_HITS_TO_OPEN,
     getDefOfType,
     getMapObjectDefOfType,
     hasDef,
@@ -47,19 +47,33 @@ describe("explosion-gated doors", () => {
         }
     });
 
-    it("the blast door opens only to the M202's rocket", () => {
+    it("the blast door opens to one M202 rocket, two NLAW rounds or six RPG-7 rockets, nothing else", () => {
         const gate = getMapObjectDefOfType("obstacle", BLAST_DOOR).explosionGate;
-        expect(gate).toEqual({ minDamage: BLAST_DOOR_MIN_DAMAGE });
-        expect(centreHit("explosion_m202")).toBeGreaterThanOrEqual(BLAST_DOOR_MIN_DAMAGE * 2);
-        for (const id of [
-            "explosion_rpg7",
-            "explosion_nlaw",
-            "explosion_frag",
-            "explosion_bomb_heavy",
-            "explosion_stove",
+        expect(gate).toEqual({ hitsToOpen: BLAST_DOOR_HITS_TO_OPEN });
+        expect(BLAST_DOOR_HITS_TO_OPEN).toEqual({ explosion_m202: 1, explosion_nlaw: 2, explosion_rpg7: 6 });
+        for (const id of Object.keys(BLAST_DOOR_HITS_TO_OPEN)) expect([id, hasDef(id)]).toEqual([id, true]);
+        // the launchers' rounds really carry those explosions
+        for (const [bullet, explosion] of [
+            ["bullet_m202", "explosion_m202"],
+            ["bullet_nlaw", "explosion_nlaw"],
+            ["bullet_rpg7", "explosion_rpg7"],
         ]) {
-            expect([id, centreHit(id) < BLAST_DOOR_MIN_DAMAGE]).toEqual([id, true]);
+            expect((getDefOfType("bullet", bullet) as { onHit?: string }).onHit).toBe(explosion);
         }
+    });
+
+    it("the buffed NLAW round hits harder than an RPG-7 round; the M202 volley still deals the most", () => {
+        const round = (gun: string) => {
+            const b = getDefOfType("bullet", `bullet_${gun}`);
+            return b.damage + getDefOfType("explosion", `explosion_${gun}`).damage;
+        };
+        expect(round("nlaw")).toBeGreaterThan(round("rpg7"));
+        expect(round("m202") * 4).toBeGreaterThan(round("nlaw"));
+        expect(getDefOfType("explosion", "explosion_nlaw").rad.max).toBe(
+            getDefOfType("explosion", "explosion_m202").rad.max,
+        );
+        // still three blasts for the 300-health subway gate (its rule is unchanged)
+        expect(Math.ceil(300 / centreHit("explosion_nlaw"))).toBe(3);
     });
 
     it("the subway gate opens to every launcher and air strike explosion, never a grenade or a barrel", () => {

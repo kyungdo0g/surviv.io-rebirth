@@ -17,7 +17,7 @@ Scope: weapons first; suits, nano infector, throwable equipment and illustration
 
 | Weapon | Damage | Interval (s) | Capacity / total charges | Reload (s) | Spread standing / moving | Range (u) |
 | --- | --- | --- | --- | --- | --- | --- |
-| NLAW | 60 + 150 blast | single use | 1 | unavailable | 1 / 3 | 160 |
+| NLAW | 80 + 175 blast (owner buff 2026-10-11; was 60 + 150) | single use | 1 | unavailable | 1 / 3 | 200 (was 160) |
 | PAW20 | 25 + 65 blast | 0.35 | 6 | 3.5 | 1.5 / 3 | 120 |
 | Bazooka | 50 + 125 blast | single use | 1 | unavailable | 2 / 4 | 100 |
 | Pvg m/42 (Carl Gustav) | 160 | 2.0 | 10 total charges | unavailable | 1 / 5 | 350 |

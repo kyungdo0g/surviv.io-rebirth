@@ -54,7 +54,7 @@ describe("the blast bunker", () => {
         // well out of the blasts' reach (explosion_m202 rad.max 16)
         game.teleportPlayer(id, v2.add(origin, { x: 0, y: -40 }), 0);
         const at = v2.add(door.pos, { x: 0, y: -3 });
-        // a frag does nothing (explosionGate minDamage: explosionGate.test.ts tries the rest); one M202 rocket 3 u out
+        // a frag does nothing (explosionGate hitsToOpen: explosionGate.test.ts tries the rest); one M202 rocket 3 u out
         // opens it
         game.explosions.add("explosion_frag", at, 0, { damageType: DamageType.Player, sourceId: 0 });
         game.step();

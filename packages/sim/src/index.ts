@@ -6,6 +6,8 @@ export {
     applyPlayerDamage,
     canDamageObstacle,
     destroyObstacle,
+    gateHitShare,
+    gateTotalShares,
     type HitRecord,
     killPlayer,
 } from "./combat/combat.ts";

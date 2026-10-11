@@ -113,10 +113,12 @@ export interface ObstacleDef {
     armorPlated?: boolean;
     /**
      * rebirth (wave 3 blast doors, rebirth/buildings/blastDoors.ts): only explosions damage it (no bullet, melee,
-     * shrapnel or projectile impact; a plane crash still does); with `explosionTypes` only those explosion ids count,
-     * with `minDamage` a single hit's obstacle damage (after the explosion's obstacleDamage) below it is ignored
+     * shrapnel or projectile impact; an air drop crate landing on it still does); with `explosionTypes` only those
+     * explosion ids count. With `hitsToOpen` (the owner, 2026-10-11) its health counts hits, not damage: each listed
+     * explosion that reaches it is one hit taking 1/n of the door for an id listed with n, so it opens to n such hits
+     * (mixed ids add up their shares); nothing else hurts it, not even a landing crate
      */
-    explosionGate?: { minDamage?: number; explosionTypes?: readonly string[] };
+    explosionGate?: { explosionTypes?: readonly string[]; hitsToOpen?: Readonly<Record<string, number>> };
     /**
      * rebirth (wave 3 collapsing buildings, rebirth/buildings/walls.ts): a load-bearing wall. In a building whose roof
      * collapses (`ceiling.destroy.collapse`) only these walls count towards `wallCount` (sim world/buildings.ts), so
@@ -223,6 +225,11 @@ export interface BuildingDef {
         errorResetDelay: number;
         pieceResetDelay: number;
         sound: { fail: string; complete: string };
+        /**
+         * rebirth (the mall's keypad, 2026-10-11): a piece that is not the code's next step is an error at once,
+         * instead of when the input reaches the code's length (survev)
+         */
+        wrongPieceResets?: boolean;
     };
     mapGroundPatches?: Array<{
         bound: Collider;

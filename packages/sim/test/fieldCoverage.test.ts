@@ -76,7 +76,7 @@ describe("behaviour field coverage", () => {
             "obstacle.armorPlated",
             "obstacle.stonePlated",
             "obstacle.explosionGate",
-            "obstacle.explosionGate.minDamage",
+            "obstacle.explosionGate.hitsToOpen",
             "obstacle.explosionGate.explosionTypes",
             "obstacle.destroyType",
             "obstacle.swapWeaponOnDestroy",

@@ -176,19 +176,59 @@ export function canDamageObstacle(obstacle: Obstacle, params: DamageParams): boo
 /**
  * Rebirth explosion-gated obstacles (ObstacleDef.explosionGate; packages/defs rebirth/buildings/blastDoors.ts): only an
  * explosion's own hit counts (never bullets, melee, shrapnel or projectile impacts), of a listed type when
- * `explosionTypes` is set and dealing at least `minDamage` in one hit; a plane crash (Airdrop) still destroys it.
+ * `explosionTypes` is set; a landing air drop crate (Airdrop) still destroys it. A hit-counted gate (`hitsToOpen`)
+ * takes only its listed explosions, crate included (gateHitShare).
  */
 function passesExplosionGate(obstacle: Obstacle, params: DamageParams): boolean {
     const gate = obstacle.def.explosionGate;
-    if (!gate || params.damageType === DamageType.Airdrop) return true;
+    if (!gate) return true;
+    if (gate.hitsToOpen) return gateHitShare(obstacle, params) > 0;
+    if (params.damageType === DamageType.Airdrop) return true;
     if (!params.isExplosion || !params.explosionType) return false;
-    if (gate.explosionTypes && !gate.explosionTypes.includes(params.explosionType)) return false;
-    return params.amount >= (gate.minDamage ?? 0);
+    return !gate.explosionTypes || gate.explosionTypes.includes(params.explosionType);
+}
+
+function gcd(a: number, b: number): number {
+    return b === 0 ? a : gcd(b, a % b);
+}
+
+const gateTotals = new WeakMap<object, number>();
+
+/**
+ * The whole door of a hit-counted gate in integer shares: the least common multiple of its `hitsToOpen` counts
+ * ({ m202: 1, nlaw: 2, rpg7: 6 } -> 6), so every hit adds a whole number of shares and the count stays exact.
+ */
+export function gateTotalShares(hitsToOpen: Readonly<Record<string, number>>): number {
+    let total = gateTotals.get(hitsToOpen);
+    if (total !== undefined) return total;
+    total = 1;
+    for (const n of Object.values(hitsToOpen)) {
+        if (Number.isInteger(n) && n > 0) total = (total / gcd(total, n)) * n;
+    }
+    gateTotals.set(hitsToOpen, total);
+    return total;
+}
+
+/**
+ * Shares of the door one hit takes on a hit-counted gate (the owner, 2026-10-11, blast_door_01: M202 1 hit, NLAW 2,
+ * RPG-7 6): an explosion listed with n that reaches it (any damage above 0) is one hit worth total / n shares, whatever
+ * its damage; anything else is 0.
+ */
+export function gateHitShare(obstacle: Obstacle, params: DamageParams): number {
+    const hits = obstacle.def.explosionGate?.hitsToOpen;
+    if (!hits || !params.isExplosion || !params.explosionType || !(params.amount > 0)) return 0;
+    const n = Object.hasOwn(hits, params.explosionType) ? hits[params.explosionType] : 0;
+    if (!Number.isInteger(n) || n <= 0) return 0;
+    return gateTotalShares(hits) / n;
 }
 
 export function applyObstacleDamage(ctx: SimContext, obstacle: Obstacle, params: DamageParams): void {
     if (!canDamageObstacle(obstacle, params)) return;
-    const destroyed = obstacle.damage(params.amount);
+    const hits = obstacle.def.explosionGate?.hitsToOpen;
+    // a hit-counted gate counts the hit, its health shows the shares left (Obstacle.gateHit)
+    const destroyed = hits
+        ? obstacle.gateHit(gateHitShare(obstacle, params), gateTotalShares(hits))
+        : obstacle.damage(params.amount);
     // loot resting against it may now move (survev forceLootUpdates)
     ctx.loot.wakeAround(obstacle.bounds, obstacle.layer);
     if (destroyed) onObstacleDestroyed(ctx, obstacle, params);

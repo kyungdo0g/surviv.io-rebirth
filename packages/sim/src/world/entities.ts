@@ -118,6 +118,12 @@ export class Obstacle {
      * Set on a landed tiered air drop (match/planes.ts); server-side only, so the shell's tier is not on the wire.
      */
     destroyTypeOverride = "";
+    /**
+     * Rebirth hit-counted explosion gate (ObstacleDef.explosionGate.hitsToOpen, blast_door_01): the qualifying hits it
+     * took and the door's shares they add up to (combat.ts gateHitShare); its health follows the shares left.
+     */
+    gateHits = 0;
+    gateShares = 0;
     /** set by the world to keep the broadphase in sync when the collider shrinks or moves */
     onBoundsChanged?: (obstacle: Obstacle) => void;
     /**
@@ -220,6 +226,18 @@ export class Obstacle {
         return this.dead;
     }
 
+    /**
+     * One more qualifying hit on a hit-counted gate, worth `shares` of the door's `total`: the health drops to the
+     * shares left (exactly 0 at the last one). Returns true when it was destroyed.
+     */
+    gateHit(shares: number, total: number): boolean {
+        if (this.dead || !(shares > 0) || !(total > 0)) return false;
+        this.gateHits++;
+        this.gateShares = Math.min(total, this.gateShares + shares);
+        const left = total - this.gateShares;
+        return this.damage(left === 0 ? this.health : this.health - (this.maxHealth * left) / total);
+    }
+
     /** Destroys the obstacle whatever its health and destructibility (opened air drop crates, crushed objects). */
     kill(): void {
         if (this.dead) return;
@@ -236,6 +254,8 @@ export class Obstacle {
         this.scale = this.maxScale;
         this.health = this.maxHealth;
         this.healthT = 1;
+        this.gateHits = 0;
+        this.gateShares = 0;
         this.refreshShape();
     }
 
