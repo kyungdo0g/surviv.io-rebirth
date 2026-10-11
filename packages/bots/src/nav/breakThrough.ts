@@ -17,9 +17,15 @@ import type { CellGrid } from "./cellGrid.ts";
 
 /** Break classes: 1 the house rule and anything breakable indoors, 2 glass walls elsewhere (BreakClass bits = 1 << (class - 1)). */
 export const BreakClass = { None: 0, HouseRule: 1, Glass: 2 } as const;
-export const BREAK_BITS = { HouseRule: 1, Glass: 2 } as const;
+export const BREAK_BITS = { HouseRule: 1, Glass: 2, Hurry: 4 } as const;
 /** Extra cost of crossing one cell blocked by a breakable obstacle (about the time to break it, in units walked). */
 export const BREAK_STEP = 5;
+/**
+ * The extra cost in a hurry (BREAK_BITS.Hurry with the classes: between a puzzle's pieces, the piece window runs): the
+ * route goes round furniture unless there is no reasonable way round (the church's pews lay across the way between
+ * its switches: punching through them ran the 10 s window out; the HQ archive's table in the swung door's way has none).
+ */
+export const HURRY_BREAK_STEP = 30;
 /** A* node budget for a goal behind breakable obstacles (another component of the grid). */
 export const CROSS_EXPAND = 5000;
 /** Obstacles with more health than this are not broken through (a 5000-HP glass wall, bollards, containers). */

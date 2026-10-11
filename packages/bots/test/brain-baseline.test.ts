@@ -49,6 +49,7 @@ describe("baseline isolation", () => {
             "rush",
             "puzzle",
             "basement",
+            "breach",
         ]);
     });
 });

@@ -135,6 +135,17 @@ export interface BrainFeatures {
      * stepping off an incoming Molotov, and backing off blind when flashed (brain/rebirthThrows.ts)
      */
     rebirthThrows: boolean;
+    // the owner's wave 3 (PR #19, 2026-10-10)
+    /**
+     * collapsing buildings: goals on the floor of a building near collapse (by the brick shell walls the bot saw broken)
+     * are avoided, a bot on it walks out, and nobody breaks another of its shell walls (brain/collapse.ts)
+     */
+    collapseAware: boolean;
+    /**
+     * an intermediate or expert bot (a seeded share) with a launcher whose round opens an explosion-gated door it sees
+     * (the blast bunker's door, the subway's shutter) blasts it open when it is quiet around (brain/gateBreach.ts)
+     */
+    gateBreach: boolean;
 }
 
 export type BrainFeature = keyof BrainFeatures;
@@ -177,6 +188,8 @@ export const BRAIN_FEATURES: readonly BrainFeature[] = [
     "crawl",
     "thirdPartyReact",
     "rebirthThrows",
+    "collapseAware",
+    "gateBreach",
 ];
 
 export type BrainName = "baseline" | "smart";

@@ -21,6 +21,8 @@ const GRID_PAD = 3;
 /** Portal points lie this far past the stair's ends, snapped to a walkable cell within PORTAL_SNAP. */
 const PORTAL_OUT = 1.6;
 const PORTAL_SNAP = 2.5;
+/** An explosion-gated obstacle this close to a stair box shuts the stair (gatesOn). */
+const GATE_REACH = 3;
 const SQRT2 = Math.SQRT2;
 const DX = [1, -1, 0, 0, 1, 1, -1, -1];
 const DY = [0, 0, 1, -1, 1, -1, 1, -1];
@@ -40,8 +42,18 @@ export interface StairPortal {
     /** half the stair length along `down`, half its width across */
     halfLen: number;
     halfWidth: number;
-    /** walkable ground point just past the top end, null when the ground grid has none there */
+    /**
+     * walkable ground point just past the top end, null when the ground grid has none there, and null while an
+     * explosion-gated obstacle across the stairs stands (`gates`; the blast bunker's door, the subway's shutter)
+     */
     top: Vec2 | null;
+    /** the top point whatever the gates (null: none on the ground grid) */
+    topPoint: Vec2 | null;
+    /**
+     * ids of the explosion-gated obstacles standing across the stairs (ObstacleDef.explosionGate): only explosions
+     * open them (sim combat.ts), so the stairs are no way in or out until a snapshot shows every one destroyed
+     */
+    gates: Set<number>;
     /** walkable underground point just past the bottom end, null when the underground grid has none there */
     bottom: Vec2 | null;
 }
@@ -111,6 +123,24 @@ function layoutOf(spawn: MapObjectSpawn, def: StructureDef, map: MapData): Layou
     const ox = Math.floor(all.min.x);
     const oy = Math.floor(all.min.y);
     return { ox, oy, w: Math.ceil(all.max.x) - ox, h: Math.ceil(all.max.y) - oy, floors, stairs };
+}
+
+/**
+ * Explosion-gated obstacles of the map across a stair or just past its top (the stair box grown by GATE_REACH: the
+ * blast bunker's door stands two units above its stair): they shut the stair.
+ */
+function gatesOn(map: MapData, box: Bounds): Set<number> {
+    const out = new Set<number>();
+    const area = grow(box, GATE_REACH);
+    for (const o of map.objects) {
+        if (!hasMapObjectDef(o.type)) continue;
+        const def = getMapObjectDef(o.type);
+        if (def.type !== "obstacle" || !def.explosionGate) continue;
+        const b = colliderBounds(obstacleCollider(def, o.pos, o.ori, o.scale));
+        if (b.max.x >= area.min.x && b.min.x <= area.max.x && b.max.y >= area.min.y && b.min.y <= area.max.y)
+            out.add(o.id);
+    }
+    return out;
 }
 
 /** The layer-1 floor of one structure. */
@@ -354,7 +384,7 @@ export class UndergroundNav {
             for (const r of from.regions) this.regions.push(r.copyFor(this));
             for (const p of from.portals) {
                 const region = this.regions[p.region.id];
-                const q: StairPortal = { ...p, region };
+                const q: StairPortal = { ...p, region, gates: new Set(p.gates) };
                 this.portals.push(q);
                 region.portals.push(q);
             }
@@ -390,9 +420,12 @@ export class UndergroundNav {
                     down: s.down,
                     halfLen,
                     halfWidth,
-                    top: topCell >= 0 ? ground.center(topCell) : null,
+                    top: null,
+                    topPoint: topCell >= 0 ? ground.center(topCell) : null,
                     bottom: botCell >= 0 ? region.center(botCell) : null,
+                    gates: gatesOn(map, s.box),
                 };
+                portal.top = portal.gates.size ? null : portal.topPoint;
                 this.portals.push(portal);
                 region.portals.push(portal);
             }
@@ -439,6 +472,13 @@ export class UndergroundNav {
 
     /** Learns from an obstacle in a snapshot (doors, destroyed obstacles), like NavGrid.observeObstacle. */
     observeObstacle(view: ObstacleView): void {
+        // a gate across a stair blown open: the stair leads down (and up) from now on
+        if (view.dead) {
+            for (const p of this.portals) {
+                if (!p.gates.delete(view.id)) continue;
+                if (p.gates.size === 0) p.top = p.topPoint;
+            }
+        }
         if ((view.layer & 1) !== 1) return;
         for (const r of this.regions) if (pointInBounds(view.pos, r.area)) r.observeObstacle(view);
     }

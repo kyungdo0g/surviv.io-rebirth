@@ -21,6 +21,21 @@ function modelAt(pos: Vec2, grid = NavGrid.forMap(gen.mapData)): WorldModel {
     return m;
 }
 
+/** The first spot west of `from` (within 300 units, 120 north or south) with every cell walkable from 14 units west of it to 36 east, 14 north and south. */
+function openPatch(grid: NavGrid, from: Vec2): Vec2 {
+    for (let dx = 0; dx <= 300; dx += 4) {
+        for (let dy = 0; dy <= 120; dy = dy > 0 ? -dy : 8 - dy) {
+            const c = { x: from.x - dx, y: from.y + dy };
+            let open = true;
+            for (let x = -14; x <= 36 && open; x += 0.5) {
+                for (let y = -14; y <= 14 && open; y += 0.5) open = grid.walkableAt({ x: c.x + x, y: c.y + y });
+            }
+            if (open) return walkable(grid, c);
+        }
+    }
+    throw new Error("no open patch");
+}
+
 function walkable(grid: NavGrid, p: Vec2): Vec2 {
     return grid.center(grid.nearestWalkable(p, 8));
 }
@@ -100,7 +115,9 @@ describe("path follower", () => {
         // a 20 x 20 room walled in glass on all sides (no door: only breaking a wall lets a player in, like the
         // greenhouse bunker's compartment 3), in the open west of the red house
         const grid = new NavGrid(gen.mapData);
-        const c = walkable(grid, { x: house.pos.x - 70, y: house.pos.y });
+        // (main 12345 moved with the wave-3 buildings, PR #19: the first open patch west of the house, clear from the
+        // room's west wall to past the bot's start 30 units east, instead of a fixed 70 units out)
+        const c = openPatch(grid, { x: house.pos.x - 70, y: house.pos.y });
         const walls: Array<[number, number, number]> = [
             [10.5, -5, 0],
             [10.5, 5, 0],

@@ -45,7 +45,8 @@ export function basementSites(map: MapData, ug: UndergroundNav): readonly Baseme
     if (sites) return sites;
     sites = [];
     for (const region of ug.regions) {
-        if (!region.portals.some((p) => p.top && p.bottom)) continue;
+        // (topPoint: a basement behind an explosion-gated stair counts; its trips wait until the gate is blown)
+        if (!region.portals.some((p) => p.topPoint && p.bottom)) continue;
         const b = region.bounds;
         sites.push({
             region,

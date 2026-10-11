@@ -52,7 +52,9 @@ export type BehaviourName =
     // bot interactions (BrainFeatures.puzzles): code puzzles, switches, control panels, vault doors and their rooms
     | "puzzle"
     // basements and bunkers (BrainFeatures.basements): down a known basement's stairs and through its rooms
-    | "basement";
+    | "basement"
+    // explosion-gated doors (BrainFeatures.gateBreach): one launcher volley at a blast door or the subway's shutter
+    | "breach";
 
 export interface ThrowPlan {
     /** throwable to use (frag, mirv, smoke) */

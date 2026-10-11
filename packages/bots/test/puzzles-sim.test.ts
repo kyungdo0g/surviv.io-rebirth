@@ -197,7 +197,10 @@ describe("puzzles in a game", () => {
         const def = obstacleDef("glass_wall_12");
         if (!glassSpawn || !def) throw new Error("no glass wall");
         const glass = obstacleCollider(def, glassSpawn.pos, glassSpawn.ori, glassSpawn.scale);
-        const bot = botAt(game, sub, "expert", 3);
+        // (seed 5 since PR #19's wave 3 moved main 12345: with seed 3 the expert now gives the planter code up after
+        // its third planter, and the compartment waits out its cooldown; seeds 1, 2, 5 and 8 reach the room, 3, 4, 6
+        // and 7 do not within the 50 s)
+        const bot = botAt(game, sub, "expert", 5);
         const pm = bot.bot.brain.mem.puzzle;
         const t = runUntil(game, [bot], () => pm.site === comp.index && pm.stage === "room", 50 * SECOND);
         expect(t).toBeGreaterThan(0);

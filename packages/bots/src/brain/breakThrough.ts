@@ -9,14 +9,19 @@
 import { v2 } from "@rebirth/core";
 import { WeaponSlot } from "@rebirth/defs";
 import { colliderCenter, distanceToCollider, segmentHits } from "../geom.ts";
+import { findPath } from "../nav/astar.ts";
 import { type BlockerSink, BREAK_BITS } from "../nav/breakThrough.ts";
 import { sameLayer } from "../nav/cellGrid.ts";
 import type { PersonaParams } from "../persona.ts";
 import type { SkillProfile } from "../skill.ts";
+import { shellBreakRisky } from "./collapse.ts";
 import { closestPoint, meleeBreaks, meleeReach, nearSurface, swingLands } from "./containers.ts";
 import type { BehaviourName, BrainCtx, Intent } from "./context.ts";
 import { breakGun } from "./scavenge.ts";
 
+/** A hurried judgement of whether an obstacle must be broken holds this long (s), searched with this many nodes. */
+const NEED_KEEP = 2;
+const NEED_EXPAND = 6000;
 /** A reported obstacle is acted on this long after the follower last reported it... */
 const FRESH = 0.6;
 /** ...or, while the bot stands at it punching, this long after the last punch that took health off it. */
@@ -80,6 +85,10 @@ export class BreakThrough implements BlockerSink {
     private lastNow = 0;
     /** the latest decision travels (TRAVEL): only then do routes break through */
     private travelling = true;
+    /** the latest decision presses a puzzle's pieces (the piece window runs): routes break through only as a last resort */
+    private hurry = false;
+    /** obstacles judged in a hurry: whether the way needs them broken, and when that was judged */
+    private readonly need = new Map<number, { at: number; need: boolean }>();
     /** decisions that went to breaking an obstacle on the way (diagnostics, tests) */
     acted = 0;
 
@@ -96,7 +105,9 @@ export class BreakThrough implements BlockerSink {
      * now), nor while an enemy close holds it back (it plans round instead).
      */
     breakMask(): number {
-        return !this.travelling || this.heldBackUntil > this.lastNow ? 0 : this.mask;
+        if (!this.travelling || this.heldBackUntil > this.lastNow || !this.mask) return 0;
+        // in a hurry (between a puzzle's pieces) routes break through only where there is no reasonable way round
+        return this.mask | (this.hurry ? BREAK_BITS.Hurry : 0);
     }
 
     blockerAhead(id: number, now: number): boolean {
@@ -111,12 +122,29 @@ export class BreakThrough implements BlockerSink {
     }
 
     /**
+     * Whether obstacle `id` must be broken to get on: walking straight at a switch (no goal), or no complete route
+     * round it to the goal on the ground grid (cached per obstacle for NEED_KEEP seconds).
+     */
+    private needed(ctx: BrainCtx, id: number, intent: Intent): boolean {
+        const goal = intent.goal;
+        // walking straight at a switch (no goal: the press's last approach), whatever is in between is in the way
+        if (!goal) return true;
+        const known = this.need.get(id);
+        if (known && ctx.now - known.at < NEED_KEEP) return known.need;
+        const route = findPath(ctx.model.nav, ctx.self.pos, goal, { maxExpand: NEED_EXPAND });
+        const need = !route?.complete;
+        this.need.set(id, { at: ctx.now, need });
+        return need;
+    }
+
+    /**
      * After the decision: a travelling bot with the reported obstacle in view breaks it (see the header). The goal
      * stays: once the obstacle is gone the follower walks on through.
      */
     apply(ctx: BrainCtx, intent: Intent): void {
         this.lastNow = ctx.now;
         this.travelling = TRAVEL.has(intent.behaviour) && !intent.targetId;
+        this.hurry = intent.behaviour === "puzzle" && ctx.mem.puzzle.stage === "press";
         if (!this.ahead || !this.travelling) return;
         const o = ctx.model.obstacleById.get(this.ahead);
         const me = ctx.self.pos;
@@ -146,6 +174,16 @@ export class BreakThrough implements BlockerSink {
             this.ahead = 0;
             return;
         }
+        // a brick shell wall of a collapsing building: never the one that brings it near collapse (brain/collapse.ts)
+        if (shellBreakRisky(ctx, o.view.id)) {
+            this.heldBackUntil = ctx.now + HELD_BACK;
+            this.ahead = 0;
+            return;
+        }
+        // in a hurry, only what the way truly needs broken: the bot walking back onto its route from a switch passed
+        // close by the church's pews and stopped to shoot each one it brushed while the piece window ran out
+        // (kept reported: on the last straight approach to a switch, with no route followed, it is in the way)
+        if (this.hurry && !this.needed(ctx, o.view.id, intent)) return;
         const aim = closestPoint(o, me);
         // in a hurry (between a puzzle's pieces: the piece window runs) a loaded gun shoots it down faster than fists
         // (the HQ archive: the office door swings onto a table, punched for 3 s on the way to the last switch)

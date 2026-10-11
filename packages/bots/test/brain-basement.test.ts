@@ -72,10 +72,22 @@ function libraryDone(game: Game, bot: BotController): void {
 /**
  * Stages the military base's PR #18 hidden rooms (the armory's gun cage, the HQ's archive, the infirmary's narcotics
  * store) as already looted: a looter who knows them works all three on the way (they sit round the basement's stairs)
- * and starts down only some 120 s in, too late for the vault and ten containers inside the 150 s.
+ * and starts down only some 120 s in, too late for the vault and ten containers inside the 150 s. PR #19's wave-3
+ * rooms too: the apartments' storeroom drew it off first, then the radio station's vault, and it was not down by 150 s.
  */
 function militaryRoomsDone(game: Game, bot: BotController): void {
-    const rooms = ["military_armory_01", "military_hq_01", "military_infirmary_01"];
+    const rooms = [
+        "military_armory_01",
+        "military_hq_01",
+        "military_infirmary_01",
+        "gas_station_store_01",
+        "church_01",
+        "mall_01",
+        "capitol_01",
+        "apartment_01",
+        "port_checkpoint_01",
+        "cargo_ship_01",
+    ];
     for (const s of puzzleSites(game.mapData)) {
         if (rooms.includes(s.entry.building)) bot.bot.brain.mem.puzzle.finished.add(s.index);
     }

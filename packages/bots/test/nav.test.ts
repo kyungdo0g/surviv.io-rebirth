@@ -98,7 +98,17 @@ describe("nav grid", () => {
 
     it("forgets obstacles seen destroyed and learns obstacles missing from MapData", () => {
         const own = new NavGrid(gen.mapData);
-        const stone = gen.objects.find((o) => o.type === "stone_01")!;
+        // a stone of the open ground with nothing else within 6 units (main 12345 moved with the wave-3 buildings, PR #19:
+        // the first stones now are props on the subway platform below ground)
+        const stone = gen.objects.find(
+            (o) =>
+                o.type === "stone_01" &&
+                o.layer === 0 &&
+                !o.parentId &&
+                !gen.objects.some(
+                    (x) => x !== o && x.layer === 0 && x.kind === "obstacle" && v2.distance(x.pos, o.pos) < 6,
+                ),
+        )!;
         expect(own.walkableAt(stone.pos)).toBe(false);
         own.observeObstacle({
             id: stone.id,

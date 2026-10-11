@@ -37,9 +37,12 @@ function doorOpen(game: Game): boolean {
  * A house-looting run: a bot outside the front door, an mp5 inside at `loot` from the house's centre (`teamMode` 2: with
  * a teammate `mate` spawned far away).
  */
-function lootRun(opts: { brain?: "smart" | "baseline"; teamMode?: 1 | 2; seed?: number; loot?: Vec2 } = {}) {
+function lootRun(
+    opts: { brain?: "smart" | "baseline"; teamMode?: 1 | 2; seed?: number; loot?: Vec2; clear?: boolean } = {},
+) {
     const teamMode = opts.teamMode ?? 1;
     const game = mainGame({}, teamMode);
+    if (opts.clear) clearContainers(game, house, 50);
     const party = teamMode === 2 ? { group: "p", autoFill: false, partySize: 2 } : undefined;
     const p = placePlayer(game, "bot", outsideStart, party);
     const mate = teamMode === 2 ? placePlayer(game, "mate", v2.add(outsideStart, { x: 0, y: 80 }), party) : null;
@@ -51,6 +54,19 @@ function lootRun(opts: { brain?: "smart" | "baseline"; teamMode?: 1 | 2; seed?: 
     });
     game.loot.addLoot("mp5", v2.add(house.pos, opts.loot ?? { x: 2, y: 6 }), 0, 1, { pushSpeed: 0 });
     return { game, p, bot, mate };
+}
+
+/**
+ * Takes the containers within `rad` of a building that are not its own (crates, an outhouse's toilets) out of the game:
+ * main 12345 moved with PR #19's wave 3, and those round the house and the bank drew the bots off to break them (the
+ * baseline bot never walked in, the bot that shut the door left the house for them before the teammate opened it
+ * again, the bank's bot went for a new outhouse's toilets). A container the bot never sees is never one it breaks.
+ */
+function clearContainers(game: Game, building: { id: number; pos: Vec2 }, rad: number): void {
+    for (const o of [...game.world.objects.values()]) {
+        if (o.kind !== "obstacle" || o.parentId === building.id || !o.destructible || o.def.explosion) continue;
+        if (o.def.loot.length > 0 && v2.distance(o.pos, building.pos) < rad) game.world.remove(o);
+    }
 }
 
 /** Steps a run; `each` sees every tick. */
@@ -95,8 +111,9 @@ describe("doors: closing behind", () => {
     it("the baseline brain leaves the door open behind it", () => {
         // seed 8: since the military base moved the map round the house, a shipping container and a crate east of it
         // drew most baseline bots there first (of seeds 1-12 only 3, 6 and 8 walked into the house within the 10 s);
-        // at the house of PR #18's layout all twelve walk in
-        const run = lootRun({ brain: "baseline", seed: 8 });
+        // at the house of PR #18's layout all twelve walk in; on PR #19's map the crates round it drew every one of
+        // seeds 1-12 off, so the containers that are not the house's are cleared (lootRun clear)
+        const run = lootRun({ brain: "baseline", seed: 8, clear: true });
         // under this house's roof (the container's roof next door does not count)
         const def = getMapObjectDef(house.type);
         const zones =
@@ -138,7 +155,7 @@ describe("doors: closing behind", () => {
 
     it("shuts it again when a teammate opens it while the bot is inside", () => {
         // (the gun lies near the door: the bot is still close by when the door opens again)
-        const run = lootRun({ teamMode: 2, loot: { x: 6, y: 8 } });
+        const run = lootRun({ teamMode: 2, loot: { x: 6, y: 8 }, clear: true });
         const mate = run.mate as Player;
         let openAt = Number.POSITIVE_INFINITY;
         let reopened = false;
@@ -178,6 +195,7 @@ describe("doors: closing behind, two wings", () => {
         // (doorClose.ts: a pickup in reach comes first)
         for (const seed of [6, 1]) {
             const game = mainGame();
+            clearContainers(game, bank, 60);
             // outside the south-east door; a vest in the hall, a gun in the south-east room (puzzles off: no vault).
             // The vest lies just past the room's inner window, where the bot sees it from the room (in the west hall it
             // saw it only on its way out: the run passed on the old map because the bot walked round the bank into the
@@ -201,7 +219,12 @@ describe("doors: closing behind, two wings", () => {
             let leaves = false;
             let vest = false;
             let gun = false;
+            // walked in by the south-east door first (an order to just inside it), then left to itself: on the map of
+            // PR #19's wave 3 nothing drew the bot into the room on its own (the gun lies under the bank's roof)
+            const inRoom = v2.add(mid, v2.mul(seShape.normal, inSide * 2));
+            bot.bot.setOrder({ type: "goto", pos: inRoom, arriveDist: 0.8 });
             for (let i = 0; i < 2500; i++) {
+                if (bot.bot.brain.mem.order && v2.distance(p.pos, inRoom) < 1) bot.bot.setOrder(null);
                 bot.update();
                 game.step();
                 for (const d of doors) {

@@ -18,11 +18,13 @@
 // through one, are avoided too (brain/strikes.ts). Round 5 (report 35): a building with an armed enemy in it that the
 // bot does not deal with (it loots, sweeps or explores on) is remembered the same way (noteContested), and a building
 // recorded unarmed waits 120 s per flight: the bot arms up elsewhere instead of walking back in to the same gunman.
+
 import { type Bounds, type Vec2, v2 } from "@rebirth/core";
 import { distToSegment, pointInBounds } from "../geom.ts";
 import { roofRegions } from "../perception/roofs.ts";
 import type { Contact, WorldModel } from "../perception/world.ts";
 import { enemyGun } from "./assess.ts";
+import { collapseAt } from "./collapse.ts";
 import type { BrainCtx, Intent } from "./context.ts";
 import { nearLeftBe } from "./earlyPace.ts";
 import type { DangerArea } from "./pursuitMemory.ts";
@@ -160,7 +162,9 @@ export function avoidPos(ctx: BrainCtx, p: Vec2): boolean {
         inDanger(ctx, p, false) ||
         strikeBlocks(ctx, p) ||
         (ctx.features.earlyPace && nearLeftBe(ctx, p)) ||
-        (ctx.features.rebirthThrows && inFire(ctx, p))
+        (ctx.features.rebirthThrows && inFire(ctx, p)) ||
+        // the owner's wave 3: the floor of a building near collapse (collapse.ts)
+        (ctx.features.collapseAware && collapseAt(ctx, p, 0) !== null)
     );
 }
 

@@ -31,6 +31,7 @@ import { NavGrid } from "../nav/grid.ts";
 import type { UndergroundNav } from "../nav/underground.ts";
 import { AirdropMemory } from "./airdrops.ts";
 import { bulletOrigin, perceiveBullets, type SeenBullet } from "./bulletSight.ts";
+import { DarkVision } from "./darkness.ts";
 import type { FactionIntel } from "./factionIntel.ts";
 import { canopyAmong, concealedAmong, LOOT_RAD, Reveals } from "./foliage.ts";
 import { type EnemyIntelProvider, NO_INTEL } from "./intel.ts";
@@ -176,10 +177,13 @@ export class WorldModel {
     roofBoxes: Bounds[] = [];
     /** concealed enemies shown for a moment by their own shot or a hit */
     private readonly reveals = new Reveals();
+    /** sight in the dark: only what the glow round the bot and flashes show (perception/darkness.ts); null: no dark */
+    readonly darkness: DarkVision | null;
 
     constructor(map: MapData, nav: NavGrid = NavGrid.forMap(map)) {
         this.map = map;
         this.nav = nav;
+        this.darkness = DarkVision.forMap(map);
     }
 
     get myGroup(): number | undefined {
@@ -350,6 +354,8 @@ export class WorldModel {
             return false;
         };
         this.reveals.note(this.bullets, snap.objects, this.selfId, now, (p) => this.onScreen(p));
+        this.darkness?.note(snap, selfPos, this.self.layer, now);
+        const lit = (p: Vec2, rad?: number): boolean => !this.darkness || this.darkness.shows(p, rad);
         for (const c of this.contacts.values()) c.visible = false;
         const seenLoot = new Set<number>();
         // players on the screen, drawn or hidden (a roof, a bush): a contact lost there keeps its sighting
@@ -360,11 +366,11 @@ export class WorldModel {
                 if (this.onScreen(o.pos, BODY_ON_SCREEN)) onScreen.add(o.id);
                 if (hidden(o.pos)) continue;
                 // teammates are known from the team UI; enemies only as the screen draws them
-                if (!this.isTeammate(o.id) && !this.enemyShows(o, now)) continue;
+                if (!this.isTeammate(o.id) && (!this.enemyShows(o, now) || !lit(o.pos))) continue;
                 this.updateContact(o, now);
             } else if (o.kind === "loot") {
-                if (!this.onScreen(o.pos) || hidden(o.pos) || concealedAmong(this.obstacles, o.pos, o.layer, LOOT_RAD))
-                    continue;
+                const dim = hidden(o.pos) || !lit(o.pos, LOOT_RAD);
+                if (!this.onScreen(o.pos) || dim || concealedAmong(this.obstacles, o.pos, o.layer, LOOT_RAD)) continue;
                 seenLoot.add(o.id);
                 this.loot.set(o.id, {
                     id: o.id,
@@ -378,7 +384,7 @@ export class WorldModel {
         }
         // grenades on the screen and not under someone else's roof (the client draws neither)
         this.projectiles = (snap.projectiles ?? []).filter(
-            (p) => this.onScreen(p.pos, BODY_ON_SCREEN) && !hidden(p.pos),
+            (p) => this.onScreen(p.pos, BODY_ON_SCREEN) && !hidden(p.pos) && lit(p.pos),
         );
         for (const p of this.projectiles) if (!this.projectileSeen.has(p.id)) this.projectileSeen.set(p.id, now);
         if (this.projectileSeen.size > this.projectiles.length) {
@@ -391,7 +397,7 @@ export class WorldModel {
         const inner = { min: { x: s.min.x + 2, y: s.min.y + 2 }, max: { x: s.max.x - 2, y: s.max.y - 2 } };
         for (const [id, l] of this.loot) {
             if (seenLoot.has(id)) continue;
-            const plain = pointInBounds(l.pos, inner) && !hidden(l.pos);
+            const plain = pointInBounds(l.pos, inner) && !hidden(l.pos) && lit(l.pos, LOOT_RAD);
             if (now - l.lastSeen > LOOT_MEMORY || (plain && !concealedAmong(this.obstacles, l.pos, l.layer, LOOT_RAD)))
                 this.loot.delete(id);
         }

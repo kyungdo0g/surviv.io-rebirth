@@ -273,6 +273,34 @@ const SPECS: readonly PuzzleSpec[] = [
             ["military_hq_01r", "common", ["blue", "red", "green"], [6.5, 0, 15.5, 9], 45, "the commander's archive"],
             ["military_hq_01b", "common", ["blue", "red", "green"], [6.5, 0, 15.5, 9], 45, "the commander's archive"],
             ["military_infirmary_01", "obvious", ["1"], [5, -2, 12, 9], 40, "the narcotics store"],
+            // PR #19, the owner's wave 3 (2026-10-10), appended so every older entry keeps its draw: a single switch is
+            // obvious, every code has its note in the same building (common). Rooms in the puzzle building's frame
+            // (the radar's ops room and the plant's control building: their compound rooms less the building's offset,
+            // radar_ops_01 at (30.5, 13), power_plant_control_01 at (-0.5, -21.5)).
+            ["gas_station_store_01", "obvious", ["1"], [0, 8, 11, 17], 55, "the gas station's back office"],
+            ["church_01", "common", ["blue", "yellow", "red"], [-17, 14, -8, 26], 55, "the church's reliquary"],
+            ["mall_01", "common", ["green", "yellow", "red", "blue"], [2, 23, 14, 34], 65, "the mall's security vault"],
+            [
+                "power_plant_control_01",
+                "common",
+                ["green", "red", "yellow"],
+                [4.5, 1.5, 17.5, 13.5],
+                60,
+                "the plant's strongroom",
+            ],
+            ["radar_ops_01", "common", ["blue", "yellow", "red"], [1.5, 4, 14.5, 15], 65, "the radar's crypto vault"],
+            ["capitol_01", "common", ["red", "green", "blue"], [24, 9, 32, 23], 60, "the governor's vault"],
+            ["apartment_01", "obvious", ["1"], [17, 7, 31, 16], 55, "the caretaker's storeroom"],
+            ["port_checkpoint_01", "obvious", ["1"], [-17, 2, -6, 17], 65, "the checkpoint's evidence vault"],
+            ["cargo_ship_01", "common", ["red", "green"], [-10.5, -41.5, 1, -33], 65, "the captain's cabin"],
+            [
+                "subway_platform_01",
+                "common",
+                ["red", "yellow", "blue"],
+                [21, -6, 32, 4],
+                60,
+                "the station master's safe",
+            ],
         ] as const
     ).map(
         ([building, lore, code, [x0, y0, x1, y1], value, room]): PuzzleSpec => ({

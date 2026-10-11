@@ -202,11 +202,13 @@ describe("per-game grids", () => {
         // the crate nearest the door, as the map has it
         const crates = gen.objects.filter((o) => o.type === "crate_01" && o.layer === 0);
         const crate = crates.sort((a, b) => v2.distance(a.pos, door.pos) - v2.distance(b.pos, door.pos))[0];
+        // (near enough for both to show on one screen from half way)
+        expect(v2.distance(crate.pos, door.pos)).toBeLessThan(40);
         const start = (name: string) => {
             const game = mainGame();
-            // outside, between the door and the crate (at +20, -31 from it since PR #18's grown hidden rooms and
-            // breakable partitions moved main 12345's layout, 2026-10-10): both in view
-            const p = placePlayer(game, name, v2.add(door.pos, { x: 12, y: -15 }));
+            // outside, half way between the door and the crate: both in view (main 12345's layout moves with every
+            // building wave: PR #18's grown hidden rooms, then PR #19's wave 3; no fixed offset from the door)
+            const p = placePlayer(game, name, v2.lerp(0.5, door.pos, crate.pos));
             const bot = new BotController(game, p.id, { seed: 1, brain: "smart" });
             bot.bot.setOrder({ type: "hold" });
             return { game, bot };

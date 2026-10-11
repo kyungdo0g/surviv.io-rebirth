@@ -93,8 +93,9 @@ describe("MOVE scenarios", () => {
         // again, so s = 2, 4, 6: house 1, now beside the crossing bunker, sends the bot to the bunker's puzzle first,
         // and it meets the player only at the end of the run, 47 s in, or armed; the rebirth buildings' rework
         // (2026-10-10) moved them once more: at house 6 the bot never meets the player, so s = 7 replaced it; PR #18's
-        // one-switch room in the military infirmary draws the house-2 bot off 3 s in, so s = 3 replaced it)
-        for (const s of [3, 4, 7]) {
+        // one-switch room in the military infirmary draws the house-2 bot off 3 s in, so s = 3 replaced it; PR #19's
+        // wave 3 moved them again: the house-3 bot no longer meets the player in the 50 s, so s = 1 replaced it)
+        for (const s of [1, 4, 7]) {
             const game = mainGame({ minPlayers: 99 });
             const hb = houses[s % houses.length];
             const def = getMapObjectDef(hb.type);
@@ -155,8 +156,9 @@ describe("MOVE scenarios", () => {
         // again, so s = 2, 4, 6: house 1, now beside the crossing bunker, sends the bot to the bunker's puzzle first,
         // and it meets the player only at the end of the run, 47 s in, or armed; the rebirth buildings' rework
         // (2026-10-10) moved them once more: at house 6 the bot never meets the player, so s = 7 replaced it; PR #18's
-        // one-switch room in the military infirmary draws the house-2 bot off 3 s in, so s = 3 replaced it)
-        for (const s of [3, 4, 7]) {
+        // one-switch room in the military infirmary draws the house-2 bot off 3 s in, so s = 3 replaced it; PR #19's
+        // wave 3 moved them again: the house-3 bot no longer meets the player in the 50 s, so s = 1 replaced it)
+        for (const s of [1, 4, 7]) {
             const game = mainGame({ minPlayers: 99 });
             const hb = houses[s % houses.length];
             const def = getMapObjectDef(hb.type);

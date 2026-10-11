@@ -2,7 +2,7 @@
 // door costs, a node budget (returns the partial path to the node closest to the goal when it runs out), then string
 // pulling over grid line of sight. Scratch arrays are shared per grid (searches never run concurrently).
 import { type Vec2, v2 } from "@rebirth/core";
-import { BREAK_STEP, breakableCell, CROSS_EXPAND } from "./breakThrough.ts";
+import { BREAK_BITS, BREAK_STEP, breakableCell, CROSS_EXPAND, HURRY_BREAK_STEP } from "./breakThrough.ts";
 import type { CellGrid } from "./cellGrid.ts";
 
 export interface PathResult {
@@ -188,7 +188,8 @@ export function findPath(grid: CellGrid, start: Vec2, goal: Vec2, opts: PathOpti
             let extra = 0;
             if (grid.blocked[ni] !== 0 && grid.tight[ni] === 0) {
                 if (mask === 0 || !breakableCell(grid, ni, mask)) continue;
-                extra = BREAK_STEP;
+                // (in a hurry, BREAK_BITS.Hurry: only where there is no reasonable way round)
+                extra = mask & BREAK_BITS.Hurry ? HURRY_BREAK_STEP : BREAK_STEP;
             }
             let step = 1;
             if (k >= 4) {

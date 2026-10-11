@@ -29,6 +29,8 @@ export interface LauncherSpec {
     minDist: number;
     /** rounds per volley (the M202 fires four) */
     rounds: number;
+    /** the round's explosion id (explosion-gated doors open to listed ids only: brain/gateBreach.ts) */
+    explosion: string;
 }
 
 const BODY = GameConfig.player.radius;
@@ -96,6 +98,7 @@ export function launcherSpec(id: string): LauncherSpec | undefined {
                 armDistance,
                 minDist: Math.max(armDistance, blast.max + BODY + SLACK),
                 rounds: Math.max(1, def.bulletCount),
+                explosion: proj?.explosionType ?? bullet.onHit ?? "",
             };
         }
     }

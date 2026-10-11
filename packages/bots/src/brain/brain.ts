@@ -19,6 +19,7 @@ import { assessCached, wantsAssessment } from "./assess.ts";
 import { planBarrelShot } from "./barrelShot.ts";
 import { holdBlastFire, stepOutOfBlast } from "./blast.ts";
 import { BreakThrough } from "./breakThrough.ts";
+import { leaveCollapse, noteCollapse } from "./collapse.ts";
 import { addCombatLayer, selectTarget } from "./combat.ts";
 import { type BehaviourName, type BrainCtx, BrainMemory, emptyIntent, type Intent } from "./context.ts";
 import { noteContested } from "./danger.ts";
@@ -176,6 +177,8 @@ export class Brain {
         const self = this.model.self;
         if (self.dead) return emptyIntent("idle");
         const ctx = this.context(now);
+        // collapsing buildings: the brick shell walls on the screen, broken or badly damaged (collapse.ts)
+        if (ctx.features.collapseAware) noteCollapse(ctx);
         // doors: what the snapshot's doors show and sound like, before anything is decided
         this.doors?.observe(ctx);
         // puzzles: the site doors the bot sees or hears open (never read from the snapshot out of its sight)
@@ -309,6 +312,8 @@ export class Brain {
         }
         // breaking through the obstacle on the way (after the faction's rules: they may have moved the goal)
         if (ctx.features.breakThrough) this.breaker.apply(ctx, intent);
+        // off the floor of a building about to cave in (collapse.ts; a dodge below still comes first)
+        if (ctx.features.collapseAware) leaveCollapse(ctx, intent);
         if (ctx.features.threats) reactToThreats(ctx, intent);
         if (ctx.features.scope) manageScope(ctx, intent);
         // pursuit: shot on the spot it stands on: step off it (stillHit.ts)

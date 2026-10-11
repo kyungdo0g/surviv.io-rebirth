@@ -98,6 +98,8 @@ describe("underground navigation", () => {
         const types = ug.regions.map((r) => r.type).sort();
         expect(types).toEqual([
             "barn_basement_structure_01",
+            // the wave-3 blast bunker (PR #19): its stair shut by blast_door_01 until an M202 blows it
+            "bunker_blast_01",
             "bunker_structure_02",
             "bunker_structure_03",
             "bunker_structure_04",
@@ -109,15 +111,22 @@ describe("underground navigation", () => {
             "mansion_structure_01",
             // the military base's basement: five stairs (packages/defs rebirth/buildings/military)
             "military_base_01",
+            // the wave-3 subway station (PR #19): its stair shut by subway_gate_01 until a launcher round blows it
+            "subway_station_01",
         ]);
         // bridges only have loot stairs
         expect(gen.mapData.objects.some((o) => o.type.startsWith("bridge_"))).toBe(true);
-        // two per structure (the mansion cellar's two stairs among them), five for the military base
-        expect(ug.portals).toHaveLength(21);
+        // two per structure (the mansion cellar's two stairs among them), five for the military base, one each for the
+        // blast bunker and the subway
+        expect(ug.portals).toHaveLength(23);
         for (const p of ug.portals) {
+            // an explosion-gated stair is no way in until its gate is blown: no top point while it stands
+            const gated = p.gates.size > 0;
+            expect(gated).toBe(p.region.type === "bunker_blast_01" || p.region.type === "subway_station_01");
+            expect(p.top === null).toBe(gated);
             // every portal leads from the main ground area to its underground floor
-            expect(p.top && p.bottom).toBeTruthy();
-            expect(ground.component(ground.cellOf(p.top as Vec2))).toBe(mainComp);
+            expect(p.topPoint && p.bottom).toBeTruthy();
+            expect(ground.component(ground.cellOf(p.topPoint as Vec2))).toBe(mainComp);
             expect(p.region.walkableAt(p.bottom as Vec2)).toBe(true);
             expect(ug.handles(p.center, 2)).toBe(true);
             expect(ug.handles(p.bottom as Vec2, 1)).toBe(true);

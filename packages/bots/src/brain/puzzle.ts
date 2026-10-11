@@ -20,7 +20,7 @@
 import { type Vec2, v2 } from "@rebirth/core";
 import { GameConfig, Input } from "@rebirth/defs";
 import type { BuildingView } from "@rebirth/sim";
-import { colliderCenter, distanceToCollider } from "../geom.ts";
+import { colliderCenter, distanceToCollider, segmentHits } from "../geom.ts";
 import { drawPuzzleKnowledge, SLIP_CHANCE } from "../knowledge/puzzles.ts";
 import { sameLayer } from "../nav/cellGrid.ts";
 import type { SeenObstacle } from "../perception/world.ts";
@@ -494,7 +494,9 @@ function pressPiece(ctx: BrainCtx, site: PuzzleSite, piece: SitePiece, intent: I
         }
         return;
     }
-    if (v2.distance(me, front.spot) < STEP_IN || d < STEP_IN) {
+    // (not through what stands in the way now: the radar ops room's door, opened on the way, swings across the
+    // straight line to its red switch, and the bot leaned into the door panel until the piece window ran out)
+    if ((v2.distance(me, front.spot) < STEP_IN || d < STEP_IN) && !panelBetween(ctx, piece.id, me, front.spot)) {
         // the last steps straight at the face's middle (a person leans into the switch), or at the piece over what
         // stands in front of it (a bottle on the saloon's bar counter: puzzleSites.ts pieceFront)
         intent.moveDir = v2.normalizeSafe(v2.sub(front.lean, me), v2.mul(front.face, -1));
@@ -502,6 +504,16 @@ function pressPiece(ctx: BrainCtx, site: PuzzleSite, piece: SitePiece, intent: I
         return;
     }
     walkTo(intent, front.spot, piece.layer, 0.5);
+}
+
+/** Whether a seen door panel (not the piece itself) stands across the straight line from `a` to `b`. */
+function panelBetween(ctx: BrainCtx, pieceId: number, a: Vec2, b: Vec2): boolean {
+    for (const o of ctx.model.obstacles) {
+        if (o.view.id === pieceId || !o.view.door || !o.blocksMove || !sameLayer(o.view.layer, ctx.self.layer))
+            continue;
+        if (segmentHits(o.col, a, b)) return true;
+    }
+    return false;
 }
 
 export function planPuzzle(ctx: BrainCtx): Intent {

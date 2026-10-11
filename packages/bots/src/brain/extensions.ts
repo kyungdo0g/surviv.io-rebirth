@@ -11,6 +11,7 @@ import { holdScore, planHold } from "./endgame.ts";
 import { evadeScore, planEvade } from "./evade.ts";
 import { advanceScore, planAdvance, planRally, rallyScore } from "./factionSquad.ts";
 import type { BrainFeature } from "./features.ts";
+import { breachScore, planBreach } from "./gateBreach.ts";
 import { guardScore, planGuard } from "./guard.ts";
 import { planPuzzle, puzzleScore } from "./puzzle.ts";
 import { planSearch, searchScore } from "./search.ts";
@@ -47,4 +48,6 @@ export const EXTENSION_BEHAVIOURS: readonly ExtensionBehaviour[] = [
     { name: "puzzle", feature: "puzzles", score: puzzleScore, plan: planPuzzle },
     // owner 2026-10-08: known basements and bunkers looted like players do (the military base's, the Hydra, ...)
     { name: "basement", feature: "basements", score: basementScore, plan: planBasement },
+    // the owner's wave 3: a launcher volley at an explosion-gated door the bot wants through
+    { name: "breach", feature: "gateBreach", score: breachScore, plan: planBreach },
 ];
