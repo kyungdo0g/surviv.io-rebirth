@@ -4,8 +4,8 @@
 // atrium with its fountain, the food court, the electronics store), the north concourse (y 11..18) and a row of toilets,
 // a café, the security office with its vault, a music shop and the loading dock. The supermarket fills the west end
 // (x -46..-26) with its stockroom behind it. Shop fronts are glass (survev's glass_wall_<len>, breakable) and windows
-// with 4-unit open doorways; the walls between shops are breakable wood; the shell, the supermarket's wall, the walls a
-// puzzle switch stands on and the vault are concrete.
+// with 4-unit open doorways; the walls between shops are breakable wood; the shell, the supermarket's wall, the
+// security office's keypad wall and the vault are concrete.
 import type { BuildingChildDef } from "../../types/index.ts";
 import { child, type Opening, type RebirthBuildingLayout, type WallMaterial, type WallSeg } from "./layout.ts";
 import { hRun, op, room, vRun } from "./military/part.ts";
@@ -120,12 +120,11 @@ const NORTH_FRONT = strip(true, 18, -26, [
     ["w", 1],
     ["win", 4],
     ["w", 2],
-    // the security office (-2..14)
-    ["w", 2],
+    // the security office (-2..14): its door, then the keypad's concrete wall (since the keypad, 2026-10-11: the door
+    // a unit west, no window)
+    ["w", 1],
     ["door", 4],
-    ["w", 2],
-    ["win", 4],
-    ["w", 4],
+    ["c", 11],
     // the music shop (14..26)
     ["w", 1],
     ["o", 4],
@@ -165,6 +164,26 @@ export const MALL_STRIPS: Strip = join(
     ATRIUM_EAST,
 );
 
+/**
+ * The security office's keypad (the owner's design, 2026-10-11): five number buttons (switch_03, 0.9 wide, 1.1 deep) on
+ * the office's south wall (inner face y 18.5), facing north, 2.2 units apart from x 3.6 (by the office door's jamb) to
+ * x 12.4 (a body still stands square before it by the east wall), digits 1 2 7 8 9 west to east. Use presses every
+ * button whose collider lies within 0.2 of the body (sim world/interact.ts), so a concrete fin 1 wide stands between
+ * neighbours, 1.15 out from the face (y 18.15..19.65): no spot a body fits reaches two buttons (above a fin's middle,
+ * the nearest spot to both, they are 1.235 away, past the 1.2 reach), each button's front reaches it (0.85), and 2.85
+ * units stay free between the fins and the vault's wall (the probe's comfortable 2.6). The digits are painted on the
+ * floor in front (tools/assets/rebirthArt/mall.ts).
+ */
+export const MALL_KEYPAD = [
+    { label: "1", x: 3.6 },
+    { label: "2", x: 5.8 },
+    { label: "7", x: 8 },
+    { label: "8", x: 10.2 },
+    { label: "9", x: 12.4 },
+].map((k) => ({ ...k, y: 19.05, ori: 2 }));
+export const MALL_KEYPAD_FINS = [4.7, 6.9, 9.1, 11.3] as const;
+export const MALL_KEYPAD_FIN_Y0 = 18.15;
+
 /** The vault's sliding door (vault_door_bathhouse: only the puzzle opens it; slides east into the vault's wall). */
 export const MALL_VAULT_DOOR = { type: "vault_door_bathhouse", pos: { x: 9, y: 23 }, ori: 1 } as const;
 
@@ -190,7 +209,7 @@ export const MALL_LAYOUT: RebirthBuildingLayout = {
             [-16.5, -12.5],
             [12.5, 16.5],
         ]),
-        // the supermarket's wall (a doorway onto each concourse) and the stockroom's, concrete: two switches stand on it
+        // the supermarket's wall (a doorway onto each concourse) and the stockroom's, concrete
         ...vRun(-26, -33.5, 33.5, [
             [-16.5, -12.5],
             [12.5, 16.5],
@@ -215,6 +234,8 @@ export const MALL_LAYOUT: RebirthBuildingLayout = {
         // the security vault (x 2..14, y 23..34 wall lines), concrete; its sliding door 5..9
         ...hRun(23, 2, 14, [[5, 9]]),
         ...vRun(2, 22.5, 34),
+        // the keypad's fins between its buttons (mall.ts MALL_KEYPAD)
+        ...MALL_KEYPAD_FINS.map((x) => [x, MALL_KEYPAD_FIN_Y0, x, MALL_KEYPAD_FIN_Y0 + 1.5] as const),
         ...MALL_STRIPS.walls,
     ],
     openings: [

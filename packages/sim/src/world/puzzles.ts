@@ -1,8 +1,9 @@
 // Building puzzles: pieces (buttons labelled with a `puzzlePiece`) must be pressed in the order of the puzzle's code.
 // The full code solves it: the pieces lock, after `completeUseDelay` the building's `completeUseType` children are
 // triggered (doors toggle, buttons are pressed, anything else is destroyed) and a structure whose interior sound
-// names the puzzle switches to its alternate track. A wrong full-length input, or no new piece for
-// `pieceResetDelay`, is an error: the pieces lock for `errorResetDelay`, then everything resets.
+// names the puzzle switches to its alternate track. A wrong full-length input (rebirth `wrongPieceResets`: any piece
+// that is not the next step), or no new piece for `pieceResetDelay`, is an error: the pieces lock for
+// `errorResetDelay`, then everything resets.
 // Behaviour follows survev server/src/game/objects/building.ts (puzzlePieceToggled, update, startReset,
 // resetPuzzle); docs/research/maps/puzzles.md "Puzzle engine".
 import { DamageType, getMapDef, REBIRTH_PUZZLE_CODES } from "@rebirth/defs";
@@ -112,7 +113,10 @@ export function puzzlePieceToggled(ctx: SimContext, building: Building, piece: O
         }
         startReset(ctx, building, def.completeOffDelay);
         puzzle.completeTicker = def.completeUseDelay;
-    } else if (puzzle.inputCode.length >= code.length) {
+    } else if (
+        puzzle.inputCode.length >= code.length ||
+        (def.wrongPieceResets && code[puzzle.inputCode.length - 1] !== piece.puzzlePiece)
+    ) {
         puzzle.errSeq++;
         startReset(ctx, building, def.errorResetDelay);
     } else {

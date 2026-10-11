@@ -2,21 +2,21 @@
 // along their middles, the atrium's marble and the fountain's basin round the statue, a small-tile supermarket with
 // coloured aisle bands, a checkered food court, a carpet per shop (the pharmacy's green cross, the toy shop's bright
 // tiles), white toilet tiles, the security office and its steel vault with a hazard band in the vault's doorway, the
-// shop switches' coloured plates and the duty note with their order, a concrete loading dock with a hazard band at the
-// truck bay, an asphalt truck apron and a paved entrance plaza. The roof: grey panels, glass barrel vaults over both
+// keypad's steel panel with a digit tile before each button, a concrete loading dock with a hazard band at the truck
+// bay, an asphalt truck apron and a paved entrance plaza with the fallen "SINCE 1987" sign (the keypad's hint). The roof: grey panels, glass barrel vaults over both
 // concourses, a glass dome over the atrium, a red shopping-bag emblem over the supermarket, the entrance canopy, the
 // loading dock's darker roof and AC units.
 import {
-    MALL_CODE,
+    MALL_KEYPAD,
     MALL_LAYOUT,
-    MALL_NOTE,
-    MALL_SWITCHES,
+    MALL_SIGN,
     MALL_VAULT_DOOR,
+    REBIRTH_ART_PX_PER_UNIT as PX,
 } from "../../../packages/defs/src/rebirth/buildings.ts";
+import { lettering } from "./lettering.ts";
 import {
     acUnit,
     circleAt,
-    codeNote,
     cross,
     type FloorPalette,
     type Frame,
@@ -28,8 +28,6 @@ import {
     py,
     rect,
     roof,
-    SWITCH_PLATE_COLORS,
-    switchPlate,
 } from "./svg.ts";
 
 export const MALL_FLOORS: FloorPalette = {
@@ -74,6 +72,85 @@ function checker(fr: Frame, x0: number, y0: number, x1: number, y1: number, step
 const mat = (fr: Frame, x0: number, y0: number, x1: number, y1: number) =>
     rect(fr, x0, y0, x1, y1, `fill="#3b3f43" fill-opacity="0.55"`);
 
+/** The keypad on the security office's south wall: a steel panel, a pale plate per button, a digit tile before it. */
+function keypad(fr: Frame): string {
+    const xs = MALL_KEYPAD.map((k) => k.x);
+    const face = 18.5;
+    const out = [
+        rect(
+            fr,
+            Math.min(...xs) - 0.5,
+            face,
+            Math.max(...xs) + 0.5,
+            face + 1.45,
+            `fill="#3d4349" stroke="${INK}" stroke-width="3"`,
+        ),
+    ];
+    for (const k of MALL_KEYPAD) {
+        out.push(rect(fr, k.x - 0.55, face, k.x + 0.55, face + 1.2, `fill="#9aa3ab" stroke="${INK}" stroke-width="2"`));
+        const ty = k.y + 1.35;
+        out.push(
+            rect(
+                fr,
+                k.x - 0.5,
+                ty - 0.5,
+                k.x + 0.5,
+                ty + 0.5,
+                `fill="#f2efe6" stroke="${INK}" stroke-width="3" rx="5"`,
+            ),
+            lettering(k.label, px(fr, k.x), py(fr, ty), 0.62 * PX, `stroke="${INK}" stroke-width="4"`),
+        );
+    }
+    return out.join("");
+}
+
+/**
+ * The shop sign fallen on the entrance plaza (MALL_SIGN): a cream board with a red border and "SINCE 1987", its broken
+ * posts beside it, a crack across one end, a shadow and a few chips of it on the paving.
+ */
+function fallenSign(fr: Frame): string {
+    const { x, y, turn } = MALL_SIGN;
+    const w = 8.8;
+    const h = 1.9;
+    const red = "#9d2b2b";
+    const body = [
+        rect(
+            fr,
+            x - w / 2 + 0.25,
+            y - h / 2 - 0.25,
+            x + w / 2 + 0.25,
+            y + h / 2 - 0.25,
+            `fill="#000" fill-opacity="0.25"`,
+        ),
+        rect(fr, x - w / 2, y - h / 2, x + w / 2, y + h / 2, `fill="#e9dfc6" stroke="#3a2f22" stroke-width="4"`),
+        rect(
+            fr,
+            x - w / 2 + 0.22,
+            y - h / 2 + 0.22,
+            x + w / 2 - 0.22,
+            y + h / 2 - 0.22,
+            `fill="none" stroke="${red}" stroke-width="3"`,
+        ),
+        lettering("SINCE 1987", px(fr, x), py(fr, y), 0.9 * PX, `stroke="${red}" stroke-width="5"`),
+        // a crack across the right end, a chipped corner
+        `<path d="M${px(fr, x + 3.95)} ${py(fr, y + h / 2)}L${px(fr, x + 4.2)} ${py(fr, y + 0.3)}L${px(fr, x + 4.0)} ${py(fr, y - 0.2)}L${px(fr, x + 4.25)} ${py(fr, y - h / 2)}" fill="none" stroke="#3a2f22" stroke-width="3"/>`,
+        `<path d="M${px(fr, x + w / 2)} ${py(fr, y - h / 2 + 0.55)}L${px(fr, x + w / 2 - 0.5)} ${py(fr, y - h / 2)}L${px(fr, x + w / 2)} ${py(fr, y - h / 2)}Z" fill="#b7b0a2"/>`,
+        // the snapped posts it hung from, along its top edge
+        rect(fr, x - 3, y + h / 2, x - 2.6, y + h / 2 + 0.9, `fill="#5d6166" stroke="${INK}" stroke-width="2"`),
+        rect(fr, x + 2.6, y + h / 2, x + 3, y + h / 2 + 0.6, `fill="#5d6166" stroke="${INK}" stroke-width="2"`),
+    ].join("");
+    const chips = [
+        [x + w / 2 + 0.5, y - 0.9],
+        [x + w / 2 + 0.9, y - 0.3],
+        [x + 2.2, y - h / 2 - 0.6],
+    ]
+        .map(([cx, cy]) =>
+            rect(fr, cx - 0.15, cy - 0.12, cx + 0.15, cy + 0.12, `fill="#e9dfc6" stroke="#3a2f22" stroke-width="1.5"`),
+        )
+        .join("");
+    return `<g transform="rotate(${turn} ${px(fr, x)} ${py(fr, y)})">${body}</g>${chips}`;
+}
+
 export function mallFloor(): string {
     const fr = floorFrameOf(MALL_LAYOUT);
     const extra = [
@@ -114,14 +191,9 @@ export function mallFloor(): string {
         rect(fr, 40.8, 34, 41.2, 42, `fill="#e2b425"`),
         // the plaza's paving border
         rect(fr, -12, -40, 12, -34, `fill="none" stroke="#8f887a" stroke-width="6"`),
-        // the shop switches' plates and the duty note with their order before the vault door
-        ...MALL_SWITCHES.map((sw) => switchPlate(fr, sw.x, sw.y, SWITCH_PLATE_COLORS[sw.label])),
-        codeNote(
-            fr,
-            MALL_NOTE.x,
-            MALL_NOTE.y,
-            MALL_CODE.map((c) => SWITCH_PLATE_COLORS[c]),
-        ),
+        // the keypad: its steel panel under the buttons and fins, a digit tile on the floor before each button
+        keypad(fr),
+        fallenSign(fr),
     ].join("");
     return floor(MALL_LAYOUT, MALL_FLOORS, "#c6c4bd", "#2b2d30", extra);
 }

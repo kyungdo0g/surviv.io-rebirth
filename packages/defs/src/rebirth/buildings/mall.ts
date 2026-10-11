@@ -3,10 +3,11 @@
 // entrances: the main entrance's sliding doors south, a sliding door at the east end of each concourse, the
 // supermarket's side door and the stockroom's back door, and the loading dock's open truck bay. Twelve shops along the
 // two concourses, behind glass fronts and 4-unit doorways, the atrium with its fountain between them. The security
-// office's vault opens on the shop-switch code: a switch in the clothing shop, the sports shop, the electronics store and
-// the pharmacy (a green, a red, a yellow and a blue plate), pressed in the order of the duty note on the security
-// office's floor (survev bathhouse_01's code room). The vault (11 x 10 inside) holds a sniper crate, a safe, a shotgun
-// mount, deposit boxes, level 3 armour and loot. Loot is dense but spread: shelves, cases and drawers in every shop.
+// office's vault opens on the keypad code (the owner's design, 2026-10-11, replacing the shop-switch colour code): five
+// number buttons 1 2 7 8 9 on the office's wall (mallLayout.ts MALL_KEYPAD), pressed 1 9 8 7, the year on the fallen
+// "SINCE 1987" sign at the main entrance (floor art); a wrong button errors at once (survev bathhouse_01's timings). The
+// vault (11 x 10 inside) holds a sniper crate, a safe, a shotgun mount, deposit boxes, level 3 armour and loot. Loot is
+// dense but spread: shelves, cases and drawers in every shop.
 import type { BuildingChildDef, BuildingDef } from "../../types/index.ts";
 import { MEDICAL_LOOT_SPAWNER } from "./clinic.ts";
 import {
@@ -21,24 +22,18 @@ import {
     rebirthPuzzle,
     wallChildren,
 } from "./layout.ts";
-import { MALL_LAYOUT, MALL_STRIPS, MALL_VAULT_DOOR } from "./mallLayout.ts";
+import { MALL_KEYPAD, MALL_LAYOUT, MALL_STRIPS, MALL_VAULT_DOOR } from "./mallLayout.ts";
 
 export * from "./mallLayout.ts";
 
 export const MALL_PUZZLE = "rebirth_mall";
-/** The shop switches, flush to concrete walls: the clothing and sports shops', the electronics store's, the pharmacy's. */
-export const MALL_SWITCHES = [
-    { label: "red", x: -24.95, y: -6, ori: 1 },
-    { label: "green", x: -24.95, y: 6, ori: 1 },
-    { label: "yellow", x: 44.95, y: 0, ori: 3 },
-    { label: "blue", x: 12, y: -32.95, ori: 2 },
-] as const;
-export const MALL_CODE: readonly string[] = ["green", "yellow", "red", "blue"];
+/** The keypad code: the year on the sign at the main entrance (MALL_SIGN); the 2 is the decoy. */
+export const MALL_CODE: readonly string[] = ["1", "9", "8", "7"];
 /**
- * The duty note with the code on the security office's floor, before the vault door (4.1 wide: the office's 3-wide bay
- * would hide its outer marks under the walls).
+ * The fallen shop sign on the entrance plaza, its centre and its turn (degrees, clockwise as drawn): "SINCE 1987", the
+ * keypad's hint, drawn into the floor art (tools/assets/rebirthArt/mall.ts) left of the main doors.
  */
-export const MALL_NOTE = { x: 7, y: 20 } as const;
+export const MALL_SIGN = { x: -5.5, y: -37.1, turn: -6 } as const;
 
 export const MALL_ART: RoofedBuildingArt = layoutArt(
     MALL_LAYOUT,
@@ -193,9 +188,9 @@ function furniture(): BuildingChildDef[] {
         flush("stand_01", "n", 33.5, -8.85),
         child("table_03", -8, 24.5),
         child("loot_tier_1", -5, 30),
-        // ---- the security office (x -1.5..13.5, y 18.5..22.5, and its west bay x -1.5..1.5 to y 33.5): a locker by
-        // the vault door, the duty note on the floor beside the door (floor art)
-        flush("locker_01", "n", 22.5, 11.5),
+        // ---- the security office (x -1.5..13.5, y 18.5..22.5, and its west bay x -1.5..1.5 to y 33.5): the keypad on
+        // its south wall (mallLayout.ts), the way along it to the vault door kept clear; a locker at the bay's end
+        flush("locker_01", "n", 33.5, 0),
         child("loot_tier_1", 0, 27),
         // ---- the vault (x 2.5..13.5, y 23.5..33.5): the sniper crate and the safe along the north wall, the shotgun
         // mount on the west wall under the crate, the deposit boxes on the east wall, armour and loot on the floor
@@ -254,7 +249,8 @@ export function mall(known: (id: string) => boolean): BuildingDef {
             vision: { dist: 5.5, width: 2.75, linger: 0.5, fadeRate: 6 },
             imgs: [{ sprite: MALL_ART.ceiling, scale: ART_SCALE, alpha: 1, tint: 0xffffff }],
         },
-        puzzle: rebirthPuzzle(MALL_PUZZLE, MALL_VAULT_DOOR.type),
+        // a wrong button errors at once, as on a keypad (survev waits for four presses before it errs)
+        puzzle: { ...rebirthPuzzle(MALL_PUZZLE, MALL_VAULT_DOOR.type), wrongPieceResets: true },
         // the hum of the mall (the clinic's sound) round the atrium
         soundEmitters: [
             {
@@ -271,7 +267,7 @@ export function mall(known: (id: string) => boolean): BuildingDef {
             ...openingChildren(L),
             ...MALL_STRIPS.glass,
             child(MALL_VAULT_DOOR.type, MALL_VAULT_DOOR.pos.x, MALL_VAULT_DOOR.pos.y, MALL_VAULT_DOOR.ori),
-            ...MALL_SWITCHES.map((sw) => piece("switch_03", sw.x, sw.y, sw.ori, sw.label)),
+            ...MALL_KEYPAD.map((k) => piece("switch_03", k.x, k.y, k.ori, k.label)),
             ...furniture(),
         ],
     };

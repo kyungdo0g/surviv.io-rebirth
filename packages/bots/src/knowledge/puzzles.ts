@@ -279,7 +279,9 @@ const SPECS: readonly PuzzleSpec[] = [
             // radar_ops_01 at (30.5, 13), power_plant_control_01 at (-0.5, -21.5)).
             ["gas_station_store_01", "obvious", ["1"], [0, 8, 11, 17], 55, "the gas station's back office"],
             ["church_01", "common", ["blue", "yellow", "red"], [-17, 14, -8, 26], 55, "the church's reliquary"],
-            ["mall_01", "common", ["green", "yellow", "red", "blue"], [2, 23, 14, 34], 65, "the mall's security vault"],
+            // the keypad since 2026-10-11 (the owner's design): 1 9 8 7, the year on the fallen "SINCE 1987" sign at
+            // the main entrance; the sign is in plain view, so it is the same common knowledge as a code note
+            ["mall_01", "common", ["1", "9", "8", "7"], [2, 23, 14, 34], 65, "the mall's security vault"],
             [
                 "power_plant_control_01",
                 "common",

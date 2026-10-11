@@ -239,6 +239,43 @@ test.describe("rebirth buildings", () => {
             expect(errors).toEqual([]);
         });
     }
+    // the mall's keypad (the owner's design, 2026-10-11): the fallen "SINCE 1987" sign on the entrance plaza, the five
+    // number buttons in the security office, and 1 9 8 7 pressed with the Use key opening the vault
+    test("mall_01: the fallen sign, the keypad, and 1 9 8 7 opening the vault", async ({ page }) => {
+        test.setTimeout(120_000);
+        const errors = collectErrors(page);
+        await boot(page, "/?building=mall_01&seed=1");
+        await standAt(page, "mall_01", -5.5, -33);
+        await page.waitForTimeout(1500);
+        await page.screenshot({ path: `${SCREENS}/mall_01-sign.png` });
+        await standAt(page, "mall_01", 8, 21.3);
+        await page.waitForTimeout(1500);
+        await page.screenshot({ path: `${SCREENS}/mall_01-keypad.png` });
+        const state = () =>
+            page.evaluate(() => {
+                const game = (window as any).__rebirth.game;
+                const mall = game.world.buildings.find((b: any) => b.type === "mall_01");
+                const vault = mall.childIds
+                    .map((id: number) => game.world.get(id))
+                    .find((o: any) => o?.type === "vault_door_bathhouse");
+                return { input: mall.puzzle.inputCode.join(""), solved: mall.puzzle.solved, open: vault.door.open };
+            });
+        // the buttons' x in the mall's frame (mallLayout.ts MALL_KEYPAD), pressed from before each one
+        const keyX: Record<string, number> = { "1": 3.6, "2": 5.8, "7": 8, "8": 10.2, "9": 12.4 };
+        for (const [i, digit] of ["1", "9", "8", "7"].entries()) {
+            await standAt(page, "mall_01", keyX[digit], 20.75);
+            await page.waitForTimeout(400);
+            await page.keyboard.press("f");
+            await expect.poll(async () => (await state()).input.length >= i + 1 || (await state()).solved).toBe(true);
+        }
+        await expect.poll(async () => (await state()).solved).toBe(true);
+        await expect.poll(async () => (await state()).open, { timeout: 10_000 }).toBe(true);
+        await standAt(page, "mall_01", 7, 21.5);
+        await page.waitForTimeout(1500);
+        await page.screenshot({ path: `${SCREENS}/mall_01-vault-open.png` });
+        expect(errors).toEqual([]);
+    });
+
     // the owner's wave 3 (2026-10-10): each new building from above, then the player standing at its centre (the blast
     // bunker and the subway open only to explosives, so their basements come in their sim tests)
     for (const [type, art] of [

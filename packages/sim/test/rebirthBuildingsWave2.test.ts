@@ -25,8 +25,6 @@ import {
     LIBRARY_SECRET_DOOR,
     LIBRARY_SHELVES,
     LOOKOUT_ZOOM,
-    MALL_CODE,
-    MALL_VAULT_DOOR,
     MILITARY_HQ_ARCHIVE_DOOR,
     MILITARY_HQ_CODE,
     OUTPOST_ARMORY_DOOR,
@@ -126,7 +124,7 @@ describe("the hidden rooms", () => {
         ["main", 12345, "radio_station_01", RADIO_VAULT_DOOR.type, RADIO_CODE],
         ["main", 12345, "library_01", LIBRARY_SECRET_DOOR.type, LIBRARY_CODE],
         ["main", 12345, "military_hq_01", MILITARY_HQ_ARCHIVE_DOOR.type, MILITARY_HQ_CODE],
-        ["main", 12345, "mall_01", MALL_VAULT_DOOR.type, MALL_CODE],
+        // (the mall's keypad, with its decoy button, has its own file: mallKeypad.test.ts)
         ["faction", 7, "blockhouse_01r", BLOCKHOUSE_MAGAZINE_DOOR.type, BLOCKHOUSE_CODE],
         ["faction", 7, "blockhouse_01b", BLOCKHOUSE_MAGAZINE_DOOR.type, BLOCKHOUSE_CODE],
         ["faction", 7, "power_plant_control_01", PLANT_STRONGROOM_DOOR.type, PLANT_CODE],
