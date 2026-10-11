@@ -74,6 +74,17 @@ describe("ground decals", () => {
         expect(getMapObjectDefOfType("decal", FIRE_DECAL_TYPE).lifetime).toBe(MOLOTOV_FIRE.duration);
     });
 
+    it("the Molotov's fire is 10 u across (the owner, 2026-10-11), its decal drawn as wide as it burns", () => {
+        // radius 5, a little inside the frag's full-damage disc; it was 4.5 (9 u across), which looked smaller still
+        expect(MOLOTOV_FIRE.rad).toBe(5);
+        expect(getDefOfType("explosion", "explosion_frag").rad.min).toBeGreaterThan(MOLOTOV_FIRE.rad);
+        expect(MOLOTOV_FIRE).toMatchObject({ duration: 7, damage: 2, tickInterval: 0.25, afterburn: 1.5 });
+        const decal = getMapObjectDefOfType("decal", FIRE_DECAL_TYPE);
+        // the 256 px sprite at 16 px per unit
+        expect((decal.img.scale * 256) / 16).toBeCloseTo(2 * MOLOTOV_FIRE.rad, 6);
+        expect(decal.collision).toMatchObject({ rad: MOLOTOV_FIRE.rad });
+    });
+
     it("the second-wave rounds draw their own sprites in flight", () => {
         expect(LAUNCHER_ROUNDS.bullet_nlaw.sprite).toBe("proj-nlaw-01.img");
         expect(LAUNCHER_ROUNDS.bullet_bazooka.sprite).toBe("proj-bazooka-01.img");

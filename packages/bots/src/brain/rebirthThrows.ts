@@ -1,5 +1,5 @@
 // The rebirth's Molotov and flashbang for bots (BrainFeatures.rebirthThrows; owner 2026-10-10, defs rebirth/throwables.ts).
-// - Molotov: not cookable, bursts on contact into MOLOTOV_FIRE (4.5 u, 7 s): the frag's cook maths does not apply. A bot
+// - Molotov: not cookable, bursts on contact into MOLOTOV_FIRE (radius 5, 7 s): the frag's cook maths does not apply. A bot
 //   throws it to flush a camper (a target that keeps still behind cover or out of sight) or to deny the doorway it
 //   holds, from MOLOTOV_MIN to MOLOTOV_MAX away, never with a teammate near the landing spot.
 // - Flashbang: a 2.5 s fuse, cooked like a frag (fragPlan): thrown before pushing a room, at a target behind cover or
@@ -21,7 +21,8 @@ import { fragPlan } from "./grenades.ts";
 
 const MOLOTOV = "molotov";
 const FLASHBANG = "flashbang";
-const MOLOTOV_MIN = 9;
+/** Never closer than the fire's edge plus 4.5 u (9 u with the 4.5 u fire it was tuned on): a short throw burns the bot. */
+const MOLOTOV_MIN = MOLOTOV_FIRE.rad + 4.5;
 const MOLOTOV_MAX = 24;
 const FLASH_MIN = 8;
 const FLASH_MAX = 20;

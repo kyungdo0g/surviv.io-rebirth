@@ -10,6 +10,7 @@ import {
     GameObjectDefs,
     getMapObjectDefOfType,
     launcherRound,
+    MOLOTOV_FIRE,
     OWNER_ROUND_ART,
     REBIRTH_THROWABLE_SPRITES,
     type ThrowableDef,
@@ -74,7 +75,7 @@ describe("effects", () => {
     it("the Molotov and flashbang explosions play their own small effects", () => {
         const molotov = explosionVisual("explosion_molotov")!;
         expect(molotov.effectType).toBe("molotov");
-        expect(molotov.burstScale).toBeCloseTo(4.5 / 12, 6);
+        expect(molotov.burstScale).toBeCloseTo(MOLOTOV_FIRE.rad / 12, 6);
         expect(molotov.effect.burst.grass).toBe("window_break_01");
         const flash = explosionVisual("explosion_flashbang")!;
         expect(flash.effectType).toBe("flashbang");

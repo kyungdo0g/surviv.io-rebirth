@@ -141,7 +141,8 @@ const EFFECTS: Readonly<Record<string, EffectDef>> = {
     }),
     /**
      * Rebirth Molotov (owner, 2026-10-10; defs rebirth/throwables.ts): the bottle breaks (the original window break)
-     * in a small fireball drawn for the fire's 4.5 u, no shake; the burning ground is its decal (objects/decal.ts).
+     * in a small fireball drawn for the fire's radius (5 u since 2026-10-11), no shake; the burning ground is its decal
+     * (objects/decal.ts).
      */
     molotov: fx("explosionBurst", 1, "window_break_01", "frag_water_01", 3, [0, 0], 1.5, { refRad: 12, volume: 1.2 }),
     /**

@@ -22,12 +22,14 @@ export const REBIRTH_THROWABLE_TYPES = [MOLOTOV, FLASHBANG] as const;
 export const FIRE_DECAL_TYPE = "decal_molotov_fire";
 
 /**
- * The Molotov's fire: 4.5 u across (a frag's inner radius is 5 x 1.3), burning 7 s; 2 HP every 0.25 s (8 HP/s, about
- * 4x the last zone's gas) to whoever stands in it and 1.5 s more after leaving, so running straight through costs
- * 15-20 HP and staying in the whole time is lethal from about 60 HP.
+ * The Molotov's fire: radius 5, 10 u across, a little inside the frag's full-damage disc (radius 6.5 in the rebirth)
+ * (the owner, 2026-10-11: "too small, about 8 across, right next to a frag's blast"; it was radius 4.5, which the notes
+ * called "4.5 u across", and its decal faded out well inside that, so it looked about 6 across), burning 7 s; 2 HP every 0.25 s (8 HP/s, about 4x the last zone's
+ * gas) to whoever stands in it and 1.5 s more after leaving, so running straight through costs 15-25 HP and staying in
+ * the whole time is lethal from about 60 HP.
  */
 export const MOLOTOV_FIRE = {
-    rad: 4.5,
+    rad: 5,
     duration: 7,
     damage: 2,
     tickInterval: 0.25,
