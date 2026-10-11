@@ -34,16 +34,23 @@ The 2026-10-08 patch was used in full and deleted.
     600-line test is green again).
 11. **HQ archive**: `78af98a`: between a puzzle's pieces a gun shoots the blocking table down; 6/6 seeds solve it.
 12. `6cfd4f0`: `explosionGate` obstacles are never broken through (the launcher holder's case is still to do).
+13. **PR #19 (the clone's wave 3) reviewed and merged**, with review fixes:
+    - sim: a collapsing building counts only its load-bearing brick shell (`ObstacleDef.loadBearing`); before, eight of
+      the church's ten wood partitions broken in a fight caved it in. The buried leave no body, cooked grenade or
+      Martyrdom grenades.
+    - client: the stairs of a dark structure are dark on a stairs layer (from the top step the station showed lit).
+      The server still sends what the dark hides (documented in rebirth-deviations.md); the bots limit their own sight.
+    - bots: gated stairs are no way down until the gate is seen blown (the portals planned through both gates);
+      `collapseAware`, `gateBreach`, sight in the dark (`perception/darkness.ts`); the ten wave-3 puzzles in the
+      knowledge (appended); between a puzzle's pieces no breaking through furniture with a way round, and no leaning
+      into a door panel. 12 fixtures re-staged for the moved map, each with its reason.
+    - The infirmary narcotics store is fixed by the PR's door move: experts loot it in about 6 s (seeds 1-3).
 
 ## Still to do
 
-- **Infirmary narcotics store** (not fixed): the pharmacy's house door (`defs/src/rebirth/buildings/military/infirmary.ts`
-  `op("house_door_01", -29, 26.5, 1)`, world id 918 on main 12345) opened from the triage hall swings across the store's
-  vault doorway, so the grid has no way in and the bot gives the room up every 10 s. A bot that closes it from the hall
-  reopens it on the way in; closing it from inside needs the way in. Likely fix: hinge that door at the other end of its
-  doorway (or swing it the other way) so it never covers the vault door; then re-stage the golden hash.
-- **When the clone's next wave lands**: a launcher holder may break an `explosionGate` obstacle; stay out of a building
-  near collapse (`rebirth_wall_brk_*`, DamageType.Collapse).
+- **Wave 3 leftovers** (PR #19 review): emotes are drawn above the darkness overlay (an emote in the dark shows where
+  its player stands); the mall's 4-switch code is tight for the bots (about 19 s, legs up to 79 u inside the 10 s
+  window); dead bodies already lying in a building when it collapses stay on the rubble.
 
 - **Full verification** in a clean worktree, with its own `pnpm install --offline --frozen-lockfile`. Symlinked
   `node_modules` resolve the workspace packages to the main checkout and give bogus type errors. Run it with the machine
