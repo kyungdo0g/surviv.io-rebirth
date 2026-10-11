@@ -122,11 +122,11 @@ describe("client messages", () => {
         const posTol = 2048 / 65535 / 2 + 1e-9;
         forCases(31, (rng) => {
             const isPing = rng.bool();
-            // up to past the 1034-unit 50v50 map (the original's 0..1024 clamped there)
+            // up to past the 1126-unit 50v50 map (the original's 0..1024 clamped there)
             const msg: ClientMsg = {
                 type: MsgType.Emote,
                 emote: isPing
-                    ? { type: randGameType(rng), isPing, pos: { x: rng.range(0, 1100), y: rng.range(0, 1100) } }
+                    ? { type: randGameType(rng), isPing, pos: { x: rng.range(0, 1200), y: rng.range(0, 1200) } }
                     : { type: randGameType(rng), isPing },
             };
             const bytes = encodeClientMsg(msg);

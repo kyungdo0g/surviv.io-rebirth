@@ -25,7 +25,7 @@
 - wiki.gg lists the same Classic numbers: width/height 512, scale 1.1875, squads scale 1.28125, extension 112, shore inset 48, grass inset 18 [src:wikigg/Classic_mode] [M]
 - The changelog increased the map size in 0.2.0 (Jan 17, 2018) and added the ocean border in 0.2.2 (Jan 23, 2018) [src:changelog/0.2.0] [src:changelog/0.2.2] [H]
 - The map msg carries width and height as uint16 [src:survev/shared/net/mapMsg.ts:107-114] [H]
-- Rebirth: the classic family (`main`, `main_spring`, `main_summer`, `snow`) and 50v50 (`faction`, `faction_potato`) are 1.2 times larger per side, 842 / 899 and 1034 units, with the per-map spawn counts grown with the land area (`docs/research/rebirth-deviations.md` "Bigger maps"; `packages/defs/src/rebirth/mapScale.ts`) [src:user/2026-10-08-bigger-maps] [H]
+- Rebirth: the classic family (`main`, `main_spring`, `main_summer`, `snow`) and 50v50 (`faction`, `faction_potato`) are 1.32 times larger per side (1.2 from 2026-10-08), 915 / 978 and 1126 units, with the per-map spawn counts grown with the land area and 2 to 4 rivers (50v50: its splitting river and 1 to 3 tributaries) (`docs/research/rebirth-deviations.md` "Bigger maps"; `packages/defs/src/rebirth/mapScale.ts`, `mapRivers.ts`) [src:user/2026-10-08-bigger-maps] [src:user/2026-10-11-bigger-maps] [H]
 
 | map (id) | scale small / large | size solo-duo / squad | shoreInset | grassInset | sources |
 |---|---|---|---|---|---|

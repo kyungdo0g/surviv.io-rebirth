@@ -8,9 +8,10 @@ import { cachedMap, objectsHash } from "./helpers.ts";
 
 /**
  * Pinned digest of generateMap("main", 12345, solo); update deliberately when generation changes. Last change: the
- * owner's wave 3 (2026-10-10: gas station, church, mall, capitol, two apartment blocks, blast bunker, subway).
+ * owner's bigger maps with more rivers (2026-10-11: main 1.32 per side, 915 solo, 2 to 4 rivers; rebirth/mapScale.ts,
+ * rebirth/mapRivers.ts).
  */
-const MAIN_12345_HASH = "d20d3c726f1fec70";
+const MAIN_12345_HASH = "95b884b821ddfbae";
 
 /**
  * Area an object reserves against other top-level objects (what canSpawn tests against). A beach obstacle is tested at

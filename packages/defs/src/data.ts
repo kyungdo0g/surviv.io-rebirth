@@ -7,6 +7,7 @@ import mapObjectsJson from "./generated/mapObjects.json" with { type: "json" };
 import mapsJson from "./generated/maps.json" with { type: "json" };
 import { REBIRTH_BUILDING_SPAWNS } from "./rebirth/buildings.ts";
 import { applyRebirthDefs, applyRebirthMaps, grassSpawn } from "./rebirth/index.ts";
+import { applyRebirthMapRivers } from "./rebirth/mapRivers.ts";
 import { playerAreaFactor, REBIRTH_MAP_SCALE, scaleMapDef } from "./rebirth/mapScale.ts";
 import { applySurvevWikiSpecs } from "./survev/wikiSpecs.ts";
 import type { GameObjectDef, MapDef, MapObjectDef } from "./types/index.ts";
@@ -75,6 +76,10 @@ export function mapDefForPlayers(name: string, maxPlayers?: number): MapDef {
 }
 /** balance deviations from the generated defs (rebirth/deviations.ts) */
 export const rebirthDeviations = rebirth.deviations;
+/** map def deviations from the generated maps (id: the map; rebirth/mapRivers.ts); the map sizes are mapScale.ts's */
+export const rebirthMapDeviations = applyRebirthMapRivers(
+    mapsJson as unknown as Readonly<Record<string, MapDef>>,
+).deviations;
 /** ids of the rebirth-only game objects, after every generated id */
 export const rebirthOnlyIds: readonly string[] = rebirth.addedGameObjects;
 /** ids of the rebirth-only map objects (scorch decals, air drop tier crates), after every generated id */

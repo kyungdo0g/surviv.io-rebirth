@@ -10,6 +10,7 @@ import { rebirthOnlyDefs, rebirthOnlyMapObjects } from "./defs.ts";
 import { applyBalanceDeviations, applyMapObjectDeviations, type DefDeviation } from "./deviations.ts";
 import { applyGunSpeedOverrides } from "./gunSpeeds.ts";
 import { applyHeldGunArt } from "./heldGunArt.ts";
+import { applyRebirthMapRivers } from "./mapRivers.ts";
 import { applyRebirthMapScale, REBIRTH_MAP_SCALE } from "./mapScale.ts";
 import { applyNewGunLoot } from "./newGunLoot.ts";
 import { applyOwnerLoot, CLUB_VAULT_BOX, clubVaultBuilding, GOLD_BONUS_CRATES, goldBonusCrates } from "./ownerLoot.ts";
@@ -28,6 +29,7 @@ export * from "./gunBeta.ts";
 export * from "./gunSpeeds.ts";
 export * from "./heldGunArt.ts";
 export * from "./launcherRoundArt.ts";
+export * from "./mapRivers.ts";
 export * from "./mapScale.ts";
 export * from "./newGunAssets.ts";
 export * from "./newGunLoot.ts";
@@ -135,11 +137,11 @@ export function grassSpawn(mapObjects: Readonly<Record<string, MapObjectDef>>): 
  * the SVD and the SCAR-SSR, rebirth/survevGuns.ts) in the gold drop of main and its seasonal copies, then the owner's
  * 2026-10-08 rows (the classic floor's USAS-12, the bathhouse ring case, the club gun box's table;
  * rebirth/ownerLoot.ts), then the Molotov and flashbang in the throwable tables (rebirth/throwables.ts), then the rare
- * crates' throwables with the variant strobes (rebirth/strobeLoot.ts), then the
- * bigger classic and 50v50 maps (`scales`, REBIRTH_MAP_SCALE by default; rebirth/mapScale.ts), then the rebirth
- * buildings in their maps' fixed spawns (rebirth/buildings.ts). Checks that every tier inner crate a map can
- * drop and the club's gun box find their tiers in that map's table. `gameObjects` gives the guns' ammo (the floor rule
- * of the new guns and of the club table).
+ * crates' throwables with the variant strobes (rebirth/strobeLoot.ts), then the classic and 50v50 maps' extra rivers
+ * (rebirth/mapRivers.ts; with any `scales`), then the bigger classic and 50v50 maps (`scales`, REBIRTH_MAP_SCALE by
+ * default; rebirth/mapScale.ts), then the rebirth buildings in their maps' fixed spawns (rebirth/buildings.ts).
+ * Checks that every tier inner crate a map can drop and the club's gun box find their tiers in that map's table.
+ * `gameObjects` gives the guns' ammo (the floor rule of the new guns and of the club table).
  */
 export function applyRebirthMaps(
     generatedMaps: Readonly<Record<string, MapDef>>,
@@ -153,11 +155,13 @@ export function applyRebirthMaps(
     };
     const maps = applyRebirthBuildingSpawns(
         applyRebirthMapScale(
-            applyStrobeVariantLoot(
-                applyRebirthThrowableLoot(
-                    applyOwnerLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf)), ammoOf),
+            applyRebirthMapRivers(
+                applyStrobeVariantLoot(
+                    applyRebirthThrowableLoot(
+                        applyOwnerLoot(applyRebirthGoldGuns(applyNewGunLoot(generatedMaps, ammoOf)), ammoOf),
+                    ),
                 ),
-            ),
+            ).maps,
             scales,
             grassSpawn(mapObjects),
         ),

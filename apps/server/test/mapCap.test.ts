@@ -20,19 +20,19 @@ describe("a room's player cap", () => {
         const room = new GameRoom(makeConfig({ log: false, maxPlayers: 160 }), "main", 3, 0, 4);
         expect(room.capacity).toBe(160);
         expect(room.game.options.maxPlayers).toBe(160);
-        expect(room.game.mapData.width).toBe(1225);
-        expect(decodedWidth(room)).toBe(1225);
+        expect(room.game.mapData.width).toBe(1337);
+        expect(decodedWidth(room)).toBe(1337);
         const faction = new GameRoom(makeConfig({ log: false, factionMaxPlayers: 200 }), "faction", 3, 0, 4);
-        expect(faction.game.mapData.width).toBe(1415);
-        expect(decodedWidth(faction)).toBe(1415);
+        expect(faction.game.mapData.width).toBe(1546);
+        expect(decodedWidth(faction)).toBe(1546);
     });
 
     it("keeps the maps' own sizes at the default caps and below them", () => {
         const config = makeConfig({ log: false });
-        expect(new GameRoom(config, "main", 3, 0, 1).game.mapData.width).toBe(842);
-        expect(new GameRoom(config, "main", 3, 0, 4).game.mapData.width).toBe(899);
-        expect(new GameRoom(config, "faction", 3, 0, 4).game.mapData.width).toBe(1034);
-        expect(new GameRoom(makeConfig({ log: false, maxPlayers: 1 }), "main", 3, 0, 1).game.mapData.width).toBe(842);
+        expect(new GameRoom(config, "main", 3, 0, 1).game.mapData.width).toBe(915);
+        expect(new GameRoom(config, "main", 3, 0, 4).game.mapData.width).toBe(978);
+        expect(new GameRoom(config, "faction", 3, 0, 4).game.mapData.width).toBe(1126);
+        expect(new GameRoom(makeConfig({ log: false, maxPlayers: 1 }), "main", 3, 0, 1).game.mapData.width).toBe(915);
     });
 
     it("never lets a game hold more than 255 players, whoever routed or joined", () => {

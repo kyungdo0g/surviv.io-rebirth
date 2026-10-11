@@ -210,7 +210,7 @@ describe("bot fill in a full game", () => {
     it("fills a game whose player cap is above the mode's maxPlayers to that cap (on the larger map)", () => {
         const config = makeConfig({ log: false, maxPlayers: 200, botFill: 200, botFillIntervalMs: 0 });
         const room = new GameRoom(config, "main", 79, 0);
-        expect(room.game.mapData.width).toBe(1144);
+        expect(room.game.mapData.width).toBe(1247);
         for (let i = 0; i < 400 && playersIn(room) < 200; i++) room.tick();
         expect(playersIn(room)).toBe(200);
         expect(room.game.canJoin()).toBe(false);

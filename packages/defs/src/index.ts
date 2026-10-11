@@ -21,6 +21,7 @@ export * from "./constants.ts";
 export {
     mapDefForPlayers,
     rebirthDeviations,
+    rebirthMapDeviations,
     rebirthOnlyIds,
     rebirthOnlyMapObjectIds,
     survevWikiSpecs,

@@ -2,7 +2,8 @@
 // per side:
 // - REBIRTH_MAP_SCALE (the owner, 2026-10-08, via the lead: "bigger maps to make room for the new buildings"): the
 //   classic map family and 50v50 are 1.2 times larger per side in every game (main 720 / 768 -> 842 / 899, faction
-//   880 -> 1034);
+//   880 -> 1034); the owner, 2026-10-11 ("go, make the maps bigger and add more rivers"): 10 % more, 1.32 (main
+//   915 / 978, faction 1126), with more rivers (rebirth/mapRivers.ts);
 // - the game's player cap (the owner, 2026-10-08, via the lead: a 200-player classic game felt small): a game whose
 //   cap is above its map's design count (playerAreaFactor) is larger by the square root of the ratio, up to
 //   MAX_PLAYER_AREA_FACTOR in area, so players per land area stay about the same (defs data.ts mapDefForPlayers).
@@ -18,17 +19,17 @@ import type { MapDef, SpawnCount } from "../types/index.ts";
 
 /** Per-side size multiplier per map (1 or absent: unchanged). */
 export const REBIRTH_MAP_SCALE: Readonly<Record<string, number>> = {
-    main: 1.2,
-    main_spring: 1.2,
-    main_summer: 1.2,
-    snow: 1.2,
-    faction: 1.2,
-    faction_potato: 1.2,
+    main: 1.32,
+    main_spring: 1.32,
+    main_summer: 1.32,
+    snow: 1.32,
+    faction: 1.32,
+    faction_potato: 1.32,
 };
 
 type Variant = "small" | "large";
 
-/** mapGen.map.scale times `k`, rounded so baseWidth x scale is a whole number (512 x 1.28125 x 1.2 = 787.2 -> 787). */
+/** mapGen.map.scale times `k`, rounded so baseWidth x scale is a whole number (512 x 1.28125 x 1.32 = 865.92 -> 866). */
 function scaledScale(def: MapDef, variant: Variant, k: number): number {
     const { baseWidth, scale } = def.mapGen.map;
     return Math.round(baseWidth * scale[variant] * k) / baseWidth;
@@ -107,10 +108,11 @@ export function applyRebirthMapScale(
 export const FACTION_DESIGN_PLAYERS = 100;
 
 /**
- * The most a player cap grows a map's land area (x2: x1.41 per side). At it a 200-player classic game is 1144 / 1225
- * units a side (842 / 899 at 80) and a 200-player 50v50 game 1415 (1034 at 100): players per land area stay at most
- * 1.25 times the design's (at 200 players) and below survev's 80 on 720, the gas stretch (gas.ts) stays within the
- * bots' 1.5 (bots brain/survival.ts) and a match within about 10 minutes 20.
+ * The most a player cap grows a map's land area (x2: x1.41 per side). At it a 200-player classic game is 1247 / 1337
+ * units a side (915 / 978 at 80) and a 200-player 50v50 game 1546 (1126 at 100), within the plane positions' 2304
+ * (protocol match.ts): players per land area stay at most 1.25 times the design's (at 200 players) and below survev's
+ * 80 on 720, the gas stretch (gas.ts) stays within the bots' 1.5 (bots brain/survival.ts) and a match within about 10
+ * minutes 20.
  */
 export const MAX_PLAYER_AREA_FACTOR = 2;
 

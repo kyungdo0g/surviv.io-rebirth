@@ -70,16 +70,16 @@ describe("maps follow the player cap", () => {
 
     it("grows the side by the square root of cap / design, up to twice the land area", () => {
         for (const name of ["main", "main_spring", "main_summer", "snow"]) {
-            expect([name, widths(mapDefForPlayers(name, 100))]).toEqual([name, [928, 992]]);
+            expect([name, widths(mapDefForPlayers(name, 100))]).toEqual([name, [1009, 1080]]);
             for (const cap of [160, 200, 255])
-                expect([name, cap, ...widths(mapDefForPlayers(name, cap))]).toEqual([name, cap, 1144, 1225]);
+                expect([name, cap, ...widths(mapDefForPlayers(name, cap))]).toEqual([name, cap, 1247, 1337]);
         }
         for (const name of ["faction", "faction_potato"]) {
-            expect(widths(mapDefForPlayers(name, 150))).toEqual([1241, 1241]);
+            expect(widths(mapDefForPlayers(name, 150))).toEqual([1354, 1354]);
             for (const cap of [200, 255])
-                expect([name, cap, ...widths(mapDefForPlayers(name, cap))]).toEqual([name, cap, 1415, 1415]);
+                expect([name, cap, ...widths(mapDefForPlayers(name, cap))]).toEqual([name, cap, 1546, 1546]);
         }
-        // maps the rebirth's 1.2 left alone grow from the survev size
+        // maps the rebirth's 1.32 left alone grow from the survev size
         expect(widths(mapDefForPlayers("cobalt", 160))).toEqual([972, 1040]);
         expect(widths(mapDefForPlayers("desert", 200))).toEqual([972, 972]);
         expect(widths(mapDefForPlayers("test_faction", 100))).toEqual(widths(getMapDef("test_faction")));
@@ -113,16 +113,16 @@ describe("maps follow the player cap", () => {
     it("grows the counts on the grass with the land area", () => {
         const own = getMapDef("main").mapGen.fixedSpawns[0];
         const grown = mapDefForPlayers("main", 160).mapGen.fixedSpawns[0];
-        expect(own).toMatchObject({ house_red_01: { small: 4, large: 6 }, tree_02: 4, hut_01: 3 });
-        // grown once from the survev counts by the land area (side less the 2 x 48 shore): small (1048 / 624)² ≈ 2.8,
-        // large (1129 / 672)² ≈ 2.8 (survev house_red_01 3 / 4, tree_02 3); the coast's huts keep theirs
-        expect(grown).toMatchObject({ house_red_01: { small: 8, large: 11 }, tree_02: 8, hut_01: 3 });
+        expect(own).toMatchObject({ house_red_01: { small: 5, large: 7 }, tree_02: 5, hut_01: 3 });
+        // grown once from the survev counts by the land area (side less the 2 x 48 shore): small (1151 / 624)² ≈ 3.4,
+        // large (1241 / 672)² ≈ 3.4 (survev house_red_01 3 / 4, tree_02 3); the coast's huts keep theirs
+        expect(grown).toMatchObject({ house_red_01: { small: 10, large: 14 }, tree_02: 10, hut_01: 3 });
         // a variant's 1 beside a larger count is not a one-off: solo maps get their warehouses, barns and teahouses too
-        expect(own).toMatchObject({ warehouse_01: { small: 1, large: 3 }, barn_01: { small: 1, large: 4 } });
+        expect(own).toMatchObject({ warehouse_01: { small: 2, large: 3 }, barn_01: { small: 2, large: 5 } });
         expect(grown).toMatchObject({
-            warehouse_01: { small: 3, large: 6 },
-            barn_01: { small: 3, large: 8 },
-            teahouse_complex_01su: { small: 3, large: 6 },
+            warehouse_01: { small: 3, large: 7 },
+            barn_01: { small: 3, large: 10 },
+            teahouse_complex_01su: { small: 3, large: 7 },
         });
     });
 });

@@ -13,11 +13,11 @@ import { MAP_CASES, validateSeed } from "./mapValidation.ts";
 const sum = (xs: readonly number[]) => xs.reduce((a, b) => a + b, 0);
 
 describe("a game's player cap", () => {
-    it("grows a classic squad game at cap 160 to 1225 a side and stretches its gas by 1225 / 899", () => {
+    it("grows a classic squad game at cap 160 to 1337 a side and stretches its gas by 1337 / 978", () => {
         const game = new Game({ mapName: "main", seed: 1, teamMode: 4, maxPlayers: 160 }, { spawnLoot: false });
-        expect(game.mapData.width).toBe(1225);
-        expect(game.gas.mapSize).toBe(1225);
-        const s = 1225 / 899;
+        expect(game.mapData.width).toBe(1337);
+        expect(game.gas.mapSize).toBe(1337);
+        const s = 1337 / 978;
         expect(game.gas.timeScale).toBeCloseTo(s, 12);
         const base = GameConfig.gas.stages;
         expect(game.gas.stages.map((x) => x.duration)).toEqual(base.map((x) => Math.round(x.duration * s * 100) / 100));
@@ -46,13 +46,13 @@ describe("a game's player cap", () => {
         expect(game.gas.stages).toBe(fast);
     });
 
-    it("grows a 50v50 game at cap 200 to 1415 with one arsenal and both bases", () => {
+    it("grows a 50v50 game at cap 200 to 1546 with one arsenal and both bases", () => {
         const game = new Game({ mapName: "faction", seed: 7, teamMode: 4, maxPlayers: 200 }, { spawnLoot: false });
-        expect(game.mapData.width).toBe(1415);
+        expect(game.mapData.width).toBe(1546);
         const top = game.generation.objects.filter((o) => o.parentId === 0);
         expect(top.filter((o) => o.type === "arsenal_01")).toHaveLength(1);
         expect(top.filter((o) => o.type.startsWith("military_base_01"))).toHaveLength(2);
-        expect(game.gas.timeScale).toBeCloseTo(1415 / 1034, 12);
+        expect(game.gas.timeScale).toBeCloseTo(1546 / 1126, 12);
     });
 
     it("lets as many players join as a cap that grows the map (else the mode's maxPlayers; 255 at most)", () => {
@@ -84,12 +84,12 @@ describe("a game's player cap", () => {
     it("stretches the gas by the width a generation passed in is played at", () => {
         const design = cachedMap("main", 1, 4);
         const capped = new Game({ mapName: "main", seed: 1, teamMode: 4, maxPlayers: 160 }, { generation: design });
-        expect(capped.mapData.width).toBe(899);
+        expect(capped.mapData.width).toBe(978);
         expect(capped.gas.timeScale).toBe(1);
         expect(capped.gas.stages).toBe(GameConfig.gas.stages);
         const grown = generateMap("main", 1, 4, mapDefForPlayers("main", 160));
         const game = new Game({ mapName: "main", seed: 1, teamMode: 4, maxPlayers: 160 }, { generation: grown });
-        expect(game.gas.timeScale).toBeCloseTo(1225 / 899, 12);
+        expect(game.gas.timeScale).toBeCloseTo(1337 / 978, 12);
     });
 
     it("stretches the circle-1 air drop wait with the gas", () => {
@@ -105,9 +105,9 @@ describe("a game's player cap", () => {
             if (circle1 < 0 && game.gas.circleIdx === 1) circle1 = game.tick;
             if (game.planes.planes.length > 0) plane = game.tick;
         }
-        // main's first drop: 10 s into circle 1, times 1144 / 842
+        // main's first drop: 10 s into circle 1, times 1247 / 915
         expect(circle1).toBeGreaterThan(0);
-        expect((plane - circle1) / 100).toBeCloseTo(10 * (1144 / 842), 1);
+        expect((plane - circle1) / 100).toBeCloseTo(10 * (1247 / 915), 1);
     }, 60_000);
 });
 
